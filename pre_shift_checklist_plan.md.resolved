@@ -1,0 +1,141 @@
+# 📋 Pre-Shift Checklist — Rencana Implementasi
+
+> **Status:** 🚧 Siap Implementasi  
+> **Tanggal diskusi:** 6-9 Maret 2026  
+> **Lokasi modul:** **Modul Baru** (menu Production → Pre-Shift Checklist)
+
+---
+
+## 🎯 Konsep
+
+Form checklist harian yang diisi **per mesin, per shift, per hari** sebelum produksi dimulai. Terdiri dari 4 section:
+
+| # | Section | Sumber Data | Status Data |
+|---|---------|-------------|-------------|
+| 1 | **Kelengkapan Material** | 🔄 Placeholder (data belum lengkap) | ⏸️ Placeholder |
+| 2 | **Kondisi Mesin** | ✅ 19 item part mesin × 16 mesin | ✅ Ready |
+| 3 | **Keamanan Mesin** | � Placeholder (belum di-meeting-kan) | ⏸️ Placeholder |
+| 4 | **Man Power (Karyawan)** | ✅ 8 item checklist | ✅ Ready |
+
+---
+
+## 🔑 Keputusan Desain
+
+1. **Modul:** Modul baru di menu Production
+2. **Material checklist:** Placeholder dulu (data BOM belum lengkap)
+3. **Kondisi Mesin:** 19 item part mesin, applicable per mesin (ada/tidak ada)
+4. **Keamanan Mesin:** Placeholder dulu (belum di-meeting-kan)
+5. **Man Power:** 8 item checklist global
+
+---
+
+## � Data Checklist
+
+### Section 2: Kondisi Mesin (19 item)
+
+| No | Part Mesin |
+|----|------------|
+| 1 | End Seal |
+| 2 | Centre Seal |
+| 3 | AS Jumbo Roll |
+| 4 | Stacker |
+| 5 | Sticker |
+| 6 | Pounch |
+| 7 | Pembersihan dan Perawatan |
+| 8 | Inkjet |
+| 9 | Temperatur Mesin |
+| 10 | Line Together |
+| 11 | Sensor Eyemark |
+| 12 | Sensor Packaging |
+| 13 | Sensor Sticker |
+| 14 | Tekanan Angin |
+| 15 | Gusset |
+| 16 | Press |
+| 17 | Inverter |
+| 18 | Pisau |
+| 19 | Jalur Kain |
+
+**Mesin (16):** MC1, MC2, MC3, MC4, MC5, MC6, MC7, MC8, MC10, MC11, MC12, FT, Cutting, Perforating, Oven
+
+**Note:** Tidak semua part ada di semua mesin (kotak hitam = tidak applicable)
+
+### Section 4: Man Power (8 item)
+
+| No | Item |
+|----|------|
+| 4.1 | Operator Mesin |
+| 4.2 | Helper |
+| 4.3 | Karyawan Packing |
+| 4.4 | Kesiapan dan Kondisi Karyawan |
+| 4.5 | Pembagian Tugas |
+| 4.6 | Distribusi |
+| 4.7 | Checker |
+| 4.8 | Operator Mesin Obras |
+
+---
+
+## 🗄️ Database Model
+
+```sql
+-- Master item kondisi mesin (19 items)
+pre_shift_checklist_items
+  → id, category (MATERIAL/KONDISI_MESIN/KEAMANAN/MANPOWER)
+  → item_code, item_name, sort_order, is_active
+
+-- Mapping item ke mesin (mana yang applicable)
+pre_shift_checklist_machine_items
+  → id, item_id, machine_id, is_applicable (default true)
+
+-- Submission per mesin per shift per hari
+pre_shift_checklist_submissions
+  → id, machine_id, tanggal, shift, operator_name
+  → submitted_by, submitted_at, status (draft/submitted)
+
+-- Jawaban per item
+pre_shift_checklist_answers
+  → id, submission_id, item_id
+  → status (OK/NG/NA), catatan, photo_url
+```
+
+---
+
+## 📁 API Endpoints
+
+```
+GET  /pre-shift-checklist/items                    - List semua item
+GET  /pre-shift-checklist/machines/<id>/items      - Items untuk mesin tertentu
+POST /pre-shift-checklist/submit                   - Submit checklist
+GET  /pre-shift-checklist/submissions              - List submissions (filter by date/machine)
+GET  /pre-shift-checklist/submissions/<id>         - Detail submission
+GET  /pre-shift-checklist/status                   - Status hari ini per mesin
+```
+
+---
+
+## 🖥️ UI Design
+
+### Halaman Utama (/app/production/pre-shift-checklist)
+- Grid mesin dengan status checklist hari ini (✅ Submitted / ⏳ Pending / ❌ Belum)
+- Filter by tanggal
+- Klik mesin → buka form checklist
+
+### Form Checklist
+- Header: Mesin, Tanggal, Shift, Nama Operator
+- 4 Tab/Section:
+  1. Kelengkapan Material (placeholder)
+  2. Kondisi Mesin (19 item, sesuai mesin)
+  3. Keamanan Mesin (placeholder)
+  4. Man Power (8 item)
+- Setiap item: Radio OK/NG/NA + field catatan
+- Tombol Submit
+
+---
+
+## ⏭️ Next Steps
+
+1. [x] Finalisasi data Kondisi Mesin (19 item)
+2. [x] Finalisasi data Man Power (8 item)
+3. [ ] Implementasi database model
+4. [ ] Implementasi backend API
+5. [ ] Implementasi frontend UI
+6. [ ] Seed data item checklist
