@@ -317,35 +317,20 @@ const WorkOrderKanban: React.FC = () => {
   }
 
   return (
-    <div className="p-4 lg:p-6 bg-gray-50 min-h-screen">
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <ClipboardDocumentListIcon className="h-7 w-7 text-blue-600" />
-            Work Order Kanban Board
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Drag & drop untuk mengubah status Work Order &middot; {totalCount} items
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => fetchWorkOrders(true)}
-            disabled={refreshing}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
-          >
-            <ArrowPathIcon className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-            Refresh
-          </button>
-          <button
-            onClick={() => navigate('/app/production/work-orders/new')}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            + Work Order Baru
-          </button>
-        </div>
+    <div>
+      {/* Subheader */}
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-sm text-gray-500">
+          Drag & drop untuk mengubah status &middot; {totalCount} items
+        </p>
+        <button
+          onClick={() => fetchWorkOrders(true)}
+          disabled={refreshing}
+          className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
+        >
+          <ArrowPathIcon className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+          Refresh
+        </button>
       </div>
 
       {/* Filters */}

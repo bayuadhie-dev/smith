@@ -16,12 +16,15 @@ import {
   EyeIcon,
   BoltIcon,
   DocumentTextIcon,
+  ListBulletIcon,
+  ViewColumnsIcon,
 } from '@heroicons/react/24/outline';
 import { useState, useEffect } from 'react'
 import axiosInstance from '../../utils/axiosConfig'
 import LoadingSpinner from '../../components/Common/LoadingSpinner'
 import ActivityLogModal from '../../components/ActivityLogModal'
 import ProductionOutputModal from '../../components/Production/ProductionOutputModal'
+import WorkOrderKanban from './WorkOrderKanban'
 interface WorkOrder {
   id: number
   wo_number: string
@@ -60,6 +63,9 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
   const [showActivityLog, setShowActivityLog] = useState(false)
   const [showProductionOutput, setShowProductionOutput] = useState(false)
   const [bulkCompleting, setBulkCompleting] = useState(false)
+  const [viewMode, setViewMode] = useState<'list' | 'kanban'>(() => {
+    return (localStorage.getItem('wo_view_mode') as 'list' | 'kanban') || 'list'
+  })
   const [summary, setSummary] = useState({ total: 0, in_progress: 0, completed: 0, total_produced: 0 })
 
   useEffect(() => {
@@ -209,7 +215,28 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
           <h1 className="text-3xl font-bold text-gray-900">📋 Work Orders</h1>
           <p className="text-gray-600 mt-1">Manage production work orders and schedules</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 items-center">
+          {/* View Mode Toggle */}
+          <div className="flex bg-gray-100 rounded-lg p-1">
+            <button
+              onClick={() => { setViewMode('list'); localStorage.setItem('wo_view_mode', 'list') }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <ListBulletIcon className="h-4 w-4" />
+              List
+            </button>
+            <button
+              onClick={() => { setViewMode('kanban'); localStorage.setItem('wo_view_mode', 'kanban') }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                viewMode === 'kanban' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <ViewColumnsIcon className="h-4 w-4" />
+              Kanban
+            </button>
+          </div>
           <button
             onClick={handleBulkComplete}
             disabled={bulkCompleting || summary.in_progress === 0}
@@ -232,6 +259,11 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
         </div>
       </div>
 
+      {/* Kanban View */}
+      {viewMode === 'kanban' ? (
+        <WorkOrderKanban />
+      ) : (
+      <>
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="card p-6">
@@ -591,6 +623,8 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
         onClose={() => setShowProductionOutput(false)}
         days={30}
       />
+      </>
+      )}
     </div>
   )
 }
