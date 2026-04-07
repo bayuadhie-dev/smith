@@ -2,8 +2,8 @@
 
 > **Sistem Manajemen Perusahaan Lengkap untuk Manufaktur Nonwoven**
 
-[![CI/CD](https://github.com/baymngrh/grat/actions/workflows/ci.yml/badge.svg)](https://github.com/baymngrh/grat/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/baymngrh/grat/branch/main/graph/badge.svg)](https://codecov.io/gh/baymngrh/grat)
+[![CI/CD](https://github.com/bayuadhie-dev/smith/actions/workflows/ci.yml/badge.svg)](https://github.com/bayuadhie-dev/smith/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/bayuadhie-dev/smith/branch/main/graph/badge.svg)](https://codecov.io/gh/bayuadhie-dev/smith)
 [![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Flask-3.0+-green.svg)](https://flask.palletsprojects.com/)
 [![React](https://img.shields.io/badge/React-18.2+-61dafb.svg)](https://reactjs.org/)
@@ -498,16 +498,17 @@ GET        /api/waste/reports
 
 ---
 
-### 1️⃣4️⃣ **Modul DCC & CAPA (Document Control Center)** 🆕
+### 1️⃣4️⃣ **Modul DCC & CAPA (Document Control Center)**
 
 **Standar:** ISO 9001:2015 (Klausul 7.5)  
 **Referensi:** QP-DCC-01, QP-DCC-02, QP-DCC-03, QP-DCC-04, WI-DCC-01, WI-DCC-02  
-**Database:** 13 tabel di `dcc.py`
+**Database:** 13 tabel di `dcc.py`  
+**RBAC:** Module `dcc` — view, create, edit, delete, approve
 
 **Sub-Modul:**
 - **Pengendalian Dokumen (QP-DCC-01)** — Registry dokumen Level I-IV (QM, QP, WI, Form), riwayat revisi, 3-level approval chain (Originator → Reviewer → Approver), distribusi salinan terkendali, kaji ulang berkala, change notice
 - **Pengendalian Rekaman Mutu (QP-DCC-02)** — Daftar induk rekaman SMM & mutu produk, masa retensi, holder tracking
-- **CAPA (QP-DCC-03)** — CPAR/SCAR/CCHF dengan auto-numbering, RCA 5-Why & Fishbone, tindakan korektif & preventif, verifikasi efektivitas, laporan bulanan
+- **CAPA (QP-DCC-03)** — CPAR/SCAR/CCHF dengan auto-numbering, RCA 5-Why & Fishbone, tindakan korektif & preventif, verifikasi efektivitas, laporan bulanan. **Referensi Penyimpangan Mutu** — Input manual nomor dokumen penyimpangan saat sumber = PM
 - **Komunikasi Internal (QP-DCC-04)** — Memo antar departemen, read receipts, kategori komunikasi
 - **Pemusnahan Dokumen (WI-DCC-01)** — Berita acara pemusnahan fisik & digital, saksi & verifikasi
 
@@ -515,17 +516,22 @@ GET        /api/waste/reports
 
 **Fitur:**
 - Auto-numbering CPAR (`CP/BB/CC/DD-nnn`) & SCAR (`SC/BB/CC/nnn`), reset per tahun
+- Nomor referensi penyimpangan mutu (manual input saat CPAR source = Penyimpangan Mutu)
 - PDF Security: Permission Lock + AES Owner Password + SHA-256 Hash
 - Digital signature auto-generated (nama, role, timestamp, QR code)
 - Workflow: draft → reviewing → pending_approval → active → obsolete
 
-**API Endpoints (Planned):**
+**API Endpoints:**
 ```bash
-POST   /api/dcc/capa                   # Create CPAR/SCAR
+POST   /api/dcc/capa                   # Create CPAR/SCAR/CCHF
 GET    /api/dcc/capa                   # List (filter type/source/status)
+GET    /api/dcc/capa/:id               # Detail + investigation + verification
 POST   /api/dcc/capa/:id/investigation # Input RCA + Action Plan
-POST   /api/dcc/capa/:id/verify        # Verifikasi efektivitas
-GET    /api/dcc/capa/monthly-report    # Laporan bulanan
+POST   /api/dcc/capa/:id/verification  # Verifikasi efektivitas
+PUT    /api/dcc/capa/:id/status        # Update status
+POST   /api/dcc/capa/:id/cancel        # Pembatalan CAPA
+GET    /api/dcc/capa/dashboard          # KPI Dashboard (by source, dept, status)
+GET    /api/dcc/capa/monthly-report     # Laporan bulanan (FRM-DCC-09)
 POST   /api/dcc/documents              # Registrasi dokumen
 GET    /api/dcc/documents              # Daftar Induk (FRM-DCC-02)
 POST   /api/dcc/memos                  # Buat memo internal
@@ -610,8 +616,8 @@ Produksi Start →
 
 ```bash
 # Clone repository
-git clone https://github.com/baymngrh/grat.git
-cd grat/backend
+git clone https://github.com/bayuadhie-dev/smith.git
+cd smith/backend
 
 # Buat virtual environment
 python -m venv venv
@@ -804,13 +810,35 @@ Total: 811 files, 304,002 lines of code
 
 ## 🔐 Fitur Keamanan
 
-- ✅ JWT Authentication
-- ✅ Password Hashing (Bcrypt)
-- ✅ CORS Protection
-- ✅ SQL Injection Prevention
-- ✅ XSS Protection
-- ✅ Role-based Access Control
-- ✅ Audit Trail
+- ✅ **JWT Authentication** — Token-based auth dengan refresh token
+- ✅ **Password Hashing** — Bcrypt dengan salt
+- ✅ **CORS Protection** — Whitelist origin
+- ✅ **SQL Injection Prevention** — SQLAlchemy ORM parameterized queries
+- ✅ **XSS Protection** — Input sanitization
+- ✅ **Role-Based Access Control (RBAC)** — 40+ default roles, 200+ permissions, module-level access control
+- ✅ **Audit Trail** — Tracking semua perubahan data
+- ✅ **Google OAuth** — Login dengan akun Google
+
+### RBAC System Detail
+
+| Komponen | Jumlah | Deskripsi |
+|----------|--------|-----------|
+| **Roles** | 40+ | Dari Super Admin sampai Helper Gudang |
+| **Modules** | 35+ | Termasuk DCC, Accounting, Pre-Shift Checklist |
+| **Permissions** | 200+ | Format: `module.action` (e.g. `dcc.approve`) |
+| **Actions** | view, create, edit, delete, approve, post, dll | Per-module granular |
+
+**Hierarki Role:**
+- **Super Admin** — Akses penuh semua modul + Settings
+- **Direktur** (Utama, Operasional, Keuangan, HRD) — Executive dashboard + approval
+- **Manager** (Produksi, Sales, QC, Finance, dll) — Full CRUD per departemen
+- **Supervisor** — Monitoring + create/edit
+- **Staff** — Operasional harian
+- **Operator/Helper** — Input data produksi
+- **Auditor** — Read-only semua modul
+- **Viewer/Guest** — Limited read-only
+
+**Catatan:** Modul **Group Chat** dapat diakses semua role tanpa permission check (komunikasi internal).
 
 ---
 
@@ -837,7 +865,7 @@ See [LICENSE](LICENSE) for full terms.
 ## 👨‍💻 Author
 
 **Bayu Adhie**
-- GitHub: [@baymngrh](https://github.com/baymngrh)
+- GitHub: [@bayuadhie-dev](https://github.com/bayuadhie-dev)
 - Email: baymngrh@gmail.com
 
 ---
@@ -886,14 +914,25 @@ AI Assistant adalah fitur chatbot terintegrasi yang memungkinkan user untuk quer
 
 ---
 
-## 📈 Recent Updates (v3.0 — Maret 2026)
+## 📈 Recent Updates
 
-### ✨ New Features (Maret 2026)
-- **DCC Module** 🆕 — Document Control Center dengan 13 tabel (ISO 9001:2015)
-- **CAPA Module** 🆕 — CPAR/SCAR/CCHF dengan auto-numbering & RCA 5-Why
-- **Internal Memo** 🆕 — Komunikasi antar departemen dengan read receipts
-- **Document Destruction** 🆕 — Berita acara pemusnahan (FRM-DCC-14)
-- **Quality Records** 🆕 — Daftar induk rekaman mutu (FRM-DCC-03)
+### ✨ v3.1 — April 2026
+- **RBAC Overhaul** — 40+ roles, 200+ permissions, module-level access control
+- **DCC Permission** — Module `dcc` dengan 5 actions (view, create, edit, delete, approve) di-assign ke 13 roles
+- **Accounting Permission** — Module `accounting` dengan 5 actions di-assign ke finance roles
+- **Pre-Shift Checklist Permission** — Module baru untuk K3 safety checks
+- **CAPA: Referensi Penyimpangan Mutu** — Field input manual nomor dokumen penyimpangan saat sumber CPAR = PM
+- **Sidebar RBAC** — Permission check untuk DCC & Accounting di frontend sidebar
+- **DCC Sidebar Fix** — Query-aware active state untuk tab-based navigation
+- **Seed Script Upgrade** — Sekarang update existing roles dengan permission baru (tidak skip)
+- **Group Chat** — Accessible untuk semua user tanpa permission check
+
+### ✨ v3.0 — Maret 2026
+- **DCC Module** — Document Control Center dengan 13 tabel (ISO 9001:2015)
+- **CAPA Module** — CPAR/SCAR/CCHF dengan auto-numbering & RCA 5-Why
+- **Internal Memo** — Komunikasi antar departemen dengan read receipts
+- **Document Destruction** — Berita acara pemusnahan (FRM-DCC-14)
+- **Quality Records** — Daftar induk rekaman mutu (FRM-DCC-03)
 
 ### ✨ Previous Features (v2.1 — Januari 2026)
 - **WIP Stock Module** — Tracking stok Work In Progress per produk
@@ -933,7 +972,7 @@ AI Assistant adalah fitur chatbot terintegrasi yang memungkinkan user untuk quer
 
 **Bayu Adhie**
 - 📧 Email: baymngrh@gmail.com
-- 🐙 GitHub: [@baymngrh](https://github.com/baymngrh)
+- 🐙 GitHub: [@bayuadhie-dev](https://github.com/bayuadhie-dev)
 - 💼 LinkedIn: [Bayu Adhie](https://linkedin.com/in/bayu-adhie)
 
 For technical support, feature requests, or bug reports, please email us at baymngrh@gmail.com
@@ -959,9 +998,8 @@ For technical support, feature requests, or bug reports, please email us at baym
 - R&D Module dengan approval workflow
 
 ### Sedang Dikerjakan 🚧
-- DCC API Routes (CAPA, Document Control, Internal Memo)
-- DCC Frontend Pages
 - Advanced reporting dengan export
+- Enhanced DCC frontend (bulk operations, advanced search)
 
 ### Direncanakan 📋
 - AI/ML predictive analytics
@@ -975,8 +1013,9 @@ For technical support, feature requests, or bug reports, please email us at baym
 
 ## 🏆 Achievements
 
-- ✅ **811 Files** | **304,002 Lines of Code** | **269 DB Tables**
+- ✅ **811+ Files** | **304,000+ Lines of Code** | **269+ DB Tables**
 - ✅ **18+ Business Modules** with 100+ Sub-Modules
+- ✅ **40+ Roles** | **200+ Permissions** | Full RBAC
 - ✅ **DCC & CAPA** ISO 9001:2015 Compliant
 - ✅ **15+ Automated Workflows** End-to-End
 - ✅ **AI Assistant** Natural Language Query + Charts
