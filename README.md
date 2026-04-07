@@ -1,4 +1,4 @@
-# 🏭 SISTEM ERP PT. GRATIA MAKMUR SENTOSA
+# 🏭 SMITH ERP — Manufacturing Resource Planning
 
 > **Sistem Manajemen Perusahaan Lengkap untuk Manufaktur Nonwoven**
 
@@ -979,7 +979,7 @@ For technical support, feature requests, or bug reports, please email us at baym
 
 ---
 
-**© 2024-2026 PT. Gratia Makmur Sentosa. All Rights Reserved.**
+**© 2024-2026 Bayu Adhie. All Rights Reserved.**
 
 ---
 
