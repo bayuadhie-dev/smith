@@ -171,6 +171,7 @@ function SidebarContent() {
             { name: 'Work Orders', href: '/app/production/work-orders', icon: ClipboardDocumentListIcon, permission: 'work_orders' },
             { name: 'Status Pengerjaan', href: '/app/production/work-order-status', icon: ClipboardDocumentListIcon },
             { name: 'WO Monitoring', href: '/app/production/work-orders-monitoring', icon: ChartBarIcon },
+            { name: 'WO Kanban Board', href: '/app/production/work-orders-kanban', icon: ClipboardDocumentListIcon },
             { name: 'Machine Data', href: '/app/production/machines', icon: CogIcon },
             {
               name: 'Controller', icon: ChartBarIcon, isSubMenu: true, subChildren: [

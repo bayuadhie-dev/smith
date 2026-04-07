@@ -124,6 +124,7 @@ import BreakdownSummary from './pages/Production/BreakdownSummary'
 import WorkOrderTimeline from './pages/Production/WorkOrderTimeline'
 import WorkOrderBreakdown from './pages/Production/WorkOrderBreakdown'
 import WorkOrderStatus from './pages/Production/WorkOrderStatus'
+import WorkOrderKanban from './pages/Production/WorkOrderKanban'
 import QualityTestList from './pages/Quality/QualityTestList'
 import QualityTestForm from './pages/Quality/QualityTestForm'
 import QualityDashboardEnhanced from './pages/Quality/QualityDashboardEnhanced'
@@ -670,6 +671,7 @@ function App() {
                 <Route path="production/work-orders/:id/timeline" element={<WorkOrderTimeline />} />
                 <Route path="production/work-orders/:id/breakdown" element={<WorkOrderBreakdown />} />
                 <Route path="production/work-order-status" element={<WorkOrderStatus />} />
+                <Route path="production/work-orders-kanban" element={<WorkOrderKanban />} />
                 <Route path="production/work-orders/:id/bom-edit" element={<WorkOrderBOMEdit />} />
                 <Route path="production/remaining-stock" element={<RemainingStock />} />
                 <Route path="production/scheduling" element={<WeeklyProductionPlan />} />
