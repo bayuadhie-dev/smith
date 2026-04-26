@@ -45,13 +45,6 @@
 
 ## 🚀 Fitur Utama
 
-### 🤖 Asisten AI
-- **Query Bahasa Alami** - Tanya data ERP pakai bahasa Indonesia
-- **Dukungan Multi-Modul** - Akses semua modul: Penjualan, Produksi, Kualitas, HR, Keuangan, dll
-- **Deteksi Intent Cerdas** - Deteksi otomatis maksud pertanyaan pengguna
-- **Tautan Cepat** - Navigasi langsung ke halaman terkait
-- **Respons Santai** - Jawaban santai dan informatif
-
 ### 📊 Kecerdasan Bisnis
 - **🎯 Dashboard Eksekutif** - Halaman utama dengan analitik lanjutan & KPI real-time
 - **Dashboard Real-time** - 20+ metrik bisnis dengan tren 12 bulan
@@ -982,6 +975,8 @@ Asisten AI adalah fitur chatbot terintegrasi yang memungkinkan pengguna untuk me
 - URL: `http://localhost:5173`
 - Admin Default: `admin / admin123`
 
+⚠️ **PENTING:** Ganti password default segera setelah setup pertama untuk keamanan sistem!
+
 ### 2. Akses Modul Utama
 - **Produksi**: Work Orders → Daily Controller → Quality Objective
 - **Kualitas**: Incoming → In-Process → Finish Good QC
@@ -1015,7 +1010,7 @@ Untuk dukungan teknis, permintaan fitur, atau laporan bug, silakan email kami di
 
 ### Selesai ✅
 - 18+ modul utama, 100+ sub-modul
-- **811 file**, **304,002 baris kode**, **269 tabel database**
+- **816+ file**, **310,000+ baris kode**, **269 tabel database**
 - Autentikasi & otorisasi (JWT + OAuth)
 - 15+ alur kerja otomatis end-to-end
 - Asisten AI terintegrasi dengan grafik
@@ -1041,7 +1036,7 @@ Untuk dukungan teknis, permintaan fitur, atau laporan bug, silakan email kami di
 
 ## 🏆 Pencapaian
 
-- ✅ **811+ File** | **304,000+ Baris Kode** | **269+ Tabel DB**
+- ✅ **816+ File** | **310,000+ Baris Kode** | **269+ Tabel DB**
 - ✅ **18+ Modul Bisnis** dengan 100+ Sub-Modul
 - ✅ **40+ Peran** | **200+ Izin** | RBAC Penuh
 - ✅ **DCC & CAPA** Sesuai ISO 9001:2015
