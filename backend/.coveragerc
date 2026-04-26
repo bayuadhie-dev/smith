@@ -1,0 +1,50 @@
+[run]
+source = .
+omit =
+    tests/*
+    migrations/*
+    venv/*
+    env/*
+    routes/ai_assistant.py
+    routes/executive_dashboard.py
+    routes/desk.py
+    routes/desk_minimal.py
+    routes/face_recognition.py
+    routes/live_monitoring.py
+    routes/tv_display.py
+    routes/socketio_chat.py
+    routes/group_chat.py
+    routes/oauth.py
+    routes/logs.py
+    routes/backup.py
+    routes/import_data.py
+    utils/dcc_pdf.py
+    utils/fifo_helper.py
+    utils/send_notification.py
+    models/shipping_updated.py
+    __pycache__/*
+    site-packages/*
+    setup.py
+    conftest.py
+    seeds/*
+    scripts/*
+    add_*.py
+    alter_tables.py
+    check_*.py
+    create_*.py
+    debug_*.py
+    merge_*.py
+    migrate*.py
+    monitor_performance.py
+    run_server.py
+    test_import.py
+    utils.py
+    company_config/*
+
+[report]
+precision = 2
+show_missing = True
+skip_covered = False
+
+[html]
+directory = htmlcov

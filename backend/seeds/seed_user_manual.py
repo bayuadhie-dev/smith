@@ -4,10 +4,11 @@ Run this script to populate the manual with initial content
 """
 import sys
 import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from app import create_app
 from models import db
+from company_config.company import COMPANY_NAME
 from models.user_manual import ManualCategory, ManualArticle, ManualFAQ
 
 
@@ -112,7 +113,7 @@ def seed_manual_data():
                 'category': 'getting-started',
                 'title': 'Pengenalan Sistem ERP',
                 'slug': 'pengenalan-sistem-erp',
-                'summary': 'Gambaran umum tentang sistem ERP PT. Gratia Makmur Sentosa',
+                'summary': f'Gambaran umum tentang sistem ERP {COMPANY_NAME}',
                 'order': 1,
                 'content': '''# Pengenalan Sistem ERP
 
