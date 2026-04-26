@@ -44,8 +44,8 @@ This software is proprietary and owned by **Mochammad Bayu Adhie Nugroho**. By c
 
 - Python 3.11+
 - Node.js 18+
-- PostgreSQL 15+
 - Git
+- Database: SQLite (Development) or PostgreSQL 15+ (Production)
 
 ### Development Setup
 
