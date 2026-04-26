@@ -1,5 +1,5 @@
 # 🔧 PANDUAN TEKNIS SISTEM ERP
-## PT. GRATIA MAKMUR SENTOSA
+## SMITH ERP - Mochammad Bayu Adhie Nugroho
 
 ---
 

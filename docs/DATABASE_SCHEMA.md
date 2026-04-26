@@ -1,5 +1,5 @@
 # 🗄️ DATABASE SCHEMA DOCUMENTATION
-## PT. GRATIA MAKMUR SENTOSA ERP
+## SMITH ERP - Mochammad Bayu Adhie Nugroho
 
 
 ### DCC & CAPA MODULE (Document Control Center)

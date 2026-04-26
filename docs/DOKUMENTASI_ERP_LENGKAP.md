@@ -1,5 +1,5 @@
 # 📚 DOKUMENTASI LENGKAP SISTEM ERP
-## PT. GRATIA MAKMUR SENTOSA
+## SMITH ERP - Mochammad Bayu Adhie Nugroho
 
 **Tanggal Update:** 13 Maret 2026  
 **Teknologi:** Python Flask + React TypeScript  

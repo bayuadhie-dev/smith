@@ -4,9 +4,9 @@ Thank you for your interest in ERP Flask! Please note that this is a **proprieta
 
 ## ⚠️ Important Notice
 
-This software is proprietary and owned by **PT. Gratia Makmur Sentosa**. By contributing to this project, you agree that:
+This software is proprietary and owned by **Mochammad Bayu Adhie Nugroho**. By contributing to this project, you agree that:
 
-1. All contributions become the property of PT. Gratia Makmur Sentosa
+1. All contributions become the property of Mochammad Bayu Adhie Nugroho
 2. You grant us a perpetual, worldwide, non-exclusive, royalty-free license to use your contributions
 3. You confirm that your contributions are your original work
 4. You have the right to submit the contributions under this agreement
@@ -51,8 +51,8 @@ This software is proprietary and owned by **PT. Gratia Makmur Sentosa**. By cont
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/baymngrh/erpflask2.git
-   cd erpflask2
+   git clone https://github.com/bayuadhie-dev/smith.git
+   cd smith
    ```
 
 2. **Backend Setup**
@@ -410,7 +410,7 @@ npm run build
 ## Questions?
 
 For questions about contributing:
-- Email: dev@gratiamakmursentosa.com
+- Email: dev@smitherp.local
 - Create an issue with `[Question]` prefix
 
 ---

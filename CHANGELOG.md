@@ -292,10 +292,8 @@ chore: [release] v1.0.0 - Initial release
 ## Support
 
 For commercial licensing and support inquiries:
-- Email: support@gratiamakmursentosa.com
-- Website: https://gratiamakmursentosa.com
+- Email: baymngrh@gmail.com
 
 ---
 
-[Unreleased]: https://github.com/baymngrh/erpflask2/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/baymngrh/erpflask2/releases/tag/v1.0.0
+[Unreleased]: https://github.com/bayuadhie-dev/smith
