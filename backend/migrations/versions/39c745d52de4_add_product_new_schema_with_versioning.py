@@ -1,4 +1,4 @@
-"""Add_product_new_schema_with_versioning
+"""add product new schema with versioning
 
 Revision ID: 39c745d52de4
 Revises: 7feca7c77bd3

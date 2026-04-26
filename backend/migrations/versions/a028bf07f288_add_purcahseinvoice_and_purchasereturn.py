@@ -1,8 +1,8 @@
-"""create new product schema with versioning
+"""add purcahseinvoice and purchasereturn
 
-Revision ID: 7feca7c77bd3
+Revision ID: a028bf07f288
 Revises: None
-Create Date: 2025-10-30 18:00:00.000000
+Create Date: 2026-04-20 08:30:00.000000
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '7feca7c77bd3'
+revision = 'a028bf07f288'
 down_revision = None
 branch_labels = None
 depends_on = None
