@@ -34,8 +34,8 @@
 ### 1.2 Clone Repository
 
 ```bash
-git clone https://github.com/baymngrh/grat.git
-cd grat
+git clone https://github.com/bayuadhie-dev/smith.git
+cd smith
 ```
 
 ### 1.3 Backend Setup
@@ -144,7 +144,7 @@ VITE_API_URL=http://localhost:5000
 ### 2.2 Folder Structure
 
 ```
-ERP FLASK/
+SMITH ERP/
 ├── backend/
 │   ├── app.py                 # Main application entry
 │   ├── config.py              # Configuration

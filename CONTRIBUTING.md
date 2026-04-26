@@ -1,6 +1,6 @@
-# Contributing to ERP Flask
+# Contributing to SMITH ERP
 
-Thank you for your interest in ERP Flask! Please note that this is a **proprietary software** project. Before contributing, please read this document carefully.
+Thank you for your interest in SMITH ERP! Please note that this is a **proprietary software** project. Before contributing, please read this document carefully.
 
 ## ⚠️ Important Notice
 
@@ -410,9 +410,9 @@ npm run build
 ## Questions?
 
 For questions about contributing:
-- Email: dev@smitherp.local
+- Email: baymngrh@gmail.com
 - Create an issue with `[Question]` prefix
 
 ---
 
-Thank you for contributing to ERP Flask! 🙏
+Thank you for contributing to SMITH ERP! 🙏

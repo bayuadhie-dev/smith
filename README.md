@@ -869,7 +869,7 @@ Support:
 
 **PROPRIETARY SOFTWARE**
 
-Copyright (c) 2025-2026 **Bayu Adhie**. All Rights Reserved.
+Copyright (c) 2025-2026 **Mochammad Bayu Adhie Nugroho**. All Rights Reserved.
 
 This software is proprietary and confidential. Unauthorized copying, distribution, modification, public display, or public performance of this software is strictly prohibited.
 
@@ -879,7 +879,7 @@ See [LICENSE](LICENSE) for full terms.
 
 ## 👨‍💻 Author
 
-**Bayu Adhie**
+**Mochammad Bayu Adhie Nugroho**
 - GitHub: [@bayuadhie-dev](https://github.com/bayuadhie-dev)
 - Email: baymngrh@gmail.com
 
@@ -994,16 +994,15 @@ AI Assistant adalah fitur chatbot terintegrasi yang memungkinkan user untuk quer
 
 ## 📞 Contact & Support
 
-**Bayu Adhie**
+**Mochammad Bayu Adhie Nugroho**
 - 📧 Email: baymngrh@gmail.com
 - 🐙 GitHub: [@bayuadhie-dev](https://github.com/bayuadhie-dev)
-- 💼 LinkedIn: [Bayu Adhie](https://linkedin.com/in/bayu-adhie)
 
 For technical support, feature requests, or bug reports, please email us at baymngrh@gmail.com
 
 ---
 
-**© 2025-2026 Bayu Adhie. All Rights Reserved.**
+**© 2025-2026 Mochammad Bayu Adhie Nugroho. All Rights Reserved.**
 
 ---
 
