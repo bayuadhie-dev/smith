@@ -94,9 +94,30 @@ const WeeklyProductionPlan: React.FC = () => {
   const [scheduleItems, setScheduleItems] = useState<ScheduleItem[]>([]);
   const [machines, setMachines] = useState<Machine[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [companyName, setCompanyName] = useState('Company');
   
   // Week navigation
   const [currentDate, setCurrentDate] = useState(new Date());
+
+  // Load company settings
+  useEffect(() => {
+    const loadCompanySettings = async () => {
+      try {
+        const response = await axiosInstance.get('/api/settings/company');
+        setCompanyName(response.data.name || 'Company');
+      } catch (error) {
+        console.error('Failed to load company settings:', error);
+      }
+    };
+    loadCompanySettings();
+    
+    const handleCompanyUpdate = () => {
+      loadCompanySettings();
+    };
+    
+    window.addEventListener('companySettingsUpdated', handleCompanyUpdate);
+    return () => window.removeEventListener('companySettingsUpdated', handleCompanyUpdate);
+  }, []);
   const [weekDates, setWeekDates] = useState<Date[]>([]);
   const [weekNumber, setWeekNumber] = useState(1);
   
@@ -463,7 +484,7 @@ const WeeklyProductionPlan: React.FC = () => {
               </div>
             </div>
             <div className="text-right print:hidden">
-              <p className="text-white/80 text-sm">PT. Gratia Makmur Sentosa</p>
+              <p className="text-white/80 text-sm">{companyName}</p>
               <p className="text-white font-semibold">{new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
             </div>
           </div>

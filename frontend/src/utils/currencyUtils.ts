@@ -98,17 +98,20 @@ export const parseRupiah = (rupiahString: string): number | null => {
 };
 
 /**
- * Convert IDR amount to IDR (approximate conversion)
- * @param usdAmount - Amount in IDR
- * @param exchangeRate - IDR to IDR exchange rate (default: 15000)
+ * Convert USD amount to IDR (approximate conversion)
+ * @param usdAmount - Amount in USD
+ * @param exchangeRate - USD to IDR exchange rate (default: 15000)
  * @returns Amount in IDR
  */
-export const convertIDRToIDR = (
+export const convertUSDToIDR = (
   usdAmount: number,
   exchangeRate: number = 15000
 ): number => {
   return usdAmount * exchangeRate;
 };
+
+/** @deprecated Use convertUSDToIDR instead */
+export const convertIDRToIDR = convertUSDToIDR;
 
 /**
  * Legacy function for backward compatibility

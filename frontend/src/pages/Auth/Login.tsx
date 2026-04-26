@@ -114,7 +114,8 @@ export default function Login() {
       localStorage.setItem('session_start_time', Date.now().toString())
       localStorage.setItem('last_activity_time', Date.now().toString())
       toast.success('Login successful!')
-      navigate('/app')
+      // Use RoleBasedRedirect logic - navigate will be handled by App.tsx
+      window.location.href = '/'
     } catch (error: any) {
       toast.error(error || 'Login failed')
     } finally {

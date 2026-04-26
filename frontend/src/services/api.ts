@@ -1420,6 +1420,44 @@ export const {
   useGetProductionChartQuery,
 } = dashboardApi
 
+// Desk API
+export const deskApi = api.injectEndpoints({
+  endpoints: (builder) => ({
+    getDeskOverview: builder.query({
+      query: () => '/desk/overview',
+      providesTags: ['Desk'],
+    }),
+    getModuleStats: builder.query({
+      query: (module) => `/desk/module-stats/${module}`,
+      providesTags: ['Desk'],
+    }),
+  }),
+})
+
+export const {
+  useGetDeskOverviewQuery,
+  useGetModuleStatsQuery,
+} = deskApi
+
+// Workspace API
+export const workspaceApi = api.injectEndpoints({
+  endpoints: (builder) => ({
+    getWorkspaceData: builder.query({
+      query: (module) => `/workspace/${module}`,
+      providesTags: ['Workspace'],
+    }),
+    getAvailableModules: builder.query({
+      query: () => '/workspace/modules',
+      providesTags: ['Workspace'],
+    }),
+  }),
+})
+
+export const {
+  useGetWorkspaceDataQuery,
+  useGetAvailableModulesQuery,
+} = workspaceApi
+
 // Shipping hooks exported from services/shippingApi.ts
 
 export const {

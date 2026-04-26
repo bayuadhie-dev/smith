@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Outlet } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Outlet, useLocation } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import Header from './Header'
 import Breadcrumb from '../ui/Breadcrumb'
@@ -7,7 +7,17 @@ import AIAssistant from '../AIAssistant/AIAssistant'
 import SkipLink from '../ui/SkipLink'
 
 export default function Layout() {
+  const location = useLocation()
   const [sidebarOpen, setSidebarOpen] = useState(true) // Default open for better UX
+  
+  // Auto-collapse sidebar on /desk page
+  useEffect(() => {
+    if (location.pathname === '/desk') {
+      setSidebarOpen(false)
+    } else {
+      setSidebarOpen(true)
+    }
+  }, [location.pathname])
 
   const toggleSidebar = () => {
     setSidebarOpen(prev => !prev);
@@ -22,7 +32,7 @@ export default function Layout() {
       <div className={`transition-all duration-300 ${sidebarOpen ? 'lg:pl-64' : 'lg:pl-0'}`}>
         <Header toggleSidebar={toggleSidebar} />
         <main id="main-content" className="py-6" role="main" aria-label="Konten utama">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8">
             <Breadcrumb />
             <Outlet />
           </div>

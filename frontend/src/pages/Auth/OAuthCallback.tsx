@@ -59,7 +59,7 @@ export default function OAuthCallback() {
 
           setStatus('success');
           toast.success(`Selamat datang, ${user.full_name}!`);
-          setTimeout(() => navigate('/app'), 1000);
+          setTimeout(() => navigate('/'), 1000);
           return;
         } catch (err: any) {
           console.error('Google OAuth error:', err);
@@ -127,7 +127,7 @@ export default function OAuthCallback() {
       localStorage.setItem('last_activity_time', Date.now().toString());
 
       toast.success(`Selamat datang kembali, ${fullName}!`);
-      setTimeout(() => navigate('/app'), 1000);
+      setTimeout(() => navigate('/'), 1000);
     };
 
     handleCallback();

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PlusIcon, AdjustmentsHorizontalIcon, ClockIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import { useLanguage } from '../../contexts/LanguageContext';
+import SearchableSelect from '../../components/SearchableSelect';
 
 interface Material {
   id: number;
@@ -289,19 +290,16 @@ const MaterialStockManagement: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700">
                     Location *
                   </label>
-                  <select
-                    required
-                    value={addStockForm.location_id}
-                    onChange={(e) => setAddStockForm({ ...addStockForm, location_id: parseInt(e.target.value) })}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  >
-                    <option value="">Select Location</option>
-                    {locations.map((loc) => (
-                      <option key={loc.id} value={loc.id}>
-                        {loc.location_code} - {loc.name}
-                      </option>
-                    ))}
-                  </select>
+                  <SearchableSelect
+                    options={locations.map(loc => ({
+                      id: loc.id,
+                      name: loc.name,
+                      label: `${loc.location_code} - ${loc.name}`
+                    }))}
+                    value={addStockForm.location_id || null}
+                    onChange={(val) => setAddStockForm({ ...addStockForm, location_id: Number(val) })}
+                    placeholder="Select Location"
+                  />
                 </div>
 
                 <div>

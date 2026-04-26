@@ -6,6 +6,7 @@ export default function TVDisplayProduction() {
   const { t } = useLanguage();
   const [data, setData] = useState<any>(null)
   const [currentTime, setCurrentTime] = useState(new Date())
+  const [companyName, setCompanyName] = useState('Company')
 
   useEffect(() => {
     const fetchData = async () => {
@@ -17,7 +18,17 @@ export default function TVDisplayProduction() {
       }
     }
 
+    const loadCompanySettings = async () => {
+      try {
+        const response = await axios.get('/api/settings/company')
+        setCompanyName(response.data.name || 'Company')
+      } catch (error) {
+        console.error('Failed to load company settings:', error)
+      }
+    }
+
     fetchData()
+    loadCompanySettings()
     const interval = setInterval(fetchData, 10000)
     const timeInterval = setInterval(() => setCurrentTime(new Date()), 1000)
     return () => {
@@ -175,7 +186,7 @@ export default function TVDisplayProduction() {
       <div className="fixed bottom-0 left-0 right-0 bg-black/50 backdrop-blur-sm border-t border-white/10 px-8 py-2">
         <div className="flex justify-between items-center text-sm text-gray-400">
           <p>Auto-refresh setiap 10 detik</p>
-          <p>PT. Gratia Makmur Sentosa - ERP System</p>
+          <p>{companyName} - ERP System</p>
         </div>
       </div>
     </div>

@@ -15,6 +15,7 @@ import {
   UserIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
+import SearchableSelect from '../../components/SearchableSelect';
 interface WorkOrder {
   id: number;
   wo_number: string;
@@ -325,10 +326,10 @@ const MaterialIssueForm: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            {isEdit ? 'Edit Material Issue' : 'New Material Issue'}
+            {isEdit ? t('production.update_issue') : t('production.create_issue')}
           </h1>
           <p className="text-gray-600">
-            {isEdit ? 'Update material issue request' : 'Create material issue request for production'}
+            {isEdit ? t('production.update_issue') : t('production.create_issue')}
           </p>
         </div>
       </div>
@@ -346,29 +347,25 @@ const MaterialIssueForm: React.FC = () => {
           {/* Issue Header Information */}
           <div className="space-y-6">
             <h3 className="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">
-              Issue Information
+              {t('production.issue_information')}
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <DocumentTextIcon className="inline h-4 w-4 mr-1" />
-                  Work Order *
+                  {t('production.work_order')} *
                 </label>
-                <select
-                  name="work_order_id"
-                  value={formData.work_order_id}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">Select Work Order</option>
-                  {workOrders.map(wo => (
-                    <option key={wo.id} value={wo.id}>
-                      {wo.wo_number} - {wo.product.name}
-                    </option>
-                  ))}
-                </select>
+                <SearchableSelect
+                  options={workOrders.map(wo => ({
+                    id: wo.id,
+                    code: wo.wo_number,
+                    name: wo.product.name
+                  }))}
+                  value={formData.work_order_id || null}
+                  onChange={(val) => handleInputChange({ target: { name: 'work_order_id', value: val } } as any)}
+                  placeholder={t('common.search') + " " + t('production.work_order')}
+                />
                 {selectedWorkOrder && (
                   <p className="mt-1 text-sm text-gray-500">
                     Product: {selectedWorkOrder.product.code} - {selectedWorkOrder.product.name}
@@ -376,9 +373,9 @@ const MaterialIssueForm: React.FC = () => {
                 )}
               </div>
 
-              <div>
+               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Issue Type *
+                  {t('production.issue_type')} *
                 </label>
                 <select
                   name="issue_type"
@@ -400,7 +397,7 @@ const MaterialIssueForm: React.FC = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <CalendarIcon className="inline h-4 w-4 mr-1" />
-                  Issue Date *
+                  {t('common.date')} *
                 </label>
                 <input
                   type="date"
@@ -414,7 +411,7 @@ const MaterialIssueForm: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Required Date
+                  {t('production.required_date')}
                 </label>
                 <input
                   type="date"
@@ -429,6 +426,7 @@ const MaterialIssueForm: React.FC = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <ExclamationTriangleIcon className="inline h-4 w-4 mr-1" />
+                  {t('common.priority')}
                 </label>
                 <select
                   name="priority"
@@ -446,9 +444,10 @@ const MaterialIssueForm: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
+               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <UserIcon className="inline h-4 w-4 mr-1" />
+                  {t('production.department')}
                 </label>
                 <input
                   type="text"
@@ -460,9 +459,9 @@ const MaterialIssueForm: React.FC = () => {
                 />
               </div>
 
-              <div>
+               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Cost Center
+                  {t('production.cost_center')}
                 </label>
                 <input
                   type="text"
@@ -476,17 +475,17 @@ const MaterialIssueForm: React.FC = () => {
             </div>
           </div>
 
-          {/* Material Items */}
+           {/* Material Items */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-gray-900">Material Items</h3>
+              <h3 className="text-lg font-medium text-gray-900">{t('production.material_items')}</h3>
               <button
                 type="button"
                 onClick={addItem}
-                className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                 className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 <PlusIcon className="inline h-4 w-4 mr-1" />
-                Add Item
+                {t('common.add')} Item
               </button>
             </div>
 
@@ -513,42 +512,36 @@ const MaterialIssueForm: React.FC = () => {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         <CubeIcon className="inline h-4 w-4 mr-1" />{t('products.bom.material')}</label>
-                      <select
-                        value={item.material_id || ''}
-                        onChange={(e) => handleItemChange(index, 'material_id', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      >
-                        <option value="">Select Material</option>
-                        {materials.map(material => (
-                          <option key={material.id} value={material.id}>
-                            {material.code} - {material.name}
-                          </option>
-                        ))}
-                      </select>
+                      <SearchableSelect
+                        options={materials}
+                        value={item.material_id}
+                        onChange={(val) => handleItemChange(index, 'material_id', val)}
+                        placeholder="Select Material"
+                        className="text-sm min-w-[250px]"
+                      />
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         <MapPinIcon className="inline h-4 w-4 mr-1" />
                       </label>
-                      <select
-                        value={item.warehouse_location_id || ''}
-                        onChange={(e) => handleItemChange(index, 'warehouse_location_id', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      >
-                        <option value="">Select Location</option>
-                        {locations.map(location => (
-                          <option key={location.id} value={location.id}>
-                            {location.location_code} - {location.zone?.name}
-                          </option>
-                        ))}
-                      </select>
+                      <SearchableSelect
+                        options={locations.map(loc => ({
+                          id: loc.id,
+                          name: loc.location_code,
+                         label: `${loc.location_code} - ${loc.zone?.name || 'No Zone'}`
+                        }))}
+                        value={item.warehouse_location_id}
+                        onChange={(val) => handleItemChange(index, 'warehouse_location_id', val)}
+                        placeholder={t('common.search') + " " + t('warehouse.locations')}
+                        className="text-sm min-w-[250px]"
+                      />
                     </div>
                   </div>
 
-                  <div>
+                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Description *
+                      {t('common.description')} *
                     </label>
                     <textarea
                       value={item.description}
@@ -561,9 +554,9 @@ const MaterialIssueForm: React.FC = () => {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
+                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Required Quantity *
+                        {t('common.quantity')} *
                       </label>
                       <input
                         type="number"
@@ -589,9 +582,9 @@ const MaterialIssueForm: React.FC = () => {
                       />
                     </div>
 
-                    <div>
+                      <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Batch Number
+                        {t('production.batch_number')}
                       </label>
                       <input
                         type="text"
@@ -603,9 +596,9 @@ const MaterialIssueForm: React.FC = () => {
                     </div>
                   </div>
 
-                  <div>
+                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Item Notes
+                      {t('production.item_notes')}
                     </label>
                     <input
                       type="text"
@@ -636,10 +629,10 @@ const MaterialIssueForm: React.FC = () => {
 
           {/* Additional Information */}
           <div className="space-y-6">
-            <div>
+             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <DocumentTextIcon className="inline h-4 w-4 mr-1" />
-                General Notes
+                {t('production.general_notes')}
               </label>
               <textarea
                 name="notes"
@@ -651,9 +644,9 @@ const MaterialIssueForm: React.FC = () => {
               />
             </div>
 
-            <div>
+             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Special Instructions
+                {t('production.special_instructions')}
               </label>
               <textarea
                 name="special_instructions"
@@ -679,8 +672,8 @@ const MaterialIssueForm: React.FC = () => {
               disabled={loading}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <BookmarkIcon className="inline h-4 w-4 mr-2" />
-              {loading ? 'Saving...' : isEdit ? 'Update Issue' : 'Create Issue'}
+               <BookmarkIcon className="inline h-4 w-4 mr-2" />
+              {loading ? t('ui.saving') : isEdit ? t('production.update_issue') : t('production.create_issue')}
             </button>
           </div>
         </form>

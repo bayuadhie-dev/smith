@@ -39,6 +39,17 @@ export const translations = {
     'nav.waste': 'Limbah',
     'nav.oee': 'OEE',
     'nav.tv_display': 'TV Display',
+
+    // Navigation Aliases (Legacy/Alternative names)
+    'navigation.dashboard': 'Dashboard',
+    'navigation.products': 'Produk',
+    'navigation.warehouse': 'Gudang',
+    'navigation.production': 'Produksi',
+    'navigation.sales': 'Penjualan',
+    'navigation.finance': 'Keuangan',
+    'navigation.hr': 'SDM',
+    'navigation.maintenance': 'Pemeliharaan',
+    'navigation.quality': 'Kualitas',
     
     // Common
     'common.save': 'Simpan',
@@ -59,7 +70,11 @@ export const translations = {
     'common.yes': 'Ya',
     'common.no': 'Tidak',
     'common.status': 'Status',
-    'common.actions': 'Aksi',
+    'common.backup': 'Cadangan',
+    'common.back_to_dashboard': 'Kembali ke Dashboard',
+    'common.basic_info': 'Informasi Dasar',
+    'common.category': 'Kategori',
+    'common.quantity': 'Kuantitas',
     'common.name': 'Nama',
     'common.date': 'Tanggal',
     'common.size': 'Ukuran',
@@ -68,7 +83,6 @@ export const translations = {
     'common.download': 'Unduh',
     'common.upload': 'Unggah',
     'common.restore': 'Pulihkan',
-    'common.backup': 'Cadangan',
     
     // Dashboard
     'dashboard.title': 'Dashboard',
@@ -119,6 +133,27 @@ export const translations = {
     'products.list': 'Daftar Produk',
     'products.add': 'Tambah Produk',
     'products.edit': 'Edit Produk',
+
+    // BOM (Bill of Materials)
+    'products.bom.title': 'Bill of Materials (BOM)',
+    'products.bom.material': 'Bahan Baku',
+    'products.bom.description': 'Kelola resep produk dan kebutuhan material',
+    'products.bom.tip': 'Klik "Buat BOM" untuk mengakses form lengkap dengan tabel input material, kuantitas, persentase waste, dan fitur canggih lainnya.',
+    'products.bom.search_placeholder': 'Cari BOM berdasarkan nama produk, kode, atau versi...',
+    'products.bom.total_materials': 'Total Material',
+    'products.bom.waste_percent': '% Waste',
+    'products.bom.not_found': 'BOM tidak ditemukan',
+    'products.bom.adjust_search': 'Coba sesuaikan kata kunci pencarian Anda',
+    'products.bom.start_creating': 'Mulai dengan membuat Bill of Materials pertama Anda',
+    'products.bom.add_material': 'Tambah Material',
+    'products.bom.edit_material': 'Edit Material',
+    'products.bom.category': 'Kategori',
+    'products.bom.edit_bom': 'Edit BOM',
+    'products.bom.total_cost': 'Total Biaya',
+    'products.bom.unit_cost': 'Biaya per Unit',
+    'products.bom.version': 'Versi',
+    'products.bom.is_active': 'Aktif',
+    'products.bom.created_at': 'Dibuat pada',
     
     // Sales
     'sales.title': 'Penjualan & CRM',
@@ -169,6 +204,16 @@ export const translations = {
     'warehouse.dashboard': 'Dashboard Gudang',
     'warehouse.add_location': 'Tambah Lokasi',
     'warehouse.add_zone': 'Tambah Zona',
+    'warehouse.stock_input': 'Input Stok Manual',
+    'warehouse.stock_input_desc': 'Input stok bahan baku, bahan kimia, dan bahan kemasan',
+    'warehouse.stock_input_info': 'Informasi Input Stok',
+    'warehouse.reference_number': 'Nomor Referensi',
+    'warehouse.movement_date': 'Tanggal Pergerakan',
+    'warehouse.received_by': 'Diterima Oleh',
+    'warehouse.received_by_placeholder': 'Nama penerima',
+    'warehouse.stock_items': 'Item Stok',
+    'warehouse.save_stock_input': 'Simpan Input Stok',
+    'warehouse.back_to_inventory': 'Kembali ke Inventaris',
     
     // Production
     'production.title': 'Produksi',
@@ -176,11 +221,39 @@ export const translations = {
     'production.dashboard': 'Dashboard Produksi',
     'production.scheduling': 'Penjadwalan',
     'production.work_orders': 'Work Order',
+    'production.work_order': 'Work Order',
     'production.planning': 'Perencanaan',
     'production.capacity': 'Kapasitas',
     'production.efficiency': 'Efisiensi',
     'production.new_work_order': 'Work Order Baru',
     'production.traceability': 'Pelacakan Produksi',
+
+    // Production Details
+    'production.product': 'Produk',
+    'production.production_date': 'Tanggal Produksi',
+    'production.shift': 'Shift',
+    'production.machine': 'Mesin',
+    'production.operator': 'Operator',
+    'production.supervisor': 'Supervisor',
+    'production.target_quantity': 'Target Kuantitas',
+    'production.actual_quantity': 'Kuantitas Aktual',
+    'production.good_quantity': 'Kuantitas Baik',
+    'production.rejected_pieces': 'Barang Rijek',
+    'production.metrics': 'Metrik Produksi',
+    'production.downtime_records': 'Catatan Downtime',
+    'production.material_issue': 'Pengeluaran Material',
+    'production.issue_information': 'Informasi Pengeluaran',
+    'production.issue_type': 'Tipe Pengeluaran',
+    'production.required_date': 'Tanggal Dibutuhkan',
+    'production.department': 'Departemen',
+    'production.cost_center': 'Pusat Biaya',
+    'production.material_items': 'Item Material',
+    'production.batch_number': 'Nomor Batch',
+    'production.item_notes': 'Catatan Item',
+    'production.general_notes': 'Catatan Umum',
+    'production.special_instructions': 'Instruksi Khusus',
+    'production.create_issue': 'Buat Pengeluaran',
+    'production.update_issue': 'Update Pengeluaran',
     
     // Purchasing
     'purchasing.title': 'Pembelian',
@@ -423,6 +496,11 @@ export const translations = {
     'oee.availability': 'Ketersediaan',
     'oee.performance': 'Kinerja',
     'oee.quality': 'Kualitas',
+    'oee.create_record': 'Buat Catatan OEE',
+    'oee.time_metrics': 'Metrik Waktu',
+    'oee.planned_production_time': 'Waktu Produksi Diferhanakan (menit)',
+    'oee.actual_production_time': 'Waktu Produksi Aktual (menit)',
+    'oee.ideal_cycle_time': 'Waktu Siklus Ideal',
     
     // Status
     'status.active': 'Aktif',
@@ -462,7 +540,7 @@ export const translations = {
     'actions.clear': 'Bersihkan',
     
     // Company
-    'company.name': 'PT. Gratia Makmur Sentosa',
+    'company.name': 'Your Company',
     'company.tagline': 'Sistem ERP Manufaktur Nonwoven',
     
     // Comprehensive Module Translations
@@ -713,6 +791,14 @@ export const translations = {
     'success.sent': 'Berhasil dikirim',
     'success.approved': 'Berhasil disetujui',
     'success.rejected': 'Berhasil ditolak',
+
+    // Miscellaneous messages found in modules
+    'production.downtime_details': 'Detail Downtime',
+    'production.enter_actual_qty': 'Masukkan kuantitas aktual yang diproduksi:',
+    'production.enter_rejection_reason': 'Masukkan alasan penolakan:',
+    'production.quality_inspection_updated': 'Inspeksi kualitas berhasil diperbarui!',
+    'production.work_order_started': 'Work Order dimulai!',
+    'production.work_order_completed': 'Produksi berhasil diselesaikan!',
     
     // Error Messages
     'error.save_failed': 'Gagal menyimpan data',
@@ -755,6 +841,17 @@ export const translations = {
     'nav.waste': 'Waste',
     'nav.oee': 'OEE',
     'nav.tv_display': 'TV Display',
+
+    // Navigation Aliases (Legacy/Alternative names)
+    'navigation.dashboard': 'Dashboard',
+    'navigation.products': 'Products',
+    'navigation.warehouse': 'Warehouse',
+    'navigation.production': 'Production',
+    'navigation.sales': 'Sales',
+    'navigation.finance': 'Finance',
+    'navigation.hr': 'HR',
+    'navigation.maintenance': 'Maintenance',
+    'navigation.quality': 'Quality',
     
     // Common
     'common.save': 'Save',
@@ -775,7 +872,11 @@ export const translations = {
     'common.yes': 'Yes',
     'common.no': 'No',
     'common.status': 'Status',
-    'common.actions': 'Actions',
+    'common.backup': 'Backup',
+    'common.back_to_dashboard': 'Back to Dashboard',
+    'common.basic_info': 'Basic Information',
+    'common.category': 'Category',
+    'common.quantity': 'Quantity',
     'common.name': 'Name',
     'common.date': 'Date',
     'common.size': 'Size',
@@ -784,7 +885,6 @@ export const translations = {
     'common.download': 'Download',
     'common.upload': 'Upload',
     'common.restore': 'Restore',
-    'common.backup': 'Backup',
     
     // Dashboard
     'dashboard.title': 'Dashboard',
@@ -835,6 +935,24 @@ export const translations = {
     'products.list': 'Product List',
     'products.add': 'Add Product',
     'products.edit': 'Edit Product',
+
+    // BOM (Bill of Materials)
+    'products.bom.title': 'Bill of Materials (BOM)',
+    'products.bom.material': 'Raw Material',
+    'products.bom.description': 'Manage product recipes and material requirements',
+    'products.bom.tip': 'Click "Create BOM" to access the full form with material input table, quantities, scrap percentage, and more advanced features.',
+    'products.bom.search_placeholder': 'Search BOMs by product name, code, or version...',
+    'products.bom.total_materials': 'Total Materials',
+    'products.bom.waste_percent': 'Waste %',
+    'products.bom.not_found': 'No BOMs found',
+    'products.bom.adjust_search': 'Try adjusting your search terms',
+    'products.bom.start_creating': 'Get started by creating your first Bill of Materials',
+    'products.bom.add_material': 'Add Material',
+    'products.bom.edit_material': 'Edit Material',
+    'products.bom.category': 'Category',
+    'products.bom.edit_bom': 'Edit BOM',
+    'products.bom.total_cost': 'Total Cost',
+    'products.bom.unit_cost': 'Unit Cost',
     
     // Sales
     'sales.title': 'Sales & CRM',
@@ -885,6 +1003,16 @@ export const translations = {
     'warehouse.dashboard': 'Warehouse Dashboard',
     'warehouse.add_location': 'Add Location',
     'warehouse.add_zone': 'Add Zone',
+    'warehouse.stock_input': 'Manual Stock Input',
+    'warehouse.stock_input_desc': 'Input stock for raw materials, chemicals, and packaging',
+    'warehouse.stock_input_info': 'Stock Input Information',
+    'warehouse.reference_number': 'Reference Number',
+    'warehouse.movement_date': 'Movement Date',
+    'warehouse.received_by': 'Received By',
+    'warehouse.received_by_placeholder': 'Receiver name',
+    'warehouse.stock_items': 'Stock Items',
+    'warehouse.save_stock_input': 'Save Stock Input',
+    'warehouse.back_to_inventory': 'Back to Inventory',
     
     // Production
     'production.title': 'Production',
@@ -892,11 +1020,39 @@ export const translations = {
     'production.dashboard': 'Production Dashboard',
     'production.scheduling': 'Scheduling',
     'production.work_orders': 'Work Orders',
+    'production.work_order': 'Work Order',
     'production.planning': 'Planning',
     'production.capacity': 'Capacity',
     'production.efficiency': 'Efficiency',
     'production.new_work_order': 'New Work Order',
     'production.traceability': 'Production Traceability',
+
+    // Production Details
+    'production.product': 'Product',
+    'production.production_date': 'Production Date',
+    'production.shift': 'Shift',
+    'production.machine': 'Machine',
+    'production.operator': 'Operator',
+    'production.supervisor': 'Supervisor',
+    'production.target_quantity': 'Target Quantity',
+    'production.actual_quantity': 'Actual Quantity',
+    'production.good_quantity': 'Good Quantity',
+    'production.rejected_pieces': 'Rejected Pieces',
+    'production.metrics': 'Production Metrics',
+    'production.downtime_records': 'Downtime Records',
+    'production.material_issue': 'Material Issue',
+    'production.issue_information': 'Issue Information',
+    'production.issue_type': 'Issue Type',
+    'production.required_date': 'Required Date',
+    'production.department': 'Department',
+    'production.cost_center': 'Cost Center',
+    'production.material_items': 'Material Items',
+    'production.batch_number': 'Batch Number',
+    'production.item_notes': 'Item Notes',
+    'production.general_notes': 'General Notes',
+    'production.special_instructions': 'Special Instructions',
+    'production.create_issue': 'Create Issue',
+    'production.update_issue': 'Update Issue',
     
     // Purchasing
     'purchasing.title': 'Purchasing',
@@ -1002,6 +1158,11 @@ export const translations = {
     'oee.availability': 'Availability',
     'oee.performance': 'Performance',
     'oee.quality': 'Quality',
+    'oee.create_record': 'Create OEE Record',
+    'oee.time_metrics': 'Time Metrics',
+    'oee.planned_production_time': 'Planned Production Time (min)',
+    'oee.actual_production_time': 'Actual Production Time (min)',
+    'oee.ideal_cycle_time': 'Ideal Cycle Time',
     
     // Status
     'status.active': 'Active',
@@ -1041,7 +1202,7 @@ export const translations = {
     'actions.clear': 'Clear',
     
     // Company
-    'company.name': 'PT. Gratia Makmur Sentosa',
+    'company.name': 'Your Company',
     'company.tagline': 'Nonwoven Manufacturing ERP System',
     
     // Comprehensive Module Translations
@@ -1292,6 +1453,14 @@ export const translations = {
     'success.sent': 'Sent successfully',
     'success.approved': 'Approved successfully',
     'success.rejected': 'Rejected successfully',
+
+    // Miscellaneous messages found in modules
+    'production.downtime_details': 'Downtime Details',
+    'production.enter_actual_qty': 'Enter actual quantity produced:',
+    'production.enter_rejection_reason': 'Enter rejection reason:',
+    'production.quality_inspection_updated': 'Quality inspection updated successfully!',
+    'production.work_order_started': 'Work Order started!',
+    'production.work_order_completed': 'Production completed successfully!',
     
     // Error Messages
     'error.save_failed': 'Failed to save data',

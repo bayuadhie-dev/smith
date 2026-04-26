@@ -234,7 +234,10 @@ const MaintenanceForm: React.FC = () => {
       const payload = {
         ...formData,
         machine_id: Number(formData.machine_id),
-        assigned_to: formData.assigned_to ? Number(formData.assigned_to) : null
+        maintenance_date: formData.scheduled_date, // Sync with backend
+        performed_by: formData.assigned_to ? Number(formData.assigned_to) : null, // Sync with backend
+        cost: formData.cost_estimate, // Sync with backend
+        problem_description: formData.description // Sync with backend
       };
 
       if (isEdit) {

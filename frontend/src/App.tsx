@@ -10,6 +10,7 @@ import { PermissionProvider } from './contexts/PermissionContext'
 import { ToastProvider, ErrorBoundary } from './components/ui'
 import SessionTimeoutModal from './components/SessionTimeoutModal'
 import Layout from './components/Layout/Layout'
+import RoleBasedRedirect from './components/RoleBasedRedirect'
 import Login from './pages/Auth/Login'
 import Register from './pages/Auth/Register'
 import ForgotPassword from './pages/Auth/ForgotPassword'
@@ -17,6 +18,8 @@ import ResetPassword from './pages/Auth/ResetPassword'
 import OAuthCallback from './pages/Auth/OAuthCallback'
 import CompleteProfile from './pages/Auth/CompleteProfile'
 import Dashboard from './pages/Dashboard/Dashboard'
+import DeskPage from './pages/Desk/DeskPage'
+import WorkspacePage from './pages/Workspace/WorkspacePage'
 import ProductList from './pages/Products/ProductList'
 import NonwovenCalculator from './pages/Products/NonwovenCalculator'
 import ProductDashboard from './pages/Products/ProductDashboard'
@@ -101,6 +104,8 @@ import ProductionRecords from './pages/Production/ProductionRecords'
 import ProductionRecordForm from './pages/Production/ProductionRecordForm'
 import EfficiencyTracking from './pages/Production/EfficiencyTracking'
 import Traceability from './pages/Production/Traceability'
+import MBFReport from './pages/Production/MBFReport'
+import MBFReportList from './pages/Production/MBFReportList'
 import ProductionPlanningList from './pages/Production/ProductionPlanningList'
 import ProductionPlanningForm from './pages/Production/ProductionPlanningForm'
 import ProductionPlanningDashboard from './pages/Production/ProductionPlanningDashboard'
@@ -259,6 +264,7 @@ import ScheduledReports from './pages/Reports/ScheduledReports'
 import ExecutiveDashboard from './pages/Reports/ExecutiveDashboard'
 import ProductionByProductReport from './pages/Reports/ProductionByProductReport'
 import ExecutiveDashboardAdvanced from './pages/Executive/ExecutiveDashboard'
+import InvestorDashboard from './pages/Executive/InvestorDashboard'
 import ProductionExecutiveDashboard from './pages/Executive/ProductionExecutiveDashboard'
 import ProductionMonitoringDashboard from './pages/Executive/ProductionMonitoringDashboard'
 import LiveMonitoringDashboard from './pages/Production/LiveMonitoringDashboard'
@@ -394,18 +400,28 @@ function App() {
             <SessionTimeoutModal />
             <Routes>
               {/* System Overview for non-authenticated users */}
-              <Route path="/" element={!isAuthenticated ? <SystemOverview /> : <Navigate to="/app" />} />
+              <Route path="/" element={!isAuthenticated ? <SystemOverview /> : <RoleBasedRedirect />} />
               <Route path="/absensi" element={<PublicAttendance />} />
               <Route path="/public/attendance" element={<PublicAttendance />} />
               <Route path="/public/leave-request" element={<StaffLeaveRequest />} />
               <Route path="/public/face-registration" element={<FaceRegistration />} />
-              <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/app" />} />
-              <Route path="/forgot-password" element={!isAuthenticated ? <ForgotPassword /> : <Navigate to="/app" />} />
-              <Route path="/reset-password" element={!isAuthenticated ? <ResetPassword /> : <Navigate to="/app" />} />
-              <Route path="/register" element={!isAuthenticated ? <Register /> : <Navigate to="/app" />} />
+              <Route path="/login" element={!isAuthenticated ? <Login /> : <RoleBasedRedirect />} />
+              <Route path="/forgot-password" element={!isAuthenticated ? <ForgotPassword /> : <RoleBasedRedirect />} />
+              <Route path="/reset-password" element={!isAuthenticated ? <ResetPassword /> : <RoleBasedRedirect />} />
+              <Route path="/register" element={!isAuthenticated ? <Register /> : <RoleBasedRedirect />} />
               <Route path="/oauth/callback" element={<OAuthCallback />} />
               <Route path="/complete-profile" element={<CompleteProfile />} />
               <Route path="/verify/:token" element={<DocumentVerifyPage />} />
+
+              {/* Desk Route - Outside /app structure */}
+              <Route path="/desk" element={isAuthenticated ? <Layout /> : <Navigate to="/login" />}>
+                <Route index element={<DeskPage />} />
+              </Route>
+
+              {/* Workspace Routes */}
+              <Route path="/workspace/:module" element={isAuthenticated ? <Layout /> : <Navigate to="/login" />}>
+                <Route index element={<WorkspacePage />} />
+              </Route>
 
               {/* Redirect specific old URLs to correct app structure */}
               <Route path="/sales/opportunities" element={<Navigate to="/app/sales/opportunities" replace />} />
@@ -481,6 +497,10 @@ function App() {
               <Route path="/production/converting" element={<Navigate to="/app/production/converting" replace />} />
               <Route path="/production/converting/input" element={<Navigate to="/app/production/converting/input" replace />} />
 
+              {/* Redirect old MBF report routes to app routes */}
+              <Route path="/production/mbf-report" element={<Navigate to="/app/production/mbf-report" replace />} />
+              <Route path="/production/mbf-report/:id" element={<Navigate to="/app/production/mbf-report" replace />} />
+
               {/* Bypass auth for specific debug route */}
               <Route path="/app/debug/roster" element={
                 <div className="min-h-screen bg-gray-50">
@@ -509,6 +529,8 @@ function App() {
 
                 {/* Executive Dashboard */}
                 <Route path="executive" element={<ExecutiveDashboardAdvanced />} />
+                <Route path="executive/dashboard" element={<ExecutiveDashboardAdvanced />} />
+                <Route path="executive/investor" element={<InvestorDashboard />} />
                 <Route path="executive/production-monitoring" element={<ProductionMonitoringDashboard />} />
                 <Route path="production/live-monitoring" element={<LiveMonitoringDashboard />} />
                 <Route path="production/live-monitoring/weekly" element={<LiveMonitoringWeekly />} />
@@ -688,6 +710,9 @@ function App() {
                 <Route path="production/material-issues/:id" element={<MaterialIssueDetail />} />
                 <Route path="production/efficiency" element={<EfficiencyTracking />} />
                 <Route path="production/traceability" element={<Traceability />} />
+                <Route path="production/mbf-report" element={<MBFReportList />} />
+                <Route path="production/mbf-report/new" element={<MBFReport />} />
+                <Route path="production/mbf-report/:id" element={<MBFReport />} />
                 <Route path="production/planning" element={<ProductionPlanningList />} />
                 <Route path="production/planning/create" element={<ProductionPlanningForm />} />
                 <Route path="production/planning/edit/:id" element={<ProductionPlanningForm />} />

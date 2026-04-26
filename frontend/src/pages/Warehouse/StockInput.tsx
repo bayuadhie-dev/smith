@@ -10,6 +10,8 @@ import {
   QrCodeIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
+import SearchableSelect from '../../components/SearchableSelect';
+
 interface Product {
   id: number;
   code: string;
@@ -275,11 +277,11 @@ const StockInput: React.FC = () => {
               className="flex items-center text-gray-600 hover:text-gray-900"
             >
               <ArrowLeftIcon className="h-5 w-5 mr-2" />
-              Back to Inventory
+              {t('warehouse.back_to_inventory')}
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Manual Stock Input</h1>
-              <p className="text-gray-600 mt-1">Input stock bahan baku, bahan kimia, dan bahan kemasan</p>
+              <h1 className="text-3xl font-bold text-gray-900">{t('warehouse.stock_input')}</h1>
+              <p className="text-gray-600 mt-1">{t('warehouse.stock_input_desc')}</p>
             </div>
           </div>
           <div className="flex items-center space-x-3">
@@ -291,12 +293,12 @@ const StockInput: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Stock Input Header */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Stock Input Information</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">{t('warehouse.stock_input_info')}</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
+               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Reference Number
+                  {t('warehouse.reference_number')}
                 </label>
                 <input
                   type="text"
@@ -307,9 +309,9 @@ const StockInput: React.FC = () => {
                 />
               </div>
 
-              <div>
+               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Movement Date
+                  {t('warehouse.movement_date')}
                 </label>
                 <input
                   type="date"
@@ -320,15 +322,15 @@ const StockInput: React.FC = () => {
                 />
               </div>
 
-              <div>
+               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Received By
+                  {t('warehouse.received_by')}
                 </label>
                 <input
                   type="text"
-                  value={formData.received_by}
+                   value={formData.received_by}
                   onChange={(e) => setFormData({...formData, received_by: e.target.value})}
-                  placeholder="Nama penerima"
+                  placeholder={t('warehouse.received_by_placeholder')}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   required
                 />
@@ -348,10 +350,10 @@ const StockInput: React.FC = () => {
             </div>
           </div>
 
-          {/* Stock Items */}
+           {/* Stock Items */}
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">Stock Items</h2>
+              <h2 className="text-xl font-semibold text-gray-900">{t('warehouse.stock_items')}</h2>
               <div className="flex items-center space-x-4">
                 {/* Item Type Selector */}
                 <div className="flex items-center space-x-2">
@@ -361,7 +363,7 @@ const StockInput: React.FC = () => {
                     onChange={(e) => setSelectedItemType(e.target.value as 'product' | 'material')}
                     className="px-3 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500"
                   >
-                    <option value="material">{t('products.bom.material')}</option>
+                    <option value="material">{t('products.materials')}</option>
                     <option value="product">{t('production.product')}</option>
                   </select>
                 </div>
@@ -371,7 +373,7 @@ const StockInput: React.FC = () => {
                   className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                 >
                   <PlusIcon className="h-4 w-4 mr-2" />
-                  Add Item
+                  {t('common.add')} Item
                 </button>
               </div>
             </div>
@@ -409,38 +411,26 @@ const StockInput: React.FC = () => {
                               ? 'bg-green-100 text-green-800' 
                               : 'bg-blue-100 text-blue-800'
                           }`}>
-                            {item.item_type === 'material' ? [t('products.bom.material')] : t('production.product')}
+                            {item.item_type === 'material' ? t('products.materials') : t('production.product')}
                           </span>
                         </td>
                         <td className="px-4 py-3">
                           {item.item_type === 'material' ? (
-                            <select
-                              value={item.material_id || ''}
-                              onChange={(e) => updateStockItem(item.id, 'material_id', e.target.value ? Number(e.target.value) : null)}
-                              className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                              required
-                            >
-                              <option value="">Select Material</option>
-                              {materials.map(material => (
-                                <option key={material.id} value={material.id}>
-                                  {material.code} - {material.name}
-                                </option>
-                              ))}
-                            </select>
+                            <SearchableSelect
+                              options={materials}
+                              value={item.material_id}
+                              onChange={(val) => updateStockItem(item.id, 'material_id', val)}
+                              placeholder="Select Material"
+                              className="text-sm min-w-[200px]"
+                            />
                           ) : (
-                            <select
-                              value={item.product_id || ''}
-                              onChange={(e) => updateStockItem(item.id, 'product_id', e.target.value ? Number(e.target.value) : null)}
-                              className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                              required
-                            >
-                              <option value="">Select Product</option>
-                              {products.map(product => (
-                                <option key={product.id} value={product.id}>
-                                  {product.code} - {product.name}
-                                </option>
-                              ))}
-                            </select>
+                             <SearchableSelect
+                              options={products}
+                              value={item.product_id}
+                              onChange={(val) => updateStockItem(item.id, 'product_id', val)}
+                              placeholder={t('common.search') + " " + t('navigation.products')}
+                              className="text-sm min-w-[200px]"
+                            />
                           )}
                           {item.item_name && (
                             <div className="text-xs text-gray-500 mt-1">
@@ -461,19 +451,17 @@ const StockInput: React.FC = () => {
                           <div className="text-xs text-gray-500 mt-1">{item.uom}</div>
                         </td>
                         <td className="px-4 py-3">
-                          <select
-                            value={item.location_id || ''}
-                            onChange={(e) => updateStockItem(item.id, 'location_id', e.target.value ? Number(e.target.value) : null)}
-                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                            required
-                          >
-                            <option value="">Select Location</option>
-                            {locations.map(location => (
-                              <option key={location.id} value={location.id}>
-                                {location.zone_name} - {location.name}
-                              </option>
-                            ))}
-                          </select>
+                          <SearchableSelect
+                            options={locations.map(loc => ({
+                              id: loc.id,
+                              name: loc.name,
+                              label: `${loc.zone_name} - ${loc.name}`
+                            }))}
+                            value={item.location_id}
+                            onChange={(val) => updateStockItem(item.id, 'location_id', val)}
+                            placeholder={t('common.search') + " " + t('warehouse.locations')}
+                            className="text-sm"
+                          />
                         </td>
                         <td className="px-4 py-3">
                           <input
@@ -513,9 +501,9 @@ const StockInput: React.FC = () => {
             <div className="bg-blue-50 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-blue-900 mb-4">Summary</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center">
+                 <div className="text-center">
                   <div className="text-2xl font-bold text-blue-600">{stockItems.length}</div>
-                  <div className="text-sm text-blue-800">Total Items</div>
+                  <div className="text-sm text-blue-800">{t('common.total')} Items</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-green-600">
@@ -550,9 +538,9 @@ const StockInput: React.FC = () => {
                   Saving...
                 </>
               ) : (
-                <>
+                 <>
                   <CheckCircleIcon className="h-4 w-4 mr-2" />
-                  Save Stock Input
+                  {t('warehouse.save_stock_input')}
                 </>
               )}
             </button>

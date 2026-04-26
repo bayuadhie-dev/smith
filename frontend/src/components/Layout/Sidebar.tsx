@@ -94,12 +94,51 @@ function SidebarContent() {
   const canView = (module: string) => isLoading || isAdmin || isSuperAdmin || hasPermission(`${module}.view`)
   const canViewAny = (modules: string[]) => isLoading || isAdmin || isSuperAdmin || hasAnyPermission(modules.map(m => `${m}.view`))
 
+  // Mapping URL paths to workspace and related menu items
+  const workspacePathMap: Record<string, { workspace: string; menus: string[] }> = {
+    '/app/production': { workspace: 'production', menus: ['Production', 'Products', 'Warehouse', 'Quality Control'] },
+    '/app/products': { workspace: 'products', menus: ['Products', 'Warehouse'] },
+    '/app/warehouse': { workspace: 'inventory', menus: ['Warehouse', 'Products'] },
+    '/app/quality': { workspace: 'quality', menus: ['Quality Control', 'Document Control'] },
+    '/app/sales': { workspace: 'sales', menus: ['Sales', 'Shipping', 'Returns'] },
+    '/app/shipping': { workspace: 'sales', menus: ['Sales', 'Shipping', 'Returns'] },
+    '/app/purchasing': { workspace: 'purchasing', menus: ['Purchasing'] },
+    '/app/finance': { workspace: 'finance', menus: ['Finance', 'Accounting'] },
+    '/app/accounting': { workspace: 'finance', menus: ['Finance', 'Accounting'] },
+    '/app/hr': { workspace: 'hr', menus: ['Human Resources'] },
+    '/app/maintenance': { workspace: 'maintenance', menus: ['Maintenance', 'OEE Monitoring', 'Waste Management'] },
+    '/app/dcc': { workspace: 'dcc', menus: ['Document Control'] },
+    '/app/rnd': { workspace: 'rd', menus: ['R&D', 'R&D Legacy'] },
+    '/app/rd': { workspace: 'rd', menus: ['R&D', 'R&D Legacy'] },
+  }
+
+  // Detect active workspace from URL path
+  const getActiveWorkspace = () => {
+    for (const [path, config] of Object.entries(workspacePathMap)) {
+      if (location.pathname.startsWith(path)) {
+        return config
+      }
+    }
+    return null
+  }
+
+  const activeWorkspaceConfig = getActiveWorkspace()
+  const isInWorkspace = activeWorkspaceConfig !== null && location.pathname !== '/app' && !location.pathname.startsWith('/app/executive') && !location.pathname.startsWith('/desk')
+  const activeWorkspace = activeWorkspaceConfig?.workspace || null
+
+  // Mapping workspace to menu item names (for filtering)
+  const workspaceMenuMap: Record<string, string[]> = activeWorkspaceConfig 
+    ? { [activeWorkspaceConfig.workspace]: activeWorkspaceConfig.menus }
+    : {}
+
   // Menu Groups with proper labels and permissions
-  const menuGroups = [
+  const allMenuGroups = [
     {
       groupName: 'MAIN',
       items: [
         { name: 'Dashboard', href: '/app', icon: HomeIcon, permission: 'dashboard' },
+        { name: 'Executive Dashboard', href: '/app/executive/dashboard', icon: ChartBarIcon, permission: 'dashboard' },
+        { name: 'Executive Overview', href: '/app/executive/investor', icon: PresentationChartLineIcon, permission: 'dashboard' },
         { name: 'Production Monitoring', href: '/app/executive/production-monitoring', icon: ChartBarIcon, permission: 'dashboard' },
         { name: 'Live Monitoring', href: '/app/production/live-monitoring', icon: SignalIcon, permission: 'dashboard' },
         { name: 'Pre-Shift Checklist', href: '/app/production/pre-shift-checklist', icon: ClipboardDocumentCheckIcon, permission: 'production' },
@@ -202,6 +241,7 @@ function SidebarContent() {
             { name: 'Capacity', href: '/app/production/capacity-planning', icon: ScaleIcon, permission: 'mrp' },
             { name: 'Efficiency', href: '/app/production/efficiency', icon: SparklesIcon },
             { name: 'Traceability', href: '/app/production/traceability', icon: DocumentCheckIcon },
+            { name: 'MBF Report', href: '/app/production/mbf-report', icon: DocumentTextIcon },
           ]
         },
         {
@@ -425,6 +465,16 @@ function SidebarContent() {
     }
   ]
 
+  // Filter menu groups based on active workspace
+  const menuGroups = isInWorkspace && activeWorkspaceConfig
+    ? allMenuGroups.map(group => ({
+        ...group,
+        items: group.items.filter((item: any) => 
+          activeWorkspaceConfig.menus.includes(item.name)
+        )
+      })).filter(group => group.items.length > 0)
+    : allMenuGroups
+
   const toggleExpanded = (itemName: string) => {
     setExpandedItems(prev =>
       prev.includes(itemName)
@@ -449,6 +499,19 @@ function SidebarContent() {
       </div>
 
       <nav className="flex flex-1 flex-col" role="navigation" aria-label="Menu utama">
+        {/* Back to Desk button when in workspace */}
+        {isInWorkspace && (
+          <button
+            onClick={() => navigate('/desk')}
+            className="flex items-center gap-2 px-3 py-2 mb-4 text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            <span className="font-medium">Kembali ke Desk</span>
+          </button>
+        )}
+        
         <div className="space-y-6">
           {menuGroups
             .filter((group: any) => group.show === undefined || group.show)
@@ -503,7 +566,7 @@ function SidebarContent() {
                             {/* Submenu with animation */}
                             <div className={clsx(
                               'overflow-hidden transition-all duration-200',
-                              expandedItems.includes(item.name.toLowerCase()) ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
+                              expandedItems.includes(item.name.toLowerCase()) ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'
                             )}>
                               <ul className="mt-1 ml-4 border-l border-slate-700/50 pl-3 space-y-0.5">
                                 {item.children

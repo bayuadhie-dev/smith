@@ -10,7 +10,7 @@ interface HeaderProps {
 }
 
 export default function Header({ toggleSidebar }: HeaderProps) {
-  const [companyName, setCompanyName] = useState('PT. Gratia Makmur Sentosa - ERP System')
+  const [companyName, setCompanyName] = useState('Company - ERP System')
 
   useEffect(() => {
     loadCompanySettings()

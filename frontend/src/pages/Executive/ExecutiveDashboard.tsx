@@ -18,10 +18,31 @@ import {
 import ProductionOutputModal from '../../components/Production/ProductionOutputModal';
 
 const ExecutiveDashboard: React.FC = () => {
+  const [companyName, setCompanyName] = useState('Company');
   const navigate = useNavigate();
   const [dateRange, setDateRange] = useState('30');
   const [canViewProfiles, setCanViewProfiles] = useState(false);
   const [showProductionOutput, setShowProductionOutput] = useState(false);
+
+  // Load company settings
+  useEffect(() => {
+    const loadCompanySettings = async () => {
+      try {
+        const response = await api.get('/api/settings/company');
+        setCompanyName(response.data.name || 'Company');
+      } catch (error) {
+        console.error('Failed to load company settings:', error);
+      }
+    };
+    loadCompanySettings();
+    
+    const handleCompanyUpdate = () => {
+      loadCompanySettings();
+    };
+    
+    window.addEventListener('companySettingsUpdated', handleCompanyUpdate);
+    return () => window.removeEventListener('companySettingsUpdated', handleCompanyUpdate);
+  }, []);
 
   // Check if current user can view other profiles (admin roles only)
   useEffect(() => {
@@ -133,7 +154,7 @@ const ExecutiveDashboard: React.FC = () => {
               </div>
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Executive Dashboard</h1>
-                <p className="text-blue-100 text-sm">PT. Gratia Makmur Sentosa</p>
+                <p className="text-blue-100 text-sm">{companyName}</p>
               </div>
             </div>
             </div>

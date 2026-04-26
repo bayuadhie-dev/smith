@@ -136,11 +136,11 @@ export default function OEERecordForm() {
         }
       }
       
-      toast.success('OEE record created successfully')
+      toast.success(t('success.created'))
       navigate('/app/oee')
       
     } catch (error: any) {
-      toast.error(error.data?.error || 'Failed to create OEE record')
+      toast.error(error.data?.error || t('error.create_failed'))
     }
   }
   
@@ -155,8 +155,8 @@ export default function OEERecordForm() {
           <ArrowLeftIcon className="h-5 w-5 text-gray-600" />
         </button>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Create OEE Record</h1>
-          <p className="text-gray-600">Record Overall Equipment Effectiveness data</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t('oee.create_record')}</h1>
+          <p className="text-gray-600">{t('oee.description')}</p>
         </div>
       </div>
       
@@ -166,11 +166,11 @@ export default function OEERecordForm() {
           <div className="lg:col-span-2 space-y-6">
             {/* Basic Information */}
             <div className="card p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('common.basic_info')}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Machine *
+                    {t('production.machine')} *
                   </label>
                   <select
                     name="machine_id"
@@ -179,7 +179,7 @@ export default function OEERecordForm() {
                     className="input"
                     required
                   >
-                    <option value="">Select Machine</option>
+                    <option value="">{t('common.search')} {t('production.machine')}</option>
                     {machines.map((machine: any) => (
                       <option key={machine.id} value={machine.id}>
                         {machine.name} ({machine.code})
@@ -190,7 +190,7 @@ export default function OEERecordForm() {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Work Order ID
+                    {t('production.work_order')} ID
                   </label>
                   <input
                     type="number"
@@ -204,7 +204,7 @@ export default function OEERecordForm() {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Record Date *
+                    {t('production.production_date')} *
                   </label>
                   <input
                     type="date"
@@ -224,7 +224,7 @@ export default function OEERecordForm() {
                     onChange={handleInputChange}
                     className="input"
                   >
-                    <option value="">Select Shift</option>
+                    <option value="">{t('common.search')} {t('production.shift')}</option>
                     <option value="morning">Morning</option>
                     <option value="afternoon">Afternoon</option>
                     <option value="night">Night</option>
@@ -237,12 +237,12 @@ export default function OEERecordForm() {
             <div className="card p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                 <ClockIcon className="h-5 w-5" />
-                Time Metrics
+                {t('oee.time_metrics')}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Planned Production Time (minutes) *
+                    {t('oee.planned_production_time')} *
                   </label>
                   <input
                     type="number"
@@ -257,7 +257,7 @@ export default function OEERecordForm() {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Downtime (minutes)
+                    {t('oee.downtime')} (min)
                   </label>
                   <input
                     type="number"
@@ -271,7 +271,7 @@ export default function OEERecordForm() {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Actual Production Time (minutes)
+                    {t('oee.actual_production_time')} (min)
                   </label>
                   <input
                     type="number"
@@ -294,7 +294,7 @@ export default function OEERecordForm() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Ideal Cycle Time (seconds per unit)
+                    {t('oee.ideal_cycle_time')} (sec/unit)
                   </label>
                   <input
                     type="number"
@@ -309,7 +309,7 @@ export default function OEERecordForm() {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Total Pieces Produced
+                    {t('production.actual_quantity')}
                   </label>
                   <input
                     type="number"
@@ -323,7 +323,7 @@ export default function OEERecordForm() {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Good Pieces
+                    {t('production.good_quantity')}
                   </label>
                   <input
                     type="number"
@@ -337,7 +337,7 @@ export default function OEERecordForm() {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Rejected Pieces
+                    {t('production.rejected_pieces')}
                   </label>
                   <input
                     type="number"
@@ -356,7 +356,7 @@ export default function OEERecordForm() {
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                   <ExclamationTriangleIcon className="h-5 w-5" />
-                  Downtime Records
+                  {t('production.downtime_records')}
                 </h3>
                 <button
                   type="button"
@@ -382,9 +382,9 @@ export default function OEERecordForm() {
                       )}
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">{t('products.bom.category')}</label>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">{t('common.category')}</label>
                         <select
                           value={record.downtime_category}
                           onChange={(e) => handleDowntimeChange(index, 'downtime_category', e.target.value)}
@@ -402,7 +402,7 @@ export default function OEERecordForm() {
                       
                       <div>
                         <label className="block text-xs font-medium text-gray-600 mb-1">
-                          Duration (minutes)
+                          {t('common.quantity')} (min)
                         </label>
                         <input
                           type="number"
@@ -421,7 +421,7 @@ export default function OEERecordForm() {
                           value={record.reason}
                           onChange={(e) => handleDowntimeChange(index, 'reason', e.target.value)}
                           className="input text-sm"
-                          placeholder="Describe the reason for downtime"
+                          placeholder={t('production.enter_rejection_reason')}
                         />
                       </div>
                     </div>
@@ -494,12 +494,12 @@ export default function OEERecordForm() {
             
             {/* Action Buttons */}
             <div className="space-y-3">
-              <button
+               <button
                 type="submit"
                 disabled={isCreating}
                 className="btn-primary w-full"
               >
-                {isCreating ? 'Creating...' : 'Create OEE Record'}
+                {isCreating ? t('ui.processing') : t('oee.create_record')}
               </button>
               
               <button

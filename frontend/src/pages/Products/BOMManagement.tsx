@@ -349,7 +349,7 @@ const BOMManagement: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-3">Loading BOM data...</span>
+        <span className="ml-3">{t('common.loading')}</span>
       </div>
     );
   }
@@ -368,10 +368,10 @@ const BOMManagement: React.FC = () => {
           </Link>
           <div>
             <h1 className="text-3xl font-bold text-gray-900">{t('products.bom.title')}</h1>
-            <p className="text-gray-600 mt-1">Manage product recipes and material requirements</p>
+            <p className="text-gray-600 mt-1">{t('products.bom.description')}</p>
             <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
               <p className="text-sm text-blue-800">
-                <strong>💡 Tip:</strong> Click "Create BOM" to access the full form with material input table, quantities, scrap percentage, and more advanced features.
+                <strong>💡 Tip:</strong> {t('products.bom.tip')}
               </p>
             </div>
           </div>
@@ -381,7 +381,7 @@ const BOMManagement: React.FC = () => {
           className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
           <PlusIcon className="h-5 w-5 mr-2" />
-          Create BOM
+          {t('common.create')} BOM
         </Link>
       </div>
 
@@ -391,7 +391,7 @@ const BOMManagement: React.FC = () => {
           <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
             type="text"
-            placeholder="Search BOMs by product name, code, or version..."
+            placeholder={t('products.bom.search_placeholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -434,7 +434,7 @@ const BOMManagement: React.FC = () => {
                   <button
                     onClick={() => deleteBOM(bom.id)}
                     className="p-2 text-gray-400 hover:text-red-600"
-                    title="Delete BOM"
+                    title={t('common.delete') + " BOM"}
                   >
                     <TrashIcon className="h-4 w-4" />
                   </button>
@@ -444,7 +444,7 @@ const BOMManagement: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div className="bg-gray-50 rounded-lg p-3">
-                <div className="text-sm text-gray-600">Total Materials</div>
+                <div className="text-sm text-gray-600">{t('products.bom.total_materials')}</div>
                 <div className="text-lg font-semibold text-gray-900">{bom.total_materials}</div>
               </div>
               <div className="bg-gray-50 rounded-lg p-3">
@@ -465,7 +465,7 @@ const BOMManagement: React.FC = () => {
                   ) : (
                     <ChevronRightIcon className="h-5 w-5 mr-2" />
                   )}
-                  Materials ({bom.total_materials})
+                  {t('products.materials')} ({bom.total_materials})
                 </button>
                 {expandedBOMs.has(bom.id) && (
                   <button
@@ -473,7 +473,7 @@ const BOMManagement: React.FC = () => {
                     className="flex items-center px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
                   >
                     <PlusIcon className="h-4 w-4 mr-1" />
-                    Add Material
+                    {t('common.add')} {t('products.bom.material')}
                   </button>
                 )}
               </div>
@@ -492,7 +492,7 @@ const BOMManagement: React.FC = () => {
                           <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">{t('products.bom.material')}</th>
                           <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">{t('common.quantity')}</th>
                           <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">{t('products.bom.unit_cost')}</th>
-                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Waste %</th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">{t('products.bom.waste_percent')}</th>
                           <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">{t('products.bom.total_cost')}</th>
                           <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">{t('common.actions')}</th>
                         </tr>
@@ -551,11 +551,11 @@ const BOMManagement: React.FC = () => {
       {filteredBOMs.length === 0 && (
         <div className="text-center py-12">
           <ClipboardDocumentListIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No BOMs found</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">{t('products.bom.not_found')}</h3>
           <p className="text-gray-600 mb-4">
             {searchTerm 
-              ? 'Try adjusting your search terms' 
-              : 'Get started by creating your first Bill of Materials'
+              ? t('products.bom.adjust_search')
+              : t('products.bom.start_creating')
             }
           </p>
           {!searchTerm && (
@@ -564,7 +564,7 @@ const BOMManagement: React.FC = () => {
               className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
               <PlusIcon className="h-5 w-5 mr-2" />
-              Create BOM
+              {t('common.create')} BOM
             </button>
           )}
         </div>
@@ -576,7 +576,7 @@ const BOMManagement: React.FC = () => {
           <div className="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
             <div className="mt-3">
               <h3 className="text-lg font-medium text-gray-900 mb-4">
-                {selectedBOM ? [t('products.bom.edit_bom')] : 'Create New BOM'}
+                {selectedBOM ? t('products.bom.edit_bom') : t('common.create') + ' New BOM'}
               </h3>
               
               <div className="space-y-4">
@@ -631,7 +631,7 @@ const BOMManagement: React.FC = () => {
                   className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                   disabled={bomForm.product_id === 0 || !bomForm.version.trim()}
                 >
-                  {selectedBOM ? 'Update BOM' : 'Create BOM'}
+                  {selectedBOM ? t('common.update') + ' BOM' : t('common.create') + ' BOM'}
                 </button>
               </div>
             </div>
@@ -645,7 +645,7 @@ const BOMManagement: React.FC = () => {
           <div className="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
             <div className="mt-3">
               <h3 className="text-lg font-medium text-gray-900 mb-4">
-                {editingItem ? 'Edit Material' : 'Add Material'}
+                {editingItem ? t('products.bom.edit_material') : t('products.bom.add_material')}
               </h3>
               
               <div className="space-y-4">

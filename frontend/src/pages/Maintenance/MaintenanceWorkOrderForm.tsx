@@ -10,7 +10,8 @@ import {
   DocumentTextIcon,
   ExclamationTriangleIcon as AlertTriangle,
   PlusIcon as Plus,
-  TrashIcon as Trash2
+  TrashIcon as Trash2,
+  XMarkIcon as X
 
 } from '@heroicons/react/24/outline';
 interface WorkOrderFormData {
@@ -153,8 +154,16 @@ const MaintenanceWorkOrderForm: React.FC = () => {
     setError('');
 
     try {
-      const url = isEdit ? `/api/maintenance/work-orders/${id}` : '/api/maintenance/work-orders';
-      const method = isEdit ? 'PUT' : 'POST';
+      const url = isEdit ? `/api/maintenance/records/${id}` : '/api/maintenance/maintenance';
+      const method = isEdit ? 'PATCH' : 'POST';
+
+      const payload = {
+        ...formData,
+        maintenance_date: formData.scheduled_date,
+        performed_by: formData.assigned_to,
+        cost: formData.estimated_cost,
+        problem_description: formData.description
+      };
 
       const response = await fetch(url, {
         method,
@@ -162,7 +171,7 @@ const MaintenanceWorkOrderForm: React.FC = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
 
       if (response.ok) {

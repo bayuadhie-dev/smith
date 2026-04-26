@@ -11,7 +11,8 @@ import {
   DocumentTextIcon,
   ExclamationTriangleIcon as AlertTriangle,
   UserIcon as User,
-  WrenchIcon as Wrench
+  WrenchIcon as Wrench,
+  XMarkIcon as X
 
 } from '@heroicons/react/24/outline';
 interface Machine {

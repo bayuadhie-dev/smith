@@ -198,8 +198,8 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
         className={`w-full px-3 py-2 border rounded-lg flex items-center justify-between transition-colors ${
           disabled 
             ? 'bg-gray-100 cursor-not-allowed border-gray-200' 
-            : 'bg-white cursor-pointer border-gray-300 hover:border-blue-400 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500'
-        } ${className.includes('text-xs') ? 'text-xs py-1.5 px-2' : 'text-sm'}`}
+            : 'bg-white cursor-pointer border-gray-300 hover:border-blue-400 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 shadow-sm'
+        } ${className.includes('text-xs') ? 'text-xs py-1.5 px-2' : 'text-sm py-2.5 px-3'}`}
       >
         <span className={selectedOption ? 'text-gray-900 truncate' : 'text-gray-400'}>
           {selectedOption ? getOptionDisplay(selectedOption) : placeholder}
@@ -220,7 +220,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
 
       {/* Dropdown */}
       {isOpen && !disabled && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg overflow-hidden">
+        <div className="absolute z-50 min-w-[300px] w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg overflow-hidden lg:min-w-[400px]">
           {/* Search Input */}
           <div className="p-2 border-b border-gray-200 sticky top-0 bg-white">
             <div className="relative">
@@ -239,7 +239,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                   }
                 }}
                 placeholder="Ketik untuk mencari..."
-                className="w-full pl-8 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-10 pr-3 py-2.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 autoFocus
                 onClick={(e) => e.stopPropagation()}
               />
@@ -247,7 +247,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
           </div>
 
           {/* Options List */}
-          <div ref={listRef} className="max-h-60 overflow-y-auto">
+          <div ref={listRef} className="max-h-80 overflow-y-auto">
             {filteredOptions.length > 0 ? (
               filteredOptions.map((option, index) => (
                 <div
@@ -255,7 +255,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                   data-option
                   onClick={() => handleSelect(option.id)}
                   onMouseEnter={() => setHighlightedIndex(index)}
-                  className={`px-3 py-2 cursor-pointer transition-colors ${
+                  className={`px-4 py-2.5 cursor-pointer transition-colors border-b border-gray-50 last:border-0 ${
                     index === highlightedIndex 
                       ? 'bg-blue-100 text-blue-900' 
                       : option.id === value 
@@ -264,12 +264,12 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                   }`}
                 >
                   {option.code ? (
-                    <>
-                      <div className="font-medium text-sm">{option.code}</div>
-                      <div className="text-xs text-gray-500 truncate">{option.name}</div>
-                    </>
+                    <div className="flex flex-col">
+                      <div className="font-semibold text-sm text-blue-700">{option.code}</div>
+                      <div className="text-sm text-gray-600 font-medium">{option.name}</div>
+                    </div>
                   ) : (
-                    <div className="text-sm">{option.label || option.name}</div>
+                    <div className="text-sm font-medium">{option.label || option.name}</div>
                   )}
                 </div>
               ))
