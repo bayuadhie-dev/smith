@@ -181,7 +181,7 @@ def public_cancel_leave(request_id):
         
         formatted_name = to_proper_case(staff_name)
         
-        leave_request = StaffLeaveRequest.query.get(request_id)
+        leave_request = db.session.get(StaffLeaveRequest, request_id)
         if not leave_request:
             return jsonify({'error': 'Pengajuan tidak ditemukan'}), 404
         
@@ -274,7 +274,7 @@ def approve_leave(request_id):
     try:
         user_id = get_jwt_identity()
         
-        leave_request = StaffLeaveRequest.query.get(request_id)
+        leave_request = db.session.get(StaffLeaveRequest, request_id)
         if not leave_request:
             return jsonify({'error': 'Pengajuan tidak ditemukan'}), 404
         
@@ -305,7 +305,7 @@ def reject_leave(request_id):
         user_id = get_jwt_identity()
         data = request.get_json()
         
-        leave_request = StaffLeaveRequest.query.get(request_id)
+        leave_request = db.session.get(StaffLeaveRequest, request_id)
         if not leave_request:
             return jsonify({'error': 'Pengajuan tidak ditemukan'}), 404
         
@@ -445,7 +445,7 @@ def create_office_location():
 def update_office_location(location_id):
     """Update office location"""
     try:
-        location = OfficeLocation.query.get(location_id)
+        location = db.session.get(OfficeLocation, location_id)
         if not location:
             return jsonify({'error': 'Lokasi tidak ditemukan'}), 404
         
@@ -485,7 +485,7 @@ def update_office_location(location_id):
 def delete_office_location(location_id):
     """Delete office location"""
     try:
-        location = OfficeLocation.query.get(location_id)
+        location = db.session.get(OfficeLocation, location_id)
         if not location:
             return jsonify({'error': 'Lokasi tidak ditemukan'}), 404
         

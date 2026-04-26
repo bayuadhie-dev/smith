@@ -3,7 +3,7 @@ Packing List Routes - Separate from Work Order
 Manages packing of products from WIP Stock
 """
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db
 from models.production import (
@@ -215,7 +215,7 @@ def adjust_wip_stock():
         # Get or create WIP stock
         wip = WIPStock.query.filter_by(product_id=product_id).first()
         if not wip:
-            product = Product.query.get(product_id)
+            product = db.session.get(Product, product_id)
             if not product:
                 return jsonify({'error': 'Product not found'}), 404
             
@@ -343,7 +343,7 @@ def get_packing_lists():
 def get_packing_list(id):
     """Get single packing list with items"""
     try:
-        pl = PackingListNew.query.get_or_404(id)
+        pl = db.session.get(PackingListNew, id) or abort(404)
         return jsonify(pl.to_dict(include_items=True)), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -370,7 +370,7 @@ def create_packing_list():
             return jsonify({'error': 'Total carton must be greater than 0'}), 400
         
         # Validate: only Finished Good products can have packing lists
-        product = Product.query.get(product_id)
+        product = db.session.get(Product, product_id)
         if not product:
             return jsonify({'error': 'Product not found'}), 404
         
@@ -408,7 +408,7 @@ def create_packing_list():
             for item in bom_items:
                 if not item.material_id:
                     continue
-                material = Material.query.get(item.material_id)
+                material = db.session.get(Material, item.material_id)
                 if not material or not (material.name or '').startswith('WIP '):
                     continue
                 
@@ -582,7 +582,7 @@ def create_packing_list():
 def update_packing_list(id):
     """Update packing list details"""
     try:
-        pl = PackingListNew.query.get_or_404(id)
+        pl = db.session.get(PackingListNew, id) or abort(404)
         data = request.get_json()
         
         if pl.status in ('released', 'rejected'):
@@ -620,7 +620,7 @@ def update_packing_list(id):
 def get_packing_list_items(id):
     """Get packing list items with pagination"""
     try:
-        pl = PackingListNew.query.get_or_404(id)
+        pl = db.session.get(PackingListNew, id) or abort(404)
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 50, type=int)
         
@@ -646,7 +646,7 @@ def get_packing_list_items(id):
 def weigh_cartons(id):
     """Update weight and weigh date for cartons"""
     try:
-        pl = PackingListNew.query.get_or_404(id)
+        pl = db.session.get(PackingListNew, id) or abort(404)
         data = request.get_json()
         items = data.get('items', [])
         
@@ -662,7 +662,7 @@ def weigh_cartons(id):
             weight_kg = item_data.get('weight_kg')
             weigh_date = item_data.get('weigh_date')
             
-            item = PackingListNewItem.query.get(item_id)
+            item = db.session.get(PackingListNewItem, item_id)
             if item and item.packing_list_id == pl.id:
                 if weight_kg is not None:
                     item.weight_kg = weight_kg
@@ -701,7 +701,7 @@ def weigh_cartons(id):
 def update_batch_mixing(id):
     """Update batch mixing for cartons"""
     try:
-        pl = PackingListNew.query.get_or_404(id)
+        pl = db.session.get(PackingListNew, id) or abort(404)
         data = request.get_json()
         
         batch_mixing = data.get('batch_mixing')
@@ -745,13 +745,13 @@ def cancel_packing_list(id):
     - Otherwise -> return to WIP component stocks via BOM
     """
     try:
-        pl = PackingListNew.query.get_or_404(id)
+        pl = db.session.get(PackingListNew, id) or abort(404)
         
         if pl.status == 'completed':
             return jsonify({'error': 'Cannot cancel completed packing list'}), 400
         
         user_id = get_jwt_identity()
-        product = Product.query.get(pl.product_id)
+        product = db.session.get(Product, pl.product_id)
         
         # Check if original deduction was direct (FG's own WIP Stock)
         direct_movement = WIPStockMovement.query.filter_by(
@@ -797,7 +797,7 @@ def cancel_packing_list(id):
             ).all()
             
             for out_mov in out_movements:
-                wip_stock = WIPStock.query.get(out_mov.wip_stock_id)
+                wip_stock = db.session.get(WIPStock, out_mov.wip_stock_id)
                 if not wip_stock:
                     continue
                 
@@ -850,7 +850,7 @@ def _return_wip_stock(pl, user_id):
         movement_type='out'
     ).first()
     
-    product = Product.query.get(pl.product_id)
+    product = db.session.get(Product, pl.product_id)
     
     if direct_movement:
         direct_wip = WIPStock.query.filter_by(product_id=pl.product_id).first()
@@ -882,7 +882,7 @@ def _return_wip_stock(pl, user_id):
             movement_type='out'
         ).all()
         for out_mov in out_movements:
-            wip_stock = WIPStock.query.get(out_mov.wip_stock_id)
+            wip_stock = db.session.get(WIPStock, out_mov.wip_stock_id)
             if not wip_stock:
                 continue
             return_pcs = out_mov.quantity_pcs or 0
@@ -920,7 +920,7 @@ def qc_packing_list(id):
     From quarantine, can be changed to released or rejected.
     """
     try:
-        pl = PackingListNew.query.get_or_404(id)
+        pl = db.session.get(PackingListNew, id) or abort(404)
         data = request.get_json()
         
         action = data.get('action')  # quarantine, released, rejected
@@ -1015,7 +1015,7 @@ def _get_fg_availability():
             for item in bom_items:
                 if not item.material_id:
                     continue
-                material = Material.query.get(item.material_id)
+                material = db.session.get(Material, item.material_id)
                 if not material or not (material.name or '').startswith('WIP '):
                     continue
                 wip_prod = Product.query.filter_by(code=material.code).first()
@@ -1064,7 +1064,7 @@ def _get_fg_availability():
         for item in bom_items:
             material = None
             if item.material_id:
-                material = Material.query.get(item.material_id)
+                material = db.session.get(Material, item.material_id)
             if not material or not (material.name or '').startswith('WIP '):
                 continue
             

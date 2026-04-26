@@ -2,7 +2,7 @@
 Document Management Routes
 Dynamic template-based document generation with PDF/Excel export
 """
-from flask import Blueprint, request, jsonify, send_file, render_template_string
+from flask import Blueprint, request, jsonify, send_file, render_template_string, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db
 from models.document_management import (
@@ -112,7 +112,7 @@ def create_template():
 def get_template(id):
     """Get single template"""
     try:
-        template = DocumentTemplate.query.get_or_404(id)
+        template = db.session.get(DocumentTemplate, id) or abort(404)
         
         return jsonify({
             'template': {
@@ -143,7 +143,7 @@ def get_template(id):
 def update_template(id):
     """Update document template"""
     try:
-        template = DocumentTemplate.query.get_or_404(id)
+        template = db.session.get(DocumentTemplate, id) or abort(404)
         data = request.get_json()
         
         template.template_name = data.get('template_name', template.template_name)
@@ -430,7 +430,7 @@ def generate_document():
         current_user_id = get_jwt_identity()
         data = request.get_json()
         
-        template = DocumentTemplate.query.get_or_404(data['template_id'])
+        template = db.session.get(DocumentTemplate, data['template_id']) or abort(404)
         
         # Generate document number
         document_number = generate_number(
@@ -488,7 +488,7 @@ def generate_document():
 def preview_document(id):
     """Get document HTML preview"""
     try:
-        document = Document.query.get_or_404(id)
+        document = db.session.get(Document, id) or abort(404)
         
         return jsonify({
             'document': {
@@ -510,7 +510,7 @@ def generate_pdf(id):
     """Generate and download PDF"""
     try:
         current_user_id = get_jwt_identity()
-        document = Document.query.get_or_404(id)
+        document = db.session.get(Document, id) or abort(404)
         
         if not WEASYPRINT_AVAILABLE:
             return jsonify({'error': 'PDF generation not available. Install WeasyPrint.'}), 500
@@ -554,7 +554,7 @@ def generate_excel(id):
     """Generate and download Excel"""
     try:
         current_user_id = get_jwt_identity()
-        document = Document.query.get_or_404(id)
+        document = db.session.get(Document, id) or abort(404)
         
         if not OPENPYXL_AVAILABLE:
             return jsonify({'error': 'Excel generation not available. Install openpyxl.'}), 500
@@ -717,7 +717,7 @@ def record_print(id):
     """Record document print"""
     try:
         current_user_id = get_jwt_identity()
-        document = Document.query.get_or_404(id)
+        document = db.session.get(Document, id) or abort(404)
         
         document.print_count += 1
         document.last_printed_at = get_local_now()
@@ -748,7 +748,7 @@ def record_print(id):
 def delete_document(id):
     """Delete document"""
     try:
-        document = Document.query.get_or_404(id)
+        document = db.session.get(Document, id) or abort(404)
         
         # Delete related logs
         DocumentLog.query.filter_by(document_id=id).delete()
@@ -768,7 +768,7 @@ def delete_document(id):
 def set_default_template(id):
     """Set template as default for its document type"""
     try:
-        template = DocumentTemplate.query.get_or_404(id)
+        template = db.session.get(DocumentTemplate, id) or abort(404)
         
         # Remove default from other templates of same type
         DocumentTemplate.query.filter_by(
@@ -795,7 +795,7 @@ def set_default_template(id):
 def delete_template(id):
     """Delete document template"""
     try:
-        template = DocumentTemplate.query.get_or_404(id)
+        template = db.session.get(DocumentTemplate, id) or abort(404)
         
         # Check if template is in use
         doc_count = Document.query.filter_by(template_id=id).count()

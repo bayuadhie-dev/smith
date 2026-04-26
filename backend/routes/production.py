@@ -58,6 +58,45 @@ production_bp = Blueprint('production', __name__)
 @production_bp.route('/machines', methods=['GET'])
 @jwt_required()
 def get_machines():
+    """
+    Get all active machines
+    ---
+    tags:
+      - Production
+    summary: Get all machines
+    description: Retrieve all active machines in the production system
+    security:
+      - BearerAuth: []
+    responses:
+      200:
+        description: Machines retrieved successfully
+        schema:
+          type: object
+          properties:
+            machines:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  code:
+                    type: string
+                  name:
+                    type: string
+                  machine_type:
+                    type: string
+                  status:
+                    type: string
+                  location:
+                    type: string
+                  department:
+                    type: string
+      401:
+        description: Unauthorized
+      500:
+        description: Server error
+    """
     try:
         machines = Machine.query.filter_by(is_active=True).all()
         return jsonify({
@@ -90,8 +129,60 @@ def get_machines():
 @production_bp.route('/machines/<int:id>', methods=['GET', 'PUT'])
 @jwt_required()
 def get_or_update_machine(id):
+    """
+    Get or update machine by ID
+    ---
+    tags:
+      - Production
+    summary: Get or update machine
+    description: Retrieve a specific machine by ID or update it
+    security:
+      - BearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+        description: Machine ID
+      - in: body
+        name: body
+        required: false
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            status:
+              type: string
+            location:
+              type: string
+            department:
+              type: string
+    responses:
+      200:
+        description: Machine retrieved/updated successfully
+        schema:
+          type: object
+          properties:
+            id:
+              type: integer
+            code:
+              type: string
+            name:
+              type: string
+            machine_type:
+              type: string
+            status:
+              type: string
+      401:
+        description: Unauthorized
+      404:
+        description: Machine not found
+      500:
+        description: Server error
+    """
     try:
-        machine = Machine.query.get(id)
+        machine = db.session.get(Machine, id)
         if not machine:
             return jsonify(error_response('api.error', error_code=404)), 404
         
@@ -200,6 +291,57 @@ def get_or_update_machine(id):
 @production_bp.route('/machines', methods=['POST'])
 @jwt_required()
 def create_machine():
+    """
+    Create a new machine
+    ---
+    tags:
+      - Production
+    summary: Create new machine
+    description: Create a new machine in the production system
+    security:
+      - BearerAuth: []
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - code
+            - name
+            - machine_type
+          properties:
+            code:
+              type: string
+            name:
+              type: string
+            machine_type:
+              type: string
+            manufacturer:
+              type: string
+            model:
+              type: string
+            status:
+              type: string
+            location:
+              type: string
+            department:
+              type: string
+    responses:
+      201:
+        description: Machine created successfully
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+            machine:
+              type: object
+      401:
+        description: Unauthorized
+      500:
+        description: Server error
+    """
     try:
         data = request.get_json()
         machine = Machine(
@@ -224,7 +366,7 @@ def create_machine():
 @jwt_required()
 def update_machine(id):
     try:
-        machine = Machine.query.get(id)
+        machine = db.session.get(Machine, id)
         if not machine:
             return jsonify(error_response('api.error', error_code=404)), 404
             
@@ -277,7 +419,7 @@ def update_machine(id):
 def get_machine_efficiency(id):
     """Get machine efficiency data for specific time period"""
     try:
-        machine = Machine.query.get(id)
+        machine = db.session.get(Machine, id)
         if not machine:
             return jsonify(error_response('api.error', error_code=404)), 404
             
@@ -477,7 +619,7 @@ def get_work_orders_status_tracking():
 def get_work_order(id):
     """Get single work order detail"""
     try:
-        wo = WorkOrder.query.get(id)
+        wo = db.session.get(WorkOrder, id)
         if not wo:
             return jsonify({'error': 'Work order not found'}), 404
         
@@ -611,7 +753,7 @@ def get_work_order(id):
         # Add supervisor info safely
         if hasattr(wo, 'supervisor_id'):
             response_data['supervisor_id'] = wo.supervisor_id
-            response_data['supervisor_name'] = wo.supervisor.name if wo.supervisor else None
+            response_data['supervisor_name'] = wo.supervisor.full_name if wo.supervisor else None
         
         # Add BOM materials used for production
         # If bom_id is not set, try to find active BOM for this product
@@ -704,7 +846,7 @@ def get_work_order(id):
         if response_data.get('source_type') == 'from_schedule' and response_data.get('schedule_grid_id'):
             from routes.schedule_grid import ScheduleGridItem
             import json
-            schedule_item = ScheduleGridItem.query.get(response_data['schedule_grid_id'])
+            schedule_item = db.session.get(ScheduleGridItem, response_data['schedule_grid_id'])
             if schedule_item and schedule_item.schedule_days:
                 response_data['schedule_days'] = json.loads(schedule_item.schedule_days)
         
@@ -727,7 +869,7 @@ def create_work_order():
         uom = data.get('uom')
         if not uom:
             from models.product import Product
-            product = Product.query.get(data['product_id'])
+            product = db.session.get(Product, data['product_id'])
             uom = product.primary_uom if product else 'pcs'
         
         # Determine source_type: manual, from_bom, from_schedule
@@ -764,7 +906,7 @@ def create_work_order():
 def update_work_order(id):
     """Update work order"""
     try:
-        wo = WorkOrder.query.get(id)
+        wo = db.session.get(WorkOrder, id)
         if not wo:
             return jsonify({'error': 'Work order not found'}), 404
         
@@ -813,7 +955,7 @@ def update_work_order(id):
 def delete_work_order(id):
     """Delete work order"""
     try:
-        wo = WorkOrder.query.get(id)
+        wo = db.session.get(WorkOrder, id)
         if not wo:
             return jsonify({'error': 'Work order not found'}), 404
         
@@ -907,7 +1049,7 @@ def update_work_order_status(id):
     try:
         from routes.production_integration import auto_deduct_materials, auto_receive_finished_goods
         
-        wo = WorkOrder.query.get(id)
+        wo = db.session.get(WorkOrder, id)
         if not wo:
             return jsonify({'error': 'Work order not found'}), 404
         
@@ -1010,7 +1152,7 @@ def get_work_order_production_records(id):
     """Get production records for a specific work order, plus same-machine records for shift usage"""
     try:
         from models.production import ShiftProduction
-        wo = WorkOrder.query.get(id)
+        wo = db.session.get(WorkOrder, id)
         if not wo:
             return jsonify({'error': 'Work order not found'}), 404
         
@@ -1083,7 +1225,7 @@ def create_work_order_production_record(id):
         from models.wip_job_costing import WIPBatch, JobCostEntry, WIPWorkflowIntegration
         
         user_id = get_jwt_identity()
-        wo = WorkOrder.query.get(id)
+        wo = db.session.get(WorkOrder, id)
         if not wo:
             return jsonify({'error': 'Work order not found'}), 404
         
@@ -1368,7 +1510,7 @@ def create_work_order_production_record(id):
             wo.actual_end_date = datetime.utcnow()
         
         # Update machine efficiency and availability based on latest production
-        machine = Machine.query.get(machine_id)
+        machine = db.session.get(Machine, machine_id)
         if machine:
             machine.efficiency = round(efficiency_rate, 2)
             machine.availability = round((actual_runtime / planned_runtime * 100) if planned_runtime > 0 else 100, 2)
@@ -1643,7 +1785,7 @@ def start_work_order(id):
         user_id = int(get_jwt_identity())
         total_material_cost = 0  # Track total material cost
         
-        wo = WorkOrder.query.get(id)
+        wo = db.session.get(WorkOrder, id)
         if not wo:
             return jsonify(error_response('api.error', error_code=404)), 404
         
@@ -1785,7 +1927,7 @@ def start_work_order(id):
                     
                     # Calculate material cost
                     issued_qty = required_qty - remaining_to_issue
-                    material = Material.query.get(bom_item.material_id)
+                    material = db.session.get(Material, bom_item.material_id)
                     unit_cost = float(material.unit_cost) if material and material.unit_cost else 0
                     item_cost = issued_qty * unit_cost
                     total_material_cost += item_cost
@@ -1868,7 +2010,7 @@ def complete_work_order(id):
     try:
         from routes.production_integration import auto_receive_finished_goods
         
-        wo = WorkOrder.query.get(id)
+        wo = db.session.get(WorkOrder, id)
         if not wo:
             return jsonify(error_response('api.error', error_code=404)), 404
         
@@ -2014,7 +2156,7 @@ def create_production_record():
         # Get product_id - use provided or fallback to WO's product
         product_id = data.get('product_id')
         if not product_id:
-            wo = WorkOrder.query.get(data['work_order_id'])
+            wo = db.session.get(WorkOrder, data['work_order_id'])
             product_id = wo.product_id if wo else None
         
         record = ProductionRecord(
@@ -2035,7 +2177,7 @@ def create_production_record():
         db.session.add(record)
         
         # Update work order quantities - convert to float to avoid Decimal conflicts
-        wo = WorkOrder.query.get(data['work_order_id'])
+        wo = db.session.get(WorkOrder, data['work_order_id'])
         wo.quantity_produced = float(wo.quantity_produced or 0) + float(data['quantity_produced'])
         wo.quantity_good = float(wo.quantity_good or 0) + float(data['quantity_good'])
         wo.quantity_scrap = float(wo.quantity_scrap or 0) + float(data.get('quantity_scrap', 0))
@@ -2051,7 +2193,7 @@ def create_production_record():
 def get_production_record(record_id):
     """Get single production record by ID"""
     try:
-        record = ProductionRecord.query.get(record_id)
+        record = db.session.get(ProductionRecord, record_id)
         if not record:
             return jsonify({'error': 'Production record not found'}), 404
         
@@ -2099,7 +2241,7 @@ def update_production_record(record_id):
     try:
         from models.production import ShiftProduction
         
-        record = ProductionRecord.query.get(record_id)
+        record = db.session.get(ProductionRecord, record_id)
         if not record:
             return jsonify({'error': 'Production record not found'}), 404
         
@@ -2287,6 +2429,43 @@ def update_production_record(record_id):
 @production_bp.route('/bom', methods=['GET'])
 @jwt_required()
 def get_boms():
+    """
+    Get all active Bill of Materials
+    ---
+    tags:
+      - Production
+    summary: Get all BOMs
+    description: Retrieve all active Bill of Materials
+    security:
+      - BearerAuth: []
+    responses:
+      200:
+        description: BOMs retrieved successfully
+        schema:
+          type: object
+          properties:
+            boms:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  bom_number:
+                    type: string
+                  product_name:
+                    type: string
+                  version:
+                    type: string
+                  batch_size:
+                    type: number
+                  item_count:
+                    type: integer
+      401:
+        description: Unauthorized
+      500:
+        description: Server error
+    """
     try:
         boms = BillOfMaterials.query.filter_by(is_active=True).all()
         return jsonify({
@@ -2305,6 +2484,68 @@ def get_boms():
 @production_bp.route('/bom', methods=['POST'])
 @jwt_required()
 def create_bom():
+    """
+    Create a new Bill of Materials
+    ---
+    tags:
+      - Production
+    summary: Create new BOM
+    description: Create a new Bill of Materials with items
+    security:
+      - BearerAuth: []
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - product_id
+            - batch_size
+            - batch_uom
+            - items
+          properties:
+            product_id:
+              type: integer
+            version:
+              type: string
+              default: 1.0
+            batch_size:
+              type: number
+            batch_uom:
+              type: string
+            notes:
+              type: string
+            items:
+              type: array
+              items:
+                type: object
+                properties:
+                  material_id:
+                    type: integer
+                  quantity:
+                    type: number
+                  uom:
+                    type: string
+                  scrap_percent:
+                    type: number
+    responses:
+      201:
+        description: BOM created successfully
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+            bom_id:
+              type: integer
+            bom_number:
+              type: string
+      401:
+        description: Unauthorized
+      500:
+        description: Server error
+    """
     try:
         data = request.get_json()
         user_id = get_jwt_identity()
@@ -2502,7 +2743,7 @@ from models.production import PackingList, PackingListItem
 def get_packing_list(wo_id):
     """Get packing list for a work order"""
     try:
-        work_order = WorkOrder.query.get(wo_id)
+        work_order = db.session.get(WorkOrder, wo_id)
         if not work_order:
             return jsonify({'error': 'Work order not found'}), 404
         
@@ -2551,7 +2792,7 @@ def get_packing_list(wo_id):
 def sync_packing_list(wo_id):
     """Sync packing list items based on actual karton count with user-defined start number"""
     try:
-        work_order = WorkOrder.query.get(wo_id)
+        work_order = db.session.get(WorkOrder, wo_id)
         if not work_order:
             return jsonify({'error': 'Work order not found'}), 404
         
@@ -2633,7 +2874,7 @@ def update_packing_list_items(wo_id):
         for item_data in items_data:
             item_id = item_data.get('id')
             if item_id:
-                item = PackingListItem.query.get(item_id)
+                item = db.session.get(PackingListItem, item_id)
                 if item and item.packing_list_id == packing_list.id:
                     if 'weight_kg' in item_data:
                         item.weight_kg = item_data['weight_kg']
@@ -2740,7 +2981,7 @@ def create_remaining_stock():
         product_code = data.get('product_code')
         
         if product_id:
-            product = Product.query.get(product_id)
+            product = db.session.get(Product, product_id)
             if product:
                 product_name = product.name
                 product_code = product.code
@@ -2776,7 +3017,7 @@ def create_remaining_stock():
 def get_remaining_stock(id):
     """Get single remaining stock by ID"""
     try:
-        stock = RemainingStock.query.get(id)
+        stock = db.session.get(RemainingStock, id)
         if not stock:
             return jsonify({'error': 'Data tidak ditemukan'}), 404
         return jsonify({'remaining_stock': stock.to_dict()}), 200
@@ -2790,7 +3031,7 @@ def update_remaining_stock(id):
     """Update remaining stock entry"""
     try:
         user_id = get_jwt_identity()
-        stock = RemainingStock.query.get(id)
+        stock = db.session.get(RemainingStock, id)
         if not stock:
             return jsonify({'error': 'Data tidak ditemukan'}), 404
         
@@ -2800,7 +3041,7 @@ def update_remaining_stock(id):
         if 'product_id' in data:
             stock.product_id = data['product_id']
             if data['product_id']:
-                product = Product.query.get(data['product_id'])
+                product = db.session.get(Product, data['product_id'])
                 if product:
                     stock.product_name = product.name
                     stock.product_code = product.code
@@ -2839,7 +3080,7 @@ def update_remaining_stock(id):
 def delete_remaining_stock(id):
     """Delete remaining stock entry"""
     try:
-        stock = RemainingStock.query.get(id)
+        stock = db.session.get(RemainingStock, id)
         if not stock:
             return jsonify({'error': 'Data tidak ditemukan'}), 404
         
@@ -2964,7 +3205,7 @@ def export_remaining_stocks_excel():
 def get_work_order_bom(wo_id):
     """Get BOM items for a work order (WO-specific copy or from master BOM)"""
     try:
-        wo = WorkOrder.query.get(wo_id)
+        wo = db.session.get(WorkOrder, wo_id)
         if not wo:
             return jsonify({'error': 'Work order not found'}), 404
         
@@ -3002,7 +3243,7 @@ def get_work_order_bom(wo_id):
         # First check if bom_id is set, otherwise find active BOM by product_id
         bom = None
         if wo.bom_id:
-            bom = BillOfMaterials.query.get(wo.bom_id)
+            bom = db.session.get(BillOfMaterials, wo.bom_id)
         
         if not bom and wo.product_id:
             # Find active BOM for this product
@@ -3052,14 +3293,14 @@ def copy_bom_to_work_order(wo_id):
     """Copy BOM items from master BOM to work order for editing"""
     try:
         user_id = get_jwt_identity()
-        wo = WorkOrder.query.get(wo_id)
+        wo = db.session.get(WorkOrder, wo_id)
         if not wo:
             return jsonify({'error': 'Work order not found'}), 404
         
         # Find BOM - first by bom_id, then by product_id
         bom = None
         if wo.bom_id:
-            bom = BillOfMaterials.query.get(wo.bom_id)
+            bom = db.session.get(BillOfMaterials, wo.bom_id)
         
         if not bom and wo.product_id:
             # Find active BOM for this product
@@ -3144,7 +3385,7 @@ def update_work_order_bom_item(wo_id, item_id):
             item.quantity_actual = data['quantity_actual']
         
         # Recalculate planned quantity
-        wo = WorkOrder.query.get(wo_id)
+        wo = db.session.get(WorkOrder, wo_id)
         if wo:
             wo_quantity = float(wo.quantity) if wo.quantity else 0
             qty_per_unit = float(item.quantity_per_unit) if item.quantity_per_unit else 0
@@ -3184,7 +3425,7 @@ def add_work_order_bom_item(wo_id):
     try:
         user_id = get_jwt_identity()
         
-        wo = WorkOrder.query.get(wo_id)
+        wo = db.session.get(WorkOrder, wo_id)
         if not wo:
             return jsonify({'error': 'Work order not found'}), 404
         
@@ -3202,7 +3443,7 @@ def add_work_order_bom_item(wo_id):
         # If material_id provided, get details from material
         material_id = data.get('material_id')
         if material_id:
-            material = Material.query.get(material_id)
+            material = db.session.get(Material, material_id)
             if material:
                 item_name = material.name
                 item_code = material.code
@@ -3277,7 +3518,7 @@ def delete_work_order_bom_item(wo_id, item_id):
 def reset_work_order_bom(wo_id):
     """Delete all WO BOM items and re-copy from master BOM"""
     try:
-        wo = WorkOrder.query.get(wo_id)
+        wo = db.session.get(WorkOrder, wo_id)
         if not wo:
             return jsonify({'error': 'Work order not found'}), 404
         

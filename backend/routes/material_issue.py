@@ -65,7 +65,7 @@ def get_material_issues():
 def get_material_issue(id):
     """Get single material issue with items"""
     try:
-        mi = MaterialIssue.query.get(id)
+        mi = db.session.get(MaterialIssue, id)
         if not mi:
             return error_response('Material issue not found'), 404
         
@@ -126,7 +126,7 @@ def create_material_issue():
         if not work_order_id:
             return error_response('Work order ID is required'), 400
         
-        wo = WorkOrder.query.get(work_order_id)
+        wo = db.session.get(WorkOrder, work_order_id)
         if not wo:
             return error_response('Work order not found'), 404
         
@@ -153,7 +153,7 @@ def create_material_issue():
         # Add items
         items_data = data.get('items', [])
         for idx, item_data in enumerate(items_data, 1):
-            material = Material.query.get(item_data['material_id'])
+            material = db.session.get(Material, item_data['material_id'])
             if not material:
                 continue
             
@@ -194,7 +194,7 @@ def create_material_issue_from_wo(work_order_id):
     try:
         user_id = int(get_jwt_identity())
         
-        wo = WorkOrder.query.get(work_order_id)
+        wo = db.session.get(WorkOrder, work_order_id)
         if not wo:
             return error_response('Work order not found'), 404
         
@@ -288,7 +288,7 @@ def approve_material_issue(id):
         
         user_id = int(get_jwt_identity())
         
-        mi = MaterialIssue.query.get(id)
+        mi = db.session.get(MaterialIssue, id)
         if not mi:
             return error_response('Material issue not found'), 404
         
@@ -354,7 +354,7 @@ def issue_materials(id):
         user_id = int(get_jwt_identity())
         data = request.get_json() or {}
         
-        mi = MaterialIssue.query.get(id)
+        mi = db.session.get(MaterialIssue, id)
         if not mi:
             return error_response('Material issue not found'), 404
         
@@ -380,7 +380,7 @@ def issue_materials(id):
         fifo_details = []
         
         for issue_data in items_to_issue:
-            item = MaterialIssueItem.query.get(issue_data['item_id'])
+            item = db.session.get(MaterialIssueItem, issue_data['item_id'])
             if not item or item.material_issue_id != id:
                 continue
             
@@ -467,7 +467,7 @@ def cancel_material_issue(id):
     try:
         from utils.fifo_helper import fifo_release_reservation
         
-        mi = MaterialIssue.query.get(id)
+        mi = db.session.get(MaterialIssue, id)
         if not mi:
             return error_response('Material issue not found'), 404
         
@@ -503,7 +503,7 @@ def cancel_material_issue(id):
 def get_wo_material_requirements(work_order_id):
     """Get material requirements for a work order based on BOM"""
     try:
-        wo = WorkOrder.query.get(work_order_id)
+        wo = db.session.get(WorkOrder, work_order_id)
         if not wo:
             return error_response('Work order not found'), 404
         
@@ -568,7 +568,7 @@ def reserve_materials_for_wo(work_order_id):
         
         user_id = int(get_jwt_identity())
         
-        wo = WorkOrder.query.get(work_order_id)
+        wo = db.session.get(WorkOrder, work_order_id)
         if not wo:
             return error_response('Work order not found'), 404
         

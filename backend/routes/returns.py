@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, CustomerReturn, ReturnItem, ReturnQCRecord, ReturnDisposition
 from models import SalesOrder, Customer, Product, User, Inventory, WasteRecord
@@ -129,7 +129,7 @@ def create_return():
 def get_return(id):
     """Get return details"""
     try:
-        customer_return = CustomerReturn.query.get_or_404(id)
+        customer_return = db.session.get(CustomerReturn, id) or abort(404)
         
         return jsonify({
             'id': customer_return.id,
@@ -193,7 +193,7 @@ def create_qc_inspection():
         user_id = get_jwt_identity()
         return_id = request.view_args['return_id']
         
-        customer_return = CustomerReturn.query.get_or_404(return_id)
+        customer_return = db.session.get(CustomerReturn, return_id) or abort(404)
         
         # Create QC record
         qc_record = ReturnQCRecord(
@@ -227,7 +227,7 @@ def create_qc_inspection():
         
         # Update individual items if specified
         if data.get('return_item_id'):
-            return_item = ReturnItem.query.get(data['return_item_id'])
+            return_item = db.session.get(ReturnItem, data['return_item_id'])
             if return_item:
                 return_item.qc_status = qc_record.overall_result
                 return_item.qc_quantity_approved = qc_record.quantity_approved
@@ -258,7 +258,7 @@ def create_disposition():
         user_id = get_jwt_identity()
         return_id = request.view_args['return_id']
         
-        customer_return = CustomerReturn.query.get_or_404(return_id)
+        customer_return = db.session.get(CustomerReturn, return_id) or abort(404)
         
         for disposition_data in data.get('dispositions', []):
             disposition = ReturnDisposition(
@@ -276,7 +276,7 @@ def create_disposition():
             db.session.add(disposition)
             
             # Update return item
-            return_item = ReturnItem.query.get(disposition_data['return_item_id'])
+            return_item = db.session.get(ReturnItem, disposition_data['return_item_id'])
             if return_item:
                 return_item.disposition = disposition_data['disposition_type']
                 return_item.warehouse_location = disposition_data.get('warehouse_location')
@@ -309,7 +309,7 @@ def _process_disposition(disposition, return_item):
             ).first()
             
             if inventory:
-                inventory.quantity += disposition.quantity
+                inventory.quantity_on_hand += disposition.quantity
             else:
                 inventory = Inventory(
                     product_id=return_item.product_id,

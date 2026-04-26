@@ -2,7 +2,7 @@
 Extended Product Routes - Additional endpoints for new schema
 """
 
-from flask import Blueprint, request, jsonify, send_file
+from flask import Blueprint, request, jsonify, send_file, abort
 from models import db
 from models.product_excel_schema import ProductNew, ProductVersion
 from datetime import datetime, timedelta
@@ -291,7 +291,7 @@ def get_product_suggestions():
 def calculate_material_requirements(product_id):
     """Calculate material requirements for a product"""
     try:
-        product = ProductNew.query.get_or_404(product_id)
+        product = db.session.get(ProductNew, product_id) or abort(404)
         quantity = request.args.get('quantity', 1, type=float)
         
         # Calculate requirements based on product specifications

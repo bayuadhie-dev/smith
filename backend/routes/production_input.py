@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime, date, time
 from sqlalchemy import func, and_, or_
@@ -338,7 +338,7 @@ def update_shift_production(production_id):
     try:
         data = request.get_json()
         
-        shift_production = ShiftProduction.query.get_or_404(production_id)
+        shift_production = db.session.get(ShiftProduction, production_id) or abort(404)
         
         # Update fields
         if 'actual_quantity' in data:
@@ -500,7 +500,7 @@ def create_downtime_record():
         
         # Update shift production downtime minutes
         if duration_minutes:
-            shift_production = ShiftProduction.query.get(data['shift_production_id'])
+            shift_production = db.session.get(ShiftProduction, data['shift_production_id'])
             if shift_production:
                 # Convert to float to avoid Decimal + float conflict
                 current_downtime = float(shift_production.downtime_minutes or 0)

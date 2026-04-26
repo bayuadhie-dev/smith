@@ -11,7 +11,77 @@ materials_bp = Blueprint('materials', __name__)
 @materials_bp.route('/', methods=['GET'])
 @jwt_required()
 def get_materials():
-    """Get all materials with filtering and pagination"""
+    """
+    Get all materials with filtering and pagination
+    ---
+    tags:
+      - Materials
+    summary: Get all materials
+    description: Retrieve all materials with filtering, search, and pagination
+    security:
+      - BearerAuth: []
+    parameters:
+      - in: query
+        name: page
+        type: integer
+        default: 1
+        description: Page number
+      - in: query
+        name: per_page
+        type: integer
+        default: 20
+        description: Items per page
+      - in: query
+        name: type
+        type: string
+        description: Filter by material type
+      - in: query
+        name: search
+        type: string
+        description: Search by name, code, or description
+    responses:
+      200:
+        description: Materials retrieved successfully
+        schema:
+          type: object
+          properties:
+            materials:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  code:
+                    type: string
+                  name:
+                    type: string
+                  material_type:
+                    type: string
+                  category:
+                    type: string
+                  unit_of_measure:
+                    type: string
+                  cost_per_unit:
+                    type: number
+                  supplier:
+                    type: string
+                  is_active:
+                    type: boolean
+            pagination:
+              type: object
+              properties:
+                page:
+                  type: integer
+                pages:
+                  type: integer
+                total:
+                  type: integer
+      401:
+        description: Unauthorized
+      500:
+        description: Server error
+    """
     try:
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 20, type=int)
@@ -68,7 +138,37 @@ def get_materials():
 @materials_bp.route('/types', methods=['GET'])
 @jwt_required()
 def get_material_types():
-    """Get material types with counts"""
+    """
+    Get material types with counts
+    ---
+    tags:
+      - Materials
+    summary: Get material types
+    description: Retrieve all material types with their counts
+    security:
+      - BearerAuth: []
+    responses:
+      200:
+        description: Material types retrieved successfully
+        schema:
+          type: object
+          properties:
+            types:
+              type: array
+              items:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  count:
+                    type: integer
+                  label:
+                    type: string
+      401:
+        description: Unauthorized
+      500:
+        description: Server error
+    """
     try:
         types = db.session.query(
             Material.material_type,

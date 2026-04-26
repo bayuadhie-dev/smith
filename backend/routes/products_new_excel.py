@@ -393,7 +393,7 @@ def get_dashboard():
         
         recent_changes = []
         for version in recent_versions:
-            product = ProductNew.query.get(version.product_id)
+            product = db.session.get(ProductNew, version.product_id)
             recent_changes.append({
                 'product_kode': product.code if product else 'Unknown',
                 'product_name': product.name if product else 'Unknown',

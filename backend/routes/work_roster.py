@@ -129,7 +129,7 @@ def get_work_rosters():
 def get_work_roster(id):
     """Get single weekly work roster with all assignments grouped by shift"""
     try:
-        roster = WorkRoster.query.get(id)
+        roster = db.session.get(WorkRoster, id)
         if not roster:
             return jsonify({'success': False, 'error': 'Roster not found'}), 404
         
@@ -379,7 +379,7 @@ def update_work_roster(id):
     """Update weekly work roster and assignments"""
     try:
         user_id = get_jwt_identity()
-        roster = WorkRoster.query.get(id)
+        roster = db.session.get(WorkRoster, id)
         
         if not roster:
             return jsonify({'success': False, 'error': 'Roster not found'}), 404
@@ -443,7 +443,7 @@ def update_work_roster(id):
 def delete_work_roster(id):
     """Delete work roster"""
     try:
-        roster = WorkRoster.query.get(id)
+        roster = db.session.get(WorkRoster, id)
         if not roster:
             return jsonify({'success': False, 'error': 'Roster not found'}), 404
         
@@ -704,7 +704,7 @@ def add_employee_skill(employee_id):
 def delete_employee_skill(id):
     """Delete employee skill"""
     try:
-        skill = EmployeeSkill.query.get(id)
+        skill = db.session.get(EmployeeSkill, id)
         if not skill:
             return jsonify({'success': False, 'error': 'Skill not found'}), 404
         

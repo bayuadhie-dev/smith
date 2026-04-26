@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, MaintenanceSchedule, MaintenanceRecord, MaintenanceTask, EquipmentHistory
 from models.production import Machine
@@ -31,16 +31,16 @@ def get_work_orders():
         return jsonify({
             'work_orders': [{
                 'id': wo.id,
-                'work_order_number': wo.maintenance_number,
-                'title': wo.description[:50] + '...' if len(wo.description) > 50 else wo.description,
+                'work_order_number': wo.record_number,
+                'title': (wo.problem_description or '')[:50] + ('...' if wo.problem_description and len(wo.problem_description) > 50 else ''),
                 'machine_name': wo.machine.name if wo.machine else 'N/A',
-                'priority': wo.priority,
+                'priority': getattr(wo, 'priority', 'medium'),
                 'status': wo.status,
-                'assigned_to': wo.assigned_technician.full_name if wo.assigned_technician else 'Unassigned',
-                'scheduled_date': wo.scheduled_date.isoformat() if wo.scheduled_date else None,
+                'assigned_to': wo.performed_by_user.full_name if wo.performed_by_user else 'Unassigned',
+                'scheduled_date': wo.maintenance_date.isoformat() if wo.maintenance_date else None,
                 'created_at': wo.created_at.isoformat(),
-                'estimated_hours': wo.estimated_completion_time,
-                'actual_hours': wo.actual_completion_time
+                'estimated_hours': float(wo.duration_hours) if wo.duration_hours else None,
+                'actual_hours': None
             } for wo in work_orders.items],
             'total': work_orders.total,
             'pages': work_orders.pages,
@@ -56,19 +56,18 @@ def create_work_order():
         data = request.get_json()
         user_id = int(get_jwt_identity())
         
-        work_order_number = generate_number('WO', MaintenanceRecord, 'maintenance_number')
+        work_order_number = generate_number('WO', MaintenanceRecord, 'record_number')
         
         work_order = MaintenanceRecord(
-            maintenance_number=work_order_number,
+            record_number=work_order_number,
             machine_id=data['machine_id'],
             maintenance_type=data['maintenance_type'],
-            priority=data['priority'],
-            description=data['description'],
-            scheduled_date=datetime.fromisoformat(data['scheduled_date']) if data.get('scheduled_date') else None,
-            assigned_technician_id=data.get('assigned_technician_id'),
-            estimated_completion_time=data.get('estimated_hours', 0),
-            status='pending',
-            requested_by=user_id
+            problem_description=data.get('description', ''),
+            maintenance_date=datetime.fromisoformat(data['scheduled_date']) if data.get('scheduled_date') else get_local_now(),
+            performed_by=data.get('assigned_technician_id') or data.get('assigned_to') or user_id,
+            duration_hours=data.get('estimated_hours', 0),
+            status='scheduled',
+            notes=data.get('notes')
         )
         
         db.session.add(work_order)
@@ -77,7 +76,7 @@ def create_work_order():
         return jsonify({
             'message': 'Work order created successfully',
             'work_order_id': work_order.id,
-            'work_order_number': work_order_number
+            'work_order_number': work_order.record_number
         }), 201
     except Exception as e:
         db.session.rollback()
@@ -87,25 +86,25 @@ def create_work_order():
 @jwt_required()
 def get_work_order(work_order_id):
     try:
-        work_order = MaintenanceRecord.query.get_or_404(work_order_id)
+        work_order = db.session.get(MaintenanceRecord, work_order_id) or abort(404)
         
         return jsonify({
             'work_order': {
                 'id': work_order.id,
-                'work_order_number': work_order.maintenance_number,
+                'work_order_number': work_order.record_number,
                 'machine_id': work_order.machine_id,
                 'machine_name': work_order.machine.name if work_order.machine else 'N/A',
                 'maintenance_type': work_order.maintenance_type,
-                'priority': work_order.priority,
+                'priority': getattr(work_order, 'priority', 'medium'),
                 'status': work_order.status,
-                'description': work_order.description,
-                'scheduled_date': work_order.scheduled_date.isoformat() if work_order.scheduled_date else None,
-                'completion_date': work_order.completion_date.isoformat() if work_order.completion_date else None,
-                'assigned_technician_id': work_order.assigned_technician_id,
-                'assigned_technician': work_order.assigned_technician.full_name if work_order.assigned_technician else None,
-                'estimated_hours': work_order.estimated_completion_time,
-                'actual_hours': work_order.actual_completion_time,
-                'cost': work_order.cost,
+                'description': work_order.problem_description,
+                'scheduled_date': work_order.maintenance_date.isoformat() if work_order.maintenance_date else None,
+                'completion_date': work_order.end_time.isoformat() if work_order.end_time else None,
+                'assigned_technician_id': work_order.performed_by,
+                'assigned_technician': work_order.performed_by_user.full_name if work_order.performed_by_user else None,
+                'estimated_hours': float(work_order.duration_hours) if work_order.duration_hours else None,
+                'actual_hours': None,
+                'cost': float(work_order.cost) if work_order.cost else 0,
                 'notes': work_order.notes,
                 'created_at': work_order.created_at.isoformat()
             }
@@ -117,7 +116,7 @@ def get_work_order(work_order_id):
 @jwt_required()
 def update_work_order(work_order_id):
     try:
-        work_order = MaintenanceRecord.query.get_or_404(work_order_id)
+        work_order = db.session.get(MaintenanceRecord, work_order_id) or abort(404)
         data = request.get_json()
         
         # Update fields
@@ -128,15 +127,17 @@ def update_work_order(work_order_id):
         if 'priority' in data:
             work_order.priority = data['priority']
         if 'description' in data:
-            work_order.description = data['description']
+            work_order.problem_description = data['description']
         if 'scheduled_date' in data:
-            work_order.scheduled_date = datetime.fromisoformat(data['scheduled_date']) if data['scheduled_date'] else None
+            work_order.maintenance_date = datetime.fromisoformat(data['scheduled_date']) if data['scheduled_date'] else None
         if 'assigned_technician_id' in data:
-            work_order.assigned_technician_id = data['assigned_technician_id']
+            work_order.performed_by = data['assigned_technician_id']
+        elif 'assigned_to' in data:
+            work_order.performed_by = data['assigned_to']
         if 'estimated_hours' in data:
-            work_order.estimated_completion_time = data['estimated_hours']
+            work_order.duration_hours = data['estimated_hours']
         if 'actual_hours' in data:
-            work_order.actual_completion_time = data['actual_hours']
+            pass  # No direct field for actual_hours
         if 'cost' in data:
             work_order.cost = data['cost']
         if 'notes' in data:
@@ -144,7 +145,7 @@ def update_work_order(work_order_id):
         if 'status' in data:
             work_order.status = data['status']
             if data['status'] == 'completed':
-                work_order.completion_date = get_local_now()
+                work_order.end_time = get_local_now()
         
         db.session.commit()
         return jsonify({'message': 'Work order updated successfully'}), 200
@@ -180,7 +181,7 @@ def create_parts_request():
         user_id = int(get_jwt_identity())
         
         # Mock response for now - will be replaced with actual implementation
-        request_number = generate_number('PR', MaintenanceRecord, 'maintenance_number')
+        request_number = generate_number('PR', MaintenanceRecord, 'record_number')
         
         return jsonify({
             'message': 'Parts request created successfully',

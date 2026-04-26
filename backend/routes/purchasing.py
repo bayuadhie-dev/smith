@@ -108,7 +108,7 @@ def create_supplier():
 @jwt_required()
 def get_supplier(id):
     try:
-        supplier = Supplier.query.get(id)
+        supplier = db.session.get(Supplier, id)
         if not supplier:
             return jsonify(error_response('api.error', error_code=404)), 404
         
@@ -140,7 +140,7 @@ def get_supplier(id):
 @jwt_required()
 def update_supplier(id):
     try:
-        supplier = Supplier.query.get(id)
+        supplier = db.session.get(Supplier, id)
         if not supplier:
             return jsonify(error_response('api.error', error_code=404)), 404
         
@@ -191,7 +191,7 @@ def update_supplier(id):
 @jwt_required()
 def delete_supplier(id):
     try:
-        supplier = Supplier.query.get(id)
+        supplier = db.session.get(Supplier, id)
         if not supplier:
             return jsonify(error_response('api.error', error_code=404)), 404
         
@@ -244,7 +244,7 @@ def create_purchase_order():
         supplier_id = data.get('supplier_id')
         if supplier_id:
             try:
-                supplier = Supplier.query.get(supplier_id)
+                supplier = db.session.get(Supplier, supplier_id)
                 if not supplier:
                     return jsonify({'error': 'Supplier not found'}), 404
                 if not supplier.is_active:
@@ -316,7 +316,7 @@ def create_purchase_order():
 @jwt_required()
 def get_purchase_order(id):
     try:
-        po = PurchaseOrder.query.get(id)
+        po = db.session.get(PurchaseOrder, id)
         if not po:
             return jsonify(error_response('api.error', error_code=404)), 404
         
@@ -384,19 +384,82 @@ def create_grn():
         db.session.add(grn)
         db.session.flush()
         
+        from models import Inventory, InventoryMovement
+        
         for item_data in data.get('items', []):
+            product_id = item_data.get('product_id')
+            material_id = item_data.get('material_id')
+            location_id = item_data.get('location_id')
+            quantity_received = float(item_data['quantity_received'])
+            quantity_accepted = float(item_data.get('quantity_accepted', quantity_received))
+            uom = item_data['uom']
+            batch_number = item_data.get('batch_number')
+
             grn_item = GRNItem(
                 grn_id=grn.id,
                 po_item_id=item_data['po_item_id'],
-                product_id=item_data['product_id'],
+                product_id=product_id,
+                material_id=material_id,
                 quantity_ordered=item_data['quantity_ordered'],
-                quantity_received=item_data['quantity_received'],
-                quantity_accepted=item_data.get('quantity_accepted', item_data['quantity_received']),
-                uom=item_data['uom'],
-                batch_number=item_data.get('batch_number'),
-                location_id=item_data.get('location_id')
+                quantity_received=quantity_received,
+                quantity_accepted=quantity_accepted,
+                uom=uom,
+                batch_number=batch_number,
+                location_id=location_id
             )
             db.session.add(grn_item)
+
+            if location_id and (product_id or material_id):
+                # Process inventory update
+                inv_query = Inventory.query.filter_by(location_id=location_id)
+                if product_id:
+                    inv_query = inv_query.filter_by(product_id=product_id)
+                else:
+                    inv_query = inv_query.filter_by(material_id=material_id)
+                
+                if batch_number:
+                    inv_query = inv_query.filter_by(batch_number=batch_number)
+                
+                inventory = inv_query.first()
+                
+                if not inventory:
+                    inventory = Inventory(
+                        product_id=product_id,
+                        material_id=material_id,
+                        location_id=location_id,
+                        quantity_on_hand=0,
+                        quantity_available=0,
+                        batch_number=batch_number,
+                        stock_status='available',
+                        grn_id=grn.id
+                    )
+                    db.session.add(inventory)
+                
+                # Update quantity
+                inventory.quantity_on_hand = float(inventory.quantity_on_hand) + quantity_accepted
+                inventory.quantity_available = float(inventory.quantity_available) + quantity_accepted
+                inventory.updated_at = get_local_now()
+                
+                # Ensure the inventory record is saved so we can get its ID for movement
+                db.session.flush()
+                
+                # Record movement
+                movement = InventoryMovement(
+                    inventory_id=inventory.id,
+                    product_id=product_id,
+                    material_id=material_id,
+                    location_id=location_id,
+                    movement_type='stock_in',
+                    movement_date=get_local_now().date(),
+                    quantity=quantity_accepted,
+                    reference_number=grn_number,
+                    reference_type='purchase_order',
+                    reference_id=grn.id,
+                    batch_number=batch_number,
+                    notes=f"Receipt from GRN {grn_number}",
+                    created_by=user_id
+                )
+                db.session.add(movement)
         
         db.session.commit()
         
@@ -421,7 +484,7 @@ def get_po_approvals(po_id):
                 'approval_level': a.approval_level,
                 'approver': {
                     'id': a.approver.id,
-                    'name': a.approver.name,
+                    'name': a.approver.full_name if a.approver else None,
                     'email': a.approver.email
                 },
                 'status': a.status,
@@ -455,7 +518,7 @@ def approve_purchase_order(po_id):
         approval.approved_at = get_local_now()
         
         # Update PO status if all approvals are complete
-        po = PurchaseOrder.query.get(po_id)
+        po = db.session.get(PurchaseOrder, po_id)
         if approval.status == 'approved':
             # Check if all required approvals are complete
             pending_approvals = PurchaseApproval.query.filter_by(
@@ -484,7 +547,7 @@ def submit_for_approval(po_id):
         data = request.get_json()
         approver_ids = data.get('approver_ids', [])
         
-        po = PurchaseOrder.query.get(po_id)
+        po = db.session.get(PurchaseOrder, po_id)
         if not po:
             return jsonify(error_response('api.error', error_code=404)), 404
         
@@ -534,7 +597,7 @@ def get_rfqs():
                 'issue_date': r.issue_date.isoformat(),
                 'closing_date': r.closing_date.isoformat(),
                 'status': r.status,
-                'created_by': r.created_by_user.name,
+                'created_by': r.created_by_user.full_name if r.created_by_user else None,
                 'quotes_count': len(r.quotes)
             } for r in rfqs.items],
             'total': rfqs.total,
@@ -592,7 +655,7 @@ def create_rfq():
 @jwt_required()
 def get_rfq(id):
     try:
-        rfq = PurchaseRFQ.query.get(id)
+        rfq = db.session.get(PurchaseRFQ, id)
         if not rfq:
             return jsonify(error_response('api.error', error_code=404)), 404
         
@@ -604,7 +667,7 @@ def get_rfq(id):
             'issue_date': rfq.issue_date.isoformat(),
             'closing_date': rfq.closing_date.isoformat(),
             'status': rfq.status,
-            'created_by': rfq.created_by_user.name,
+            'created_by': rfq.created_by_user.full_name if rfq.created_by_user else None,
             'items': [{
                 'id': i.id,
                 'line_number': i.line_number,
@@ -839,8 +902,8 @@ def get_contracts():
                 'status': c.status,
                 'currency': c.currency,
                 'total_value': float(c.total_value) if c.total_value else None,
-                'created_by': c.created_by_user.name,
-                'approved_by': c.approved_by_user.name if c.approved_by_user else None
+                'created_by': c.created_by_user.full_name if c.created_by_user else None,
+                'approved_by': c.approved_by_user.full_name if c.approved_by_user else None
             } for c in contracts.items],
             'total': contracts.total,
             'pages': contracts.pages,
@@ -910,7 +973,7 @@ def create_contract():
 @jwt_required()
 def get_contract(id):
     try:
-        contract = SupplierContract.query.get(id)
+        contract = db.session.get(SupplierContract, id)
         if not contract:
             return jsonify(error_response('api.error', error_code=404)), 404
         
@@ -934,8 +997,8 @@ def get_contract(id):
             'terms_conditions': contract.terms_conditions,
             'auto_renewal': contract.auto_renewal,
             'renewal_period_months': contract.renewal_period_months,
-            'created_by': contract.created_by_user.name,
-            'approved_by': contract.approved_by_user.name if contract.approved_by_user else None,
+            'created_by': contract.created_by_user.full_name if contract.created_by_user else None,
+            'approved_by': contract.approved_by_user.full_name if contract.approved_by_user else None,
             'items': [{
                 'id': i.id,
                 'line_number': i.line_number,
@@ -958,7 +1021,7 @@ def get_contract(id):
 @jwt_required()
 def activate_contract(id):
     try:
-        contract = SupplierContract.query.get(id)
+        contract = db.session.get(SupplierContract, id)
         if not contract:
             return jsonify(error_response('api.error', error_code=404)), 404
         

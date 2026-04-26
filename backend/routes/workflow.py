@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db
 from models.workflow_integration import WorkflowStep, MRPRequirement, ProductionBuffer, WorkflowAutomation
@@ -115,13 +115,13 @@ def get_mrp_requirements():
 def analyze_mrp_requirement(requirement_id):
     """Manually trigger analysis for specific MRP requirement"""
     try:
-        requirement = MRPRequirement.query.get_or_404(requirement_id)
+        requirement = db.session.get(MRPRequirement, requirement_id) or abort(404)
         
         # Get current inventory
         inventory = Inventory.query.filter_by(product_id=requirement.product_id).first()
         
         if inventory:
-            requirement.current_stock = inventory.quantity
+            requirement.current_stock = inventory.quantity_on_hand
             requirement.reserved_stock = inventory.reserved_quantity
             requirement.available_stock = inventory.available_quantity
         
@@ -204,7 +204,7 @@ def get_production_buffer():
 def move_buffer_to_warehouse(buffer_id):
     """Move buffer stock to warehouse"""
     try:
-        buffer = ProductionBuffer.query.get_or_404(buffer_id)
+        buffer = db.session.get(ProductionBuffer, buffer_id) or abort(404)
         data = request.get_json()
         
         warehouse_location_id = data.get('warehouse_location_id')
@@ -291,7 +291,7 @@ def get_workflow_steps():
 def trigger_return_workflow(return_id):
     """Trigger workflow for customer return processing"""
     try:
-        customer_return = CustomerReturn.query.get_or_404(return_id)
+        customer_return = db.session.get(CustomerReturn, return_id) or abort(404)
         
         # Create workflow steps for return processing
         steps = [
@@ -399,7 +399,7 @@ def manual_create_work_order_from_sales():
         product_id = data.get('product_id')
         quantity = data.get('quantity')
         
-        sales_order = SalesOrder.query.get_or_404(sales_order_id)
+        sales_order = db.session.get(SalesOrder, sales_order_id) or abort(404)
         
         # Create work order
         work_order = WorkOrder(
@@ -435,7 +435,7 @@ def manual_trigger_quality_inspection():
         data = request.get_json()
         shift_production_id = data.get('shift_production_id')
         
-        shift_production = ShiftProduction.query.get_or_404(shift_production_id)
+        shift_production = db.session.get(ShiftProduction, shift_production_id) or abort(404)
         
         # Create quality inspection
         inspection = QualityInspection(

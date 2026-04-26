@@ -36,6 +36,8 @@ def register_routes(app):
     from .staff_leave import staff_leave_bp
     from .hr_payroll import hr_payroll_bp
     from .live_monitoring import live_monitoring_bp
+    from .desk_minimal import desk_bp
+    from .executive_dashboard import executive_dashboard_bp
     
     # Register all blueprints
     app.register_blueprint(health_bp, url_prefix='/api')
@@ -69,6 +71,8 @@ def register_routes(app):
     app.register_blueprint(staff_leave_bp, url_prefix='/api/staff-leave')
     app.register_blueprint(hr_payroll_bp, url_prefix='/api/hr/payroll')
     app.register_blueprint(live_monitoring_bp, url_prefix='/api/live-monitoring')
+    app.register_blueprint(desk_bp, url_prefix='/api/desk')
+    app.register_blueprint(executive_dashboard_bp, url_prefix='/api/executive')
     print("✓ Converting routes registered")
     print("✓ Live Monitoring routes registered")
     print("✓ Staff Leave routes registered")
@@ -77,8 +81,9 @@ def register_routes(app):
     # API documentation endpoint
     @app.route('/api/docs')
     def api_docs():
+        from company_config.company import COMPANY_NAME
         return {
-            'application': 'PT. Gratia Makmur Sentosa ERP System',
+            'application': f'{COMPANY_NAME} ERP System',
             'version': '1.0.0',
             'description': 'Complete ERP System for Nonwoven Manufacturing',
             'endpoints': {
@@ -111,8 +116,9 @@ def register_routes(app):
     @app.route('/')
     @app.route('/api')
     def index():
+        from company_config.company import COMPANY_NAME
         return {
-            'message': 'PT. Gratia Makmur Sentosa ERP API',
+            'message': f'{COMPANY_NAME} ERP API',
             'status': 'running',
             'version': '1.0.0',
             'documentation': '/api/docs'

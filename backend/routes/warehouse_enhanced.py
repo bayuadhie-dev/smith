@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, Product, WarehouseZone, WarehouseLocation, Inventory, InventoryMovement
 from utils.i18n import success_response, error_response, get_message
@@ -336,7 +336,7 @@ def acknowledge_alert(alert_id):
     """Acknowledge a warehouse alert"""
     try:
         user_id = get_jwt_identity()
-        alert = WarehouseAlert.query.get_or_404(alert_id)
+        alert = db.session.get(WarehouseAlert, alert_id) or abort(404)
         
         alert.status = 'acknowledged'
         alert.acknowledged_by = user_id
@@ -358,7 +358,7 @@ def resolve_alert(alert_id):
         user_id = get_jwt_identity()
         data = request.get_json()
         
-        alert = WarehouseAlert.query.get_or_404(alert_id)
+        alert = db.session.get(WarehouseAlert, alert_id) or abort(404)
         
         alert.status = 'resolved'
         alert.resolved_by = user_id
@@ -460,8 +460,8 @@ def get_enhanced_stock_summary():
         stock_by_category = db.session.query(
             Product.category,
             func.count(func.distinct(Inventory.product_id)).label('product_count'),
-            func.sum(Inventory.quantity).label('total_quantity'),
-            func.sum(Inventory.quantity * Product.cost).label('total_value')
+            func.sum(Inventory.quantity_on_hand).label('total_quantity'),
+            func.sum(Inventory.quantity_on_hand * Product.cost).label('total_value')
         ).join(Inventory).group_by(Product.category).all()
         
         category_data = []
@@ -478,7 +478,7 @@ def get_enhanced_stock_summary():
             WarehouseZone.name,
             WarehouseZone.material_type,
             func.count(func.distinct(Inventory.product_id)).label('product_count'),
-            func.sum(Inventory.quantity).label('total_quantity')
+            func.sum(Inventory.quantity_on_hand).label('total_quantity')
         ).join(WarehouseLocation).join(Inventory).group_by(
             WarehouseZone.id, WarehouseZone.name, WarehouseZone.material_type
         ).all()

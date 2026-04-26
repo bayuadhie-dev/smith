@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db
 from models.production import WorkOrder, WorkOrderStatusHistory, ShiftProduction, Machine
@@ -117,7 +117,7 @@ def get_work_orders_monitoring():
 def get_work_order_timeline(wo_id):
     """Get status timeline for a work order"""
     try:
-        wo = WorkOrder.query.get_or_404(wo_id)
+        wo = db.session.get(WorkOrder, wo_id) or abort(404)
         
         timeline = []
         for history in wo.status_history:
@@ -145,7 +145,7 @@ def get_work_order_timeline(wo_id):
 def get_breakdown_impact(wo_id):
     """Get machine breakdown impact analysis for a work order"""
     try:
-        wo = WorkOrder.query.get_or_404(wo_id)
+        wo = db.session.get(WorkOrder, wo_id) or abort(404)
         
         if not wo.machine_id:
             return jsonify({'error': 'Work order has no assigned machine'}), 400

@@ -113,7 +113,7 @@ def get_projects():
 def get_project(id):
     """Get single R&D project with details"""
     try:
-        project = RNDProject.query.get(id)
+        project = db.session.get(RNDProject, id)
         if not project:
             return jsonify({'error': 'Project not found'}), 404
         
@@ -168,7 +168,7 @@ def create_project():
 def update_project(id):
     """Update R&D project"""
     try:
-        project = RNDProject.query.get(id)
+        project = db.session.get(RNDProject, id)
         if not project:
             return jsonify({'error': 'Project not found'}), 404
         
@@ -210,7 +210,7 @@ def update_project(id):
 def delete_project(id):
     """Delete R&D project"""
     try:
-        project = RNDProject.query.get(id)
+        project = db.session.get(RNDProject, id)
         if not project:
             return jsonify({'error': 'Project not found'}), 404
         
@@ -240,7 +240,7 @@ def request_stage_approval(id):
     """Request approval for stage transition"""
     try:
         user_id = get_jwt_identity()
-        project = RNDProject.query.get(id)
+        project = db.session.get(RNDProject, id)
         
         if not project:
             return jsonify({'error': 'Project not found'}), 404
@@ -297,7 +297,7 @@ def approve_stage(id):
     """Approve stage transition"""
     try:
         user_id = get_jwt_identity()
-        approval = RNDApprovalLog.query.get(id)
+        approval = db.session.get(RNDApprovalLog, id)
         
         if not approval:
             return jsonify({'error': 'Approval request not found'}), 404
@@ -342,7 +342,7 @@ def reject_stage(id):
     """Reject stage transition"""
     try:
         user_id = get_jwt_identity()
-        approval = RNDApprovalLog.query.get(id)
+        approval = db.session.get(RNDApprovalLog, id)
         
         if not approval:
             return jsonify({'error': 'Approval request not found'}), 404
@@ -408,7 +408,7 @@ def get_formulas(project_id):
 def get_formula(id):
     """Get single formula with details"""
     try:
-        formula = RNDFormula.query.get(id)
+        formula = db.session.get(RNDFormula, id)
         if not formula:
             return jsonify({'error': 'Formula not found'}), 404
         
@@ -426,7 +426,7 @@ def create_formula(project_id):
     """Create new formula for a project"""
     try:
         user_id = get_jwt_identity()
-        project = RNDProject.query.get(project_id)
+        project = db.session.get(RNDProject, project_id)
         
         if not project:
             return jsonify({'error': 'Project not found'}), 404
@@ -494,7 +494,7 @@ def create_formula(project_id):
 def update_formula(id):
     """Update formula"""
     try:
-        formula = RNDFormula.query.get(id)
+        formula = db.session.get(RNDFormula, id)
         if not formula:
             return jsonify({'error': 'Formula not found'}), 404
         
@@ -554,7 +554,7 @@ def update_formula(id):
 def select_formula(id):
     """Select formula as the chosen one for production"""
     try:
-        formula = RNDFormula.query.get(id)
+        formula = db.session.get(RNDFormula, id)
         if not formula:
             return jsonify({'error': 'Formula not found'}), 404
         
@@ -586,7 +586,7 @@ def select_formula(id):
 def delete_formula(id):
     """Delete formula"""
     try:
-        formula = RNDFormula.query.get(id)
+        formula = db.session.get(RNDFormula, id)
         if not formula:
             return jsonify({'error': 'Formula not found'}), 404
         
@@ -628,7 +628,7 @@ def get_experiments(formula_id):
 def get_experiment(id):
     """Get single experiment with details"""
     try:
-        experiment = RNDExperiment.query.get(id)
+        experiment = db.session.get(RNDExperiment, id)
         if not experiment:
             return jsonify({'error': 'Experiment not found'}), 404
         
@@ -646,7 +646,7 @@ def create_experiment(formula_id):
     """Create new experiment for a formula"""
     try:
         user_id = get_jwt_identity()
-        formula = RNDFormula.query.get(formula_id)
+        formula = db.session.get(RNDFormula, formula_id)
         
         if not formula:
             return jsonify({'error': 'Formula not found'}), 404
@@ -696,7 +696,7 @@ def update_experiment(id):
     """Update experiment"""
     try:
         user_id = get_jwt_identity()
-        experiment = RNDExperiment.query.get(id)
+        experiment = db.session.get(RNDExperiment, id)
         
         if not experiment:
             return jsonify({'error': 'Experiment not found'}), 404
@@ -747,7 +747,7 @@ def update_experiment(id):
 def delete_experiment(id):
     """Delete experiment"""
     try:
-        experiment = RNDExperiment.query.get(id)
+        experiment = db.session.get(RNDExperiment, id)
         if not experiment:
             return jsonify({'error': 'Experiment not found'}), 404
         
@@ -785,7 +785,7 @@ def convert_to_production_bom(id):
     """
     try:
         user_id = get_jwt_identity()
-        project = RNDProject.query.get(id)
+        project = db.session.get(RNDProject, id)
         
         if not project:
             return jsonify({'error': 'Project not found'}), 404
@@ -832,7 +832,7 @@ def convert_to_production_bom(id):
         # Get or create product
         product = None
         if project.target_product_id:
-            product = Product.query.get(project.target_product_id)
+            product = db.session.get(Product, project.target_product_id)
         
         if not product:
             # Create new product

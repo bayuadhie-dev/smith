@@ -2,7 +2,7 @@
 Weekly Production Plan Routes
 PPIC creates weekly production schedules with material shortage checking
 """
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, WeeklyProductionPlan, WeeklyProductionPlanItem, Product, Machine, WorkOrder, BillOfMaterials, BOMItem, Inventory, User
 from datetime import datetime, timedelta
@@ -64,7 +64,7 @@ def check_material_availability(product_id, quantity):
         
         # Get current stock
         inventory = Inventory.query.filter_by(product_id=item.material_id).first()
-        available_qty = float(inventory.quantity or 0) if inventory else 0
+        available_qty = float(inventory.quantity_on_hand or 0) if inventory else 0
         
         if available_qty < required_qty:
             shortage = {
@@ -117,7 +117,7 @@ def get_weekly_plans():
 def get_weekly_plan(id):
     """Get single weekly production plan with items"""
     try:
-        plan = WeeklyProductionPlan.query.get_or_404(id)
+        plan = db.session.get(WeeklyProductionPlan, id) or abort(404)
         return jsonify({'weekly_plan': plan.to_dict(include_items=True)}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -174,7 +174,7 @@ def create_weekly_plan():
 def update_weekly_plan(id):
     """Update weekly production plan"""
     try:
-        plan = WeeklyProductionPlan.query.get_or_404(id)
+        plan = db.session.get(WeeklyProductionPlan, id) or abort(404)
         data = request.get_json()
         
         if plan.status not in ['draft']:
@@ -200,7 +200,7 @@ def update_weekly_plan(id):
 def delete_weekly_plan(id):
     """Delete weekly production plan"""
     try:
-        plan = WeeklyProductionPlan.query.get_or_404(id)
+        plan = db.session.get(WeeklyProductionPlan, id) or abort(404)
         
         if plan.status not in ['draft']:
             return jsonify({'error': 'Can only delete draft plans'}), 400
@@ -222,7 +222,7 @@ def delete_weekly_plan(id):
 def add_plan_item(plan_id):
     """Add item to weekly production plan"""
     try:
-        plan = WeeklyProductionPlan.query.get_or_404(plan_id)
+        plan = db.session.get(WeeklyProductionPlan, plan_id) or abort(404)
         
         if plan.status not in ['draft']:
             return jsonify({'error': 'Can only add items to draft plans'}), 400
@@ -235,7 +235,7 @@ def add_plan_item(plan_id):
             return jsonify({'error': 'product_id and planned_quantity are required'}), 400
         
         # Check product exists
-        product = Product.query.get(product_id)
+        product = db.session.get(Product, product_id)
         if not product:
             return jsonify({'error': 'Product not found'}), 404
         
@@ -337,7 +337,7 @@ def delete_plan_item(plan_id, item_id):
 def check_plan_materials(id):
     """Re-check material availability for all items in plan"""
     try:
-        plan = WeeklyProductionPlan.query.get_or_404(id)
+        plan = db.session.get(WeeklyProductionPlan, id) or abort(404)
         
         results = []
         for item in plan.items.all():
@@ -380,7 +380,7 @@ def check_plan_materials(id):
 def submit_plan(id):
     """Submit plan for approval"""
     try:
-        plan = WeeklyProductionPlan.query.get_or_404(id)
+        plan = db.session.get(WeeklyProductionPlan, id) or abort(404)
         
         if plan.status != 'draft':
             return jsonify({'error': 'Only draft plans can be submitted'}), 400
@@ -407,7 +407,7 @@ def approve_plan(id):
     """Approve weekly plan"""
     try:
         current_user_id = get_jwt_identity()
-        plan = WeeklyProductionPlan.query.get_or_404(id)
+        plan = db.session.get(WeeklyProductionPlan, id) or abort(404)
         
         if plan.status != 'submitted':
             return jsonify({'error': 'Only submitted plans can be approved'}), 400
@@ -434,7 +434,7 @@ def reject_plan(id):
     """Reject weekly plan"""
     try:
         current_user_id = get_jwt_identity()
-        plan = WeeklyProductionPlan.query.get_or_404(id)
+        plan = db.session.get(WeeklyProductionPlan, id) or abort(404)
         
         if plan.status != 'submitted':
             return jsonify({'error': 'Only submitted plans can be rejected'}), 400
@@ -498,7 +498,7 @@ def generate_work_orders(id):
     """Generate work orders from approved plan"""
     try:
         current_user_id = get_jwt_identity()
-        plan = WeeklyProductionPlan.query.get_or_404(id)
+        plan = db.session.get(WeeklyProductionPlan, id) or abort(404)
         
         if plan.status != 'approved':
             return jsonify({'error': 'Only approved plans can generate work orders'}), 400

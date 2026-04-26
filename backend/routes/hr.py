@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, Employee, Department, ShiftSchedule, Attendance, Leave, EmployeeRoster, Role
 from utils.i18n import success_response, error_response, get_message
@@ -11,7 +11,37 @@ hr_bp = Blueprint('hr', __name__)
 @hr_bp.route('/positions', methods=['GET'])
 @jwt_required()
 def get_positions():
-    """Get all roles/positions for employee dropdown"""
+    """
+    Get all positions/roles
+    ---
+    tags:
+      - HR
+    summary: Get all positions
+    description: Retrieve all active positions/roles for employee dropdown
+    security:
+      - BearerAuth: []
+    responses:
+      200:
+        description: Positions retrieved successfully
+        schema:
+          type: object
+          properties:
+            positions:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  description:
+                    type: string
+      401:
+        description: Unauthorized
+      500:
+        description: Server error
+    """
     try:
         roles = Role.query.filter_by(is_active=True).order_by(Role.name).all()
         return jsonify({
@@ -27,6 +57,58 @@ def get_positions():
 @hr_bp.route('/employees', methods=['GET'])
 @jwt_required()
 def get_employees():
+    """
+    Get all employees with pagination
+    ---
+    tags:
+      - HR
+    summary: Get all employees
+    description: Retrieve all active employees with pagination
+    security:
+      - BearerAuth: []
+    parameters:
+      - in: query
+        name: page
+        type: integer
+        default: 1
+        description: Page number
+      - in: query
+        name: per_page
+        type: integer
+        default: 50
+        description: Items per page
+    responses:
+      200:
+        description: Employees retrieved successfully
+        schema:
+          type: object
+          properties:
+            employees:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  employee_number:
+                    type: string
+                  full_name:
+                    type: string
+                  department:
+                    type: string
+                  position:
+                    type: string
+                  employment_type:
+                    type: string
+                  status:
+                    type: string
+            total:
+              type: integer
+      401:
+        description: Unauthorized
+      500:
+        description: Server error
+    """
     try:
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 50, type=int)
@@ -51,6 +133,80 @@ def get_employees():
 @hr_bp.route('/employees', methods=['POST'])
 @jwt_required()
 def create_employee():
+    """
+    Create a new employee
+    ---
+    tags:
+      - HR
+    summary: Create new employee
+    description: Create a new employee record
+    security:
+      - BearerAuth: []
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - employee_number
+            - first_name
+            - last_name
+          properties:
+            employee_number:
+              type: string
+            nik:
+              type: string
+            first_name:
+              type: string
+            last_name:
+              type: string
+            email:
+              type: string
+              format: email
+            phone:
+              type: string
+            mobile:
+              type: string
+            date_of_birth:
+              type: string
+              format: date
+            gender:
+              type: string
+            marital_status:
+              type: string
+            address:
+              type: string
+            city:
+              type: string
+            postal_code:
+              type: string
+            department_id:
+              type: integer
+            position:
+              type: string
+            employment_type:
+              type: string
+            hire_date:
+              type: string
+              format: date
+            salary:
+              type: number
+    responses:
+      201:
+        description: Employee created successfully
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+            employee_id:
+              type: integer
+      401:
+        description: Unauthorized
+      500:
+        description: Server error
+    """
     try:
         data = request.get_json()
         
@@ -133,6 +289,20 @@ def record_attendance():
     try:
         data = request.get_json()
         
+        # Calculate late hours if shift_id and clock_in are provided
+        late_hours = 0
+        if data.get('shift_id') and data.get('clock_in'):
+            shift = db.session.get(ShiftSchedule, data['shift_id'])
+            if shift:
+                clock_in_dt = datetime.fromisoformat(data['clock_in'])
+                # Combine attendance date with shift start time for comparison
+                attendance_date = datetime.fromisoformat(data['attendance_date']).date()
+                shift_start_dt = datetime.combine(attendance_date, shift.start_time)
+                
+                if clock_in_dt > shift_start_dt:
+                    diff = clock_in_dt - shift_start_dt
+                    late_hours = diff.total_seconds() / 3600  # Convert to hours
+        
         attendance = Attendance(
             employee_id=data['employee_id'],
             attendance_date=datetime.fromisoformat(data['attendance_date']),
@@ -140,7 +310,8 @@ def record_attendance():
             clock_in=datetime.fromisoformat(data['clock_in']) if data.get('clock_in') else None,
             clock_out=datetime.fromisoformat(data['clock_out']) if data.get('clock_out') else None,
             status=data.get('status', 'present'),
-            worked_hours=data.get('worked_hours', 0)
+            worked_hours=data.get('worked_hours', 0),
+            late_hours=late_hours
         )
         
         db.session.add(attendance)
@@ -486,7 +657,7 @@ def copy_weekly_roster():
 @jwt_required()
 def delete_roster_assignment(roster_id):
     try:
-        roster = EmployeeRoster.query.get_or_404(roster_id)
+        roster = db.session.get(EmployeeRoster, roster_id) or abort(404)
         
         db.session.delete(roster)
         db.session.commit()
@@ -628,7 +799,7 @@ def get_employee_labor_cost_summary(employee_id):
         from models.wip_job_costing import JobCostEntry
         from sqlalchemy import func
         
-        employee = Employee.query.get_or_404(employee_id)
+        employee = db.session.get(Employee, employee_id) or abort(404)
         
         # Get date range from query params
         date_from = request.args.get('date_from')

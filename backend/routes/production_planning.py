@@ -3,7 +3,7 @@ Production Planning Routes (Master Production Schedule)
 Handles production planning, MPS, and work order generation
 """
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime, date, timedelta
 from sqlalchemy import and_, or_, func
@@ -95,7 +95,7 @@ def get_production_plans():
 def get_production_plan(plan_id):
     """Get single production plan details"""
     try:
-        plan = ProductionPlan.query.get_or_404(plan_id)
+        plan = db.session.get(ProductionPlan, plan_id) or abort(404)
         
         # Get related work orders
         work_orders = [{
@@ -197,7 +197,7 @@ def create_production_plan():
 def update_production_plan(plan_id):
     """Update production plan"""
     try:
-        plan = ProductionPlan.query.get_or_404(plan_id)
+        plan = db.session.get(ProductionPlan, plan_id) or abort(404)
         data = request.get_json()
         
         # Update fields
@@ -232,7 +232,7 @@ def update_production_plan(plan_id):
 def delete_production_plan(plan_id):
     """Delete production plan"""
     try:
-        plan = ProductionPlan.query.get_or_404(plan_id)
+        plan = db.session.get(ProductionPlan, plan_id) or abort(404)
         
         # Check if plan has work orders
         if plan.work_orders:
@@ -253,7 +253,7 @@ def delete_production_plan(plan_id):
 def approve_production_plan(plan_id):
     """Approve production plan"""
     try:
-        plan = ProductionPlan.query.get_or_404(plan_id)
+        plan = db.session.get(ProductionPlan, plan_id) or abort(404)
         user_id = int(get_jwt_identity())
         
         plan.status = 'approved'
@@ -278,7 +278,7 @@ def approve_production_plan(plan_id):
 def generate_work_orders_from_plan(plan_id):
     """Auto-generate work orders from production plan"""
     try:
-        plan = ProductionPlan.query.get_or_404(plan_id)
+        plan = db.session.get(ProductionPlan, plan_id) or abort(404)
         data = request.get_json()
         user_id = int(get_jwt_identity())
         
@@ -368,7 +368,7 @@ def _create_work_order(plan, quantity, scheduled_date, user_id):
 def create_plan_from_forecast(forecast_id):
     """Create production plan from sales forecast"""
     try:
-        forecast = SalesForecast.query.get_or_404(forecast_id)
+        forecast = db.session.get(SalesForecast, forecast_id) or abort(404)
         user_id = int(get_jwt_identity())
         
         # Check if forecast is approved

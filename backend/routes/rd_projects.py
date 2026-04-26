@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, ResearchProject, User
 from utils.i18n import success_response, error_response, get_message
@@ -136,7 +136,7 @@ def create_project():
 def get_project(id):
     """Get project details"""
     try:
-        project = ResearchProject.query.get_or_404(id)
+        project = db.session.get(ResearchProject, id) or abort(404)
         
         return jsonify({
             'id': project.id,
@@ -177,7 +177,7 @@ def get_project(id):
 def update_project(id):
     """Update project"""
     try:
-        project = ResearchProject.query.get_or_404(id)
+        project = db.session.get(ResearchProject, id) or abort(404)
         data = request.get_json()
         
         # Update fields
@@ -242,7 +242,7 @@ def update_project(id):
 def delete_project(id):
     """Delete project"""
     try:
-        project = ResearchProject.query.get_or_404(id)
+        project = db.session.get(ResearchProject, id) or abort(404)
         
         # Check if project has related data
         if project.experiments or project.product_developments or project.materials or project.reports:
@@ -339,7 +339,7 @@ def get_projects_analytics():
 def update_project_progress(id):
     """Update project progress"""
     try:
-        project = ResearchProject.query.get_or_404(id)
+        project = db.session.get(ResearchProject, id) or abort(404)
         data = request.get_json()
         
         progress = data.get('progress_percentage', 0)

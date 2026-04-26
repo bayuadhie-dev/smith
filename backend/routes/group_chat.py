@@ -1,7 +1,7 @@
 """
 Group Chat Routes - Discord-style group chat API
 """
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify, current_app, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime
 import secrets
@@ -165,7 +165,7 @@ def auto_join_company_server(user):
 def get_servers():
     """Get the company server - all eligible users share one server"""
     current_user_id = get_jwt_identity()
-    user = User.query.get(current_user_id)
+    user = db.session.get(User, current_user_id)
     
     if not user:
         return jsonify({'error': 'User not found'}), 404
@@ -216,7 +216,7 @@ def create_server():
     db.session.flush()
     
     # Add owner as member
-    owner = User.query.get(current_user_id)
+    owner = db.session.get(User, current_user_id)
     server.members.append(owner)
     
     # Create default role
@@ -260,10 +260,10 @@ def create_server():
 def get_server(server_id):
     """Get server details with channels"""
     current_user_id = get_jwt_identity()
-    server = ChatServer.query.get_or_404(server_id)
+    server = db.session.get(ChatServer, server_id) or abort(404)
     
     # Check if user is member
-    user = User.query.get(current_user_id)
+    user = db.session.get(User, current_user_id)
     if user not in server.members and not server.is_public:
         return jsonify({'error': 'Access denied'}), 403
     
@@ -277,7 +277,7 @@ def get_server(server_id):
 def update_server(server_id):
     """Update server settings"""
     current_user_id = get_jwt_identity()
-    server = ChatServer.query.get_or_404(server_id)
+    server = db.session.get(ChatServer, server_id) or abort(404)
     
     # Check if user is owner or has permission
     if server.owner_id != current_user_id:
@@ -309,7 +309,7 @@ def update_server(server_id):
 def delete_server(server_id):
     """Delete a server"""
     current_user_id = get_jwt_identity()
-    server = ChatServer.query.get_or_404(server_id)
+    server = db.session.get(ChatServer, server_id) or abort(404)
     
     if server.owner_id != current_user_id:
         return jsonify({'error': 'Only server owner can delete server'}), 403
@@ -325,7 +325,7 @@ def delete_server(server_id):
 def get_available_users(server_id):
     """Get users that can be invited to the server"""
     current_user_id = get_jwt_identity()
-    server = ChatServer.query.get_or_404(server_id)
+    server = db.session.get(ChatServer, server_id) or abort(404)
     
     # Get current member IDs
     member_ids = [m.id for m in server.members]
@@ -355,14 +355,14 @@ def get_available_users(server_id):
 def invite_user_to_server(server_id):
     """Invite a user to the server"""
     current_user_id = get_jwt_identity()
-    server = ChatServer.query.get_or_404(server_id)
+    server = db.session.get(ChatServer, server_id) or abort(404)
     data = request.get_json()
     
     user_id = data.get('user_id')
     if not user_id:
         return jsonify({'error': 'User ID is required'}), 400
     
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
     if not user:
         return jsonify({'error': 'User not found'}), 404
     
@@ -404,8 +404,8 @@ def invite_user_to_server(server_id):
 def join_server(server_id):
     """Join a server"""
     current_user_id = get_jwt_identity()
-    server = ChatServer.query.get_or_404(server_id)
-    user = User.query.get(current_user_id)
+    server = db.session.get(ChatServer, server_id) or abort(404)
+    user = db.session.get(User, current_user_id)
     
     if user in server.members:
         return jsonify({'error': 'Already a member'}), 400
@@ -440,8 +440,8 @@ def join_server(server_id):
 def leave_server(server_id):
     """Leave a server"""
     current_user_id = get_jwt_identity()
-    server = ChatServer.query.get_or_404(server_id)
-    user = User.query.get(current_user_id)
+    server = db.session.get(ChatServer, server_id) or abort(404)
+    user = db.session.get(User, current_user_id)
     
     if user not in server.members:
         return jsonify({'error': 'Not a member'}), 400
@@ -471,7 +471,7 @@ def join_by_invite(invite_code):
     if not server:
         return jsonify({'error': 'Invalid invite code'}), 404
     
-    user = User.query.get(current_user_id)
+    user = db.session.get(User, current_user_id)
     
     if user in server.members:
         return jsonify({'error': 'Already a member'}), 400
@@ -492,7 +492,7 @@ def join_by_invite(invite_code):
 def create_category(server_id):
     """Create a channel category"""
     current_user_id = get_jwt_identity()
-    server = ChatServer.query.get_or_404(server_id)
+    server = db.session.get(ChatServer, server_id) or abort(404)
     
     # Check permission
     if server.owner_id != current_user_id:
@@ -531,7 +531,7 @@ def create_category(server_id):
 def update_category(category_id):
     """Update a category"""
     current_user_id = get_jwt_identity()
-    category = ChatCategory.query.get_or_404(category_id)
+    category = db.session.get(ChatCategory, category_id) or abort(404)
     server = category.server
     
     if server.owner_id != current_user_id:
@@ -559,7 +559,7 @@ def update_category(category_id):
 def delete_category(category_id):
     """Delete a category"""
     current_user_id = get_jwt_identity()
-    category = ChatCategory.query.get_or_404(category_id)
+    category = db.session.get(ChatCategory, category_id) or abort(404)
     server = category.server
     
     if server.owner_id != current_user_id:
@@ -582,7 +582,7 @@ def delete_category(category_id):
 def create_channel(server_id):
     """Create a new channel"""
     current_user_id = get_jwt_identity()
-    server = ChatServer.query.get_or_404(server_id)
+    server = db.session.get(ChatServer, server_id) or abort(404)
     
     # Check permission
     if server.owner_id != current_user_id:
@@ -629,7 +629,7 @@ def create_channel(server_id):
     
     # If private, add creator as allowed member
     if channel.is_private:
-        user = User.query.get(current_user_id)
+        user = db.session.get(User, current_user_id)
         channel.allowed_members.append(user)
     
     db.session.commit()
@@ -645,8 +645,8 @@ def create_channel(server_id):
 def check_channel_access(channel_id):
     """Check if user has access to private channel"""
     current_user_id = get_jwt_identity()
-    channel = ChatChannel.query.get_or_404(channel_id)
-    user = User.query.get(current_user_id)
+    channel = db.session.get(ChatChannel, channel_id) or abort(404)
+    user = db.session.get(User, current_user_id)
     
     # Server owner always has access
     if channel.server.owner_id == current_user_id:
@@ -668,8 +668,8 @@ def check_channel_access(channel_id):
 def unlock_channel(channel_id):
     """Unlock private channel with password"""
     current_user_id = get_jwt_identity()
-    channel = ChatChannel.query.get_or_404(channel_id)
-    user = User.query.get(current_user_id)
+    channel = db.session.get(ChatChannel, channel_id) or abort(404)
+    user = db.session.get(User, current_user_id)
     
     if not channel.is_private:
         return jsonify({'error': 'Channel is not private'}), 400
@@ -693,11 +693,11 @@ def unlock_channel(channel_id):
 def get_channel(channel_id):
     """Get channel details with recent messages"""
     current_user_id = int(get_jwt_identity())
-    channel = ChatChannel.query.get_or_404(channel_id)
+    channel = db.session.get(ChatChannel, channel_id) or abort(404)
     server = channel.server
     
     # Check if user is member of server
-    user = User.query.get(current_user_id)
+    user = db.session.get(User, current_user_id)
     if not user:
         return jsonify({'error': 'User not found'}), 404
     
@@ -752,7 +752,7 @@ def get_channel(channel_id):
 def update_channel(channel_id):
     """Update channel settings"""
     current_user_id = get_jwt_identity()
-    channel = ChatChannel.query.get_or_404(channel_id)
+    channel = db.session.get(ChatChannel, channel_id) or abort(404)
     server = channel.server
     
     if server.owner_id != current_user_id:
@@ -794,7 +794,7 @@ def update_channel(channel_id):
 def delete_channel(channel_id):
     """Delete a channel"""
     current_user_id = get_jwt_identity()
-    channel = ChatChannel.query.get_or_404(channel_id)
+    channel = db.session.get(ChatChannel, channel_id) or abort(404)
     server = channel.server
     
     if server.owner_id != current_user_id:
@@ -811,7 +811,7 @@ def delete_channel(channel_id):
 def add_channel_member(channel_id):
     """Add member to private channel"""
     current_user_id = get_jwt_identity()
-    channel = ChatChannel.query.get_or_404(channel_id)
+    channel = db.session.get(ChatChannel, channel_id) or abort(404)
     
     if not channel.is_private:
         return jsonify({'error': 'Channel is not private'}), 400
@@ -825,7 +825,7 @@ def add_channel_member(channel_id):
     if not user_id:
         return jsonify({'error': 'User ID is required'}), 400
     
-    user = User.query.get_or_404(user_id)
+    user = db.session.get(User, user_id) or abort(404)
     
     if user in channel.allowed_members:
         return jsonify({'error': 'User already has access'}), 400
@@ -841,12 +841,12 @@ def add_channel_member(channel_id):
 def remove_channel_member(channel_id, user_id):
     """Remove member from private channel"""
     current_user_id = get_jwt_identity()
-    channel = ChatChannel.query.get_or_404(channel_id)
+    channel = db.session.get(ChatChannel, channel_id) or abort(404)
     
     if channel.server.owner_id != current_user_id:
         return jsonify({'error': 'Permission denied'}), 403
     
-    user = User.query.get_or_404(user_id)
+    user = db.session.get(User, user_id) or abort(404)
     
     if user not in channel.allowed_members:
         return jsonify({'error': 'User does not have access'}), 400
@@ -864,8 +864,8 @@ def remove_channel_member(channel_id, user_id):
 def send_message(channel_id):
     """Send a message to a channel"""
     current_user_id = get_jwt_identity()
-    channel = ChatChannel.query.get_or_404(channel_id)
-    user = User.query.get(current_user_id)
+    channel = db.session.get(ChatChannel, channel_id) or abort(404)
+    user = db.session.get(User, current_user_id)
     
     # Check if user is member of server
     if user not in channel.server.members:
@@ -959,8 +959,8 @@ def upload_file_message():
     if not channel_id:
         return jsonify({'error': 'Channel ID is required'}), 400
     
-    channel = ChatChannel.query.get_or_404(int(channel_id))
-    user = User.query.get(current_user_id)
+    channel = db.session.get(ChatChannel, int(channel_id)) or abort(404)
+    user = db.session.get(User, current_user_id)
     
     # Check if user is member of server
     if user not in channel.server.members:
@@ -1060,7 +1060,7 @@ def upload_file_message():
 def edit_message(message_id):
     """Edit a message"""
     current_user_id = get_jwt_identity()
-    message = ChatMessage.query.get_or_404(message_id)
+    message = db.session.get(ChatMessage, message_id) or abort(404)
     
     if message.user_id != current_user_id:
         return jsonify({'error': 'Can only edit your own messages'}), 403
@@ -1090,7 +1090,7 @@ def edit_message(message_id):
 def delete_message(message_id):
     """Delete a message"""
     current_user_id = get_jwt_identity()
-    message = ChatMessage.query.get_or_404(message_id)
+    message = db.session.get(ChatMessage, message_id) or abort(404)
     channel = message.channel
     
     # Can delete own messages or if has manage_messages permission
@@ -1111,7 +1111,7 @@ def delete_message(message_id):
 def add_reaction(message_id):
     """Add reaction to a message"""
     current_user_id = get_jwt_identity()
-    message = ChatMessage.query.get_or_404(message_id)
+    message = db.session.get(ChatMessage, message_id) or abort(404)
     
     data = request.get_json()
     emoji = data.get('emoji')
@@ -1165,7 +1165,7 @@ def remove_reaction(message_id):
     db.session.delete(reaction)
     db.session.commit()
     
-    message = ChatMessage.query.get(message_id)
+    message = db.session.get(ChatMessage, message_id)
     
     return jsonify({
         'message': 'Reaction removed successfully',
@@ -1178,7 +1178,7 @@ def remove_reaction(message_id):
 def pin_message(message_id):
     """Pin a message"""
     current_user_id = get_jwt_identity()
-    message = ChatMessage.query.get_or_404(message_id)
+    message = db.session.get(ChatMessage, message_id) or abort(404)
     channel = message.channel
     
     # Check permission
@@ -1210,7 +1210,7 @@ def pin_message(message_id):
 def unpin_message(message_id):
     """Unpin a message"""
     current_user_id = get_jwt_identity()
-    message = ChatMessage.query.get_or_404(message_id)
+    message = db.session.get(ChatMessage, message_id) or abort(404)
     channel = message.channel
     
     if channel.server.owner_id != current_user_id:
@@ -1234,7 +1234,7 @@ def unpin_message(message_id):
 @jwt_required()
 def get_pinned_messages(channel_id):
     """Get pinned messages in a channel"""
-    channel = ChatChannel.query.get_or_404(channel_id)
+    channel = db.session.get(ChatChannel, channel_id) or abort(404)
     
     pins = ChatPinnedMessage.query.filter_by(channel_id=channel_id).order_by(
         ChatPinnedMessage.pinned_at.desc()
@@ -1256,7 +1256,7 @@ def get_pinned_messages(channel_id):
 @jwt_required()
 def get_roles(server_id):
     """Get server roles"""
-    server = ChatServer.query.get_or_404(server_id)
+    server = db.session.get(ChatServer, server_id) or abort(404)
     
     roles = ChatServerRole.query.filter_by(server_id=server_id).order_by(
         ChatServerRole.position.desc()
@@ -1272,7 +1272,7 @@ def get_roles(server_id):
 def create_role(server_id):
     """Create a new role"""
     current_user_id = get_jwt_identity()
-    server = ChatServer.query.get_or_404(server_id)
+    server = db.session.get(ChatServer, server_id) or abort(404)
     
     if server.owner_id != current_user_id:
         return jsonify({'error': 'Permission denied'}), 403
@@ -1317,7 +1317,7 @@ def create_role(server_id):
 def update_role(role_id):
     """Update a role"""
     current_user_id = get_jwt_identity()
-    role = ChatServerRole.query.get_or_404(role_id)
+    role = db.session.get(ChatServerRole, role_id) or abort(404)
     
     if role.server.owner_id != current_user_id:
         return jsonify({'error': 'Permission denied'}), 403
@@ -1347,7 +1347,7 @@ def update_role(role_id):
 def delete_role(role_id):
     """Delete a role"""
     current_user_id = get_jwt_identity()
-    role = ChatServerRole.query.get_or_404(role_id)
+    role = db.session.get(ChatServerRole, role_id) or abort(404)
     
     if role.server.owner_id != current_user_id:
         return jsonify({'error': 'Permission denied'}), 403
@@ -1366,7 +1366,7 @@ def delete_role(role_id):
 def assign_role(role_id):
     """Assign role to a user"""
     current_user_id = get_jwt_identity()
-    role = ChatServerRole.query.get_or_404(role_id)
+    role = db.session.get(ChatServerRole, role_id) or abort(404)
     
     if role.server.owner_id != current_user_id:
         return jsonify({'error': 'Permission denied'}), 403
@@ -1402,7 +1402,7 @@ def assign_role(role_id):
 def remove_role(role_id, user_id):
     """Remove role from a user"""
     current_user_id = get_jwt_identity()
-    role = ChatServerRole.query.get_or_404(role_id)
+    role = db.session.get(ChatServerRole, role_id) or abort(404)
     
     if role.server.owner_id != current_user_id:
         return jsonify({'error': 'Permission denied'}), 403
@@ -1474,7 +1474,7 @@ def update_status():
 @jwt_required()
 def get_members_status(server_id):
     """Get online status of server members"""
-    server = ChatServer.query.get_or_404(server_id)
+    server = db.session.get(ChatServer, server_id) or abort(404)
     
     members_status = []
     for member in server.members:
@@ -1545,7 +1545,7 @@ def mark_as_read(channel_id):
 @jwt_required()
 def search_messages(channel_id):
     """Search messages in a channel"""
-    channel = ChatChannel.query.get_or_404(channel_id)
+    channel = db.session.get(ChatChannel, channel_id) or abort(404)
     
     query = request.args.get('q', '')
     if not query or len(query) < 2:
@@ -1567,7 +1567,7 @@ def search_messages(channel_id):
 @jwt_required()
 def search_server_messages(server_id):
     """Search messages across all channels in a server"""
-    server = ChatServer.query.get_or_404(server_id)
+    server = db.session.get(ChatServer, server_id) or abort(404)
     
     query = request.args.get('q', '')
     if not query or len(query) < 2:
@@ -1623,7 +1623,7 @@ def get_online_members(server_id):
     """Get real-time online status of server members based on heartbeat"""
     from datetime import timedelta
     
-    server = ChatServer.query.get_or_404(server_id)
+    server = db.session.get(ChatServer, server_id) or abort(404)
     
     # Consider user active if last_seen within 30 seconds
     active_threshold = get_local_now() - timedelta(seconds=30)
@@ -1695,11 +1695,11 @@ def get_online_members(server_id):
 def create_or_get_thread(message_id):
     """Buat thread dari sebuah pesan (atau return existing thread)"""
     current_user_id = int(get_jwt_identity())
-    msg = ChatMessage.query.get_or_404(message_id)
+    msg = db.session.get(ChatMessage, message_id) or abort(404)
 
     # Jika sudah ada thread
     if msg.is_thread_starter and msg.thread_id:
-        thread = ChatThread.query.get(msg.thread_id)
+        thread = db.session.get(ChatThread, msg.thread_id)
         if thread:
             replies = ChatMessage.query.filter_by(
                 thread_id=thread.id, is_deleted=False
@@ -1734,7 +1734,7 @@ def create_or_get_thread(message_id):
 @jwt_required()
 def get_thread(thread_id):
     """Get thread dan semua replynya"""
-    thread = ChatThread.query.get_or_404(thread_id)
+    thread = db.session.get(ChatThread, thread_id) or abort(404)
     replies = ChatMessage.query.filter_by(
         thread_id=thread_id, is_deleted=False
     ).order_by(ChatMessage.created_at.asc()).all()
@@ -1751,7 +1751,7 @@ def get_thread(thread_id):
 def reply_to_thread(thread_id):
     """Kirim reply ke thread via REST (fallback dari WebSocket)"""
     current_user_id = int(get_jwt_identity())
-    thread = ChatThread.query.get_or_404(thread_id)
+    thread = db.session.get(ChatThread, thread_id) or abort(404)
     data = request.get_json()
 
     content = (data.get('content') or '').strip()
@@ -1816,7 +1816,7 @@ def get_dm_messages(user_id):
 
     if not conv:
         # Belum ada percakapan — return empty (akan dibuat saat first message)
-        other = User.query.get_or_404(user_id)
+        other = db.session.get(User, user_id) or abort(404)
         return jsonify({
             'conversation': None,
             'other_user': {
@@ -1875,7 +1875,7 @@ def send_dm(user_id):
     if not content:
         return jsonify({'error': 'Content wajib diisi'}), 400
 
-    receiver = User.query.get_or_404(user_id)
+    receiver = db.session.get(User, user_id) or abort(404)
 
     u1, u2 = (current_user_id, user_id) if current_user_id < user_id else (user_id, current_user_id)
     conv = ChatDirectConversation.query.filter_by(user1_id=u1, user2_id=u2).first()
@@ -1981,7 +1981,7 @@ def upload_dm_file(user_id):
     file.save(file_path)
 
     # Buat atau ambil conversation
-    receiver = User.query.get_or_404(user_id)
+    receiver = db.session.get(User, user_id) or abort(404)
     u1, u2 = (current_user_id, user_id) if current_user_id < user_id else (user_id, current_user_id)
     conv = ChatDirectConversation.query.filter_by(user1_id=u1, user2_id=u2).first()
     if not conv:
@@ -2041,7 +2041,7 @@ def serve_dm_file(filename):
 def delete_dm_message(message_id):
     """Hapus DM message (soft delete)"""
     current_user_id = int(get_jwt_identity())
-    msg = ChatDirectMessage.query.get_or_404(message_id)
+    msg = db.session.get(ChatDirectMessage, message_id) or abort(404)
 
     if msg.sender_id == current_user_id:
         msg.is_deleted_by_sender = True
@@ -2059,7 +2059,7 @@ def delete_dm_message(message_id):
 def edit_dm_message(message_id):
     """Edit DM message"""
     current_user_id = int(get_jwt_identity())
-    msg = ChatDirectMessage.query.get_or_404(message_id)
+    msg = db.session.get(ChatDirectMessage, message_id) or abort(404)
 
     if msg.sender_id != current_user_id:
         return jsonify({'error': 'Tidak ada izin'}), 403

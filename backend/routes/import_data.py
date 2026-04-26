@@ -226,7 +226,7 @@ def import_inventory(df, user_id):
             
             if existing_inventory:
                 # Update existing inventory
-                existing_inventory.quantity = row['quantity']
+                existing_inventory.quantity_on_hand = row['quantity']
                 existing_inventory.batch_number = row.get('batch_number', '')
                 existing_inventory.expiry_date = pd.to_datetime(row.get('expiry_date'), errors='coerce') if row.get('expiry_date') else None
                 existing_inventory.remarks = row.get('remarks', '')

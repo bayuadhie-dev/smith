@@ -13,7 +13,66 @@ def get_bcrypt():
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
-    """User login endpoint"""
+    """
+    User login endpoint
+    ---
+    tags:
+      - Authentication
+    summary: User login
+    description: Authenticate user and return JWT tokens
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - username
+            - password
+          properties:
+            username:
+              type: string
+              example: admin
+            password:
+              type: string
+              example: password123
+    responses:
+      200:
+        description: Login successful
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: Login successful
+            access_token:
+              type: string
+            refresh_token:
+              type: string
+            user:
+              type: object
+              properties:
+                id:
+                  type: integer
+                username:
+                  type: string
+                email:
+                  type: string
+                full_name:
+                  type: string
+                is_admin:
+                  type: boolean
+                is_super_admin:
+                  type: boolean
+                roles:
+                  type: array
+                  items:
+                    type: string
+      401:
+        description: Invalid credentials
+      403:
+        description: Account inactive
+    """
     try:
         data = request.get_json()
         username = data.get('username')
@@ -69,7 +128,62 @@ def login():
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
-    """User registration endpoint"""
+    """
+    User registration endpoint
+    ---
+    tags:
+      - Authentication
+    summary: User registration
+    description: Register a new user account
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - username
+            - email
+            - password
+            - full_name
+          properties:
+            username:
+              type: string
+              example: newuser
+            email:
+              type: string
+              format: email
+              example: user@example.com
+            password:
+              type: string
+              example: password123
+            full_name:
+              type: string
+              example: John Doe
+    responses:
+      200:
+        description: Registration successful
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+            user:
+              type: object
+              properties:
+                id:
+                  type: integer
+                username:
+                  type: string
+                email:
+                  type: string
+                full_name:
+                  type: string
+      400:
+        description: Validation error
+      409:
+        description: Username or email already exists
+    """
     try:
         data = request.get_json()
         
@@ -215,7 +329,7 @@ def extend_session():
         user_id = get_jwt_identity()
         
         # Verify user still exists and is active
-        user = User.query.get(int(user_id))
+        user = db.session.get(User, int(user_id))
         if not user:
             return jsonify({'error': 'User not found'}), 404
         if not user.is_active:
@@ -253,7 +367,7 @@ def change_password():
         if not current_password or not new_password:
             return jsonify({'error': 'Current and new passwords are required'}), 400
         
-        user = User.query.get(int(user_id))  # Convert string to int
+        user = db.session.get(User, int(user_id))  # Convert string to int
         
         if not user or not user.check_password(current_password):
             return jsonify({'error': 'Current password is incorrect'}), 401
@@ -398,7 +512,7 @@ def update_profile():
     """Update user profile - for new users completing their profile"""
     try:
         user_id = get_jwt_identity()
-        user = User.query.get(int(user_id))
+        user = db.session.get(User, int(user_id))
         
         if not user:
             return jsonify({'error': 'User not found'}), 404
@@ -466,7 +580,7 @@ def get_profile():
     """Get current user profile"""
     try:
         user_id = get_jwt_identity()
-        user = User.query.get(int(user_id))
+        user = db.session.get(User, int(user_id))
         
         if not user:
             return jsonify({'error': 'User not found'}), 404

@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db
 from models.wip_job_costing import WIPBatch, WIPStageMovement, JobCostEntry, WIPSummary, WIPWorkflowIntegration
@@ -91,7 +91,7 @@ def get_wip_batches():
 def get_wip_batch_detail(wip_batch_id):
     """Get detailed WIP batch information"""
     try:
-        wip_batch = WIPBatch.query.get_or_404(wip_batch_id)
+        wip_batch = db.session.get(WIPBatch, wip_batch_id) or abort(404)
         
         # Get stage movements
         movements = WIPStageMovement.query.filter_by(wip_batch_id=wip_batch_id).order_by(WIPStageMovement.movement_date).all()
@@ -198,7 +198,7 @@ def create_wip_batch():
             return jsonify({'message': 'WIP batch sudah ada untuk Work Order ini'}), 400
         
         # Get work order
-        work_order = WorkOrder.query.get(work_order_id)
+        work_order = db.session.get(WorkOrder, work_order_id)
         if not work_order:
             return jsonify({'message': 'Work Order tidak ditemukan'}), 404
         

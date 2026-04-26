@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime, date, timedelta
 from models import db, ConvertingMachine, ConvertingProduction, Employee, Product
@@ -87,7 +87,7 @@ def create_converting_machine():
 def update_converting_machine(machine_id):
     """Update a converting machine"""
     try:
-        machine = ConvertingMachine.query.get_or_404(machine_id)
+        machine = db.session.get(ConvertingMachine, machine_id) or abort(404)
         data = request.get_json()
         
         if 'name' in data:
@@ -227,7 +227,7 @@ def create_converting_production():
         prod_date = datetime.strptime(data['production_date'], '%Y-%m-%d').date()
         
         # Get machine info
-        machine = ConvertingMachine.query.get(data['machine_id'])
+        machine = db.session.get(ConvertingMachine, data['machine_id'])
         if not machine:
             return jsonify({'error': 'Mesin tidak ditemukan'}), 404
         
@@ -272,7 +272,7 @@ def create_converting_production():
 def update_converting_production(prod_id):
     """Update a converting production record"""
     try:
-        production = ConvertingProduction.query.get_or_404(prod_id)
+        production = db.session.get(ConvertingProduction, prod_id) or abort(404)
         data = request.get_json()
         
         if 'actual_quantity' in data:
@@ -313,7 +313,7 @@ def update_converting_production(prod_id):
 def delete_converting_production(prod_id):
     """Delete a converting production record"""
     try:
-        production = ConvertingProduction.query.get_or_404(prod_id)
+        production = db.session.get(ConvertingProduction, prod_id) or abort(404)
         db.session.delete(production)
         db.session.commit()
         

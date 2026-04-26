@@ -2,7 +2,7 @@
 Approval Workflow Routes
 Handles multi-level approval process with review and edit capabilities
 """
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db
 from models.approval_workflow import ApprovalWorkflow, ApprovalHistory, ApprovalConfiguration, PendingJournalEntry
@@ -21,7 +21,7 @@ def get_workflows():
     """Get approval workflows with filtering"""
     try:
         current_user_id = get_jwt_identity()
-        user = User.query.get(current_user_id)
+        user = db.session.get(User, current_user_id)
         
         # Query parameters
         status = request.args.get('status')
@@ -85,7 +85,7 @@ def get_workflows():
 def get_workflow_detail(workflow_id):
     """Get workflow detail with history"""
     try:
-        workflow = ApprovalWorkflow.query.get_or_404(workflow_id)
+        workflow = db.session.get(ApprovalWorkflow, workflow_id) or abort(404)
         
         # Get history
         history = ApprovalHistory.query.filter_by(workflow_id=workflow_id).order_by(ApprovalHistory.action_at.desc()).all()
@@ -205,7 +205,7 @@ def submit_for_review(workflow_id):
     """Submit workflow for review"""
     try:
         current_user_id = get_jwt_identity()
-        workflow = ApprovalWorkflow.query.get_or_404(workflow_id)
+        workflow = db.session.get(ApprovalWorkflow, workflow_id) or abort(404)
         
         # Check if user is the submitter
         if workflow.submitted_by != current_user_id:
@@ -243,14 +243,14 @@ def review_workflow(workflow_id):
     """Review workflow (Manager Production) - can edit data"""
     try:
         current_user_id = get_jwt_identity()
-        user = User.query.get(current_user_id)
+        user = db.session.get(User, current_user_id)
         data = request.get_json()
         
         # Check if user has reviewer role
         if user.role not in ['production_manager', 'warehouse_manager', 'admin']:
             return jsonify({'error': 'Unauthorized - Reviewer role required'}), 403
         
-        workflow = ApprovalWorkflow.query.get_or_404(workflow_id)
+        workflow = db.session.get(ApprovalWorkflow, workflow_id) or abort(404)
         
         # Check if workflow is in pending_review status
         if workflow.status != 'pending_review':
@@ -304,14 +304,14 @@ def approve_workflow(workflow_id):
     """Approve workflow (Finance/Accounting) - creates journal entry"""
     try:
         current_user_id = get_jwt_identity()
-        user = User.query.get(current_user_id)
+        user = db.session.get(User, current_user_id)
         data = request.get_json()
         
         # Check if user has approver role
         if user.role not in ['finance', 'accounting', 'finance_manager', 'admin']:
             return jsonify({'error': 'Unauthorized - Finance/Accounting role required'}), 403
         
-        workflow = ApprovalWorkflow.query.get_or_404(workflow_id)
+        workflow = db.session.get(ApprovalWorkflow, workflow_id) or abort(404)
         
         # Check if workflow is in pending_approval status
         if workflow.status != 'pending_approval':
@@ -376,10 +376,10 @@ def reject_workflow(workflow_id):
     """Reject workflow"""
     try:
         current_user_id = get_jwt_identity()
-        user = User.query.get(current_user_id)
+        user = db.session.get(User, current_user_id)
         data = request.get_json()
         
-        workflow = ApprovalWorkflow.query.get_or_404(workflow_id)
+        workflow = db.session.get(ApprovalWorkflow, workflow_id) or abort(404)
         
         # Check authorization
         if workflow.status == 'pending_review' and user.role not in ['production_manager', 'warehouse_manager', 'admin']:
@@ -446,7 +446,7 @@ def get_dashboard():
     """Get approval dashboard statistics"""
     try:
         current_user_id = get_jwt_identity()
-        user = User.query.get(current_user_id)
+        user = db.session.get(User, current_user_id)
         
         # Count workflows by status
         pending_review = ApprovalWorkflow.query.filter_by(status='pending_review').count()

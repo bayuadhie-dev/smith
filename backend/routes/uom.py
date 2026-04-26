@@ -2,7 +2,7 @@
 Unit of Measure (UoM) Routes
 CRUD untuk master satuan dan konversi antar satuan.
 """
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db
 from models.uom import UnitOfMeasure, UoMConversion
@@ -55,7 +55,7 @@ def get_units():
 def get_unit(id):
     """Get single unit of measure with its conversions"""
     try:
-        unit = UnitOfMeasure.query.get_or_404(id)
+        unit = db.session.get(UnitOfMeasure, id) or abort(404)
 
         unit_data = unit.to_dict()
 
@@ -120,7 +120,7 @@ def create_unit():
 def update_unit(id):
     """Update unit of measure"""
     try:
-        unit = UnitOfMeasure.query.get_or_404(id)
+        unit = db.session.get(UnitOfMeasure, id) or abort(404)
         data = request.get_json()
 
         if 'code' in data:
@@ -159,7 +159,7 @@ def update_unit(id):
 def delete_unit(id):
     """Delete unit of measure (soft delete — set inactive)"""
     try:
-        unit = UnitOfMeasure.query.get_or_404(id)
+        unit = db.session.get(UnitOfMeasure, id) or abort(404)
 
         # Check if used in conversions
         conversion_count = UoMConversion.query.filter(
@@ -264,8 +264,8 @@ def create_conversion():
             return error_response('Conversion factor harus lebih dari 0'), 400
 
         # Validate UoMs exist
-        from_uom = UnitOfMeasure.query.get(from_uom_id)
-        to_uom = UnitOfMeasure.query.get(to_uom_id)
+        from_uom = db.session.get(UnitOfMeasure, from_uom_id)
+        to_uom = db.session.get(UnitOfMeasure, to_uom_id)
         if not from_uom or not to_uom:
             return error_response('Satuan tidak ditemukan'), 404
 
@@ -323,7 +323,7 @@ def create_conversion():
 def update_conversion(id):
     """Update UoM conversion"""
     try:
-        conversion = UoMConversion.query.get_or_404(id)
+        conversion = db.session.get(UoMConversion, id) or abort(404)
         data = request.get_json()
 
         if 'conversion_factor' in data:
@@ -364,7 +364,7 @@ def update_conversion(id):
 def delete_conversion(id):
     """Delete UoM conversion (and its reverse)"""
     try:
-        conversion = UoMConversion.query.get_or_404(id)
+        conversion = db.session.get(UoMConversion, id) or abort(404)
 
         # Find and delete reverse
         reverse = UoMConversion.query.filter_by(
@@ -407,7 +407,7 @@ def convert_quantity():
             return error_response('from_uom_id, to_uom_id, dan quantity wajib diisi'), 400
 
         if from_uom_id == to_uom_id:
-            from_uom = UnitOfMeasure.query.get(from_uom_id)
+            from_uom = db.session.get(UnitOfMeasure, from_uom_id)
             return jsonify({
                 'from_quantity': quantity,
                 'from_uom': from_uom.code if from_uom else '?',
@@ -439,8 +439,8 @@ def convert_quantity():
             ).first()
 
         if not conversion:
-            from_uom = UnitOfMeasure.query.get(from_uom_id)
-            to_uom = UnitOfMeasure.query.get(to_uom_id)
+            from_uom = db.session.get(UnitOfMeasure, from_uom_id)
+            to_uom = db.session.get(UnitOfMeasure, to_uom_id)
             return error_response(
                 f'Tidak ada konversi dari {from_uom.code if from_uom else "?"} '
                 f'ke {to_uom.code if to_uom else "?"}'

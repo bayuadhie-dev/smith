@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, Notification, SystemAlert
 from models.notification import PushSubscription
@@ -7,6 +7,7 @@ from datetime import datetime
 from utils.timezone import get_local_now, get_local_today
 import os
 
+# Exempt notifications from rate limiting to allow legitimate polling
 notifications_bp = Blueprint('notifications', __name__)
 
 VAPID_PRIVATE_KEY = os.environ.get('VAPID_PRIVATE_KEY', '-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgY7mRZgnZwBe0ap+j\ndb+3V+P3N0BEIMkh3QDh2/JrT3WhRANCAARWOhyAgeZFoRaAzqIF+8rTBsYv10Zg\njOszUQzt9Y83TKuP5nbm/5AK2iBNozXlCmxV46+81l43uSiUEcgJwwJ8\n-----END PRIVATE KEY-----\n')
@@ -53,7 +54,7 @@ def get_notifications():
 @jwt_required()
 def mark_as_read(id):
     try:
-        notification = Notification.query.get(id)
+        notification = db.session.get(Notification, id)
         if not notification:
             return jsonify(error_response('api.error', error_code=404)), 404
         

@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, send_file
+from flask import Blueprint, request, jsonify, send_file, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, Machine, MaintenanceRecord, MaintenanceSchedule, User
 from utils.i18n import success_response, error_response, get_message
@@ -735,7 +735,7 @@ def update_shift_production_downtime(id):
     try:
         from models.production import ShiftProduction
         
-        sp = ShiftProduction.query.get(id)
+        sp = db.session.get(ShiftProduction, id)
         if not sp:
             return jsonify({'error': 'ShiftProduction not found'}), 404
         
@@ -1162,7 +1162,7 @@ def acknowledge_alert(alert_id):
     """Acknowledge an OEE alert"""
     try:
         user_id = get_jwt_identity()
-        alert = OEEAlert.query.get_or_404(alert_id)
+        alert = db.session.get(OEEAlert, alert_id) or abort(404)
         
         alert.status = 'acknowledged'
         alert.acknowledged_by = user_id
@@ -1183,7 +1183,7 @@ def resolve_alert(alert_id):
     try:
         user_id = get_jwt_identity()
         data = request.get_json()
-        alert = OEEAlert.query.get_or_404(alert_id)
+        alert = db.session.get(OEEAlert, alert_id) or abort(404)
         
         alert.status = 'resolved'
         alert.resolved_by = user_id
@@ -1239,7 +1239,7 @@ def create_maintenance_impact():
 def get_machine_analytics(machine_id):
     """Get detailed analytics for a specific machine"""
     try:
-        machine = Machine.query.get_or_404(machine_id)
+        machine = db.session.get(Machine, machine_id) or abort(404)
         
         # Get query parameters
         period = request.args.get('period', 'monthly')  # daily, weekly, monthly
@@ -3380,7 +3380,7 @@ def create_downtime_root_cause():
         
         if record_id:
             # Update existing
-            record = DowntimeRootCause.query.get(record_id)
+            record = db.session.get(DowntimeRootCause, record_id)
             if not record:
                 return jsonify({'error': 'Record not found'}), 404
         else:
@@ -3416,7 +3416,7 @@ def create_downtime_root_cause():
 def delete_downtime_root_cause(id):
     """Delete root cause analysis"""
     try:
-        record = DowntimeRootCause.query.get(id)
+        record = db.session.get(DowntimeRootCause, id)
         if not record:
             return jsonify({'error': 'Record not found'}), 404
         

@@ -2,7 +2,7 @@
 WIP Accounting Routes
 Handles WIP Ledger, Variance Tracking, and Auto-posting to GL
 """
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db
 from models.wip_accounting import WIPLedger, WIPTransaction, WIPVariance, COGMTransfer, COGSPosting
@@ -60,7 +60,7 @@ def get_wip_ledger():
 def get_wip_ledger_detail(id):
     """Get WIP Ledger detail with transactions and variances"""
     try:
-        ledger = WIPLedger.query.get_or_404(id)
+        ledger = db.session.get(WIPLedger, id) or abort(404)
         
         # Get transactions
         transactions = WIPTransaction.query.filter_by(wip_ledger_id=id).all()
@@ -129,7 +129,7 @@ def create_wip_ledger_from_wo(work_order_id):
     try:
         current_user_id = get_jwt_identity()
         
-        work_order = WorkOrder.query.get_or_404(work_order_id)
+        work_order = db.session.get(WorkOrder, work_order_id) or abort(404)
         
         # Check if WIP Ledger already exists
         existing = WIPLedger.query.filter_by(work_order_id=work_order_id).first()
@@ -137,7 +137,7 @@ def create_wip_ledger_from_wo(work_order_id):
             return jsonify({'error': 'WIP Ledger already exists for this Work Order'}), 400
         
         # Get product
-        product = Product.query.get(work_order.product_id)
+        product = db.session.get(Product, work_order.product_id)
         
         # Calculate standard costs from BOM
         from utils.costing_helper import calculate_standard_costs_from_bom
@@ -183,7 +183,7 @@ def add_wip_transaction():
         current_user_id = get_jwt_identity()
         data = request.get_json()
         
-        wip_ledger = WIPLedger.query.get_or_404(data['wip_ledger_id'])
+        wip_ledger = db.session.get(WIPLedger, data['wip_ledger_id']) or abort(404)
         
         # Create transaction
         transaction = WIPTransaction(
@@ -242,7 +242,7 @@ def post_wip_transaction_to_gl(id):
     try:
         current_user_id = get_jwt_identity()
         
-        transaction = WIPTransaction.query.get_or_404(id)
+        transaction = db.session.get(WIPTransaction, id) or abort(404)
         
         if transaction.is_posted_to_gl:
             return jsonify({'error': 'Transaction already posted to GL'}), 400
@@ -295,7 +295,7 @@ def analyze_variances(wip_ledger_id):
     try:
         current_user_id = get_jwt_identity()
         
-        wip_ledger = WIPLedger.query.get_or_404(wip_ledger_id)
+        wip_ledger = db.session.get(WIPLedger, wip_ledger_id) or abort(404)
         
         # Recalculate variances
         wip_ledger.calculate_variances()
@@ -352,7 +352,7 @@ def transfer_to_finished_goods():
         current_user_id = get_jwt_identity()
         data = request.get_json()
         
-        wip_ledger = WIPLedger.query.get_or_404(data['wip_ledger_id'])
+        wip_ledger = db.session.get(WIPLedger, data['wip_ledger_id']) or abort(404)
         
         # Generate transfer number
         transfer_number = generate_number('COGM', COGMTransfer, 'transfer_number')

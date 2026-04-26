@@ -58,7 +58,7 @@ def get_changeovers():
 def get_changeover_detail(id):
     """Get changeover detail"""
     try:
-        changeover = ProductChangeover.query.get(id)
+        changeover = db.session.get(ProductChangeover, id)
         if not changeover:
             return jsonify({'error': 'Changeover tidak ditemukan'}), 404
         
@@ -87,7 +87,7 @@ def initiate_changeover(wo_id):
         data = request.get_json()
         
         # Validate current work order
-        from_wo = WorkOrder.query.get(wo_id)
+        from_wo = db.session.get(WorkOrder, wo_id)
         if not from_wo:
             return jsonify({'error': 'Work Order tidak ditemukan'}), 404
         
@@ -107,7 +107,7 @@ def initiate_changeover(wo_id):
         to_wo = None
         to_work_order_id = data.get('to_work_order_id')
         if to_work_order_id:
-            to_wo = WorkOrder.query.get(to_work_order_id)
+            to_wo = db.session.get(WorkOrder, to_work_order_id)
             if not to_wo:
                 return jsonify({'error': 'Work Order tujuan tidak ditemukan'}), 404
             if to_wo.status not in ['pending', 'paused']:
@@ -189,7 +189,7 @@ def complete_changeover(id):
         user_id = int(get_jwt_identity())
         data = request.get_json()
         
-        changeover = ProductChangeover.query.get(id)
+        changeover = db.session.get(ProductChangeover, id)
         if not changeover:
             return jsonify({'error': 'Changeover tidak ditemukan'}), 404
         
@@ -201,7 +201,7 @@ def complete_changeover(id):
         if not to_work_order_id:
             return jsonify({'error': 'Work Order tujuan harus ditentukan'}), 400
         
-        to_wo = WorkOrder.query.get(to_work_order_id)
+        to_wo = db.session.get(WorkOrder, to_work_order_id)
         if not to_wo:
             return jsonify({'error': 'Work Order tujuan tidak ditemukan'}), 404
         
@@ -232,7 +232,7 @@ def complete_changeover(id):
         to_wo.updated_at = get_local_now()
         
         # Record changeover downtime to the PREVIOUS WO's ShiftProduction
-        from_wo = WorkOrder.query.get(changeover.from_work_order_id)
+        from_wo = db.session.get(WorkOrder, changeover.from_work_order_id)
         if from_wo:
             # Find or create ShiftProduction for the previous WO on today's date
             today = get_local_now().date()
@@ -302,7 +302,7 @@ def cancel_changeover(id):
         user_id = int(get_jwt_identity())
         data = request.get_json() or {}
         
-        changeover = ProductChangeover.query.get(id)
+        changeover = db.session.get(ProductChangeover, id)
         if not changeover:
             return jsonify({'error': 'Changeover tidak ditemukan'}), 404
         
@@ -391,7 +391,7 @@ def get_available_work_orders_for_changeover(machine_id):
     Returns pending and paused work orders
     """
     try:
-        machine = Machine.query.get(machine_id)
+        machine = db.session.get(Machine, machine_id)
         if not machine:
             return jsonify({'error': 'Mesin tidak ditemukan'}), 404
         

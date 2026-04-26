@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, Product, ProductCategory, ProductSpecification, ProductPackaging, Material, Inventory, SalesOrder
 from utils.i18n import success_response, error_response, get_message
@@ -212,7 +212,7 @@ def get_products():
 def get_product(id):
     """Get single product details"""
     try:
-        product = Product.query.get(id)
+        product = db.session.get(Product, id)
         
         if not product:
             return jsonify(error_response('api.error', error_code=404)), 404
@@ -402,7 +402,7 @@ def create_product():
 def update_product(id):
     """Update product"""
     try:
-        product = Product.query.get(id)
+        product = db.session.get(Product, id)
         
         if not product:
             return jsonify(error_response('api.error', error_code=404)), 404
@@ -496,7 +496,7 @@ def update_product(id):
 def delete_product(id):
     """Delete product"""
     try:
-        product = Product.query.get(id)
+        product = db.session.get(Product, id)
         
         if not product:
             return jsonify(error_response('api.error', error_code=404)), 404
@@ -594,7 +594,7 @@ def create_category():
 def update_category(category_id):
     """Update product category"""
     try:
-        category = ProductCategory.query.get_or_404(category_id)
+        category = db.session.get(ProductCategory, category_id) or abort(404)
         data = request.get_json()
         
         if data.get('code') and data['code'] != category.code:
@@ -630,7 +630,7 @@ def update_category(category_id):
 def delete_category(category_id):
     """Delete product category"""
     try:
-        category = ProductCategory.query.get_or_404(category_id)
+        category = db.session.get(ProductCategory, category_id) or abort(404)
         
         # Check if category has products
         product_count = Product.query.filter_by(category_id=category.id).count()

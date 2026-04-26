@@ -317,7 +317,7 @@ def save_check():
 def get_check_detail(check_id):
     """Get detailed check data including checklist answers"""
     try:
-        check = LiveMonitoringCheck.query.get(check_id)
+        check = db.session.get(LiveMonitoringCheck, check_id)
         if not check:
             return jsonify({'success': False, 'error': 'Check not found'}), 404
         
@@ -351,7 +351,7 @@ def get_checklist_items_for_machine(machine_id):
         mapped_item_ids = {m.item_id for m in machine_mappings}
         
         # Get machine info
-        machine = Machine.query.get(machine_id)
+        machine = db.session.get(Machine, machine_id)
         
         # Build result - items that are either mapped to this machine OR are general items
         result = []

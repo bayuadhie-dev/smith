@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, Employee, PayrollPeriod, PayrollRecord, SalaryComponent, EmployeeSalaryComponent, Attendance, PieceworkLog
 from utils.i18n import success_response, error_response, get_message
@@ -110,7 +110,7 @@ def create_payroll_period():
 def approve_payroll_period(period_id):
     """Approve payroll period and all its records"""
     try:
-        period = PayrollPeriod.query.get_or_404(period_id)
+        period = db.session.get(PayrollPeriod, period_id) or abort(404)
         
         if period.status != 'processing':
             return jsonify({'error': 'Only processing periods can be approved'}), 400
@@ -136,7 +136,7 @@ def approve_payroll_period(period_id):
 def calculate_payroll(period_id):
     """Calculate payroll for all employees in a period"""
     try:
-        period = PayrollPeriod.query.get_or_404(period_id)
+        period = db.session.get(PayrollPeriod, period_id) or abort(404)
         
         if period.status not in ('draft', 'processing'):
             return jsonify({'error': 'Periode sudah diapprove/dikunci, tidak bisa dihitung ulang'}), 400
@@ -771,7 +771,7 @@ def create_payroll_record():
 def get_payroll_record(record_id):
     """Get individual payroll record"""
     try:
-        r = PayrollRecord.query.get_or_404(record_id)
+        r = db.session.get(PayrollRecord, record_id) or abort(404)
         
         return jsonify({
             'id': r.id,
@@ -808,7 +808,7 @@ def get_payroll_record(record_id):
 def update_payroll_record(record_id):
     """Update individual payroll record"""
     try:
-        record = PayrollRecord.query.get_or_404(record_id)
+        record = db.session.get(PayrollRecord, record_id) or abort(404)
         data = request.get_json()
         
         if record.status == 'paid':
@@ -856,7 +856,7 @@ def update_payroll_record(record_id):
 def approve_payroll_record(record_id):
     """Approve individual payroll record"""
     try:
-        record = PayrollRecord.query.get_or_404(record_id)
+        record = db.session.get(PayrollRecord, record_id) or abort(404)
         
         record.status = 'approved'
         db.session.commit()
@@ -872,7 +872,7 @@ def mark_payroll_paid(record_id):
     """Mark payroll record as paid"""
     try:
         data = request.get_json() or {}
-        record = PayrollRecord.query.get_or_404(record_id)
+        record = db.session.get(PayrollRecord, record_id) or abort(404)
         
         record.status = 'paid'
         record.payment_date = get_local_today()
@@ -890,7 +890,7 @@ def mark_payroll_paid(record_id):
 def get_payslip(record_id):
     """Get detailed payslip data for a payroll record"""
     try:
-        r = PayrollRecord.query.get_or_404(record_id)
+        r = db.session.get(PayrollRecord, record_id) or abort(404)
         period = r.period
         employee = r.employee
         
@@ -1157,7 +1157,7 @@ def create_outsourcing_vendor():
 def get_outsourcing_vendor(vendor_id):
     """Get single outsourcing vendor"""
     try:
-        vendor = OutsourcingVendor.query.get_or_404(vendor_id)
+        vendor = db.session.get(OutsourcingVendor, vendor_id) or abort(404)
         result = vendor.to_dict()
         # Include employees under this vendor
         result['employees'] = [{
@@ -1176,7 +1176,7 @@ def get_outsourcing_vendor(vendor_id):
 def update_outsourcing_vendor(vendor_id):
     """Update outsourcing vendor"""
     try:
-        vendor = OutsourcingVendor.query.get_or_404(vendor_id)
+        vendor = db.session.get(OutsourcingVendor, vendor_id) or abort(404)
         data = request.get_json()
         
         for field in ['name', 'contact_person', 'phone', 'email', 'address',
@@ -1248,7 +1248,7 @@ def create_piecework_log():
                 return jsonify({'error': f'{field} wajib diisi'}), 400
         
         # Verify employee is piecework type
-        employee = Employee.query.get(data['employee_id'])
+        employee = db.session.get(Employee, data['employee_id'])
         if not employee:
             return jsonify({'error': 'Karyawan tidak ditemukan'}), 404
         
@@ -1280,7 +1280,7 @@ def create_piecework_log():
 def update_piecework_log(log_id):
     """Update piecework log"""
     try:
-        log = PieceworkLog.query.get_or_404(log_id)
+        log = db.session.get(PieceworkLog, log_id) or abort(404)
         data = request.get_json()
         
         if 'quantity' in data or 'rate_per_unit' in data:
@@ -1308,7 +1308,7 @@ def update_piecework_log(log_id):
 def verify_piecework_log(log_id):
     """Verify/approve piecework log"""
     try:
-        log = PieceworkLog.query.get_or_404(log_id)
+        log = db.session.get(PieceworkLog, log_id) or abort(404)
         data = request.get_json() or {}
         
         action = data.get('action', 'verify')  # verify or reject

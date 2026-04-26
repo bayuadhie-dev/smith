@@ -93,7 +93,7 @@ def get_boms():
 def get_bom_detail(bom_id):
     """Get detailed BOM with all items"""
     try:
-        bom = BillOfMaterials.query.get(bom_id)
+        bom = db.session.get(BillOfMaterials, bom_id)
         if not bom:
             return error_response('BOM not found', 404)
         
@@ -161,7 +161,7 @@ def create_bom():
             return error_response('Product ID is required', 400)
         
         # Check if product exists
-        product = Product.query.get(data['product_id'])
+        product = db.session.get(Product, data['product_id'])
         if not product:
             return error_response('Product not found', 404)
         
@@ -246,7 +246,7 @@ def update_bom(bom_id):
         user_id = get_jwt_identity()
         
         # Get existing BOM
-        old_bom = BillOfMaterials.query.get(bom_id)
+        old_bom = db.session.get(BillOfMaterials, bom_id)
         if not old_bom:
             return error_response('BOM not found', 404)
         
@@ -349,7 +349,7 @@ def delete_bom(bom_id):
     try:
         user_id = get_jwt_identity()
         
-        bom = BillOfMaterials.query.get(bom_id)
+        bom = db.session.get(BillOfMaterials, bom_id)
         if not bom:
             return error_response('BOM not found', 404)
         
@@ -384,7 +384,7 @@ def delete_bom_item(bom_id, item_id):
         user_id = get_jwt_identity()
         
         # Check if BOM exists
-        bom = BillOfMaterials.query.get(bom_id)
+        bom = db.session.get(BillOfMaterials, bom_id)
         if not bom:
             return error_response('BOM not found', 404)
         
@@ -420,7 +420,7 @@ def delete_bom_item(bom_id, item_id):
 def get_bom_history(bom_id):
     """Get BOM version history"""
     try:
-        bom = BillOfMaterials.query.get(bom_id)
+        bom = db.session.get(BillOfMaterials, bom_id)
         if not bom:
             return error_response('BOM not found', 404)
         
@@ -454,7 +454,7 @@ def get_bom_history(bom_id):
 def get_product_bom_versions(product_id):
     """Get all BOM versions for a product"""
     try:
-        product = Product.query.get(product_id)
+        product = db.session.get(Product, product_id)
         if not product:
             return error_response('Product not found', 404)
         

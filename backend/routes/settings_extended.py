@@ -67,17 +67,17 @@ def get_system_config():
         # Merge with defaults
         for setting in settings:
             try:
-                keys = setting.key.split('.')
+                keys = setting.setting_key.split('.')
                 if len(keys) == 2:
                     category, key = keys
                     if category in default_configs and key in default_configs[category]:
                         # Parse value based on type
                         if isinstance(default_configs[category][key], bool):
-                            default_configs[category][key] = setting.value.lower() == 'true'
+                            default_configs[category][key] = setting.setting_value.lower() == 'true'
                         elif isinstance(default_configs[category][key], int):
-                            default_configs[category][key] = int(setting.value)
+                            default_configs[category][key] = int(setting.setting_value)
                         else:
-                            default_configs[category][key] = setting.value
+                            default_configs[category][key] = setting.setting_value
             except:
                 continue
         
@@ -106,13 +106,13 @@ def save_system_config():
                 setting_key = f"{category}.{key}"
                 
                 # Find existing setting or create new
-                setting = SystemSetting.query.filter_by(key=setting_key).first()
+                setting = SystemSetting.query.filter_by(setting_key=setting_key).first()
                 if not setting:
-                    setting = SystemSetting(key=setting_key)
+                    setting = SystemSetting(setting_key=setting_key)
                     db.session.add(setting)
                 
                 # Convert value to string for storage
-                setting.value = str(value)
+                setting.setting_value = str(value)
                 setting.updated_at = get_local_now()
         
         db.session.commit()

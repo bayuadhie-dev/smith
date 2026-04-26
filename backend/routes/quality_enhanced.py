@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, Product, Machine, User, Employee
 from utils.i18n import success_response, error_response, get_message
@@ -198,7 +198,7 @@ def acknowledge_alert(alert_id):
     """Acknowledge a quality alert"""
     try:
         current_user_id = get_jwt_identity()
-        alert = QualityAlert.query.get_or_404(alert_id)
+        alert = db.session.get(QualityAlert, alert_id) or abort(404)
         
         alert.status = 'acknowledged'
         alert.acknowledged_by = current_user_id
@@ -223,7 +223,7 @@ def resolve_alert(alert_id):
         current_user_id = get_jwt_identity()
         data = request.get_json()
         
-        alert = QualityAlert.query.get_or_404(alert_id)
+        alert = db.session.get(QualityAlert, alert_id) or abort(404)
         
         alert.status = 'resolved'
         alert.resolved_by = current_user_id

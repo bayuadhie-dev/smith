@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, Material, Inventory
 from datetime import datetime
@@ -11,7 +11,7 @@ def force_delete_material(material_id):
     """Force delete material - using raw SQL to bypass relationships"""
     try:
         # Get material info first
-        material = Material.query.get_or_404(material_id)
+        material = db.session.get(Material, material_id) or abort(404)
         material_name = material.name
         material_code = material.code
         
@@ -33,7 +33,7 @@ def force_delete_material(material_id):
 def simple_delete_material(material_id):
     """Simple delete material - only check inventory"""
     try:
-        material = Material.query.get_or_404(material_id)
+        material = db.session.get(Material, material_id) or abort(404)
         
         # Only check if material is used in inventory
         inventory_count = db.session.query(Inventory).filter_by(material_id=material_id).count()

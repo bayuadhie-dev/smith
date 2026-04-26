@@ -14,7 +14,29 @@ health_bp = Blueprint('health', __name__)
 def health_check():
     """
     Basic health check endpoint
-    Returns 200 if application is running
+    ---
+    tags:
+      - Health
+    summary: Basic health check
+    description: Returns 200 if application is running
+    responses:
+      200:
+        description: Service is healthy
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+              example: healthy
+            timestamp:
+              type: string
+              format: date-time
+            service:
+              type: string
+              example: ERP Backend
+            version:
+              type: string
+              example: 1.0.0
     """
     return jsonify({
         'status': 'healthy',
@@ -28,6 +50,50 @@ def health_check():
 def detailed_health_check():
     """
     Detailed health check including database and redis
+    ---
+    tags:
+      - Health
+    summary: Detailed health check
+    description: Checks database and redis connections
+    responses:
+      200:
+        description: All services are healthy
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+              example: healthy
+            timestamp:
+              type: string
+              format: date-time
+            service:
+              type: string
+              example: ERP Backend
+            version:
+              type: string
+              example: 1.0.0
+            checks:
+              type: object
+              properties:
+                database:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: healthy
+                    message:
+                      type: string
+                redis:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: healthy
+                    message:
+                      type: string
+      503:
+        description: Service unhealthy
     """
     health_status = {
         'status': 'healthy',

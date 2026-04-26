@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db
 from models.sales import SalesOrder, SalesOrderItem
@@ -20,7 +20,7 @@ def confirm_sales_order(sales_order_id):
     """Confirm sales order first"""
     try:
         user_id = get_jwt_identity()
-        sales_order = SalesOrder.query.get_or_404(sales_order_id)
+        sales_order = db.session.get(SalesOrder, sales_order_id) or abort(404)
         
         # Confirm the sales order
         sales_order.status = 'confirmed'
@@ -45,7 +45,7 @@ def trigger_complete_workflow(sales_order_id):
     """Trigger complete workflow from sales order to finance"""
     try:
         user_id = get_jwt_identity()
-        sales_order = SalesOrder.query.get_or_404(sales_order_id)
+        sales_order = db.session.get(SalesOrder, sales_order_id) or abort(404)
         
         # Simple workflow - just update status for now
         sales_order.status = 'in_production'
@@ -71,7 +71,7 @@ def complete_production(work_order_id):
         user_id = get_jwt_identity()
         data = request.get_json()
         
-        work_order = WorkOrder.query.get_or_404(work_order_id)
+        work_order = db.session.get(WorkOrder, work_order_id) or abort(404)
         
         # Update work order status
         work_order.status = 'completed'
@@ -123,7 +123,7 @@ def approve_quality(inspection_id):
         user_id = get_jwt_identity()
         data = request.get_json()
         
-        inspection = QualityInspection.query.get_or_404(inspection_id)
+        inspection = db.session.get(QualityInspection, inspection_id) or abort(404)
         
         # Update quality inspection
         inspection.status = 'passed' if data.get('approved', True) else 'failed'
@@ -220,7 +220,7 @@ def ship_order(shipping_id):
         user_id = get_jwt_identity()
         data = request.get_json()
         
-        shipping_order = ShippingOrder.query.get_or_404(shipping_id)
+        shipping_order = db.session.get(ShippingOrder, shipping_id) or abort(404)
         
         # Update shipping status
         shipping_order.status = 'shipped'
@@ -292,7 +292,7 @@ def ship_order(shipping_id):
 def get_workflow_status(sales_order_id):
     """Get complete workflow status for sales order"""
     try:
-        sales_order = SalesOrder.query.get_or_404(sales_order_id)
+        sales_order = db.session.get(SalesOrder, sales_order_id) or abort(404)
         
         # Get all workflow steps
         workflow_steps = WorkflowStep.query.filter_by(

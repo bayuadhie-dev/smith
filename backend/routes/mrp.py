@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, Material, Product, BillOfMaterials, BOMItem, WorkOrder, SalesOrder, SalesForecast, Inventory, Machine, PurchaseOrder
 from sqlalchemy import func
@@ -94,7 +94,7 @@ def get_boms():
 def get_bom_details(bom_id):
     """Get BOM details with all items"""
     try:
-        bom = BillOfMaterials.query.get_or_404(bom_id)
+        bom = db.session.get(BillOfMaterials, bom_id) or abort(404)
 
         return jsonify({
             'id': bom.id,
@@ -1224,7 +1224,7 @@ def create_po_from_shortage():
                 # Try to get supplier from material
                 material_id = item.get('material_id')
                 if material_id:
-                    material = Material.query.get(material_id)
+                    material = db.session.get(Material, material_id)
                     if material and material.supplier_id:
                         supplier_id = material.supplier_id
             
@@ -1243,7 +1243,7 @@ def create_po_from_shortage():
         
         # Create PO for each supplier
         for supplier_id, items in supplier_items.items():
-            supplier = Supplier.query.get(supplier_id)
+            supplier = db.session.get(Supplier, supplier_id)
             if not supplier:
                 continue
             
@@ -1266,7 +1266,7 @@ def create_po_from_shortage():
             subtotal = 0
             for idx, item in enumerate(items, 1):
                 material_id = item.get('material_id')
-                material = Material.query.get(material_id) if material_id else None
+                material = db.session.get(Material, material_id) if material_id else None
                 
                 quantity = float(item.get('shortage_quantity', 0))
                 unit_price = float(item.get('unit_cost', 0)) or (float(material.cost_per_unit) if material else 0)
@@ -1436,7 +1436,7 @@ def create_po_from_shortage_internal(shortage_items, reference_type, reference_i
         if not supplier_id:
             material_id = item.get('material_id')
             if material_id:
-                material = Material.query.get(material_id)
+                material = db.session.get(Material, material_id)
                 if material and material.supplier_id:
                     supplier_id = material.supplier_id
         
@@ -1453,7 +1453,7 @@ def create_po_from_shortage_internal(shortage_items, reference_type, reference_i
     created_pos = []
     
     for supplier_id, items in supplier_items.items():
-        supplier = Supplier.query.get(supplier_id)
+        supplier = db.session.get(Supplier, supplier_id)
         if not supplier:
             continue
         
@@ -1476,7 +1476,7 @@ def create_po_from_shortage_internal(shortage_items, reference_type, reference_i
         subtotal = 0
         for idx, item in enumerate(items, 1):
             material_id = item.get('material_id')
-            material = Material.query.get(material_id) if material_id else None
+            material = db.session.get(Material, material_id) if material_id else None
             
             quantity = float(item.get('shortage_quantity', 0))
             unit_price = float(item.get('unit_cost', 0)) or (float(material.cost_per_unit) if material else 0)

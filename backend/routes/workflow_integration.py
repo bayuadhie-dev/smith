@@ -1,3 +1,4 @@
+from models import db
 """
 Workflow Integration Routes
 Handles end-to-end business workflow integration:
@@ -37,7 +38,7 @@ def sales_order_to_mrp():
             return jsonify({'error': 'sales_order_id is required'}), 400
         
         # Get Sales Order
-        so = SalesOrder.query.get(so_id)
+        so = db.session.get(SalesOrder, so_id)
         if not so:
             return jsonify({'error': 'Sales Order not found'}), 404
         
@@ -48,7 +49,7 @@ def sales_order_to_mrp():
         
         for item in so_items:
             # Get product BOM
-            product = Product.query.get(item.product_id)
+            product = db.session.get(Product, item.product_id)
             if not product:
                 continue
             
@@ -80,7 +81,7 @@ def sales_order_to_mrp():
                     material_id=bom_item.material_id
                 ).first()
                 
-                current_stock = float(inventory.quantity) if inventory else 0
+                current_stock = float(inventory.quantity_on_hand) if inventory else 0
                 shortage = max(0, material_needed - current_stock)
                 
                 mrp_requirements.append({
@@ -162,7 +163,7 @@ def mrp_to_purchase_order():
             if req.get('type') != 'material':
                 continue
             
-            material = Material.query.get(req['material_id'])
+            material = db.session.get(Material, req['material_id'])
             if not material:
                 continue
             
@@ -226,12 +227,12 @@ def mrp_to_work_order():
             return jsonify({'error': 'sales_order_id, product_id, and quantity are required'}), 400
         
         # Get Sales Order
-        so = SalesOrder.query.get(so_id)
+        so = db.session.get(SalesOrder, so_id)
         if not so:
             return jsonify({'error': 'Sales Order not found'}), 404
         
         # Get Product
-        product = Product.query.get(product_id)
+        product = db.session.get(Product, product_id)
         if not product:
             return jsonify({'error': 'Product not found'}), 404
         
@@ -345,7 +346,7 @@ def complete_workflow():
         
         # Step 3: Create Work Order if no shortage or after PO
         if (not has_shortage or auto_create_po) and auto_create_wo:
-            so = SalesOrder.query.get(so_id)
+            so = db.session.get(SalesOrder, so_id)
             so_items = SalesOrderItem.query.filter_by(order_id=so_id).first()
             
             if so_items:
@@ -392,7 +393,7 @@ def get_workflow_status(so_id):
     Get complete workflow status for a Sales Order
     """
     try:
-        so = SalesOrder.query.get(so_id)
+        so = db.session.get(SalesOrder, so_id)
         if not so:
             return jsonify({'error': 'Sales Order not found'}), 404
         

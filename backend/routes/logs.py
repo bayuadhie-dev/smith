@@ -4,6 +4,7 @@ import os
 from datetime import datetime
 from utils.timezone import get_local_now, get_local_today
 
+from models import db
 logs_bp = Blueprint('logs', __name__)
 
 @logs_bp.route('/frontend', methods=['POST'])
@@ -61,7 +62,7 @@ def view_logs():
     try:
         from models.user import User
         user_id = get_jwt_identity()
-        user = User.query.get(int(user_id))
+        user = db.session.get(User, int(user_id))
         
         if not user or not (user.is_admin or user.is_super_admin):
             return jsonify({'error': 'Admin access required'}), 403

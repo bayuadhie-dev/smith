@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, WasteRecord, WasteCategory, WasteTarget, WasteDisposal
 from models.production import ShiftProduction, Machine, WorkOrder
@@ -129,6 +129,27 @@ def create_waste_record():
             recorded_by=user_id
         )
         
+        # LOGIC FIX: Deduct stock from Warehouse Inventory (FIFO)
+        # Assuming waste is usually materials. If it's a product, we'd need a product_id.
+        # Check if the category or data provides a material_id
+        material_id = data.get('material_id')
+        if material_id:
+            from utils.fifo_helper import fifo_deduct_stock
+            deduction = fifo_deduct_stock(
+                material_id=material_id,
+                quantity_needed=float(data['quantity']),
+                reference_number=record_number,
+                reference_type='waste',
+                notes=f"Waste recorded: {data.get('reason', '')}",
+                user_id=user_id
+            )
+            if not deduction['success']:
+                return jsonify({'error': f"Stock deduction failed: {deduction['error']}"}), 400
+            
+            # Update record with actual cost from inventory if available
+            if deduction.get('total_cost'):
+                record.estimated_value = deduction['total_cost']
+
         db.session.add(record)
         db.session.commit()
         return jsonify({'message': 'Waste record created', 'record_id': record.id}), 201
@@ -140,7 +161,7 @@ def create_waste_record():
 @jwt_required()
 def get_waste_record(id):
     try:
-        record = WasteRecord.query.get_or_404(id)
+        record = db.session.get(WasteRecord, id) or abort(404)
         return jsonify({
             'id': record.id,
             'record_number': record.record_number,
@@ -167,7 +188,7 @@ def get_waste_record(id):
 @jwt_required()
 def update_waste_record(id):
     try:
-        record = WasteRecord.query.get_or_404(id)
+        record = db.session.get(WasteRecord, id) or abort(404)
         data = request.get_json()
         
         if data.get('waste_date'):
@@ -196,7 +217,7 @@ def update_waste_record(id):
 @jwt_required()
 def delete_waste_record(id):
     try:
-        record = WasteRecord.query.get_or_404(id)
+        record = db.session.get(WasteRecord, id) or abort(404)
         db.session.delete(record)
         db.session.commit()
         return jsonify(success_response('api.success')), 200

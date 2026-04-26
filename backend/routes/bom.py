@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db
 from models.production import BillOfMaterials, BOMItem
@@ -113,7 +113,7 @@ def get_boms():
 def get_bom(bom_id):
     """Get specific BOM with all items and stock information"""
     try:
-        bom = BillOfMaterials.query.get_or_404(bom_id)
+        bom = db.session.get(BillOfMaterials, bom_id) or abort(404)
         
         # Get BOM items with stock information
         items = []
@@ -244,7 +244,7 @@ def create_bom():
 def update_bom(bom_id):
     """Update existing BOM"""
     try:
-        bom = BillOfMaterials.query.get_or_404(bom_id)
+        bom = db.session.get(BillOfMaterials, bom_id) or abort(404)
         data = request.get_json()
         user_id = int(get_jwt_identity())
 
@@ -263,7 +263,7 @@ def update_bom(bom_id):
         
         if 'product_id' in data and data['product_id'] != bom.product_id:
             # Check if product exists
-            product = Product.query.get(data['product_id'])
+            product = db.session.get(Product, data['product_id'])
             if not product:
                 return error_response('Product not found'), 404
             bom.product_id = data['product_id']
@@ -315,7 +315,7 @@ def update_bom(bom_id):
 def delete_bom(bom_id):
     """Delete BOM"""
     try:
-        bom = BillOfMaterials.query.get_or_404(bom_id)
+        bom = db.session.get(BillOfMaterials, bom_id) or abort(404)
         
         # Check if BOM is used in work orders
         from models.production import WorkOrder
@@ -337,7 +337,7 @@ def delete_bom(bom_id):
 def get_bom_shortage_analysis(bom_id):
     """Get material shortage analysis for BOM"""
     try:
-        bom = BillOfMaterials.query.get_or_404(bom_id)
+        bom = db.session.get(BillOfMaterials, bom_id) or abort(404)
         production_qty = request.args.get('production_qty', 1, type=float)
 
         shortage_items = []
@@ -384,7 +384,7 @@ def get_bom_shortage_analysis(bom_id):
 def create_bom_cost_analysis(bom_id):
     """Create cost analysis for BOM"""
     try:
-        bom = BillOfMaterials.query.get_or_404(bom_id)
+        bom = db.session.get(BillOfMaterials, bom_id) or abort(404)
         
         # Calculate costs by material type
         raw_material_cost = 0

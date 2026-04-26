@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, ResearchReport, ResearchProject, User
 from utils.i18n import success_response, error_response, get_message
@@ -140,7 +140,7 @@ def create_report():
 def get_report(id):
     """Get report details"""
     try:
-        report = ResearchReport.query.get_or_404(id)
+        report = db.session.get(ResearchReport, id) or abort(404)
         
         return jsonify({
             'id': report.id,
@@ -184,7 +184,7 @@ def get_report(id):
 def update_report(id):
     """Update report"""
     try:
-        report = ResearchReport.query.get_or_404(id)
+        report = db.session.get(ResearchReport, id) or abort(404)
         data = request.get_json()
         
         # Check if user can edit this report
@@ -244,7 +244,7 @@ def update_report(id):
 def delete_report(id):
     """Delete report"""
     try:
-        report = ResearchReport.query.get_or_404(id)
+        report = db.session.get(ResearchReport, id) or abort(404)
         user_id = get_jwt_identity()
         
         # Check if user can delete this report
@@ -265,7 +265,7 @@ def delete_report(id):
 def review_report(id):
     """Review report"""
     try:
-        report = ResearchReport.query.get_or_404(id)
+        report = db.session.get(ResearchReport, id) or abort(404)
         user_id = get_jwt_identity()
         data = request.get_json()
         
@@ -294,7 +294,7 @@ def review_report(id):
 def approve_report(id):
     """Approve report for publication"""
     try:
-        report = ResearchReport.query.get_or_404(id)
+        report = db.session.get(ResearchReport, id) or abort(404)
         user_id = get_jwt_identity()
         
         if report.status != 'approved':
@@ -318,7 +318,7 @@ def approve_report(id):
 def submit_report(id):
     """Submit report for review"""
     try:
-        report = ResearchReport.query.get_or_404(id)
+        report = db.session.get(ResearchReport, id) or abort(404)
         user_id = get_jwt_identity()
         
         if report.prepared_by != user_id:

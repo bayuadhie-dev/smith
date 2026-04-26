@@ -1,6 +1,6 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from models import db, Invoice, InvoiceItem, Payment, AccountingEntry, CostCenter
+from models import db, Invoice, InvoiceItem, Payment, AccountingEntry, CostCenter, Account
 from utils.i18n import success_response, error_response, get_message
 from utils import generate_number
 from datetime import datetime, timedelta
@@ -12,6 +12,65 @@ finance_bp = Blueprint('finance', __name__)
 @finance_bp.route('/invoices', methods=['GET'])
 @jwt_required()
 def get_invoices():
+    """
+    Get all invoices with pagination
+    ---
+    tags:
+      - Finance
+    summary: Get all invoices
+    description: Retrieve all invoices with pagination and optional filtering
+    security:
+      - BearerAuth: []
+    parameters:
+      - in: query
+        name: page
+        type: integer
+        default: 1
+        description: Page number
+      - in: query
+        name: per_page
+        type: integer
+        default: 50
+        description: Items per page
+      - in: query
+        name: type
+        type: string
+        description: Filter by invoice type
+    responses:
+      200:
+        description: Invoices retrieved successfully
+        schema:
+          type: object
+          properties:
+            invoices:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  invoice_number:
+                    type: string
+                  invoice_type:
+                    type: string
+                  invoice_date:
+                    type: string
+                    format: date-time
+                  total_amount:
+                    type: number
+                  paid_amount:
+                    type: number
+                  balance_due:
+                    type: number
+                  status:
+                    type: string
+            total:
+              type: integer
+      401:
+        description: Unauthorized
+      500:
+        description: Server error
+    """
     try:
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 50, type=int)
@@ -42,9 +101,63 @@ def get_invoices():
 @finance_bp.route('/invoices/<int:id>', methods=['GET'])
 @jwt_required()
 def get_invoice(id):
-    """Get single invoice by ID with items and related data"""
+    """
+    Get single invoice by ID with items
+    ---
+    tags:
+      - Finance
+    summary: Get invoice by ID
+    description: Retrieve a specific invoice with items and related data
+    security:
+      - BearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+        description: Invoice ID
+    responses:
+      200:
+        description: Invoice retrieved successfully
+        schema:
+          type: object
+          properties:
+            invoice:
+              type: object
+              properties:
+                id:
+                  type: integer
+                invoice_number:
+                  type: string
+                invoice_type:
+                  type: string
+                invoice_date:
+                  type: string
+                  format: date-time
+                due_date:
+                  type: string
+                  format: date-time
+                total_amount:
+                  type: number
+                paid_amount:
+                  type: number
+                balance_due:
+                  type: number
+                status:
+                  type: string
+                items:
+                  type: array
+                  items:
+                    type: object
+      401:
+        description: Unauthorized
+      404:
+        description: Invoice not found
+      500:
+        description: Server error
+    """
     try:
-        invoice = Invoice.query.get_or_404(id)
+        invoice = db.session.get(Invoice, id) or abort(404)
         
         # Get invoice items
         items = InvoiceItem.query.filter_by(invoice_id=id).order_by(InvoiceItem.line_number).all()
@@ -53,7 +166,7 @@ def get_invoice(id):
         work_order_number = None
         if invoice.work_order_id:
             from models.production import WorkOrder
-            wo = WorkOrder.query.get(invoice.work_order_id)
+            wo = db.session.get(WorkOrder, invoice.work_order_id)
             if wo:
                 work_order_number = wo.wo_number
         
@@ -82,7 +195,7 @@ def get_invoice(id):
                     'description': item.description,
                     'quantity': float(item.quantity) if item.quantity else 0,
                     'unit_price': float(item.unit_price) if item.unit_price else 0,
-                    'amount': float(item.amount) if item.amount else 0,
+                    'amount': float(item.total_amount) if item.total_amount else 0,
                     'discount_percent': float(item.discount_percent) if item.discount_percent else 0,
                     'tax_amount': float(item.tax_amount) if item.tax_amount else 0
                 } for item in items]
@@ -146,7 +259,7 @@ def create_invoice():
         
         invoice.subtotal = subtotal
         invoice.discount_amount = discount_amount
-        invoice.tax_rate = tax_rate
+        # tax_rate is not a field on Invoice model — used only for calculation
         invoice.tax_amount = tax_amount
         invoice.total_amount = subtotal - discount_amount + tax_amount
         invoice.balance_due = invoice.total_amount
@@ -204,7 +317,7 @@ def create_payment():
         
         # Update invoice if provided
         if data.get('invoice_id'):
-            invoice = Invoice.query.get(data['invoice_id'])
+            invoice = db.session.get(Invoice, data['invoice_id'])
             invoice.paid_amount += data['amount']
             invoice.balance_due -= data['amount']
             if invoice.balance_due <= 0:
@@ -328,7 +441,7 @@ def get_general_ledger():
                 'debit_amount': float(e.debit_amount) if e.debit_amount else 0,
                 'credit_amount': float(e.credit_amount) if e.credit_amount else 0,
                 'reference_number': e.reference_number,
-                'created_by': getattr(e.created_user, 'username', 'N/A') if e.created_user else 'N/A'
+                'created_by': getattr(e.posted_by_user, 'username', 'N/A') if e.posted_by_user else 'N/A'
             } for e in entries.items],
             'total': entries.total,
             'pages': entries.pages
@@ -344,13 +457,13 @@ def get_basic_chart_of_accounts():
         from models.finance import Account
         
         # Get all active accounts
-        accounts = Account.query.filter_by(is_active=True).order_by(Account.code).all()
+        accounts = Account.query.filter_by(is_active=True).order_by(Account.account_code).all()
         
         return jsonify({
             'accounts': [{
                 'id': a.id,
-                'code': a.code,
-                'name': a.name,
+                'code': a.account_code,
+                'name': a.account_name,
                 'account_type': a.account_type,
                 'balance': float(a.balance) if a.balance else 0,
                 'is_header': a.is_header if hasattr(a, 'is_header') else False
@@ -378,8 +491,8 @@ def get_cash_bank():
         return jsonify({
             'cash_accounts': [{
                 'id': a.id,
-                'code': a.code,
-                'name': a.name,
+                'code': a.account_code,
+                'name': a.account_name,
                 'account_type': a.account_type,
                 'balance': float(a.balance) if a.balance else 0
             } for a in cash_accounts],
@@ -989,38 +1102,99 @@ def get_dashboard_revenue():
 # ADDITIONAL FINANCE ENDPOINTS
 # ===============================
 
-@finance_bp.route('/accounting/chart-of-accounts', methods=['GET'])
+@finance_bp.route('/chart-of-accounts', methods=['GET'])
 @jwt_required()
 def get_chart_of_accounts():
     """Get chart of accounts"""
     try:
-        # Get accounts from database - need to create Account model first
-        # For now, return empty array until Account model is implemented
-        accounts = []
+        accounts = Account.query.order_by(Account.account_code).all()
         
-        # Get accounts from Account model
-        try:
-            from ..models.finance import Account
-            accounts = Account.query.filter_by(is_active=True).order_by(Account.account_code).all()
-            
-            return jsonify({
-                'accounts': [{
-                    'id': a.id,
-                    'account_code': a.account_code,
-                    'account_name': a.account_name,
-                    'account_type': a.account_type,
-                    'balance': float(a.balance),
-                    'is_header': a.is_header,
-                    'level': a.level
-                } for a in accounts]
-            }), 200
-        except ImportError:
-            return jsonify({
-                'accounts': [],
-                'message': 'Chart of accounts not configured. Please set up your accounts first.'
-            }), 200
+        return jsonify({
+            'accounts': [{
+                'id': a.id,
+                'code': a.account_code,
+                'name': a.account_name,
+                'type': a.account_type,
+                'balance': float(a.balance),
+                'is_header': a.is_header,
+                'level': a.level,
+                'is_active': a.is_active,
+                'description': a.description
+            } for a in accounts]
+        }), 200
         
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@finance_bp.route('/chart-of-accounts', methods=['POST'])
+@jwt_required()
+def create_account():
+    """Create a new account"""
+    try:
+        data = request.get_json()
+        
+        # Check if account code already exists
+        if Account.query.filter_by(account_code=data['code']).first():
+            return jsonify({'error': f"Account code '{data['code']}' already exists"}), 400
+            
+        new_account = Account(
+            account_code=data['code'],
+            account_name=data['name'],
+            account_type=data['type'],
+            normal_balance='debit' if data['type'] in ['Asset', 'Expense'] else 'credit',
+            description=data.get('description', ''),
+            is_active=True,
+            is_header=data.get('is_header', False)
+        )
+        
+        db.session.add(new_account)
+        db.session.commit()
+        
+        return jsonify({'message': 'Account created successfully', 'id': new_account.id}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@finance_bp.route('/chart-of-accounts/<string:code>', methods=['PUT'])
+@jwt_required()
+def update_account(code):
+    """Update an account by code"""
+    try:
+        data = request.get_json()
+        account = Account.query.filter_by(account_code=code).first_or_404()
+        
+        if 'name' in data:
+            account.account_name = data['name']
+        if 'type' in data:
+            account.account_type = data['type']
+            account.normal_balance = 'debit' if data['type'] in ['Asset', 'Expense'] else 'credit'
+        if 'description' in data:
+            account.description = data['description']
+        if 'is_active' in data:
+            account.is_active = data['is_active']
+            
+        db.session.commit()
+        return jsonify({'message': 'Account updated successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@finance_bp.route('/chart-of-accounts/<string:code>', methods=['DELETE'])
+@jwt_required()
+def delete_account(code):
+    """Delete an account by code"""
+    try:
+        account = Account.query.filter_by(account_code=code).first_or_404()
+        
+        # Check if account has journal entries before deleting
+        if AccountingEntry.query.filter_by(account_code=code).first():
+            return jsonify({'error': 'Cannot delete account with existing journal entries. Deactivate it instead.'}), 400
+            
+        db.session.delete(account)
+        db.session.commit()
+        return jsonify({'message': 'Account deleted successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
 @finance_bp.route('/accounting/journal-entries', methods=['GET'])

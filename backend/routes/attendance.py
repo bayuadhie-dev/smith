@@ -624,7 +624,7 @@ def admin_get_all_attendance():
     """Admin: Get all users' attendance"""
     try:
         user_id = get_jwt_identity()
-        user = User.query.get(user_id)
+        user = db.session.get(User, user_id)
         
         # Check admin permission
         if not user or not (user.is_admin or user.is_super_admin):
@@ -663,12 +663,12 @@ def admin_verify_attendance(attendance_id):
     """Admin: Verify or reject attendance"""
     try:
         user_id = get_jwt_identity()
-        user = User.query.get(user_id)
+        user = db.session.get(User, user_id)
         
         if not user or not (user.is_admin or user.is_super_admin):
             return jsonify({'error': 'Unauthorized'}), 403
         
-        attendance = Attendance.query.get(attendance_id)
+        attendance = db.session.get(Attendance, attendance_id)
         if not attendance:
             return jsonify({'error': 'Attendance not found'}), 404
         
@@ -978,12 +978,12 @@ def admin_delete_attendance(id):
         # Check if user is super admin
         current_user_id = get_jwt_identity()
         from models.auth import User
-        user = User.query.get(current_user_id)
+        user = db.session.get(User, current_user_id)
         
         if not user or user.role not in ['super_admin', 'admin']:
             return jsonify({'error': 'Tidak memiliki akses'}), 403
         
-        attendance = Attendance.query.get(id)
+        attendance = db.session.get(Attendance, id)
         
         if not attendance:
             return jsonify({'error': 'Data absensi tidak ditemukan'}), 404

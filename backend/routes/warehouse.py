@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required
 from models import db, WarehouseZone, WarehouseLocation, Inventory, InventoryMovement, Product
 from models.product import Material
@@ -108,7 +108,7 @@ def get_locations():
 def get_location_detail(id):
     """Get single warehouse location with inventory items"""
     try:
-        location = WarehouseLocation.query.get(id)
+        location = db.session.get(WarehouseLocation, id)
         if not location:
             return jsonify({'error': 'Location not found'}), 404
         
@@ -330,13 +330,13 @@ def get_inventory():
                 location = None
                 
                 if i.product_id:
-                    product = Product.query.get(i.product_id)
+                    product = db.session.get(Product, i.product_id)
                 
                 if i.material_id:
-                    material = Material.query.get(i.material_id)
+                    material = db.session.get(Material, i.material_id)
                 
                 if i.location_id:
-                    location = WarehouseLocation.query.get(i.location_id)
+                    location = db.session.get(WarehouseLocation, i.location_id)
                 
                 item_data = {
                     'id': i.id,
@@ -491,7 +491,7 @@ def add_to_inventory():
         db.session.add(movement)
         
         # Update location occupied
-        location = WarehouseLocation.query.get(location_id)
+        location = db.session.get(WarehouseLocation, location_id)
         if location:
             location.occupied = float(location.occupied or 0) + quantity
         
@@ -602,7 +602,7 @@ def get_movements():
 def get_movement_detail(movement_id):
     """Get single inventory movement detail"""
     try:
-        m = InventoryMovement.query.get_or_404(movement_id)
+        m = db.session.get(InventoryMovement, movement_id) or abort(404)
 
         product_code = ''
         product_name = ''
@@ -810,6 +810,11 @@ def create_movement():
             from_inventory.quantity_on_hand -= quantity
             from_inventory.quantity_available -= quantity
             
+            # Update source location occupied
+            from_location = db.session.get(WarehouseLocation, from_location_id)
+            if from_location:
+                from_location.occupied = float(from_location.occupied or 0) - quantity
+            
             # Increase at destination
             to_inventory = Inventory.query.filter_by(
                 product_id=product_id,
@@ -832,6 +837,11 @@ def create_movement():
                     created_by=user_id
                 )
                 db.session.add(to_inventory)
+            
+            # Update destination location occupied
+            to_location = db.session.get(WarehouseLocation, to_location_id)
+            if to_location:
+                to_location.occupied = float(to_location.occupied or 0) + quantity
         
         elif movement_type == 'adjust':
             location_id = data.get('location_id')
@@ -847,9 +857,20 @@ def create_movement():
                 if adjustment_type == 'increase':
                     inventory.quantity_on_hand += quantity
                     inventory.quantity_available += quantity
+                    # Update location occupied
+                    location = db.session.get(WarehouseLocation, location_id)
+                    if location:
+                        location.occupied = float(location.occupied or 0) + quantity
                 else:
+                    # Validate sufficient stock before decrease
+                    if inventory.quantity_available < quantity:
+                        return error_response('Insufficient stock for adjustment'), 400
                     inventory.quantity_on_hand -= quantity
                     inventory.quantity_available -= quantity
+                    # Update location occupied
+                    location = db.session.get(WarehouseLocation, location_id)
+                    if location:
+                        location.occupied = float(location.occupied or 0) - quantity
         
         db.session.commit()
         
@@ -931,8 +952,8 @@ def get_warehouse_dashboard():
             from sqlalchemy import case
             movement_summary = db.session.query(
                 func.count(InventoryMovement.id).label('total_movements'),
-                func.sum(case((InventoryMovement.movement_type == 'in', InventoryMovement.quantity), else_=0)).label('total_in'),
-                func.sum(case((InventoryMovement.movement_type == 'out', InventoryMovement.quantity), else_=0)).label('total_out')
+                func.sum(case((InventoryMovement.movement_type == 'stock_in', InventoryMovement.quantity), else_=0)).label('total_in'),
+                func.sum(case((InventoryMovement.movement_type == 'stock_out', InventoryMovement.quantity), else_=0)).label('total_out')
             ).filter(
                 InventoryMovement.movement_date >= start_date
             ).first()
@@ -951,11 +972,11 @@ def get_warehouse_dashboard():
                 Product.code,
                 Product.name,
                 Inventory.quantity_on_hand,
-                Product.minimum_stock
+                Product.min_stock_level
             ).join(Inventory).filter(
                 and_(
-                    Inventory.quantity_on_hand <= Product.minimum_stock,
-                    Product.minimum_stock > 0
+                    Inventory.quantity_on_hand <= Product.min_stock_level,
+                    Product.min_stock_level > 0
                 )
             ).all()
         except:
@@ -1033,8 +1054,8 @@ def get_warehouse_dashboard():
                 'id': item.id,
                 'code': item.code,
                 'name': item.name,
-                'current_quantity': float(item.quantity),
-                'minimum_stock': float(item.minimum_stock)
+                'current_quantity': float(item.quantity_on_hand),
+                'minimum_stock': float(item.min_stock_level)
             } for item in low_stock_items],
             'recent_movements': [{
                 'id': movement.id,
@@ -1173,7 +1194,7 @@ def get_inventory_turnover():
             Product.code,
             Product.name,
             func.avg(Inventory.quantity_on_hand).label('avg_inventory'),
-            func.sum(func.case([(InventoryMovement.movement_type == 'out', InventoryMovement.quantity)], else_=0)).label('total_sold'),
+            func.sum(func.case([(InventoryMovement.movement_type == 'stock_out', InventoryMovement.quantity)], else_=0)).label('total_sold'),
             Product.unit_cost
         ).join(Inventory).join(InventoryMovement).filter(
             InventoryMovement.movement_date >= start_date

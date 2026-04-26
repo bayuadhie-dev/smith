@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, QualityTest, QualityInspection, CAPA, QualityStandard
 from models.production import WorkOrder
@@ -259,7 +259,7 @@ def create_qc_test_for_work_order(wo_id):
         user_id = int(get_jwt_identity())
         
         # Get work order
-        work_order = WorkOrder.query.get_or_404(wo_id)
+        work_order = db.session.get(WorkOrder, wo_id) or abort(404)
         
         if work_order.status != 'completed':
             return jsonify({'error': 'Work order must be completed before QC'}), 400
@@ -341,7 +341,7 @@ def update_qc_test_result(test_id):
         data = request.get_json()
         user_id = int(get_jwt_identity())
         
-        test = QualityTest.query.get_or_404(test_id)
+        test = db.session.get(QualityTest, test_id) or abort(404)
         
         test.result = data.get('result', test.result)
         test.defects_found = data.get('defects_found', test.defects_found)
@@ -379,7 +379,7 @@ def set_qc_disposition(inspection_id):
         data = request.get_json()
         user_id = int(get_jwt_identity())
         
-        inspection = QualityInspection.query.get_or_404(inspection_id)
+        inspection = db.session.get(QualityInspection, inspection_id) or abort(404)
         
         # Update checklist counts if provided
         if 'total_checklist_items' in data:
@@ -468,7 +468,7 @@ def transfer_qc_to_warehouse(inspection_id):
         data = request.get_json()
         user_id = int(get_jwt_identity())
         
-        inspection = QualityInspection.query.get_or_404(inspection_id)
+        inspection = db.session.get(QualityInspection, inspection_id) or abort(404)
         
         if inspection.transferred_to_warehouse:
             return jsonify({'error': 'Already transferred to warehouse'}), 400
@@ -493,7 +493,7 @@ def transfer_qc_to_warehouse(inspection_id):
                 return jsonify({'error': 'No available finished goods warehouse location'}), 400
             location_id = fg_location.id
         
-        location = WarehouseLocation.query.get(location_id)
+        location = db.session.get(WarehouseLocation, location_id)
         if not location:
             return jsonify({'error': 'Warehouse location not found'}), 404
         
@@ -753,7 +753,7 @@ def inspect_incoming_material(item_id):
         user_id = int(get_jwt_identity())
         
         # Get goods receipt item
-        gr_item = GoodsReceiptItem.query.get_or_404(item_id)
+        gr_item = db.session.get(GoodsReceiptItem, item_id) or abort(404)
         
         # Check if inspection already exists
         existing = QualityInspection.query.filter(
@@ -908,7 +908,7 @@ def create_ipqc_inspection(wo_id):
         user_id = int(get_jwt_identity())
         
         # Get work order
-        work_order = WorkOrder.query.get_or_404(wo_id)
+        work_order = db.session.get(WorkOrder, wo_id) or abort(404)
         
         if work_order.status != 'in_progress':
             return jsonify({'error': 'Work order must be in progress for IPQC'}), 400

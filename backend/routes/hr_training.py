@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, Employee, TrainingCategory, TrainingProgram, TrainingSession, TrainingEnrollment, TrainingRequest
 from utils.i18n import success_response, error_response, get_message
@@ -174,7 +174,7 @@ def create_training_program():
 def get_training_program(program_id):
     """Get training program details"""
     try:
-        program = TrainingProgram.query.get_or_404(program_id)
+        program = db.session.get(TrainingProgram, program_id) or abort(404)
         
         return jsonify({
             'program': {
@@ -328,7 +328,7 @@ def create_training_session():
 def get_training_session(session_id):
     """Get training session details with enrollments"""
     try:
-        session = TrainingSession.query.get_or_404(session_id)
+        session = db.session.get(TrainingSession, session_id) or abort(404)
         
         return jsonify({
             'session': {
@@ -388,7 +388,7 @@ def enroll_employees(session_id):
         data = request.get_json()
         user_id = get_jwt_identity()
         
-        session = TrainingSession.query.get_or_404(session_id)
+        session = db.session.get(TrainingSession, session_id) or abort(404)
         employee_ids = data.get('employee_ids', [])
         
         if not employee_ids:
@@ -435,7 +435,7 @@ def update_attendance(enrollment_id):
     """Update training attendance"""
     try:
         data = request.get_json()
-        enrollment = TrainingEnrollment.query.get_or_404(enrollment_id)
+        enrollment = db.session.get(TrainingEnrollment, enrollment_id) or abort(404)
         
         enrollment.attendance_status = data.get('attendance_status')
         enrollment.attendance_percentage = Decimal(str(data.get('attendance_percentage', 0)))
@@ -453,7 +453,7 @@ def update_assessment(enrollment_id):
     """Update training assessment scores"""
     try:
         data = request.get_json()
-        enrollment = TrainingEnrollment.query.get_or_404(enrollment_id)
+        enrollment = db.session.get(TrainingEnrollment, enrollment_id) or abort(404)
         
         enrollment.pre_assessment_score = Decimal(str(data.get('pre_assessment_score', 0))) if data.get('pre_assessment_score') else None
         enrollment.post_assessment_score = Decimal(str(data.get('post_assessment_score', 0))) if data.get('post_assessment_score') else None
@@ -473,7 +473,7 @@ def issue_certificate(enrollment_id):
     """Issue training certificate"""
     try:
         data = request.get_json()
-        enrollment = TrainingEnrollment.query.get_or_404(enrollment_id)
+        enrollment = db.session.get(TrainingEnrollment, enrollment_id) or abort(404)
         
         if enrollment.pass_status != 'pass':
             return jsonify(error_response('api.error', error_code=400)), 400
@@ -598,7 +598,7 @@ def approve_training_request(request_id):
     """Approve training request"""
     try:
         user_id = get_jwt_identity()
-        training_request = TrainingRequest.query.get_or_404(request_id)
+        training_request = db.session.get(TrainingRequest, request_id) or abort(404)
         
         if training_request.status != 'pending':
             return jsonify(error_response('api.error', error_code=400)), 400
@@ -621,7 +621,7 @@ def reject_training_request(request_id):
     try:
         data = request.get_json()
         user_id = get_jwt_identity()
-        training_request = TrainingRequest.query.get_or_404(request_id)
+        training_request = db.session.get(TrainingRequest, request_id) or abort(404)
         
         if training_request.status != 'pending':
             return jsonify(error_response('api.error', error_code=400)), 400

@@ -2,7 +2,7 @@
 R&D Integration Routes
 Connects R&D Legacy module with Products, Production, Warehouse, and Quality modules
 """
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db
 from models.rd import ResearchProject, Experiment, ProductDevelopment, RDMaterial, Prototype
@@ -66,7 +66,7 @@ def create_product_from_development(dev_id):
     """Create a new product from R&D product development"""
     try:
         user_id = get_jwt_identity()
-        development = ProductDevelopment.query.get_or_404(dev_id)
+        development = db.session.get(ProductDevelopment, dev_id) or abort(404)
         
         if development.status != 'approved':
             return jsonify({'error': 'Product development must be approved first'}), 400
@@ -164,7 +164,7 @@ def create_bom_from_prototype(prototype_id):
     """Create BOM from R&D prototype specifications"""
     try:
         user_id = get_jwt_identity()
-        prototype = Prototype.query.get_or_404(prototype_id)
+        prototype = db.session.get(Prototype, prototype_id) or abort(404)
         development = prototype.product_development
         
         if not development:
@@ -176,7 +176,7 @@ def create_bom_from_prototype(prototype_id):
         if not product_id:
             return jsonify({'error': 'product_id is required'}), 400
         
-        product = Product.query.get_or_404(product_id)
+        product = db.session.get(Product, product_id) or abort(404)
         
         # Generate BOM number
         bom_number = generate_number('BOM', BillOfMaterials, 'bom_number')
@@ -294,7 +294,7 @@ def request_material_from_warehouse():
         if not material_id or not quantity:
             return jsonify({'error': 'material_id and quantity are required'}), 400
         
-        material = Material.query.get_or_404(material_id)
+        material = db.session.get(Material, material_id) or abort(404)
         
         # Create RD Material request linked to warehouse material
         rd_material = RDMaterial(
@@ -401,7 +401,7 @@ def create_quality_test_from_experiment(exp_id):
     """Create quality test based on R&D experiment results"""
     try:
         user_id = get_jwt_identity()
-        experiment = Experiment.query.get_or_404(exp_id)
+        experiment = db.session.get(Experiment, exp_id) or abort(404)
         
         if experiment.status != 'completed':
             return jsonify({'error': 'Experiment must be completed first'}), 400

@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, ProductDevelopment, ResearchProject, Prototype, ProductTestResult, User
 from utils.i18n import success_response, error_response, get_message
@@ -149,7 +149,7 @@ def create_product_development():
 def get_product_development(id):
     """Get product development details"""
     try:
-        development = ProductDevelopment.query.get_or_404(id)
+        development = db.session.get(ProductDevelopment, id) or abort(404)
         
         return jsonify({
             'id': development.id,
@@ -215,7 +215,7 @@ def get_product_development(id):
 def update_product_development(id):
     """Update product development"""
     try:
-        development = ProductDevelopment.query.get_or_404(id)
+        development = db.session.get(ProductDevelopment, id) or abort(404)
         data = request.get_json()
         
         # Update fields
@@ -286,7 +286,7 @@ def update_product_development(id):
 def delete_product_development(id):
     """Delete product development"""
     try:
-        development = ProductDevelopment.query.get_or_404(id)
+        development = db.session.get(ProductDevelopment, id) or abort(404)
         
         # Check if development has related data
         if development.prototypes or development.test_results:
@@ -308,7 +308,7 @@ def delete_product_development(id):
 def approve_product_development(id):
     """Approve product development"""
     try:
-        development = ProductDevelopment.query.get_or_404(id)
+        development = db.session.get(ProductDevelopment, id) or abort(404)
         user_id = get_jwt_identity()
         
         development.approved_by = user_id
@@ -436,7 +436,7 @@ def convert_rd_to_production(development_id):
         data = request.get_json() or {}
         
         # Get R&D product development
-        rd_product = ProductDevelopment.query.get_or_404(development_id)
+        rd_product = db.session.get(ProductDevelopment, development_id) or abort(404)
         
         if rd_product.status != 'approved':
             return jsonify({'error': 'Hanya produk R&D yang sudah approved yang bisa dikonversi'}), 400

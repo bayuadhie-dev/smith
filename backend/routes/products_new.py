@@ -3,7 +3,7 @@ New Product Routes - Using unified products table
 API endpoints with all Excel fields, now backed by the merged products table.
 """
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from models import db
 from models.product_excel_schema import ProductNew, ProductVersion
 from datetime import datetime
@@ -66,7 +66,7 @@ def get_products():
 def get_product(product_id):
     """Get single product by ID"""
     try:
-        product = ProductNew.query.get_or_404(product_id)
+        product = db.session.get(ProductNew, product_id) or abort(404)
         return jsonify({
             'product': product.to_dict()
         })
@@ -149,7 +149,7 @@ def create_product():
 def update_product(product_id):
     """Update existing product with versioning"""
     try:
-        product = ProductNew.query.get_or_404(product_id)
+        product = db.session.get(ProductNew, product_id) or abort(404)
         data = request.get_json()
         
         # Store previous data for versioning
@@ -216,7 +216,7 @@ def update_product(product_id):
 def delete_product(product_id):
     """Delete product (soft delete)"""
     try:
-        product = ProductNew.query.get_or_404(product_id)
+        product = db.session.get(ProductNew, product_id) or abort(404)
         product.is_active = False
         product.updated_at = get_local_now()
         
@@ -234,7 +234,7 @@ def delete_product(product_id):
 def get_product_versions(product_id):
     """Get version history for a product"""
     try:
-        product = ProductNew.query.get_or_404(product_id)
+        product = db.session.get(ProductNew, product_id) or abort(404)
         versions = ProductVersion.query.filter_by(product_id=product_id).order_by(ProductVersion.version.desc()).all()
         
         return jsonify({

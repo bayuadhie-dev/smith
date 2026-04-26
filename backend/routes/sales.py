@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, Customer, SalesOrder, SalesOrderItem, SalesForecast, Product, Notification
 from utils.i18n import success_response, error_response, get_message
@@ -136,7 +136,7 @@ def create_customer():
 def get_customer(id):
     """Get customer details"""
     try:
-        customer = Customer.query.get(id)
+        customer = db.session.get(Customer, id)
         if not customer:
             return jsonify(error_response('api.error', error_code=404)), 404
         
@@ -200,7 +200,7 @@ def update_customer(id):
     verify_jwt_in_request()
     
     try:
-        customer = Customer.query.get(id)
+        customer = db.session.get(Customer, id)
         if not customer:
             return jsonify(error_response('api.error', error_code=404)), 404
         
@@ -296,7 +296,7 @@ def delete_customer(id):
     verify_jwt_in_request()
     
     try:
-        customer = Customer.query.get(id)
+        customer = db.session.get(Customer, id)
         if not customer:
             return jsonify(error_response('api.error', error_code=404)), 404
         
@@ -591,7 +591,7 @@ def create_order():
 def get_order(id):
     """Get sales order details"""
     try:
-        order = SalesOrder.query.get(id)
+        order = db.session.get(SalesOrder, id)
         if not order:
             return jsonify(error_response('api.error', error_code=404)), 404
         
@@ -632,7 +632,7 @@ def confirm_order(id):
     """Confirm sales order"""
     try:
         user_id = get_jwt_identity()
-        order = SalesOrder.query.get(id)
+        order = db.session.get(SalesOrder, id)
         
         if not order:
             return jsonify(error_response('api.error', error_code=404)), 404
@@ -739,7 +739,7 @@ def confirm_order(id):
 def update_order(id):
     """Update sales order"""
     try:
-        order = SalesOrder.query.get(id)
+        order = db.session.get(SalesOrder, id)
         if not order:
             return jsonify({'error': 'Order not found'}), 404
         
@@ -795,7 +795,7 @@ def update_order(id):
 def cancel_order(id):
     """Cancel sales order"""
     try:
-        order = SalesOrder.query.get(id)
+        order = db.session.get(SalesOrder, id)
         if not order:
             return jsonify({'error': 'Order not found'}), 404
         
@@ -945,7 +945,7 @@ def create_lead():
 def convert_lead(lead_id):
     """Convert lead to customer and create opportunity"""
     try:
-        lead = Lead.query.get_or_404(lead_id)
+        lead = db.session.get(Lead, lead_id) or abort(404)
         data = request.get_json()
         user_id = get_jwt_identity()
         
@@ -1525,7 +1525,7 @@ def create_forecast():
 def get_forecast(id):
     """Get sales forecast details"""
     try:
-        forecast = SalesForecast.query.get_or_404(id)
+        forecast = db.session.get(SalesForecast, id) or abort(404)
         
         return jsonify({
             'id': forecast.id,
@@ -1563,7 +1563,7 @@ def get_forecast(id):
 def update_forecast(id):
     """Update sales forecast"""
     try:
-        forecast = SalesForecast.query.get_or_404(id)
+        forecast = db.session.get(SalesForecast, id) or abort(404)
         data = request.get_json()
         
         forecast.forecast_number = data.get('forecast_number', forecast.forecast_number)
@@ -1599,7 +1599,7 @@ def update_forecast(id):
 def delete_forecast(id):
     """Delete sales forecast"""
     try:
-        forecast = SalesForecast.query.get_or_404(id)
+        forecast = db.session.get(SalesForecast, id) or abort(404)
         db.session.delete(forecast)
         db.session.commit()
         
@@ -1643,7 +1643,7 @@ def create_shipment_from_order(order_id):
 def confirm_order_with_shipment(order_id):
     """Confirm sales order and optionally create shipment"""
     try:
-        order = SalesOrder.query.get_or_404(order_id)
+        order = db.session.get(SalesOrder, order_id) or abort(404)
         data = request.get_json() or {}
         
         # Update order status
@@ -1685,4 +1685,480 @@ def confirm_order_with_shipment(order_id):
         
     except Exception as e:
         db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+# ===============================
+# SALES REPORTS
+# ===============================
+
+@sales_bp.route('/reports/sales-per-customer', methods=['GET'])
+@jwt_required()
+def report_sales_per_customer():
+    """
+    Sales report per customer
+    ---
+    tags:
+      - Sales Reports
+    summary: Sales per customer report
+    description: Generate sales report grouped by customer with order count, total sales, and average order value
+    security:
+      - BearerAuth: []
+    parameters:
+      - name: date_from
+        in: query
+        type: string
+        format: date
+        description: Filter sales from this date (YYYY-MM-DD)
+      - name: date_to
+        in: query
+        type: string
+        format: date
+        description: Filter sales until this date (YYYY-MM-DD)
+    responses:
+      200:
+        description: Sales report generated successfully
+        schema:
+          type: object
+          properties:
+            sales_by_customer:
+              type: array
+              items:
+                type: object
+                properties:
+                  customer_id:
+                    type: integer
+                  customer_name:
+                    type: string
+                  order_count:
+                    type: integer
+                  total_sales:
+                    type: number
+                  avg_order_value:
+                    type: number
+    """
+    try:
+        date_from = request.args.get('date_from')
+        date_to = request.args.get('date_to')
+        
+        query = db.session.query(
+            Customer.id.label('customer_id'),
+            Customer.company_name.label('customer_name'),
+            func.count(SalesOrder.id).label('order_count'),
+            func.sum(SalesOrder.total_amount).label('total_sales'),
+            func.avg(SalesOrder.total_amount).label('avg_order_value')
+        ).join(
+            SalesOrder, Customer.id == SalesOrder.customer_id
+        ).group_by(
+            Customer.id, Customer.company_name
+        )
+        
+        if date_from:
+            query = query.filter(SalesOrder.order_date >= date_from)
+        if date_to:
+            query = query.filter(SalesOrder.order_date <= date_to)
+            
+        results = query.all()
+        
+        return jsonify({
+            'sales_by_customer': [{
+                'customer_id': row.customer_id,
+                'customer_name': row.customer_name,
+                'order_count': row.order_count,
+                'total_sales': float(row.total_sales) if row.total_sales else 0,
+                'avg_order_value': float(row.avg_order_value) if row.avg_order_value else 0
+            } for row in results]
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@sales_bp.route('/reports/sales-per-item', methods=['GET'])
+@jwt_required()
+def report_sales_per_item():
+    """
+    Sales report per item/product
+    ---
+    tags:
+      - Sales Reports
+    summary: Sales per item report
+    description: Generate sales report grouped by product/item with total quantity sold, total sales, and order count
+    security:
+      - BearerAuth: []
+    parameters:
+      - name: date_from
+        in: query
+        type: string
+        format: date
+        description: Filter sales from this date (YYYY-MM-DD)
+      - name: date_to
+        in: query
+        type: string
+        format: date
+        description: Filter sales until this date (YYYY-MM-DD)
+    responses:
+      200:
+        description: Sales report generated successfully
+        schema:
+          type: object
+          properties:
+            sales_by_item:
+              type: array
+              items:
+                type: object
+                properties:
+                  product_id:
+                    type: integer
+                  product_name:
+                    type: string
+                  sku:
+                    type: string
+                  total_quantity:
+                    type: number
+                  total_sales:
+                    type: number
+                  order_item_count:
+                    type: integer
+    """
+    try:
+        date_from = request.args.get('date_from')
+        date_to = request.args.get('date_to')
+        
+        query = db.session.query(
+            Product.id.label('product_id'),
+            Product.name.label('product_name'),
+            Product.sku.label('sku'),
+            func.sum(SalesOrderItem.quantity).label('total_quantity'),
+            func.sum(SalesOrderItem.total_price).label('total_sales'),
+            func.count(SalesOrderItem.id).label('order_item_count')
+        ).join(
+            SalesOrderItem, Product.id == SalesOrderItem.product_id
+        ).join(
+            SalesOrder, SalesOrderItem.order_id == SalesOrder.id
+        ).group_by(
+            Product.id, Product.name, Product.sku
+        )
+        
+        if date_from:
+            query = query.filter(SalesOrder.order_date >= date_from)
+        if date_to:
+            query = query.filter(SalesOrder.order_date <= date_to)
+            
+        results = query.all()
+        
+        return jsonify({
+            'sales_by_item': [{
+                'product_id': row.product_id,
+                'product_name': row.product_name,
+                'sku': row.sku,
+                'total_quantity': float(row.total_quantity) if row.total_quantity else 0,
+                'total_sales': float(row.total_sales) if row.total_sales else 0,
+                'order_item_count': row.order_item_count
+            } for row in results]
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@sales_bp.route('/reports/sales-per-warehouse', methods=['GET'])
+@jwt_required()
+def report_sales_per_warehouse():
+    """
+    Sales report per warehouse
+    ---
+    tags:
+      - Sales Reports
+    summary: Sales per warehouse report
+    description: Generate sales report grouped by warehouse location with movement count and total quantity
+    security:
+      - BearerAuth: []
+    parameters:
+      - name: date_from
+        in: query
+        type: string
+        format: date
+        description: Filter sales from this date (YYYY-MM-DD)
+      - name: date_to
+        in: query
+        type: string
+        format: date
+        description: Filter sales until this date (YYYY-MM-DD)
+    responses:
+      200:
+        description: Sales report generated successfully
+        schema:
+          type: object
+          properties:
+            sales_by_warehouse:
+              type: array
+              items:
+                type: object
+                properties:
+                  location_id:
+                    type: integer
+                  location_name:
+                    type: string
+                  zone_id:
+                    type: integer
+                  movement_count:
+                    type: integer
+                  total_quantity:
+                    type: number
+    """
+    try:
+        from models.warehouse import WarehouseLocation, InventoryMovement
+        
+        date_from = request.args.get('date_from')
+        date_to = request.args.get('date_to')
+        
+        query = db.session.query(
+            WarehouseLocation.id.label('location_id'),
+            WarehouseLocation.name.label('location_name'),
+            WarehouseLocation.zone_id.label('zone_id'),
+            func.count(InventoryMovement.id).label('movement_count'),
+            func.sum(InventoryMovement.quantity).label('total_quantity')
+        ).join(
+            InventoryMovement, WarehouseLocation.id == InventoryMovement.location_id
+        ).filter(
+            InventoryMovement.movement_type == 'out'
+        ).group_by(
+            WarehouseLocation.id, WarehouseLocation.name, WarehouseLocation.zone_id
+        )
+        
+        if date_from:
+            query = query.filter(InventoryMovement.movement_date >= date_from)
+        if date_to:
+            query = query.filter(InventoryMovement.movement_date <= date_to)
+            
+        results = query.all()
+        
+        return jsonify({
+            'sales_by_warehouse': [{
+                'location_id': row.location_id,
+                'location_name': row.location_name,
+                'zone_id': row.zone_id,
+                'movement_count': row.movement_count,
+                'total_quantity': float(row.total_quantity) if row.total_quantity else 0
+            } for row in results]
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@sales_bp.route('/reports/sales-process-history', methods=['GET'])
+@jwt_required()
+def report_sales_process_history():
+    """
+    Sales process history
+    ---
+    tags:
+      - Sales Reports
+    summary: Sales process history report
+    description: Generate sales process history with order details, status tracking, and timestamps
+    security:
+      - BearerAuth: []
+    parameters:
+      - name: date_from
+        in: query
+        type: string
+        format: date
+        description: Filter sales from this date (YYYY-MM-DD)
+      - name: date_to
+        in: query
+        type: string
+        format: date
+        description: Filter sales until this date (YYYY-MM-DD)
+      - name: customer_id
+        in: query
+        type: integer
+        description: Filter by specific customer ID
+    responses:
+      200:
+        description: Sales history retrieved successfully
+        schema:
+          type: object
+          properties:
+            sales_history:
+              type: array
+              items:
+                type: object
+                properties:
+                  order_id:
+                    type: integer
+                  order_number:
+                    type: string
+                  customer_id:
+                    type: integer
+                  customer_name:
+                    type: string
+                  order_date:
+                    type: string
+                    format: date
+                  status:
+                    type: string
+                  total_amount:
+                    type: number
+                  created_at:
+                    type: string
+                    format: date-time
+                  updated_at:
+                    type: string
+                    format: date-time
+    """
+    try:
+        date_from = request.args.get('date_from')
+        date_to = request.args.get('date_to')
+        customer_id = request.args.get('customer_id', type=int)
+        
+        query = db.session.query(
+            SalesOrder.id.label('order_id'),
+            SalesOrder.order_number.label('order_number'),
+            SalesOrder.customer_id.label('customer_id'),
+            Customer.company_name.label('customer_name'),
+            SalesOrder.order_date.label('order_date'),
+            SalesOrder.status.label('status'),
+            SalesOrder.created_at.label('created_at'),
+            SalesOrder.updated_at.label('updated_at'),
+            SalesOrder.total_amount.label('total_amount')
+        ).join(
+            Customer, SalesOrder.customer_id == Customer.id
+        )
+        
+        if date_from:
+            query = query.filter(SalesOrder.order_date >= date_from)
+        if date_to:
+            query = query.filter(SalesOrder.order_date <= date_to)
+        if customer_id:
+            query = query.filter(SalesOrder.customer_id == customer_id)
+            
+        results = query.order_by(SalesOrder.order_date.desc()).all()
+        
+        return jsonify({
+            'sales_history': [{
+                'order_id': row.order_id,
+                'order_number': row.order_number,
+                'customer_id': row.customer_id,
+                'customer_name': row.customer_name,
+                'order_date': row.order_date.isoformat() if row.order_date else None,
+                'status': row.status,
+                'created_at': row.created_at.isoformat() if row.created_at else None,
+                'updated_at': row.updated_at.isoformat() if row.updated_at else None,
+                'total_amount': float(row.total_amount) if row.total_amount else 0
+            } for row in results]
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@sales_bp.route('/reports/sales-charts', methods=['GET'])
+@jwt_required()
+def report_sales_charts():
+    """
+    Sales charts/graphs for proportion and trends
+    ---
+    tags:
+      - Sales Reports
+    summary: Sales charts and trends
+    description: Generate sales chart data for trend analysis (monthly) or proportion analysis (by customer)
+    security:
+      - BearerAuth: []
+    parameters:
+      - name: chart_type
+        in: query
+        type: string
+        enum: [trend, proportion]
+        default: trend
+        description: Type of chart: trend (monthly sales) or proportion (by customer)
+      - name: date_from
+        in: query
+        type: string
+        format: date
+        description: Filter sales from this date (YYYY-MM-DD)
+      - name: date_to
+        in: query
+        type: string
+        format: date
+        description: Filter sales until this date (YYYY-MM-DD)
+    responses:
+      200:
+        description: Chart data generated successfully
+        schema:
+          type: object
+          properties:
+            chart_type:
+              type: string
+            data:
+              type: array
+              items:
+                type: object
+            total_sales:
+              type: number
+      400:
+        description: Invalid chart_type parameter
+    """
+    try:
+        date_from = request.args.get('date_from')
+        date_to = request.args.get('date_to')
+        chart_type = request.args.get('chart_type', 'trend')  # trend, proportion
+        
+        if chart_type == 'trend':
+            # Sales trend over time (monthly)
+            query = db.session.query(
+                func.strftime('%Y-%m', SalesOrder.order_date).label('month'),
+                func.count(SalesOrder.id).label('order_count'),
+                func.sum(SalesOrder.total_amount).label('total_sales')
+            ).group_by(
+                func.strftime('%Y-%m', SalesOrder.order_date)
+            ).order_by(
+                func.strftime('%Y-%m', SalesOrder.order_date)
+            )
+            
+            if date_from:
+                query = query.filter(SalesOrder.order_date >= date_from)
+            if date_to:
+                query = query.filter(SalesOrder.order_date <= date_to)
+                
+            results = query.all()
+            
+            return jsonify({
+                'chart_type': 'trend',
+                'data': [{
+                    'month': row.month,
+                    'order_count': row.order_count,
+                    'total_sales': float(row.total_sales) if row.total_sales else 0
+                } for row in results]
+            }), 200
+            
+        elif chart_type == 'proportion':
+            # Sales proportion by customer
+            query = db.session.query(
+                Customer.company_name.label('customer_name'),
+                func.sum(SalesOrder.total_amount).label('total_sales')
+            ).join(
+                SalesOrder, Customer.id == SalesOrder.customer_id
+            ).group_by(
+                Customer.company_name
+            )
+            
+            if date_from:
+                query = query.filter(SalesOrder.order_date >= date_from)
+            if date_to:
+                query = query.filter(SalesOrder.order_date <= date_to)
+                
+            results = query.all()
+            total_sales = sum(float(row.total_sales) if row.total_sales else 0 for row in results)
+            
+            return jsonify({
+                'chart_type': 'proportion',
+                'total_sales': total_sales,
+                'data': [{
+                    'customer_name': row.customer_name,
+                    'total_sales': float(row.total_sales) if row.total_sales else 0,
+                    'percentage': (float(row.total_sales) if row.total_sales else 0) / total_sales * 100 if total_sales > 0 else 0
+                } for row in results]
+            }), 200
+            
+        else:
+            return jsonify({'error': 'Invalid chart_type. Use "trend" or "proportion"'}), 400
+        
+    except Exception as e:
         return jsonify({'error': str(e)}), 500

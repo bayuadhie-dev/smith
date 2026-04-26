@@ -1,3 +1,4 @@
+from models import db
 """
 Email Notification Routes
 =========================
@@ -29,7 +30,7 @@ def send_test_email():
     """Send a test email to current user"""
     try:
         user_id = get_jwt_identity()
-        user = User.query.get(int(user_id))
+        user = db.session.get(User, int(user_id))
         
         if not user:
             return jsonify({'error': 'User not found'}), 404

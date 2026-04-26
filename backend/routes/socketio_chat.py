@@ -29,7 +29,7 @@ def get_user_from_token(token):
         decoded = decode_token(token)
         user_id = decoded.get('sub')
         if user_id:
-            return User.query.get(int(user_id))
+            return db.session.get(User, int(user_id))
     except Exception:
         pass
     return None
@@ -238,7 +238,7 @@ def on_send_message(data):
             emit('error', {'message': 'channel_id dan content wajib diisi'})
             return
 
-        channel = ChatChannel.query.get(channel_id)
+        channel = db.session.get(ChatChannel, channel_id)
         if not channel:
             emit('error', {'message': 'Channel tidak ditemukan'})
             return
@@ -319,7 +319,7 @@ def on_edit_message(data):
         if not content:
             return
 
-        msg = ChatMessage.query.get(message_id)
+        msg = db.session.get(ChatMessage, message_id)
         if not msg or msg.user_id != user.id or msg.is_deleted:
             emit('error', {'message': 'Tidak bisa edit pesan ini'})
             return
@@ -350,7 +350,7 @@ def on_delete_message(data):
 
     try:
         message_id = data.get('message_id')
-        msg = ChatMessage.query.get(message_id)
+        msg = db.session.get(ChatMessage, message_id)
         if not msg:
             return
 
@@ -386,7 +386,7 @@ def on_add_reaction(data):
         message_id = data.get('message_id')
         emoji = data.get('emoji', '')
 
-        msg = ChatMessage.query.get(message_id)
+        msg = db.session.get(ChatMessage, message_id)
         if not msg or msg.is_deleted:
             return
 
@@ -433,7 +433,7 @@ def on_send_thread_reply(data):
             emit('error', {'message': 'thread_id dan content wajib'})
             return
 
-        thread = ChatThread.query.get(thread_id)
+        thread = db.session.get(ChatThread, thread_id)
         if not thread:
             emit('error', {'message': 'Thread tidak ditemukan'})
             return
@@ -484,14 +484,14 @@ def on_create_thread(data):
 
     try:
         message_id = data.get('message_id')
-        msg = ChatMessage.query.get(message_id)
+        msg = db.session.get(ChatMessage, message_id)
         if not msg or msg.is_deleted:
             emit('error', {'message': 'Pesan tidak ditemukan'})
             return
 
         # Cek apakah thread sudah ada
         if msg.is_thread_starter and msg.thread_id:
-            thread = ChatThread.query.get(msg.thread_id)
+            thread = db.session.get(ChatThread, msg.thread_id)
             emit('thread_created', thread.to_dict(), room=request.sid)
             return
 
@@ -539,7 +539,7 @@ def on_send_dm(data):
             emit('error', {'message': 'receiver_id dan content wajib'})
             return
 
-        receiver = User.query.get(receiver_id)
+        receiver = db.session.get(User, receiver_id)
         if not receiver:
             emit('error', {'message': 'User tidak ditemukan'})
             return
@@ -596,7 +596,7 @@ def on_dm_read(data):
 
     try:
         conversation_id = data.get('conversation_id')
-        conv = ChatDirectConversation.query.get(conversation_id)
+        conv = db.session.get(ChatDirectConversation, conversation_id)
         if not conv:
             return
 

@@ -1,7 +1,7 @@
 """
 Pre-Shift Checklist API Routes
 """
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from datetime import datetime, date, timezone, timedelta
 from models import db, Machine
 
@@ -145,7 +145,7 @@ def _ensure_extra_items_exist():
 @jwt_required()
 def get_machine_checklist_items(machine_id):
     """Get checklist items applicable for a specific machine"""
-    machine = Machine.query.get_or_404(machine_id)
+    machine = db.session.get(Machine, machine_id) or abort(404)
     
     # Ensure extra items (Obras, Fliptop) exist in DB
     _ensure_extra_items_exist()
@@ -244,7 +244,7 @@ def submit_checklist():
     if ng_items:
         try:
             from utils.send_notification import notify_users_by_role
-            machine = Machine.query.get(machine_id)
+            machine = db.session.get(Machine, machine_id)
             machine_name = machine.name if machine else f'Mesin #{machine_id}'
             ng_count = len(ng_items)
             notify_users_by_role('Maintenance',
@@ -291,7 +291,7 @@ def get_submissions():
 @jwt_required()
 def get_submission_detail(submission_id):
     """Get a single submission with answers"""
-    submission = PreShiftChecklistSubmission.query.get_or_404(submission_id)
+    submission = db.session.get(PreShiftChecklistSubmission, submission_id) or abort(404)
     return jsonify(submission.to_dict(include_answers=True))
 
 
@@ -828,7 +828,7 @@ def update_answer(answer_id):
     user_id = get_jwt_identity()
     data = request.get_json()
     
-    answer = PreShiftChecklistAnswer.query.get_or_404(answer_id)
+    answer = db.session.get(PreShiftChecklistAnswer, answer_id) or abort(404)
     old_status = answer.status
     old_catatan = answer.catatan
     
@@ -875,7 +875,7 @@ def update_answer(answer_id):
 @jwt_required()
 def get_answer_audit_logs(answer_id):
     """Get audit logs for a specific answer"""
-    answer = PreShiftChecklistAnswer.query.get_or_404(answer_id)
+    answer = db.session.get(PreShiftChecklistAnswer, answer_id) or abort(404)
     logs = PreShiftChecklistAuditLog.query.filter_by(answer_id=answer_id)\
         .order_by(PreShiftChecklistAuditLog.changed_at.desc()).all()
     
@@ -889,7 +889,7 @@ def get_answer_audit_logs(answer_id):
 @jwt_required()
 def get_submission_audit_logs(submission_id):
     """Get all audit logs for a submission"""
-    submission = PreShiftChecklistSubmission.query.get_or_404(submission_id)
+    submission = db.session.get(PreShiftChecklistSubmission, submission_id) or abort(404)
     logs = PreShiftChecklistAuditLog.query.filter_by(submission_id=submission_id)\
         .order_by(PreShiftChecklistAuditLog.changed_at.desc()).all()
     
@@ -906,7 +906,7 @@ def create_corrective_action(answer_id):
     user_id = get_jwt_identity()
     data = request.get_json()
     
-    answer = PreShiftChecklistAnswer.query.get_or_404(answer_id)
+    answer = db.session.get(PreShiftChecklistAnswer, answer_id) or abort(404)
     
     # Check if corrective action already exists
     existing = PreShiftChecklistCorrectiveAction.query.filter_by(answer_id=answer_id).first()
@@ -966,7 +966,7 @@ def add_supervisor_note(answer_id):
     user_id = get_jwt_identity()
     data = request.get_json()
     
-    answer = PreShiftChecklistAnswer.query.get_or_404(answer_id)
+    answer = db.session.get(PreShiftChecklistAnswer, answer_id) or abort(404)
     
     if answer.status != 'NG':
         return jsonify({'error': 'Only NG items can have supervisor notes'}), 400

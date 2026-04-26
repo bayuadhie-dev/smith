@@ -3,7 +3,7 @@ Production Schedule Grid Routes
 Excel-style weekly production schedule with machine/product/shift grid
 Auto-generates Work Orders when scheduled date arrives
 """
-from flask import Blueprint, request, jsonify, send_file, Response
+from flask import Blueprint, request, jsonify, send_file, Response, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, Machine, Product
 from models.product import ProductPackaging
@@ -249,7 +249,7 @@ def create_schedule_item():
 def update_schedule_item(id):
     """Update schedule grid item"""
     try:
-        item = ScheduleGridItem.query.get_or_404(id)
+        item = db.session.get(ScheduleGridItem, id) or abort(404)
         data = request.get_json()
         
         if 'machine_id' in data:
@@ -288,7 +288,7 @@ def update_schedule_item(id):
 def delete_schedule_item(id):
     """Delete schedule grid item"""
     try:
-        item = ScheduleGridItem.query.get_or_404(id)
+        item = db.session.get(ScheduleGridItem, id) or abort(404)
         db.session.delete(item)
         db.session.commit()
         
@@ -365,7 +365,7 @@ def generate_work_order_from_schedule(id):
         }), 400
         
         current_user_id = get_jwt_identity()
-        schedule = ScheduleGridItem.query.get_or_404(id)
+        schedule = db.session.get(ScheduleGridItem, id) or abort(404)
         
         # Check if WO already exists
         if schedule.wo_id:
@@ -697,7 +697,7 @@ def generate_work_order_from_approved_schedule(id):
     """Generate Work Orders from an approved schedule item - 1 WO per scheduled day"""
     try:
         current_user_id = get_jwt_identity()
-        schedule = ScheduleGridItem.query.get_or_404(id)
+        schedule = db.session.get(ScheduleGridItem, id) or abort(404)
         
         # Check if schedule is approved
         if schedule.status != 'approved':
@@ -882,7 +882,7 @@ def create_monthly_schedule():
 def update_monthly_schedule(id):
     """Update monthly schedule item"""
     try:
-        schedule = MonthlySchedule.query.get_or_404(id)
+        schedule = db.session.get(MonthlySchedule, id) or abort(404)
         data = request.get_json()
         
         if 'target_ctn' in data:
@@ -917,7 +917,7 @@ def update_monthly_schedule(id):
 def delete_monthly_schedule(id):
     """Delete monthly schedule item"""
     try:
-        schedule = MonthlySchedule.query.get_or_404(id)
+        schedule = db.session.get(MonthlySchedule, id) or abort(404)
         
         # Check if has weekly schedules linked
         if schedule.weekly_schedules:
@@ -938,7 +938,7 @@ def delete_monthly_schedule(id):
 def add_monthly_to_weekly(id):
     """Add portion of monthly schedule to weekly schedule"""
     try:
-        monthly = MonthlySchedule.query.get_or_404(id)
+        monthly = db.session.get(MonthlySchedule, id) or abort(404)
         data = request.get_json()
         
         order_ctn = float(data.get('order_ctn', 0))

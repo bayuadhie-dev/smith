@@ -283,7 +283,7 @@ def delete_face(id):
         return cors_preflight_response()
     
     try:
-        staff_face = StaffFace.query.get(id)
+        staff_face = db.session.get(StaffFace, id)
         
         if not staff_face:
             return jsonify({'error': 'Data tidak ditemukan'}), 404

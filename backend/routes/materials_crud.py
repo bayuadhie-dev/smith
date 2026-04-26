@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, Material, Inventory, InventoryMovement
 from datetime import datetime
@@ -11,7 +11,7 @@ materials_crud_bp = Blueprint('materials_crud', __name__)
 def get_material(material_id):
     """Get single material by ID for viewing"""
     try:
-        material = Material.query.get_or_404(material_id)
+        material = db.session.get(Material, material_id) or abort(404)
         
         return jsonify({
             'material': {
@@ -46,7 +46,7 @@ def get_material(material_id):
 def update_material(material_id):
     """Update material"""
     try:
-        material = Material.query.get_or_404(material_id)
+        material = db.session.get(Material, material_id) or abort(404)
         data = request.get_json()
         
         # Update fields - allow full editing including code
@@ -109,7 +109,7 @@ def update_material(material_id):
 def delete_material(material_id):
     """Delete material with safety checks"""
     try:
-        material = Material.query.get_or_404(material_id)
+        material = db.session.get(Material, material_id) or abort(404)
         
         # Check if material is used in inventory
         inventory_count = db.session.query(Inventory).filter_by(material_id=material_id).count()

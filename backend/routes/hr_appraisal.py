@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, Employee, AppraisalCycle, AppraisalTemplate, AppraisalCriteria, EmployeeAppraisal, AppraisalScore
 from utils.i18n import success_response, error_response, get_message
@@ -101,7 +101,7 @@ def activate_appraisal_cycle(cycle_id):
     """Activate appraisal cycle and create appraisals for all employees"""
     try:
         data = request.get_json()
-        cycle = AppraisalCycle.query.get_or_404(cycle_id)
+        cycle = db.session.get(AppraisalCycle, cycle_id) or abort(404)
         
         if cycle.status != 'draft':
             return jsonify(error_response('api.error', error_code=400)), 400
@@ -110,7 +110,7 @@ def activate_appraisal_cycle(cycle_id):
         if not template_id:
             return jsonify(error_response('api.error', error_code=400)), 400
         
-        template = AppraisalTemplate.query.get_or_404(template_id)
+        template = db.session.get(AppraisalTemplate, template_id) or abort(404)
         
         # Get all active employees
         employees = Employee.query.filter_by(is_active=True, status='active').all()
@@ -230,7 +230,7 @@ def create_appraisal_template():
 def get_appraisal_template(template_id):
     """Get appraisal template with criteria"""
     try:
-        template = AppraisalTemplate.query.get_or_404(template_id)
+        template = db.session.get(AppraisalTemplate, template_id) or abort(404)
         
         return jsonify({
             'template': {
@@ -316,7 +316,7 @@ def get_employee_appraisals():
 def get_appraisal_detail(appraisal_id):
     """Get detailed appraisal with scores"""
     try:
-        appraisal = EmployeeAppraisal.query.get_or_404(appraisal_id)
+        appraisal = db.session.get(EmployeeAppraisal, appraisal_id) or abort(404)
         
         return jsonify({
             'appraisal': {
@@ -383,7 +383,7 @@ def submit_self_review(appraisal_id):
     """Submit self review"""
     try:
         data = request.get_json()
-        appraisal = EmployeeAppraisal.query.get_or_404(appraisal_id)
+        appraisal = db.session.get(EmployeeAppraisal, appraisal_id) or abort(404)
         
         if appraisal.self_review_status == 'completed':
             return jsonify(error_response('api.error', error_code=400)), 400
@@ -420,7 +420,7 @@ def submit_manager_review(appraisal_id):
     """Submit manager review"""
     try:
         data = request.get_json()
-        appraisal = EmployeeAppraisal.query.get_or_404(appraisal_id)
+        appraisal = db.session.get(EmployeeAppraisal, appraisal_id) or abort(404)
         
         if appraisal.manager_review_status == 'completed':
             return jsonify(error_response('api.error', error_code=400)), 400
@@ -495,7 +495,7 @@ def calculate_rating(score):
 def get_appraisal_cycle_report(cycle_id):
     """Get appraisal cycle summary report"""
     try:
-        cycle = AppraisalCycle.query.get_or_404(cycle_id)
+        cycle = db.session.get(AppraisalCycle, cycle_id) or abort(404)
         
         # Get statistics
         total_appraisals = len(cycle.appraisals)

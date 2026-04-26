@@ -1,7 +1,7 @@
 """
 Custom BOM Routes - Edit BOM per transaction without affecting master BOM
 """
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db
 from models.custom_bom import CustomBOM, CustomBOMItem
@@ -43,7 +43,7 @@ def get_custom_boms():
 def get_custom_bom(id):
     """Get single custom BOM detail"""
     try:
-        custom_bom = CustomBOM.query.get_or_404(id)
+        custom_bom = db.session.get(CustomBOM, id) or abort(404)
         return jsonify({'custom_bom': custom_bom.to_dict()}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -105,7 +105,7 @@ def create_custom_bom_from_master():
 def update_custom_bom_items(id):
     """Update custom BOM items"""
     try:
-        custom_bom = CustomBOM.query.get_or_404(id)
+        custom_bom = db.session.get(CustomBOM, id) or abort(404)
         data = request.get_json()
         items = data.get('items', [])
         
@@ -114,7 +114,7 @@ def update_custom_bom_items(id):
             
             if item_id:
                 # Update existing item
-                item = CustomBOMItem.query.get(item_id)
+                item = db.session.get(CustomBOMItem, item_id)
                 if item and item.custom_bom_id == id:
                     if 'quantity' in item_data:
                         item.quantity = item_data['quantity']
@@ -178,7 +178,7 @@ def update_custom_bom_items(id):
 def remove_custom_bom_item(id, item_id):
     """Mark a custom BOM item as removed (soft delete)"""
     try:
-        item = CustomBOMItem.query.get_or_404(item_id)
+        item = db.session.get(CustomBOMItem, item_id) or abort(404)
         
         if item.custom_bom_id != id:
             return jsonify({'error': 'Item does not belong to this custom BOM'}), 400
@@ -204,7 +204,7 @@ def remove_custom_bom_item(id, item_id):
 def reset_custom_bom(id):
     """Reset custom BOM to match master BOM"""
     try:
-        custom_bom = CustomBOM.query.get_or_404(id)
+        custom_bom = db.session.get(CustomBOM, id) or abort(404)
         
         if not custom_bom.master_bom_id:
             return jsonify({'error': 'No master BOM linked'}), 400
@@ -213,7 +213,7 @@ def reset_custom_bom(id):
         CustomBOMItem.query.filter_by(custom_bom_id=id).delete()
         
         # Re-copy from master
-        master = BillOfMaterials.query.get(custom_bom.master_bom_id)
+        master = db.session.get(BillOfMaterials, custom_bom.master_bom_id)
         if master:
             custom_bom.batch_size = master.batch_size
             custom_bom.batch_uom = master.batch_uom
@@ -253,7 +253,7 @@ def reset_custom_bom(id):
 def delete_custom_bom(id):
     """Soft delete custom BOM"""
     try:
-        custom_bom = CustomBOM.query.get_or_404(id)
+        custom_bom = db.session.get(CustomBOM, id) or abort(404)
         custom_bom.is_active = False
         db.session.commit()
         

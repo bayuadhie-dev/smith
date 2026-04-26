@@ -9,7 +9,7 @@ Sub-Modul:
   IV.  Komunikasi Internal (QP-DCC-04) — FRM-DCC-07
   V.   Pemusnahan Dokumen (WI-DCC-01) — FRM-DCC-14
 """
-from flask import Blueprint, request, jsonify, send_file
+from flask import Blueprint, request, jsonify, send_file, abort
 from datetime import datetime, date, timedelta
 from sqlalchemy import extract, func, or_
 from models import db, User
@@ -38,7 +38,7 @@ def _get_user_dcc_roles(user_id):
 
 def _check_dcc_permission(user_id, action):
     """Check if user has permission for DCC action based on role matrix from dcc.md"""
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
     if not user:
         return False
     # Super admin / admin always allowed
@@ -265,7 +265,7 @@ def create_document():
 @jwt_required()
 def get_document_detail(doc_id):
     """Get document detail with all revisions"""
-    doc = DccDocument.query.get_or_404(doc_id)
+    doc = db.session.get(DccDocument, doc_id) or abort(404)
 
     revisions = DccDocumentRevision.query.filter_by(document_id=doc_id)\
         .order_by(DccDocumentRevision.revision_number.desc()).all()
@@ -322,7 +322,7 @@ def get_document_detail(doc_id):
 @jwt_required()
 def update_document(doc_id):
     """Update document info"""
-    doc = DccDocument.query.get_or_404(doc_id)
+    doc = db.session.get(DccDocument, doc_id) or abort(404)
     data = request.get_json()
 
     if 'title' in data:
@@ -342,7 +342,7 @@ def update_document(doc_id):
 @jwt_required()
 def delete_document(doc_id):
     """Soft delete document (is_active=False) — audit trail tetap terjaga"""
-    doc = DccDocument.query.get_or_404(doc_id)
+    doc = db.session.get(DccDocument, doc_id) or abort(404)
     doc.is_active = False
     # Rename document_number agar bisa di-reuse (DB unique constraint)
     doc.document_number = f"_DEL_{doc.id}_{doc.document_number}"
@@ -359,14 +359,14 @@ def delete_document(doc_id):
 @jwt_required()
 def create_revision(doc_id):
     """Create new revision for a document — wajib ada DCN yang sudah approved"""
-    doc = DccDocument.query.get_or_404(doc_id)
+    doc = db.session.get(DccDocument, doc_id) or abort(404)
     user_id = get_jwt_identity()
     data = request.get_json()
 
     # Cek apakah ada DCN approved yang belum punya revisi
     dcn_id = data.get('change_notice_id')
     if dcn_id:
-        dcn = DccChangeNotice.query.get(dcn_id)
+        dcn = db.session.get(DccChangeNotice, dcn_id)
         if not dcn or dcn.document_id != doc_id:
             return jsonify({'error': 'Change Notice tidak valid'}), 400
         if dcn.status != 'approved':
@@ -417,7 +417,7 @@ def create_revision(doc_id):
 @jwt_required()
 def upload_revision_file(rev_id):
     """Upload file (docx/pdf) for a revision"""
-    rev = DccDocumentRevision.query.get_or_404(rev_id)
+    rev = db.session.get(DccDocumentRevision, rev_id) or abort(404)
 
     if 'file' not in request.files:
         return jsonify({'error': 'No file uploaded'}), 400
@@ -426,7 +426,7 @@ def upload_revision_file(rev_id):
     filename = file.filename
     ext = filename.rsplit('.', 1)[-1].lower() if '.' in filename else ''
 
-    doc = DccDocument.query.get(rev.document_id)
+    doc = db.session.get(DccDocument, rev.document_id)
     safe_name = f"{doc.document_number}_Rev{rev.revision_number:02d}".replace('/', '_').replace(' ', '_')
 
     if ext == 'pdf':
@@ -452,7 +452,7 @@ def upload_revision_file(rev_id):
 @jwt_required()
 def approve_revision(rev_id):
     """Approve/review a revision — wajib password + role check per level dokumen"""
-    rev = DccDocumentRevision.query.get_or_404(rev_id)
+    rev = db.session.get(DccDocumentRevision, rev_id) or abort(404)
     user_id = get_jwt_identity()
     data = request.get_json()
     action = data.get('action')
@@ -460,7 +460,7 @@ def approve_revision(rev_id):
     password = data.get('password', '')
 
     # === Verifikasi password wajib ===
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
     if not user or not password:
         return jsonify({'error': 'Password wajib diisi untuk menandatangani dokumen'}), 400
     if not user.check_password(password):
@@ -639,7 +639,7 @@ def approve_revision(rev_id):
 @jwt_required()
 def download_revision_file(rev_id):
     """Download revision file"""
-    rev = DccDocumentRevision.query.get_or_404(rev_id)
+    rev = db.session.get(DccDocumentRevision, rev_id) or abort(404)
     file_type = request.args.get('type', 'pdf')
 
     if file_type == 'pdf':
@@ -661,7 +661,7 @@ def export_controlled_pdf(rev_id):
     """Export PDF Controlled Copy — watermark + TTD digital + QR + locked"""
     from utils.dcc_pdf import generate_controlled_pdf
 
-    rev = DccDocumentRevision.query.get_or_404(rev_id)
+    rev = db.session.get(DccDocumentRevision, rev_id) or abort(404)
 
     # Generate verification token if not exists
     if not rev.verification_token:
@@ -795,7 +795,7 @@ def create_capa():
 @jwt_required()
 def get_capa_detail(capa_id):
     """Get CAPA detail with investigation & verification"""
-    c = CapaRequest.query.get_or_404(capa_id)
+    c = db.session.get(CapaRequest, capa_id) or abort(404)
 
     inv = c.investigation
     ver = c.verification
@@ -848,7 +848,7 @@ def get_capa_detail(capa_id):
 @jwt_required()
 def save_investigation(capa_id):
     """Save/update investigation for a CAPA"""
-    capa = CapaRequest.query.get_or_404(capa_id)
+    capa = db.session.get(CapaRequest, capa_id) or abort(404)
     user_id = get_jwt_identity()
     data = request.get_json()
 
@@ -880,7 +880,7 @@ def save_investigation(capa_id):
 @jwt_required()
 def save_verification(capa_id):
     """Save verification for a CAPA"""
-    capa = CapaRequest.query.get_or_404(capa_id)
+    capa = db.session.get(CapaRequest, capa_id) or abort(404)
     user_id = get_jwt_identity()
     data = request.get_json()
 
@@ -910,7 +910,7 @@ def save_verification(capa_id):
 @jwt_required()
 def update_capa_status(capa_id):
     """Update CAPA status"""
-    capa = CapaRequest.query.get_or_404(capa_id)
+    capa = db.session.get(CapaRequest, capa_id) or abort(404)
     data = request.get_json()
     user_id = get_jwt_identity()
 
@@ -991,7 +991,7 @@ def create_memo():
 @jwt_required()
 def get_memo_detail(memo_id):
     """Get memo detail"""
-    m = InternalMemo.query.get_or_404(memo_id)
+    m = db.session.get(InternalMemo, memo_id) or abort(404)
 
     distributions = InternalMemoDistribution.query.filter_by(memo_id=memo_id).all()
 
@@ -1022,7 +1022,7 @@ def get_memo_detail(memo_id):
 @jwt_required()
 def update_memo(memo_id):
     """Update memo"""
-    memo = InternalMemo.query.get_or_404(memo_id)
+    memo = db.session.get(InternalMemo, memo_id) or abort(404)
     data = request.get_json()
 
     if 'subject' in data:
@@ -1040,7 +1040,7 @@ def update_memo(memo_id):
 @jwt_required()
 def publish_memo(memo_id):
     """Publish memo and distribute to selected departments"""
-    memo = InternalMemo.query.get_or_404(memo_id)
+    memo = db.session.get(InternalMemo, memo_id) or abort(404)
     data = request.get_json()
     departments = data.get('departments', [])
 
@@ -1160,7 +1160,7 @@ def create_destruction():
 @jwt_required()
 def confirm_witness(log_id):
     """Witness confirms destruction"""
-    log = DccDestructionLog.query.get_or_404(log_id)
+    log = db.session.get(DccDestructionLog, log_id) or abort(404)
     user_id = get_jwt_identity()
 
     log.witnessed_by = user_id
@@ -1175,7 +1175,7 @@ def confirm_witness(log_id):
 @jwt_required()
 def verify_destruction(log_id):
     """Verify destruction"""
-    log = DccDestructionLog.query.get_or_404(log_id)
+    log = db.session.get(DccDestructionLog, log_id) or abort(404)
     user_id = get_jwt_identity()
 
     log.verified_by = user_id
@@ -1261,7 +1261,7 @@ def get_capa_dashboard():
 @jwt_required()
 def cancel_capa(capa_id):
     """Cancel CAPA (perlu approval Inisiator + Management per QP-DCC-03)"""
-    capa = CapaRequest.query.get_or_404(capa_id)
+    capa = db.session.get(CapaRequest, capa_id) or abort(404)
     user_id = get_jwt_identity()
     data = request.get_json()
 
@@ -1398,7 +1398,7 @@ def get_change_notices(doc_id):
 @jwt_required()
 def create_change_notice(doc_id):
     """Submit FRM-DCC-05 (Document/Form Change Notice)"""
-    doc = DccDocument.query.get_or_404(doc_id)
+    doc = db.session.get(DccDocument, doc_id) or abort(404)
     user_id = get_jwt_identity()
     data = request.get_json()
 
@@ -1425,7 +1425,7 @@ def create_change_notice(doc_id):
 @jwt_required()
 def approve_change_notice(notice_id):
     """Approve or reject a change notice"""
-    notice = DccChangeNotice.query.get_or_404(notice_id)
+    notice = db.session.get(DccChangeNotice, notice_id) or abort(404)
     user_id = get_jwt_identity()
     data = request.get_json()
     action = data.get('action', 'approved')
@@ -1437,7 +1437,7 @@ def approve_change_notice(notice_id):
         notice.status = 'approved'
 
         # Paralel: otomatis buat revisi baru saat change notice di-approve
-        doc = DccDocument.query.get(notice.document_id)
+        doc = db.session.get(DccDocument, notice.document_id)
         if doc:
             last_rev = DccDocumentRevision.query.filter_by(document_id=doc.id)\
                 .order_by(DccDocumentRevision.revision_number.desc()).first()
@@ -1477,7 +1477,7 @@ def approve_change_notice(notice_id):
 @jwt_required()
 def distribute_document(doc_id):
     """Distribute document revision to departments (FRM-DCC-04)"""
-    doc = DccDocument.query.get_or_404(doc_id)
+    doc = db.session.get(DccDocument, doc_id) or abort(404)
     user_id = get_jwt_identity()
     data = request.get_json()
 
@@ -1485,7 +1485,7 @@ def distribute_document(doc_id):
     departments = data.get('departments', [])
     copy_type = data.get('copy_type', 'controlled')
 
-    rev = DccDocumentRevision.query.get_or_404(rev_id)
+    rev = db.session.get(DccDocumentRevision, rev_id) or abort(404)
     now = datetime.utcnow()
 
     created = []
@@ -1532,7 +1532,7 @@ def get_distributions(doc_id):
 @jwt_required()
 def acknowledge_distribution(dist_id):
     """Penerima TTD digital (FRM-DCC-01 Serah Terima Dokumen)"""
-    dist = DccDocumentDistribution.query.get_or_404(dist_id)
+    dist = db.session.get(DccDocumentDistribution, dist_id) or abort(404)
     user_id = get_jwt_identity()
     data = request.get_json() or {}
 
@@ -1569,7 +1569,7 @@ def get_document_reviews(doc_id):
 @jwt_required()
 def submit_document_review(doc_id):
     """Submit kaji ulang dokumen (FRM-DCC-10)"""
-    doc = DccDocument.query.get_or_404(doc_id)
+    doc = db.session.get(DccDocument, doc_id) or abort(404)
     user_id = get_jwt_identity()
     data = request.get_json()
 
@@ -1684,7 +1684,7 @@ def create_quality_record():
 @jwt_required()
 def get_quality_record_detail(rec_id):
     """Get quality record detail"""
-    r = DccQualityRecord.query.get_or_404(rec_id)
+    r = db.session.get(DccQualityRecord, rec_id) or abort(404)
     return jsonify({
         'id': r.id, 'record_number': r.record_number, 'title': r.title,
         'record_type': r.record_type, 'revision_number': r.revision_number,
@@ -1702,7 +1702,7 @@ def get_quality_record_detail(rec_id):
 @jwt_required()
 def update_quality_record(rec_id):
     """Update quality record"""
-    r = DccQualityRecord.query.get_or_404(rec_id)
+    r = db.session.get(DccQualityRecord, rec_id) or abort(404)
     data = request.get_json()
 
     for field in ['title', 'record_type', 'department', 'storage_location',

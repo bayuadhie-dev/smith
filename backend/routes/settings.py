@@ -15,6 +15,29 @@ settings_bp = Blueprint('settings', __name__)
 @settings_bp.route('/system', methods=['GET'])
 @jwt_required()
 def get_system_settings():
+    """
+    Get all system settings
+    ---
+    tags:
+      - Settings
+    summary: Get system settings
+    description: Retrieve all system settings organized by category
+    security:
+      - BearerAuth: []
+    responses:
+      200:
+        description: System settings retrieved successfully
+        schema:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: object
+      401:
+        description: Unauthorized
+      500:
+        description: Server error
+    """
     try:
         settings = SystemSetting.query.all()
         
@@ -42,6 +65,38 @@ def get_system_settings():
 @settings_bp.route('/system', methods=['PUT'])
 @jwt_required()
 def update_system_settings():
+    """
+    Update system settings
+    ---
+    tags:
+      - Settings
+    summary: Update system settings
+    description: Update multiple system settings by category
+    security:
+      - BearerAuth: []
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: object
+    responses:
+      200:
+        description: Settings updated successfully
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+      401:
+        description: Unauthorized
+      500:
+        description: Server error
+    """
     try:
         data = request.get_json()
         user_id = int(get_jwt_identity())  # Convert string to int
@@ -113,18 +168,19 @@ def get_company_public_info():
 @jwt_required()
 def get_company_profile():
     try:
+        from company_config.company import COMPANY_NAME, COMPANY_ADDRESS_LINE1, COMPANY_PHONE, COMPANY_EMAIL, COMPANY_WEBSITE
         profile = CompanyProfile.query.first()
         if not profile:
             # Create default company profile if not exists
             profile = CompanyProfile(
-                company_name='PT. Gratia Makmur Sentosa',
-                legal_name='PT. Gratia Makmur Sentosa',
+                company_name=COMPANY_NAME,
+                legal_name=COMPANY_NAME,
                 tax_id='12.345.678.9-012.000',
                 industry='Manufacturing',
-                phone='+62-21-1234567',
-                email='info@gratiamakmur.com',
-                website='www.gratiamakmur.com',
-                address='Jl. Industri No. 123, Jakarta',
+                phone=COMPANY_PHONE,
+                email=COMPANY_EMAIL,
+                website=COMPANY_WEBSITE,
+                address=COMPANY_ADDRESS_LINE1,
                 city='Jakarta',
                 country='Indonesia',
                 currency='IDR',
@@ -352,7 +408,7 @@ def create_user():
 def update_user(user_id):
     try:
         data = request.get_json()
-        user = User.query.get(user_id)
+        user = db.session.get(User, user_id)
         
         if not user:
             return jsonify(error_response('api.error', error_code=404)), 404
@@ -426,7 +482,7 @@ def delete_user(user_id):
         if current_user_id == user_id:
             return jsonify(error_response('api.error', error_code=400)), 400
         
-        user = User.query.get(user_id)
+        user = db.session.get(User, user_id)
         if not user:
             return jsonify(error_response('api.error', error_code=404)), 404
         
@@ -450,7 +506,7 @@ def permanent_delete_user(user_id):
         current_user_id = int(get_jwt_identity())
         
         # Get current user to check if admin
-        current_user = User.query.get(current_user_id)
+        current_user = db.session.get(User, current_user_id)
         if not current_user or not (current_user.is_admin or current_user.is_super_admin):
             return jsonify({'error': 'Only administrators can permanently delete users'}), 403
         
@@ -458,7 +514,7 @@ def permanent_delete_user(user_id):
         if current_user_id == user_id:
             return jsonify({'error': 'Cannot delete your own account'}), 400
         
-        user = User.query.get(user_id)
+        user = db.session.get(User, user_id)
         if not user:
             return jsonify({'error': 'User not found'}), 404
         
@@ -765,7 +821,7 @@ def update_role(role_id):
     """Update role"""
     try:
         data = request.get_json()
-        role = Role.query.get(role_id)
+        role = db.session.get(Role, role_id)
         
         if not role:
             return jsonify({'error': 'Role not found'}), 404
@@ -820,7 +876,7 @@ def update_role(role_id):
 def delete_role(role_id):
     """Delete role (soft delete)"""
     try:
-        role = Role.query.get(role_id)
+        role = db.session.get(Role, role_id)
         if not role:
             return jsonify({'error': 'Role not found'}), 404
         
@@ -934,7 +990,7 @@ def assign_user_roles(user_id):
     """Assign roles to user"""
     try:
         data = request.get_json()
-        user = User.query.get(user_id)
+        user = db.session.get(User, user_id)
         
         if not user:
             return jsonify({'error': 'User not found'}), 404
@@ -948,7 +1004,7 @@ def assign_user_roles(user_id):
         # Add new role assignments
         for role_id in role_ids:
             # Verify role exists
-            role = Role.query.get(role_id)
+            role = db.session.get(Role, role_id)
             if role and role.is_active:
                 user_role = UserRole(
                     user_id=user_id,

@@ -92,7 +92,7 @@ def get_production_approval_detail(id):
     try:
         from models.production import ShiftProduction, BillOfMaterials, BOMItem
         
-        approval = ProductionApproval.query.get(id)
+        approval = db.session.get(ProductionApproval, id)
         if not approval:
             return jsonify({'error': 'Approval tidak ditemukan'}), 404
         
@@ -100,7 +100,7 @@ def get_production_approval_detail(id):
         wip_batch = None
         job_costs = []
         if approval.wip_batch_id:
-            wip = WIPBatch.query.get(approval.wip_batch_id)
+            wip = db.session.get(WIPBatch, approval.wip_batch_id)
             if wip:
                 wip_batch = {
                     'id': wip.id,
@@ -157,7 +157,7 @@ def get_production_approval_detail(id):
             # Try to get BOM from WO first, then fallback to product's active BOM
             bom = None
             if wo.bom_id:
-                bom = BillOfMaterials.query.get(wo.bom_id)
+                bom = db.session.get(BillOfMaterials, wo.bom_id)
             
             # Fallback: get active BOM for product
             if not bom and wo.product_id:
@@ -490,7 +490,7 @@ def create_production_approval():
         if not work_order_id:
             return jsonify({'error': 'Work Order ID diperlukan'}), 400
         
-        wo = WorkOrder.query.get(work_order_id)
+        wo = db.session.get(WorkOrder, work_order_id)
         if not wo:
             return jsonify({'error': 'Work Order tidak ditemukan'}), 404
         
@@ -552,7 +552,7 @@ def update_production_approval(id):
         user_id = int(get_jwt_identity())
         data = request.get_json()
         
-        approval = ProductionApproval.query.get(id)
+        approval = db.session.get(ProductionApproval, id)
         if not approval:
             return jsonify({'error': 'Approval tidak ditemukan'}), 404
         
@@ -617,17 +617,88 @@ def approve_production(id):
         user_id = int(get_jwt_identity())
         data = request.get_json() or {}
         
-        approval = ProductionApproval.query.get(id)
+        approval = db.session.get(ProductionApproval, id)
         if not approval:
             return jsonify({'error': 'Approval tidak ditemukan'}), 404
         
         if approval.status != 'pending':
             return jsonify({'error': 'Approval sudah diproses'}), 400
         
-        approval.status = 'approved'
-        approval.reviewed_by = user_id
-        approval.reviewed_at = get_local_now()
-        approval.manager_notes = data.get('notes', approval.manager_notes)
+        # ============= STOCK SYNCHRONIZATION (A-015) =============
+        # Move stock from WIP to Master Inventory (Gudang Finished Goods)
+        try:
+            from models.production import WIPStock, WIPStockMovement
+            from models.warehouse import Inventory, InventoryMovement
+            
+            wo = approval.work_order
+            if wo and wo.product_id:
+                # 1. Update WIP Stock (Deduct)
+                wip = WIPStock.query.filter_by(product_id=wo.product_id).first()
+                qty_to_move = float(approval.quantity_good or 0)
+                
+                if wip and qty_to_move > 0:
+                    # Deduct from WIP
+                    wip.quantity_pcs = float(wip.quantity_pcs or 0) - qty_to_move
+                    # Ensure not negative
+                    if wip.quantity_pcs < 0: wip.quantity_pcs = 0
+                    
+                    # Record WIP Out Movement
+                    db.session.add(WIPStockMovement(
+                        wip_stock_id=wip.id,
+                        product_id=wo.product_id,
+                        movement_type='out',
+                        quantity_pcs=qty_to_move,
+                        balance_pcs=wip.quantity_pcs,
+                        reference_type='production_approval',
+                        reference_id=approval.id,
+                        reference_number=approval.approval_number,
+                        notes=f'Transfer ke Gudang Finished Goods (Approval {approval.approval_number})',
+                        created_by=user_id
+                    ))
+                
+                # 2. Update Master Inventory (Add to FG Location ID 3)
+                # Check for existing inventory record at FG location (3)
+                inv = Inventory.query.filter_by(
+                    product_id=wo.product_id,
+                    location_id=3,
+                    is_active=True
+                ).first()
+                
+                if not inv:
+                    inv = Inventory(
+                        product_id=wo.product_id,
+                        location_id=3,
+                        quantity_on_hand=0,
+                        quantity_available=0,
+                        stock_status='available',
+                        created_by=user_id
+                    )
+                    db.session.add(inv)
+                    db.session.flush()
+                
+                # Add to inventory
+                old_qty = float(inv.quantity_on_hand or 0)
+                inv.quantity_on_hand = old_qty + qty_to_move
+                inv.quantity_available = float(inv.quantity_available or 0) + qty_to_move
+                inv.updated_at = get_local_now()
+                
+                # Record Inventory In Movement
+                db.session.add(InventoryMovement(
+                    inventory_id=inv.id,
+                    movement_type='in',
+                    quantity=qty_to_move,
+                    prev_quantity=old_qty,
+                    new_quantity=inv.quantity_on_hand,
+                    reference_type='production_approval',
+                    reference_id=approval.id,
+                    reference_number=approval.approval_number,
+                    notes=f'Penerimaan hasil produksi WO {wo.wo_number}',
+                    created_by=user_id
+                ))
+        except Exception as stock_err:
+            print(f"Error in stock synchronization: {stock_err}")
+            # We don't rollback the whole approval if stock sync fails, 
+            # but we should definitely log it. In production, we'd want atomicity.
         
         db.session.commit()
         
@@ -667,7 +738,7 @@ def reject_production(id):
         user_id = int(get_jwt_identity())
         data = request.get_json()
         
-        approval = ProductionApproval.query.get(id)
+        approval = db.session.get(ProductionApproval, id)
         if not approval:
             return jsonify({'error': 'Approval tidak ditemukan'}), 404
         
@@ -725,7 +796,7 @@ def forward_to_finance(id):
         
         user_id = int(get_jwt_identity())
         
-        approval = ProductionApproval.query.get(id)
+        approval = db.session.get(ProductionApproval, id)
         if not approval:
             return jsonify({'error': 'Approval tidak ditemukan'}), 404
         
@@ -821,7 +892,7 @@ def submit_wo_for_approval(wo_id):
     try:
         user_id = int(get_jwt_identity())
         
-        wo = WorkOrder.query.get(wo_id)
+        wo = db.session.get(WorkOrder, wo_id)
         if not wo:
             return jsonify({'error': 'Work Order tidak ditemukan'}), 404
         

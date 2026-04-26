@@ -39,7 +39,7 @@ def get_kpi_targets():
 def get_kpi_target(id):
     """Get single KPI target"""
     try:
-        target = KPITarget.query.get(id)
+        target = db.session.get(KPITarget, id)
         if not target:
             return jsonify({'success': False, 'error': 'KPI target not found'}), 404
         
@@ -57,7 +57,7 @@ def get_kpi_target(id):
 def update_kpi_target(id):
     """Update KPI target"""
     try:
-        target = KPITarget.query.get(id)
+        target = db.session.get(KPITarget, id)
         if not target:
             return jsonify({'success': False, 'error': 'KPI target not found'}), 404
         
@@ -143,7 +143,7 @@ def create_kpi_target():
 def delete_kpi_target(id):
     """Delete KPI target (soft delete)"""
     try:
-        target = KPITarget.query.get(id)
+        target = db.session.get(KPITarget, id)
         if not target:
             return jsonify({'success': False, 'error': 'KPI target not found'}), 404
         

@@ -240,13 +240,13 @@ def get_executive_dashboard():
         # Inventory
         try:
             low_stock_items = Inventory.query.filter(
-                Inventory.quantity <= Inventory.min_quantity
+                Inventory.quantity_on_hand <= Inventory.min_stock_level
             ).count()
         except:
             low_stock_items = 0
         
         try:
-            inventory_value = db.session.query(func.coalesce(func.sum(Inventory.quantity * Inventory.unit_cost), 0)).scalar() or 0
+            inventory_value = db.session.query(func.coalesce(func.sum(Inventory.quantity_on_hand), 0)).scalar() or 0
         except:
             inventory_value = 0
         

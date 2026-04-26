@@ -1,7 +1,7 @@
 """
 Stock Opname (Physical Inventory Count) Routes
 """
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db
 from models.stock_opname import StockOpnameOrder, StockOpnameItem
@@ -53,7 +53,7 @@ def get_opname_orders():
 def get_opname_order(id):
     """Get single stock opname order with items"""
     try:
-        order = StockOpnameOrder.query.get_or_404(id)
+        order = db.session.get(StockOpnameOrder, id) or abort(404)
         
         order_data = order.to_dict()
         order_data['items'] = [item.to_dict() for item in order.items]
@@ -127,12 +127,12 @@ def generate_opname_items(order):
     for inv in inventories:
         # Get item details
         if inv.product_id:
-            product = Product.query.get(inv.product_id)
+            product = db.session.get(Product, inv.product_id)
             item_code = product.code if product else f'P-{inv.product_id}'
             item_name = product.name if product else 'Unknown Product'
             uom = product.uom if product else 'pcs'
         elif inv.material_id:
-            material = Material.query.get(inv.material_id)
+            material = db.session.get(Material, inv.material_id)
             item_code = material.code if material else f'M-{inv.material_id}'
             item_name = material.name if material else 'Unknown Material'
             uom = material.uom if material else 'kg'
@@ -164,7 +164,7 @@ def generate_opname_items(order):
 def update_opname_order(id):
     """Update stock opname order"""
     try:
-        order = StockOpnameOrder.query.get_or_404(id)
+        order = db.session.get(StockOpnameOrder, id) or abort(404)
         data = request.get_json()
         
         if order.status not in ['draft', 'scheduled']:
@@ -198,7 +198,7 @@ def update_opname_order(id):
 def start_opname(id):
     """Start stock opname counting"""
     try:
-        order = StockOpnameOrder.query.get_or_404(id)
+        order = db.session.get(StockOpnameOrder, id) or abort(404)
         
         if order.status not in ['draft', 'scheduled']:
             return jsonify({'error': 'Opname sudah dimulai atau selesai'}), 400
@@ -223,7 +223,7 @@ def start_opname(id):
 def get_opname_items(id):
     """Get items for a stock opname order"""
     try:
-        order = StockOpnameOrder.query.get_or_404(id)
+        order = db.session.get(StockOpnameOrder, id) or abort(404)
         
         status = request.args.get('status')
         search = request.args.get('search')
@@ -259,11 +259,11 @@ def count_item(order_id, item_id):
     try:
         user_id = int(get_jwt_identity())
         
-        order = StockOpnameOrder.query.get_or_404(order_id)
+        order = db.session.get(StockOpnameOrder, order_id) or abort(404)
         if order.status != 'in_progress':
             return jsonify({'error': 'Opname belum dimulai atau sudah selesai'}), 400
         
-        item = StockOpnameItem.query.get_or_404(item_id)
+        item = db.session.get(StockOpnameItem, item_id) or abort(404)
         if item.opname_order_id != order_id:
             return jsonify({'error': 'Item tidak ditemukan dalam opname ini'}), 404
         
@@ -304,7 +304,7 @@ def complete_opname(id):
     """Complete stock opname and calculate variances"""
     try:
         user_id = int(get_jwt_identity())
-        order = StockOpnameOrder.query.get_or_404(id)
+        order = db.session.get(StockOpnameOrder, id) or abort(404)
         
         if order.status != 'in_progress':
             return jsonify({'error': 'Opname tidak dalam status in_progress'}), 400
@@ -358,7 +358,7 @@ def approve_opname(id):
     """Approve stock opname and create adjustments"""
     try:
         user_id = int(get_jwt_identity())
-        order = StockOpnameOrder.query.get_or_404(id)
+        order = db.session.get(StockOpnameOrder, id) or abort(404)
         
         if order.status != 'completed':
             return jsonify({'error': 'Opname belum selesai'}), 400
@@ -376,7 +376,7 @@ def approve_opname(id):
             for item in items_with_variance:
                 # Update inventory
                 if item.inventory_id:
-                    inventory = Inventory.query.get(item.inventory_id)
+                    inventory = db.session.get(Inventory, item.inventory_id)
                     if inventory:
                         old_qty = inventory.quantity_on_hand
                         inventory.quantity_on_hand = item.counted_qty
@@ -421,7 +421,7 @@ def approve_opname(id):
 def delete_opname_order(id):
     """Delete stock opname order"""
     try:
-        order = StockOpnameOrder.query.get_or_404(id)
+        order = db.session.get(StockOpnameOrder, id) or abort(404)
         
         if order.status not in ['draft', 'cancelled']:
             return jsonify({'error': 'Hanya opname draft atau cancelled yang bisa dihapus'}), 400

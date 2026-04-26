@@ -233,7 +233,7 @@ def validate_location_capacity():
         if not location_id:
             return error_response('Location ID is required'), 400
         
-        location = WarehouseLocation.query.get(location_id)
+        location = db.session.get(WarehouseLocation, location_id)
         if not location:
             return error_response('Location not found'), 404
         

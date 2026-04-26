@@ -34,7 +34,7 @@ def create_category():
     """Create a new category (admin only)"""
     try:
         current_user_id = int(get_jwt_identity())
-        user = User.query.get(current_user_id)
+        user = db.session.get(User, current_user_id)
         
         if not user or not (user.is_admin or user.is_super_admin):
             return jsonify({'error': 'Admin access required'}), 403
@@ -77,12 +77,12 @@ def update_category(category_id):
     """Update a category (admin only)"""
     try:
         current_user_id = int(get_jwt_identity())
-        user = User.query.get(current_user_id)
+        user = db.session.get(User, current_user_id)
         
         if not user or not (user.is_admin or user.is_super_admin):
             return jsonify({'error': 'Admin access required'}), 403
         
-        category = ManualCategory.query.get(category_id)
+        category = db.session.get(ManualCategory, category_id)
         if not category:
             return jsonify({'error': 'Category not found'}), 404
         
@@ -118,12 +118,12 @@ def delete_category(category_id):
     """Delete a category (admin only)"""
     try:
         current_user_id = int(get_jwt_identity())
-        user = User.query.get(current_user_id)
+        user = db.session.get(User, current_user_id)
         
         if not user or not (user.is_admin or user.is_super_admin):
             return jsonify({'error': 'Admin access required'}), 403
         
-        category = ManualCategory.query.get(category_id)
+        category = db.session.get(ManualCategory, category_id)
         if not category:
             return jsonify({'error': 'Category not found'}), 404
         
@@ -180,7 +180,7 @@ def get_articles():
 def get_article(article_id):
     """Get a single article by ID"""
     try:
-        article = ManualArticle.query.get(article_id)
+        article = db.session.get(ManualArticle, article_id)
         if not article:
             return jsonify({'error': 'Article not found'}), 404
         
@@ -225,7 +225,7 @@ def create_article():
     """Create a new article (admin only)"""
     try:
         current_user_id = int(get_jwt_identity())
-        user = User.query.get(current_user_id)
+        user = db.session.get(User, current_user_id)
         
         if not user or not (user.is_admin or user.is_super_admin):
             return jsonify({'error': 'Admin access required'}), 403
@@ -271,12 +271,12 @@ def update_article(article_id):
     """Update an article (admin only)"""
     try:
         current_user_id = int(get_jwt_identity())
-        user = User.query.get(current_user_id)
+        user = db.session.get(User, current_user_id)
         
         if not user or not (user.is_admin or user.is_super_admin):
             return jsonify({'error': 'Admin access required'}), 403
         
-        article = ManualArticle.query.get(article_id)
+        article = db.session.get(ManualArticle, article_id)
         if not article:
             return jsonify({'error': 'Article not found'}), 404
         
@@ -314,12 +314,12 @@ def delete_article(article_id):
     """Delete an article (admin only)"""
     try:
         current_user_id = int(get_jwt_identity())
-        user = User.query.get(current_user_id)
+        user = db.session.get(User, current_user_id)
         
         if not user or not (user.is_admin or user.is_super_admin):
             return jsonify({'error': 'Admin access required'}), 403
         
-        article = ManualArticle.query.get(article_id)
+        article = db.session.get(ManualArticle, article_id)
         if not article:
             return jsonify({'error': 'Article not found'}), 404
         
@@ -367,7 +367,7 @@ def create_faq():
     """Create a new FAQ (admin only)"""
     try:
         current_user_id = int(get_jwt_identity())
-        user = User.query.get(current_user_id)
+        user = db.session.get(User, current_user_id)
         
         if not user or not (user.is_admin or user.is_super_admin):
             return jsonify({'error': 'Admin access required'}), 403
@@ -402,12 +402,12 @@ def update_faq(faq_id):
     """Update a FAQ (admin only)"""
     try:
         current_user_id = int(get_jwt_identity())
-        user = User.query.get(current_user_id)
+        user = db.session.get(User, current_user_id)
         
         if not user or not (user.is_admin or user.is_super_admin):
             return jsonify({'error': 'Admin access required'}), 403
         
-        faq = ManualFAQ.query.get(faq_id)
+        faq = db.session.get(ManualFAQ, faq_id)
         if not faq:
             return jsonify({'error': 'FAQ not found'}), 404
         
@@ -443,12 +443,12 @@ def delete_faq(faq_id):
     """Delete a FAQ (admin only)"""
     try:
         current_user_id = int(get_jwt_identity())
-        user = User.query.get(current_user_id)
+        user = db.session.get(User, current_user_id)
         
         if not user or not (user.is_admin or user.is_super_admin):
             return jsonify({'error': 'Admin access required'}), 403
         
-        faq = ManualFAQ.query.get(faq_id)
+        faq = db.session.get(ManualFAQ, faq_id)
         if not faq:
             return jsonify({'error': 'FAQ not found'}), 404
         
@@ -538,7 +538,7 @@ def get_manual_stats():
     """Get manual statistics (admin only)"""
     try:
         current_user_id = int(get_jwt_identity())
-        user = User.query.get(current_user_id)
+        user = db.session.get(User, current_user_id)
         
         if not user or not (user.is_admin or user.is_super_admin):
             return jsonify({'error': 'Admin access required'}), 403

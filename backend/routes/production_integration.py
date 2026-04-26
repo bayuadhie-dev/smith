@@ -8,7 +8,7 @@ Handles automatic integrations between Production and other modules:
 5. Finance Cost Tracking
 """
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db
 from models.production import WorkOrder, ShiftProduction, Machine
@@ -33,7 +33,7 @@ def auto_deduct_materials(work_order_id, user_id=None):
     try:
         from utils.opname_lock import check_opname_lock
         
-        wo = WorkOrder.query.get(work_order_id)
+        wo = db.session.get(WorkOrder, work_order_id)
         if not wo:
             return False, "Work order not found", []
         
@@ -359,7 +359,7 @@ def trigger_auto_receive(wo_id):
 def check_material_availability(wo_id):
     """Check if all materials are available for production"""
     try:
-        wo = WorkOrder.query.get_or_404(wo_id)
+        wo = db.session.get(WorkOrder, wo_id) or abort(404)
         
         if not wo.bom_id:
             return jsonify({
@@ -378,7 +378,7 @@ def check_material_availability(wo_id):
             
             if bom_item.material_id:
                 inventory = Inventory.query.filter_by(material_id=bom_item.material_id).first()
-                available_qty = float(inventory.quantity) if inventory else 0
+                available_qty = float(inventory.quantity_on_hand) if inventory else 0
                 
                 item_available = available_qty >= required_qty
                 if not item_available:

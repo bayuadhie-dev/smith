@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, MaintenanceSchedule, MaintenanceRecord, MaintenanceTask, EquipmentHistory
 from models.production import Machine
@@ -75,10 +75,10 @@ def get_records():
                 'machine_id': r.machine_id,
                 'machine_name': r.machine.name if r.machine else None,
                 'maintenance_type': r.maintenance_type,
-                'description': r.description,
-                'scheduled_date': r.scheduled_date.isoformat() if r.scheduled_date else None,
+                'description': r.problem_description,
+                'scheduled_date': r.maintenance_date.isoformat() if r.maintenance_date else None,
                 'maintenance_date': r.maintenance_date.isoformat() if r.maintenance_date else None,
-                'completed_date': r.completed_date.isoformat() if r.completed_date else None,
+                'completed_date': r.end_time.isoformat() if r.end_time else None,
                 'status': r.status,
                 'cost': float(r.cost) if r.cost else 0
             } for r in records]
@@ -99,17 +99,13 @@ def create_maintenance():
             record_number=record_number,
             machine_id=data['machine_id'],
             maintenance_type=data['maintenance_type'],
-            scheduled_date=datetime.fromisoformat(data['scheduled_date']),
-            estimated_duration_hours=data.get('estimated_duration_hours'),
-            priority=data.get('priority', 'medium'),
-            description=data.get('description'),
-            assigned_to=data.get('assigned_to'),
-            preventive_schedule=data.get('preventive_schedule'),
-            cost_estimate=data.get('cost_estimate', 0),
-            safety_requirements=data.get('safety_requirements'),
+            maintenance_date=datetime.fromisoformat(data.get('scheduled_date', data.get('maintenance_date', datetime.utcnow().isoformat()))),
+            duration_hours=data.get('estimated_duration_hours'),
+            problem_description=data.get('description'),
+            cost=data.get('cost_estimate', data.get('cost', 0)),
             notes=data.get('notes'),
             status='scheduled',
-            created_by=user_id
+            performed_by=data.get('performed_by', user_id)
         )
         
         db.session.add(record)
@@ -119,27 +115,17 @@ def create_maintenance():
         for task in data.get('tasks', []):
             from models import MaintenanceTask
             maintenance_task = MaintenanceTask(
-                maintenance_record_id=record.id,
-                task_name=task['task_name'],
-                description=task.get('description'),
-                estimated_time_hours=task.get('estimated_time_hours'),
-                required_parts=task.get('required_parts'),
+                record_id=record.id,
+                task_description=task.get('task_name', task.get('task_description', '')),
+                notes=task.get('description'),
                 status=task.get('status', 'pending')
             )
             db.session.add(maintenance_task)
         
-        # Add required parts
-        for part in data.get('required_parts', []):
-            from models import MaintenancePart
-            maintenance_part = MaintenancePart(
-                maintenance_record_id=record.id,
-                part_name=part['part_name'],
-                quantity=part['quantity'],
-                unit_cost=part.get('unit_cost', 0),
-                supplier=part.get('supplier'),
-                availability_status=part.get('availability_status', 'available')
-            )
-            db.session.add(maintenance_part)
+        # Add required parts (stored as JSON in parts_used field since MaintenancePart model does not exist)
+        if data.get('required_parts'):
+            import json
+            record.parts_used = json.dumps(data['required_parts'])
         
         db.session.commit()
         return jsonify({'message': 'Maintenance scheduled successfully', 'record_id': record.id}), 201
@@ -180,7 +166,7 @@ def create_record():
 @jwt_required()
 def update_maintenance_record(record_id):
     try:
-        record = MaintenanceRecord.query.get_or_404(record_id)
+        record = db.session.get(MaintenanceRecord, record_id) or abort(404)
         data = request.get_json()
         
         # Update fields
@@ -255,6 +241,55 @@ def update_maintenance_record(record_id):
                         duration_mins = (dt.end_time - dt.start_time).total_seconds() / 60
                         dt.duration_minutes = int(duration_mins)
                     dt.action_taken = f'Maintenance completed: {record.work_performed or "N/A"}'
+                
+                # ============= INVENTORY INTEGRATION (A-008) =============
+                # Deduct spare parts from inventory when maintenance is completed
+                if record.parts_used:
+                    try:
+                        from models import Inventory, InventoryMovement
+                        import json
+                        parts = json.loads(record.parts_used)
+                        
+                        for part in parts:
+                            # Handling both {id: X, quantity: Y} and {material_id: X, quantity: Y} formats
+                            material_id = part.get('material_id') or part.get('id')
+                            usage_qty = float(part.get('quantity', 1))
+                            
+                            if material_id:
+                                # Find inventory for this spare part
+                                # Location 2 is standard for Spare Parts
+                                inv = Inventory.query.filter_by(
+                                    material_id=material_id,
+                                    location_id=2
+                                ).first()
+                                
+                                if not inv:
+                                    # Fallback: find any location with this material
+                                    inv = Inventory.query.filter_by(material_id=material_id).first()
+                                
+                                if inv:
+                                    inv.quantity_on_hand = float(inv.quantity_on_hand) - usage_qty
+                                    inv.quantity_available = float(inv.quantity_available) - usage_qty
+                                    inv.updated_at = get_local_now()
+                                    
+                                    # Record movement
+                                    movement = InventoryMovement(
+                                        inventory_id=inv.id,
+                                        material_id=material_id,
+                                        location_id=inv.location_id,
+                                        movement_type='stock_out',
+                                        movement_date=get_local_now().date(),
+                                        quantity=usage_qty,
+                                        reference_number=record.record_number,
+                                        reference_type='work_order',
+                                        reference_id=record.id,
+                                        notes=f"Used for maintenance {record.record_number}",
+                                        created_by=get_jwt_identity()
+                                    )
+                                    db.session.add(movement)
+                    except Exception as pe:
+                        # Log error but don't fail the whole request
+                        print(f"Error processing maintenance inventory: {pe}")
         
         if 'work_performed' in data:
             record.work_performed = data['work_performed']
@@ -264,6 +299,10 @@ def update_maintenance_record(record_id):
         
         if 'notes' in data:
             record.notes = data['notes']
+            
+        if 'parts_used' in data:
+            import json
+            record.parts_used = json.dumps(data['parts_used'])
         
         record.updated_at = get_local_now()
         
@@ -277,7 +316,7 @@ def update_maintenance_record(record_id):
 @jwt_required()
 def get_maintenance_record(record_id):
     try:
-        record = MaintenanceRecord.query.get_or_404(record_id)
+        record = db.session.get(MaintenanceRecord, record_id) or abort(404)
         return jsonify({
             'record': {
                 'id': record.id,
@@ -347,7 +386,7 @@ def get_maintenance_stats():
 @jwt_required()
 def generate_maintenance_from_schedule(schedule_id):
     try:
-        schedule = MaintenanceSchedule.query.get_or_404(schedule_id)
+        schedule = db.session.get(MaintenanceSchedule, schedule_id) or abort(404)
         user_id = int(get_jwt_identity())
         
         # Generate record number

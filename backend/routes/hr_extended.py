@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, Employee, Department, ShiftSchedule, Attendance, Leave, EmployeeRoster, Machine
 from utils.i18n import success_response, error_response, get_message
@@ -19,7 +19,7 @@ hr_extended_bp = Blueprint('hr_extended', __name__)
 def get_employee_detail(employee_id):
     """Get detailed employee information"""
     try:
-        employee = Employee.query.get_or_404(employee_id)
+        employee = db.session.get(Employee, employee_id) or abort(404)
         
         return jsonify({
             'employee': {
@@ -77,7 +77,7 @@ def update_employee(employee_id):
     """Update employee information"""
     try:
         data = request.get_json()
-        employee = Employee.query.get_or_404(employee_id)
+        employee = db.session.get(Employee, employee_id) or abort(404)
         
         # Update fields if provided
         if 'employee_number' in data and data['employee_number']:
@@ -161,7 +161,7 @@ def update_employee(employee_id):
 def delete_employee(employee_id):
     """Hard-delete employee (permanent removal)"""
     try:
-        employee = Employee.query.get_or_404(employee_id)
+        employee = db.session.get(Employee, employee_id) or abort(404)
         db.session.delete(employee)
         db.session.commit()
         return jsonify({'message': 'Karyawan berhasil dihapus permanen'}), 200
@@ -482,7 +482,7 @@ def approve_leave(leave_id):
     """Approve leave request"""
     try:
         user_id = get_jwt_identity()
-        leave = Leave.query.get_or_404(leave_id)
+        leave = db.session.get(Leave, leave_id) or abort(404)
         
         if leave.status != 'pending':
             return jsonify(error_response('api.error', error_code=400)), 400
@@ -505,7 +505,7 @@ def reject_leave(leave_id):
     try:
         data = request.get_json()
         user_id = get_jwt_identity()
-        leave = Leave.query.get_or_404(leave_id)
+        leave = db.session.get(Leave, leave_id) or abort(404)
         
         if leave.status != 'pending':
             return jsonify(error_response('api.error', error_code=400)), 400

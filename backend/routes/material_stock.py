@@ -95,7 +95,7 @@ def get_material_inventory():
 def get_material_inventory_detail(material_id):
     """Get detailed inventory for a specific material"""
     try:
-        material = Material.query.get(material_id)
+        material = db.session.get(Material, material_id)
         if not material:
             return jsonify({'error': 'Material not found'}), 404
         
@@ -172,12 +172,12 @@ def add_material_stock():
             return jsonify({'error': lock['message']}), 423
         
         # Verify material exists
-        material = Material.query.get(material_id)
+        material = db.session.get(Material, material_id)
         if not material:
             return jsonify({'error': 'Material not found'}), 404
         
         # Verify location exists
-        location = WarehouseLocation.query.get(location_id)
+        location = db.session.get(WarehouseLocation, location_id)
         if not location:
             return jsonify({'error': 'Location not found'}), 404
         
@@ -277,7 +277,7 @@ def adjust_material_stock():
             return jsonify({'error': 'Adjustment quantity must be greater than 0'}), 400
         
         # Get inventory record
-        inventory = Inventory.query.get(inventory_id)
+        inventory = db.session.get(Inventory, inventory_id)
         if not inventory:
             return jsonify({'error': 'Inventory record not found'}), 404
         

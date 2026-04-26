@@ -1,8 +1,9 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, ShippingOrder, ShippingItem, DeliveryTracking, LogisticsProvider
 from utils.i18n import success_response, error_response, get_message
 from utils import generate_number
+from company_config.company import COMPANY_NAME, COMPANY_ADDRESS_LINE1, COMPANY_PHONE
 from datetime import datetime
 from utils.timezone import get_local_now, get_local_today
 
@@ -152,9 +153,9 @@ def get_tracking():
                 'customer_name': shipping_order.customer.company_name if shipping_order.customer else 'Unknown',
                 'shipping_date': shipping_order.shipping_date.isoformat(),
                 'expected_delivery_date': shipping_order.expected_delivery_date.isoformat() if shipping_order.expected_delivery_date else None,
-                'sender_name': 'PT. Gratia Makmur Sentosa',
-                'sender_address': 'Jl. Industri No. 123, Tangerang',
-                'sender_phone': '021-12345678',
+                'sender_name': COMPANY_NAME,
+                'sender_address': COMPANY_ADDRESS_LINE1,
+                'sender_phone': COMPANY_PHONE,
                 'recipient_name': shipping_order.customer.company_name if shipping_order.customer else 'Unknown',
                 'recipient_address': shipping_order.shipping_address or 'Address not available',
                 'recipient_phone': shipping_order.customer.phone if shipping_order.customer else 'Phone not available',
@@ -201,7 +202,7 @@ def add_tracking():
         db.session.add(tracking)
         
         # Update shipping order status
-        order = ShippingOrder.query.get(data['shipping_id'])
+        order = db.session.get(ShippingOrder, data['shipping_id'])
         order.status = data['status']
         
         db.session.commit()
@@ -262,7 +263,7 @@ def create_provider():
 @jwt_required()
 def update_provider(id):
     try:
-        provider = LogisticsProvider.query.get_or_404(id)
+        provider = db.session.get(LogisticsProvider, id) or abort(404)
         data = request.get_json()
         
         provider.company_name = data.get('name', provider.company_name)
@@ -288,7 +289,7 @@ def update_provider(id):
 @jwt_required()
 def delete_provider(id):
     try:
-        provider = LogisticsProvider.query.get_or_404(id)
+        provider = db.session.get(LogisticsProvider, id) or abort(404)
         
         # Check if provider is used in any shipping orders
         if ShippingOrder.query.filter_by(logistics_provider_id=id).first():
@@ -306,7 +307,7 @@ def delete_provider(id):
 @jwt_required()
 def get_shipping_order(order_id):
     try:
-        order = ShippingOrder.query.get_or_404(order_id)
+        order = db.session.get(ShippingOrder, order_id) or abort(404)
         
         return jsonify({
             'shipping_order': {
@@ -352,7 +353,7 @@ def get_shipping_order(order_id):
 @jwt_required()
 def update_shipping_order(order_id):
     try:
-        order = ShippingOrder.query.get_or_404(order_id)
+        order = db.session.get(ShippingOrder, order_id) or abort(404)
         data = request.get_json()
         
         # Update order fields
@@ -409,7 +410,7 @@ def update_shipping_order(order_id):
 @jwt_required()
 def delete_shipping_order(order_id):
     try:
-        order = ShippingOrder.query.get_or_404(order_id)
+        order = db.session.get(ShippingOrder, order_id) or abort(404)
         
         # Check if order can be deleted (not shipped yet)
         if order.status in ['shipped', 'delivered']:
@@ -543,7 +544,7 @@ def get_ready_for_shipping():
         
         for qc in passed_inspections:
             # Get the work order
-            work_order = WorkOrder.query.get(qc.work_order_id) if qc.work_order_id else None
+            work_order = db.session.get(WorkOrder, qc.work_order_id) if qc.work_order_id else None
             if not work_order:
                 continue
             
@@ -560,7 +561,7 @@ def get_ready_for_shipping():
             sales_order = None
             customer = None
             if work_order.sales_order_id:
-                sales_order = SalesOrder.query.get(work_order.sales_order_id)
+                sales_order = db.session.get(SalesOrder, work_order.sales_order_id)
                 if sales_order:
                     customer = sales_order.customer
             
@@ -621,19 +622,19 @@ def create_shipping_from_qc():
         if not work_order_id:
             return jsonify({'error': 'Work order ID is required'}), 400
         
-        work_order = WorkOrder.query.get(work_order_id)
+        work_order = db.session.get(WorkOrder, work_order_id)
         if not work_order:
             return jsonify({'error': 'Work order not found'}), 404
         
         # Get QC inspection
         qc = None
         if qc_inspection_id:
-            qc = QualityInspection.query.get(qc_inspection_id)
+            qc = db.session.get(QualityInspection, qc_inspection_id)
         
         # Get customer from sales order or data
         customer_id = data.get('customer_id')
         if not customer_id and work_order.sales_order_id:
-            sales_order = SalesOrder.query.get(work_order.sales_order_id)
+            sales_order = db.session.get(SalesOrder, work_order.sales_order_id)
             if sales_order:
                 customer_id = sales_order.customer_id
         
@@ -703,6 +704,53 @@ def create_shipping_from_qc():
         
         # Update work order status
         work_order.status = 'shipped'
+        
+        # ============= INVENTORY INTEGRATION (A-004) =============
+        from models import Inventory, InventoryMovement
+        
+        # Deduct from inventory (Finished Goods Warehouse, Location ID 3 is default for FG)
+        # We try to find match by product and batch
+        inv = Inventory.query.filter_by(
+            product_id=work_order.product_id,
+            batch_number=shipping_item.batch_number,
+            location_id=3  # Standard FG Location
+        ).first()
+        
+        if not inv:
+            # Fallback: Find any location with this product and batch
+            inv = Inventory.query.filter_by(
+                product_id=work_order.product_id,
+                batch_number=shipping_item.batch_number
+            ).first()
+            
+        if not inv:
+            # Fallback 2: Find any location with this product (ignore batch if necessary)
+            inv = Inventory.query.filter_by(
+                product_id=work_order.product_id
+            ).first()
+            
+        if inv:
+            # Deduct quantity
+            inv.quantity_on_hand = float(inv.quantity_on_hand) - quantity
+            inv.quantity_available = float(inv.quantity_available) - quantity
+            inv.updated_at = get_local_now()
+            
+            # Record movement
+            movement = InventoryMovement(
+                inventory_id=inv.id,
+                product_id=work_order.product_id,
+                location_id=inv.location_id,
+                movement_type='stock_out',
+                movement_date=get_local_now().date(),
+                quantity=quantity,
+                reference_number=shipping_number,
+                reference_type='sales_order',
+                reference_id=shipping_order.id,
+                batch_number=shipping_item.batch_number,
+                notes=f"Shipped from WO {work_order.wo_number}",
+                created_by=user_id
+            )
+            db.session.add(movement)
         
         db.session.commit()
         

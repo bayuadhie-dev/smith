@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, Experiment, ResearchProject, User
 from utils.i18n import success_response, error_response, get_message
@@ -138,7 +138,7 @@ def create_experiment():
 def get_experiment(id):
     """Get experiment details"""
     try:
-        experiment = Experiment.query.get_or_404(id)
+        experiment = db.session.get(Experiment, id) or abort(404)
         
         return jsonify({
             'id': experiment.id,
@@ -182,7 +182,7 @@ def get_experiment(id):
 def update_experiment(id):
     """Update experiment"""
     try:
-        experiment = Experiment.query.get_or_404(id)
+        experiment = db.session.get(Experiment, id) or abort(404)
         data = request.get_json()
         
         # Update fields
@@ -243,7 +243,7 @@ def update_experiment(id):
 def delete_experiment(id):
     """Delete experiment"""
     try:
-        experiment = Experiment.query.get_or_404(id)
+        experiment = db.session.get(Experiment, id) or abort(404)
         
         # Check if experiment has related materials
         if experiment.materials:
@@ -265,7 +265,7 @@ def delete_experiment(id):
 def review_experiment(id):
     """Review experiment results"""
     try:
-        experiment = Experiment.query.get_or_404(id)
+        experiment = db.session.get(Experiment, id) or abort(404)
         data = request.get_json()
         user_id = get_jwt_identity()
         
