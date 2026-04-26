@@ -16,6 +16,7 @@ This software is proprietary and owned by **PT. Gratia Makmur Sentosa**. By cont
 - [Code of Conduct](#code-of-conduct)
 - [Getting Started](#getting-started)
 - [Development Setup](#development-setup)
+- [Project Structure](#project-structure)
 - [Coding Standards](#coding-standards)
 - [Commit Guidelines](#commit-guidelines)
 - [Pull Request Process](#pull-request-process)
@@ -109,6 +110,85 @@ This software is proprietary and owned by **PT. Gratia Makmur Sentosa**. By cont
    cd frontend
    npm run dev
    ```
+
+## Project Structure
+
+### Overview (as of April 2026)
+
+```bash
+SourceCode/
+├── backend/                    # 339 files, 97,428 lines
+│   ├── app.py                  # Flask application entry
+│   ├── config.py               # Configuration management
+│   ├── models/                 # 49 model files (269 DB tables)
+│   │   ├── user.py             # User, Role, Permission
+│   │   ├── product.py          # Products, Categories, BOM
+│   │   ├── sales.py            # Customers, Orders, Invoices
+│   │   ├── production.py       # Work Orders, Machines, Shifts
+│   │   ├── quality.py          # QC Inspections, Defects
+│   │   ├── finance.py          # Accounts, Journals, Payments
+│   │   ├── hr.py               # Employees, Payroll, Leave
+│   │   ├── dcc.py              # ISO 9001:2015, CAPA (13 tables)
+│   │   └── ...                 # 40+ more model files
+│   ├── routes/                 # 91 route files (~1.8 MB)
+│   │   ├── sales.py            # Sales & CRM (84 KB, 45+ endpoints)
+│   │   ├── production.py       # Production management (155 KB)
+│   │   ├── oee.py              # Quality objectives (165 KB, 62 functions)
+│   │   ├── dcc.py              # Document control (72 KB)
+│   │   ├── finance.py          # Accounting (55 KB, 40+ endpoints)
+│   │   ├── hr_payroll.py       # Payroll (56 KB)
+│   │   ├── rd*.py (8 files)    # R&D modules (135 KB total)
+│   │   └── ...                 # 80+ more route files
+│   ├── utils/                  # 19 helper files
+│   ├── tests/                  # 44 test files
+│   ├── migrations/             # 26 migration files
+│   ├── seeds/                  # 3 seed files
+│   └── scripts/                # 4 utility scripts
+├── frontend/                   # 428 files, 180,231 lines
+│   ├── src/
+│   │   ├── pages/              # 35 modules, 420+ components
+│   │   │   ├── Dashboard/
+│   │   │   ├── Sales/
+│   │   │   ├── Production/
+│   │   │   ├── Quality/
+│   │   │   ├── DCC/            # Document Control
+│   │   │   ├── RD/             # R&D
+│   │   │   ├── Finance/
+│   │   │   ├── HR/
+│   │   │   └── ...             # 25+ more modules
+│   │   ├── components/         # 60 reusable components
+│   │   ├── store/              # Redux Toolkit store
+│   │   └── hooks/              # Custom React hooks
+│   └── package.json
+├── docs/                       # 7 documentation files
+├── README.md                   # Main documentation
+├── CHANGELOG.md                # Version history
+└── CONTRIBUTING.md             # This file
+
+Total: 816+ files, 310,000+ lines of code
+```
+
+### Key Statistics
+
+| Component | Count | Details |
+|-----------|-------|---------|
+| **Backend Routes** | 91 files | ~1.8 MB Python code |
+| **Frontend Pages** | 35 modules | 420+ React components |
+| **Database Models** | 49 files | 269 tables |
+| **API Endpoints** | 800+ | RESTful API |
+| **Test Files** | 44 files | Backend tests |
+| **Migrations** | 26 files | Database versioning |
+
+### Large Modules by Size
+
+1. **oee.py** — 165 KB (62 functions) — Quality objectives & OEE tracking
+2. **production.py** — 155 KB — Production management
+3. **group_chat.py** — 66 KB — Real-time chat
+4. **mrp.py** — 63 KB — Material requirements planning
+5. **finance.py** — 55 KB — Accounting & financial reports
+6. **hr_payroll.py** — 56 KB — Payroll calculations
+7. **rd_*.py (8 files)** — 135 KB — R&D comprehensive suite
+8. **schedule_grid.py** — 57 KB — Production scheduling
 
 ## Coding Standards
 
