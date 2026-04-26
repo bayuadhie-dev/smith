@@ -1,0 +1,2915 @@
+[
+  {
+    "timestamp": "2026-04-14T13:46:42.146019",
+    "database": "instance/erp_database.db",
+    "index_info": {
+      "total_indexes": 271,
+      "indexes_by_table": {
+        "accounting_entries": [
+          "ix_accounting_entries_entry_date",
+          "ix_accounting_entries_entry_number"
+        ],
+        "accounts": [
+          "ix_accounts_account_code"
+        ],
+        "analytics_reports": [
+          "ix_analytics_reports_report_number"
+        ],
+        "attendances": [
+          "idx_attendances_created_at",
+          "idx_attendances_employee_id",
+          "idx_attendances_status",
+          "idx_attendances_user_id"
+        ],
+        "audit_logs": [
+          "ix_audit_logs_timestamp"
+        ],
+        "backup_records": [
+          "ix_backup_records_backup_date",
+          "ix_backup_records_backup_number"
+        ],
+        "bill_of_materials": [
+          "idx_bom_approved_by",
+          "idx_bom_created_by",
+          "idx_bom_product_id",
+          "ix_bill_of_materials_bom_number"
+        ],
+        "bom_items": [
+          "idx_bom_items_bom_id",
+          "idx_bom_items_material_id",
+          "idx_bom_items_product_id"
+        ],
+        "capa": [
+          "ix_capa_capa_number"
+        ],
+        "consolidation_entities": [
+          "ix_consolidation_entities_entity_code"
+        ],
+        "converting_machines": [
+          "ix_converting_machines_code"
+        ],
+        "converting_productions": [
+          "ix_converting_productions_production_date"
+        ],
+        "cost_analysis": [
+          "ix_cost_analysis_analysis_code"
+        ],
+        "cost_centers": [
+          "ix_cost_centers_code"
+        ],
+        "customer_returns": [
+          "ix_customer_returns_return_number"
+        ],
+        "customers": [
+          "ix_customers_code",
+          "ix_customers_company_name"
+        ],
+        "dcc_capa_requests": [
+          "ix_dcc_capa_requests_capa_number"
+        ],
+        "dcc_change_notices": [
+          "ix_dcc_change_notices_request_number"
+        ],
+        "dcc_destruction_logs": [
+          "ix_dcc_destruction_logs_destruction_number"
+        ],
+        "dcc_documents": [
+          "ix_dcc_documents_document_number"
+        ],
+        "dcc_internal_memos": [
+          "ix_dcc_internal_memos_memo_number"
+        ],
+        "dcc_quality_records": [
+          "ix_dcc_quality_records_record_number"
+        ],
+        "departments": [
+          "ix_departments_code"
+        ],
+        "downtime_records": [
+          "ix_downtime_records_downtime_date"
+        ],
+        "downtime_root_causes": [
+          "idx_downtime_root_cause_machine_period"
+        ],
+        "employee_appraisals": [
+          "ix_employee_appraisals_appraisal_number"
+        ],
+        "employee_rosters": [
+          "idx_employee_roster_date",
+          "idx_machine_roster_date"
+        ],
+        "employee_skills": [
+          "idx_employee_skill"
+        ],
+        "employees": [
+          "idx_employees_created_at",
+          "idx_employees_department_id",
+          "idx_employees_is_active",
+          "ix_employees_employee_number",
+          "ix_employees_nik"
+        ],
+        "experiments": [
+          "ix_experiments_experiment_number"
+        ],
+        "fixed_assets": [
+          "ix_fixed_assets_asset_code"
+        ],
+        "goods_received_notes": [
+          "ix_goods_received_notes_grn_number"
+        ],
+        "integration_logs": [
+          "ix_integration_logs_log_date"
+        ],
+        "inventory": [
+          "idx_inventory_created_by",
+          "idx_inventory_expiry_date",
+          "idx_inventory_grn_id",
+          "idx_inventory_is_active",
+          "idx_inventory_material_status",
+          "idx_inventory_product_status",
+          "idx_inventory_qc_inspection_id",
+          "idx_inventory_stock_status",
+          "idx_inventory_work_order_id",
+          "idx_material_location",
+          "idx_product_location",
+          "ix_inventory_batch_number"
+        ],
+        "inventory_adjustments": [
+          "ix_inventory_adjustments_adjustment_number"
+        ],
+        "inventory_movements": [
+          "idx_inventory_movements_created_by",
+          "idx_inventory_movements_location_id",
+          "idx_inventory_movements_material_id",
+          "idx_inventory_movements_product_id",
+          "idx_movement_date",
+          "idx_reference",
+          "ix_inventory_movements_reference_number"
+        ],
+        "inventory_transfers": [
+          "ix_inventory_transfers_transfer_number"
+        ],
+        "invoices": [
+          "idx_invoice_customer_date",
+          "idx_invoice_status_date",
+          "idx_invoices_created_at",
+          "idx_invoices_created_by",
+          "idx_invoices_customer_id",
+          "idx_invoices_purchase_order_id",
+          "idx_invoices_sales_order_id",
+          "idx_invoices_status",
+          "idx_invoices_supplier_id",
+          "idx_invoices_work_order_id",
+          "ix_invoices_invoice_date",
+          "ix_invoices_invoice_number"
+        ],
+        "kpi_targets": [
+          "ix_kpi_targets_kpi_code"
+        ],
+        "kpis": [
+          "ix_kpis_kpi_code"
+        ],
+        "leads": [
+          "idx_leads_assigned_to",
+          "idx_leads_converted_to_customer_id",
+          "idx_leads_created_at",
+          "idx_leads_created_by",
+          "idx_leads_lead_status",
+          "ix_leads_company_name",
+          "ix_leads_lead_number"
+        ],
+        "leaves": [
+          "idx_leaves_approved_by",
+          "idx_leaves_created_at",
+          "idx_leaves_employee_id",
+          "idx_leaves_status",
+          "ix_leaves_leave_number"
+        ],
+        "live_monitoring_checks": [
+          "ix_live_monitoring_checks_check_date"
+        ],
+        "logistics_providers": [
+          "ix_logistics_providers_code"
+        ],
+        "machine_performance": [
+          "idx_machine_performance_date",
+          "ix_machine_performance_performance_date"
+        ],
+        "machines": [
+          "idx_machines_is_active",
+          "idx_machines_machine_type",
+          "idx_machines_status",
+          "ix_machines_code"
+        ],
+        "maintenance_records": [
+          "idx_maintenance_machine_status",
+          "idx_maintenance_records_created_at",
+          "idx_maintenance_records_machine_id",
+          "idx_maintenance_records_status",
+          "ix_maintenance_records_record_number"
+        ],
+        "maintenance_schedules": [
+          "ix_maintenance_schedules_schedule_number"
+        ],
+        "material_issues": [
+          "ix_material_issues_issue_number"
+        ],
+        "material_returns": [
+          "ix_material_returns_return_number"
+        ],
+        "materials": [
+          "ix_materials_code",
+          "ix_materials_name"
+        ],
+        "mbf_report_details": [
+          "idx_mbf_report_details_report_id"
+        ],
+        "mbf_reports": [
+          "idx_mbf_reports_created_at",
+          "idx_mbf_reports_created_by",
+          "idx_mbf_reports_manager_id",
+          "idx_mbf_reports_supervisor_id",
+          "ix_mbf_reports_report_number"
+        ],
+        "metric_data": [
+          "idx_kpi_date",
+          "ix_metric_data_metric_date"
+        ],
+        "mrp_requirements": [
+          "ix_mrp_requirements_requirement_number"
+        ],
+        "notifications": [
+          "idx_notifications_is_read",
+          "idx_notifications_notification_type",
+          "idx_user_read",
+          "ix_notifications_created_at"
+        ],
+        "oee_analytics": [
+          "idx_oee_analytics_machine_date"
+        ],
+        "oee_records": [
+          "idx_oee_records_created_at",
+          "idx_oee_records_machine_id",
+          "ix_oee_records_record_date",
+          "ix_oee_records_record_number"
+        ],
+        "opportunities": [
+          "idx_opportunities_assigned_to",
+          "idx_opportunities_created_at",
+          "idx_opportunities_created_by",
+          "idx_opportunities_customer_id",
+          "idx_opportunities_lead_id",
+          "idx_opportunities_stage_id",
+          "ix_opportunities_name",
+          "ix_opportunities_opportunity_number"
+        ],
+        "outsourcing_vendors": [
+          "ix_outsourcing_vendors_code"
+        ],
+        "packing_lists_new": [
+          "ix_packing_lists_new_packing_number"
+        ],
+        "payments": [
+          "idx_payments_created_at",
+          "idx_payments_customer_id",
+          "idx_payments_invoice_id",
+          "idx_payments_status",
+          "idx_payments_supplier_id",
+          "ix_payments_payment_date",
+          "ix_payments_payment_number"
+        ],
+        "permissions": [
+          "ix_permissions_name"
+        ],
+        "piecework_logs": [
+          "idx_piecework_employee_date",
+          "ix_piecework_logs_work_date"
+        ],
+        "product_abc_classification": [
+          "idx_product_warehouse"
+        ],
+        "product_categories": [
+          "ix_product_categories_code"
+        ],
+        "product_changeovers": [
+          "ix_product_changeovers_machine",
+          "ix_product_changeovers_status"
+        ],
+        "product_developments": [
+          "ix_product_developments_development_number"
+        ],
+        "product_test_results": [
+          "ix_product_test_results_test_number"
+        ],
+        "production_approvals": [
+          "ix_production_approvals_approval_number"
+        ],
+        "production_buffer": [
+          "ix_production_buffer_buffer_number"
+        ],
+        "production_plans": [
+          "ix_production_plans_plan_number"
+        ],
+        "production_records": [
+          "idx_production_date"
+        ],
+        "production_schedules": [
+          "ix_production_schedules_schedule_number"
+        ],
+        "products": [
+          "ix_products_code",
+          "ix_products_name"
+        ],
+        "prototypes": [
+          "ix_prototypes_prototype_number"
+        ],
+        "purchase_orders": [
+          "idx_purchase_orders_approved_by",
+          "idx_purchase_orders_created_at",
+          "idx_purchase_orders_created_by",
+          "idx_purchase_orders_status",
+          "idx_purchase_orders_supplier_id",
+          "ix_purchase_orders_order_date",
+          "ix_purchase_orders_po_number"
+        ],
+        "purchase_rfqs": [
+          "ix_purchase_rfqs_rfq_number"
+        ],
+        "quality_alerts": [
+          "ix_quality_alerts_alert_number"
+        ],
+        "quality_analytics": [
+          "ix_quality_analytics_analysis_date"
+        ],
+        "quality_audits": [
+          "ix_quality_audits_audit_number"
+        ],
+        "quality_inspections": [
+          "idx_quality_inspections_created_at",
+          "idx_quality_inspections_created_by",
+          "idx_quality_inspections_inspection_date",
+          "idx_quality_inspections_product_id",
+          "idx_quality_inspections_status",
+          "idx_quality_inspections_work_order_id",
+          "ix_quality_inspections_inspection_number"
+        ],
+        "quality_metrics": [
+          "ix_quality_metrics_metric_date"
+        ],
+        "quality_standards": [
+          "ix_quality_standards_code"
+        ],
+        "quality_tests": [
+          "ix_quality_tests_test_number"
+        ],
+        "quality_training": [
+          "ix_quality_training_training_code"
+        ],
+        "quotations": [
+          "ix_quotations_quote_date",
+          "ix_quotations_quote_number"
+        ],
+        "research_projects": [
+          "ix_research_projects_project_number"
+        ],
+        "research_reports": [
+          "ix_research_reports_report_number"
+        ],
+        "rnd_experiments": [
+          "ix_rnd_experiments_experiment_number"
+        ],
+        "rnd_projects": [
+          "idx_rnd_projects_created_at",
+          "idx_rnd_projects_created_by",
+          "idx_rnd_projects_start_date",
+          "ix_rnd_projects_project_number"
+        ],
+        "roles": [
+          "ix_roles_name"
+        ],
+        "sales_activities": [
+          "ix_sales_activities_activity_number"
+        ],
+        "sales_forecasts": [
+          "ix_sales_forecasts_forecast_number"
+        ],
+        "sales_metrics": [
+          "ix_sales_metrics_metric_date"
+        ],
+        "sales_orders": [
+          "idx_sales_orders_created_at",
+          "idx_sales_orders_created_by",
+          "idx_sales_orders_customer_id",
+          "idx_sales_orders_status",
+          "idx_so_customer_date",
+          "idx_so_customer_status",
+          "ix_sales_orders_order_date",
+          "ix_sales_orders_order_number"
+        ],
+        "sales_tasks": [
+          "ix_sales_tasks_task_number"
+        ],
+        "schedule_grid_items": [
+          "ix_schedule_grid_machine",
+          "ix_schedule_grid_week"
+        ],
+        "schedule_grid_notes": [
+          "ix_schedule_notes_week"
+        ],
+        "shift_productions": [
+          "ix_shift_productions_production_date"
+        ],
+        "shipping_orders": [
+          "ix_shipping_orders_shipping_number"
+        ],
+        "staff_faces": [
+          "idx_staff_faces_name"
+        ],
+        "staff_leave_requests": [
+          "idx_staff_leave_request_number",
+          "idx_staff_leave_staff_name"
+        ],
+        "stock_movement_forecast": [
+          "idx_product_forecast_date"
+        ],
+        "stock_opname_orders": [
+          "ix_stock_opname_orders_opname_number"
+        ],
+        "supplier_contracts": [
+          "ix_supplier_contracts_contract_number"
+        ],
+        "supplier_quotes": [
+          "ix_supplier_quotes_quote_number"
+        ],
+        "suppliers": [
+          "idx_suppliers_created_at",
+          "idx_suppliers_is_active",
+          "ix_suppliers_code",
+          "ix_suppliers_company_name"
+        ],
+        "sync_job_executions": [
+          "ix_sync_job_executions_execution_id"
+        ],
+        "system_alerts": [
+          "ix_system_alerts_created_at"
+        ],
+        "system_configurations": [
+          "ix_system_configurations_config_key"
+        ],
+        "system_settings": [
+          "ix_system_settings_setting_key"
+        ],
+        "tax_transactions": [
+          "ix_tax_transactions_transaction_date",
+          "ix_tax_transactions_transaction_number"
+        ],
+        "training_programs": [
+          "ix_training_programs_program_code"
+        ],
+        "training_requests": [
+          "ix_training_requests_request_number"
+        ],
+        "training_sessions": [
+          "ix_training_sessions_session_code"
+        ],
+        "units_of_measure": [
+          "ix_units_of_measure_code"
+        ],
+        "users": [
+          "idx_users_created_at",
+          "idx_users_is_active",
+          "idx_users_last_login",
+          "ix_users_email",
+          "ix_users_username"
+        ],
+        "warehouse_analytics": [
+          "idx_warehouse_date"
+        ],
+        "warehouse_locations": [
+          "idx_warehouse_locations_zone_id",
+          "ix_warehouse_locations_location_code"
+        ],
+        "warehouse_zones": [
+          "ix_warehouse_zones_code"
+        ],
+        "waste_categories": [
+          "ix_waste_categories_code"
+        ],
+        "waste_disposals": [
+          "ix_waste_disposals_disposal_date",
+          "ix_waste_disposals_disposal_number"
+        ],
+        "waste_records": [
+          "ix_waste_records_record_number",
+          "ix_waste_records_waste_date"
+        ],
+        "webhook_deliveries": [
+          "ix_webhook_deliveries_delivery_id"
+        ],
+        "weekly_production_plan_items": [
+          "ix_weekly_plan_items_plan",
+          "ix_weekly_plan_items_product"
+        ],
+        "weekly_production_plans": [
+          "ix_weekly_plans_status",
+          "ix_weekly_plans_year_week"
+        ],
+        "work_order_bom_items": [
+          "idx_wo_bom_work_order"
+        ],
+        "work_orders": [
+          "idx_wo_machine_scheduled_start",
+          "idx_wo_product_scheduled_start",
+          "idx_wo_status_scheduled_start",
+          "idx_work_orders_actual_end_date",
+          "idx_work_orders_actual_start_date",
+          "idx_work_orders_created_at",
+          "idx_work_orders_machine_id",
+          "idx_work_orders_product_id",
+          "idx_work_orders_scheduled_end_date",
+          "idx_work_orders_scheduled_start_date",
+          "idx_work_orders_status",
+          "ix_work_orders_wo_number"
+        ],
+        "work_roster_assignments": [
+          "idx_assignment_employee",
+          "idx_assignment_roster"
+        ],
+        "work_rosters": [
+          "idx_roster_year_week"
+        ]
+      }
+    },
+    "table_sizes": {
+      "accounting_entries": 0,
+      "accounts": 0,
+      "advanced_permissions": 0,
+      "advanced_role_permissions": 0,
+      "advanced_user_role_assignments": 0,
+      "advanced_user_roles": 0,
+      "alembic_version": 1,
+      "analytics_reports": 0,
+      "api_endpoints": 0,
+      "appraisal_criteria": 0,
+      "appraisal_cycles": 0,
+      "appraisal_scores": 0,
+      "appraisal_templates": 0,
+      "approval_configurations": 0,
+      "approval_history": 0,
+      "approval_workflows": 4,
+      "attendances": 13,
+      "audit_logs": 38290,
+      "backup_configurations": 0,
+      "backup_records": 0,
+      "bill_of_materials": 276,
+      "bom_history": 284,
+      "bom_import_logs": 3,
+      "bom_items": 1727,
+      "bom_items_new": 0,
+      "budget_lines": 0,
+      "budgets": 0,
+      "capa": 0,
+      "chat_attachments": 0,
+      "chat_categories": 5,
+      "chat_channel_members": 0,
+      "chat_channels": 14,
+      "chat_direct_conversations": 0,
+      "chat_direct_messages": 0,
+      "chat_mentions": 0,
+      "chat_messages": 6,
+      "chat_pinned_messages": 0,
+      "chat_reactions": 0,
+      "chat_server_members": 16,
+      "chat_server_role_members": 14,
+      "chat_server_roles": 3,
+      "chat_servers": 3,
+      "chat_threads": 0,
+      "chat_unread_messages": 15,
+      "chat_user_status": 7,
+      "cogm_transfers": 0,
+      "cogs_postings": 0,
+      "company_profile": 1,
+      "consolidation_entities": 0,
+      "contract_items": 0,
+      "converting_machines": 12,
+      "converting_productions": 0,
+      "cost_analysis": 0,
+      "cost_centers": 0,
+      "custom_bom_items": 0,
+      "custom_boms": 0,
+      "customer_contacts": 0,
+      "customer_returns": 0,
+      "customers": 0,
+      "data_sync_jobs": 0,
+      "dcc_capa_investigations": 0,
+      "dcc_capa_monthly_reports": 0,
+      "dcc_capa_requests": 2,
+      "dcc_capa_verifications": 1,
+      "dcc_change_notices": 0,
+      "dcc_destruction_logs": 1,
+      "dcc_document_distributions": 0,
+      "dcc_document_reviews": 0,
+      "dcc_document_revisions": 148,
+      "dcc_documents": 146,
+      "dcc_internal_memo_distributions": 0,
+      "dcc_internal_memos": 1,
+      "dcc_quality_records": 1,
+      "delivery_tracking": 0,
+      "departments": 15,
+      "document_attachments": 0,
+      "document_categories": 0,
+      "document_logs": 4,
+      "document_revisions": 0,
+      "document_templates": 1,
+      "documents": 4,
+      "downtime_records": 0,
+      "downtime_root_causes": 1,
+      "employee_appraisals": 0,
+      "employee_rosters": 0,
+      "employee_salary_components": 0,
+      "employee_skills": 0,
+      "employees": 52,
+      "equipment_history": 0,
+      "experiments": 0,
+      "external_connectors": 0,
+      "fixed_assets": 0,
+      "goods_received_notes": 0,
+      "grn_items": 0,
+      "integration_logs": 0,
+      "inventory": 603,
+      "inventory_adjustments": 0,
+      "inventory_items_new": 0,
+      "inventory_movements": 131,
+      "inventory_reorder_points": 0,
+      "inventory_transfers": 0,
+      "invoice_items": 0,
+      "invoices": 1,
+      "job_cost_entries": 424,
+      "kpi_targets": 7,
+      "kpis": 0,
+      "leads": 0,
+      "leaves": 0,
+      "live_monitoring_checklist_answers": 0,
+      "live_monitoring_checks": 0,
+      "logistics_providers": 0,
+      "machine_monthly_targets": 0,
+      "machine_performance": 0,
+      "machines": 16,
+      "maintenance_impacts": 0,
+      "maintenance_records": 0,
+      "maintenance_schedules": 0,
+      "maintenance_tasks": 0,
+      "manual_articles": 20,
+      "manual_categories": 9,
+      "manual_faqs": 10,
+      "material_issue_items": 0,
+      "material_issues": 0,
+      "material_return_items": 0,
+      "material_returns": 0,
+      "materials": 1010,
+      "mbf_report_details": 19,
+      "mbf_reports": 4,
+      "metric_data": 0,
+      "monthly_schedules": 1,
+      "mrp_requirements": 0,
+      "notifications": 2067,
+      "oee_alerts": 0,
+      "oee_analytics": 0,
+      "oee_downtime_records": 0,
+      "oee_records": 0,
+      "oee_targets": 0,
+      "office_locations": 1,
+      "opportunities": 0,
+      "outsourcing_vendors": 0,
+      "packing_list_items": 598,
+      "packing_list_new_items": 280,
+      "packing_lists": 145,
+      "packing_lists_new": 3,
+      "payments": 0,
+      "payroll_periods": 1,
+      "payroll_records": 6,
+      "pending_journal_entries": 0,
+      "permissions": 262,
+      "piecework_logs": 0,
+      "pipeline_stages": 0,
+      "pre_shift_checklist_answers": 331,
+      "pre_shift_checklist_audit_logs": 16,
+      "pre_shift_checklist_corrective_actions": 15,
+      "pre_shift_checklist_items": 76,
+      "pre_shift_checklist_machine_items": 467,
+      "pre_shift_checklist_submissions": 24,
+      "price_history": 0,
+      "product_abc_classification": 0,
+      "product_categories": 0,
+      "product_changeovers": 0,
+      "product_developments": 0,
+      "product_packaging": 249,
+      "product_specifications": 255,
+      "product_test_results": 0,
+      "product_versions": 298,
+      "production_approvals": 5,
+      "production_buffer": 0,
+      "production_plans": 0,
+      "production_records": 211,
+      "production_schedules": 0,
+      "products": 383,
+      "prototypes": 0,
+      "purchase_approvals": 0,
+      "purchase_order_items": 1,
+      "purchase_orders": 1,
+      "purchase_rfqs": 0,
+      "push_subscriptions": 20,
+      "quality_alerts": 0,
+      "quality_analytics": 0,
+      "quality_audits": 0,
+      "quality_competency": 0,
+      "quality_defects": 0,
+      "quality_inspections": 0,
+      "quality_metrics": 0,
+      "quality_standards": 0,
+      "quality_targets": 0,
+      "quality_tests": 1,
+      "quality_training": 0,
+      "quotation_items": 0,
+      "quotations": 0,
+      "rd_materials": 0,
+      "remaining_stocks": 0,
+      "research_projects": 1,
+      "research_reports": 0,
+      "return_dispositions": 0,
+      "return_items": 0,
+      "return_qc_records": 0,
+      "rfq_items": 0,
+      "rnd_approval_logs": 0,
+      "rnd_conversion_records": 0,
+      "rnd_experiments": 0,
+      "rnd_formula_items": 0,
+      "rnd_formulas": 0,
+      "rnd_projects": 0,
+      "role_permissions": 1996,
+      "roles": 64,
+      "roster_templates": 0,
+      "salary_components": 0,
+      "sales_activities": 0,
+      "sales_forecasts": 0,
+      "sales_metrics": 0,
+      "sales_order_items": 0,
+      "sales_orders": 4,
+      "sales_pipelines": 0,
+      "sales_reports": 0,
+      "sales_tasks": 0,
+      "schedule_grid_items": 4,
+      "schedule_grid_notes": 0,
+      "shift_productions": 210,
+      "shift_schedules": 0,
+      "shipping_items": 0,
+      "shipping_orders": 0,
+      "sqlite_sequence": 9,
+      "staff_faces": 3,
+      "staff_leave_requests": 1,
+      "stock_movement_forecast": 0,
+      "stock_opname_items": 0,
+      "stock_opname_orders": 0,
+      "supplier_contracts": 0,
+      "supplier_quote_items": 0,
+      "supplier_quotes": 0,
+      "suppliers": 0,
+      "sync_job_executions": 0,
+      "system_alerts": 0,
+      "system_configurations": 0,
+      "system_settings": 17,
+      "tax_transactions": 0,
+      "third_party_apis": 0,
+      "training_categories": 0,
+      "training_enrollments": 0,
+      "training_programs": 0,
+      "training_requests": 0,
+      "training_sessions": 0,
+      "units_of_measure": 15,
+      "uom_conversions": 0,
+      "user_roles": 27,
+      "users": 14,
+      "warehouse_alerts": 0,
+      "warehouse_analytics": 0,
+      "warehouse_locations": 3,
+      "warehouse_optimization": 0,
+      "warehouse_zones": 3,
+      "waste_categories": 0,
+      "waste_disposals": 0,
+      "waste_records": 0,
+      "waste_targets": 0,
+      "webhook_deliveries": 0,
+      "webhooks": 0,
+      "weekly_production_plan_items": 0,
+      "weekly_production_plans": 1,
+      "wip_batches": 145,
+      "wip_ledger": 0,
+      "wip_stage_movements": 0,
+      "wip_stock_movements": 134,
+      "wip_stocks": 23,
+      "wip_summaries": 0,
+      "wip_transactions": 0,
+      "wip_variances": 0,
+      "work_order_bom_items": 0,
+      "work_order_status_history": 0,
+      "work_orders": 145,
+      "work_orders_new": 0,
+      "work_roster_assignments": 0,
+      "work_rosters": 0,
+      "workflow_steps": 0
+    },
+    "query_results": [
+      {
+        "description": "Work Orders - Status Filter",
+        "query": "SELECT * FROM work_orders WHERE status = 'in_progress';",
+        "avg_time_ms": 0.27,
+        "min_time_ms": 0.23,
+        "max_time_ms": 0.35,
+        "avg_rows": 25.0,
+        "runs": 3
+      },
+      {
+        "description": "Work Orders - Machine Filter",
+        "query": "SELECT * FROM work_orders WHERE machine_id = 1;",
+        "avg_time_ms": 0.23,
+        "min_time_ms": 0.19,
+        "max_time_ms": 0.29,
+        "avg_rows": 22.0,
+        "runs": 3
+      },
+      {
+        "description": "Work Orders - Date Range",
+        "query": "SELECT * FROM work_orders WHERE scheduled_start_date >= date('now', '-7 days');",
+        "avg_time_ms": 0.08,
+        "min_time_ms": 0.02,
+        "max_time_ms": 0.21,
+        "avg_rows": 0.0,
+        "runs": 3
+      },
+      {
+        "description": "Inventory - Status Filter",
+        "query": "SELECT * FROM inventory WHERE stock_status = 'released';",
+        "avg_time_ms": 0.16,
+        "min_time_ms": 0.13,
+        "max_time_ms": 0.22,
+        "avg_rows": 21.0,
+        "runs": 3
+      },
+      {
+        "description": "Inventory - Product Filter",
+        "query": "SELECT * FROM inventory WHERE product_id = 1;",
+        "avg_time_ms": 0.05,
+        "min_time_ms": 0.02,
+        "max_time_ms": 0.11,
+        "avg_rows": 0.0,
+        "runs": 3
+      },
+      {
+        "description": "Inventory - Material Filter",
+        "query": "SELECT * FROM inventory WHERE material_id = 1;",
+        "avg_time_ms": 0.07,
+        "min_time_ms": 0.03,
+        "max_time_ms": 0.14,
+        "avg_rows": 1.0,
+        "runs": 3
+      },
+      {
+        "description": "Sales Orders - Customer Filter",
+        "query": "SELECT * FROM sales_orders WHERE customer_id = 1;",
+        "avg_time_ms": 0.07,
+        "min_time_ms": 0.04,
+        "max_time_ms": 0.12,
+        "avg_rows": 4.0,
+        "runs": 3
+      },
+      {
+        "description": "Sales Orders - Status Filter",
+        "query": "SELECT * FROM sales_orders WHERE status = 'pending';",
+        "avg_time_ms": 0.06,
+        "min_time_ms": 0.02,
+        "max_time_ms": 0.12,
+        "avg_rows": 0.0,
+        "runs": 3
+      },
+      {
+        "description": "Invoices - Customer Filter",
+        "query": "SELECT * FROM invoices WHERE customer_id = 1;",
+        "avg_time_ms": 0.04,
+        "min_time_ms": 0.02,
+        "max_time_ms": 0.09,
+        "avg_rows": 0.0,
+        "runs": 3
+      },
+      {
+        "description": "Invoices - Status Filter",
+        "query": "SELECT * FROM invoices WHERE status = 'paid';",
+        "avg_time_ms": 0.04,
+        "min_time_ms": 0.02,
+        "max_time_ms": 0.09,
+        "avg_rows": 0.0,
+        "runs": 3
+      },
+      {
+        "description": "Employees - Department Filter",
+        "query": "SELECT * FROM employees WHERE department_id = 1;",
+        "avg_time_ms": 0.05,
+        "min_time_ms": 0.02,
+        "max_time_ms": 0.11,
+        "avg_rows": 0.0,
+        "runs": 3
+      },
+      {
+        "description": "Employees - Active Filter",
+        "query": "SELECT * FROM employees WHERE is_active = 1;",
+        "avg_time_ms": 0.53,
+        "min_time_ms": 0.46,
+        "max_time_ms": 0.59,
+        "avg_rows": 52.0,
+        "runs": 3
+      },
+      {
+        "description": "Attendances - User Filter",
+        "query": "SELECT * FROM attendances WHERE user_id = 1;",
+        "avg_time_ms": 0.09,
+        "min_time_ms": 0.03,
+        "max_time_ms": 0.21,
+        "avg_rows": 0.0,
+        "runs": 3
+      },
+      {
+        "description": "Attendances - Date Filter",
+        "query": "SELECT * FROM attendances WHERE attendance_date >= date('now', '-30 days');",
+        "avg_time_ms": 0.08,
+        "min_time_ms": 0.03,
+        "max_time_ms": 0.19,
+        "avg_rows": 0.0,
+        "runs": 3
+      },
+      {
+        "description": "Production Records - Date Filter",
+        "query": "SELECT * FROM production_records WHERE production_date >= date('now', '-7 days');",
+        "avg_time_ms": 0.05,
+        "min_time_ms": 0.02,
+        "max_time_ms": 0.11,
+        "avg_rows": 0.0,
+        "runs": 3
+      },
+      {
+        "description": "Machines - Status Filter",
+        "query": "SELECT * FROM machines WHERE status = 'running';",
+        "avg_time_ms": 0.09,
+        "min_time_ms": 0.05,
+        "max_time_ms": 0.17,
+        "avg_rows": 4.0,
+        "runs": 3
+      }
+    ],
+    "slow_queries_count": 0
+  },
+  {
+    "timestamp": "2026-04-15T14:29:34.660917",
+    "database": "instance/erp_database.db",
+    "index_info": {
+      "total_indexes": 271,
+      "indexes_by_table": {
+        "accounting_entries": [
+          "ix_accounting_entries_entry_date",
+          "ix_accounting_entries_entry_number"
+        ],
+        "accounts": [
+          "ix_accounts_account_code"
+        ],
+        "analytics_reports": [
+          "ix_analytics_reports_report_number"
+        ],
+        "attendances": [
+          "idx_attendances_created_at",
+          "idx_attendances_employee_id",
+          "idx_attendances_status",
+          "idx_attendances_user_id"
+        ],
+        "audit_logs": [
+          "ix_audit_logs_timestamp"
+        ],
+        "backup_records": [
+          "ix_backup_records_backup_date",
+          "ix_backup_records_backup_number"
+        ],
+        "bill_of_materials": [
+          "idx_bom_approved_by",
+          "idx_bom_created_by",
+          "idx_bom_product_id",
+          "ix_bill_of_materials_bom_number"
+        ],
+        "bom_items": [
+          "idx_bom_items_bom_id",
+          "idx_bom_items_material_id",
+          "idx_bom_items_product_id"
+        ],
+        "capa": [
+          "ix_capa_capa_number"
+        ],
+        "consolidation_entities": [
+          "ix_consolidation_entities_entity_code"
+        ],
+        "converting_machines": [
+          "ix_converting_machines_code"
+        ],
+        "converting_productions": [
+          "ix_converting_productions_production_date"
+        ],
+        "cost_analysis": [
+          "ix_cost_analysis_analysis_code"
+        ],
+        "cost_centers": [
+          "ix_cost_centers_code"
+        ],
+        "customer_returns": [
+          "ix_customer_returns_return_number"
+        ],
+        "customers": [
+          "ix_customers_code",
+          "ix_customers_company_name"
+        ],
+        "dcc_capa_requests": [
+          "ix_dcc_capa_requests_capa_number"
+        ],
+        "dcc_change_notices": [
+          "ix_dcc_change_notices_request_number"
+        ],
+        "dcc_destruction_logs": [
+          "ix_dcc_destruction_logs_destruction_number"
+        ],
+        "dcc_documents": [
+          "ix_dcc_documents_document_number"
+        ],
+        "dcc_internal_memos": [
+          "ix_dcc_internal_memos_memo_number"
+        ],
+        "dcc_quality_records": [
+          "ix_dcc_quality_records_record_number"
+        ],
+        "departments": [
+          "ix_departments_code"
+        ],
+        "downtime_records": [
+          "ix_downtime_records_downtime_date"
+        ],
+        "downtime_root_causes": [
+          "idx_downtime_root_cause_machine_period"
+        ],
+        "employee_appraisals": [
+          "ix_employee_appraisals_appraisal_number"
+        ],
+        "employee_rosters": [
+          "idx_employee_roster_date",
+          "idx_machine_roster_date"
+        ],
+        "employee_skills": [
+          "idx_employee_skill"
+        ],
+        "employees": [
+          "idx_employees_created_at",
+          "idx_employees_department_id",
+          "idx_employees_is_active",
+          "ix_employees_employee_number",
+          "ix_employees_nik"
+        ],
+        "experiments": [
+          "ix_experiments_experiment_number"
+        ],
+        "fixed_assets": [
+          "ix_fixed_assets_asset_code"
+        ],
+        "goods_received_notes": [
+          "ix_goods_received_notes_grn_number"
+        ],
+        "integration_logs": [
+          "ix_integration_logs_log_date"
+        ],
+        "inventory": [
+          "idx_inventory_created_by",
+          "idx_inventory_expiry_date",
+          "idx_inventory_grn_id",
+          "idx_inventory_is_active",
+          "idx_inventory_material_status",
+          "idx_inventory_product_status",
+          "idx_inventory_qc_inspection_id",
+          "idx_inventory_stock_status",
+          "idx_inventory_work_order_id",
+          "idx_material_location",
+          "idx_product_location",
+          "ix_inventory_batch_number"
+        ],
+        "inventory_adjustments": [
+          "ix_inventory_adjustments_adjustment_number"
+        ],
+        "inventory_movements": [
+          "idx_inventory_movements_created_by",
+          "idx_inventory_movements_location_id",
+          "idx_inventory_movements_material_id",
+          "idx_inventory_movements_product_id",
+          "idx_movement_date",
+          "idx_reference",
+          "ix_inventory_movements_reference_number"
+        ],
+        "inventory_transfers": [
+          "ix_inventory_transfers_transfer_number"
+        ],
+        "invoices": [
+          "idx_invoice_customer_date",
+          "idx_invoice_status_date",
+          "idx_invoices_created_at",
+          "idx_invoices_created_by",
+          "idx_invoices_customer_id",
+          "idx_invoices_purchase_order_id",
+          "idx_invoices_sales_order_id",
+          "idx_invoices_status",
+          "idx_invoices_supplier_id",
+          "idx_invoices_work_order_id",
+          "ix_invoices_invoice_date",
+          "ix_invoices_invoice_number"
+        ],
+        "kpi_targets": [
+          "ix_kpi_targets_kpi_code"
+        ],
+        "kpis": [
+          "ix_kpis_kpi_code"
+        ],
+        "leads": [
+          "idx_leads_assigned_to",
+          "idx_leads_converted_to_customer_id",
+          "idx_leads_created_at",
+          "idx_leads_created_by",
+          "idx_leads_lead_status",
+          "ix_leads_company_name",
+          "ix_leads_lead_number"
+        ],
+        "leaves": [
+          "idx_leaves_approved_by",
+          "idx_leaves_created_at",
+          "idx_leaves_employee_id",
+          "idx_leaves_status",
+          "ix_leaves_leave_number"
+        ],
+        "live_monitoring_checks": [
+          "ix_live_monitoring_checks_check_date"
+        ],
+        "logistics_providers": [
+          "ix_logistics_providers_code"
+        ],
+        "machine_performance": [
+          "idx_machine_performance_date",
+          "ix_machine_performance_performance_date"
+        ],
+        "machines": [
+          "idx_machines_is_active",
+          "idx_machines_machine_type",
+          "idx_machines_status",
+          "ix_machines_code"
+        ],
+        "maintenance_records": [
+          "idx_maintenance_machine_status",
+          "idx_maintenance_records_created_at",
+          "idx_maintenance_records_machine_id",
+          "idx_maintenance_records_status",
+          "ix_maintenance_records_record_number"
+        ],
+        "maintenance_schedules": [
+          "ix_maintenance_schedules_schedule_number"
+        ],
+        "material_issues": [
+          "ix_material_issues_issue_number"
+        ],
+        "material_returns": [
+          "ix_material_returns_return_number"
+        ],
+        "materials": [
+          "ix_materials_code",
+          "ix_materials_name"
+        ],
+        "mbf_report_details": [
+          "idx_mbf_report_details_report_id"
+        ],
+        "mbf_reports": [
+          "idx_mbf_reports_created_at",
+          "idx_mbf_reports_created_by",
+          "idx_mbf_reports_manager_id",
+          "idx_mbf_reports_supervisor_id",
+          "ix_mbf_reports_report_number"
+        ],
+        "metric_data": [
+          "idx_kpi_date",
+          "ix_metric_data_metric_date"
+        ],
+        "mrp_requirements": [
+          "ix_mrp_requirements_requirement_number"
+        ],
+        "notifications": [
+          "idx_notifications_is_read",
+          "idx_notifications_notification_type",
+          "idx_user_read",
+          "ix_notifications_created_at"
+        ],
+        "oee_analytics": [
+          "idx_oee_analytics_machine_date"
+        ],
+        "oee_records": [
+          "idx_oee_records_created_at",
+          "idx_oee_records_machine_id",
+          "ix_oee_records_record_date",
+          "ix_oee_records_record_number"
+        ],
+        "opportunities": [
+          "idx_opportunities_assigned_to",
+          "idx_opportunities_created_at",
+          "idx_opportunities_created_by",
+          "idx_opportunities_customer_id",
+          "idx_opportunities_lead_id",
+          "idx_opportunities_stage_id",
+          "ix_opportunities_name",
+          "ix_opportunities_opportunity_number"
+        ],
+        "outsourcing_vendors": [
+          "ix_outsourcing_vendors_code"
+        ],
+        "packing_lists_new": [
+          "ix_packing_lists_new_packing_number"
+        ],
+        "payments": [
+          "idx_payments_created_at",
+          "idx_payments_customer_id",
+          "idx_payments_invoice_id",
+          "idx_payments_status",
+          "idx_payments_supplier_id",
+          "ix_payments_payment_date",
+          "ix_payments_payment_number"
+        ],
+        "permissions": [
+          "ix_permissions_name"
+        ],
+        "piecework_logs": [
+          "idx_piecework_employee_date",
+          "ix_piecework_logs_work_date"
+        ],
+        "product_abc_classification": [
+          "idx_product_warehouse"
+        ],
+        "product_categories": [
+          "ix_product_categories_code"
+        ],
+        "product_changeovers": [
+          "ix_product_changeovers_machine",
+          "ix_product_changeovers_status"
+        ],
+        "product_developments": [
+          "ix_product_developments_development_number"
+        ],
+        "product_test_results": [
+          "ix_product_test_results_test_number"
+        ],
+        "production_approvals": [
+          "ix_production_approvals_approval_number"
+        ],
+        "production_buffer": [
+          "ix_production_buffer_buffer_number"
+        ],
+        "production_plans": [
+          "ix_production_plans_plan_number"
+        ],
+        "production_records": [
+          "idx_production_date"
+        ],
+        "production_schedules": [
+          "ix_production_schedules_schedule_number"
+        ],
+        "products": [
+          "ix_products_code",
+          "ix_products_name"
+        ],
+        "prototypes": [
+          "ix_prototypes_prototype_number"
+        ],
+        "purchase_orders": [
+          "idx_purchase_orders_approved_by",
+          "idx_purchase_orders_created_at",
+          "idx_purchase_orders_created_by",
+          "idx_purchase_orders_status",
+          "idx_purchase_orders_supplier_id",
+          "ix_purchase_orders_order_date",
+          "ix_purchase_orders_po_number"
+        ],
+        "purchase_rfqs": [
+          "ix_purchase_rfqs_rfq_number"
+        ],
+        "quality_alerts": [
+          "ix_quality_alerts_alert_number"
+        ],
+        "quality_analytics": [
+          "ix_quality_analytics_analysis_date"
+        ],
+        "quality_audits": [
+          "ix_quality_audits_audit_number"
+        ],
+        "quality_inspections": [
+          "idx_quality_inspections_created_at",
+          "idx_quality_inspections_created_by",
+          "idx_quality_inspections_inspection_date",
+          "idx_quality_inspections_product_id",
+          "idx_quality_inspections_status",
+          "idx_quality_inspections_work_order_id",
+          "ix_quality_inspections_inspection_number"
+        ],
+        "quality_metrics": [
+          "ix_quality_metrics_metric_date"
+        ],
+        "quality_standards": [
+          "ix_quality_standards_code"
+        ],
+        "quality_tests": [
+          "ix_quality_tests_test_number"
+        ],
+        "quality_training": [
+          "ix_quality_training_training_code"
+        ],
+        "quotations": [
+          "ix_quotations_quote_date",
+          "ix_quotations_quote_number"
+        ],
+        "research_projects": [
+          "ix_research_projects_project_number"
+        ],
+        "research_reports": [
+          "ix_research_reports_report_number"
+        ],
+        "rnd_experiments": [
+          "ix_rnd_experiments_experiment_number"
+        ],
+        "rnd_projects": [
+          "idx_rnd_projects_created_at",
+          "idx_rnd_projects_created_by",
+          "idx_rnd_projects_start_date",
+          "ix_rnd_projects_project_number"
+        ],
+        "roles": [
+          "ix_roles_name"
+        ],
+        "sales_activities": [
+          "ix_sales_activities_activity_number"
+        ],
+        "sales_forecasts": [
+          "ix_sales_forecasts_forecast_number"
+        ],
+        "sales_metrics": [
+          "ix_sales_metrics_metric_date"
+        ],
+        "sales_orders": [
+          "idx_sales_orders_created_at",
+          "idx_sales_orders_created_by",
+          "idx_sales_orders_customer_id",
+          "idx_sales_orders_status",
+          "idx_so_customer_date",
+          "idx_so_customer_status",
+          "ix_sales_orders_order_date",
+          "ix_sales_orders_order_number"
+        ],
+        "sales_tasks": [
+          "ix_sales_tasks_task_number"
+        ],
+        "schedule_grid_items": [
+          "ix_schedule_grid_machine",
+          "ix_schedule_grid_week"
+        ],
+        "schedule_grid_notes": [
+          "ix_schedule_notes_week"
+        ],
+        "shift_productions": [
+          "ix_shift_productions_production_date"
+        ],
+        "shipping_orders": [
+          "ix_shipping_orders_shipping_number"
+        ],
+        "staff_faces": [
+          "idx_staff_faces_name"
+        ],
+        "staff_leave_requests": [
+          "idx_staff_leave_request_number",
+          "idx_staff_leave_staff_name"
+        ],
+        "stock_movement_forecast": [
+          "idx_product_forecast_date"
+        ],
+        "stock_opname_orders": [
+          "ix_stock_opname_orders_opname_number"
+        ],
+        "supplier_contracts": [
+          "ix_supplier_contracts_contract_number"
+        ],
+        "supplier_quotes": [
+          "ix_supplier_quotes_quote_number"
+        ],
+        "suppliers": [
+          "idx_suppliers_created_at",
+          "idx_suppliers_is_active",
+          "ix_suppliers_code",
+          "ix_suppliers_company_name"
+        ],
+        "sync_job_executions": [
+          "ix_sync_job_executions_execution_id"
+        ],
+        "system_alerts": [
+          "ix_system_alerts_created_at"
+        ],
+        "system_configurations": [
+          "ix_system_configurations_config_key"
+        ],
+        "system_settings": [
+          "ix_system_settings_setting_key"
+        ],
+        "tax_transactions": [
+          "ix_tax_transactions_transaction_date",
+          "ix_tax_transactions_transaction_number"
+        ],
+        "training_programs": [
+          "ix_training_programs_program_code"
+        ],
+        "training_requests": [
+          "ix_training_requests_request_number"
+        ],
+        "training_sessions": [
+          "ix_training_sessions_session_code"
+        ],
+        "units_of_measure": [
+          "ix_units_of_measure_code"
+        ],
+        "users": [
+          "idx_users_created_at",
+          "idx_users_is_active",
+          "idx_users_last_login",
+          "ix_users_email",
+          "ix_users_username"
+        ],
+        "warehouse_analytics": [
+          "idx_warehouse_date"
+        ],
+        "warehouse_locations": [
+          "idx_warehouse_locations_zone_id",
+          "ix_warehouse_locations_location_code"
+        ],
+        "warehouse_zones": [
+          "ix_warehouse_zones_code"
+        ],
+        "waste_categories": [
+          "ix_waste_categories_code"
+        ],
+        "waste_disposals": [
+          "ix_waste_disposals_disposal_date",
+          "ix_waste_disposals_disposal_number"
+        ],
+        "waste_records": [
+          "ix_waste_records_record_number",
+          "ix_waste_records_waste_date"
+        ],
+        "webhook_deliveries": [
+          "ix_webhook_deliveries_delivery_id"
+        ],
+        "weekly_production_plan_items": [
+          "ix_weekly_plan_items_plan",
+          "ix_weekly_plan_items_product"
+        ],
+        "weekly_production_plans": [
+          "ix_weekly_plans_status",
+          "ix_weekly_plans_year_week"
+        ],
+        "work_order_bom_items": [
+          "idx_wo_bom_work_order"
+        ],
+        "work_orders": [
+          "idx_wo_machine_scheduled_start",
+          "idx_wo_product_scheduled_start",
+          "idx_wo_status_scheduled_start",
+          "idx_work_orders_actual_end_date",
+          "idx_work_orders_actual_start_date",
+          "idx_work_orders_created_at",
+          "idx_work_orders_machine_id",
+          "idx_work_orders_product_id",
+          "idx_work_orders_scheduled_end_date",
+          "idx_work_orders_scheduled_start_date",
+          "idx_work_orders_status",
+          "ix_work_orders_wo_number"
+        ],
+        "work_roster_assignments": [
+          "idx_assignment_employee",
+          "idx_assignment_roster"
+        ],
+        "work_rosters": [
+          "idx_roster_year_week"
+        ]
+      }
+    },
+    "table_sizes": {
+      "accounting_entries": 0,
+      "accounts": 0,
+      "advanced_permissions": 0,
+      "advanced_role_permissions": 0,
+      "advanced_user_role_assignments": 0,
+      "advanced_user_roles": 0,
+      "alembic_version": 1,
+      "analytics_reports": 0,
+      "api_endpoints": 0,
+      "appraisal_criteria": 0,
+      "appraisal_cycles": 0,
+      "appraisal_scores": 0,
+      "appraisal_templates": 0,
+      "approval_configurations": 0,
+      "approval_history": 0,
+      "approval_workflows": 4,
+      "attendances": 13,
+      "audit_logs": 38563,
+      "backup_configurations": 0,
+      "backup_records": 0,
+      "bill_of_materials": 276,
+      "bom_history": 284,
+      "bom_import_logs": 3,
+      "bom_items": 1727,
+      "bom_items_new": 0,
+      "budget_lines": 0,
+      "budgets": 0,
+      "capa": 0,
+      "chat_attachments": 0,
+      "chat_categories": 5,
+      "chat_channel_members": 0,
+      "chat_channels": 14,
+      "chat_direct_conversations": 0,
+      "chat_direct_messages": 0,
+      "chat_mentions": 0,
+      "chat_messages": 6,
+      "chat_pinned_messages": 0,
+      "chat_reactions": 0,
+      "chat_server_members": 16,
+      "chat_server_role_members": 14,
+      "chat_server_roles": 3,
+      "chat_servers": 3,
+      "chat_threads": 0,
+      "chat_unread_messages": 15,
+      "chat_user_status": 7,
+      "cogm_transfers": 0,
+      "cogs_postings": 0,
+      "company_profile": 1,
+      "consolidation_entities": 0,
+      "contract_items": 0,
+      "converting_machines": 12,
+      "converting_productions": 0,
+      "cost_analysis": 0,
+      "cost_centers": 0,
+      "custom_bom_items": 0,
+      "custom_boms": 0,
+      "customer_contacts": 0,
+      "customer_returns": 0,
+      "customers": 0,
+      "data_sync_jobs": 0,
+      "dcc_capa_investigations": 0,
+      "dcc_capa_monthly_reports": 0,
+      "dcc_capa_requests": 2,
+      "dcc_capa_verifications": 1,
+      "dcc_change_notices": 0,
+      "dcc_destruction_logs": 1,
+      "dcc_document_distributions": 0,
+      "dcc_document_reviews": 0,
+      "dcc_document_revisions": 148,
+      "dcc_documents": 146,
+      "dcc_internal_memo_distributions": 0,
+      "dcc_internal_memos": 1,
+      "dcc_quality_records": 1,
+      "delivery_tracking": 0,
+      "departments": 15,
+      "document_attachments": 0,
+      "document_categories": 0,
+      "document_logs": 4,
+      "document_revisions": 0,
+      "document_templates": 1,
+      "documents": 4,
+      "downtime_records": 0,
+      "downtime_root_causes": 1,
+      "employee_appraisals": 0,
+      "employee_rosters": 0,
+      "employee_salary_components": 0,
+      "employee_skills": 0,
+      "employees": 52,
+      "equipment_history": 0,
+      "experiments": 0,
+      "external_connectors": 0,
+      "fixed_assets": 0,
+      "goods_received_notes": 0,
+      "grn_items": 0,
+      "integration_logs": 0,
+      "inventory": 603,
+      "inventory_adjustments": 0,
+      "inventory_items_new": 0,
+      "inventory_movements": 137,
+      "inventory_reorder_points": 0,
+      "inventory_transfers": 0,
+      "invoice_items": 0,
+      "invoices": 1,
+      "job_cost_entries": 436,
+      "kpi_targets": 7,
+      "kpis": 0,
+      "leads": 0,
+      "leaves": 0,
+      "live_monitoring_checklist_answers": 0,
+      "live_monitoring_checks": 0,
+      "logistics_providers": 0,
+      "machine_monthly_targets": 0,
+      "machine_performance": 0,
+      "machines": 16,
+      "maintenance_impacts": 0,
+      "maintenance_records": 0,
+      "maintenance_schedules": 0,
+      "maintenance_tasks": 0,
+      "manual_articles": 20,
+      "manual_categories": 9,
+      "manual_faqs": 10,
+      "material_issue_items": 0,
+      "material_issues": 0,
+      "material_return_items": 0,
+      "material_returns": 0,
+      "materials": 1010,
+      "mbf_report_details": 19,
+      "mbf_reports": 4,
+      "metric_data": 0,
+      "monthly_schedules": 1,
+      "mrp_requirements": 0,
+      "notifications": 2165,
+      "oee_alerts": 0,
+      "oee_analytics": 0,
+      "oee_downtime_records": 0,
+      "oee_records": 0,
+      "oee_targets": 0,
+      "office_locations": 1,
+      "opportunities": 0,
+      "outsourcing_vendors": 0,
+      "packing_list_items": 598,
+      "packing_list_new_items": 280,
+      "packing_lists": 150,
+      "packing_lists_new": 3,
+      "payments": 0,
+      "payroll_periods": 1,
+      "payroll_records": 6,
+      "pending_journal_entries": 0,
+      "permissions": 262,
+      "piecework_logs": 0,
+      "pipeline_stages": 0,
+      "pre_shift_checklist_answers": 331,
+      "pre_shift_checklist_audit_logs": 16,
+      "pre_shift_checklist_corrective_actions": 15,
+      "pre_shift_checklist_items": 76,
+      "pre_shift_checklist_machine_items": 467,
+      "pre_shift_checklist_submissions": 24,
+      "price_history": 0,
+      "product_abc_classification": 0,
+      "product_categories": 0,
+      "product_changeovers": 0,
+      "product_developments": 0,
+      "product_packaging": 249,
+      "product_specifications": 255,
+      "product_test_results": 0,
+      "product_versions": 298,
+      "production_approvals": 5,
+      "production_buffer": 0,
+      "production_plans": 0,
+      "production_records": 217,
+      "production_schedules": 0,
+      "products": 383,
+      "prototypes": 0,
+      "purchase_approvals": 0,
+      "purchase_order_items": 1,
+      "purchase_orders": 1,
+      "purchase_rfqs": 0,
+      "push_subscriptions": 20,
+      "quality_alerts": 0,
+      "quality_analytics": 0,
+      "quality_audits": 0,
+      "quality_competency": 0,
+      "quality_defects": 0,
+      "quality_inspections": 0,
+      "quality_metrics": 0,
+      "quality_standards": 0,
+      "quality_targets": 0,
+      "quality_tests": 1,
+      "quality_training": 0,
+      "quotation_items": 0,
+      "quotations": 0,
+      "rd_materials": 0,
+      "remaining_stocks": 0,
+      "research_projects": 1,
+      "research_reports": 0,
+      "return_dispositions": 0,
+      "return_items": 0,
+      "return_qc_records": 0,
+      "rfq_items": 0,
+      "rnd_approval_logs": 0,
+      "rnd_conversion_records": 0,
+      "rnd_experiments": 0,
+      "rnd_formula_items": 0,
+      "rnd_formulas": 0,
+      "rnd_projects": 0,
+      "role_permissions": 1996,
+      "roles": 64,
+      "roster_templates": 0,
+      "salary_components": 0,
+      "sales_activities": 0,
+      "sales_forecasts": 0,
+      "sales_metrics": 0,
+      "sales_order_items": 0,
+      "sales_orders": 4,
+      "sales_pipelines": 0,
+      "sales_reports": 0,
+      "sales_tasks": 0,
+      "schedule_grid_items": 4,
+      "schedule_grid_notes": 0,
+      "shift_productions": 216,
+      "shift_schedules": 0,
+      "shipping_items": 0,
+      "shipping_orders": 0,
+      "sqlite_sequence": 9,
+      "staff_faces": 3,
+      "staff_leave_requests": 1,
+      "stock_movement_forecast": 0,
+      "stock_opname_items": 0,
+      "stock_opname_orders": 0,
+      "supplier_contracts": 0,
+      "supplier_quote_items": 0,
+      "supplier_quotes": 0,
+      "suppliers": 0,
+      "sync_job_executions": 0,
+      "system_alerts": 0,
+      "system_configurations": 0,
+      "system_settings": 17,
+      "tax_transactions": 0,
+      "third_party_apis": 0,
+      "training_categories": 0,
+      "training_enrollments": 0,
+      "training_programs": 0,
+      "training_requests": 0,
+      "training_sessions": 0,
+      "units_of_measure": 15,
+      "uom_conversions": 0,
+      "user_roles": 27,
+      "users": 14,
+      "warehouse_alerts": 0,
+      "warehouse_analytics": 0,
+      "warehouse_locations": 3,
+      "warehouse_optimization": 0,
+      "warehouse_zones": 3,
+      "waste_categories": 0,
+      "waste_disposals": 0,
+      "waste_records": 0,
+      "waste_targets": 0,
+      "webhook_deliveries": 0,
+      "webhooks": 0,
+      "weekly_production_plan_items": 0,
+      "weekly_production_plans": 1,
+      "wip_batches": 150,
+      "wip_ledger": 0,
+      "wip_stage_movements": 0,
+      "wip_stock_movements": 134,
+      "wip_stocks": 23,
+      "wip_summaries": 0,
+      "wip_transactions": 0,
+      "wip_variances": 0,
+      "work_order_bom_items": 0,
+      "work_order_status_history": 0,
+      "work_orders": 150,
+      "work_orders_new": 0,
+      "work_roster_assignments": 0,
+      "work_rosters": 0,
+      "workflow_steps": 0
+    },
+    "query_results": [
+      {
+        "description": "Work Orders - Status Filter",
+        "query": "SELECT * FROM work_orders WHERE status = 'in_progress';",
+        "avg_time_ms": 0.44,
+        "min_time_ms": 0.32,
+        "max_time_ms": 0.66,
+        "avg_rows": 24.0,
+        "runs": 3
+      },
+      {
+        "description": "Work Orders - Machine Filter",
+        "query": "SELECT * FROM work_orders WHERE machine_id = 1;",
+        "avg_time_ms": 0.34,
+        "min_time_ms": 0.24,
+        "max_time_ms": 0.47,
+        "avg_rows": 22.0,
+        "runs": 3
+      },
+      {
+        "description": "Work Orders - Date Range",
+        "query": "SELECT * FROM work_orders WHERE scheduled_start_date >= date('now', '-7 days');",
+        "avg_time_ms": 0.12,
+        "min_time_ms": 0.04,
+        "max_time_ms": 0.29,
+        "avg_rows": 0.0,
+        "runs": 3
+      },
+      {
+        "description": "Inventory - Status Filter",
+        "query": "SELECT * FROM inventory WHERE stock_status = 'released';",
+        "avg_time_ms": 0.28,
+        "min_time_ms": 0.21,
+        "max_time_ms": 0.36,
+        "avg_rows": 21.0,
+        "runs": 3
+      },
+      {
+        "description": "Inventory - Product Filter",
+        "query": "SELECT * FROM inventory WHERE product_id = 1;",
+        "avg_time_ms": 0.1,
+        "min_time_ms": 0.03,
+        "max_time_ms": 0.24,
+        "avg_rows": 0.0,
+        "runs": 3
+      },
+      {
+        "description": "Inventory - Material Filter",
+        "query": "SELECT * FROM inventory WHERE material_id = 1;",
+        "avg_time_ms": 0.12,
+        "min_time_ms": 0.04,
+        "max_time_ms": 0.25,
+        "avg_rows": 1.0,
+        "runs": 3
+      },
+      {
+        "description": "Sales Orders - Customer Filter",
+        "query": "SELECT * FROM sales_orders WHERE customer_id = 1;",
+        "avg_time_ms": 0.13,
+        "min_time_ms": 0.06,
+        "max_time_ms": 0.23,
+        "avg_rows": 4.0,
+        "runs": 3
+      },
+      {
+        "description": "Sales Orders - Status Filter",
+        "query": "SELECT * FROM sales_orders WHERE status = 'pending';",
+        "avg_time_ms": 0.07,
+        "min_time_ms": 0.02,
+        "max_time_ms": 0.15,
+        "avg_rows": 0.0,
+        "runs": 3
+      },
+      {
+        "description": "Invoices - Customer Filter",
+        "query": "SELECT * FROM invoices WHERE customer_id = 1;",
+        "avg_time_ms": 0.07,
+        "min_time_ms": 0.03,
+        "max_time_ms": 0.14,
+        "avg_rows": 0.0,
+        "runs": 3
+      },
+      {
+        "description": "Invoices - Status Filter",
+        "query": "SELECT * FROM invoices WHERE status = 'paid';",
+        "avg_time_ms": 0.09,
+        "min_time_ms": 0.02,
+        "max_time_ms": 0.21,
+        "avg_rows": 0.0,
+        "runs": 3
+      },
+      {
+        "description": "Employees - Department Filter",
+        "query": "SELECT * FROM employees WHERE department_id = 1;",
+        "avg_time_ms": 0.08,
+        "min_time_ms": 0.03,
+        "max_time_ms": 0.16,
+        "avg_rows": 0.0,
+        "runs": 3
+      },
+      {
+        "description": "Employees - Active Filter",
+        "query": "SELECT * FROM employees WHERE is_active = 1;",
+        "avg_time_ms": 1.16,
+        "min_time_ms": 0.84,
+        "max_time_ms": 1.74,
+        "avg_rows": 52.0,
+        "runs": 3
+      },
+      {
+        "description": "Attendances - User Filter",
+        "query": "SELECT * FROM attendances WHERE user_id = 1;",
+        "avg_time_ms": 0.12,
+        "min_time_ms": 0.03,
+        "max_time_ms": 0.26,
+        "avg_rows": 0.0,
+        "runs": 3
+      },
+      {
+        "description": "Attendances - Date Filter",
+        "query": "SELECT * FROM attendances WHERE attendance_date >= date('now', '-30 days');",
+        "avg_time_ms": 0.15,
+        "min_time_ms": 0.05,
+        "max_time_ms": 0.35,
+        "avg_rows": 0.0,
+        "runs": 3
+      },
+      {
+        "description": "Production Records - Date Filter",
+        "query": "SELECT * FROM production_records WHERE production_date >= date('now', '-7 days');",
+        "avg_time_ms": 0.07,
+        "min_time_ms": 0.04,
+        "max_time_ms": 0.14,
+        "avg_rows": 0.0,
+        "runs": 3
+      },
+      {
+        "description": "Machines - Status Filter",
+        "query": "SELECT * FROM machines WHERE status = 'running';",
+        "avg_time_ms": 0.11,
+        "min_time_ms": 0.05,
+        "max_time_ms": 0.23,
+        "avg_rows": 2.0,
+        "runs": 3
+      }
+    ],
+    "slow_queries_count": 0
+  },
+  {
+    "timestamp": "2026-04-20T16:45:38.151528",
+    "database": "instance/erp_database.db",
+    "index_info": {
+      "total_indexes": 275,
+      "indexes_by_table": {
+        "accounting_entries": [
+          "ix_accounting_entries_entry_date",
+          "ix_accounting_entries_entry_number"
+        ],
+        "accounts": [
+          "ix_accounts_account_code"
+        ],
+        "analytics_reports": [
+          "ix_analytics_reports_report_number"
+        ],
+        "attendances": [
+          "idx_attendances_created_at",
+          "idx_attendances_employee_id",
+          "idx_attendances_status",
+          "idx_attendances_user_id"
+        ],
+        "audit_logs": [
+          "ix_audit_logs_timestamp"
+        ],
+        "backup_records": [
+          "ix_backup_records_backup_date",
+          "ix_backup_records_backup_number"
+        ],
+        "bill_of_materials": [
+          "idx_bom_approved_by",
+          "idx_bom_created_by",
+          "idx_bom_product_id",
+          "ix_bill_of_materials_bom_number"
+        ],
+        "bom_items": [
+          "idx_bom_items_bom_id",
+          "idx_bom_items_material_id",
+          "idx_bom_items_product_id"
+        ],
+        "capa": [
+          "ix_capa_capa_number"
+        ],
+        "consolidation_entities": [
+          "ix_consolidation_entities_entity_code"
+        ],
+        "converting_machines": [
+          "ix_converting_machines_code"
+        ],
+        "converting_productions": [
+          "ix_converting_productions_production_date"
+        ],
+        "cost_analysis": [
+          "ix_cost_analysis_analysis_code"
+        ],
+        "cost_centers": [
+          "ix_cost_centers_code"
+        ],
+        "customer_returns": [
+          "ix_customer_returns_return_number"
+        ],
+        "customers": [
+          "ix_customers_code",
+          "ix_customers_company_name"
+        ],
+        "dcc_capa_requests": [
+          "ix_dcc_capa_requests_capa_number"
+        ],
+        "dcc_change_notices": [
+          "ix_dcc_change_notices_request_number"
+        ],
+        "dcc_destruction_logs": [
+          "ix_dcc_destruction_logs_destruction_number"
+        ],
+        "dcc_documents": [
+          "ix_dcc_documents_document_number"
+        ],
+        "dcc_internal_memos": [
+          "ix_dcc_internal_memos_memo_number"
+        ],
+        "dcc_quality_records": [
+          "ix_dcc_quality_records_record_number"
+        ],
+        "departments": [
+          "ix_departments_code"
+        ],
+        "downtime_records": [
+          "ix_downtime_records_downtime_date"
+        ],
+        "downtime_root_causes": [
+          "idx_downtime_root_cause_machine_period"
+        ],
+        "employee_appraisals": [
+          "ix_employee_appraisals_appraisal_number"
+        ],
+        "employee_rosters": [
+          "idx_employee_roster_date",
+          "idx_machine_roster_date"
+        ],
+        "employee_skills": [
+          "idx_employee_skill"
+        ],
+        "employees": [
+          "idx_employees_created_at",
+          "idx_employees_department_id",
+          "idx_employees_is_active",
+          "ix_employees_employee_number",
+          "ix_employees_nik"
+        ],
+        "experiments": [
+          "ix_experiments_experiment_number"
+        ],
+        "fixed_assets": [
+          "ix_fixed_assets_asset_code"
+        ],
+        "goods_received_notes": [
+          "ix_goods_received_notes_grn_number"
+        ],
+        "integration_logs": [
+          "ix_integration_logs_log_date"
+        ],
+        "inventory": [
+          "idx_inventory_created_by",
+          "idx_inventory_expiry_date",
+          "idx_inventory_grn_id",
+          "idx_inventory_is_active",
+          "idx_inventory_material_status",
+          "idx_inventory_product_status",
+          "idx_inventory_qc_inspection_id",
+          "idx_inventory_stock_status",
+          "idx_inventory_work_order_id",
+          "idx_material_location",
+          "idx_product_location",
+          "ix_inventory_batch_number"
+        ],
+        "inventory_adjustments": [
+          "ix_inventory_adjustments_adjustment_number"
+        ],
+        "inventory_movements": [
+          "idx_inventory_movements_created_by",
+          "idx_inventory_movements_location_id",
+          "idx_inventory_movements_material_id",
+          "idx_inventory_movements_product_id",
+          "idx_movement_date",
+          "idx_reference",
+          "ix_inventory_movements_reference_number"
+        ],
+        "inventory_transfers": [
+          "ix_inventory_transfers_transfer_number"
+        ],
+        "invoices": [
+          "idx_invoice_customer_date",
+          "idx_invoice_status_date",
+          "idx_invoices_created_at",
+          "idx_invoices_created_by",
+          "idx_invoices_customer_id",
+          "idx_invoices_purchase_order_id",
+          "idx_invoices_sales_order_id",
+          "idx_invoices_status",
+          "idx_invoices_supplier_id",
+          "idx_invoices_work_order_id",
+          "ix_invoices_invoice_date",
+          "ix_invoices_invoice_number"
+        ],
+        "kpi_targets": [
+          "ix_kpi_targets_kpi_code"
+        ],
+        "kpis": [
+          "ix_kpis_kpi_code"
+        ],
+        "leads": [
+          "idx_leads_assigned_to",
+          "idx_leads_converted_to_customer_id",
+          "idx_leads_created_at",
+          "idx_leads_created_by",
+          "idx_leads_lead_status",
+          "ix_leads_company_name",
+          "ix_leads_lead_number"
+        ],
+        "leaves": [
+          "idx_leaves_approved_by",
+          "idx_leaves_created_at",
+          "idx_leaves_employee_id",
+          "idx_leaves_status",
+          "ix_leaves_leave_number"
+        ],
+        "live_monitoring_checks": [
+          "ix_live_monitoring_checks_check_date"
+        ],
+        "logistics_providers": [
+          "ix_logistics_providers_code"
+        ],
+        "machine_performance": [
+          "idx_machine_performance_date",
+          "ix_machine_performance_performance_date"
+        ],
+        "machines": [
+          "idx_machines_is_active",
+          "idx_machines_machine_type",
+          "idx_machines_status",
+          "ix_machines_code"
+        ],
+        "maintenance_records": [
+          "idx_maintenance_machine_status",
+          "idx_maintenance_records_created_at",
+          "idx_maintenance_records_machine_id",
+          "idx_maintenance_records_status",
+          "ix_maintenance_records_record_number"
+        ],
+        "maintenance_schedules": [
+          "ix_maintenance_schedules_schedule_number"
+        ],
+        "material_issues": [
+          "ix_material_issues_issue_number"
+        ],
+        "material_returns": [
+          "ix_material_returns_return_number"
+        ],
+        "materials": [
+          "ix_materials_code",
+          "ix_materials_name"
+        ],
+        "mbf_report_details": [
+          "idx_mbf_report_details_report_id"
+        ],
+        "mbf_reports": [
+          "idx_mbf_reports_created_at",
+          "idx_mbf_reports_created_by",
+          "idx_mbf_reports_manager_id",
+          "idx_mbf_reports_supervisor_id",
+          "ix_mbf_reports_report_number"
+        ],
+        "metric_data": [
+          "idx_kpi_date",
+          "ix_metric_data_metric_date"
+        ],
+        "mrp_requirements": [
+          "ix_mrp_requirements_requirement_number"
+        ],
+        "notifications": [
+          "idx_notifications_is_read",
+          "idx_notifications_notification_type",
+          "idx_user_read",
+          "ix_notifications_created_at"
+        ],
+        "oee_analytics": [
+          "idx_oee_analytics_machine_date"
+        ],
+        "oee_records": [
+          "idx_oee_records_created_at",
+          "idx_oee_records_machine_id",
+          "ix_oee_records_record_date",
+          "ix_oee_records_record_number"
+        ],
+        "opportunities": [
+          "idx_opportunities_assigned_to",
+          "idx_opportunities_created_at",
+          "idx_opportunities_created_by",
+          "idx_opportunities_customer_id",
+          "idx_opportunities_lead_id",
+          "idx_opportunities_stage_id",
+          "ix_opportunities_name",
+          "ix_opportunities_opportunity_number"
+        ],
+        "outsourcing_vendors": [
+          "ix_outsourcing_vendors_code"
+        ],
+        "packing_lists_new": [
+          "ix_packing_lists_new_packing_number"
+        ],
+        "payments": [
+          "idx_payments_created_at",
+          "idx_payments_customer_id",
+          "idx_payments_invoice_id",
+          "idx_payments_status",
+          "idx_payments_supplier_id",
+          "ix_payments_payment_date",
+          "ix_payments_payment_number"
+        ],
+        "permissions": [
+          "ix_permissions_name"
+        ],
+        "piecework_logs": [
+          "idx_piecework_employee_date",
+          "ix_piecework_logs_work_date"
+        ],
+        "product_abc_classification": [
+          "idx_product_warehouse"
+        ],
+        "product_categories": [
+          "ix_product_categories_code"
+        ],
+        "product_changeovers": [
+          "ix_product_changeovers_machine",
+          "ix_product_changeovers_status"
+        ],
+        "product_developments": [
+          "ix_product_developments_development_number"
+        ],
+        "product_test_results": [
+          "ix_product_test_results_test_number"
+        ],
+        "production_approvals": [
+          "ix_production_approvals_approval_number"
+        ],
+        "production_buffer": [
+          "ix_production_buffer_buffer_number"
+        ],
+        "production_plans": [
+          "ix_production_plans_plan_number"
+        ],
+        "production_records": [
+          "idx_production_date"
+        ],
+        "production_schedules": [
+          "ix_production_schedules_schedule_number"
+        ],
+        "products": [
+          "ix_products_code",
+          "ix_products_name"
+        ],
+        "prototypes": [
+          "ix_prototypes_prototype_number"
+        ],
+        "purchase_invoices": [
+          "ix_purchase_invoices_invoice_date",
+          "ix_purchase_invoices_invoice_number"
+        ],
+        "purchase_orders": [
+          "idx_purchase_orders_approved_by",
+          "idx_purchase_orders_created_at",
+          "idx_purchase_orders_created_by",
+          "idx_purchase_orders_status",
+          "idx_purchase_orders_supplier_id",
+          "ix_purchase_orders_order_date",
+          "ix_purchase_orders_po_number"
+        ],
+        "purchase_returns": [
+          "ix_purchase_returns_return_date",
+          "ix_purchase_returns_return_number"
+        ],
+        "purchase_rfqs": [
+          "ix_purchase_rfqs_rfq_number"
+        ],
+        "quality_alerts": [
+          "ix_quality_alerts_alert_number"
+        ],
+        "quality_analytics": [
+          "ix_quality_analytics_analysis_date"
+        ],
+        "quality_audits": [
+          "ix_quality_audits_audit_number"
+        ],
+        "quality_inspections": [
+          "idx_quality_inspections_created_at",
+          "idx_quality_inspections_created_by",
+          "idx_quality_inspections_inspection_date",
+          "idx_quality_inspections_product_id",
+          "idx_quality_inspections_status",
+          "idx_quality_inspections_work_order_id",
+          "ix_quality_inspections_inspection_number"
+        ],
+        "quality_metrics": [
+          "ix_quality_metrics_metric_date"
+        ],
+        "quality_standards": [
+          "ix_quality_standards_code"
+        ],
+        "quality_tests": [
+          "ix_quality_tests_test_number"
+        ],
+        "quality_training": [
+          "ix_quality_training_training_code"
+        ],
+        "quotations": [
+          "ix_quotations_quote_date",
+          "ix_quotations_quote_number"
+        ],
+        "research_projects": [
+          "ix_research_projects_project_number"
+        ],
+        "research_reports": [
+          "ix_research_reports_report_number"
+        ],
+        "rnd_experiments": [
+          "ix_rnd_experiments_experiment_number"
+        ],
+        "rnd_projects": [
+          "idx_rnd_projects_created_at",
+          "idx_rnd_projects_created_by",
+          "idx_rnd_projects_start_date",
+          "ix_rnd_projects_project_number"
+        ],
+        "roles": [
+          "ix_roles_name"
+        ],
+        "sales_activities": [
+          "ix_sales_activities_activity_number"
+        ],
+        "sales_forecasts": [
+          "ix_sales_forecasts_forecast_number"
+        ],
+        "sales_metrics": [
+          "ix_sales_metrics_metric_date"
+        ],
+        "sales_orders": [
+          "idx_sales_orders_created_at",
+          "idx_sales_orders_created_by",
+          "idx_sales_orders_customer_id",
+          "idx_sales_orders_status",
+          "idx_so_customer_date",
+          "idx_so_customer_status",
+          "ix_sales_orders_order_date",
+          "ix_sales_orders_order_number"
+        ],
+        "sales_tasks": [
+          "ix_sales_tasks_task_number"
+        ],
+        "schedule_grid_items": [
+          "ix_schedule_grid_machine",
+          "ix_schedule_grid_week"
+        ],
+        "schedule_grid_notes": [
+          "ix_schedule_notes_week"
+        ],
+        "shift_productions": [
+          "ix_shift_productions_production_date"
+        ],
+        "shipping_orders": [
+          "ix_shipping_orders_shipping_number"
+        ],
+        "staff_faces": [
+          "idx_staff_faces_name"
+        ],
+        "staff_leave_requests": [
+          "idx_staff_leave_request_number",
+          "idx_staff_leave_staff_name"
+        ],
+        "stock_movement_forecast": [
+          "idx_product_forecast_date"
+        ],
+        "stock_opname_orders": [
+          "ix_stock_opname_orders_opname_number"
+        ],
+        "supplier_contracts": [
+          "ix_supplier_contracts_contract_number"
+        ],
+        "supplier_quotes": [
+          "ix_supplier_quotes_quote_number"
+        ],
+        "suppliers": [
+          "idx_suppliers_created_at",
+          "idx_suppliers_is_active",
+          "ix_suppliers_code",
+          "ix_suppliers_company_name"
+        ],
+        "sync_job_executions": [
+          "ix_sync_job_executions_execution_id"
+        ],
+        "system_alerts": [
+          "ix_system_alerts_created_at"
+        ],
+        "system_configurations": [
+          "ix_system_configurations_config_key"
+        ],
+        "system_settings": [
+          "ix_system_settings_setting_key"
+        ],
+        "tax_transactions": [
+          "ix_tax_transactions_transaction_date",
+          "ix_tax_transactions_transaction_number"
+        ],
+        "training_programs": [
+          "ix_training_programs_program_code"
+        ],
+        "training_requests": [
+          "ix_training_requests_request_number"
+        ],
+        "training_sessions": [
+          "ix_training_sessions_session_code"
+        ],
+        "units_of_measure": [
+          "ix_units_of_measure_code"
+        ],
+        "users": [
+          "idx_users_created_at",
+          "idx_users_is_active",
+          "idx_users_last_login",
+          "ix_users_email",
+          "ix_users_username"
+        ],
+        "warehouse_analytics": [
+          "idx_warehouse_date"
+        ],
+        "warehouse_locations": [
+          "idx_warehouse_locations_zone_id",
+          "ix_warehouse_locations_location_code"
+        ],
+        "warehouse_zones": [
+          "ix_warehouse_zones_code"
+        ],
+        "waste_categories": [
+          "ix_waste_categories_code"
+        ],
+        "waste_disposals": [
+          "ix_waste_disposals_disposal_date",
+          "ix_waste_disposals_disposal_number"
+        ],
+        "waste_records": [
+          "ix_waste_records_record_number",
+          "ix_waste_records_waste_date"
+        ],
+        "webhook_deliveries": [
+          "ix_webhook_deliveries_delivery_id"
+        ],
+        "weekly_production_plan_items": [
+          "ix_weekly_plan_items_plan",
+          "ix_weekly_plan_items_product"
+        ],
+        "weekly_production_plans": [
+          "ix_weekly_plans_status",
+          "ix_weekly_plans_year_week"
+        ],
+        "work_order_bom_items": [
+          "idx_wo_bom_work_order"
+        ],
+        "work_orders": [
+          "idx_wo_machine_scheduled_start",
+          "idx_wo_product_scheduled_start",
+          "idx_wo_status_scheduled_start",
+          "idx_work_orders_actual_end_date",
+          "idx_work_orders_actual_start_date",
+          "idx_work_orders_created_at",
+          "idx_work_orders_machine_id",
+          "idx_work_orders_product_id",
+          "idx_work_orders_scheduled_end_date",
+          "idx_work_orders_scheduled_start_date",
+          "idx_work_orders_status",
+          "ix_work_orders_wo_number"
+        ],
+        "work_roster_assignments": [
+          "idx_assignment_employee",
+          "idx_assignment_roster"
+        ],
+        "work_rosters": [
+          "idx_roster_year_week"
+        ]
+      }
+    },
+    "table_sizes": {
+      "accounting_entries": 0,
+      "accounts": 0,
+      "advanced_permissions": 0,
+      "advanced_role_permissions": 0,
+      "advanced_user_role_assignments": 0,
+      "advanced_user_roles": 0,
+      "alembic_version": 1,
+      "analytics_reports": 0,
+      "api_endpoints": 0,
+      "appraisal_criteria": 0,
+      "appraisal_cycles": 0,
+      "appraisal_scores": 0,
+      "appraisal_templates": 0,
+      "approval_configurations": 0,
+      "approval_history": 0,
+      "approval_workflows": 4,
+      "attendances": 13,
+      "audit_logs": 39062,
+      "backup_configurations": 0,
+      "backup_records": 0,
+      "bill_of_materials": 276,
+      "bom_history": 284,
+      "bom_import_logs": 3,
+      "bom_items": 1727,
+      "bom_items_new": 0,
+      "budget_lines": 0,
+      "budgets": 0,
+      "capa": 0,
+      "chat_attachments": 0,
+      "chat_categories": 5,
+      "chat_channel_members": 0,
+      "chat_channels": 14,
+      "chat_direct_conversations": 0,
+      "chat_direct_messages": 0,
+      "chat_mentions": 0,
+      "chat_messages": 6,
+      "chat_pinned_messages": 0,
+      "chat_reactions": 0,
+      "chat_server_members": 16,
+      "chat_server_role_members": 14,
+      "chat_server_roles": 3,
+      "chat_servers": 3,
+      "chat_threads": 0,
+      "chat_unread_messages": 15,
+      "chat_user_status": 7,
+      "cogm_transfers": 0,
+      "cogs_postings": 0,
+      "company_profile": 1,
+      "consolidation_entities": 0,
+      "contract_items": 0,
+      "converting_machines": 12,
+      "converting_productions": 0,
+      "cost_analysis": 0,
+      "cost_centers": 0,
+      "custom_bom_items": 0,
+      "custom_boms": 0,
+      "customer_contacts": 0,
+      "customer_returns": 0,
+      "customers": 0,
+      "data_sync_jobs": 0,
+      "dcc_capa_investigations": 0,
+      "dcc_capa_monthly_reports": 0,
+      "dcc_capa_requests": 2,
+      "dcc_capa_verifications": 1,
+      "dcc_change_notices": 0,
+      "dcc_destruction_logs": 1,
+      "dcc_document_distributions": 0,
+      "dcc_document_reviews": 0,
+      "dcc_document_revisions": 148,
+      "dcc_documents": 146,
+      "dcc_internal_memo_distributions": 0,
+      "dcc_internal_memos": 1,
+      "dcc_quality_records": 1,
+      "delivery_tracking": 0,
+      "departments": 15,
+      "document_attachments": 0,
+      "document_categories": 0,
+      "document_logs": 4,
+      "document_revisions": 0,
+      "document_templates": 1,
+      "documents": 4,
+      "downtime_records": 0,
+      "downtime_root_causes": 1,
+      "employee_appraisals": 0,
+      "employee_rosters": 0,
+      "employee_salary_components": 0,
+      "employee_skills": 0,
+      "employees": 52,
+      "equipment_history": 0,
+      "experiments": 0,
+      "external_connectors": 0,
+      "fixed_assets": 0,
+      "goods_received_notes": 0,
+      "grn_items": 0,
+      "integration_logs": 0,
+      "inventory": 603,
+      "inventory_adjustments": 0,
+      "inventory_items_new": 0,
+      "inventory_movements": 140,
+      "inventory_reorder_points": 0,
+      "inventory_transfers": 0,
+      "invoice_items": 0,
+      "invoices": 1,
+      "job_cost_entries": 458,
+      "kpi_targets": 7,
+      "kpis": 0,
+      "leads": 0,
+      "leaves": 0,
+      "live_monitoring_checklist_answers": 0,
+      "live_monitoring_checks": 0,
+      "logistics_providers": 0,
+      "machine_monthly_targets": 0,
+      "machine_performance": 0,
+      "machines": 16,
+      "maintenance_impacts": 0,
+      "maintenance_records": 0,
+      "maintenance_schedules": 0,
+      "maintenance_tasks": 0,
+      "manual_articles": 20,
+      "manual_categories": 9,
+      "manual_faqs": 10,
+      "material_issue_items": 0,
+      "material_issues": 0,
+      "material_return_items": 0,
+      "material_returns": 0,
+      "materials": 1010,
+      "mbf_report_details": 19,
+      "mbf_reports": 4,
+      "metric_data": 0,
+      "monthly_schedules": 1,
+      "mrp_requirements": 0,
+      "notifications": 2319,
+      "oee_alerts": 0,
+      "oee_analytics": 0,
+      "oee_downtime_records": 0,
+      "oee_records": 0,
+      "oee_targets": 0,
+      "office_locations": 1,
+      "opportunities": 0,
+      "outsourcing_vendors": 0,
+      "packing_list_items": 598,
+      "packing_list_new_items": 280,
+      "packing_lists": 156,
+      "packing_lists_new": 3,
+      "payments": 0,
+      "payroll_periods": 1,
+      "payroll_records": 6,
+      "pending_journal_entries": 0,
+      "permissions": 262,
+      "piecework_logs": 0,
+      "pipeline_stages": 0,
+      "pre_shift_checklist_answers": 331,
+      "pre_shift_checklist_audit_logs": 16,
+      "pre_shift_checklist_corrective_actions": 15,
+      "pre_shift_checklist_items": 76,
+      "pre_shift_checklist_machine_items": 467,
+      "pre_shift_checklist_submissions": 24,
+      "price_history": 0,
+      "product_abc_classification": 0,
+      "product_categories": 0,
+      "product_changeovers": 0,
+      "product_developments": 0,
+      "product_packaging": 249,
+      "product_specifications": 255,
+      "product_test_results": 0,
+      "product_versions": 298,
+      "production_approvals": 5,
+      "production_buffer": 0,
+      "production_plans": 0,
+      "production_records": 228,
+      "production_schedules": 0,
+      "products": 383,
+      "prototypes": 0,
+      "purchase_approvals": 0,
+      "purchase_invoice_items": 0,
+      "purchase_invoices": 0,
+      "purchase_order_items": 1,
+      "purchase_orders": 1,
+      "purchase_return_items": 0,
+      "purchase_returns": 0,
+      "purchase_rfqs": 0,
+      "push_subscriptions": 20,
+      "quality_alerts": 0,
+      "quality_analytics": 0,
+      "quality_audits": 0,
+      "quality_competency": 0,
+      "quality_defects": 0,
+      "quality_inspections": 0,
+      "quality_metrics": 0,
+      "quality_standards": 0,
+      "quality_targets": 0,
+      "quality_tests": 1,
+      "quality_training": 0,
+      "quotation_items": 0,
+      "quotations": 0,
+      "rd_materials": 0,
+      "remaining_stocks": 0,
+      "research_projects": 1,
+      "research_reports": 0,
+      "return_dispositions": 0,
+      "return_items": 0,
+      "return_qc_records": 0,
+      "rfq_items": 0,
+      "rnd_approval_logs": 0,
+      "rnd_conversion_records": 0,
+      "rnd_experiments": 0,
+      "rnd_formula_items": 0,
+      "rnd_formulas": 0,
+      "rnd_projects": 0,
+      "role_permissions": 1996,
+      "roles": 64,
+      "roster_templates": 0,
+      "salary_components": 0,
+      "sales_activities": 0,
+      "sales_forecasts": 0,
+      "sales_metrics": 0,
+      "sales_order_items": 0,
+      "sales_orders": 4,
+      "sales_pipelines": 0,
+      "sales_reports": 0,
+      "sales_tasks": 0,
+      "schedule_grid_items": 4,
+      "schedule_grid_notes": 0,
+      "shift_productions": 227,
+      "shift_schedules": 0,
+      "shipping_items": 0,
+      "shipping_orders": 0,
+      "sqlite_sequence": 9,
+      "staff_faces": 3,
+      "staff_leave_requests": 1,
+      "stock_movement_forecast": 0,
+      "stock_opname_items": 0,
+      "stock_opname_orders": 0,
+      "supplier_contracts": 0,
+      "supplier_quote_items": 0,
+      "supplier_quotes": 0,
+      "suppliers": 0,
+      "sync_job_executions": 0,
+      "system_alerts": 0,
+      "system_configurations": 0,
+      "system_settings": 17,
+      "tax_transactions": 0,
+      "third_party_apis": 0,
+      "training_categories": 0,
+      "training_enrollments": 0,
+      "training_programs": 0,
+      "training_requests": 0,
+      "training_sessions": 0,
+      "units_of_measure": 15,
+      "uom_conversions": 0,
+      "user_roles": 27,
+      "users": 14,
+      "warehouse_alerts": 0,
+      "warehouse_analytics": 0,
+      "warehouse_locations": 3,
+      "warehouse_optimization": 0,
+      "warehouse_zones": 3,
+      "waste_categories": 0,
+      "waste_disposals": 0,
+      "waste_records": 0,
+      "waste_targets": 0,
+      "webhook_deliveries": 0,
+      "webhooks": 0,
+      "weekly_production_plan_items": 0,
+      "weekly_production_plans": 1,
+      "wip_batches": 156,
+      "wip_ledger": 0,
+      "wip_stage_movements": 0,
+      "wip_stock_movements": 134,
+      "wip_stocks": 23,
+      "wip_summaries": 0,
+      "wip_transactions": 0,
+      "wip_variances": 0,
+      "work_order_bom_items": 0,
+      "work_order_status_history": 0,
+      "work_orders": 156,
+      "work_orders_new": 0,
+      "work_roster_assignments": 0,
+      "work_rosters": 0,
+      "workflow_steps": 0
+    },
+    "query_results": [
+      {
+        "description": "Work Orders - Status Filter",
+        "query": "SELECT * FROM work_orders WHERE status = 'in_progress';",
+        "avg_time_ms": 0.24,
+        "min_time_ms": 0.18,
+        "max_time_ms": 0.32,
+        "avg_rows": 27.0,
+        "runs": 3
+      },
+      {
+        "description": "Work Orders - Machine Filter",
+        "query": "SELECT * FROM work_orders WHERE machine_id = 1;",
+        "avg_time_ms": 0.19,
+        "min_time_ms": 0.15,
+        "max_time_ms": 0.25,
+        "avg_rows": 22.0,
+        "runs": 3
+      },
+      {
+        "description": "Work Orders - Date Range",
+        "query": "SELECT * FROM work_orders WHERE scheduled_start_date >= date('now', '-7 days');",
+        "avg_time_ms": 0.05,
+        "min_time_ms": 0.02,
+        "max_time_ms": 0.1,
+        "avg_rows": 0.0,
+        "runs": 3
+      },
+      {
+        "description": "Inventory - Status Filter",
+        "query": "SELECT * FROM inventory WHERE stock_status = 'released';",
+        "avg_time_ms": 0.14,
+        "min_time_ms": 0.11,
+        "max_time_ms": 0.19,
+        "avg_rows": 21.0,
+        "runs": 3
+      },
+      {
+        "description": "Inventory - Product Filter",
+        "query": "SELECT * FROM inventory WHERE product_id = 1;",
+        "avg_time_ms": 0.04,
+        "min_time_ms": 0.01,
+        "max_time_ms": 0.08,
+        "avg_rows": 0.0,
+        "runs": 3
+      },
+      {
+        "description": "Inventory - Material Filter",
+        "query": "SELECT * FROM inventory WHERE material_id = 1;",
+        "avg_time_ms": 0.05,
+        "min_time_ms": 0.02,
+        "max_time_ms": 0.09,
+        "avg_rows": 1.0,
+        "runs": 3
+      },
+      {
+        "description": "Sales Orders - Customer Filter",
+        "query": "SELECT * FROM sales_orders WHERE customer_id = 1;",
+        "avg_time_ms": 0.06,
+        "min_time_ms": 0.03,
+        "max_time_ms": 0.12,
+        "avg_rows": 4.0,
+        "runs": 3
+      },
+      {
+        "description": "Sales Orders - Status Filter",
+        "query": "SELECT * FROM sales_orders WHERE status = 'pending';",
+        "avg_time_ms": 0.04,
+        "min_time_ms": 0.01,
+        "max_time_ms": 0.08,
+        "avg_rows": 0.0,
+        "runs": 3
+      },
+      {
+        "description": "Invoices - Customer Filter",
+        "query": "SELECT * FROM invoices WHERE customer_id = 1;",
+        "avg_time_ms": 0.04,
+        "min_time_ms": 0.01,
+        "max_time_ms": 0.08,
+        "avg_rows": 0.0,
+        "runs": 3
+      },
+      {
+        "description": "Invoices - Status Filter",
+        "query": "SELECT * FROM invoices WHERE status = 'paid';",
+        "avg_time_ms": 0.04,
+        "min_time_ms": 0.01,
+        "max_time_ms": 0.08,
+        "avg_rows": 0.0,
+        "runs": 3
+      },
+      {
+        "description": "Employees - Department Filter",
+        "query": "SELECT * FROM employees WHERE department_id = 1;",
+        "avg_time_ms": 0.05,
+        "min_time_ms": 0.02,
+        "max_time_ms": 0.1,
+        "avg_rows": 0.0,
+        "runs": 3
+      },
+      {
+        "description": "Employees - Active Filter",
+        "query": "SELECT * FROM employees WHERE is_active = 1;",
+        "avg_time_ms": 0.41,
+        "min_time_ms": 0.35,
+        "max_time_ms": 0.51,
+        "avg_rows": 52.0,
+        "runs": 3
+      },
+      {
+        "description": "Attendances - User Filter",
+        "query": "SELECT * FROM attendances WHERE user_id = 1;",
+        "avg_time_ms": 0.05,
+        "min_time_ms": 0.01,
+        "max_time_ms": 0.11,
+        "avg_rows": 0.0,
+        "runs": 3
+      },
+      {
+        "description": "Attendances - Date Filter",
+        "query": "SELECT * FROM attendances WHERE attendance_date >= date('now', '-30 days');",
+        "avg_time_ms": 0.05,
+        "min_time_ms": 0.02,
+        "max_time_ms": 0.12,
+        "avg_rows": 0.0,
+        "runs": 3
+      },
+      {
+        "description": "Production Records - Date Filter",
+        "query": "SELECT * FROM production_records WHERE production_date >= date('now', '-7 days');",
+        "avg_time_ms": 0.03,
+        "min_time_ms": 0.01,
+        "max_time_ms": 0.08,
+        "avg_rows": 0.0,
+        "runs": 3
+      },
+      {
+        "description": "Machines - Status Filter",
+        "query": "SELECT * FROM machines WHERE status = 'running';",
+        "avg_time_ms": 0.05,
+        "min_time_ms": 0.03,
+        "max_time_ms": 0.1,
+        "avg_rows": 2.0,
+        "runs": 3
+      }
+    ],
+    "slow_queries_count": 0
+  }
+]

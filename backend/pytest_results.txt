@@ -1,0 +1,407 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.13, pytest-7.4.3, pluggy-1.6.0
+rootdir: /home/superadmin/SourceCode/backend
+configfile: pytest.ini
+plugins: mock-3.12.0, cov-4.1.0, flask-1.3.0
+collected 741 items
+
+tests/test_analytics.py FFFFF                                            [  0%]
+tests/test_analytics_extended.py ...................                     [  3%]
+tests/test_auth.py .....                                                 [  3%]
+tests/test_auth_extended.py ...........F..                               [  5%]
+tests/test_backup.py FFFFF                                               [  6%]
+tests/test_bom.py FFFFF                                                  [  7%]
+tests/test_dashboard.py FFFFF                                            [  7%]
+tests/test_finance.py ......                                             [  8%]
+tests/test_finance_extended.py .............................             [ 12%]
+tests/test_health.py ...                                                 [ 12%]
+tests/test_hr.py .F.F..                                                  [ 13%]
+tests/test_hr_extended.py ..........................                     [ 17%]
+tests/test_integration.py FFFFF                                          [ 17%]
+tests/test_maintenance.py .F...                                          [ 18%]
+tests/test_models.py ......                                              [ 19%]
+tests/test_models_comprehensive.py ...........................           [ 23%]
+tests/test_mrp.py F.FFFF                                                 [ 23%]
+tests/test_notifications.py .F..F                                        [ 24%]
+tests/test_oee.py .FFFF                                                  [ 25%]
+tests/test_production.py .F...                                           [ 25%]
+tests/test_production_extended.py .........................              [ 29%]
+tests/test_products.py ......                                            [ 30%]
+tests/test_products_extended.py .......................                  [ 33%]
+tests/test_purchasing.py ..F..                                           [ 33%]
+tests/test_purchasing_extended.py .......................                [ 36%]
+tests/test_quality.py ......                                             [ 37%]
+tests/test_quality_extended.py ...................                       [ 40%]
+tests/test_rd.py ......                                                  [ 41%]
+tests/test_reports.py F....F                                             [ 41%]
+tests/test_reports_extended.py .................                         [ 44%]
+tests/test_routes_comprehensive.py ..................................... [ 49%]
+....................
+
+=============================== warnings summary ===============================
+tests/test_analytics.py::test_get_analytics_overview
+  /home/superadmin/SourceCode/backend/venv/lib64/python3.12/site-packages/dateutil/tz/tz.py:37: DeprecationWarning: datetime.datetime.utcfromtimestamp() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.fromtimestamp(timestamp, datetime.UTC).
+    EPOCH = datetime.datetime.utcfromtimestamp(0)
+
+tests/test_analytics.py: 15 warnings
+tests/test_analytics_extended.py: 57 warnings
+tests/test_auth.py: 8 warnings
+tests/test_auth_extended.py: 24 warnings
+tests/test_backup.py: 15 warnings
+tests/test_bom.py: 21 warnings
+tests/test_dashboard.py: 15 warnings
+tests/test_finance.py: 18 warnings
+tests/test_finance_extended.py: 89 warnings
+tests/test_hr.py: 18 warnings
+tests/test_hr_extended.py: 80 warnings
+tests/test_integration.py: 15 warnings
+tests/test_maintenance.py: 15 warnings
+tests/test_models.py: 12 warnings
+tests/test_models_comprehensive.py: 45 warnings
+tests/test_mrp.py: 18 warnings
+tests/test_notifications.py: 15 warnings
+tests/test_oee.py: 15 warnings
+tests/test_production.py: 19 warnings
+tests/test_production_extended.py: 79 warnings
+tests/test_products.py: 31 warnings
+tests/test_products_extended.py: 91 warnings
+tests/test_purchasing.py: 16 warnings
+tests/test_purchasing_extended.py: 70 warnings
+tests/test_quality.py: 18 warnings
+tests/test_quality_extended.py: 57 warnings
+tests/test_rd.py: 18 warnings
+tests/test_reports.py: 18 warnings
+tests/test_reports_extended.py: 51 warnings
+tests/test_routes_comprehensive.py: 182 warnings
+  /home/superadmin/SourceCode/backend/venv/lib64/python3.12/site-packages/sqlalchemy/sql/schema.py:3592: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    return util.wrap_callable(lambda ctx: fn(), fn)  # type: ignore
+
+tests/test_analytics.py: 5 warnings
+tests/test_analytics_extended.py: 19 warnings
+tests/test_auth.py: 2 warnings
+tests/test_auth_extended.py: 6 warnings
+tests/test_backup.py: 5 warnings
+tests/test_bom.py: 5 warnings
+tests/test_dashboard.py: 5 warnings
+tests/test_finance.py: 7 warnings
+tests/test_finance_extended.py: 29 warnings
+tests/test_health.py: 3 warnings
+tests/test_hr.py: 6 warnings
+tests/test_hr_extended.py: 26 warnings
+tests/test_integration.py: 5 warnings
+tests/test_maintenance.py: 5 warnings
+tests/test_mrp.py: 7 warnings
+tests/test_notifications.py: 6 warnings
+tests/test_oee.py: 6 warnings
+tests/test_production.py: 5 warnings
+tests/test_production_extended.py: 25 warnings
+tests/test_products.py: 6 warnings
+tests/test_products_extended.py: 24 warnings
+tests/test_purchasing.py: 6 warnings
+tests/test_purchasing_extended.py: 24 warnings
+tests/test_quality.py: 9 warnings
+tests/test_quality_extended.py: 19 warnings
+tests/test_rd.py: 6 warnings
+tests/test_reports.py: 8 warnings
+tests/test_reports_extended.py: 20 warnings
+tests/test_routes_comprehensive.py: 53 warnings
+  /home/superadmin/SourceCode/backend/utils/timezone.py:16: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    utc_now = datetime.utcnow()
+
+tests/test_analytics.py: 5 warnings
+tests/test_analytics_extended.py: 19 warnings
+tests/test_auth.py: 2 warnings
+tests/test_auth_extended.py: 6 warnings
+tests/test_backup.py: 5 warnings
+tests/test_bom.py: 5 warnings
+tests/test_dashboard.py: 5 warnings
+tests/test_finance.py: 6 warnings
+tests/test_finance_extended.py: 29 warnings
+tests/test_hr.py: 6 warnings
+tests/test_hr_extended.py: 26 warnings
+tests/test_integration.py: 5 warnings
+tests/test_maintenance.py: 5 warnings
+tests/test_mrp.py: 6 warnings
+tests/test_notifications.py: 5 warnings
+tests/test_oee.py: 5 warnings
+tests/test_production.py: 5 warnings
+tests/test_production_extended.py: 25 warnings
+tests/test_products.py: 6 warnings
+tests/test_products_extended.py: 23 warnings
+tests/test_purchasing.py: 5 warnings
+tests/test_purchasing_extended.py: 23 warnings
+tests/test_quality.py: 6 warnings
+tests/test_quality_extended.py: 19 warnings
+tests/test_rd.py: 6 warnings
+tests/test_reports.py: 6 warnings
+tests/test_reports_extended.py: 17 warnings
+tests/test_routes_comprehensive.py: 53 warnings
+  /home/superadmin/SourceCode/backend/venv/lib64/python3.12/site-packages/jwt/api_jwt.py:147: InsecureKeyLengthWarning: The HMAC key is 15 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+    return self._jws.encode(
+
+tests/test_analytics.py: 5 warnings
+tests/test_analytics_extended.py: 19 warnings
+tests/test_auth.py: 1 warning
+tests/test_auth_extended.py: 6 warnings
+tests/test_backup.py: 5 warnings
+tests/test_bom.py: 5 warnings
+tests/test_dashboard.py: 5 warnings
+tests/test_finance.py: 6 warnings
+tests/test_finance_extended.py: 29 warnings
+tests/test_hr.py: 6 warnings
+tests/test_hr_extended.py: 26 warnings
+tests/test_integration.py: 5 warnings
+tests/test_maintenance.py: 5 warnings
+tests/test_mrp.py: 6 warnings
+tests/test_notifications.py: 3 warnings
+tests/test_oee.py: 5 warnings
+tests/test_production.py: 5 warnings
+tests/test_production_extended.py: 25 warnings
+tests/test_products.py: 6 warnings
+tests/test_products_extended.py: 23 warnings
+tests/test_purchasing.py: 5 warnings
+tests/test_purchasing_extended.py: 23 warnings
+tests/test_quality.py: 6 warnings
+tests/test_quality_extended.py: 19 warnings
+tests/test_rd.py: 6 warnings
+tests/test_reports.py: 6 warnings
+tests/test_reports_extended.py: 17 warnings
+tests/test_routes_comprehensive.py: 52 warnings
+  /home/superadmin/SourceCode/backend/venv/lib64/python3.12/site-packages/jwt/api_jwt.py:365: InsecureKeyLengthWarning: The HMAC key is 15 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+    decoded = self.decode_complete(
+
+tests/test_analytics.py: 5 warnings
+tests/test_analytics_extended.py: 19 warnings
+tests/test_auth.py: 1 warning
+tests/test_auth_extended.py: 5 warnings
+tests/test_backup.py: 5 warnings
+tests/test_bom.py: 5 warnings
+tests/test_dashboard.py: 5 warnings
+tests/test_finance.py: 6 warnings
+tests/test_finance_extended.py: 29 warnings
+tests/test_hr.py: 6 warnings
+tests/test_hr_extended.py: 26 warnings
+tests/test_integration.py: 5 warnings
+tests/test_maintenance.py: 5 warnings
+tests/test_mrp.py: 6 warnings
+tests/test_oee.py: 5 warnings
+tests/test_production.py: 5 warnings
+tests/test_production_extended.py: 25 warnings
+tests/test_products.py: 8 warnings
+tests/test_products_extended.py: 23 warnings
+tests/test_purchasing.py: 5 warnings
+tests/test_purchasing_extended.py: 23 warnings
+tests/test_quality.py: 6 warnings
+tests/test_quality_extended.py: 19 warnings
+tests/test_rd.py: 6 warnings
+tests/test_reports.py: 6 warnings
+tests/test_reports_extended.py: 17 warnings
+tests/test_routes_comprehensive.py: 51 warnings
+  /home/superadmin/SourceCode/backend/utils/audit_middleware.py:49: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    user = User.query.get(user_id)
+
+tests/test_analytics.py: 5 warnings
+tests/test_analytics_extended.py: 19 warnings
+tests/test_auth.py: 1 warning
+tests/test_auth_extended.py: 5 warnings
+tests/test_backup.py: 5 warnings
+tests/test_bom.py: 5 warnings
+tests/test_dashboard.py: 5 warnings
+tests/test_finance.py: 6 warnings
+tests/test_finance_extended.py: 29 warnings
+tests/test_hr.py: 6 warnings
+tests/test_hr_extended.py: 26 warnings
+tests/test_integration.py: 5 warnings
+tests/test_maintenance.py: 5 warnings
+tests/test_mrp.py: 6 warnings
+tests/test_oee.py: 5 warnings
+tests/test_production.py: 5 warnings
+tests/test_production_extended.py: 25 warnings
+tests/test_products.py: 8 warnings
+tests/test_products_extended.py: 23 warnings
+tests/test_purchasing.py: 5 warnings
+tests/test_purchasing_extended.py: 23 warnings
+tests/test_quality.py: 6 warnings
+tests/test_quality_extended.py: 19 warnings
+tests/test_rd.py: 6 warnings
+tests/test_reports.py: 6 warnings
+tests/test_reports_extended.py: 17 warnings
+tests/test_routes_comprehensive.py: 51 warnings
+  /home/superadmin/SourceCode/backend/utils/audit_middleware.py:106: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow()
+
+tests/test_analytics.py: 5 warnings
+tests/test_analytics_extended.py: 19 warnings
+tests/test_auth.py: 5 warnings
+tests/test_auth_extended.py: 14 warnings
+tests/test_backup.py: 5 warnings
+tests/test_bom.py: 5 warnings
+tests/test_dashboard.py: 5 warnings
+tests/test_finance.py: 6 warnings
+tests/test_finance_extended.py: 29 warnings
+tests/test_health.py: 3 warnings
+tests/test_hr.py: 6 warnings
+tests/test_hr_extended.py: 26 warnings
+tests/test_integration.py: 5 warnings
+tests/test_maintenance.py: 5 warnings
+tests/test_models.py: 6 warnings
+tests/test_models_comprehensive.py: 27 warnings
+tests/test_mrp.py: 6 warnings
+tests/test_notifications.py: 5 warnings
+tests/test_oee.py: 5 warnings
+tests/test_production.py: 5 warnings
+tests/test_production_extended.py: 25 warnings
+tests/test_products.py: 6 warnings
+tests/test_products_extended.py: 23 warnings
+tests/test_purchasing.py: 5 warnings
+tests/test_purchasing_extended.py: 23 warnings
+tests/test_quality.py: 6 warnings
+tests/test_quality_extended.py: 19 warnings
+tests/test_rd.py: 6 warnings
+tests/test_reports.py: 6 warnings
+tests/test_reports_extended.py: 17 warnings
+tests/test_routes_comprehensive.py: 57 warnings
+tests/conftest.py:159: 1 warning
+  /home/superadmin/SourceCode/backend/tests/conftest.py:159: SAWarning: Cannot correctly sort tables; there are unresolvable cycles between tables "departments, employees, quotations, sales_orders", which is usually caused by mutually dependent foreign key constraints.  Foreign key constraints involving these tables will not be considered; this warning may raise an error in a future release.
+    for table in reversed(db.metadata.sorted_tables):
+
+tests/test_auth_extended.py::TestAuthExtended::test_change_password_wrong_current
+tests/test_routes_comprehensive.py::TestAuthRoutes::test_change_password
+  /home/superadmin/SourceCode/backend/routes/auth.py:256: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    user = User.query.get(int(user_id))  # Convert string to int
+
+tests/test_auth_extended.py::TestAuthExtended::test_get_permissions_list
+tests/test_routes_comprehensive.py::TestAuthRoutes::test_get_permissions
+  /home/superadmin/SourceCode/backend/routes/auth.py:312: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    ).get(int(user_id))
+
+tests/test_finance_extended.py::TestInvoices::test_get_invoice_by_id
+tests/test_hr_extended.py::TestHRExtended::test_get_employee_by_id
+tests/test_hr_extended.py::TestHRExtended::test_update_employee
+tests/test_products_extended.py::TestMaterials::test_get_material_by_id
+tests/test_products_extended.py::TestMaterials::test_update_material
+tests/test_products_extended.py::TestMaterials::test_delete_material
+tests/test_routes_comprehensive.py::TestHRRoutes::test_get_employee_by_id
+  /home/superadmin/SourceCode/backend/venv/lib64/python3.12/site-packages/flask_sqlalchemy/query.py:30: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    rv = self.get(ident)
+
+tests/test_notifications.py::test_mark_notification_read
+  /home/superadmin/SourceCode/backend/routes/notifications.py:56: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    notification = Notification.query.get(id)
+
+tests/test_production.py::test_create_work_order
+  /home/superadmin/SourceCode/backend/tests/test_production.py:25: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    'start_date': datetime.utcnow().isoformat(),
+
+tests/test_production.py::test_create_work_order
+  /home/superadmin/SourceCode/backend/tests/test_production.py:26: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    'due_date': (datetime.utcnow() + timedelta(days=7)).isoformat(),
+
+tests/test_production.py::test_create_work_order
+tests/test_production_extended.py::TestProductionExtended::test_create_work_order
+  /home/superadmin/SourceCode/backend/routes/production.py:730: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    product = Product.query.get(data['product_id'])
+
+tests/test_production_extended.py::TestProductionExtended::test_get_work_order_by_id
+  /home/superadmin/SourceCode/backend/routes/production.py:480: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    wo = WorkOrder.query.get(id)
+
+tests/test_production_extended.py::TestProductionExtended::test_update_work_order
+  /home/superadmin/SourceCode/backend/routes/production.py:767: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    wo = WorkOrder.query.get(id)
+
+tests/test_production_extended.py::TestMachines::test_get_machine_by_id
+tests/test_production_extended.py::TestMachines::test_update_machine
+  /home/superadmin/SourceCode/backend/routes/production.py:94: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    machine = Machine.query.get(id)
+
+tests/test_products.py::test_get_product_by_id
+tests/test_products.py::test_update_product
+tests/test_products.py::test_delete_product
+tests/test_products_extended.py::TestProductsExtended::test_get_product_not_found
+  /home/superadmin/SourceCode/backend/routes/products.py:215: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    product = Product.query.get(id)
+
+tests/test_products.py::test_update_product
+tests/test_products_extended.py::TestProductsExtended::test_update_product_not_found
+tests/test_products_extended.py::TestProductsExtended::test_update_product_with_flat_spec
+  /home/superadmin/SourceCode/backend/routes/products.py:405: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    product = Product.query.get(id)
+
+tests/test_products.py::test_delete_product
+tests/test_products_extended.py::TestProductsExtended::test_delete_product
+tests/test_products_extended.py::TestProductsExtended::test_delete_product_not_found
+  /home/superadmin/SourceCode/backend/routes/products.py:499: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    product = Product.query.get(id)
+
+tests/test_purchasing.py::test_get_supplier_by_id
+tests/test_purchasing_extended.py::TestSuppliers::test_get_supplier_by_id
+  /home/superadmin/SourceCode/backend/routes/purchasing.py:111: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    supplier = Supplier.query.get(id)
+
+tests/test_purchasing_extended.py::TestSuppliers::test_update_supplier
+  /home/superadmin/SourceCode/backend/routes/purchasing.py:143: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    supplier = Supplier.query.get(id)
+
+tests/test_reports_extended.py::TestReportsExtended::test_get_hr_report
+  /home/superadmin/SourceCode/backend/routes/reports.py:251: SAWarning: SELECT statement has a cartesian product between FROM element(s) "departments" and FROM element "employees".  Apply join condition(s) between each element to resolve.
+    ).filter(Employee.is_active == True).group_by(Employee.department).all()
+
+tests/test_routes_comprehensive.py::TestAuthRoutes::test_get_current_user
+  /home/superadmin/SourceCode/backend/routes/auth.py:165: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    ).get(int(user_id))  # Convert string to int
+
+venv/lib64/python3.12/site-packages/flask_sqlalchemy/extension.py:881
+  /home/superadmin/SourceCode/backend/venv/lib64/python3.12/site-packages/flask_sqlalchemy/extension.py:881: SAWarning: Can't sort tables for DROP; an unresolvable foreign key dependency exists between tables: departments, employees, quotations, sales_orders; and backend does not support ALTER.  To restore at least a partial sort, apply use_alter=True to ForeignKey and ForeignKeyConstraint objects involved in the cycle to mark these as known cycles that will be ignored.
+    getattr(metadata, op_name)(bind=engine)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_analytics.py::test_get_analytics_overview - assert 500 in [...
+FAILED tests/test_analytics.py::test_get_sales_analytics - assert 500 in [200...
+FAILED tests/test_analytics.py::test_get_production_analytics - assert 500 in...
+FAILED tests/test_analytics.py::test_get_inventory_analytics - assert 500 in ...
+FAILED tests/test_analytics.py::test_get_financial_analytics - assert 500 in ...
+FAILED tests/test_auth_extended.py::TestAuthExtended::test_get_user_roles - a...
+FAILED tests/test_backup.py::test_get_backups_list - assert 500 in [200, 404]
+FAILED tests/test_backup.py::test_get_backup_status - assert 500 in [200, 404]
+FAILED tests/test_backup.py::test_create_backup - assert 500 in [200, 201, 40...
+FAILED tests/test_backup.py::test_restore_backup - assert 500 in [200, 201, 4...
+FAILED tests/test_backup.py::test_delete_backup - assert 500 in [200, 404]
+FAILED tests/test_bom.py::test_get_bom_list - assert 500 in [200, 404]
+FAILED tests/test_bom.py::test_get_bom_by_id - assert 500 in [200, 404]
+FAILED tests/test_bom.py::test_get_bom_by_product - assert 500 in [200, 404]
+FAILED tests/test_bom.py::test_create_bom - assert 500 in [200, 201, 400, 404]
+FAILED tests/test_bom.py::test_calculate_bom_cost - assert 500 in [200, 404]
+FAILED tests/test_dashboard.py::test_get_main_dashboard - assert 500 in [200,...
+FAILED tests/test_dashboard.py::test_get_dashboard_kpis - assert 500 in [200,...
+FAILED tests/test_dashboard.py::test_get_dashboard_charts - assert 500 in [20...
+FAILED tests/test_dashboard.py::test_get_dashboard_alerts - assert 500 in [20...
+FAILED tests/test_dashboard.py::test_get_dashboard_activities - assert 500 in...
+FAILED tests/test_hr.py::test_get_hr_dashboard - assert 500 in [200, 404]
+FAILED tests/test_hr.py::test_get_leave_requests - assert 500 in [200, 404]
+FAILED tests/test_integration.py::test_get_integrations_list - assert 500 in ...
+FAILED tests/test_integration.py::test_get_integration_status - assert 500 in...
+FAILED tests/test_integration.py::test_get_integration_logs - assert 500 in [...
+FAILED tests/test_integration.py::test_test_integration_connection - assert 5...
+FAILED tests/test_integration.py::test_sync_integration_data - assert 500 in ...
+FAILED tests/test_maintenance.py::test_get_maintenance_dashboard - assert 500...
+FAILED tests/test_mrp.py::test_get_mrp_dashboard - assert 500 in [200, 404]
+FAILED tests/test_mrp.py::test_get_demand_forecast - assert 500 in [200, 404]
+FAILED tests/test_mrp.py::test_get_material_shortages - assert 500 in [200, 404]
+FAILED tests/test_mrp.py::test_get_planning_timeline - assert 500 in [200, 404]
+FAILED tests/test_mrp.py::test_run_mrp_calculation - assert 500 in [200, 201,...
+FAILED tests/test_notifications.py::test_get_unread_notifications - assert 50...
+FAILED tests/test_notifications.py::test_delete_notification - assert 500 in ...
+FAILED tests/test_oee.py::test_get_oee_metrics - assert 500 in [200, 404]
+FAILED tests/test_oee.py::test_get_oee_by_machine - assert 500 in [200, 404]
+FAILED tests/test_oee.py::test_get_oee_trends - assert 500 in [200, 404]
+FAILED tests/test_oee.py::test_get_downtime_analysis - assert 500 in [200, 404]
+FAILED tests/test_production.py::test_get_production_dashboard - assert 500 i...
+FAILED tests/test_purchasing.py::test_get_purchasing_dashboard - assert 500 i...
+FAILED tests/test_reports.py::test_get_reports_list - assert 500 in [200, 404]
+FAILED tests/test_reports.py::test_get_custom_report - assert 500 in [200, 404]
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! KeyboardInterrupt !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+/home/superadmin/SourceCode/backend/venv/lib64/python3.12/site-packages/flask_bcrypt.py:225: KeyboardInterrupt
+(to show a full traceback on KeyboardInterrupt use --full-trace)
+========== 44 failed, 341 passed, 3238 warnings in 148.74s (0:02:28) ===========

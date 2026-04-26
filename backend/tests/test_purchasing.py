@@ -1,5 +1,6 @@
 """
 Tests for Purchasing Module
+NOTE: /dashboard doesn't exist in purchasing.py
 """
 import pytest
 from datetime import datetime, timedelta
@@ -20,9 +21,9 @@ def test_get_purchase_orders_list(client, auth_headers):
     assert response.status_code in [200, 404]
 
 
-def test_get_purchasing_dashboard(client, auth_headers):
-    """Test purchasing dashboard"""
-    response = client.get('/api/purchasing/dashboard', headers=auth_headers)
+def test_get_grns(client, auth_headers):
+    """Test getting GRNs - actual route"""
+    response = client.get('/api/purchasing/grn', headers=auth_headers)
     assert response.status_code in [200, 404]
 
 
@@ -44,4 +45,16 @@ def test_create_supplier(client, auth_headers):
 def test_get_supplier_by_id(client, auth_headers):
     """Test getting single supplier"""
     response = client.get('/api/purchasing/suppliers/1', headers=auth_headers)
+    assert response.status_code in [200, 404]
+
+
+def test_get_rfqs(client, auth_headers):
+    """Test getting RFQs - actual route"""
+    response = client.get('/api/purchasing/rfqs', headers=auth_headers)
+    assert response.status_code in [200, 404]
+
+
+def test_get_quotes(client, auth_headers):
+    """Test getting quotes - actual route"""
+    response = client.get('/api/purchasing/quotes', headers=auth_headers)
     assert response.status_code in [200, 404]

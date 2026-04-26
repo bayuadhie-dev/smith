@@ -1,5 +1,6 @@
 """
 Tests for Sales Module
+NOTE: /dashboard doesn't exist in sales.py
 """
 import pytest
 from datetime import datetime, timedelta
@@ -46,7 +47,7 @@ def test_get_sales_orders_list(client, auth_headers):
     assert 'orders' in data or 'data' in data or isinstance(data, list)
 
 
-def test_get_sales_dashboard(client, auth_headers):
-    """Test sales dashboard endpoint"""
-    response = client.get('/api/sales/dashboard', headers=auth_headers)
-    assert response.status_code in [200, 404]  # May not have dashboard endpoint
+def test_confirm_order(client, auth_headers):
+    """Test confirming order - actual route"""
+    response = client.put('/api/sales/orders/1/confirm', headers=auth_headers)
+    assert response.status_code in [200, 404]
