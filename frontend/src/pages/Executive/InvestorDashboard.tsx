@@ -21,8 +21,6 @@ const InvestorDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState('financial');
   const [darkMode, setDarkMode] = useState(false);
   const [companyName, setCompanyName] = useState('Company');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
 
   // Set document title
   useDocumentTitle('Executive Overview');
@@ -106,12 +104,7 @@ const InvestorDashboard: React.FC = () => {
   const handleExport = async () => {
     try {
       console.log('Starting PDF export...');
-      const params: any = {};
-      if (startDate) params.start_date = startDate;
-      if (endDate) params.end_date = endDate;
-      
       const response = await api.get('/api/executive/executive-overview/export-pdf', {
-        params,
         responseType: 'blob'
       });
       
@@ -147,23 +140,6 @@ const InvestorDashboard: React.FC = () => {
             <p className="text-blue-100 mt-1">{companyName} - Executive Overview</p>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 bg-white/10 rounded-xl p-2">
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="bg-transparent text-white text-sm border-none outline-none"
-                placeholder="Start Date"
-              />
-              <span className="text-white/60">-</span>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="bg-transparent text-white text-sm border-none outline-none"
-                placeholder="End Date"
-              />
-            </div>
             <button
               onClick={toggleDarkMode}
               className="p-2.5 bg-white/10 rounded-xl hover:bg-white/20 transition-all"
