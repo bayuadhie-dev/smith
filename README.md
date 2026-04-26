@@ -854,7 +854,7 @@ Support:
 
 **PROPRIETARY SOFTWARE**
 
-Copyright (c) 2024-2026 **Bayu Adhie**. All Rights Reserved.
+Copyright (c) 2025-2026 **Bayu Adhie**. All Rights Reserved.
 
 This software is proprietary and confidential. Unauthorized copying, distribution, modification, public display, or public performance of this software is strictly prohibited.
 
@@ -979,7 +979,7 @@ For technical support, feature requests, or bug reports, please email us at baym
 
 ---
 
-**© 2024-2026 Bayu Adhie. All Rights Reserved.**
+**© 2025-2026 Bayu Adhie. All Rights Reserved.**
 
 ---
 

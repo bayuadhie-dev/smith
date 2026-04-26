@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "============================================================"
-echo "  PT. Gratia Makmur Sentosa - ERP System"
+echo "  ERP System"
 echo "  Starting All Servers (Linux)"
 echo "============================================================"
 echo ""

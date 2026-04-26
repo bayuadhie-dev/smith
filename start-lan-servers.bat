@@ -1,6 +1,6 @@
 @echo off
 echo ============================================================
-echo   PT. Gratia Makmur Sentosa - ERP System
+echo   ERP System
 echo   Starting LAN Servers
 echo ============================================================
 echo.
