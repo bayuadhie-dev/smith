@@ -19,7 +19,7 @@
 - [Modul-Modul](#modul-modul)
 - [Integrasi Workflow](#integrasi-workflow)
 - [Cara Install](#cara-install)
-- [Testing](#testing)
+- [Pengujian](#pengujian)
 - [Dokumentasi API](#dokumentasi-api)
 - [AI Assistant](#ai-assistant)
 
@@ -672,9 +672,9 @@ Frontend jalan di `http://localhost:5173`
 
 ---
 
-## 🧪 Testing
+## 🧪 Pengujian
 
-### Backend Testing (Pytest)
+### Pengujian Backend (Pytest)
 
 ```bash
 cd backend
@@ -691,7 +691,7 @@ pytest tests/test_auth.py -v
 
 
 
-### Frontend Testing (Vitest)
+### Pengujian Frontend (Vitest)
 
 ```bash
 cd frontend
@@ -710,7 +710,7 @@ npm test:coverage
 
 ## 📚 Dokumentasi API
 
-### Authentication
+### Autentikasi
 
 ```http
 POST /api/auth/login
@@ -722,16 +722,16 @@ Content-Type: application/json
 }
 ```
 
-### Pakai Token
+### Gunakan Token
 
 ```http
 GET /api/products
 Authorization: Bearer <your-jwt-token>
 ```
 
-### Format Response Umum
+### Format Respons Umum
 
-**Success:**
+**Sukses:**
 ```json
 {
   "success": true,
@@ -748,9 +748,9 @@ Authorization: Bearer <your-jwt-token>
 }
 ```
 
-### API Endpoints Lengkap
+### Endpoint API Lengkap
 
-#### Production & OEE
+#### Produksi & OEE
 ```bash
 GET    /api/production/work-orders
 POST   /api/production/work-orders
@@ -760,7 +760,7 @@ GET    /api/oee/monthly-summary
 GET    /api/oee/quality-objectives/production
 ```
 
-#### Quality Control
+#### Kontrol Kualitas
 ```bash
 GET    /api/quality/incoming
 GET    /api/quality/in-process
@@ -772,7 +772,7 @@ GET    /api/oee/machine-downtime-analysis
 GET/POST/DELETE /api/oee/downtime-root-causes
 ```
 
-#### Sales & CRM
+#### Penjualan & CRM
 ```bash
 GET    /api/sales/customers
 POST   /api/sales/customers
@@ -782,7 +782,7 @@ GET    /api/sales/forecasts
 POST   /api/sales/quotations
 ```
 
-#### Inventory & Warehouse
+#### Inventori & Gudang
 ```bash
 GET    /api/inventory/items
 POST   /api/inventory/items
@@ -793,7 +793,7 @@ GET    /api/inventory/warehouses
 
 ---
 
-## 🗂️ Struktur Project
+## 🗂️ Struktur Proyek
 
 ```
 SourceCode/
@@ -857,7 +857,7 @@ Total: 816+ files, 310,000+ lines of code
 
 ---
 
-## 🌐 Internationalization
+## 🌐 Internasionalisasi
 
 Support:
 - 🇮🇩 Bahasa Indonesia
@@ -865,7 +865,7 @@ Support:
 
 ---
 
-## 📝 License
+## 📝 Lisensi
 
 **PROPRIETARY SOFTWARE**
 
@@ -877,7 +877,7 @@ See [LICENSE](LICENSE) for full terms.
 
 ---
 
-## 👨‍💻 Author
+## 👨‍💻 Penulis
 
 **Mochammad Bayu Adhie Nugroho**
 - GitHub: [@bayuadhie-dev](https://github.com/bayuadhie-dev)
@@ -885,7 +885,7 @@ See [LICENSE](LICENSE) for full terms.
 
 ---
 
-## 👥 Support
+## 👥 Dukungan
 
 Untuk support teknis: baymngrh@gmail.com
 
@@ -929,7 +929,7 @@ AI Assistant adalah fitur chatbot terintegrasi yang memungkinkan user untuk quer
 
 ---
 
-## 📈 Recent Updates
+## 📈 Pembaruan Terbaru
 
 ### ✨ v3.1.1 — April 2026 (README Update)
 - **README Documentation Update** — Verifikasi dan update dokumentasi lengkap:
