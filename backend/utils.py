@@ -3,6 +3,7 @@ from flask import jsonify
 from flask_jwt_extended import get_jwt_identity
 from models import User
 
+from models import db
 def generate_number(prefix, model, field_name='number'):
     """Generate sequential number for entities"""
     from datetime import datetime
@@ -67,7 +68,7 @@ def admin_required():
         @wraps(fn)
         def decorator(*args, **kwargs):
             user_id = get_jwt_identity()
-            user = User.query.get(user_id)
+            user = db.session.get(User, user_id)
             
             if not user or not user.is_admin:
                 return jsonify({'error': 'Admin access required'}), 403

@@ -298,3 +298,4 @@ reports/
 *.pdf
 *.xlsx
 !docs/*.pdf
+backend/token.json
