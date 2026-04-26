@@ -43,13 +43,14 @@ class Config:
     # Backup
     BACKUP_FOLDER = 'backups'
     
-    # Email Configuration (for password reset)
+    # Email Configuration (for password reset and error alerts)
+    # Map from GMAIL_* variables if MAIL_* not set
     MAIL_SERVER = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
     MAIL_PORT = int(os.getenv('MAIL_PORT', 587))
     MAIL_USE_TLS = os.getenv('MAIL_USE_TLS', 'True').lower() == 'true'
-    MAIL_USERNAME = os.getenv('MAIL_USERNAME', '')
-    MAIL_PASSWORD = os.getenv('MAIL_PASSWORD', '')  # Use App Password for Gmail
-    MAIL_DEFAULT_SENDER = os.getenv('MAIL_DEFAULT_SENDER', '')
+    MAIL_USERNAME = os.getenv('MAIL_USERNAME', os.getenv('GMAIL_ADDRESS', ''))
+    MAIL_PASSWORD = os.getenv('MAIL_PASSWORD', os.getenv('GMAIL_APP_PASSWORD', ''))
+    MAIL_DEFAULT_SENDER = os.getenv('MAIL_DEFAULT_SENDER', os.getenv('GMAIL_ADDRESS', ''))
     
     # Google OAuth
     GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID', '')

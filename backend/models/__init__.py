@@ -9,7 +9,7 @@ from .product import Material, Product, ProductSpecification, ProductPackaging, 
 from .product_excel_schema import ProductNew, ProductVersion
 from .warehouse import WarehouseZone, WarehouseLocation, Inventory, InventoryMovement
 from .sales import Customer, SalesOrder, SalesOrderItem, SalesForecast
-from .purchasing import Supplier, PurchaseOrder, PurchaseOrderItem, GoodsReceivedNote, GRNItem
+from .purchasing import Supplier, PurchaseOrder, PurchaseOrderItem, GoodsReceivedNote, GRNItem, PurchaseInvoice, PurchaseInvoiceItem, PurchaseReturn, PurchaseReturnItem
 from .production import (
     Machine, WorkOrder, ProductionRecord, BillOfMaterials, BOMItem, 
     ProductionSchedule, ShiftProduction, DowntimeRecord, WeeklyProductionPlan, 
@@ -19,8 +19,9 @@ from .production import (
 )
 from .quality import QualityTest, QualityInspection, CAPA, QualityStandard
 from .shipping import ShippingOrder, ShippingItem, DeliveryTracking, LogisticsProvider
+from .mbf_report import MBFReport, MBFReportDetail
 from .returns import CustomerReturn, ReturnItem, ReturnQCRecord, ReturnDisposition
-from .finance import Invoice, InvoiceItem, Payment, AccountingEntry, CostCenter
+from .finance import Invoice, InvoiceItem, Payment, AccountingEntry, CostCenter, Account
 from .hr import Employee, Department, ShiftSchedule, Attendance, Leave, EmployeeRoster, OutsourcingVendor, PieceworkLog
 from .hr_extended import (
     PayrollPeriod, PayrollRecord, SalaryComponent, EmployeeSalaryComponent,
@@ -113,7 +114,7 @@ __all__ = [
     # Returns models
     'CustomerReturn', 'ReturnItem', 'ReturnQCRecord', 'ReturnDisposition',
     # Finance models
-    'Invoice', 'InvoiceItem', 'Payment', 'AccountingEntry', 'CostCenter',
+    'Invoice', 'InvoiceItem', 'Payment', 'AccountingEntry', 'CostCenter', 'Account',
     # HR models
     'Employee', 'Department', 'ShiftSchedule', 'Attendance', 'Leave', 'EmployeeRoster',
     'OutsourcingVendor', 'PieceworkLog',

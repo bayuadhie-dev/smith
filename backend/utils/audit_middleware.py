@@ -46,7 +46,7 @@ def get_user_info():
             if isinstance(user_id, str):
                 user_id = int(user_id)
             
-            user = User.query.get(user_id)
+            user = db.session.get(User, user_id)
             if user:
                 # Skip tracking for admin users
                 if user.username == 'admin' or (hasattr(user, 'role') and user.role == 'admin'):
@@ -253,7 +253,7 @@ def audit_log_action(action, resource_type, get_resource_id=None, get_resource_n
                 
                 # Skip if admin
                 if user_id:
-                    user = User.query.get(user_id)
+                    user = db.session.get(User, user_id)
                     if user and (user.username == 'admin' or (hasattr(user, 'role') and user.role == 'admin')):
                         return f(*args, **kwargs)
                 

@@ -1,3 +1,4 @@
+from models import db
 """
 Business Rules Module
 Validation and controls for business operations
@@ -80,7 +81,7 @@ class BusinessRules:
             dict: Availability status
         """
         try:
-            material = Material.query.get(material_id)
+            material = db.session.get(Material, material_id)
             
             if not material:
                 return {
@@ -121,7 +122,7 @@ class BusinessRules:
         """
         try:
             if product_id:
-                product = Product.query.get(product_id)
+                product = db.session.get(Product, product_id)
                 if not product:
                     return {'low_stock': False, 'message': 'Product not found'}
                 
@@ -142,7 +143,7 @@ class BusinessRules:
                 }
             
             elif material_id:
-                material = Material.query.get(material_id)
+                material = db.session.get(Material, material_id)
                 if not material:
                     return {'low_stock': False, 'message': 'Material not found'}
                 
@@ -180,7 +181,7 @@ class BusinessRules:
             dict: Credit validation result
         """
         try:
-            customer = Customer.query.get(customer_id)
+            customer = db.session.get(Customer, customer_id)
             
             if not customer:
                 return {
@@ -223,7 +224,7 @@ class BusinessRules:
             dict: Payment terms validation
         """
         try:
-            customer = Customer.query.get(customer_id)
+            customer = db.session.get(Customer, customer_id)
             
             if not customer:
                 return {
@@ -271,7 +272,7 @@ class BusinessRules:
             dict: Machine availability status
         """
         try:
-            machine = Machine.query.get(machine_id)
+            machine = db.session.get(Machine, machine_id)
             
             if not machine:
                 return {
@@ -313,7 +314,7 @@ class BusinessRules:
             dict: BOM materials validation
         """
         try:
-            bom = BillOfMaterials.query.get(bom_id)
+            bom = db.session.get(BillOfMaterials, bom_id)
             
             if not bom:
                 return {

@@ -354,3 +354,151 @@ class PriceHistory(db.Model):
     purchase_order = db.relationship('PurchaseOrder')
     quote = db.relationship('SupplierQuote')
     contract = db.relationship('SupplierContract')
+
+class PurchaseInvoice(db.Model):
+    __tablename__ = 'purchase_invoices'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    invoice_number = db.Column(db.String(100), unique=True, nullable=False, index=True)
+    po_id = db.Column(db.Integer, db.ForeignKey('purchase_orders.id'), nullable=False)
+    supplier_id = db.Column(db.Integer, db.ForeignKey('suppliers.id'), nullable=False)
+    invoice_date = db.Column(db.Date, nullable=False, index=True)
+    due_date = db.Column(db.Date, nullable=True)
+    supplier_invoice_number = db.Column(db.String(100), nullable=True)
+    supplier_invoice_date = db.Column(db.Date, nullable=True)
+    status = db.Column(db.String(50), nullable=False, default='draft')  # draft, posted, paid, cancelled
+    payment_status = db.Column(db.String(50), nullable=False, default='unpaid')  # unpaid, partial, paid, overdue
+    currency = db.Column(db.String(10), nullable=False, default='USD')
+    exchange_rate = db.Column(db.Numeric(10, 4), default=1.0)
+    payment_terms = db.Column(db.String(100), nullable=True)
+    payment_method = db.Column(db.String(50), nullable=True)
+    subtotal = db.Column(db.Numeric(15, 2), default=0)
+    tax_amount = db.Column(db.Numeric(15, 2), default=0)
+    discount_amount = db.Column(db.Numeric(15, 2), default=0)
+    shipping_amount = db.Column(db.Numeric(15, 2), default=0)
+    other_charges = db.Column(db.Numeric(15, 2), default=0)
+    total_amount = db.Column(db.Numeric(15, 2), default=0)
+    amount_paid = db.Column(db.Numeric(15, 2), default=0)
+    balance_due = db.Column(db.Numeric(15, 2), default=0)
+    notes = db.Column(db.Text, nullable=True)
+    internal_notes = db.Column(db.Text, nullable=True)
+    received_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    posted_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    posted_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    purchase_order = db.relationship('PurchaseOrder')
+    supplier = db.relationship('Supplier')
+    items = db.relationship('PurchaseInvoiceItem', back_populates='invoice', cascade='all, delete-orphan')
+    returns = db.relationship('PurchaseReturn', back_populates='invoice', cascade='all, delete-orphan')
+    received_by_user = db.relationship('User', foreign_keys=[received_by])
+    posted_by_user = db.relationship('User', foreign_keys=[posted_by])
+    
+    def __repr__(self):
+        return f'<PurchaseInvoice {self.invoice_number}>'
+
+class PurchaseInvoiceItem(db.Model):
+    __tablename__ = 'purchase_invoice_items'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    invoice_id = db.Column(db.Integer, db.ForeignKey('purchase_invoices.id', ondelete='CASCADE'), nullable=False)
+    po_item_id = db.Column(db.Integer, db.ForeignKey('purchase_order_items.id'), nullable=False)
+    line_number = db.Column(db.Integer, nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=True)
+    material_id = db.Column(db.Integer, db.ForeignKey('materials.id'), nullable=True)
+    description = db.Column(db.Text, nullable=True)
+    quantity = db.Column(db.Numeric(15, 2), nullable=False)
+    uom = db.Column(db.String(20), nullable=False)
+    unit_price = db.Column(db.Numeric(15, 2), nullable=False)
+    discount_percent = db.Column(db.Numeric(5, 2), default=0)
+    discount_amount = db.Column(db.Numeric(15, 2), default=0)
+    tax_percent = db.Column(db.Numeric(5, 2), default=0)
+    tax_amount = db.Column(db.Numeric(15, 2), default=0)
+    total_price = db.Column(db.Numeric(15, 2), nullable=False)
+    quantity_returned = db.Column(db.Numeric(15, 2), default=0)
+    notes = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    invoice = db.relationship('PurchaseInvoice', back_populates='items')
+    po_item = db.relationship('PurchaseOrderItem')
+    product = db.relationship('Product')
+    material = db.relationship('Material')
+    
+    __table_args__ = (
+        db.UniqueConstraint('invoice_id', 'line_number', name='unique_invoice_line'),
+    )
+
+class PurchaseReturn(db.Model):
+    __tablename__ = 'purchase_returns'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    return_number = db.Column(db.String(100), unique=True, nullable=False, index=True)
+    invoice_id = db.Column(db.Integer, db.ForeignKey('purchase_invoices.id'), nullable=False)
+    supplier_id = db.Column(db.Integer, db.ForeignKey('suppliers.id'), nullable=False)
+    return_date = db.Column(db.Date, nullable=False, index=True)
+    reason = db.Column(db.String(255), nullable=False)
+    return_type = db.Column(db.String(50), nullable=False)  # defective, wrong_item, damaged, other
+    status = db.Column(db.String(50), nullable=False, default='draft')  # draft, submitted, approved, rejected, completed
+    approval_status = db.Column(db.String(50), nullable=False, default='pending')  # pending, approved, rejected
+    currency = db.Column(db.String(10), nullable=False, default='USD')
+    exchange_rate = db.Column(db.Numeric(10, 4), default=1.0)
+    subtotal = db.Column(db.Numeric(15, 2), default=0)
+    tax_amount = db.Column(db.Numeric(15, 2), default=0)
+    discount_amount = db.Column(db.Numeric(15, 2), default=0)
+    total_amount = db.Column(db.Numeric(15, 2), default=0)
+    credit_note_number = db.Column(db.String(100), nullable=True)
+    credit_note_date = db.Column(db.Date, nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+    internal_notes = db.Column(db.Text, nullable=True)
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    approved_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    approved_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    invoice = db.relationship('PurchaseInvoice', back_populates='returns')
+    supplier = db.relationship('Supplier')
+    items = db.relationship('PurchaseReturnItem', back_populates='purchase_return', cascade='all, delete-orphan')
+    created_by_user = db.relationship('User', foreign_keys=[created_by])
+    approved_by_user = db.relationship('User', foreign_keys=[approved_by])
+    
+    def __repr__(self):
+        return f'<PurchaseReturn {self.return_number}>'
+
+class PurchaseReturnItem(db.Model):
+    __tablename__ = 'purchase_return_items'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    return_id = db.Column(db.Integer, db.ForeignKey('purchase_returns.id', ondelete='CASCADE'), nullable=False)
+    invoice_item_id = db.Column(db.Integer, db.ForeignKey('purchase_invoice_items.id'), nullable=False)
+    line_number = db.Column(db.Integer, nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=True)
+    material_id = db.Column(db.Integer, db.ForeignKey('materials.id'), nullable=True)
+    description = db.Column(db.Text, nullable=True)
+    quantity = db.Column(db.Numeric(15, 2), nullable=False)
+    uom = db.Column(db.String(20), nullable=False)
+    unit_price = db.Column(db.Numeric(15, 2), nullable=False)
+    discount_percent = db.Column(db.Numeric(5, 2), default=0)
+    discount_amount = db.Column(db.Numeric(15, 2), default=0)
+    tax_percent = db.Column(db.Numeric(5, 2), default=0)
+    tax_amount = db.Column(db.Numeric(15, 2), default=0)
+    total_price = db.Column(db.Numeric(15, 2), nullable=False)
+    reason = db.Column(db.Text, nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    purchase_return = db.relationship('PurchaseReturn', back_populates='items')
+    invoice_item = db.relationship('PurchaseInvoiceItem')
+    product = db.relationship('Product')
+    material = db.relationship('Material')
+    
+    __table_args__ = (
+        db.UniqueConstraint('return_id', 'line_number', name='unique_return_line'),
+    )

@@ -1,3 +1,4 @@
+from models import db
 """
 Stock Opname Lock Utility
 Checks if a zone/location is currently under stock opname (in_progress).
@@ -36,7 +37,7 @@ def check_opname_lock(location_id=None, zone_id=None, material_id=None, product_
 
     if location_id:
         resolved_location_ids.add(location_id)
-        loc = WarehouseLocation.query.get(location_id)
+        loc = db.session.get(WarehouseLocation, location_id)
         if loc:
             resolved_zone_ids.add(loc.zone_id)
 

@@ -17,7 +17,7 @@ def generate_surat_jalan_from_sales_order(sales_order_id, user_id):
     """
     try:
         # Get sales order with items
-        sales_order = SalesOrder.query.get(sales_order_id)
+        sales_order = db.session.get(SalesOrder, sales_order_id)
         if not sales_order:
             raise ValueError('Sales Order not found')
         
@@ -106,7 +106,7 @@ def generate_spk_from_work_order(work_order_id, user_id):
     """
     try:
         # Get work order
-        work_order = WorkOrder.query.get(work_order_id)
+        work_order = db.session.get(WorkOrder, work_order_id)
         if not work_order:
             raise ValueError('Work Order not found')
         

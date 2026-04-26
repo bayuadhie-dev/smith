@@ -96,6 +96,7 @@ class Attendance(db.Model):
     status = db.Column(db.String(50), nullable=False, default='present')  # present, absent, late, half_day
     worked_hours = db.Column(db.Numeric(5, 2), default=0)
     overtime_hours = db.Column(db.Numeric(5, 2), default=0)
+    late_hours = db.Column(db.Numeric(5, 2), default=0)
     notes = db.Column(db.Text, nullable=True)
     
     # Photo verification fields (photo NOT stored, only hash and metadata)

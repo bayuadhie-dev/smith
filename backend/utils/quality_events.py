@@ -93,14 +93,14 @@ def update_production_from_quality(quality_inspection_id):
     from models.production import WorkOrder
     from models import db
     
-    inspection = QualityInspection.query.get(quality_inspection_id)
+    inspection = db.session.get(QualityInspection, quality_inspection_id)
     if not inspection:
         raise ValueError(f"Quality Inspection {quality_inspection_id} not found")
     
     if not inspection.work_order_id:
         raise ValueError("Quality Inspection not linked to Work Order")
     
-    work_order = WorkOrder.query.get(inspection.work_order_id)
+    work_order = db.session.get(WorkOrder, inspection.work_order_id)
     if not work_order:
         raise ValueError(f"Work Order {inspection.work_order_id} not found")
     
@@ -131,7 +131,7 @@ def trigger_rework_workflow(work_order_id):
     from models.quality import QualityInspection
     from models import db
     
-    work_order = WorkOrder.query.get(work_order_id)
+    work_order = db.session.get(WorkOrder, work_order_id)
     if not work_order:
         raise ValueError(f"Work Order {work_order_id} not found")
     

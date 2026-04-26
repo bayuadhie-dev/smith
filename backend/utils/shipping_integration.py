@@ -6,6 +6,7 @@ from models.shipping import ShippingOrder, ShippingItem, LogisticsProvider
 from models.sales import SalesOrder, SalesOrderItem
 from models import db, Customer
 from utils import generate_number
+from company_config.company import COMPANY_NAME, COMPANY_ADDRESS_LINE1, COMPANY_PHONE
 from datetime import datetime, timedelta
 import random
 
@@ -15,18 +16,18 @@ def create_shipping_from_sales_order(sales_order_id, logistics_provider_id=None,
     """
     try:
         # Get sales order
-        sales_order = SalesOrder.query.get(sales_order_id)
+        sales_order = db.session.get(SalesOrder, sales_order_id)
         if not sales_order:
             raise ValueError("Sales order not found")
         
         # Get customer
-        customer = Customer.query.get(sales_order.customer_id)
+        customer = db.session.get(Customer, sales_order.customer_id)
         if not customer:
             raise ValueError("Customer not found")
         
         # Get logistics provider (use first active if not specified)
         if logistics_provider_id:
-            provider = LogisticsProvider.query.get(logistics_provider_id)
+            provider = db.session.get(LogisticsProvider, logistics_provider_id)
         else:
             provider = LogisticsProvider.query.filter_by(is_active=True).first()
         
@@ -57,9 +58,9 @@ def create_shipping_from_sales_order(sales_order_id, logistics_provider_id=None,
             recipient_name=customer.company_name or customer.name,
             recipient_address=sales_order.delivery_address or customer.address or "Alamat tidak tersedia",
             recipient_phone=customer.phone or "Phone tidak tersedia",
-            sender_name="PT. Gratia Makmur Sentosa",
-            sender_address="Jl. Industri No. 123, Tangerang, Banten 15134",
-            sender_phone="021-12345678",
+            sender_name=COMPANY_NAME,
+            sender_address=COMPANY_ADDRESS_LINE1,
+            sender_phone=COMPANY_PHONE,
             service_type=service_type,
             status='preparing',
             notes=f"Auto-generated from Sales Order {sales_order.order_number}",
@@ -168,7 +169,7 @@ def update_sales_order_shipping_status(sales_order_id, shipping_status):
     Update sales order status based on shipping status
     """
     try:
-        sales_order = SalesOrder.query.get(sales_order_id)
+        sales_order = db.session.get(SalesOrder, sales_order_id)
         if not sales_order:
             return False
         

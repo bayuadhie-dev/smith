@@ -1,9 +1,15 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_migrate import Migrate
 from middleware.i18n import setup_i18n_middleware
 from flask_jwt_extended import JWTManager
 from flask_bcrypt import Bcrypt
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from flask_talisman import Talisman
+from flasgger import Swagger
+import sentry_sdk
+from sentry_sdk.integrations.flask import FlaskIntegration
 from config import Config
 from models import db
 from routes import register_routes
@@ -14,6 +20,17 @@ def create_app(config_class=Config):
     """Application factory pattern"""
     app = Flask(__name__)
     app.config.from_object(config_class)
+    
+    # Initialize Sentry error monitoring
+    sentry_dsn = os.getenv('SENTRY_DSN')
+    if sentry_dsn:
+        sentry_sdk.init(
+            dsn=sentry_dsn,
+            integrations=[FlaskIntegration()],
+            traces_sample_rate=0.1,  # Sample 10% of transactions for performance monitoring
+            environment=os.getenv('SENTRY_ENVIRONMENT', 'production'),
+            send_default_pii=False  # Don't send personally identifiable information
+        )
     
     # Setup logging
     from utils.logger import setup_logging, log_request, log_exception
@@ -36,6 +53,48 @@ def create_app(config_class=Config):
     jwt = JWTManager(app)
     bcrypt = Bcrypt(app)
     app.bcrypt = bcrypt  # Make bcrypt accessible from app instance
+    
+    # Initialize rate limiting
+    limiter = Limiter(
+        key_func=get_remote_address,
+        default_limits=["300 per day", "100 per hour"],
+        storage_uri="memory://"  # In-memory storage (no Redis needed)
+    )
+    
+    # Exempt notifications from rate limiting to allow legitimate polling
+    @limiter.request_filter
+    def exempt_notifications():
+        from flask import request
+        return request.path.startswith('/api/notifications')
+    
+    limiter.init_app(app)
+    app.limiter = limiter  # Make limiter accessible from app instance
+    
+    # Initialize security headers with Talisman (only in production)
+    if os.getenv('FLASK_ENV', 'development') != 'development':
+        talisman = Talisman(
+            app,
+            force_https=False,  # Cloudflared handles HTTPS
+            strict_transport_security=False,  # Cloudflared handles HSTS
+            session_cookie_httponly=True,
+            session_cookie_secure=True,
+            session_cookie_samesite='Lax',
+            content_security_policy={
+                'default-src': "'self'",
+                'script-src': "'self' 'unsafe-inline' 'unsafe-eval'",
+                'style-src': "'self' 'unsafe-inline'",
+                'img-src': "'self' data: https:",
+                'font-src': "'self' data:",
+                'connect-src': "'self' https://erp.graterp.my.id https://api.graterp.my.id wss://erp.graterp.my.id",
+                'frame-ancestors': "'none'",
+            },
+            feature_policy={
+                'geolocation': "'none'",
+                'microphone': "'none'",
+                'camera': "'none'",
+            }
+        )
+    
     # More permissive CORS for LAN access
     setup_i18n_middleware(app)
     
@@ -59,6 +118,49 @@ def create_app(config_class=Config):
          allow_headers=['Content-Type', 'Authorization', 'X-Requested-With'],
          methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
          supports_credentials=True)
+    
+    # Configure Swagger/OpenAPI documentation with Flasgger
+    swagger_config = {
+        "headers": [],
+        "specs": [
+            {
+                "endpoint": 'apispec',
+                "route": '/apispec.json',
+                "rule_filter": lambda rule: True,
+                "model_filter": lambda tag: True,
+            }
+        ],
+        "static_url_path": "/flasgger_static",
+        "swagger_ui": True,
+        "specs_route": "/api/docs"
+    }
+    
+    swagger_template = {
+        "info": {
+            "title": "ERP System API",
+            "description": "Enterprise Resource Planning System API Documentation",
+            "contact": {
+                "name": "ERP System Support",
+                "email": "servergms4@gmail.com"
+            },
+            "version": "1.0.0"
+        },
+        "security": [
+            {
+                "BearerAuth": []
+            }
+        ],
+        "securityDefinitions": {
+            "BearerAuth": {
+                "type": "apiKey",
+                "name": "Authorization",
+                "in": "header",
+                "description": "JWT Authorization header using the Bearer scheme. Example: 'Bearer {token}'"
+            }
+        }
+    }
+    
+    Swagger(app, config=swagger_config, template=swagger_template)
     
     # Global handler for OPTIONS preflight requests
     @app.before_request
@@ -109,6 +211,8 @@ def create_app(config_class=Config):
     from routes.oee import oee_bp
     from routes.import_data import import_bp
     from routes.returns import returns_bp
+    from routes.purchase_invoice import purchase_invoice_bp
+    from routes.purchase_return import purchase_return_bp
     from routes.warehouse_enhanced import warehouse_enhanced_bp
     from routes.stock_opname import stock_opname_bp
     from routes.settings_extended import settings_extended_bp
@@ -132,6 +236,8 @@ def create_app(config_class=Config):
     from routes.converting import converting_bp
     from routes.staff_leave import staff_leave_bp
     from routes.face_recognition import face_bp
+    from routes.desk import desk_bp
+    from routes.workspace import workspace_bp
     
     app.register_blueprint(health_bp, url_prefix='/api')
     app.register_blueprint(face_bp)  # Face Recognition - /api/face
@@ -167,6 +273,8 @@ def create_app(config_class=Config):
     app.register_blueprint(hr_extended_bp, url_prefix='/api/hr')
     app.register_blueprint(attendance_bp, url_prefix='/api/attendance')
     app.register_blueprint(logs_bp, url_prefix='/api/logs')
+    app.register_blueprint(desk_bp, url_prefix='/api/desk')  # Desk interface
+    app.register_blueprint(workspace_bp, url_prefix='/api/workspace')  # Workspace API
     app.register_blueprint(converting_bp)  # Converting module - routes have /api/converting prefix
     app.register_blueprint(staff_leave_bp, url_prefix='/api/staff-leave')  # Staff Leave Request
     app.register_blueprint(work_roster_bp, url_prefix='/api/hr/work-roster')
@@ -185,7 +293,9 @@ def create_app(config_class=Config):
     app.register_blueprint(rnd_bp)  # New RND module with /api/rnd prefix
     app.register_blueprint(waste_bp, url_prefix='/api/waste')
     app.register_blueprint(oee_bp, url_prefix='/api/oee')
-    app.register_blueprint(returns_bp, url_prefix='/api/returns')
+    app.register_blueprint(returns_bp, url_prefix='/api/sales/returns')  # Moved to sales sub-module
+    app.register_blueprint(purchase_invoice_bp, url_prefix='/api/purchase-invoices')  # New Purchase Invoice module
+    app.register_blueprint(purchase_return_bp, url_prefix='/api/purchase-returns')  # New Purchase Return module
     app.register_blueprint(warehouse_enhanced_bp, url_prefix='/api/warehouse-enhanced')
     app.register_blueprint(stock_opname_bp, url_prefix='/api/stock-opname')
     
@@ -311,6 +421,10 @@ def create_app(config_class=Config):
     from routes.dcc import dcc_bp
     app.register_blueprint(dcc_bp, url_prefix='/api/dcc')
     
+    # Import and register MBF Report blueprint
+    from routes.mbf_report import mbf_report_bp
+    app.register_blueprint(mbf_report_bp, url_prefix='/api/mbf-report')
+    
     # Serve uploaded files
     from flask import send_from_directory
     
@@ -324,27 +438,26 @@ def create_app(config_class=Config):
     def get_public_company_info():
         try:
             from models import CompanyProfile
+            from company_config.company import COMPANY_NAME
             company_profile = CompanyProfile.query.first()
             
             if company_profile:
                 return {
                     'name': company_profile.company_name,
                     'industry': company_profile.industry or 'Manufacturing',
-                    'website': company_profile.website or '',
                     'city': company_profile.city or 'Jakarta'
                 }, 200
             else:
                 return {
-                    'name': 'PT. Gratia Makmur Sentosa',
+                    'name': COMPANY_NAME,
                     'industry': 'Manufacturing',
-                    'website': 'www.gratiams.com',
                     'city': 'Jakarta'
                 }, 200
         except Exception as e:
+            from company_config.company import COMPANY_NAME
             return {
-                'name': 'PT. Gratia Makmur Sentosa',
+                'name': COMPANY_NAME,
                 'industry': 'Manufacturing',
-                'website': 'www.gratiams.com',
                 'city': 'Jakarta'
             }, 200
 
@@ -368,8 +481,9 @@ def create_app(config_class=Config):
             
             # Get company profile
             from models import CompanyProfile
+            from company_config.company import COMPANY_NAME
             company_profile = CompanyProfile.query.first()
-            company_name = company_profile.company_name if company_profile else 'PT. Gratia Makmur Sentosa'
+            company_name = company_profile.company_name if company_profile else COMPANY_NAME
             
             return {
                 'status': 'online',
@@ -397,11 +511,12 @@ def create_app(config_class=Config):
             }, 200
         except Exception as e:
             # Fallback if database not ready
+            from company_config.company import COMPANY_NAME
             return {
                 'status': 'online',
                 'message': 'ERP System is running (DB initializing)',
                 'version': '1.0.0',
-                'company': 'PT. Gratia Makmur Sentosa',
+                'company': COMPANY_NAME,
                 'statistics': {
                     'total_users': 0,
                     'total_products': 0,
@@ -510,12 +625,13 @@ def create_initial_data(app):
         print(f"Roles may already exist: {e}")
     
     # Create company profile
+    from company_config.company import COMPANY_NAME
     if not CompanyProfile.query.first():
         company = CompanyProfile(
-            company_name='PT. Gratia Makmur Sentosa',
-            legal_name='PT. Gratia Makmur Sentosa',
+            company_name=COMPANY_NAME,
+            legal_name=COMPANY_NAME,
             industry='Nonwoven Manufacturing',
-            email='info@gratiams.com',
+            email='baymngrh@gmail.com',
             country='Indonesia',
             currency='IDR',
             timezone='Asia/Jakarta',
@@ -681,14 +797,25 @@ def create_initial_data(app):
 
 if __name__ == '__main__':
     app = create_app()
+    # Get company name from database or config
+    try:
+        with app.app_context():
+            from models import CompanyProfile
+            company_profile = CompanyProfile.query.first()
+            if company_profile and company_profile.company_name:
+                company_name = company_profile.company_name
+            else:
+                from company_config.company import COMPANY_NAME
+                company_name = COMPANY_NAME
+    except:
+        from company_config.company import COMPANY_NAME
+        company_name = COMPANY_NAME
+    
     print("\n" + "="*60)
-    print("  PT. Gratia Makmur Sentosa - ERP System")
+    print(f"  {company_name} - ERP System")
     print("  Nonwoven Manufacturing ERP")
     print("="*60)
     print("\n\u2713 Server starting on http://localhost:5000")
     print("\u2713 WebSocket: ws://localhost:5000")
-    print("\nDefault Credentials:")
-    print("  Username: admin")
-    print("  Password: admin123")
     print("\n" + "="*60 + "\n")
     socketio.run(app, debug=True, host='0.0.0.0', port=5000, allow_unsafe_werkzeug=True)

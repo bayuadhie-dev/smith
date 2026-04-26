@@ -169,7 +169,7 @@ def create_wip_ledger_from_work_order(work_order_id):
     from utils.costing_helper import calculate_standard_costs_from_bom
     from models import db
     
-    work_order = WorkOrder.query.get(work_order_id)
+    work_order = db.session.get(WorkOrder, work_order_id)
     if not work_order:
         raise ValueError(f"Work Order {work_order_id} not found")
     
@@ -179,7 +179,7 @@ def create_wip_ledger_from_work_order(work_order_id):
         return existing
     
     # Get product
-    product = Product.query.get(work_order.product_id)
+    product = db.session.get(Product, work_order.product_id)
     
     # Calculate standard costs from BOM
     standard_material, standard_labor, standard_overhead = calculate_standard_costs_from_bom(
@@ -217,7 +217,7 @@ def close_wip_ledger_from_work_order(work_order_id):
     from models.wip_accounting import WIPLedger
     from models import db
     
-    work_order = WorkOrder.query.get(work_order_id)
+    work_order = db.session.get(WorkOrder, work_order_id)
     if not work_order:
         raise ValueError(f"Work Order {work_order_id} not found")
     
