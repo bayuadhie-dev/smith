@@ -403,9 +403,29 @@ npm run build
 
 ### Test Coverage Requirements
 
-- Backend: Minimum 40% coverage
+- Backend: Minimum 70% coverage
 - All new features must include tests
 - Bug fixes should include regression tests
+- Critical security paths require 90%+ coverage
+
+## Security Vulnerability Reporting
+
+If you discover a security vulnerability, please report it responsibly:
+
+1. **Do NOT** create a public issue
+2. Email the details to: baymngrh@gmail.com
+3. Include:
+   - Description of the vulnerability
+   - Steps to reproduce
+   - Potential impact
+   - Suggested fix (if available)
+
+We will:
+- Acknowledge receipt within 48 hours
+- Provide regular updates on the fix
+- Credit you in the release notes if desired
+
+---
 
 ## Questions?
 

@@ -8,9 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- CI/CD pipeline with GitHub Actions
-- Comprehensive test suite with 50%+ coverage
-- Proprietary license for commercial use
+- Security vulnerability reporting process in CONTRIBUTING.md
+- Updated test coverage requirement from 40% to 70%
+- Improved documentation organization (moved files to docs/)
+
+### Changed
+- Updated .gitignore header to SMITH ERP
+- Clarified database prerequisite (SQLite for dev, PostgreSQL for prod)
+
+### Documentation
+- Reorganized root directory files
+- Moved DCC documentation to docs/ folder
+- Updated all GitHub links to point to correct repository
 
 ---
 
