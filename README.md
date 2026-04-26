@@ -449,6 +449,16 @@ POST       /api/mrp/run
 - R&D Reports & Analytics
 - Approval Workflow untuk R&D
 
+**Backend Files (8 modules, 135KB total):**
+- `rd.py` — Core R&D utilities and base routes
+- `rd_projects.py` — Project management, milestones, approvals
+- `rd_experiments.py` — Lab experiments, test tracking
+- `rd_materials.py` — Material research, testing, formulations  
+- `rd_products.py` — New product development, formulations
+- `rd_reports.py` — R&D analytics and reporting
+- `rd_extended.py` — Extended R&D features
+- `rd_integration.py` — Integration with Production and Quality
+
 **API Endpoints:**
 ```bash
 GET/POST   /api/rd/projects
@@ -561,6 +571,11 @@ POST   /api/dcc/destruction            # Berita acara pemusnahan
 | **OAuth** | Google OAuth integration | `/api/oauth` |
 | **KPI Targets** | Target setting and tracking | `/api/kpi-targets` |
 | **Product Changeover** | Machine changeover tracking | `/api/product-changeover` |
+| **Face Recognition** | Attendance with face verification | `/api/face-recognition` |
+| **Live Monitoring** | Real-time production monitoring | `/api/live-monitoring` |
+| **Material Stock** | Raw material inventory tracking | `/api/material-stock` |
+| **Converting** | Converting production tracking | `/api/converting` |
+| **Desk/Workspace** | Personal workspace management | `/api/desk`, `/api/workspace` |
 
 ---
 
@@ -785,7 +800,7 @@ SourceCode/
 ├── backend/                    # 339 files, 97,428 lines
 │   ├── app.py
 │   ├── config.py
-│   ├── models/                 # 48 model files (269 DB tables)
+│   ├── models/                 # 49 model files (269 DB tables)
 │   ├── routes/                 # 91 route files
 │   ├── utils/                  # 19 helper files
 │   ├── tests/                  # 44 test files
@@ -794,7 +809,7 @@ SourceCode/
 │   └── scripts/                # 4 utility scripts
 ├── frontend/                   # 428 files, 180,231 lines
 │   ├── src/
-│   │   ├── pages/              # 32 modules, 397 components
+│   │   ├── pages/              # 35 modules, 420+ components
 │   │   ├── components/         # 60 reusable components
 │   │   ├── store/              # Redux store
 │   │   └── hooks/              # Custom hooks
@@ -803,7 +818,7 @@ SourceCode/
 ├── docs/                       # 7 documentation files
 └── README.md
 
-Total: 811 files, 304,002 lines of code
+Total: 816+ files, 310,000+ lines of code
 ```
 
 ---
@@ -916,6 +931,15 @@ AI Assistant adalah fitur chatbot terintegrasi yang memungkinkan user untuk quer
 
 ## 📈 Recent Updates
 
+### ✨ v3.1.1 — April 2026 (README Update)
+- **README Documentation Update** — Verifikasi dan update dokumentasi lengkap:
+  - Backend routes: 91 files verified ✅
+  - Frontend pages: 32 → **35 modules** ✅
+  - Database models: 48 → **49 files** ✅
+  - R&D Module: 1 → **8 backend files** (rd_projects, rd_experiments, rd_materials, rd_products, rd_reports, rd_extended, rd_integration)
+  - New modules added: Face Recognition, Live Monitoring, Material Stock, Converting, Desk/Workspace
+  - Total code: 811 files → **816+ files**, 304K → **310K+ lines**
+
 ### ✨ v3.1 — April 2026
 - **RBAC Overhaul** — 40+ roles, 200+ permissions, module-level access control
 - **DCC Permission** — Module `dcc` dengan 5 actions (view, create, edit, delete, approve) di-assign ke 13 roles
@@ -937,7 +961,7 @@ AI Assistant adalah fitur chatbot terintegrasi yang memungkinkan user untuk quer
 ### ✨ Previous Features (v2.1 — Januari 2026)
 - **WIP Stock Module** — Tracking stok Work In Progress per produk
 - **Packing List Terpisah** — Packing list independen dari Work Order
-- **R&D Module Enhanced** — Project tracking, experiments, approvals
+- **R&D Module Enhanced** — **8 backend files**: Projects, Experiments, Materials, Products, Reports, Extended, Integration
 - **Public Attendance** — QR Code based attendance
 
 ### ✨ Previous Features (v2.0)
