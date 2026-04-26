@@ -1,4 +1,4 @@
-# 🏭 SMITH ERP — Manufacturing Resource Planning
+# 🏭 SMITH ERP — Sistem Perencanaan Sumber Daya Manufaktur
 
 > **Sistem Manajemen Perusahaan Lengkap untuk Manufaktur Nonwoven**
 
@@ -32,7 +32,7 @@
 ### 🌟 Keunggulan
 
 - ✅ **Arsitektur Modern Full-Stack** - Flask REST API + React TypeScript
-- ✅ **AI Assistant Terintegrasi** - Query data ERP dengan bahasa natural Indonesia
+- ✅ **Asisten AI Terintegrasi** - Query data ERP dengan bahasa natural Indonesia
 - ✅ **Sinkronisasi Data Real-time** - Update langsung di semua modul
 - ✅ **Otomasi Workflow Lengkap** - Sales → MRP → Produksi → Quality → Shipping → Finance
 - ✅ **Multi-bahasa** - Indonesia & English (i18n)
@@ -45,45 +45,45 @@
 
 ## 🚀 Fitur Utama
 
-### 🤖 AI Assistant
-- **Query Natural Language** - Tanya data ERP pakai bahasa Indonesia
-- **Multi-Module Support** - Akses semua modul: Sales, Production, Quality, HR, Finance, dll
-- **Smart Intent Detection** - Deteksi otomatis maksud pertanyaan user
-- **Quick Links** - Navigasi langsung ke halaman terkait
-- **Playful Responses** - Jawaban santai dan informatif
+### 🤖 Asisten AI
+- **Query Bahasa Alami** - Tanya data ERP pakai bahasa Indonesia
+- **Dukungan Multi-Modul** - Akses semua modul: Penjualan, Produksi, Kualitas, HR, Keuangan, dll
+- **Deteksi Intent Cerdas** - Deteksi otomatis maksud pertanyaan pengguna
+- **Tautan Cepat** - Navigasi langsung ke halaman terkait
+- **Respons Santai** - Jawaban santai dan informatif
 
-### 📊 Business Intelligence
-- **🎯 Executive Dashboard** - Halaman utama dengan advanced analytics & KPI real-time
-- **Dashboard Real-time** - 20+ metrik bisnis dengan trend 12 bulan
-- **Performance Scorecard** - 5 KPI utama dengan target & achievement tracking
-- **Top Performers** - Ranking customers & products terbaik
-- **Critical Alerts** - Notifikasi issue penting untuk executive
-- **Reporting Canggih** - Report custom dengan export (PDF, Excel)
-- **Analisa Data** - Trend penjualan, metrik produksi, analisa keuangan
-- **Predictive Analytics** - Forecasting demand dan optimasi inventory
+### 📊 Kecerdasan Bisnis
+- **🎯 Dashboard Eksekutif** - Halaman utama dengan analitik lanjutan & KPI real-time
+- **Dashboard Real-time** - 20+ metrik bisnis dengan tren 12 bulan
+- **Scorecard Kinerja** - 5 KPI utama dengan target & pelacakan pencapaian
+- **Performer Terbaik** - Peringkat pelanggan & produk terbaik
+- **Peringatan Kritis** - Notifikasi masalah penting untuk eksekutif
+- **Pelaporan Canggih** - Laporan kustom dengan ekspor (PDF, Excel)
+- **Analisis Data** - Tren penjualan, metrik produksi, analisis keuangan
+- **Analisis Prediktif** - Peramalan permintaan dan optimasi inventori
 
-### 🏭 Manufaktur Excellence
-- **Planning Produksi** - Work order, scheduling, capacity planning
-- **Tracking OEE** - Monitoring efektivitas equipment
-- **Quality Control** - Workflow inspeksi, tracking defect, CAPA
-- **Manajemen Maintenance** - Preventive dan corrective maintenance
+### 🏭 Keunggulan Manufaktur
+- **Perencanaan Produksi** - Work order, penjadwalan, perencanaan kapasitas
+- **Pelacakan OEE** - Monitoring efektivitas peralatan
+- **Kontrol Kualitas** - Alur kerja inspeksi, pelacakan cacat, CAPA
+- **Manajemen Pemeliharaan** - Pemeliharaan preventif dan korektif
 
 ### 💼 Operasional Bisnis
-- **Sales & CRM** - Order, quotation, manajemen customer
-- **Purchasing** - Manajemen supplier, otomasi PO
-- **Manajemen Inventory** - Tracking stock real-time, operasi gudang
-- **Finance & Accounting** - GL, AP, AR, budgeting, cost accounting
+- **Penjualan & CRM** - Pesanan, kutipan harga, manajemen pelanggan
+- **Pembelian** - Manajemen pemasok, otomasi PO
+- **Manajemen Inventori** - Pelacakan stok real-time, operasi gudang
+- **Keuangan & Akuntansi** - GL, AP, AR, penganggaran, akuntansi biaya
 
-### 👥 Human Resources
-- **Manajemen Karyawan** - Profile, absensi, cuti
-- **Sistem Payroll** - Kalkulasi gaji, potongan, pajak
-- **Performance Appraisal** - Tracking KPI, review
-- **Training & Development** - Tracking skill, manajemen sertifikasi
+### 👥 Sumber Daya Manusia
+- **Manajemen Karyawan** - Profil, absensi, cuti
+- **Sistem Penggajian** - Kalkulasi gaji, potongan, pajak
+- **Penilaian Kinerja** - Pelacakan KPI, review
+- **Pelatihan & Pengembangan** - Pelacakan skill, manajemen sertifikasi
 
-### 🔬 R&D & Inovasi
-- **Manajemen Project** - Project R&D, tracking eksperimen
-- **Pengembangan Produk** - Formulasi produk baru, testing
-- **Riset Material** - Testing dan analisa material
+### 🔬 Riset & Pengembangan
+- **Manajemen Proyek** - Proyek R&D, pelacakan eksperimen
+- **Pengembangan Produk** - Formulasi produk baru, pengujian
+- **Riset Material** - Pengujian dan analisa material
 
 ---
 
@@ -91,19 +91,19 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     Frontend Layer                          │
+│                     Lapisan Frontend                          │
 │  React 18 + TypeScript + Redux Toolkit + React Router      │
 │  Tailwind CSS + Recharts + React Beautiful DND             │
 └─────────────────────────────────────────────────────────────┘
                             ↕ REST API
 ┌─────────────────────────────────────────────────────────────┐
-│                     Backend Layer                           │
+│                     Lapisan Backend                           │
 │  Flask 3.0 + SQLAlchemy + Flask-JWT-Extended               │
 │  Flask-CORS + Flask-Migrate + Bcrypt                       │
 └─────────────────────────────────────────────────────────────┘
                             ↕ ORM
 ┌─────────────────────────────────────────────────────────────┐
-│                   Database Layer                            │
+│                   Lapisan Database                            │
 │  SQLite (Development) / PostgreSQL (Production)            │
 │  Alembic Migrations + Database Indexing                    │
 └─────────────────────────────────────────────────────────────┘
@@ -117,25 +117,25 @@
 | Teknologi | Versi | Kegunaan |
 |-----------|-------|----------|
 | Python | 3.12+ | Bahasa utama |
-| Flask | 3.0+ | Web framework |
+| Flask | 3.0+ | Framework web |
 | SQLAlchemy | 2.0+ | ORM |
-| Flask-JWT-Extended | 4.6+ | Authentication |
-| Flask-CORS | 4.0+ | Cross-origin support |
-| Flask-Migrate | 4.0+ | Database migrations |
-| Pytest | 7.4+ | Testing framework |
-| Bcrypt | 4.1+ | Password hashing |
+| Flask-JWT-Extended | 4.6+ | Autentikasi |
+| Flask-CORS | 4.0+ | Dukungan cross-origin |
+| Flask-Migrate | 4.0+ | Migrasi database |
+| Pytest | 7.4+ | Framework pengujian |
+| Bcrypt | 4.1+ | Enkripsi password |
 
 ### Frontend
 | Teknologi | Versi | Kegunaan |
 |-----------|-------|----------|
-| React | 18.2+ | UI framework |
-| TypeScript | 5.2+ | Type safety |
-| Redux Toolkit | 2.0+ | State management |
+| React | 18.2+ | Framework UI |
+| TypeScript | 5.2+ | Keamanan tipe |
+| Redux Toolkit | 2.0+ | Manajemen state |
 | React Router | 6.20+ | Routing |
 | Tailwind CSS | 3.3+ | Styling |
 | Recharts | 2.15+ | Visualisasi data |
-| Vitest | 4.0+ | Testing framework |
-| Axios | 1.6+ | HTTP client |
+| Vitest | 4.0+ | Framework pengujian |
+| Axios | 1.6+ | Klien HTTP |
 
 ---
 
@@ -151,7 +151,7 @@
 - Proses Return Customer
 - Invoice & Payment Tracking
 
-**API Endpoints:**
+**Endpoint API:**
 ```bash
 GET/POST   /api/sales/customers
 GET/POST   /api/sales/orders
@@ -191,7 +191,7 @@ GET/POST   /api/returns
 - **Idle Time**: Tunggu material, tunggu stiker, tunggu packaging
 - **Early Stop**: Tracking shift berakhir lebih awal dengan alasan
 
-**API Endpoints:**
+**Endpoint API:**
 ```bash
 GET/POST   /api/production/work-orders
 GET        /api/production/machines
@@ -220,7 +220,7 @@ Work Order Production → WIP Stock (per product) →
 Packing List (per order) → Carton Weighing → Shipping
 ```
 
-**API Endpoints:**
+**Endpoint API:**
 ```bash
 GET        /api/packing-list/wip-stock
 POST       /api/packing-list/wip-stock/adjustment
@@ -252,7 +252,7 @@ POST       /api/packing-list/:id/cancel
 - **Downtime by Category** - Grafik visual downtime per kategori (mesin, operator, material)
 - **Achievement Tracking** - Persentase pencapaian, quality rate, working days
 
-**API Endpoints:**
+**Endpoint API:**
 ```bash
 # Quality Objectives
 GET    /api/oee/quality-objectives/production
@@ -292,7 +292,7 @@ Update Metrik Quality
 - Goods Receipt Note (GRN)
 - Stock Adjustment dengan Approval
 
-**API Endpoints:**
+**Endpoint API:**
 ```bash
 GET/POST   /api/warehouse
 GET/POST   /api/warehouse/stock
@@ -316,7 +316,7 @@ GET        /api/material-stock
 - Perbandingan Harga
 - Evaluasi Vendor
 
-**API Endpoints:**
+**Endpoint API:**
 ```bash
 GET/POST   /api/purchasing/suppliers
 GET/POST   /api/purchasing/purchase-orders
@@ -347,7 +347,7 @@ GET        /api/purchasing/reports
 - Flow COGM → Finished Goods → COGS
 - Job Costing per Work Order
 
-**API Endpoints:**
+**Endpoint API:**
 ```bash
 GET/POST   /api/finance/accounts
 GET/POST   /api/finance/journals
@@ -378,7 +378,7 @@ GET/POST   /api/wip-job-costing
 - Interface drag & drop
 - View roster mingguan
 
-**API Endpoints:**
+**Endpoint API:**
 ```bash
 GET/POST   /api/hr/employees
 GET/POST   /api/hr/attendance
@@ -401,7 +401,7 @@ GET/POST   /api/work-roster
 - History Equipment
 - Tracking Cost Maintenance
 
-**API Endpoints:**
+**Endpoint API:**
 ```bash
 GET/POST   /api/maintenance
 GET/POST   /api/maintenance/schedules
@@ -424,10 +424,15 @@ GET/POST   /api/maintenance/work-orders
 ```
 Sales Order Confirmed → Analisa MRP → 
 Cek Stock → Shortage Teridentifikasi → 
-Purchase Order / Work Order Dibuat
+Ya: Buat Purchase Order
+Tidak: Buat Work Order → 
+Produksi Selesai → 
+Auto Quality Inspection → 
+Pass: Pindah ke Finished Goods
+Fail: Rework/Disposal
 ```
 
-**API Endpoints:**
+**Endpoint API:**
 ```bash
 GET/POST   /api/mrp
 GET        /api/mrp/requirements
@@ -437,7 +442,7 @@ POST       /api/mrp/run
 
 ---
 
-### 1️⃣1️⃣ **Modul R&D (Research & Development)**
+### 1️⃣1️⃣ **Modul Riset & Pengembangan**
 
 **Fitur:**
 - Manajemen Project R&D
@@ -449,17 +454,17 @@ POST       /api/mrp/run
 - R&D Reports & Analytics
 - Approval Workflow untuk R&D
 
-**Backend Files (8 modules, 135KB total):**
-- `rd.py` — Core R&D utilities and base routes
-- `rd_projects.py` — Project management, milestones, approvals
-- `rd_experiments.py` — Lab experiments, test tracking
-- `rd_materials.py` — Material research, testing, formulations  
-- `rd_products.py` — New product development, formulations
-- `rd_reports.py` — R&D analytics and reporting
-- `rd_extended.py` — Extended R&D features
-- `rd_integration.py` — Integration with Production and Quality
+**File Backend (8 modul, 135KB total):**
+- `rd.py` — Utilitas inti R&D dan rute dasar
+- `rd_projects.py` — Manajemen proyek, milestone, persetujuan
+- `rd_experiments.py` — Eksperimen laboratorium, pelacakan pengujian
+- `rd_materials.py` — Riset material, pengujian, formulasi  
+- `rd_products.py` — Pengembangan produk baru, formulasi
+- `rd_reports.py` — Analitik dan pelaporan R&D
+- `rd_extended.py` — Fitur R&D tambahan
+- `rd_integration.py` — Integrasi dengan Produksi dan Kualitas
 
-**API Endpoints:**
+**Endpoint API:**
 ```bash
 GET/POST   /api/rd/projects
 GET/POST   /api/rd/experiments
@@ -471,17 +476,17 @@ GET/POST   /api/rnd
 
 ---
 
-### 1️⃣2️⃣ **Modul Shipping & Logistics**
+### 1️⃣2️⃣ **Modul Pengiriman & Logistik**
 
 **Fitur:**
-- Manajemen Delivery Order
-- Tracking Pengiriman
-- Manajemen Carrier/Transporter
-- Shipping Schedule
-- Delivery Confirmation
-- Proof of Delivery
+- Manajemen Order Pengiriman
+- Pelacakan Pengiriman
+- Manajemen Pengangkut/Transporter
+- Jadwal Pengiriman
+- Konfirmasi Pengiriman
+- Bukti Pengiriman
 
-**API Endpoints:**
+**Endpoint API:**
 ```bash
 GET/POST   /api/shipping
 GET/POST   /api/shipping/deliveries
@@ -490,16 +495,16 @@ GET/POST   /api/shipping/carriers
 
 ---
 
-### 1️⃣3️⃣ **Modul Waste Management**
+### 1️⃣3️⃣ **Modul Manajemen Limbah**
 
 **Fitur:**
-- Tracking Waste Produksi
-- Kategorisasi Waste
-- Waste Analytics & Reports
-- Compliance Tracking
-- Disposal Management
+- Pelacakan Limbah Produksi
+- Kategorisasi Limbah
+- Analitik & Laporan Limbah
+- Pelacakan Kepatuhan
+- Manajemen Pembuangan
 
-**API Endpoints:**
+**Endpoint API:**
 ```bash
 GET/POST   /api/waste
 GET        /api/waste/analytics
@@ -531,7 +536,7 @@ GET        /api/waste/reports
 - Digital signature auto-generated (nama, role, timestamp, QR code)
 - Workflow: draft → reviewing → pending_approval → active → obsolete
 
-**API Endpoints:**
+**Endpoint API:**
 ```bash
 POST   /api/dcc/capa                   # Create CPAR/SCAR/CCHF
 GET    /api/dcc/capa                   # List (filter type/source/status)
@@ -579,18 +584,18 @@ POST   /api/dcc/destruction            # Berita acara pemusnahan
 
 ---
 
-## 🔄 Integrasi Workflow
+## 🔄 Integrasi Alur Kerja
 
-### Flow Bisnis Lengkap
+### Alur Bisnis Lengkap
 
 ```
 SALES → MRP → PURCHASING/PRODUCTION → WAREHOUSE → 
 QUALITY → SHIPPING → FINANCE
 ```
 
-### Workflow Otomatis
+### Alur Kerja Otomatis
 
-#### Sales Order ke Produksi
+#### Order Penjualan ke Produksi
 ```
 Sales Order Confirmed → 
   Auto Analisa MRP → 
@@ -603,7 +608,7 @@ Sales Order Confirmed →
             Fail: Rework/Disposal
 ```
 
-#### Produksi ke Finance
+#### Produksi ke Keuangan
 ```
 Produksi Start → 
   Buat WIP Ledger → 
@@ -618,23 +623,23 @@ Produksi Start →
 
 ---
 
-## 🛠️ Cara Install
+## 🛠️ Cara Instalasi
 
-### Prerequisites
+### Prasyarat
 
 - Python 3.10+
 - Node.js 18+
 - npm atau yarn
 - Git
 
-### Setup Backend
+### Pengaturan Backend
 
 ```bash
-# Clone repository
+# Kloning repositori
 git clone https://github.com/bayuadhie-dev/smith.git
 cd smith/backend
 
-# Buat virtual environment
+# Buat lingkungan virtual
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 
@@ -644,16 +649,16 @@ pip install -r requirements.txt
 # Setup environment variables
 cp .env.example .env
 
-# Initialize database
+# Inisialisasi database
 flask db upgrade
 
 # Jalankan development server
 python app.py
 ```
 
-Backend jalan di `http://localhost:5000`
+Backend berjalan di `http://localhost:5000`
 
-### Setup Frontend
+### Pengaturan Frontend
 
 ```bash
 cd ../frontend
@@ -668,7 +673,7 @@ cp .env.example .env
 npm run dev
 ```
 
-Frontend jalan di `http://localhost:5173`
+Frontend berjalan di `http://localhost:5173`
 
 ---
 
@@ -679,13 +684,13 @@ Frontend jalan di `http://localhost:5173`
 ```bash
 cd backend
 
-# Jalankan semua test
+# Jalankan semua pengujian
 pytest tests/ -v
 
 # Jalankan dengan coverage
 pytest tests/ --cov=. --cov-report=html
 
-# Jalankan test file tertentu
+# Jalankan file pengujian tertentu
 pytest tests/test_auth.py -v
 ```
 
@@ -699,7 +704,7 @@ cd frontend
 # Jalankan test
 npm test
 
-# Jalankan dengan UI
+# Jalankan dengan antarmuka
 npm test:ui
 
 # Jalankan dengan coverage
@@ -825,43 +830,43 @@ Total: 816+ files, 310,000+ lines of code
 
 ## 🔐 Fitur Keamanan
 
-- ✅ **JWT Authentication** — Token-based auth dengan refresh token
-- ✅ **Password Hashing** — Bcrypt dengan salt
-- ✅ **CORS Protection** — Whitelist origin
-- ✅ **SQL Injection Prevention** — SQLAlchemy ORM parameterized queries
-- ✅ **XSS Protection** — Input sanitization
-- ✅ **Role-Based Access Control (RBAC)** — 40+ default roles, 200+ permissions, module-level access control
-- ✅ **Audit Trail** — Tracking semua perubahan data
+- ✅ **Autentikasi JWT** — Token-based auth dengan refresh token
+- ✅ **Enkripsi Password** — Bcrypt dengan salt
+- ✅ **Proteksi CORS** — Whitelist origin
+- ✅ **Pencegahan SQL Injection** — SQLAlchemy ORM parameterized queries
+- ✅ **Proteksi XSS** — Input sanitization
+- ✅ **Kontrol Akses Berbasis Role (RBAC)** — 40+ default roles, 200+ permissions, module-level access control
+- ✅ **Jejak Audit** — Tracking semua perubahan data
 - ✅ **Google OAuth** — Login dengan akun Google
 
-### RBAC System Detail
+### Detail Sistem RBAC
 
 | Komponen | Jumlah | Deskripsi |
 |----------|--------|-----------|
-| **Roles** | 40+ | Dari Super Admin sampai Helper Gudang |
-| **Modules** | 35+ | Termasuk DCC, Accounting, Pre-Shift Checklist |
-| **Permissions** | 200+ | Format: `module.action` (e.g. `dcc.approve`) |
-| **Actions** | view, create, edit, delete, approve, post, dll | Per-module granular |
+| **Peran** | 40+ | Dari Super Admin sampai Helper Gudang |
+| **Modul** | 35+ | Termasuk DCC, Akuntansi, Daftar Periksa Pra-Shift |
+| **Izin** | 200+ | Format: `module.action` (e.g. `dcc.approve`) |
+| **Aksi** | view, create, edit, delete, approve, post, dll | Granular per-modul |
 
-**Hierarki Role:**
-- **Super Admin** — Akses penuh semua modul + Settings
-- **Direktur** (Utama, Operasional, Keuangan, HRD) — Executive dashboard + approval
-- **Manager** (Produksi, Sales, QC, Finance, dll) — Full CRUD per departemen
+**Hierarki Peran:**
+- **Super Admin** — Akses penuh semua modul + Pengaturan
+- **Direktur** (Utama, Operasional, Keuangan, HRD) — Dashboard eksekutif + persetujuan
+- **Manajer** (Produksi, Penjualan, QC, Keuangan, dll) — CRUD penuh per departemen
 - **Supervisor** — Monitoring + create/edit
-- **Staff** — Operasional harian
+- **Staf** — Operasional harian
 - **Operator/Helper** — Input data produksi
-- **Auditor** — Read-only semua modul
-- **Viewer/Guest** — Limited read-only
+- **Auditor** — Baca-saja semua modul
+- **Penampil/Tamu** — Baca-saja terbatas
 
-**Catatan:** Modul **Group Chat** dapat diakses semua role tanpa permission check (komunikasi internal).
+**Catatan:** Modul **Grup Chat** dapat diakses semua peran tanpa pemeriksaan izin (komunikasi internal).
 
 ---
 
 ## 🌐 Internasionalisasi
 
-Support:
+Dukungan:
 - 🇮🇩 Bahasa Indonesia
-- 🇬🇧 English
+- 🇬🇧 Bahasa Inggris
 
 ---
 
@@ -891,9 +896,9 @@ Untuk support teknis: baymngrh@gmail.com
 
 ---
 
-## 🤖 AI Assistant
+## 🤖 Asisten AI
 
-AI Assistant adalah fitur chatbot terintegrasi yang memungkinkan user untuk query data ERP menggunakan bahasa natural Indonesia.
+Asisten AI adalah fitur chatbot terintegrasi yang memungkinkan pengguna untuk melakukan query data ERP menggunakan bahasa alami Indonesia.
 
 ### Contoh Query
 
@@ -919,7 +924,7 @@ AI Assistant adalah fitur chatbot terintegrasi yang memungkinkan user untuk quer
 - "quality rate"
 ```
 
-### Quick Links
+### Tautan Cepat
 
 - **Production → Quality Objective** - Set target dan analisa downtime
 - **Production → Daily Controller** - Monitoring shift dan OEE
@@ -931,8 +936,8 @@ AI Assistant adalah fitur chatbot terintegrasi yang memungkinkan user untuk quer
 
 ## 📈 Pembaruan Terbaru
 
-### ✨ v3.1.1 — April 2026 (README Update)
-- **README Documentation Update** — Verifikasi dan update dokumentasi lengkap:
+### ✨ v3.1.1 — April 2026 (Pembaruan README)
+- **Pembaruan Dokumentasi README** — Verifikasi dan update dokumentasi lengkap:
   - Backend routes: 91 files verified ✅
   - Frontend pages: 32 → **35 modules** ✅
   - Database models: 48 → **49 files** ✅
@@ -941,64 +946,64 @@ AI Assistant adalah fitur chatbot terintegrasi yang memungkinkan user untuk quer
   - Total code: 811 files → **816+ files**, 304K → **310K+ lines**
 
 ### ✨ v3.1 — April 2026
-- **RBAC Overhaul** — 40+ roles, 200+ permissions, module-level access control
-- **DCC Permission** — Module `dcc` dengan 5 actions (view, create, edit, delete, approve) di-assign ke 13 roles
-- **Accounting Permission** — Module `accounting` dengan 5 actions di-assign ke finance roles
-- **Pre-Shift Checklist Permission** — Module baru untuk K3 safety checks
+- **Overhaul RBAC** — 40+ peran, 200+ izin, kontrol akses level modul
+- **Izin DCC** — Modul `dcc` dengan 5 aksi (view, create, edit, delete, approve) di-assign ke 13 peran
+- **Izin Akuntansi** — Modul `accounting` dengan 5 aksi di-assign ke peran keuangan
+- **Izin Daftar Periksa Pra-Shift** — Modul baru untuk pemeriksaan keselamatan K3
 - **CAPA: Referensi Penyimpangan Mutu** — Field input manual nomor dokumen penyimpangan saat sumber CPAR = PM
-- **Sidebar RBAC** — Permission check untuk DCC & Accounting di frontend sidebar
-- **DCC Sidebar Fix** — Query-aware active state untuk tab-based navigation
-- **Seed Script Upgrade** — Sekarang update existing roles dengan permission baru (tidak skip)
-- **Group Chat** — Accessible untuk semua user tanpa permission check
+- **Sidebar RBAC** — Pemeriksaan izin untuk DCC & Akuntansi di sidebar frontend
+- **Perbaikan Sidebar DCC** — Active state yang sadar query untuk navigasi berbasis tab
+- **Upgrade Script Seed** — Sekarang update peran yang ada dengan izin baru (tidak skip)
+- **Grup Chat** — Dapat diakses semua pengguna tanpa pemeriksaan izin
 
 ### ✨ v3.0 — Maret 2026
-- **DCC Module** — Document Control Center dengan 13 tabel (ISO 9001:2015)
-- **CAPA Module** — CPAR/SCAR/CCHF dengan auto-numbering & RCA 5-Why
-- **Internal Memo** — Komunikasi antar departemen dengan read receipts
-- **Document Destruction** — Berita acara pemusnahan (FRM-DCC-14)
-- **Quality Records** — Daftar induk rekaman mutu (FRM-DCC-03)
+- **Modul DCC** — Pusat Kontrol Dokumen dengan 13 tabel (ISO 9001:2015)
+- **Modul CAPA** — CPAR/SCAR/CCHF dengan penomoran otomatis & RCA 5-Why
+- **Memo Internal** — Komunikasi antar departemen dengan tanda terima baca
+- **Pemusnahan Dokumen** — Berita acara pemusnahan (FRM-DCC-14)
+- **Rekaman Kualitas** — Daftar induk rekaman mutu (FRM-DCC-03)
 
-### ✨ Previous Features (v2.1 — Januari 2026)
-- **WIP Stock Module** — Tracking stok Work In Progress per produk
-- **Packing List Terpisah** — Packing list independen dari Work Order
-- **R&D Module Enhanced** — **8 backend files**: Projects, Experiments, Materials, Products, Reports, Extended, Integration
-- **Public Attendance** — QR Code based attendance
+### ✨ Fitur Sebelumnya (v2.1 — Januari 2026)
+- **Modul Stok WIP** — Pelacakan stok Work In Progress per produk
+- **Daftar Packing Terpisah** — Daftar packing independen dari Work Order
+- **Modul R&D Ditingkatkan** — **8 file backend**: Proyek, Eksperimen, Material, Produk, Laporan, Tambahan, Integrasi
+- **Absensi Publik** — Absensi berbasis Kode QR
 
-### ✨ Previous Features (v2.0)
-- **Quality Objective Module** — Target manual per mesin, tracking achievement
-- **Downtime Analysis** — Top 3 downtime, root cause analysis
+### ✨ Fitur Sebelumnya (v2.0)
+- **Modul Tujuan Kualitas** — Target manual per mesin, pelacakan pencapaian
+- **Analisis Downtime** — Top 3 downtime, analisis akar masalah
 - **Enhanced QC Workflows** — Incoming, In-Process, Finish Good QC
 
 ---
 
-## 🎯 Quick Start Guide
+## 🎯 Panduan Mulai Cepat
 
-### 1. Login System
+### 1. Sistem Login
 - URL: `http://localhost:5173`
-- Default Admin: `admin / admin123`
+- Admin Default: `admin / admin123`
 
-### 2. Key Modules Access
-- **Production**: Work Orders → Daily Controller → Quality Objective
-- **Quality**: Incoming → In-Process → Finish Good QC
-- **Sales**: Customers → Orders → Quotations
-- **Inventory**: Items → Stock → Transactions
+### 2. Akses Modul Utama
+- **Produksi**: Work Orders → Daily Controller → Quality Objective
+- **Kualitas**: Incoming → In-Process → Finish Good QC
+- **Penjualan**: Customers → Orders → Quotations
+- **Inventori**: Items → Stock → Transactions
 
-### 3. Quality Objective Workflow
-1. Go to **Production → Quality Objective**
-2. Select year/month
-3. Click **"Set Target"** to input monthly targets per machine
-4. View achievement rates and status
-5. Click **"Analisa Downtime"** for detailed analysis
+### 3. Alur Kerja Tujuan Kualitas
+1. Buka **Produksi → Quality Objective**
+2. Pilih tahun/bulan
+3. Klik **"Set Target"** untuk input target bulanan per mesin
+4. Lihat tingkat pencapaian dan status
+5. Klik **"Analisa Downtime"** untuk analisis detail
 
 ---
 
-## 📞 Contact & Support
+## 📞 Kontak & Dukungan
 
 **Mochammad Bayu Adhie Nugroho**
 - 📧 Email: baymngrh@gmail.com
 - 🐙 GitHub: [@bayuadhie-dev](https://github.com/bayuadhie-dev)
 
-For technical support, feature requests, or bug reports, please email us at baymngrh@gmail.com
+Untuk dukungan teknis, permintaan fitur, atau laporan bug, silakan email kami di baymngrh@gmail.com
 
 ---
 
@@ -1006,45 +1011,45 @@ For technical support, feature requests, or bug reports, please email us at baym
 
 ---
 
-## 🎯 Roadmap
+## 🎯 Peta Jalan
 
 ### Selesai ✅
 - 18+ modul utama, 100+ sub-modul
-- **811 files**, **304,002 baris kode**, **269 tabel database**
-- Authentication & authorization (JWT + OAuth)
-- 15+ automated workflows end-to-end
-- AI Assistant terintegrasi dengan grafik
-- Executive Dashboard dengan KPI real-time
-- DCC & CAPA Module (ISO 9001:2015) — 13 tabel
-- WIP Stock & Packing List Module
-- Quality Objective & Downtime Analysis
-- R&D Module dengan approval workflow
+- **811 file**, **304,002 baris kode**, **269 tabel database**
+- Autentikasi & otorisasi (JWT + OAuth)
+- 15+ alur kerja otomatis end-to-end
+- Asisten AI terintegrasi dengan grafik
+- Dashboard Eksekutif dengan KPI real-time
+- Modul DCC & CAPA (ISO 9001:2015) — 13 tabel
+- Modul Stok WIP & Daftar Packing
+- Tujuan Kualitas & Analisis Downtime
+- Modul R&D dengan alur kerja persetujuan
 
 ### Sedang Dikerjakan 🚧
-- Advanced reporting dengan export
-- Enhanced DCC frontend (bulk operations, advanced search)
+- Pelaporan lanjutan dengan ekspor
+- Frontend DCC yang ditingkatkan (operasi massal, pencarian lanjutan)
 
 ### Direncanakan 📋
-- AI/ML predictive analytics
+- Analitik prediktif AI/ML
 - Integrasi IoT untuk mesin produksi
-- Mobile app (React Native)
-- Multi-plant Support
+- Aplikasi mobile (React Native)
+- Dukungan multi-pabrik
 
 ---
 
 <div align="center">
 
-## 🏆 Achievements
+## 🏆 Pencapaian
 
-- ✅ **811+ Files** | **304,000+ Lines of Code** | **269+ DB Tables**
-- ✅ **18+ Business Modules** with 100+ Sub-Modules
-- ✅ **40+ Roles** | **200+ Permissions** | Full RBAC
-- ✅ **DCC & CAPA** ISO 9001:2015 Compliant
-- ✅ **15+ Automated Workflows** End-to-End
-- ✅ **AI Assistant** Natural Language Query + Charts
-- ✅ **Real-time Dashboard** 30+ KPIs
-- ✅ **80+ API Endpoints** RESTful Design
+- ✅ **811+ File** | **304,000+ Baris Kode** | **269+ Tabel DB**
+- ✅ **18+ Modul Bisnis** dengan 100+ Sub-Modul
+- ✅ **40+ Peran** | **200+ Izin** | RBAC Penuh
+- ✅ **DCC & CAPA** Sesuai ISO 9001:2015
+- ✅ **15+ Alur Kerja Otomatis** End-to-End
+- ✅ **Asisten AI** Query Bahasa Alami + Grafik
+- ✅ **Dashboard Real-time** 30+ KPI
+- ✅ **80+ Endpoint API** Desain RESTful
 
-⭐ Star repository ini kalau bermanfaat!
+⭐ Beri bintang repository ini jika bermanfaat!
 
 </div>
