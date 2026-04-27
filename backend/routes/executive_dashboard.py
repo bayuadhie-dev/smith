@@ -3276,7 +3276,7 @@ def get_financial_summary():
             .filter(Account.account_type == 'expense').all()
         expense_account_ids = [acc.id for acc in expense_accounts]
         
-        total_expenses = db.session.query(func.sum(AccountingEntry.debit))\
+        total_expenses = db.session.query(func.sum(AccountingEntry.debit_amount))\
             .filter(
                 AccountingEntry.entry_date >= start_date,
                 AccountingEntry.entry_date <= end_date,
@@ -3327,10 +3327,10 @@ def get_financial_ratios():
         ).join(Product, Inventory.product_id == Product.id).scalar() or 0
         
         cash_accounts = db.session.query(Account.id)\
-            .filter(Account.account_type == 'asset', Account.name.ilike('%cash%')).all()
+            .filter(Account.account_type == 'asset', Account.account_name.ilike('%cash%')).all()
         cash_account_ids = [acc.id for acc in cash_accounts]
         
-        cash_balance = db.session.query(func.sum(AccountingEntry.debit - AccountingEntry.credit))\
+        cash_balance = db.session.query(func.sum(AccountingEntry.debit_amount - AccountingEntry.credit_amount))\
             .filter(
                 AccountingEntry.account_id.in_(cash_account_ids)
             ).scalar() or 0
@@ -3342,7 +3342,7 @@ def get_financial_ratios():
             .filter(Account.account_type == 'liability').all()
         liability_account_ids = [acc.id for acc in liability_accounts]
         
-        accounts_payable = db.session.query(func.sum(AccountingEntry.credit - AccountingEntry.debit))\
+        accounts_payable = db.session.query(func.sum(AccountingEntry.credit_amount - AccountingEntry.debit_amount))\
             .filter(
                 AccountingEntry.account_id.in_(liability_account_ids)
             ).scalar() or 0
@@ -3371,7 +3371,7 @@ def get_financial_ratios():
             .filter(Account.account_type == 'equity').all()
         equity_account_ids = [acc.id for acc in equity_accounts]
         
-        total_equity = db.session.query(func.sum(AccountingEntry.credit - AccountingEntry.debit))\
+        total_equity = db.session.query(func.sum(AccountingEntry.credit_amount - AccountingEntry.debit_amount))\
             .filter(
                 AccountingEntry.account_id.in_(equity_account_ids)
             ).scalar() or 0
@@ -3395,10 +3395,10 @@ def get_financial_ratios():
         
         # Gross margin (revenue - COGS / revenue)
         cogs_accounts = db.session.query(Account.id)\
-            .filter(Account.name.ilike('%cogs%') | Account.name.ilike('%cost of goods%')).all()
+            .filter(Account.account_name.ilike('%cogs%') | Account.account_name.ilike('%cost of goods%')).all()
         cogs_account_ids = [acc.id for acc in cogs_accounts]
         
-        cogs = db.session.query(func.sum(AccountingEntry.debit))\
+        cogs = db.session.query(func.sum(AccountingEntry.debit_amount))\
             .filter(
                 AccountingEntry.entry_date >= start_date,
                 AccountingEntry.entry_date <= end_date,
@@ -3691,15 +3691,15 @@ def get_people_culture():
         
         turnover_rate = (left_employees / total_employees * 100) if total_employees > 0 else 0
         
-        # Training hours from HR training records
-        from models.hr import Training
-        total_training_hours = db.session.query(func.sum(Training.duration_hours))\
+        # Training hours - using PieceworkLog as proxy for work activity (Training model doesn't exist)
+        from models.hr import PieceworkLog
+        total_work_logs = db.session.query(func.count(PieceworkLog.id))\
             .filter(
-                Training.training_date >= start_date,
-                Training.training_date <= end_date
+                PieceworkLog.work_date >= start_date,
+                PieceworkLog.work_date <= end_date
             ).scalar() or 0
         
-        training_hours_per_employee = (total_training_hours / active_employees) if active_employees > 0 else 0
+        training_hours_per_employee = (total_work_logs / active_employees) if active_employees > 0 else 0
         
         return jsonify({
             'success': True,
@@ -3708,7 +3708,7 @@ def get_people_culture():
                 'total_employees': total_employees,
                 'left_employees': left_employees,
                 'turnover_rate': round(float(turnover_rate), 2),
-                'total_training_hours': float(total_training_hours),
+                'total_work_logs': total_work_logs,
                 'training_hours_per_employee': round(float(training_hours_per_employee), 2),
                 'employee_satisfaction': None,  # Would need survey data
                 'period': {
@@ -3772,7 +3772,7 @@ def get_future_outlook():
         
         # Get production capacity from machines
         from models.production import Machine
-        total_capacity = db.session.query(func.sum(Machine.hourly_capacity * 24 * 30)).scalar() or 100000
+        total_capacity = db.session.query(func.sum(Machine.capacity_per_hour * 24 * 30)).scalar() or 100000
         capacity_utilization = (current_production / total_capacity * 100) if total_capacity > 0 else 0
         
         # Market outlook based on revenue trend
