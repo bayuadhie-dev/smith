@@ -935,13 +935,6 @@ def create_app(config_class=Config):
 
                 return {
 
-                    'name': 'PT. Gratia Makmur Sentosa',
-
-                    'industry': 'Manufacturing',
-
-                    'website': 'www.gratiams.com',
-
-                    'city': 'Jakarta'
 
                 }, 200
 
@@ -950,14 +943,7 @@ def create_app(config_class=Config):
             from company_config.company import COMPANY_NAME
             return {
 
-                'name': 'PT. Gratia Makmur Sentosa',
-
-                'industry': 'Manufacturing',
-
-                'website': 'www.gratiams.com',
-
-                'city': 'Jakarta'
-
+                
             }, 200
 
 
@@ -1293,13 +1279,13 @@ def create_initial_data(app):
 
         company = CompanyProfile(
 
-            company_name='PT. Gratia Makmur Sentosa',
+            company_name='',
 
-            legal_name='PT. Gratia Makmur Sentosa',
+            legal_name='',
 
-            industry='Nonwoven Manufacturing',
+            industry='',
 
-            email='info@gratiams.com',
+            email='',
 
             country='Indonesia',
 
@@ -1647,7 +1633,7 @@ if __name__ == '__main__':
     
     print("\n" + "="*60)
 
-    print("  PT. Gratia Makmur Sentosa - ERP System")
+    print("  SMITH - ERP System")
 
     print("  Nonwoven Manufacturing ERP")
 
@@ -1656,12 +1642,6 @@ if __name__ == '__main__':
     print("\n\u2713 Server starting on http://localhost:5000")
 
     print("\u2713 WebSocket: ws://localhost:5000")
-
-    print("\nDefault Credentials:")
-
-    print("  Username: admin")
-
-    print("  Password: admin123")
 
     print("\n" + "="*60 + "\n")
 
