@@ -3383,7 +3383,7 @@ def get_financial_ratios():
             .filter(Account.account_type == 'expense').all()
         expense_account_ids = [acc.id for acc in expense_accounts]
         
-        total_expenses = db.session.query(func.sum(AccountingEntry.debit))\
+        total_expenses = db.session.query(func.sum(AccountingEntry.debit_amount))\
             .filter(
                 AccountingEntry.entry_date >= start_date,
                 AccountingEntry.entry_date <= end_date,
