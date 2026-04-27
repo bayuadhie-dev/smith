@@ -3233,8 +3233,9 @@ def get_financial_summary():
     Get financial summary for investor dashboard
     """
     try:
+        # Use 180 days to capture available data
         end_date = get_local_now().date()
-        start_date = (get_local_now() - timedelta(days=30)).date()
+        start_date = (get_local_now() - timedelta(days=180)).date()
         
         # Revenue from invoices
         current_revenue = db.session.query(func.sum(Invoice.total_amount))\
@@ -3316,8 +3317,9 @@ def get_financial_ratios():
     Get financial ratios for investor dashboard
     """
     try:
+        # Use 180 days to capture available data
         end_date = get_local_now().date()
-        start_date = (get_local_now() - timedelta(days=30)).date()
+        start_date = (get_local_now() - timedelta(days=180)).date()
         
         from models.finance import Account
         
@@ -3437,12 +3439,13 @@ def get_growth_metrics():
     Get growth metrics for investor dashboard
     """
     try:
+        # Use 180 days to capture available data
         end_date = get_local_now().date()
-        start_date = (get_local_now() - timedelta(days=30)).date()
+        start_date = (get_local_now() - timedelta(days=180)).date()
         
         # Previous period
         prev_end_date = start_date - timedelta(days=1)
-        prev_start_date = prev_end_date - timedelta(days=30)
+        prev_start_date = prev_end_date - timedelta(days=180)
         
         # Revenue growth
         current_revenue = db.session.query(func.sum(Invoice.total_amount))\
@@ -3521,8 +3524,9 @@ def get_operational_excellence():
     Get operational excellence metrics for investor dashboard
     """
     try:
+        # Use 180 days to capture available data
         end_date = get_local_now().date()
-        start_date = (get_local_now() - timedelta(days=30)).date()
+        start_date = (get_local_now() - timedelta(days=180)).date()
         
         # OEE
         avg_oee = db.session.query(func.avg(ShiftProduction.oee_score))\
@@ -3613,8 +3617,9 @@ def get_risk_compliance():
     Get risk and compliance metrics for investor dashboard
     """
     try:
+        # Use 180 days to capture available data
         end_date = get_local_now().date()
-        start_date = (get_local_now() - timedelta(days=30)).date()
+        start_date = (get_local_now() - timedelta(days=180)).date()
         
         # Quality failures
         failed_inspections = db.session.query(func.count(QualityInspection.id))\
@@ -3679,9 +3684,9 @@ def get_people_culture():
         # Total employees
         total_employees = db.session.query(func.count(Employee.id)).scalar() or 0
         
-        # Employee turnover (inactive in last 30 days)
+        # Employee turnover (inactive in last 180 days)
         end_date = get_local_now().date()
-        start_date = (get_local_now() - timedelta(days=30)).date()
+        start_date = (get_local_now() - timedelta(days=180)).date()
         
         left_employees = db.session.query(func.count(Employee.id))\
             .filter(
@@ -3731,8 +3736,9 @@ def get_future_outlook():
     Get future outlook and projections for investor dashboard
     """
     try:
+        # Use 180 days to capture available data
         end_date = get_local_now().date()
-        start_date = (get_local_now() - timedelta(days=30)).date()
+        start_date = (get_local_now() - timedelta(days=180)).date()
         
         # Current revenue for projection
         current_revenue = db.session.query(func.sum(Invoice.total_amount))\
