@@ -138,7 +138,6 @@ function SidebarContent() {
       items: [
         { name: 'Dashboard', href: '/app', icon: HomeIcon, permission: 'dashboard' },
         { name: 'Executive Dashboard', href: '/app/executive/dashboard', icon: ChartBarIcon, permission: 'dashboard' },
-        { name: 'Executive Overview', href: '/app/executive/investor', icon: PresentationChartLineIcon, permission: 'dashboard' },
         { name: 'Production Monitoring', href: '/app/executive/production-monitoring', icon: ChartBarIcon, permission: 'dashboard' },
         { name: 'Live Monitoring', href: '/app/production/live-monitoring', icon: SignalIcon, permission: 'dashboard' },
         { name: 'Pre-Shift Checklist', href: '/app/production/pre-shift-checklist', icon: ClipboardDocumentCheckIcon, permission: 'production' },

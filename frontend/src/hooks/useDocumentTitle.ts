@@ -32,7 +32,6 @@ const ROUTE_TITLES: Record<string, string> = {
   '/app/hr/payroll': 'Payroll',
   '/app/settings': 'Settings',
   '/app/users': 'User Management',
-  '/app/executive/investor': 'Executive Overview',
 }
 
 const getPageTitle = (pathname: string): string => {

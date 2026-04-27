@@ -264,7 +264,6 @@ import ScheduledReports from './pages/Reports/ScheduledReports'
 import ExecutiveDashboard from './pages/Reports/ExecutiveDashboard'
 import ProductionByProductReport from './pages/Reports/ProductionByProductReport'
 import ExecutiveDashboardAdvanced from './pages/Executive/ExecutiveDashboard'
-import InvestorDashboard from './pages/Executive/InvestorDashboard'
 import ProductionExecutiveDashboard from './pages/Executive/ProductionExecutiveDashboard'
 import ProductionMonitoringDashboard from './pages/Executive/ProductionMonitoringDashboard'
 import LiveMonitoringDashboard from './pages/Production/LiveMonitoringDashboard'
@@ -530,7 +529,6 @@ function App() {
                 {/* Executive Dashboard */}
                 <Route path="executive" element={<ExecutiveDashboardAdvanced />} />
                 <Route path="executive/dashboard" element={<ExecutiveDashboardAdvanced />} />
-                <Route path="executive/investor" element={<InvestorDashboard />} />
                 <Route path="executive/production-monitoring" element={<ProductionMonitoringDashboard />} />
                 <Route path="production/live-monitoring" element={<LiveMonitoringDashboard />} />
                 <Route path="production/live-monitoring/weekly" element={<LiveMonitoringWeekly />} />
