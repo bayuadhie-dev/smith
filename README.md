@@ -3,6 +3,7 @@
 > **Sistem Manajemen Perusahaan Lengkap untuk Manufaktur Nonwoven**
 
 [![CI/CD](https://github.com/bayuadhie-dev/smith/actions/workflows/ci.yml/badge.svg)](https://github.com/bayuadhie-dev/smith/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/bayuadhie-dev/smith/branch/main/graph/badge.svg)](https://codecov.io/gh/bayuadhie-dev/smith)
 [![Codecov](https://github.com/bayuadhie-dev/smith/actions/workflows/codecov.yml/badge.svg)](https://github.com/bayuadhie-dev/smith/actions/workflows/codecov.yml)
 [![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Flask-3.0+-green.svg)](https://flask.palletsprojects.com/)
