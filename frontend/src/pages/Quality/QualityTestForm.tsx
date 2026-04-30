@@ -180,8 +180,8 @@ const navigate = useNavigate()
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Create Quality Test</h1>
-          <p className="text-gray-600">Perform quality control testing and record results</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Create Quality Test</h1>
+          <p className="text-gray-600 dark:text-gray-300">Perform quality control testing and record results</p>
         </div>
         <button
           onClick={() => navigate('/app/quality/tests')}
@@ -194,14 +194,14 @@ const navigate = useNavigate()
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Test Information */}
         <div className="card p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <BeakerIcon className="h-5 w-5" />
             Test Information
           </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Test Type *
               </label>
               <select
@@ -221,7 +221,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Product *
               </label>
               <select
@@ -241,7 +241,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Batch Number
               </label>
               <input
@@ -253,7 +253,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Lot Number
               </label>
               <input
@@ -265,7 +265,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Test Date & Time *
               </label>
               <input
@@ -279,7 +279,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Tested By
               </label>
               <select {...register('tested_by')} className="input-field">
@@ -293,7 +293,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Sample Size
               </label>
               <input
@@ -306,7 +306,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Test Method
               </label>
               <input
@@ -346,11 +346,11 @@ const navigate = useNavigate()
 
         {/* Test Environment */}
         <div className="card p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Test Environment</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Test Environment</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Environment Type
               </label>
               <select {...register('test_environment')} className="input-field">
@@ -364,7 +364,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Temperature (°C)
               </label>
               <input
@@ -377,7 +377,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Humidity (%)
               </label>
               <input
@@ -396,7 +396,7 @@ const navigate = useNavigate()
         {/* Test Parameters */}
         <div className="card p-6">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium text-gray-900">Test Parameters</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Test Parameters</h3>
             <div className="flex gap-2">
               <button
                 type="button"
@@ -432,10 +432,10 @@ const navigate = useNavigate()
 
           <div className="space-y-4">
             {fields.map((field, index) => (
-              <div key={field.id} className="border border-gray-200 rounded-lg p-4">
+              <div key={field.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                 <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Parameter Name *
                     </label>
                     <input
@@ -449,7 +449,7 @@ const navigate = useNavigate()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Expected Value *
                     </label>
                     <input
@@ -463,7 +463,7 @@ const navigate = useNavigate()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Actual Value *
                     </label>
                     <input
@@ -477,7 +477,7 @@ const navigate = useNavigate()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     </label>
                     <input
                       type="text"
@@ -488,7 +488,7 @@ const navigate = useNavigate()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Result *
                     </label>
                     <select
@@ -515,7 +515,7 @@ const navigate = useNavigate()
                 </div>
 
                 <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Parameter Notes
                   </label>
                   <textarea
@@ -547,7 +547,7 @@ const navigate = useNavigate()
 
         {/* Additional Notes */}
         <div className="card p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Additional Notes</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Additional Notes</h3>
           <textarea
             {...register('notes')}
             rows={4}

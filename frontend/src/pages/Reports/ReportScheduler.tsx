@@ -301,7 +301,7 @@ const navigate = useNavigate()
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Report Scheduler</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Report Scheduler</h1>
           <p className="text-gray-600">Automate report generation and delivery</p>
         </div>
         <div className="flex gap-3">
@@ -326,10 +326,10 @@ const navigate = useNavigate()
         <div className="card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
                 {scheduledReports.length}
               </div>
-              <div className="text-sm text-gray-500">Total Schedules</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Total Schedules</div>
             </div>
             <ClockIcon className="h-8 w-8 text-blue-500" />
           </div>
@@ -341,7 +341,7 @@ const navigate = useNavigate()
               <div className="text-2xl font-bold text-green-600">
                 {scheduledReports.filter(r => r.isActive).length}
               </div>
-              <div className="text-sm text-gray-500">Active</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Active</div>
             </div>
             <PlayIcon className="h-8 w-8 text-green-500" />
           </div>
@@ -353,9 +353,9 @@ const navigate = useNavigate()
               <div className="text-2xl font-bold text-gray-600">
                 {scheduledReports.filter(r => !r.isActive).length}
               </div>
-              <div className="text-sm text-gray-500">Paused</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Paused</div>
             </div>
-            <PauseIcon className="h-8 w-8 text-gray-500" />
+            <PauseIcon className="h-8 w-8 text-gray-500 dark:text-gray-400" />
           </div>
         </div>
         
@@ -365,7 +365,7 @@ const navigate = useNavigate()
               <div className="text-2xl font-bold text-blue-600">
                 {scheduledReports.reduce((sum, r) => sum + r.recipients.length, 0)}
               </div>
-              <div className="text-sm text-gray-500">Recipients</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Recipients</div>
             </div>
             <EnvelopeIcon className="h-8 w-8 text-blue-500" />
           </div>
@@ -374,36 +374,36 @@ const navigate = useNavigate()
 
       {/* Scheduled Reports List */}
       <div className="card">
-        <div className="p-6 border-b border-gray-200">
-          <h3 className="font-semibold text-gray-900">Scheduled Reports</h3>
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="font-semibold text-gray-900 dark:text-white">Scheduled Reports</h3>
         </div>
         
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Next Run
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.status')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.actions')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {scheduledReports.map((report) => (
-                <tr key={report.id} className="hover:bg-gray-50">
+                <tr key={report.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">
                         {report.name}
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
                         {reportTypes.find(t => t.value === report.reportType)?.label}
                       </div>
                     </div>
@@ -419,15 +419,15 @@ const navigate = useNavigate()
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900">
+                    <div className="text-sm text-gray-900 dark:text-white">
                       {report.recipients.length} recipient{report.recipients.length !== 1 ? 's' : ''}
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
                       {report.recipients.slice(0, 2).join(', ')}
                       {report.recipients.length > 2 && ` +${report.recipients.length - 2} more`}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {formatNextRun(report.nextRun)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -453,7 +453,7 @@ const navigate = useNavigate()
                       </button>
                       <button
                         onClick={() => setEditingReport(report)}
-                        className="text-gray-600 hover:text-gray-900"
+                        className="text-gray-600 hover:text-gray-900 dark:text-white"
                         title={t('common.edit')}
                       >
                         <PencilIcon className="h-4 w-4" />
@@ -477,15 +477,15 @@ const navigate = useNavigate()
       {/* New Schedule Modal */}
       {showNewScheduleModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Create New Schedule</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Create New Schedule</h3>
             </div>
             
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Schedule Name *
                   </label>
                   <input
@@ -498,7 +498,7 @@ const navigate = useNavigate()
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Report Type *
                   </label>
                   <select
@@ -516,7 +516,7 @@ const navigate = useNavigate()
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Frequency *
                   </label>
                   <select
@@ -533,7 +533,7 @@ const navigate = useNavigate()
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Time *
                   </label>
                   <input
@@ -546,7 +546,7 @@ const navigate = useNavigate()
 
                 {newSchedule.frequency === 'weekly' && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Day of Week
                     </label>
                     <select
@@ -565,7 +565,7 @@ const navigate = useNavigate()
 
                 {newSchedule.frequency === 'monthly' && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Day of Month
                     </label>
                     <select
@@ -583,7 +583,7 @@ const navigate = useNavigate()
                 )}
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   </label>
                   <select
                     value={newSchedule.format}
@@ -601,7 +601,7 @@ const navigate = useNavigate()
 
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
                     Email Recipients *
                   </label>
                   <button
@@ -636,7 +636,7 @@ const navigate = useNavigate()
               </div>
             </div>
 
-            <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
+            <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
               <button
                 onClick={() => setShowNewScheduleModal(false)}
                 className="btn-secondary"

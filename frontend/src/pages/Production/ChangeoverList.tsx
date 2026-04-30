@@ -89,7 +89,7 @@ const ChangeoverList: React.FC = () => {
           </span>
         );
       default:
-        return <span className="px-2 py-1 rounded-full text-xs bg-gray-100">{status}</span>;
+        return <span className="px-2 py-1 rounded-full text-xs bg-gray-100 dark:bg-gray-800">{status}</span>;
     }
   };
 
@@ -107,11 +107,11 @@ const ChangeoverList: React.FC = () => {
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
           <ArrowPathIcon className="h-7 w-7 text-orange-500" />
           Product Changeover
         </h1>
-        <p className="text-gray-600 mt-1">
+        <p className="text-gray-600 dark:text-gray-300 mt-1">
           Riwayat pergantian produk di tengah produksi
         </p>
       </div>
@@ -148,13 +148,13 @@ const ChangeoverList: React.FC = () => {
       </div>
 
       {/* Filter */}
-      <div className="bg-white rounded-lg shadow-md p-4 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-6">
         <div className="flex items-center gap-4">
-          <FunnelIcon className="h-5 w-5 text-gray-500" />
+          <FunnelIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500"
           >
             <option value="">Semua Status</option>
             <option value="in_progress">Sedang Berlangsung</option>
@@ -165,48 +165,48 @@ const ChangeoverList: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center p-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
           </div>
         ) : changeovers.length === 0 ? (
-          <div className="text-center p-12 text-gray-500">
+          <div className="text-center p-12 text-gray-500 dark:text-gray-400">
             <ArrowPathIcon className="h-12 w-12 mx-auto mb-3 text-gray-300" />
             <p>Belum ada data changeover</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Changeover</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dari WO</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ke WO</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mesin</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Alasan</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Progress</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Waktu</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Changeover</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Dari WO</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Ke WO</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Mesin</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Alasan</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Progress</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Waktu</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {changeovers.map((co) => (
-                  <tr key={co.id} className="hover:bg-gray-50">
+                  <tr key={co.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                     <td className="px-4 py-3">
                       <span className="font-medium text-orange-600">{co.changeover_number}</span>
                     </td>
                     <td className="px-4 py-3">
                       <div>
                         <p className="font-medium">{co.from_wo_number}</p>
-                        <p className="text-sm text-gray-500">{co.from_product_name}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{co.from_product_name}</p>
                       </div>
                     </td>
                     <td className="px-4 py-3">
                       {co.to_wo_number ? (
                         <div>
                           <p className="font-medium">{co.to_wo_number}</p>
-                          <p className="text-sm text-gray-500">{co.to_product_name}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">{co.to_product_name}</p>
                         </div>
                       ) : (
                         <span className="text-gray-400">-</span>
@@ -221,7 +221,7 @@ const ChangeoverList: React.FC = () => {
                         <div className="flex justify-between text-xs mb-1">
                           <span>{co.progress_percentage}%</span>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                           <div 
                             className="bg-blue-500 h-2 rounded-full"
                             style={{ width: `${Math.min(co.progress_percentage, 100)}%` }}
@@ -233,7 +233,7 @@ const ChangeoverList: React.FC = () => {
                       <div>
                         <p>{formatDateTime(co.changeover_start)}</p>
                         {co.setup_time_minutes > 0 && (
-                          <p className="text-gray-500">{co.setup_time_minutes} menit</p>
+                          <p className="text-gray-500 dark:text-gray-400">{co.setup_time_minutes} menit</p>
                         )}
                       </div>
                     </td>

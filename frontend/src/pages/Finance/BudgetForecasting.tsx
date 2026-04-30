@@ -78,8 +78,8 @@ const [budgets, setBudgets] = useState<Budget[]>([])
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">📊 Budget & Forecasting</h1>
-          <p className="text-gray-600 mt-1">Track budget performance and financial forecasts</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">📊 Budget & Forecasting</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Track budget performance and financial forecasts</p>
         </div>
         <div className="flex gap-3">
           <select
@@ -124,8 +124,8 @@ const [budgets, setBudgets] = useState<Budget[]>([])
               <ChartBarIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Budgeted</p>
-              <p className="text-2xl font-bold text-gray-900">{formatRupiah(getTotalBudgeted())}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Budgeted</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatRupiah(getTotalBudgeted())}</p>
             </div>
           </div>
         </div>
@@ -136,8 +136,8 @@ const [budgets, setBudgets] = useState<Budget[]>([])
               <ArrowTrendingUpIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Actual</p>
-              <p className="text-2xl font-bold text-gray-900">{formatRupiah(getTotalActual())}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Actual</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatRupiah(getTotalActual())}</p>
             </div>
           </div>
         </div>
@@ -151,7 +151,7 @@ const [budgets, setBudgets] = useState<Budget[]>([])
               }
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Variance</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Variance</p>
               <p className={`text-2xl font-bold ${getVarianceColor(getTotalVariance())}`}>
                 {formatRupiah(getTotalVariance())}
               </p>
@@ -165,8 +165,8 @@ const [budgets, setBudgets] = useState<Budget[]>([])
               <span className="text-2xl text-white">%</span>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Performance</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Performance</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {((getTotalActual() / getTotalBudgeted()) * 100).toFixed(1)}%
               </p>
             </div>
@@ -178,7 +178,7 @@ const [budgets, setBudgets] = useState<Budget[]>([])
       <div className="card p-4">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold">Budget Analysis - {selectedYear}</h3>
-          <div className="flex rounded-lg border border-gray-300">
+          <div className="flex rounded-lg border border-gray-300 dark:border-gray-600">
             <button
               onClick={() => setViewMode('table')}
               className={`px-4 py-2 text-sm font-medium rounded-l-lg ${
@@ -207,33 +207,33 @@ const [budgets, setBudgets] = useState<Budget[]>([])
       {viewMode === 'table' && (
         <div className="card overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('products.bom.category')}</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('products.bom.category')}</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Performance %
                   </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.status')}</th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {budgets.map((budget, index) => (
-                  <tr key={index} className="hover:bg-gray-50">
+                  <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{budget.category}</div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">{budget.category}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <div className="text-sm text-gray-900">{formatRupiah(budget.budgeted)}</div>
+                      <div className="text-sm text-gray-900 dark:text-white">{formatRupiah(budget.budgeted)}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <div className="text-sm font-medium text-gray-900">{formatRupiah(budget.actual)}</div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">{formatRupiah(budget.actual)}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <div className={`text-sm font-medium inline-flex items-center ${getVarianceColor(budget.variance)}`}>
@@ -259,19 +259,19 @@ const [budgets, setBudgets] = useState<Budget[]>([])
                   </tr>
                 ))}
               </tbody>
-              <tfoot className="bg-gray-50">
+              <tfoot className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <td className="px-6 py-4 text-sm font-bold text-gray-900">TOTALS</td>
-                  <td className="px-6 py-4 text-right text-sm font-bold text-gray-900">
+                  <td className="px-6 py-4 text-sm font-bold text-gray-900 dark:text-white">TOTALS</td>
+                  <td className="px-6 py-4 text-right text-sm font-bold text-gray-900 dark:text-white">
                     {formatRupiah(getTotalBudgeted())}
                   </td>
-                  <td className="px-6 py-4 text-right text-sm font-bold text-gray-900">
+                  <td className="px-6 py-4 text-right text-sm font-bold text-gray-900 dark:text-white">
                     {formatRupiah(getTotalActual())}
                   </td>
                   <td className={`px-6 py-4 text-right text-sm font-bold ${getVarianceColor(getTotalVariance())}`}>
                     {formatRupiah(getTotalVariance())}
                   </td>
-                  <td className="px-6 py-4 text-right text-sm font-bold text-gray-900">
+                  <td className="px-6 py-4 text-right text-sm font-bold text-gray-900 dark:text-white">
                     {((getTotalActual() / getTotalBudgeted()) * 100).toFixed(1)}%
                   </td>
                   <td></td>
@@ -291,11 +291,11 @@ const [budgets, setBudgets] = useState<Budget[]>([])
               <div key={index} className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="font-medium">{budget.category}</span>
-                  <span className="text-gray-500">
+                  <span className="text-gray-500 dark:text-gray-400">
                     {formatRupiah(budget.actual)} / {formatRupiah(budget.budgeted)}
                   </span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-6 relative">
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-6 relative">
                   <div
                     className={`h-6 rounded-full ${
                       budget.percentage >= 100 ? 'bg-green-500' :
@@ -318,8 +318,8 @@ const [budgets, setBudgets] = useState<Budget[]>([])
         <h3 className="text-lg font-semibold mb-4">📈 Forecast Analysis</h3>
         <div className="text-center py-12">
           <ChartBarIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No forecast data available</h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No forecast data available</h3>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             Budget forecasts will be generated based on your actual budget performance
           </p>
         </div>
@@ -328,20 +328,20 @@ const [budgets, setBudgets] = useState<Budget[]>([])
       {budgets.length === 0 && !loading && (
         <div className="text-center py-12">
           <ChartBarIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No budget data found</h3>
-          <p className="mt-1 text-sm text-gray-500">Create your first budget to start tracking performance</p>
+          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No budget data found</h3>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Create your first budget to start tracking performance</p>
         </div>
       )}
 
       {/* New Budget Modal */}
       {showNewBudgetModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">📊 Create New Budget</h3>
               <button 
                 onClick={() => setShowNewBudgetModal(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-300"
               >
                 ✕
               </button>
@@ -376,7 +376,7 @@ const [budgets, setBudgets] = useState<Budget[]>([])
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Budget Category *
                   </label>
                   <select name="category" className="input w-full" required>
@@ -392,7 +392,7 @@ const [budgets, setBudgets] = useState<Budget[]>([])
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Budgeted Amount (IDR) *
                   </label>
                   <input 
@@ -407,7 +407,7 @@ const [budgets, setBudgets] = useState<Budget[]>([])
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Budget Year
                   </label>
                   <input 
@@ -419,7 +419,7 @@ const [budgets, setBudgets] = useState<Budget[]>([])
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   </label>
                   <select name="period" className="input w-full">
                     <option value="annual">Annual</option>
@@ -430,7 +430,7 @@ const [budgets, setBudgets] = useState<Budget[]>([])
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">{t('common.description')}</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('common.description')}</label>
                 <textarea 
                   name="description"
                   className="input w-full" 

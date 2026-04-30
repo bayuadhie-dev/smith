@@ -84,7 +84,7 @@ const BreakdownSummary: React.FC = () => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-3 gap-6 mb-6">
-        <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-3 bg-red-100 rounded-lg">
               <ExclamationTriangleIcon className="h-6 w-6 text-red-600" />
@@ -96,7 +96,7 @@ const BreakdownSummary: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-3 bg-orange-100 rounded-lg">
               <ClockIcon className="h-6 w-6 text-orange-600" />
@@ -109,7 +109,7 @@ const BreakdownSummary: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-3 bg-blue-100 rounded-lg">
               <ChartBarIcon className="h-6 w-6 text-blue-600" />
@@ -128,7 +128,7 @@ const BreakdownSummary: React.FC = () => {
       </div>
 
       {/* Affected Work Orders Table */}
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-200">
           <h2 className="text-lg font-semibold text-slate-800">Top 20 Most Affected Work Orders</h2>
         </div>

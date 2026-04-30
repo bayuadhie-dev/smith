@@ -418,7 +418,7 @@ const ChatPopup: React.FC<ChatPopupProps> = ({ isOpen, onClose, onOpenFullPage }
                       onChange={(e) => setMessageInput(e.target.value)}
                       onKeyDown={handleKeyPress}
                       placeholder={`Kirim pesan ke #${selectedChannel.name}`}
-                      className="flex-1 bg-transparent text-white placeholder-gray-400 py-2 px-3 text-sm focus:outline-none"
+                      className="flex-1 bg-transparent text-white placeholder-gray-400 dark:placeholder-gray-500 dark:placeholder-gray-400 py-2 px-3 text-sm focus:outline-none"
                     />
                     <button
                       onClick={sendMessage}
@@ -433,7 +433,7 @@ const ChatPopup: React.FC<ChatPopupProps> = ({ isOpen, onClose, onOpenFullPage }
             ) : (
               <div className="flex-1 flex items-center justify-center">
                 <div className="text-center">
-                  <HashtagSolid className="h-12 w-12 text-gray-600 mx-auto mb-3" />
+                  <HashtagSolid className="h-12 w-12 text-gray-600 dark:text-gray-300 mx-auto mb-3" />
                   <p className="text-gray-400">Pilih channel untuk mulai chat</p>
                 </div>
               </div>
@@ -505,7 +505,7 @@ const MessageBubble: React.FC<{
         {showAvatar && (
           <div className="flex items-baseline gap-2">
             <span className="font-medium text-sm text-white">{message.user?.full_name}</span>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-gray-500 dark:text-gray-400">
               {format(new Date(message.created_at), 'HH:mm')}
             </span>
           </div>
@@ -519,7 +519,7 @@ const MessageBubble: React.FC<{
         )}
         <p className={`text-sm text-gray-200 break-words ${message.is_deleted ? 'italic text-gray-500' : ''}`}>
           {message.content}
-          {message.is_edited && <span className="text-xs text-gray-500 ml-1">(diedit)</span>}
+          {message.is_edited && <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">(diedit)</span>}
         </p>
       </div>
       {showActions && !message.is_deleted && (

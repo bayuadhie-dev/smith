@@ -453,7 +453,7 @@ const UoMList: React.FC = () => {
               </div>
             </div>
             <div className="flex justify-end gap-3 mt-6">
-              <button onClick={() => setShowUnitModal(false)} className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 transition">
+              <button onClick={() => setShowUnitModal(false)} className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:text-gray-100 transition">
                 Batal
               </button>
               <button onClick={handleSaveUnit} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">
@@ -551,7 +551,7 @@ const UoMList: React.FC = () => {
               </div>
             </div>
             <div className="flex justify-end gap-3 mt-6">
-              <button onClick={() => setShowConversionModal(false)} className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 transition">
+              <button onClick={() => setShowConversionModal(false)} className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:text-gray-100 transition">
                 Batal
               </button>
               <button onClick={handleSaveConversion} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">

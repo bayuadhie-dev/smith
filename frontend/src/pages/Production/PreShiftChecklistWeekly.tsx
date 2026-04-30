@@ -50,10 +50,10 @@ const PreShiftChecklistWeekly = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
+      <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-600 font-medium">Memuat data mingguan...</p>
+          <p className="text-gray-600 dark:text-gray-300 font-medium">Memuat data mingguan...</p>
         </div>
       </div>
     )
@@ -64,17 +64,17 @@ const PreShiftChecklistWeekly = () => {
       <div className="max-w-full mx-auto space-y-4">
         
         {/* Header */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 overflow-hidden">
           <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <button 
                   onClick={() => navigate('/app/production/pre-shift-checklist')}
-                  className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors"
+                  className="p-2 bg-white/20 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/30 rounded-lg transition-colors"
                 >
                   <ArrowLeftIcon className="w-5 h-5 text-white" />
                 </button>
-                <div className="p-2 bg-white/20 rounded-lg">
+                <div className="p-2 bg-white dark:bg-gray-800/20 rounded-lg">
                   <ClipboardDocumentCheckIcon className="w-6 h-6 text-white" />
                 </div>
                 <div>
@@ -87,7 +87,7 @@ const PreShiftChecklistWeekly = () => {
               <div className="flex items-center space-x-3">
                 <button
                   onClick={() => handleWeekChange(-1)}
-                  className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors"
+                  className="p-2 bg-white/20 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/30 rounded-lg transition-colors"
                 >
                   <ChevronLeftIcon className="w-5 h-5 text-white" />
                 </button>
@@ -98,13 +98,13 @@ const PreShiftChecklistWeekly = () => {
                 </div>
                 <button
                   onClick={() => handleWeekChange(1)}
-                  className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors"
+                  className="p-2 bg-white/20 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/30 rounded-lg transition-colors"
                 >
                   <ChevronRightIcon className="w-5 h-5 text-white" />
                 </button>
                 <button
                   onClick={goToThisWeek}
-                  className="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-white text-sm font-medium transition-colors"
+                  className="px-3 py-1.5 bg-white/20 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/30 rounded-lg text-white text-sm font-medium transition-colors"
                 >
                   Minggu Ini
                 </button>
@@ -117,11 +117,11 @@ const PreShiftChecklistWeekly = () => {
             <div className="flex items-center space-x-6 text-sm">
               <div className="flex items-center space-x-2">
                 <CheckCircleSolid className="w-5 h-5 text-green-600" />
-                <span className="text-gray-700"><strong>{stats.submitted}</strong> Submitted</span>
+                <span className="text-gray-700 dark:text-gray-200"><strong>{stats.submitted}</strong> Submitted</span>
               </div>
               <div className="flex items-center space-x-2">
-                <CalendarIcon className="w-5 h-5 text-gray-500" />
-                <span className="text-gray-700"><strong>{data?.machines?.length || 0}</strong> Mesin × 7 Hari × 3 Shift</span>
+                <CalendarIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                <span className="text-gray-700 dark:text-gray-200"><strong>{data?.machines?.length || 0}</strong> Mesin × 7 Hari × 3 Shift</span>
               </div>
             </div>
             {isFetching && (
@@ -131,13 +131,13 @@ const PreShiftChecklistWeekly = () => {
         </div>
 
         {/* Submissions List */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-          <div className="px-4 py-3 bg-gray-50 border-b">
-            <h3 className="font-semibold text-gray-700">Daftar Checklist yang Sudah Diinput</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+          <div className="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-b">
+            <h3 className="font-semibold text-gray-700 dark:text-gray-200">Daftar Checklist yang Sudah Diinput</h3>
           </div>
           
           {data?.submissions?.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
+            <div className="p-8 text-center text-gray-500 dark:text-gray-400">
               <XCircleIcon className="w-12 h-12 text-gray-300 mx-auto mb-2" />
               <p>Belum ada checklist yang diinput minggu ini</p>
             </div>
@@ -214,14 +214,14 @@ const SubmissionItem: React.FC<SubmissionItemProps> = ({ submission, isExpanded,
     <div className="border-b border-gray-100 last:border-b-0">
       {/* Header Row - Clickable */}
       <div 
-        className="px-4 py-3 hover:bg-gray-50 cursor-pointer flex items-center justify-between"
+        className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 cursor-pointer flex items-center justify-between"
         onClick={onToggle}
       >
         <div className="flex items-center space-x-4">
           <CheckCircleSolid className="w-5 h-5 text-green-500 flex-shrink-0" />
           <div>
-            <div className="font-medium text-gray-900">{submission.machine_name}</div>
-            <div className="text-sm text-gray-500">
+            <div className="font-medium text-gray-900 dark:text-white">{submission.machine_name}</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">
               {new Date(submission.tanggal).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
             </div>
           </div>
@@ -231,9 +231,9 @@ const SubmissionItem: React.FC<SubmissionItemProps> = ({ submission, isExpanded,
             Shift {submission.shift} ({shiftTimes[submission.shift]})
           </span>
           <div className="text-right">
-            <div className="text-sm font-medium text-gray-700">{submission.operator_name || '-'}</div>
+            <div className="text-sm font-medium text-gray-700 dark:text-gray-200">{submission.operator_name || '-'}</div>
             {submission.product_name && (
-              <div className="text-xs text-gray-500">{submission.product_name}</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">{submission.product_name}</div>
             )}
           </div>
           {isExpanded ? (
@@ -246,30 +246,30 @@ const SubmissionItem: React.FC<SubmissionItemProps> = ({ submission, isExpanded,
 
       {/* Expanded Details - Compact Table */}
       {isExpanded && (
-        <div className="px-4 pb-3 bg-gray-50">
+        <div className="px-4 pb-3 bg-gray-50 dark:bg-gray-900">
           {isLoading ? (
             <div className="flex items-center justify-center py-3">
               <div className="animate-spin rounded-full h-5 w-5 border-2 border-indigo-600 border-t-transparent"></div>
             </div>
           ) : detail?.answers ? (
-            <div className="bg-white rounded border overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded border overflow-hidden">
               <table className="w-full text-xs">
-                <thead className="bg-gray-100">
+                <thead className="bg-gray-100 dark:bg-gray-800">
                   <tr>
-                    <th className="px-2 py-1.5 text-left font-medium text-gray-600 w-8">#</th>
-                    <th className="px-2 py-1.5 text-left font-medium text-gray-600">Item</th>
-                    <th className="px-2 py-1.5 text-left font-medium text-gray-600 w-20">Kategori</th>
-                    <th className="px-2 py-1.5 text-center font-medium text-gray-600 w-12">Status</th>
-                    <th className="px-2 py-1.5 text-left font-medium text-gray-600">Catatan</th>
+                    <th className="px-2 py-1.5 text-left font-medium text-gray-600 dark:text-gray-300 w-8">#</th>
+                    <th className="px-2 py-1.5 text-left font-medium text-gray-600 dark:text-gray-300">Item</th>
+                    <th className="px-2 py-1.5 text-left font-medium text-gray-600 dark:text-gray-300 w-20">Kategori</th>
+                    <th className="px-2 py-1.5 text-center font-medium text-gray-600 dark:text-gray-300 w-12">Status</th>
+                    <th className="px-2 py-1.5 text-left font-medium text-gray-600 dark:text-gray-300">Catatan</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {detail.answers.map((answer: any, idx: number) => (
                     <tr key={answer.id} className={answer.status === 'NG' ? 'bg-red-50' : ''}>
                       <td className="px-2 py-1 text-gray-400">{idx + 1}</td>
-                      <td className="px-2 py-1 text-gray-700">{answer.item?.item_name}</td>
+                      <td className="px-2 py-1 text-gray-700 dark:text-gray-200">{answer.item?.item_name}</td>
                       <td className="px-2 py-1">
-                        <span className="text-[10px] text-gray-500">{getCategoryLabel(answer.item?.category)}</span>
+                        <span className="text-[10px] text-gray-500 dark:text-gray-400">{getCategoryLabel(answer.item?.category)}</span>
                       </td>
                       <td className="px-2 py-1 text-center">
                         {answer.status === 'OK' ? (
@@ -280,13 +280,13 @@ const SubmissionItem: React.FC<SubmissionItemProps> = ({ submission, isExpanded,
                           <MinusCircleIcon className="w-4 h-4 text-gray-400 inline" />
                         )}
                       </td>
-                      <td className="px-2 py-1 text-gray-500 italic">{answer.catatan || '-'}</td>
+                      <td className="px-2 py-1 text-gray-500 dark:text-gray-400 italic">{answer.catatan || '-'}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
               {/* Summary Stats */}
-              <div className="px-2 py-1.5 bg-gray-50 border-t flex items-center justify-between text-[10px]">
+              <div className="px-2 py-1.5 bg-gray-50 dark:bg-gray-900 border-t flex items-center justify-between text-[10px]">
                 <div className="flex items-center space-x-3">
                   <span className="text-green-600 font-medium">
                     ✓ OK: {detail.answers.filter((a: any) => a.status === 'OK').length}
@@ -294,7 +294,7 @@ const SubmissionItem: React.FC<SubmissionItemProps> = ({ submission, isExpanded,
                   <span className="text-red-600 font-medium">
                     ✗ NG: {detail.answers.filter((a: any) => a.status === 'NG').length}
                   </span>
-                  <span className="text-gray-500">
+                  <span className="text-gray-500 dark:text-gray-400">
                     N/A: {detail.answers.filter((a: any) => a.status === 'NA').length}
                   </span>
                 </div>
@@ -304,7 +304,7 @@ const SubmissionItem: React.FC<SubmissionItemProps> = ({ submission, isExpanded,
               </div>
             </div>
           ) : (
-            <p className="text-center text-gray-500 py-2 text-xs">Tidak ada data</p>
+            <p className="text-center text-gray-500 dark:text-gray-400 py-2 text-xs">Tidak ada data</p>
           )}
         </div>
       )}

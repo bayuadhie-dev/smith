@@ -125,10 +125,10 @@ const ProductVersionHistory: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading version history...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-300">Loading version history...</p>
         </div>
       </div>
     );
@@ -136,7 +136,7 @@ const ProductVersionHistory: React.FC = () => {
 
   if (error || !product) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <ExclamationCircleIcon className="h-12 w-12 text-red-500 mx-auto mb-4" />
           <p className="text-red-600">{error || 'Product not found'}</p>
@@ -152,34 +152,34 @@ const ProductVersionHistory: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-white dark:bg-gray-800 shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
               <button
                 onClick={() => navigate('/app/products/list')}
-                className="mr-4 p-2 rounded hover:bg-gray-100"
+                className="mr-4 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800"
               >
                 <ArrowLeft className="h-5 w-5" />
               </button>
               <div>
-                <h1 className="text-xl font-semibold text-gray-900">
+                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
                   Version History - {product.kode_produk}
                 </h1>
-                <p className="text-sm text-gray-500">{product.nama_produk}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{product.nama_produk}</p>
               </div>
             </div>
             
             <div className="flex items-center space-x-4">
-              <div className="text-sm text-gray-500">
-                Current Version: <span className="font-medium text-gray-900">v{product.version}</span>
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                Current Version: <span className="font-medium text-gray-900 dark:text-white">v{product.version}</span>
               </div>
               
               {compareMode && (
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
                     Selected: {selectedVersions.length}/2
                   </span>
                   {selectedVersions.length === 2 && (
@@ -212,18 +212,18 @@ const ProductVersionHistory: React.FC = () => {
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Product Info Card */}
-        <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6 mb-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-medium text-gray-900">{product.kode_produk}</h2>
-              <p className="text-gray-600">{product.nama_produk}</p>
-              <div className="mt-2 flex items-center space-x-4 text-sm text-gray-500">
+              <h2 className="text-lg font-medium text-gray-900 dark:text-white">{product.kode_produk}</h2>
+              <p className="text-gray-600 dark:text-gray-300">{product.nama_produk}</p>
+              <div className="mt-2 flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
                 <span>Version: v{product.version}</span>
                 <span>Status: {product.is_active ? 'Active' : 'Inactive'}</span>
                 <span>Total Versions: {versions.length}</span>
               </div>
             </div>
-            <div className="text-right text-sm text-gray-500">
+            <div className="text-right text-sm text-gray-500 dark:text-gray-400">
               <div>Created: {formatDate(product.created_at)}</div>
               <div>Updated: {formatDate(product.updated_at)}</div>
             </div>
@@ -231,9 +231,9 @@ const ProductVersionHistory: React.FC = () => {
         </div>
 
         {/* Versions List */}
-        <div className="bg-white rounded-lg shadow-sm border">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border">
           <div className="px-6 py-4 border-b">
-            <h3 className="text-lg font-medium text-gray-900 flex items-center">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white flex items-center">
               <History className="h-5 w-5 mr-2" />
               Version History ({versions.length})
             </h3>
@@ -241,7 +241,7 @@ const ProductVersionHistory: React.FC = () => {
           
           <div className="divide-y">
             {versions.map((version) => (
-              <div key={version.id} className="p-6 hover:bg-gray-50">
+              <div key={version.id} className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start space-x-4">
                     {compareMode && (
@@ -249,7 +249,7 @@ const ProductVersionHistory: React.FC = () => {
                         type="checkbox"
                         checked={selectedVersions.includes(version.version)}
                         onChange={() => toggleVersionSelection(version.version)}
-                        className="mt-1 h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                        className="mt-1 h-4 w-4 text-purple-600 border-gray-300 dark:border-gray-600 rounded focus:ring-purple-500"
                       />
                     )}
                     
@@ -261,7 +261,7 @@ const ProductVersionHistory: React.FC = () => {
                     
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-3 mb-2">
-                        <span className="font-medium text-gray-900">
+                        <span className="font-medium text-gray-900 dark:text-white">
                           Version {version.version}
                         </span>
                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${getChangeTypeColor(version.change_type)}`}>
@@ -269,11 +269,11 @@ const ProductVersionHistory: React.FC = () => {
                         </span>
                       </div>
                       
-                      <p className="text-sm text-gray-600 mb-2">
+                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
                         {version.change_reason || 'No reason provided'}
                       </p>
                       
-                      <div className="flex items-center space-x-4 text-xs text-gray-500">
+                      <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
                         <div className="flex items-center">
                           <Calendar className="h-3 w-3 mr-1" />
                           {formatDate(version.created_at)}
@@ -294,12 +294,12 @@ const ProductVersionHistory: React.FC = () => {
                       
                       {version.changed_fields.length > 0 && (
                         <div className="mt-3">
-                          <p className="text-xs font-medium text-gray-700 mb-1">Changed Fields:</p>
+                          <p className="text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">Changed Fields:</p>
                           <div className="flex flex-wrap gap-1">
                             {version.changed_fields.map((field, index) => (
                               <span
                                 key={index}
-                                className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded"
+                                className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded"
                               >
                                 {field}
                               </span>

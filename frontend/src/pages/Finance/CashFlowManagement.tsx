@@ -115,12 +115,12 @@ const CashFlowManagement: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Cash Flow Management</h1>
-          <p className="text-gray-600 mt-1">Cash flow tracking and forecasting</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Cash Flow Management</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Cash flow tracking and forecasting</p>
         </div>
         <div className="flex space-x-3">
           <select
-            className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             value={selectedPeriod}
             onChange={(e) => setSelectedPeriod(e.target.value as 'weekly' | 'monthly')}
           >
@@ -137,74 +137,74 @@ const CashFlowManagement: React.FC = () => {
       {/* Cash Flow Analysis Cards */}
       {analysis && (
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
             <div className="flex items-center">
               <div className="bg-green-100 p-2 rounded-lg">
                 <ArrowTrendingUpIcon className="h-5 w-5 text-green-600" />
               </div>
               <div className="ml-3">
-                <p className="text-xs font-medium text-gray-600">Operating CF</p>
-                <p className="text-lg font-bold text-gray-900">{formatShortCurrency(analysis.operating_cash_flow)}</p>
+                <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Operating CF</p>
+                <p className="text-lg font-bold text-gray-900 dark:text-white">{formatShortCurrency(analysis.operating_cash_flow)}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
             <div className="flex items-center">
               <div className="bg-red-100 p-2 rounded-lg">
                 <ArrowTrendingDownIcon className="h-5 w-5 text-red-600" />
               </div>
               <div className="ml-3">
-                <p className="text-xs font-medium text-gray-600">Investing CF</p>
-                <p className="text-lg font-bold text-gray-900">{formatShortCurrency(analysis.investing_cash_flow)}</p>
+                <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Investing CF</p>
+                <p className="text-lg font-bold text-gray-900 dark:text-white">{formatShortCurrency(analysis.investing_cash_flow)}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
             <div className="flex items-center">
               <div className="bg-blue-100 p-2 rounded-lg">
                 <BanknotesIcon className="h-5 w-5 text-blue-600" />
               </div>
               <div className="ml-3">
-                <p className="text-xs font-medium text-gray-600">Financing CF</p>
-                <p className="text-lg font-bold text-gray-900">{formatShortCurrency(analysis.financing_cash_flow)}</p>
+                <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Financing CF</p>
+                <p className="text-lg font-bold text-gray-900 dark:text-white">{formatShortCurrency(analysis.financing_cash_flow)}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
             <div className="flex items-center">
               <div className="bg-purple-100 p-2 rounded-lg">
                 <CurrencyDollarIcon className="h-5 w-5 text-purple-600" />
               </div>
               <div className="ml-3">
-                <p className="text-xs font-medium text-gray-600">Net Cash Flow</p>
-                <p className="text-lg font-bold text-gray-900">{formatShortCurrency(analysis.net_cash_flow)}</p>
+                <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Net Cash Flow</p>
+                <p className="text-lg font-bold text-gray-900 dark:text-white">{formatShortCurrency(analysis.net_cash_flow)}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
             <div className="flex items-center">
               <div className="bg-orange-100 p-2 rounded-lg">
                 <ClockIcon className="h-5 w-5 text-orange-600" />
               </div>
               <div className="ml-3">
-                <p className="text-xs font-medium text-gray-600">Cash Cycle</p>
-                <p className="text-lg font-bold text-gray-900">{analysis.cash_conversion_cycle} days</p>
+                <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Cash Cycle</p>
+                <p className="text-lg font-bold text-gray-900 dark:text-white">{analysis.cash_conversion_cycle} days</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
             <div className="flex items-center">
               <div className="bg-indigo-100 p-2 rounded-lg">
                 <ChartBarIcon className="h-5 w-5 text-indigo-600" />
               </div>
               <div className="ml-3">
-                <p className="text-xs font-medium text-gray-600">Free Cash Flow</p>
-                <p className="text-lg font-bold text-gray-900">{formatShortCurrency(analysis.free_cash_flow)}</p>
+                <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Free Cash Flow</p>
+                <p className="text-lg font-bold text-gray-900 dark:text-white">{formatShortCurrency(analysis.free_cash_flow)}</p>
               </div>
             </div>
           </div>
@@ -212,8 +212,8 @@ const CashFlowManagement: React.FC = () => {
       )}
 
       {/* Cash Flow Forecast Chart */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Cash Flow Forecast</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Cash Flow Forecast</h3>
         <ResponsiveContainer width="100%" height={400}>
           <AreaChart data={forecast}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -235,8 +235,8 @@ const CashFlowManagement: React.FC = () => {
       {/* Cash Flow Details */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Cash In vs Cash Out */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Cash In vs Cash Out</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Cash In vs Cash Out</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={forecast}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -253,8 +253,8 @@ const CashFlowManagement: React.FC = () => {
         </div>
 
         {/* Balance Trend */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Cash Balance Trend</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Cash Balance Trend</h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={forecast}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -272,42 +272,42 @@ const CashFlowManagement: React.FC = () => {
       </div>
 
       {/* Detailed Forecast Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Detailed Cash Flow Forecast</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Detailed Cash Flow Forecast</h3>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Opening Balance
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Cash In
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Cash Out
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Net Flow
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Closing Balance
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {forecast.map((item, index) => {
                 const netFlow = item.cash_in - item.cash_out;
                 return (
-                  <tr key={index} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                       {item.period}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white text-right">
                       {formatRupiah(item.opening_balance)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 text-right font-medium">
@@ -321,7 +321,7 @@ const CashFlowManagement: React.FC = () => {
                     }`}>
                       {formatRupiah(netFlow)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-bold">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white text-right font-bold">
                       {formatRupiah(item.closing_balance)}
                     </td>
                   </tr>
@@ -334,13 +334,13 @@ const CashFlowManagement: React.FC = () => {
 
       {/* Cash Flow Summary */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="bg-green-100 p-3 rounded-lg">
               <ArrowTrendingUpIcon className="h-6 w-6 text-green-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Cash In</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Cash In</p>
               <p className="text-xl font-bold text-green-600">
                 {formatRupiah(forecast.reduce((sum, f) => sum + f.cash_in, 0))}
               </p>
@@ -348,13 +348,13 @@ const CashFlowManagement: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="bg-red-100 p-3 rounded-lg">
               <ArrowTrendingDownIcon className="h-6 w-6 text-red-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Cash Out</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Cash Out</p>
               <p className="text-xl font-bold text-red-600">
                 {formatRupiah(forecast.reduce((sum, f) => sum + f.cash_out, 0))}
               </p>
@@ -362,13 +362,13 @@ const CashFlowManagement: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="bg-blue-100 p-3 rounded-lg">
               <CurrencyDollarIcon className="h-6 w-6 text-blue-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Net Cash Flow</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Net Cash Flow</p>
               <p className="text-xl font-bold text-blue-600">
                 {formatRupiah(forecast.reduce((sum, f) => sum + (f.cash_in - f.cash_out), 0))}
               </p>
@@ -376,14 +376,14 @@ const CashFlowManagement: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="bg-purple-100 p-3 rounded-lg">
               <BanknotesIcon className="h-6 w-6 text-purple-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Ending Balance</p>
-              <p className="text-xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Ending Balance</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-white">
                 {forecast.length > 0 ? formatRupiah(forecast[forecast.length - 1].closing_balance) : formatRupiah(0)}
               </p>
             </div>

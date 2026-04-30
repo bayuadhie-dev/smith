@@ -178,7 +178,7 @@ export default function IncomingQC() {
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:text-gray-100">
             <ClipboardDocumentCheckIcon className="w-3.5 h-3.5" />
             Menunggu QC
           </span>
@@ -311,7 +311,7 @@ export default function IncomingQC() {
           </div>
         ) : (
           <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900 dark:bg-gray-700">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">PO / Supplier</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Material</th>
@@ -324,7 +324,7 @@ export default function IncomingQC() {
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {filteredMaterials.map(material => (
-                <tr key={material.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <tr key={material.id} className="hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-700/50">
                   <td className="px-4 py-4">
                     <div>
                       <p className="font-medium text-gray-900 dark:text-white">{material.po_number}</p>
@@ -426,7 +426,7 @@ export default function IncomingQC() {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Visual Inspection */}
-                  <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                  <div className="p-4 bg-gray-50 dark:bg-gray-900 dark:bg-gray-700/50 rounded-lg">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Inspeksi Visual
                     </label>
@@ -463,7 +463,7 @@ export default function IncomingQC() {
                   </div>
 
                   {/* Packaging Condition */}
-                  <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                  <div className="p-4 bg-gray-50 dark:bg-gray-900 dark:bg-gray-700/50 rounded-lg">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Kondisi Kemasan
                     </label>
@@ -479,7 +479,7 @@ export default function IncomingQC() {
                   </div>
 
                   {/* Quantity Verified */}
-                  <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                  <div className="p-4 bg-gray-50 dark:bg-gray-900 dark:bg-gray-700/50 rounded-lg">
                     <label className="flex items-center gap-3 cursor-pointer">
                       <input
                         type="checkbox"
@@ -494,7 +494,7 @@ export default function IncomingQC() {
                   </div>
 
                   {/* Lab Test Required */}
-                  <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                  <div className="p-4 bg-gray-50 dark:bg-gray-900 dark:bg-gray-700/50 rounded-lg">
                     <label className="flex items-center gap-3 cursor-pointer">
                       <input
                         type="checkbox"
@@ -588,7 +588,7 @@ export default function IncomingQC() {
             <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
               <button
                 onClick={() => setShowInspectionModal(false)}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-700"
               >
                 Batal
               </button>

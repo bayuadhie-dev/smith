@@ -24,32 +24,32 @@ const { data, isLoading } = useGetOEERecordsQuery({})
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="card p-6">
-          <h3 className="text-sm font-medium text-gray-500">Average OEE</h3>
+          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Average OEE</h3>
           <p className={`mt-2 text-3xl font-semibold ${getOEEColor(avgOEE)}`}>
             {avgOEE.toFixed(1)}%
           </p>
-          <p className="text-xs text-gray-500 mt-1">Target: 85%</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Target: 85%</p>
         </div>
         <div className="card p-6">
-          <h3 className="text-sm font-medium text-gray-500">Availability</h3>
+          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Availability</h3>
           <p className={`mt-2 text-3xl font-semibold ${getOEEColor(avgAvailability)}`}>
             {avgAvailability.toFixed(1)}%
           </p>
-          <p className="text-xs text-gray-500 mt-1">Target: 90%</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Target: 90%</p>
         </div>
         <div className="card p-6">
-          <h3 className="text-sm font-medium text-gray-500">Performance</h3>
+          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Performance</h3>
           <p className={`mt-2 text-3xl font-semibold ${getOEEColor(avgPerformance)}`}>
             {avgPerformance.toFixed(1)}%
           </p>
-          <p className="text-xs text-gray-500 mt-1">Target: 95%</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Target: 95%</p>
         </div>
         <div className="card p-6">
-          <h3 className="text-sm font-medium text-gray-500">{t('navigation.quality')}</h3>
+          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('navigation.quality')}</h3>
           <p className={`mt-2 text-3xl font-semibold ${getOEEColor(avgQuality)}`}>
             {avgQuality.toFixed(1)}%
           </p>
-          <p className="text-xs text-gray-500 mt-1">Target: 99%</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Target: 99%</p>
         </div>
       </div>
 
@@ -71,7 +71,7 @@ const { data, isLoading } = useGetOEERecordsQuery({})
                   <th>OEE</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {data?.records?.map((record: any) => (
                   <tr key={record.id}>
                     <td className="font-medium">{record.record_number}</td>

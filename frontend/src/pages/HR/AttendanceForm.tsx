@@ -264,17 +264,17 @@ const AttendanceForm: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             {isEdit ? 'Edit Attendance' : 'New Attendance Record'}
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-300">
             {isEdit ? 'Update employee attendance record' : 'Record employee attendance for the day'}
           </p>
         </div>
       </div>
 
       {/* Form */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
             <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
@@ -285,13 +285,13 @@ const AttendanceForm: React.FC = () => {
 
           {/* Basic Information */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
               Attendance Information
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <User className="inline h-4 w-4 mr-1" />
                   Employee *
                 </label>
@@ -300,7 +300,7 @@ const AttendanceForm: React.FC = () => {
                   value={formData.employee_id}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Select Employee</option>
                   {employees.map(employee => (
@@ -310,14 +310,14 @@ const AttendanceForm: React.FC = () => {
                   ))}
                 </select>
                 {selectedEmployee && (
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     Department: {selectedEmployee.department?.name || 'N/A'}
                   </p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <Calendar className="inline h-4 w-4 mr-1" />
                   Attendance Date *
                 </label>
@@ -327,14 +327,14 @@ const AttendanceForm: React.FC = () => {
                   value={formData.attendance_date}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <MapPinIcon className="inline h-4 w-4 mr-1" />
                   Shift Schedule
                 </label>
@@ -342,7 +342,7 @@ const AttendanceForm: React.FC = () => {
                   name="shift_id"
                   value={formData.shift_id || ''}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">No Specific Shift</option>
                   {shifts.map(shift => (
@@ -352,14 +352,14 @@ const AttendanceForm: React.FC = () => {
                   ))}
                 </select>
                 {selectedShift && (
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     Break: {selectedShift.break_duration} minutes
                   </p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Status *
                 </label>
                 <select
@@ -367,7 +367,7 @@ const AttendanceForm: React.FC = () => {
                   value={formData.status}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   {statusOptions.map(status => (
                     <option key={status.value} value={status.value}>
@@ -388,13 +388,13 @@ const AttendanceForm: React.FC = () => {
           {/* Time Information */}
           {formData.status === 'present' && (
             <div className="space-y-6">
-              <h3 className="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
                 Time Information
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     <ClockIcon className="inline h-4 w-4 mr-1" />
                     ClockIcon In Time *
                   </label>
@@ -405,19 +405,19 @@ const AttendanceForm: React.FC = () => {
                       value={formData.clock_in}
                       onChange={handleInputChange}
                       required
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                     <button
                       type="button"
                       onClick={() => setCurrentTime('clock_in')}
-                      className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                      className="px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                     >
                     </button>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     ClockIcon Out Time *
                   </label>
                   <div className="flex gap-2">
@@ -427,12 +427,12 @@ const AttendanceForm: React.FC = () => {
                       value={formData.clock_out}
                       onChange={handleInputChange}
                       required
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                     <button
                       type="button"
                       onClick={() => setCurrentTime('clock_out')}
-                      className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                      className="px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                     >
                     </button>
                   </div>
@@ -441,7 +441,7 @@ const AttendanceForm: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     <Timer className="inline h-4 w-4 mr-1" />
                     Regular Hours
                   </label>
@@ -453,12 +453,12 @@ const AttendanceForm: React.FC = () => {
                     min="0"
                     max="24"
                     step="0.25"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Overtime Hours
                   </label>
                   <input
@@ -469,12 +469,12 @@ const AttendanceForm: React.FC = () => {
                     min="0"
                     max="12"
                     step="0.25"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Total Hours
                   </label>
                   <div className="px-3 py-2 bg-blue-50 border border-blue-300 rounded-lg text-blue-700 font-medium">
@@ -484,23 +484,23 @@ const AttendanceForm: React.FC = () => {
               </div>
 
               {/* Time Summary */}
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <h4 className="font-medium text-gray-900 mb-2">Time Summary</h4>
+              <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                <h4 className="font-medium text-gray-900 dark:text-white mb-2">Time Summary</h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div>
-                    <span className="text-gray-600">ClockIcon In:</span>
+                    <span className="text-gray-600 dark:text-gray-300">ClockIcon In:</span>
                     <div className="font-medium">{formData.clock_in || 'Not set'}</div>
                   </div>
                   <div>
-                    <span className="text-gray-600">ClockIcon Out:</span>
+                    <span className="text-gray-600 dark:text-gray-300">ClockIcon Out:</span>
                     <div className="font-medium">{formData.clock_out || 'Not set'}</div>
                   </div>
                   <div>
-                    <span className="text-gray-600">Regular:</span>
+                    <span className="text-gray-600 dark:text-gray-300">Regular:</span>
                     <div className="font-medium text-green-600">{formData.worked_hours}h</div>
                   </div>
                   <div>
-                    <span className="text-gray-600">Overtime:</span>
+                    <span className="text-gray-600 dark:text-gray-300">Overtime:</span>
                     <div className="font-medium text-orange-600">{formData.overtime_hours}h</div>
                   </div>
                 </div>
@@ -510,7 +510,7 @@ const AttendanceForm: React.FC = () => {
 
           {/* Notes */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               <DocumentTextIcon className="inline h-4 w-4 mr-1" />
             </label>
             <textarea
@@ -518,17 +518,17 @@ const AttendanceForm: React.FC = () => {
               value={formData.notes}
               onChange={handleInputChange}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Enter any additional notes about this attendance record..."
             />
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200">
+          <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
             <button
               type="button"
               onClick={() => navigate('/app/hr/attendance')}
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+              className="px-4 py-2 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
             >
               <X className="inline h-4 w-4 mr-2" />{t('common.cancel')}</button>
             <button

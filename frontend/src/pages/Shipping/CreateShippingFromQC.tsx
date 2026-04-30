@@ -212,13 +212,13 @@ export default function CreateShippingFromQC() {
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/app/shipping')}
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
           >
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Buat Pengiriman dari QC</h1>
-            <p className="text-gray-600">Pilih produk yang sudah lulus QC untuk dikirim</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Buat Pengiriman dari QC</h1>
+            <p className="text-gray-600 dark:text-gray-300">Pilih produk yang sudah lulus QC untuk dikirim</p>
           </div>
         </div>
       </div>
@@ -237,7 +237,7 @@ export default function CreateShippingFromQC() {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               </div>
             ) : readyItems.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <CubeIcon className="h-12 w-12 mx-auto mb-2 text-gray-300" />
                 <p>Tidak ada item siap kirim</p>
                 <p className="text-sm">Pastikan ada Work Order yang sudah lulus QC</p>
@@ -260,19 +260,19 @@ export default function CreateShippingFromQC() {
                         QC Pass
                       </span>
                     </div>
-                    <p className="font-medium text-gray-900">{item.product_name}</p>
-                    <p className="text-sm text-gray-500">{item.product_code}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{item.product_name}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{item.product_code}</p>
                     <div className="mt-2 flex justify-between text-sm">
-                      <span className="text-gray-600">Qty: {item.quantity_passed.toLocaleString()} {item.uom}</span>
-                      <span className="text-gray-500">{formatDate(item.qc_date)}</span>
+                      <span className="text-gray-600 dark:text-gray-300">Qty: {item.quantity_passed.toLocaleString()} {item.uom}</span>
+                      <span className="text-gray-500 dark:text-gray-400">{formatDate(item.qc_date)}</span>
                     </div>
                     <div className="mt-2 pt-2 border-t border-gray-100">
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
                         <BuildingOfficeIcon className="h-4 w-4 inline mr-1" />
                         {item.customer_name}
                       </p>
                       {item.sales_order_number && (
-                        <p className="text-xs text-gray-500">SO: {item.sales_order_number}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">SO: {item.sales_order_number}</p>
                       )}
                     </div>
                   </div>
@@ -287,8 +287,8 @@ export default function CreateShippingFromQC() {
           {!selectedItem ? (
             <div className="card p-8 text-center">
               <TruckIcon className="h-16 w-16 mx-auto text-gray-300 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Pilih Item untuk Dikirim</h3>
-              <p className="text-gray-500">Klik salah satu item di sebelah kiri untuk membuat pengiriman</p>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Pilih Item untuk Dikirim</h3>
+              <p className="text-gray-500 dark:text-gray-400">Klik salah satu item di sebelah kiri untuk membuat pengiriman</p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -317,7 +317,7 @@ export default function CreateShippingFromQC() {
 
               {/* Delivery Method Selection */}
               <div className="card p-4">
-                <h3 className="font-semibold text-gray-900 mb-4">Metode Pengiriman</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Metode Pengiriman</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <button
                     type="button"
@@ -330,7 +330,7 @@ export default function CreateShippingFromQC() {
                   >
                     <TruckIcon className={`h-8 w-8 mb-2 ${deliveryMethod === 'expedition' ? 'text-blue-600' : 'text-gray-400'}`} />
                     <p className="font-semibold">Via Ekspedisi</p>
-                    <p className="text-sm text-gray-500">Kirim melalui jasa ekspedisi/kurir</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Kirim melalui jasa ekspedisi/kurir</p>
                   </button>
                   
                   <button
@@ -344,20 +344,20 @@ export default function CreateShippingFromQC() {
                   >
                     <UserIcon className={`h-8 w-8 mb-2 ${deliveryMethod === 'self_pickup' ? 'text-green-600' : 'text-gray-400'}`} />
                     <p className="font-semibold">Diambil Sendiri</p>
-                    <p className="text-sm text-gray-500">Customer mengambil langsung</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Customer mengambil langsung</p>
                   </button>
                 </div>
               </div>
 
               {/* Shipping Date */}
               <div className="card p-4">
-                <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                   <CalendarIcon className="h-5 w-5" />
                   Tanggal Pengiriman
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Tanggal Kirim *</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Tanggal Kirim *</label>
                     <input
                       type="date"
                       name="shipping_date"
@@ -368,7 +368,7 @@ export default function CreateShippingFromQC() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Estimasi Tiba</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Estimasi Tiba</label>
                     <input
                       type="date"
                       name="expected_delivery_date"
@@ -383,13 +383,13 @@ export default function CreateShippingFromQC() {
               {/* Expedition Info */}
               {deliveryMethod === 'expedition' && (
                 <div className="card p-4">
-                  <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                     <TruckIcon className="h-5 w-5" />
                     Informasi Ekspedisi
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Provider Logistik *</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Provider Logistik *</label>
                       <select
                         name="logistics_provider_id"
                         value={formData.logistics_provider_id}
@@ -404,7 +404,7 @@ export default function CreateShippingFromQC() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">No. Resi</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">No. Resi</label>
                       <input
                         type="text"
                         name="tracking_number"
@@ -420,7 +420,7 @@ export default function CreateShippingFromQC() {
 
               {/* Vehicle & Driver Info */}
               <div className="card p-4">
-                <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                   <IdentificationIcon className="h-5 w-5" />
                   {deliveryMethod === 'expedition' ? 'Informasi Kendaraan & Supir' : 'Informasi Pengambil'}
                 </h3>
@@ -430,7 +430,7 @@ export default function CreateShippingFromQC() {
                     {/* Vehicle Info */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                           Nomor Polisi Kendaraan
                         </label>
                         <input
@@ -443,7 +443,7 @@ export default function CreateShippingFromQC() {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                           Jenis Kendaraan
                         </label>
                         <select
@@ -467,7 +467,7 @@ export default function CreateShippingFromQC() {
                     {/* Driver Info */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                           Nama Supir
                         </label>
                         <input
@@ -480,7 +480,7 @@ export default function CreateShippingFromQC() {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                           No. HP Supir
                         </label>
                         <input
@@ -496,7 +496,7 @@ export default function CreateShippingFromQC() {
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                           No. KTP Supir
                         </label>
                         <input
@@ -510,7 +510,7 @@ export default function CreateShippingFromQC() {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                           No. SIM Supir
                         </label>
                         <input
@@ -529,7 +529,7 @@ export default function CreateShippingFromQC() {
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                           Nama Pengambil *
                         </label>
                         <input
@@ -543,7 +543,7 @@ export default function CreateShippingFromQC() {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                           No. HP Pengambil
                         </label>
                         <input
@@ -559,7 +559,7 @@ export default function CreateShippingFromQC() {
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                           No. KTP Pengambil *
                         </label>
                         <input
@@ -574,7 +574,7 @@ export default function CreateShippingFromQC() {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                           Nomor Polisi Kendaraan
                         </label>
                         <input
@@ -589,7 +589,7 @@ export default function CreateShippingFromQC() {
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                         Surat Kuasa / Otorisasi
                       </label>
                       <textarea
@@ -607,13 +607,13 @@ export default function CreateShippingFromQC() {
 
               {/* Shipping Details */}
               <div className="card p-4">
-                <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                   <MapPinIcon className="h-5 w-5" />
                   Detail Pengiriman
                 </h3>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Alamat Tujuan
                     </label>
                     <textarea
@@ -628,7 +628,7 @@ export default function CreateShippingFromQC() {
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                         Jumlah Koli/Paket
                       </label>
                       <input
@@ -641,7 +641,7 @@ export default function CreateShippingFromQC() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                         Total Berat (kg)
                       </label>
                       <input
@@ -655,7 +655,7 @@ export default function CreateShippingFromQC() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                         Biaya Kirim (Rp)
                       </label>
                       <input
@@ -670,7 +670,7 @@ export default function CreateShippingFromQC() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Catatan
                     </label>
                     <textarea

@@ -217,24 +217,24 @@ const DailyController: React.FC = () => {
   const totalDowntime = machines.reduce((sum, m) => sum + m.total_downtime, 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800 p-6">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
           <ChartBarIcon className="h-7 w-7 text-blue-600" />
           Daily Controller
         </h1>
-        <p className="text-slate-500 mt-1">Monitoring produksi semua mesin per hari</p>
+        <p className="text-slate-500 dark:text-gray-400 mt-1">Monitoring produksi semua mesin per hari</p>
       </div>
 
       {/* Date Selector */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 p-4 mb-6">
         <div className="flex items-center justify-between">
           <button
             onClick={() => changeDate(-1)}
-            className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-slate-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
-            <ChevronLeftIcon className="h-5 w-5 text-slate-600" />
+            <ChevronLeftIcon className="h-5 w-5 text-slate-600 dark:text-gray-300" />
           </button>
 
           <div className="flex items-center gap-3">
@@ -243,29 +243,29 @@ const DailyController: React.FC = () => {
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="text-lg font-semibold text-slate-800 border-none focus:ring-0 cursor-pointer"
+              className="text-lg font-semibold text-slate-800 dark:text-white dark:bg-gray-800 border-none focus:ring-0 cursor-pointer"
             />
-            <span className="text-slate-500">|</span>
-            <span className="text-slate-600">{formatDate(selectedDate)}</span>
+            <span className="text-slate-500 dark:text-gray-400">|</span>
+            <span className="text-slate-600 dark:text-gray-300">{formatDate(selectedDate)}</span>
           </div>
 
           <button
             onClick={() => changeDate(1)}
-            className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-slate-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
-            <ChevronRightIcon className="h-5 w-5 text-slate-600" />
+            <ChevronRightIcon className="h-5 w-5 text-slate-600 dark:text-gray-300" />
           </button>
         </div>
       </div>
 
       {/* Tab Selector */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-2 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 p-2 mb-6">
         <div className="flex items-center gap-2">
           <button
             onClick={() => setActiveTab('ringkasan')}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all ${activeTab === 'ringkasan'
               ? 'bg-blue-500 text-white shadow-md'
-              : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
+              : 'bg-slate-50 dark:bg-gray-700 text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-600'
               }`}
           >
             <Squares2X2Icon className="h-5 w-5" />
@@ -275,7 +275,7 @@ const DailyController: React.FC = () => {
             onClick={() => setActiveTab('detail')}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all ${activeTab === 'detail'
               ? 'bg-indigo-500 text-white shadow-md'
-              : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
+              : 'bg-slate-50 dark:bg-gray-700 text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-600'
               }`}
           >
             <DocumentMagnifyingGlassIcon className="h-5 w-5" />
@@ -327,21 +327,21 @@ const DailyController: React.FC = () => {
               <LoadingSpinner />
             </div>
           ) : machines.length === 0 ? (
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center">
-              <CogIcon className="h-16 w-16 text-slate-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-slate-600">Tidak ada data produksi</h3>
-              <p className="text-slate-400 mt-1">Belum ada hasil produksi yang diinput untuk tanggal ini</p>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 p-12 text-center">
+              <CogIcon className="h-16 w-16 text-slate-300 dark:text-gray-600 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-slate-600 dark:text-gray-300">Tidak ada data produksi</h3>
+              <p className="text-slate-400 dark:text-gray-500 mt-1">Belum ada hasil produksi yang diinput untuk tanggal ini</p>
             </div>
           ) : (
             <div className="space-y-4">
               {machines.map((machine) => (
                 <div
                   key={machine.machine_id}
-                  className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"
+                  className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 overflow-hidden"
                 >
                   {/* Machine Header - Always visible */}
                   <div
-                    className="p-4 cursor-pointer hover:bg-slate-50 transition-colors"
+                    className="p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors"
                     onClick={() => toggleExpand(machine.machine_id)}
                   >
                     <div className="flex items-center justify-between">
@@ -351,12 +351,12 @@ const DailyController: React.FC = () => {
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <h3 className="font-bold text-slate-800 text-lg">{machine.machine_name}</h3>
-                            <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-medium rounded">
+                            <h3 className="font-bold text-slate-800 dark:text-white text-lg">{machine.machine_name}</h3>
+                            <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-medium rounded">
                               📅 {new Date(machine.date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
                             </span>
                           </div>
-                          <p className="text-sm text-slate-500">
+                          <p className="text-sm text-slate-500 dark:text-gray-400">
                             {machine.products.length > 0 ? machine.products.join(', ') : 'No product'}
                           </p>
                         </div>
@@ -368,9 +368,9 @@ const DailyController: React.FC = () => {
                         <div className="flex items-center gap-2">
                           {(machine.shift_summaries || []).map((ss) => {
                             return (
-                              <div key={ss.shift} className="text-center px-2 py-1 rounded-lg bg-slate-50 border border-slate-200 min-w-[90px]">
-                                <p className="text-[10px] text-slate-400 font-medium">Shift {ss.shift}</p>
-                                <p className={`text-base font-bold ${ss.efficiency >= 60 ? 'text-green-600' : ss.efficiency >= 42 ? 'text-yellow-600' : 'text-red-600'}`}>
+                              <div key={ss.shift} className="text-center px-2 py-1 rounded-lg bg-slate-50 dark:bg-gray-700 border border-slate-200 dark:border-gray-600 min-w-[90px]">
+                                <p className="text-[10px] text-slate-400 dark:text-gray-500 font-medium">Shift {ss.shift}</p>
+                                <p className={`text-base font-bold ${ss.efficiency >= 60 ? 'text-green-600 dark:text-green-400' : ss.efficiency >= 42 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'}`}>
                                   {ss.efficiency}%
                                   {ss.efficiency >= 60 && <span className="ml-0.5 text-[10px]">✓</span>}
                                   {ss.efficiency < 42 && <span className="ml-0.5 text-[10px]">⚠</span>}
@@ -379,36 +379,36 @@ const DailyController: React.FC = () => {
                             );
                           })}
                         </div>
-                        <div className="h-8 w-px bg-slate-200"></div>
+                        <div className="h-8 w-px bg-slate-200 dark:bg-gray-600"></div>
                         <div className="text-center px-2">
-                          <p className="text-xs text-slate-400">Quality</p>
-                          <p className={`text-lg font-bold ${machine.quality >= 95 ? 'text-green-600' : machine.quality >= 85 ? 'text-yellow-600' : 'text-red-600'}`}>
+                          <p className="text-xs text-slate-400 dark:text-gray-500">Quality</p>
+                          <p className={`text-lg font-bold ${machine.quality >= 95 ? 'text-green-600 dark:text-green-400' : machine.quality >= 85 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'}`}>
                             {machine.quality}%
                           </p>
                         </div>
-                        <div className="h-8 w-px bg-slate-200"></div>
+                        <div className="h-8 w-px bg-slate-200 dark:bg-gray-600"></div>
                         <div className="text-center px-2">
-                          <p className="text-xs text-slate-400">Output</p>
-                          <p className="text-lg font-bold text-slate-800">{machine.total_output.toLocaleString()}</p>
+                          <p className="text-xs text-slate-400 dark:text-gray-500">Output</p>
+                          <p className="text-lg font-bold text-slate-800 dark:text-white">{machine.total_output.toLocaleString()}</p>
                         </div>
                         <div className="text-center px-2">
-                          <p className="text-xs text-slate-400">Runtime</p>
-                          <p className="text-lg font-bold text-green-600">{machine.runtime}m</p>
+                          <p className="text-xs text-slate-400 dark:text-gray-500">Runtime</p>
+                          <p className="text-lg font-bold text-green-600 dark:text-green-400">{machine.runtime}m</p>
                         </div>
                         <div className="text-center px-2">
-                          <p className="text-xs text-slate-400">Down</p>
-                          <p className="text-lg font-bold text-red-600">{machine.total_downtime}m</p>
+                          <p className="text-xs text-slate-400 dark:text-gray-500">Down</p>
+                          <p className="text-lg font-bold text-red-600 dark:text-red-400">{machine.total_downtime}m</p>
                         </div>
                         <div className="text-center px-2">
-                          <p className="text-xs text-slate-400">Idle</p>
-                          <p className="text-lg font-bold text-orange-600">{machine.total_idle}m</p>
+                          <p className="text-xs text-slate-400 dark:text-gray-500">Idle</p>
+                          <p className="text-lg font-bold text-orange-600 dark:text-orange-400">{machine.total_idle}m</p>
                         </div>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             navigate(`/app/production/machines/${machine.machine_id}`);
                           }}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
                           title="View Detail"
                         >
                           <EyeIcon className="h-5 w-5" />
@@ -419,11 +419,11 @@ const DailyController: React.FC = () => {
 
                   {/* Expanded Details */}
                   {expandedMachine === machine.machine_id && (
-                    <div className="border-t border-slate-200 p-4 bg-slate-50">
+                    <div className="border-t border-slate-200 dark:border-gray-700 p-4 bg-slate-50 dark:bg-gray-900">
                       <div className="grid grid-cols-2 gap-6">
                         {/* Shift Details */}
                         <div>
-                          <h4 className="font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                          <h4 className="font-semibold text-slate-700 dark:text-gray-200 mb-3 flex items-center gap-2">
                             <ClockIcon className="h-4 w-4" />
                             Detail per Shift
                           </h4>
@@ -443,82 +443,82 @@ const DailyController: React.FC = () => {
                                 return (
                                   <React.Fragment key={`shift-group-${shiftNum}`}>
                                     {shiftsInGroup.map((shift, idx) => (
-                                      <div key={`${shiftNum}-${idx}`} className="bg-white rounded-lg p-3 border border-slate-200">
+                                      <div key={`${shiftNum}-${idx}`} className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-slate-200 dark:border-gray-700">
                                         <div className="flex items-center justify-between mb-2">
                                           <div>
-                                            <span className="font-medium text-slate-800">
+                                            <span className="font-medium text-slate-800 dark:text-white">
                                               {getShiftEntryLabel(shift, idx, shiftsInGroup)}
                                             </span>
-                                            <span className="text-xs text-slate-400 ml-2">
+                                            <span className="text-xs text-slate-400 dark:text-gray-500 ml-2">
                                               ({getCustomTimeLabel(shift, idx, shiftsInGroup)})
                                             </span>
                                             {isMultiProduct && shift.planned_runtime && (
-                                              <span className="text-xs text-blue-500 ml-1">
+                                              <span className="text-xs text-blue-500 dark:text-blue-400 ml-1">
                                                 [{shift.planned_runtime}m]
                                               </span>
                                             )}
                                           </div>
                                           <div className="flex items-center gap-2">
                                             {shift.efficiency !== undefined && (
-                                              <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${shift.efficiency >= 60 ? 'bg-green-100 text-green-700' :
-                                                shift.efficiency >= 40 ? 'bg-yellow-100 text-yellow-700' :
-                                                  'bg-red-100 text-red-700'
+                                              <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${shift.efficiency >= 60 ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
+                                                shift.efficiency >= 40 ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' :
+                                                  'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
                                                 }`}>
                                                 {shift.efficiency}%
                                               </span>
                                             )}
-                                            <span className="text-sm text-blue-600 font-medium">{shift.total.toLocaleString()} pcs</span>
+                                            <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">{shift.total.toLocaleString()} pcs</span>
                                           </div>
                                         </div>
                                         {/* Show product name for multi-product shifts */}
                                         {isMultiProduct && shift.product_name && (
-                                          <p className="text-xs text-indigo-600 font-medium mb-2 bg-indigo-50 px-2 py-1 rounded inline-block">
+                                          <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium mb-2 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 rounded inline-block">
                                             📦 {shift.product_name}
                                           </p>
                                         )}
                                         <div className="grid grid-cols-6 gap-2 text-xs">
-                                          <div className="bg-green-50 rounded p-1.5 text-center">
-                                            <p className="text-slate-400">Grade A</p>
-                                            <p className="font-bold text-green-600">{shift.grade_a.toLocaleString()}</p>
+                                          <div className="bg-green-50 dark:bg-green-900/20 rounded p-1.5 text-center">
+                                            <p className="text-slate-400 dark:text-gray-500">Grade A</p>
+                                            <p className="font-bold text-green-600 dark:text-green-400">{shift.grade_a.toLocaleString()}</p>
                                             {shift.grade_a_carton > 0 && (
-                                              <p className="text-xs text-green-500">{shift.grade_a_carton} ctn</p>
+                                              <p className="text-xs text-green-500 dark:text-green-400">{shift.grade_a_carton} ctn</p>
                                             )}
                                           </div>
-                                          <div className="bg-yellow-50 rounded p-1.5 text-center">
-                                            <p className="text-slate-400">Grade B</p>
-                                            <p className="font-bold text-yellow-600">{shift.grade_b.toLocaleString()}</p>
+                                          <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded p-1.5 text-center">
+                                            <p className="text-slate-400 dark:text-gray-500">Grade B</p>
+                                            <p className="font-bold text-yellow-600 dark:text-yellow-400">{shift.grade_b.toLocaleString()}</p>
                                           </div>
-                                          <div className="bg-red-50 rounded p-1.5 text-center">
-                                            <p className="text-slate-400">Grade C</p>
-                                            <p className="font-bold text-red-600">{shift.grade_c.toLocaleString()}</p>
+                                          <div className="bg-red-50 dark:bg-red-900/20 rounded p-1.5 text-center">
+                                            <p className="text-slate-400 dark:text-gray-500">Grade C</p>
+                                            <p className="font-bold text-red-600 dark:text-red-400">{shift.grade_c.toLocaleString()}</p>
                                           </div>
-                                          <div className="bg-purple-50 rounded p-1.5 text-center">
-                                            <p className="text-slate-400">Set Sticker</p>
-                                            <p className="font-bold text-purple-600">{Math.round(shift.setting_sticker || 0).toLocaleString()}</p>
+                                          <div className="bg-purple-50 dark:bg-purple-900/20 rounded p-1.5 text-center">
+                                            <p className="text-slate-400 dark:text-gray-500">Set Sticker</p>
+                                            <p className="font-bold text-purple-600 dark:text-purple-400">{Math.round(shift.setting_sticker || 0).toLocaleString()}</p>
                                           </div>
-                                          <div className="bg-indigo-50 rounded p-1.5 text-center">
-                                            <p className="text-slate-400">Set Packaging</p>
-                                            <p className="font-bold text-indigo-600">{Math.round(shift.setting_packaging || 0).toLocaleString()}</p>
+                                          <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded p-1.5 text-center">
+                                            <p className="text-slate-400 dark:text-gray-500">Set Packaging</p>
+                                            <p className="font-bold text-indigo-600 dark:text-indigo-400">{Math.round(shift.setting_packaging || 0).toLocaleString()}</p>
                                           </div>
-                                          <div className="bg-emerald-50 rounded p-1.5 text-center">
-                                            <p className="text-slate-400">Runtime</p>
-                                            <p className="font-bold text-emerald-600">{shift.runtime !== undefined ? shift.runtime : (shift.machine_speed && shift.machine_speed > 0 ? Math.round(shift.grade_a / shift.machine_speed) : (machine.machine_speed > 0 ? Math.round(shift.grade_a / machine.machine_speed) : 0))}m</p>
+                                          <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded p-1.5 text-center">
+                                            <p className="text-slate-400 dark:text-gray-500">Runtime</p>
+                                            <p className="font-bold text-emerald-600 dark:text-emerald-400">{shift.runtime !== undefined ? shift.runtime : (shift.machine_speed && shift.machine_speed > 0 ? Math.round(shift.grade_a / shift.machine_speed) : (machine.machine_speed > 0 ? Math.round(shift.grade_a / machine.machine_speed) : 0))}m</p>
                                           </div>
-                                          <div className="bg-red-50 rounded p-1.5 text-center">
-                                            <p className="text-slate-400">Down</p>
-                                            <p className="font-bold text-red-600">{shift.downtime_minutes}m</p>
+                                          <div className="bg-red-50 dark:bg-red-900/20 rounded p-1.5 text-center">
+                                            <p className="text-slate-400 dark:text-gray-500">Down</p>
+                                            <p className="font-bold text-red-600 dark:text-red-400">{shift.downtime_minutes}m</p>
                                           </div>
-                                          <div className="bg-orange-50 rounded p-1.5 text-center">
-                                            <p className="text-slate-400">Idle</p>
-                                            <p className="font-bold text-orange-600">{shift.idle_time_minutes}m</p>
+                                          <div className="bg-orange-50 dark:bg-orange-900/20 rounded p-1.5 text-center">
+                                            <p className="text-slate-400 dark:text-gray-500">Idle</p>
+                                            <p className="font-bold text-orange-600 dark:text-orange-400">{shift.idle_time_minutes}m</p>
                                           </div>
                                           {/* Top 3 Downtime per Shift - inline in grid */}
                                           {(() => {
                                             const ss = (machine.shift_summaries || []).find((s: ShiftSummary) => s.shift === Number(shiftNum));
                                             if (!ss || !ss.top_3_downtime || ss.top_3_downtime.length === 0) return null;
                                             return (
-                                              <div className="col-span-4 bg-red-50 rounded p-1.5">
-                                                <p className="text-slate-400 text-center mb-1 flex items-center justify-center gap-1">
+                                              <div className="col-span-4 bg-red-50 dark:bg-red-900/20 rounded p-1.5">
+                                                <p className="text-slate-400 dark:text-gray-500 text-center mb-1 flex items-center justify-center gap-1">
                                                   <ExclamationTriangleIcon className="h-3 w-3" /> Top Downtime
                                                 </p>
                                                 <div className="space-y-0.5">
@@ -528,9 +528,9 @@ const DailyController: React.FC = () => {
                                                         <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold text-white ${dtIdx === 0 ? 'bg-red-500' : dtIdx === 1 ? 'bg-orange-500' : 'bg-yellow-500'}`}>
                                                           {dtIdx + 1}
                                                         </span>
-                                                        <span className="text-slate-600 text-[10px] truncate">{dt.reason}</span>
+                                                        <span className="text-slate-600 dark:text-gray-300 text-[10px] truncate">{dt.reason}</span>
                                                       </div>
-                                                      <span className="text-red-600 font-bold text-[10px] whitespace-nowrap">{dt.duration_minutes}m</span>
+                                                      <span className="text-red-600 dark:text-red-400 font-bold text-[10px] whitespace-nowrap">{dt.duration_minutes}m</span>
                                                     </div>
                                                   ))}
                                                 </div>
@@ -539,31 +539,31 @@ const DailyController: React.FC = () => {
                                           })()}
                                         </div>
                                         {shift.wo_number && (
-                                          <p className="text-xs text-slate-400 mt-2">WO: {shift.wo_number}</p>
+                                          <p className="text-xs text-slate-400 dark:text-gray-500 mt-2">WO: {shift.wo_number}</p>
                                         )}
                                         {/* Early Stop - only for single-product shifts (shown inside card) */}
                                         {!isMultiProduct && shift.early_stop && (
-                                          <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded-lg">
-                                            <div className="flex items-center gap-2 text-amber-700">
+                                          <div className="mt-2 p-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg">
+                                            <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
                                               <span className="text-sm font-medium">⚠️ Shift Berakhir Lebih Awal</span>
                                               {shift.early_stop_time && (
-                                                <span className="text-xs bg-amber-100 px-2 py-0.5 rounded">
+                                                <span className="text-xs bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 rounded">
                                                   Jam {shift.early_stop_time}
                                                 </span>
                                               )}
                                             </div>
                                             {shift.early_stop_reason && (
-                                              <p className="text-xs text-amber-600 mt-1">
+                                              <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
                                                 Alasan: <span className="font-medium">{shift.early_stop_reason}</span>
                                               </p>
                                             )}
                                             {shift.early_stop_notes && (
-                                              <p className="text-xs text-amber-600 mt-0.5">
+                                              <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">
                                                 Catatan: {shift.early_stop_notes}
                                               </p>
                                             )}
                                             {shift.operator_reassigned && shift.reassignment_task && (
-                                              <p className="text-xs text-blue-600 mt-1">
+                                              <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
                                                 👷 Operator dialihkan ke: <span className="font-medium">{shift.reassignment_task}</span>
                                               </p>
                                             )}
@@ -573,27 +573,27 @@ const DailyController: React.FC = () => {
                                     ))}
                                     {/* Early Stop Banner - AFTER all sub-shifts for multi-product */}
                                     {isMultiProduct && earlyStopEntry && (
-                                      <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                                        <div className="flex items-center gap-2 text-amber-700">
+                                      <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg">
+                                        <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
                                           <span className="text-sm font-medium">⚠️ Shift {shiftNum} Berakhir Lebih Awal</span>
                                           {earlyStopEntry.early_stop_time && (
-                                            <span className="text-xs bg-amber-100 px-2 py-0.5 rounded">
+                                            <span className="text-xs bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 rounded">
                                               Jam {earlyStopEntry.early_stop_time}
                                             </span>
                                           )}
                                         </div>
                                         {earlyStopEntry.early_stop_reason && (
-                                          <p className="text-xs text-amber-600 mt-1">
+                                          <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
                                             Alasan: <span className="font-medium">{earlyStopEntry.early_stop_reason}</span>
                                           </p>
                                         )}
                                         {earlyStopEntry.early_stop_notes && (
-                                          <p className="text-xs text-amber-600 mt-0.5">
+                                          <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">
                                             Catatan: {earlyStopEntry.early_stop_notes}
                                           </p>
                                         )}
                                         {earlyStopEntry.operator_reassigned && earlyStopEntry.reassignment_task && (
-                                          <p className="text-xs text-blue-600 mt-1">
+                                          <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
                                             👷 Operator dialihkan ke: <span className="font-medium">{earlyStopEntry.reassignment_task}</span>
                                           </p>
                                         )}
@@ -612,7 +612,7 @@ const DailyController: React.FC = () => {
                               <ChartBarIcon className="h-4 w-4" />
                               Distribusi Waktu
                             </h4>
-                            <div className="bg-white rounded-lg p-4 border border-slate-200">
+                            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-slate-200">
                               <div className="flex items-center gap-4">
                                 {/* Donut Chart */}
                                 <div className="relative w-32 h-32">
@@ -691,7 +691,7 @@ const DailyController: React.FC = () => {
                               <CubeIcon className="h-4 w-4" />
                               Quality Breakdown
                             </h4>
-                            <div className="bg-white rounded-lg p-4 border border-slate-200">
+                            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-slate-200">
                               {(() => {
                                 const totalOutput = machine.total_output || 0;
                                 const gradeA = machine.total_grade_a || 0;
@@ -708,7 +708,7 @@ const DailyController: React.FC = () => {
                                         <span className="text-slate-600">Grade A</span>
                                         <span className="font-semibold text-green-600">{pctA}%</span>
                                       </div>
-                                      <div className="w-full bg-gray-200 rounded-full h-3">
+                                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
                                         <div className="bg-green-500 h-3 rounded-full transition-all" style={{ width: `${pctA}%` }}></div>
                                       </div>
                                     </div>
@@ -717,7 +717,7 @@ const DailyController: React.FC = () => {
                                         <span className="text-slate-600">Grade B</span>
                                         <span className="font-semibold text-yellow-600">{pctB}%</span>
                                       </div>
-                                      <div className="w-full bg-gray-200 rounded-full h-3">
+                                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
                                         <div className="bg-yellow-500 h-3 rounded-full transition-all" style={{ width: `${pctB}%` }}></div>
                                       </div>
                                     </div>
@@ -726,7 +726,7 @@ const DailyController: React.FC = () => {
                                         <span className="text-slate-600">Grade C</span>
                                         <span className="font-semibold text-red-600">{pctC}%</span>
                                       </div>
-                                      <div className="w-full bg-gray-200 rounded-full h-3">
+                                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
                                         <div className="bg-red-500 h-3 rounded-full transition-all" style={{ width: `${pctC}%` }}></div>
                                       </div>
                                     </div>
@@ -751,7 +751,7 @@ const DailyController: React.FC = () => {
                             <div className="space-y-3">
                               {(machine.shift_summaries || []).map((ss) => {
                                 return (
-                                  <div key={ss.shift} className="bg-white rounded-lg p-4 border border-slate-200">
+                                  <div key={ss.shift} className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-slate-200">
                                     <div className="flex items-center justify-between mb-3">
                                       <span className="font-bold text-slate-700 text-base">Shift {ss.shift} <span className="text-xs font-normal text-slate-400">({ss.shift === 1 ? '06:30-15:00' : ss.shift === 2 ? '15:00-23:00' : '23:00-06:30'})</span></span>
                                       <div className="flex items-center gap-3">
@@ -815,7 +815,7 @@ const DailyController: React.FC = () => {
                               <CubeIcon className="h-4 w-4" />
                               Ringkasan Output
                             </h4>
-                            <div className="bg-white rounded-lg p-4 border border-slate-200">
+                            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-slate-200">
                               <div className="grid grid-cols-4 gap-3">
                                 <div className="text-center">
                                   <p className="text-xs text-slate-400">Grade A</p>
@@ -848,7 +848,7 @@ const DailyController: React.FC = () => {
                               <ExclamationTriangleIcon className="h-4 w-4" />
                               Top 3 Downtime
                             </h4>
-                            <div className="bg-white rounded-lg p-4 border border-slate-200">
+                            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-slate-200">
                               {machine.top_3_downtime.length > 0 ? (
                                 <div className="space-y-2">
                                   {machine.top_3_downtime.map((dt, idx) => (

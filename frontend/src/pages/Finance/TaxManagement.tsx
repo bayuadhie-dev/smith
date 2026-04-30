@@ -116,7 +116,7 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
         )
       default:
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100">
             {status}
           </span>
         )
@@ -173,8 +173,8 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">🧾 Tax Management</h1>
-          <p className="text-gray-600 mt-1">Monitor VAT, income tax, and withholding tax obligations</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">🧾 Tax Management</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Monitor VAT, income tax, and withholding tax obligations</p>
         </div>
         <div className="flex gap-3">
           <button 
@@ -207,7 +207,7 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
       {taxSummary && (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-900">Tax Summary - {period}</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Tax Summary - {period}</h2>
             <button className="btn-secondary text-sm">
               Change Period
             </button>
@@ -220,7 +220,7 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
                   <CalculatorIcon className="h-6 w-6 text-white" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">VAT Payable</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300">VAT Payable</p>
                   <p className="text-2xl font-bold text-red-600">{formatRupiah(taxSummary.vat_payable)}</p>
                 </div>
               </div>
@@ -232,7 +232,7 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
                   <CalculatorIcon className="h-6 w-6 text-white" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">VAT Receivable</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300">VAT Receivable</p>
                   <p className="text-2xl font-bold text-green-600">{formatRupiah(taxSummary.vat_receivable)}</p>
                 </div>
               </div>
@@ -244,7 +244,7 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
                   <CalculatorIcon className="h-6 w-6 text-white" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Net VAT</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Net VAT</p>
                   <p className={`text-2xl font-bold ${taxSummary.net_vat >= 0 ? 'text-red-600' : 'text-green-600'}`}>
                     {formatRupiah(taxSummary.net_vat)}
                   </p>
@@ -260,7 +260,7 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
                   <DocumentTextIcon className="h-6 w-6 text-white" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Income Tax</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Income Tax</p>
                   <p className="text-2xl font-bold text-purple-600">{formatRupiah(taxSummary.income_tax)}</p>
                 </div>
               </div>
@@ -272,7 +272,7 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
                   <DocumentTextIcon className="h-6 w-6 text-white" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Withholding Tax</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Withholding Tax</p>
                   <p className="text-2xl font-bold text-orange-600">{formatRupiah(taxSummary.withholding_tax)}</p>
                 </div>
               </div>
@@ -284,7 +284,7 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
                   <ExclamationTriangleIcon className="h-6 w-6 text-white" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Tax Liability</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Tax Liability</p>
                   <p className="text-2xl font-bold text-red-700">{formatRupiah(taxSummary.total_tax_liability)}</p>
                 </div>
               </div>
@@ -299,8 +299,8 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="text-center py-8">
             <CalculatorIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No upcoming tax obligations</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No upcoming tax obligations</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               Tax obligations will appear here based on your transactions
             </p>
           </div>
@@ -309,34 +309,34 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
 
       {/* Tax Transactions */}
       <div className="card overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Recent Tax Transactions</h3>
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Recent Tax Transactions</h3>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.date')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.date')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.description')}</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.description')}</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Base Amount
                 </th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Tax Rate
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Tax Amount
                 </th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.status')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.actions')}</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {taxTransactions.map((transaction) => (
-                <tr key={transaction.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <tr key={transaction.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {formatDate(transaction.transaction_date)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -344,13 +344,13 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
                       {transaction.type}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {transaction.description}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900 dark:text-white">
                     {formatRupiah(transaction.base_amount)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900 dark:text-white">
                     {transaction.tax_rate}%
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-blue-600">
@@ -400,12 +400,12 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
       {/* Add Tax Transaction Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">🧾 Record Tax Transaction</h3>
               <button 
                 onClick={() => setShowAddModal(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-300"
               >
                 ✕
               </button>
@@ -413,7 +413,7 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
             
             <form className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Tax Type
                 </label>
                 <select className="input w-full">
@@ -426,26 +426,26 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Transaction Date
                 </label>
                 <input type="date" className="input w-full" />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">{t('common.description')}</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('common.description')}</label>
                 <input type="text" className="input w-full" placeholder="e.g., Purchase from Supplier A" />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Base Amount
                   </label>
                   <input type="number" className="input w-full" placeholder="100000" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Tax Rate (%)
                   </label>
                   <input type="number" className="input w-full" placeholder="11" step="0.1" />
@@ -469,8 +469,8 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
       {taxTransactions.length === 0 && !loading && (
         <div className="text-center py-12">
           <CalculatorIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No tax transactions found</h3>
-          <p className="mt-1 text-sm text-gray-500">Start by recording your first tax transaction</p>
+          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No tax transactions found</h3>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Start by recording your first tax transaction</p>
         </div>
       )}
     </div>

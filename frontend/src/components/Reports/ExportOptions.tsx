@@ -236,18 +236,18 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({
       {/* Advanced Export Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
+          <div className="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800">
             <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-6">Advanced Export Options</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-6">Advanced Export Options</h3>
               
               <div className="space-y-6">
                 
                 {/* Export Format Selection */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">Export Format</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-3">Export Format</label>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {exportFormats.map((format) => (
-                      <label key={format.value} className="flex items-start p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                      <label key={format.value} className="flex items-start p-3 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                         <input
                           type="radio"
                           name="format"
@@ -259,9 +259,9 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({
                         <div className="flex-1">
                           <div className="flex items-center">
                             <format.icon className="h-5 w-5 text-gray-400 mr-2" />
-                            <span className="font-medium text-gray-900">{format.label}</span>
+                            <span className="font-medium text-gray-900 dark:text-white">{format.label}</span>
                           </div>
-                          <p className="text-sm text-gray-500 mt-1">{format.description}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{format.description}</p>
                         </div>
                       </label>
                     ))}
@@ -271,23 +271,23 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({
                 {/* File Settings */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">File Name</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">File Name</label>
                     <input
                       type="text"
                       value={exportSettings.fileName}
                       onChange={(e) => setExportSettings({...exportSettings, fileName: e.target.value})}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2"
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                     />
                   </div>
                   
                   {exportSettings.format === 'pdf' && (
                     <>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Page Orientation</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Page Orientation</label>
                         <select
                           value={exportSettings.pageOrientation}
                           onChange={(e) => setExportSettings({...exportSettings, pageOrientation: e.target.value})}
-                          className="w-full border border-gray-300 rounded-md px-3 py-2"
+                          className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                         >
                           <option value="portrait">Portrait</option>
                           <option value="landscape">Landscape</option>
@@ -295,11 +295,11 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({
                       </div>
                       
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Paper Size</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Paper Size</label>
                         <select
                           value={exportSettings.paperSize}
                           onChange={(e) => setExportSettings({...exportSettings, paperSize: e.target.value})}
-                          className="w-full border border-gray-300 rounded-md px-3 py-2"
+                          className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                         >
                           {paperSizes.map((size) => (
                             <option key={size.value} value={size.value}>
@@ -314,7 +314,7 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({
 
                 {/* Content Options */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">Content Options</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-3">Content Options</label>
                   <div className="space-y-2">
                     <label className="flex items-center">
                       <input
@@ -323,7 +323,7 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({
                         onChange={(e) => setExportSettings({...exportSettings, includeCharts: e.target.checked})}
                         className="mr-2"
                       />
-                      <span className="text-sm text-gray-700">Include charts and visualizations</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-200">Include charts and visualizations</span>
                     </label>
                     
                     <label className="flex items-center">
@@ -333,7 +333,7 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({
                         onChange={(e) => setExportSettings({...exportSettings, includeRawData: e.target.checked})}
                         className="mr-2"
                       />
-                      <span className="text-sm text-gray-700">Include raw data tables</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-200">Include raw data tables</span>
                     </label>
                     
                     <label className="flex items-center">
@@ -343,14 +343,14 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({
                         onChange={(e) => setExportSettings({...exportSettings, compression: e.target.checked})}
                         className="mr-2"
                       />
-                      <span className="text-sm text-gray-700">Enable compression (smaller file size)</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-200">Enable compression (smaller file size)</span>
                     </label>
                   </div>
                 </div>
 
                 {/* Email Options */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Email Recipients (optional)
                   </label>
                   <div className="flex items-center">
@@ -360,10 +360,10 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({
                       value={exportSettings.emailRecipients}
                       onChange={(e) => setExportSettings({...exportSettings, emailRecipients: e.target.value})}
                       placeholder="email1@company.com, email2@company.com"
-                      className="flex-1 border border-gray-300 rounded-md px-3 py-2"
+                      className="flex-1 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     Leave empty to download directly. Separate multiple emails with commas.
                   </p>
                 </div>
@@ -374,7 +374,7 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                  className="px-4 py-2 bg-gray-300 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400"
                 >{t('common.cancel')}</button>
                 <button
                   onClick={advancedExport}

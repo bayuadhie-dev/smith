@@ -188,7 +188,7 @@ const ProductDevelopmentList: React.FC = () => {
 
           <button
             onClick={() => fetchProducts()}
-            className="p-2 text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            className="p-2 text-gray-600 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
             <ArrowPathIcon className="w-5 h-5" />
           </button>
@@ -200,7 +200,7 @@ const ProductDevelopmentList: React.FC = () => {
         <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl">
           <RocketLaunchIcon className="w-16 h-16 mx-auto text-gray-300 mb-4" />
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">No products found</h3>
-          <p className="text-gray-500 mt-1">Start by creating a new product development</p>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">Start by creating a new product development</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -213,7 +213,7 @@ const ProductDevelopmentList: React.FC = () => {
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
                     <h3 className="font-semibold text-gray-900 dark:text-white text-lg">{product.name}</h3>
-                    <p className="text-sm text-gray-500 capitalize">{product.category?.replace('_', ' ')}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">{product.category?.replace('_', ' ')}</p>
                   </div>
                   <span className={`px-2 py-1 text-xs font-medium rounded-full ${stageColors[product.development_stage] || 'bg-gray-100 text-gray-800'}`}>
                     {product.development_stage?.replace('_', ' ')}
@@ -228,11 +228,11 @@ const ProductDevelopmentList: React.FC = () => {
 
                 {/* Progress Bar */}
                 <div className="mb-4">
-                  <div className="flex justify-between text-xs text-gray-500 mb-1">
+                  <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
                     <span>Progress</span>
                     <span>{getStageProgress(product.development_stage)}%</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div
                       className="bg-blue-600 h-2 rounded-full transition-all"
                       style={{ width: `${getStageProgress(product.development_stage)}%` }}
@@ -244,13 +244,13 @@ const ProductDevelopmentList: React.FC = () => {
                 <div className="space-y-2 text-sm">
                   {product.target_market && (
                     <div className="flex justify-between">
-                      <span className="text-gray-500">Target Market:</span>
+                      <span className="text-gray-500 dark:text-gray-400">Target Market:</span>
                       <span className="text-gray-900 dark:text-white truncate ml-2">{product.target_market}</span>
                     </div>
                   )}
                   {product.estimated_launch_date && (
                     <div className="flex justify-between">
-                      <span className="text-gray-500">Launch Date:</span>
+                      <span className="text-gray-500 dark:text-gray-400">Launch Date:</span>
                       <span className="text-gray-900 dark:text-white">
                         {new Date(product.estimated_launch_date).toLocaleDateString('id-ID')}
                       </span>
@@ -258,7 +258,7 @@ const ProductDevelopmentList: React.FC = () => {
                   )}
                   {product.development_cost > 0 && (
                     <div className="flex justify-between">
-                      <span className="text-gray-500">Dev Cost:</span>
+                      <span className="text-gray-500 dark:text-gray-400">Dev Cost:</span>
                       <span className="text-gray-900 dark:text-white">
                         Rp {product.development_cost.toLocaleString('id-ID')}
                       </span>
@@ -268,14 +268,14 @@ const ProductDevelopmentList: React.FC = () => {
 
                 {product.project && (
                   <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
-                    <span className="text-xs text-gray-500">Project: </span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">Project: </span>
                     <span className="text-xs text-blue-600">{product.project.project_code}</span>
                   </div>
                 )}
               </div>
 
               {/* Actions */}
-              <div className="px-5 py-3 bg-gray-50 dark:bg-gray-700/50 flex justify-end gap-2">
+              <div className="px-5 py-3 bg-gray-50 dark:bg-gray-900 dark:bg-gray-700/50 flex justify-end gap-2">
                 <Link
                   to={`/app/rd/products/${product.id}`}
                   className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -309,7 +309,7 @@ const ProductDevelopmentList: React.FC = () => {
           <button
             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
             disabled={currentPage === 1}
-            className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+            className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
           >
             Previous
           </button>
@@ -319,7 +319,7 @@ const ProductDevelopmentList: React.FC = () => {
           <button
             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
-            className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+            className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
           >
             Next
           </button>

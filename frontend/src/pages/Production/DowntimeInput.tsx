@@ -16,7 +16,7 @@ const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({ chi
 );
 
 const CardHeader: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="px-6 py-4 border-b border-gray-200">{children}</div>
+  <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">{children}</div>
 );
 
 const CardTitle: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
@@ -28,7 +28,7 @@ const CardContent: React.FC<{ children: React.ReactNode; className?: string }> =
 );
 
 const Label: React.FC<{ children: React.ReactNode; htmlFor?: string }> = ({ children, htmlFor }) => (
-  <label htmlFor={htmlFor} className="block text-sm font-medium text-gray-700 mb-1">{children}</label>
+  <label htmlFor={htmlFor} className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{children}</label>
 );
 
 const Input: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (props) => (
@@ -241,8 +241,8 @@ const DowntimeInput: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Input Downtime Mesin</h1>
-          <p className="text-gray-600">Catat downtime mesin dengan kategorisasi dan analisis dampak</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Input Downtime Mesin</h1>
+          <p className="text-gray-600 dark:text-gray-300">Catat downtime mesin dengan kategorisasi dan analisis dampak</p>
         </div>
       </div>
 
@@ -271,7 +271,7 @@ const DowntimeInput: React.FC = () => {
                   id="shift_production_id"
                   value={formData.shift_production_id}
                   onChange={(e) => handleInputChange('shift_production_id', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Pilih Shift Produksi</option>
                   {shiftProductions.map((sp) => (
@@ -283,7 +283,7 @@ const DowntimeInput: React.FC = () => {
               </div>
 
               {selectedShiftProduction && (
-                <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
                   <p className="text-sm"><strong>Mesin:</strong> {selectedShiftProduction.machine.code} - {selectedShiftProduction.machine.name}</p>
                   <p className="text-sm"><strong>Produk:</strong> {selectedShiftProduction.product.code} - {selectedShiftProduction.product.name}</p>
                   <p className="text-sm"><strong>Shift:</strong> {selectedShiftProduction.shift}</p>
@@ -296,7 +296,7 @@ const DowntimeInput: React.FC = () => {
                   id="downtime_type"
                   value={formData.downtime_type}
                   onChange={(e) => handleInputChange('downtime_type', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Pilih Tipe</option>
                   <option value="planned">Planned Downtime</option>
@@ -311,7 +311,7 @@ const DowntimeInput: React.FC = () => {
                   value={formData.downtime_category}
                   onChange={(e) => handleInputChange('downtime_category', e.target.value)}
                   disabled={!formData.downtime_type}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 dark:bg-gray-800 disabled:cursor-not-allowed"
                 >
                   <option value="">Pilih Kategori</option>
                   {formData.downtime_type && downtimeCategories[formData.downtime_type as keyof typeof downtimeCategories]?.map((category) => (
@@ -328,7 +328,7 @@ const DowntimeInput: React.FC = () => {
                   id="priority"
                   value={formData.priority}
                   onChange={(e) => handleInputChange('priority', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>

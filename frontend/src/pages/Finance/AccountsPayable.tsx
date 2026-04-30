@@ -143,8 +143,8 @@ const [payables, setPayables] = useState<AccountPayable[]>([])
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">💳 Accounts Payable</h1>
-          <p className="text-gray-600 mt-1">Manage supplier outstanding balances and payment schedules</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">💳 Accounts Payable</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Manage supplier outstanding balances and payment schedules</p>
         </div>
         <div className="flex gap-3">
           <Link to="/app/finance/payments/new" className="btn-primary inline-flex items-center gap-2">
@@ -162,8 +162,8 @@ const [payables, setPayables] = useState<AccountPayable[]>([])
               <CreditCardIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Payable</p>
-              <p className="text-2xl font-bold text-gray-900">{formatRupiah(totalPayable)}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Payable</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatRupiah(totalPayable)}</p>
             </div>
           </div>
         </div>
@@ -174,8 +174,8 @@ const [payables, setPayables] = useState<AccountPayable[]>([])
               <ExclamationTriangleIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Overdue</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Overdue</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {payables.filter(p => p.days_overdue > 0).length}
               </p>
             </div>
@@ -188,8 +188,8 @@ const [payables, setPayables] = useState<AccountPayable[]>([])
               <ClockIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Due This Week</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Due This Week</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {payables.filter(p => {
                   if (!p.due_date) return false
                   const dueDate = new Date(p.due_date)
@@ -208,8 +208,8 @@ const [payables, setPayables] = useState<AccountPayable[]>([])
               <CheckCircleIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Payment Rate</p>
-              <p className="text-2xl font-bold text-gray-900">92%</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Payment Rate</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">92%</p>
             </div>
           </div>
         </div>
@@ -266,49 +266,49 @@ const [payables, setPayables] = useState<AccountPayable[]>([])
       {/* Payables Table */}
       <div className="card overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Invoice Date
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Due Date
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Balance Due
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.status')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.actions')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {payables.map((payable) => (
-                <tr key={payable.id} className="hover:bg-gray-50">
+                <tr key={payable.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{payable.invoice_number}</div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">{payable.invoice_number}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{payable.supplier_name}</div>
+                    <div className="text-sm text-gray-900 dark:text-white">{payable.supplier_name}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{formatDate(payable.invoice_date)}</div>
+                    <div className="text-sm text-gray-900 dark:text-white">{formatDate(payable.invoice_date)}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
+                    <div className="text-sm text-gray-900 dark:text-white">
                       {payable.due_date ? formatDate(payable.due_date) : '-'}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">
                       {formatRupiah(payable.total_amount)}
                     </div>
                   </td>
@@ -374,24 +374,24 @@ const [payables, setPayables] = useState<AccountPayable[]>([])
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+        <div className="flex items-center justify-between border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 sm:px-6">
           <div className="flex flex-1 justify-between sm:hidden">
             <button
               onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="relative inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
             >
             </button>
             <button
               onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
-              className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
             >
             </button>
           </div>
           <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-gray-700 dark:text-gray-200">
                 Page <span className="font-medium">{currentPage}</span> of{' '}
                 <span className="font-medium">{totalPages}</span>
               </p>

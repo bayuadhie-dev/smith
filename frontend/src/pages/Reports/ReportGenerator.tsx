@@ -312,8 +312,8 @@ const { reportId } = useParams()
     return (
       <div className="p-6">
         <div className="text-center py-12">
-          <h2 className="text-xl font-semibold text-gray-900">Report not found</h2>
-          <p className="text-gray-600 mt-2">The requested report configuration could not be loaded.</p>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Report not found</h2>
+          <p className="text-gray-600 dark:text-gray-300 mt-2">The requested report configuration could not be loaded.</p>
           <button
             onClick={() => navigate('/app/reports')}
             className="btn-primary mt-4"
@@ -330,8 +330,8 @@ const { reportId } = useParams()
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{config.title}</h1>
-          <p className="text-gray-600 mt-1">{config.description}</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{config.title}</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">{config.description}</p>
         </div>
         <button
           onClick={() => navigate('/app/reports')}
@@ -346,14 +346,14 @@ const { reportId } = useParams()
         <div className="lg:col-span-1 space-y-6">
           {/* Filters */}
           <div className="card p-4">
-            <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
               <FunnelIcon className="h-5 w-5" />
             </h3>
             
             <div className="space-y-4">
               {config.filters.map((filter) => (
                 <div key={filter.field}>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     {filter.label}
                   </label>
                   
@@ -411,7 +411,7 @@ const { reportId } = useParams()
 
           {/* Field Selection */}
           <div className="card p-4">
-            <h3 className="font-semibold text-gray-900 mb-4">Select Fields</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Select Fields</h3>
             <div className="space-y-2">
               {config.fields.map((field) => (
                 <label key={field} className="flex items-center">
@@ -425,9 +425,9 @@ const { reportId } = useParams()
                         setSelectedFields(selectedFields.filter(f => f !== field))
                       }
                     }}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
                   />
-                  <span className="ml-2 text-sm text-gray-700">
+                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-200">
                     {field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                   </span>
                 </label>
@@ -437,7 +437,7 @@ const { reportId } = useParams()
 
           {/* Display Options */}
           <div className="card p-4">
-            <h3 className="font-semibold text-gray-900 mb-4">Display As</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Display As</h3>
             <div className="space-y-2">
               <label className="flex items-center">
                 <input
@@ -449,7 +449,7 @@ const { reportId } = useParams()
                   className="text-blue-600 focus:ring-blue-500"
                 />
                 <TableCellsIcon className="h-4 w-4 ml-2 mr-1" />
-                <span className="text-sm text-gray-700">Table</span>
+                <span className="text-sm text-gray-700 dark:text-gray-200">Table</span>
               </label>
               {config.chartTypes.map((type) => (
                 <label key={type} className="flex items-center">
@@ -462,7 +462,7 @@ const { reportId } = useParams()
                     className="text-blue-600 focus:ring-blue-500"
                   />
                   <ChartBarIcon className="h-4 w-4 ml-2 mr-1" />
-                  <span className="text-sm text-gray-700">
+                  <span className="text-sm text-gray-700 dark:text-gray-200">
                     {type.charAt(0).toUpperCase() + type.slice(1)} Chart
                   </span>
                 </label>
@@ -484,7 +484,7 @@ const { reportId } = useParams()
         <div className="lg:col-span-3">
           <div className="card p-6">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="font-semibold text-gray-900">Report Results</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white">Report Results</h3>
               
               {reportData.length > 0 && (
                 <div className="flex gap-2">
@@ -511,30 +511,30 @@ const { reportId } = useParams()
             </div>
 
             {reportData.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
+              <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                 <ChartBarIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                 <p>Click "Generate Report" to display results</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-900">
                     <tr>
                       {selectedFields.map((field) => (
                         <th
                           key={field}
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                         >
                           {field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                         </th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     {reportData.slice(0, 50).map((row, index) => (
-                      <tr key={index} className="hover:bg-gray-50">
+                      <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                         {selectedFields.map((field) => (
-                          <td key={field} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td key={field} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                             {row[field] || '-'}
                           </td>
                         ))}
@@ -544,7 +544,7 @@ const { reportId } = useParams()
                 </table>
                 
                 {reportData.length > 50 && (
-                  <div className="mt-4 text-center text-sm text-gray-500">
+                  <div className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
                     Showing first 50 of {reportData.length} records. Export to view all data.
                   </div>
                 )}

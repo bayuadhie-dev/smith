@@ -207,17 +207,17 @@ const QualityCheckForm: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             {isEdit ? 'Edit Quality Inspection' : 'New Quality Inspection'}
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-300">
             {isEdit ? 'Update quality inspection details' : 'Record new quality inspection and results'}
           </p>
         </div>
       </div>
 
       {/* Form */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
             <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
@@ -228,13 +228,13 @@ const QualityCheckForm: React.FC = () => {
 
           {/* Inspection Details */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
               Inspection Information
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <Calendar className="inline h-4 w-4 mr-1" />
                   Inspection Date & Time *
                 </label>
@@ -244,12 +244,12 @@ const QualityCheckForm: React.FC = () => {
                   value={formData.inspection_date}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Inspection Type *
                 </label>
                 <select
@@ -257,7 +257,7 @@ const QualityCheckForm: React.FC = () => {
                   value={formData.inspection_type}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   {inspectionTypes.map(type => (
                     <option key={type.value} value={type.value}>
@@ -270,13 +270,13 @@ const QualityCheckForm: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <CubeIcon className="inline h-4 w-4 mr-1" />{t('production.product')}</label>
                 <select
                   name="product_id"
                   value={formData.product_id || ''}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Select Product</option>
                   {products.map(product => (
@@ -288,7 +288,7 @@ const QualityCheckForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <Hash className="inline h-4 w-4 mr-1" />
                   Batch Number
                 </label>
@@ -297,7 +297,7 @@ const QualityCheckForm: React.FC = () => {
                   name="batch_number"
                   value={formData.batch_number}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Enter batch number"
                 />
               </div>
@@ -306,13 +306,13 @@ const QualityCheckForm: React.FC = () => {
 
           {/* Sample and Defect Information */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
               Sample & Quality Data
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Sample Size *
                 </label>
                 <input
@@ -322,13 +322,13 @@ const QualityCheckForm: React.FC = () => {
                   onChange={handleInputChange}
                   required
                   min="1"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Enter sample size"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Defect Count
                 </label>
                 <input
@@ -338,7 +338,7 @@ const QualityCheckForm: React.FC = () => {
                   onChange={handleInputChange}
                   min="0"
                   max={formData.sample_size}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Enter defect count"
                 />
               </div>
@@ -346,23 +346,23 @@ const QualityCheckForm: React.FC = () => {
 
             {/* Quality Metrics */}
             {formData.sample_size > 0 && (
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <h4 className="font-medium text-gray-900 mb-3">Quality Metrics</h4>
+              <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                <h4 className="font-medium text-gray-900 dark:text-white mb-3">Quality Metrics</h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-green-600">{passRate.toFixed(1)}%</div>
-                    <div className="text-sm text-gray-600">Pass Rate</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-300">Pass Rate</div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-red-600">{defectRate.toFixed(1)}%</div>
-                    <div className="text-sm text-gray-600">Defect Rate</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-300">Defect Rate</div>
                   </div>
                   <div className="text-center">
                     <div className={`flex items-center justify-center gap-2 ${qualityStatus.color}`}>
                       <QualityIcon className="h-5 w-5" />
                       <span className="font-medium">{qualityStatus.label}</span>
                     </div>
-                    <div className="text-sm text-gray-600">Quality Status</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-300">Quality Status</div>
                   </div>
                 </div>
               </div>
@@ -371,13 +371,13 @@ const QualityCheckForm: React.FC = () => {
 
           {/* Status and Results */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
               Status & Results
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <User className="inline h-4 w-4 mr-1" />
                   Inspection Status *
                 </label>
@@ -386,7 +386,7 @@ const QualityCheckForm: React.FC = () => {
                   value={formData.status}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   {statusOptions.map(status => (
                     <option key={status.value} value={status.value}>
@@ -397,14 +397,14 @@ const QualityCheckForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Inspection Result
                 </label>
                 <select
                   name="result"
                   value={formData.result}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   {resultOptions.map(result => (
                     <option key={result.value} value={result.value}>
@@ -417,7 +417,7 @@ const QualityCheckForm: React.FC = () => {
 
             {/* Result Status Display */}
             {formData.result && (
-              <div className="p-3 bg-gray-50 rounded-lg">
+              <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
                 <div className="flex items-center gap-2">
                   {formData.result === 'accepted' && <CheckCircle className="h-5 w-5 text-green-600" />}
                   {formData.result === 'rejected' && <XCircle className="h-5 w-5 text-red-600" />}
@@ -433,7 +433,7 @@ const QualityCheckForm: React.FC = () => {
           {/* Findings and Actions */}
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 <DocumentTextIcon className="inline h-4 w-4 mr-1" />
               </label>
               <textarea
@@ -441,13 +441,13 @@ const QualityCheckForm: React.FC = () => {
                 value={formData.findings}
                 onChange={handleInputChange}
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Describe inspection findings, defects, or observations..."
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Corrective Actions
               </label>
               <textarea
@@ -455,7 +455,7 @@ const QualityCheckForm: React.FC = () => {
                 value={formData.corrective_actions}
                 onChange={handleInputChange}
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Describe corrective actions taken or required..."
               />
             </div>
@@ -487,11 +487,11 @@ const QualityCheckForm: React.FC = () => {
           )}
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200">
+          <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
             <button
               type="button"
               onClick={() => navigate('/app/quality/inspections')}
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+              className="px-4 py-2 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
             >
               <X className="inline h-4 w-4 mr-2" />{t('common.cancel')}</button>
             <button

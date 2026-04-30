@@ -147,8 +147,8 @@ export default function WIPStock() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">📦 WIP Stock</h1>
-          <p className="text-sm text-gray-500">Work In Progress - Stok hasil produksi sebelum packing</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">📦 WIP Stock</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Work In Progress - Stok hasil produksi sebelum packing</p>
         </div>
         <Link
           to="/app/production/packing-list"
@@ -160,7 +160,7 @@ export default function WIPStock() {
       </div>
 
       {/* Search */}
-      <div className="bg-white rounded-lg shadow p-4 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
         <div className="relative max-w-md">
           <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input
@@ -168,7 +168,7 @@ export default function WIPStock() {
             placeholder="Cari produk..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </div>
@@ -194,49 +194,49 @@ export default function WIPStock() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
         ) : wipStocks.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-64 text-gray-500">
+          <div className="flex flex-col items-center justify-center h-64 text-gray-500 dark:text-gray-400">
             <ArchiveBoxIcon className="h-16 w-16 mb-4 text-gray-300" />
             <p>Tidak ada stok WIP</p>
             <p className="text-sm">Selesaikan Work Order untuk menambah stok WIP</p>
           </div>
         ) : (
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Produk</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Stok Karton</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Stok Pcs</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Pack/Karton</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">WO Terakhir</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Produk</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Stok Karton</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Stok Pcs</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Pack/Karton</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">WO Terakhir</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {wipStocks.map((wip) => (
-                <tr key={wip.id} className="hover:bg-gray-50">
+                <tr key={wip.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                   <td className="px-4 py-3">
-                    <p className="font-medium text-gray-900">{wip.product_name}</p>
-                    <p className="text-xs text-gray-500">{wip.product_code}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{wip.product_name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{wip.product_code}</p>
                   </td>
                   <td className="px-4 py-3 text-center">
                     <span className="text-xl font-bold text-purple-600">{wip.quantity_carton.toLocaleString()}</span>
                   </td>
                   <td className="px-4 py-3 text-center">
-                    <span className="text-lg font-medium text-gray-700">{wip.quantity_pcs.toLocaleString()}</span>
+                    <span className="text-lg font-medium text-gray-700 dark:text-gray-200">{wip.quantity_pcs.toLocaleString()}</span>
                   </td>
-                  <td className="px-4 py-3 text-center text-sm text-gray-600">
+                  <td className="px-4 py-3 text-center text-sm text-gray-600 dark:text-gray-300">
                     {wip.pack_per_carton}
                   </td>
                   <td className="px-4 py-3">
                     <p className="text-sm text-blue-600">{wip.last_wo_number || '-'}</p>
                     {wip.last_updated_at && (
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         {new Date(wip.last_updated_at).toLocaleDateString('id-ID')}
                       </p>
                     )}
@@ -245,7 +245,7 @@ export default function WIPStock() {
                     <div className="flex items-center justify-center gap-2">
                       <button
                         onClick={() => openMovementsModal(wip)}
-                        className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 flex items-center gap-1"
+                        className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-200 dark:bg-gray-700 flex items-center gap-1"
                       >
                         <ClockIcon className="h-3 w-3" />
                         Histori
@@ -267,7 +267,7 @@ export default function WIPStock() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="bg-gray-50 px-4 py-3 flex items-center justify-between border-t">
+          <div className="bg-gray-50 dark:bg-gray-900 px-4 py-3 flex items-center justify-between border-t">
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}
@@ -275,7 +275,7 @@ export default function WIPStock() {
             >
               Sebelumnya
             </button>
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-gray-600 dark:text-gray-300">
               Halaman {page} dari {totalPages}
             </span>
             <button
@@ -292,7 +292,7 @@ export default function WIPStock() {
       {/* Adjustment Modal */}
       {showAdjustModal && selectedProduct && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
             <h3 className="text-lg font-semibold mb-4">Adjustment WIP Stock</h3>
             
             <div className="bg-purple-50 rounded-lg p-3 mb-4">
@@ -304,31 +304,31 @@ export default function WIPStock() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Adjustment Karton (+ untuk tambah, - untuk kurang)
                 </label>
                 <input
                   type="number"
                   value={adjustmentCarton}
                   onChange={(e) => setAdjustmentCarton(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: 10 atau -5"
                 />
                 {adjustmentCarton && (
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                     Stok setelah adjustment: {selectedProduct.quantity_carton + parseInt(adjustmentCarton || '0')} karton
                   </p>
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Catatan
                 </label>
                 <textarea
                   value={adjustmentNotes}
                   onChange={(e) => setAdjustmentNotes(e.target.value)}
                   rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                   placeholder="Alasan adjustment..."
                 />
               </div>
@@ -337,7 +337,7 @@ export default function WIPStock() {
             <div className="mt-6 flex justify-end gap-3">
               <button
                 onClick={() => setShowAdjustModal(false)}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300"
               >
                 Batal
               </button>
@@ -356,15 +356,15 @@ export default function WIPStock() {
       {/* Movements Modal */}
       {showMovementsModal && selectedProduct && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-lg font-semibold">Histori Movement</h3>
-                <p className="text-sm text-gray-500">{selectedProduct.product_name}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{selectedProduct.product_name}</p>
               </div>
               <button
                 onClick={() => setShowMovementsModal(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-300"
               >
                 ✕
               </button>
@@ -376,22 +376,22 @@ export default function WIPStock() {
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                 </div>
               ) : movements.length === 0 ? (
-                <p className="text-center text-gray-500 py-8">Belum ada histori movement</p>
+                <p className="text-center text-gray-500 dark:text-gray-400 py-8">Belum ada histori movement</p>
               ) : (
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50 sticky top-0">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-900 sticky top-0">
                     <tr>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Tanggal</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Tipe</th>
-                      <th className="px-3 py-2 text-right text-xs font-medium text-gray-500">Qty</th>
-                      <th className="px-3 py-2 text-right text-xs font-medium text-gray-500">Saldo</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Referensi</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Tanggal</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Tipe</th>
+                      <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400">Qty</th>
+                      <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400">Saldo</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Referensi</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200">
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                     {movements.map((m) => (
                       <tr key={m.id}>
-                        <td className="px-3 py-2 text-xs text-gray-600">
+                        <td className="px-3 py-2 text-xs text-gray-600 dark:text-gray-300">
                           {new Date(m.created_at).toLocaleString('id-ID')}
                         </td>
                         <td className="px-3 py-2">
@@ -405,10 +405,10 @@ export default function WIPStock() {
                         <td className={`px-3 py-2 text-right text-xs font-medium ${getMovementColor(m.movement_type)}`}>
                           {m.movement_type === 'out' ? '-' : '+'}{m.quantity_carton} ktn
                         </td>
-                        <td className="px-3 py-2 text-right text-xs text-gray-600">
+                        <td className="px-3 py-2 text-right text-xs text-gray-600 dark:text-gray-300">
                           {m.balance_carton} ktn
                         </td>
-                        <td className="px-3 py-2 text-xs text-gray-600">
+                        <td className="px-3 py-2 text-xs text-gray-600 dark:text-gray-300">
                           <p>{m.reference_number}</p>
                           {m.notes && <p className="text-gray-400">{m.notes}</p>}
                         </td>

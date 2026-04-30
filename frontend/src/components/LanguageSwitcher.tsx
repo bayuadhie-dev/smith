@@ -31,7 +31,7 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
   return (
     <div className={`flex items-center space-x-2 ${className}`}>
       {showLabel && (
-        <div className="flex items-center space-x-1 text-sm text-gray-600">
+        <div className="flex items-center space-x-1 text-sm text-gray-600 dark:text-gray-300">
           <GlobeAltIcon className="h-4 w-4" />
           <span>{t('settings.language')}:</span>
         </div>

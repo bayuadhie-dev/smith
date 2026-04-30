@@ -112,12 +112,12 @@ export default function EmployeeList() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Link to="/app/hr" className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-            <ArrowLeftIcon className="h-5 w-5 text-gray-600" />
+          <Link to="/app/hr" className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg transition-colors">
+            <ArrowLeftIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Data Karyawan</h1>
-            <p className="text-gray-500 text-sm">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Data Karyawan</h1>
+            <p className="text-gray-500 dark:text-gray-400 text-sm">
               {filteredEmployees.length} dari {data?.employees?.length || 0} karyawan
             </p>
           </div>
@@ -139,7 +139,7 @@ export default function EmployeeList() {
               placeholder="Cari nama, NIK, atau email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
           
@@ -165,13 +165,13 @@ export default function EmployeeList() {
 
         {/* Filter Options */}
         {showFilters && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-200">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Departemen</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Departemen</label>
               <select
                 value={departmentFilter}
                 onChange={(e) => setDepartmentFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Semua Departemen</option>
                 {departments?.departments?.map((dept: any) => (
@@ -180,11 +180,11 @@ export default function EmployeeList() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Jabatan</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Jabatan</label>
               <select
                 value={positionFilter}
                 onChange={(e) => setPositionFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Semua Jabatan</option>
                 {positions?.positions?.map((pos: any) => (
@@ -193,11 +193,11 @@ export default function EmployeeList() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Status</label>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Semua Status</option>
                 <option value="active">Aktif</option>
@@ -206,11 +206,11 @@ export default function EmployeeList() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Tipe Karyawan</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Tipe Karyawan</label>
               <select
                 value={employmentTypeFilter}
                 onChange={(e) => setEmploymentTypeFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Semua Tipe</option>
                 {employmentTypes.map((type) => (
@@ -226,23 +226,23 @@ export default function EmployeeList() {
       {filteredEmployees.length > 0 ? (
         <div className="card overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NIK</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Lengkap</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Departemen</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jabatan</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">NIK</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Nama Lengkap</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Departemen</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Jabatan</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tipe</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Aksi</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {filteredEmployees.map((employee: any) => (
-                  <tr key={employee.id} className="hover:bg-gray-50 transition-colors">
+                  <tr key={employee.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="font-mono text-sm font-medium text-gray-900">{employee.employee_number}</span>
+                      <span className="font-mono text-sm font-medium text-gray-900 dark:text-white">{employee.employee_number}</span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
@@ -252,15 +252,15 @@ export default function EmployeeList() {
                           </span>
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{employee.full_name}</div>
-                          <div className="text-sm text-gray-500">{employee.email || '-'}</div>
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">{employee.full_name}</div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">{employee.email || '-'}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                       {employee.department || '-'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                       {employee.position || '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -277,21 +277,21 @@ export default function EmployeeList() {
                       <div className="flex items-center justify-center gap-2">
                         <Link
                           to={`/app/hr/employees/${employee.id}`}
-                          className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          className="p-2 text-gray-500 dark:text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                           title="Lihat Detail"
                         >
                           <EyeIcon className="h-5 w-5" />
                         </Link>
                         <Link
                           to={`/app/hr/employees/${employee.id}/edit`}
-                          className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                          className="p-2 text-gray-500 dark:text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                           title="Edit"
                         >
                           <PencilSquareIcon className="h-5 w-5" />
                         </Link>
                         <button
                           onClick={() => handleDelete(employee.id, employee.full_name)}
-                          className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                           title="Hapus"
                         >
                           <TrashIcon className="h-5 w-5" />
@@ -306,13 +306,13 @@ export default function EmployeeList() {
         </div>
       ) : (
         <div className="card p-12 text-center">
-          <div className="mx-auto h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+          <div className="mx-auto h-16 w-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
             <UserGroupIcon className="h-8 w-8 text-gray-400" />
           </div>
-          <h3 className="text-lg font-medium text-gray-900">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">
             {hasActiveFilters ? 'Tidak ada data yang cocok' : 'Belum ada data karyawan'}
           </h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             {hasActiveFilters 
               ? 'Coba ubah filter pencarian Anda'
               : 'Mulai dengan menambahkan karyawan pertama'}

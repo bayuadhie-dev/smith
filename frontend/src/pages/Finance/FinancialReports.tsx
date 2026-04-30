@@ -483,8 +483,8 @@ const FinancialReports = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">📈 Financial Reports</h1>
-          <p className="text-gray-600 mt-1">Comprehensive financial statements and analysis</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">📈 Financial Reports</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Comprehensive financial statements and analysis</p>
         </div>
         <div className="flex gap-3">
           <select
@@ -557,7 +557,7 @@ const FinancialReports = () => {
 
       {/* Report Tabs */}
       <div className="card">
-        <div className="border-b border-gray-200">
+        <div className="border-b border-gray-200 dark:border-gray-700">
           <nav className="-mb-px flex space-x-8" aria-label="Tabs">
             <button
               onClick={() => setActiveReport('income')}

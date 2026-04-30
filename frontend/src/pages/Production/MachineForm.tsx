@@ -137,15 +137,15 @@ const navigate = useNavigate()
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/app/production/machines')}
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
           >
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
               {isEdit ? '🔧 Edit Machine' : '🏭 Add Machine'}
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-gray-600 dark:text-gray-300 mt-1">
               {isEdit ? 'Update machine information' : 'Add a new machine to production'}
             </p>
           </div>
@@ -157,12 +157,12 @@ const navigate = useNavigate()
         <div className="card p-6">
           <div className="flex items-center gap-2 mb-6">
             <CogIcon className="h-5 w-5 text-blue-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Basic Information</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Basic Information</h3>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Machine Name *
               </label>
               <input
@@ -177,7 +177,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Machine Code *
               </label>
               <input
@@ -192,7 +192,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Machine Type
               </label>
               <select
@@ -208,7 +208,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">{t('common.status')}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('common.status')}</label>
               <select
                 {...register('status')}
                 className="input"
@@ -222,7 +222,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               </label>
               <input
                 type="text"
@@ -233,7 +233,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               </label>
               <input
                 type="text"
@@ -244,7 +244,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Installation Date
               </label>
               <input
@@ -255,7 +255,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               </label>
               <input
                 type="text"
@@ -271,12 +271,12 @@ const navigate = useNavigate()
         <div className="card p-6">
           <div className="flex items-center gap-2 mb-6">
             <ChartBarIcon className="h-5 w-5 text-green-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Technical Specifications</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Technical Specifications</h3>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               </label>
               <input
                 type="number"
@@ -287,7 +287,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Unit of Measure
               </label>
               <select
@@ -302,7 +302,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Default Speed (pcs/menit)
               </label>
               <input
@@ -311,11 +311,11 @@ const navigate = useNavigate()
                 className="input"
                 placeholder="Speed mesin untuk perhitungan efisiensi"
               />
-              <p className="mt-1 text-xs text-gray-500">Speed default untuk input produksi (pcs per menit)</p>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Speed default untuk input produksi (pcs per menit)</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Target Efisiensi (%)
               </label>
               <input
@@ -324,11 +324,11 @@ const navigate = useNavigate()
                 className="input"
                 placeholder="60"
               />
-              <p className="mt-1 text-xs text-gray-500">Target efisiensi mesin (default 60%)</p>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Target efisiensi mesin (default 60%)</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Location
               </label>
               <input
@@ -340,7 +340,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Maintenance Schedule
               </label>
               <select
@@ -357,7 +357,7 @@ const navigate = useNavigate()
             </div>
 
             <div className="lg:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               </label>
               <textarea
                 {...register('specifications')}
@@ -368,7 +368,7 @@ const navigate = useNavigate()
             </div>
 
             <div className="lg:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               </label>
               <textarea
                 {...register('notes')}
@@ -383,9 +383,9 @@ const navigate = useNavigate()
                 <input
                   type="checkbox"
                   {...register('is_active')}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded"
                 />
-                <label className="ml-2 block text-sm text-gray-900">
+                <label className="ml-2 block text-sm text-gray-900 dark:text-white">
                   Machine is active
                 </label>
               </div>

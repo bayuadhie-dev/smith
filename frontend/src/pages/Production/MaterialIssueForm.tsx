@@ -325,17 +325,17 @@ const MaterialIssueForm: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             {isEdit ? t('production.update_issue') : t('production.create_issue')}
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-300">
             {isEdit ? t('production.update_issue') : t('production.create_issue')}
           </p>
         </div>
       </div>
 
       {/* Form */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
             <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
@@ -346,13 +346,13 @@ const MaterialIssueForm: React.FC = () => {
 
           {/* Issue Header Information */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
               {t('production.issue_information')}
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <DocumentTextIcon className="inline h-4 w-4 mr-1" />
                   {t('production.work_order')} *
                 </label>
@@ -367,14 +367,14 @@ const MaterialIssueForm: React.FC = () => {
                   placeholder={t('common.search') + " " + t('production.work_order')}
                 />
                 {selectedWorkOrder && (
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     Product: {selectedWorkOrder.product.code} - {selectedWorkOrder.product.name}
                   </p>
                 )}
               </div>
 
                <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   {t('production.issue_type')} *
                 </label>
                 <select
@@ -382,7 +382,7 @@ const MaterialIssueForm: React.FC = () => {
                   value={formData.issue_type}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   {issueTypes.map(type => (
                     <option key={type.value} value={type.value}>
@@ -395,7 +395,7 @@ const MaterialIssueForm: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <CalendarIcon className="inline h-4 w-4 mr-1" />
                   {t('common.date')} *
                 </label>
@@ -405,12 +405,12 @@ const MaterialIssueForm: React.FC = () => {
                   value={formData.issue_date}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   {t('production.required_date')}
                 </label>
                 <input
@@ -419,12 +419,12 @@ const MaterialIssueForm: React.FC = () => {
                   value={formData.required_date}
                   onChange={handleInputChange}
                   min={getMinRequiredDate()}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <ExclamationTriangleIcon className="inline h-4 w-4 mr-1" />
                   {t('common.priority')}
                 </label>
@@ -432,7 +432,7 @@ const MaterialIssueForm: React.FC = () => {
                   name="priority"
                   value={formData.priority}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   {priorities.map(priority => (
                     <option key={priority.value} value={priority.value}>
@@ -445,7 +445,7 @@ const MaterialIssueForm: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <UserIcon className="inline h-4 w-4 mr-1" />
                   {t('production.department')}
                 </label>
@@ -454,13 +454,13 @@ const MaterialIssueForm: React.FC = () => {
                   name="department"
                   value={formData.department}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Enter department"
                 />
               </div>
 
                <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   {t('production.cost_center')}
                 </label>
                 <input
@@ -468,7 +468,7 @@ const MaterialIssueForm: React.FC = () => {
                   name="cost_center"
                   value={formData.cost_center}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Enter cost center"
                 />
               </div>
@@ -478,7 +478,7 @@ const MaterialIssueForm: React.FC = () => {
            {/* Material Items */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-gray-900">{t('production.material_items')}</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">{t('production.material_items')}</h3>
               <button
                 type="button"
                 onClick={addItem}
@@ -491,9 +491,9 @@ const MaterialIssueForm: React.FC = () => {
 
             <div className="space-y-4">
               {formData.items.map((item, index) => (
-                <div key={index} className="p-4 border border-gray-200 rounded-lg space-y-4">
+                <div key={index} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg space-y-4">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-medium text-gray-900">
+                    <h4 className="font-medium text-gray-900 dark:text-white">
                       <HashtagIcon className="inline h-4 w-4 mr-1" />
                       Line {item.line_number}
                     </h4>
@@ -510,7 +510,7 @@ const MaterialIssueForm: React.FC = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                         <CubeIcon className="inline h-4 w-4 mr-1" />{t('products.bom.material')}</label>
                       <SearchableSelect
                         options={materials}
@@ -522,7 +522,7 @@ const MaterialIssueForm: React.FC = () => {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                         <MapPinIcon className="inline h-4 w-4 mr-1" />
                       </label>
                       <SearchableSelect
@@ -540,7 +540,7 @@ const MaterialIssueForm: React.FC = () => {
                   </div>
 
                    <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       {t('common.description')} *
                     </label>
                     <textarea
@@ -548,14 +548,14 @@ const MaterialIssueForm: React.FC = () => {
                       onChange={(e) => handleItemChange(index, 'description', e.target.value)}
                       required
                       rows={2}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="Enter material description"
                     />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                      <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                         {t('common.quantity')} *
                       </label>
                       <input
@@ -565,46 +565,46 @@ const MaterialIssueForm: React.FC = () => {
                         required
                         min="0"
                         step="0.01"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                         Unit of Measure
                       </label>
                       <input
                         type="text"
                         value={item.uom}
                         onChange={(e) => handleItemChange(index, 'uom', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         placeholder="e.g., Kg, Liter, Pcs"
                       />
                     </div>
 
                       <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                         {t('production.batch_number')}
                       </label>
                       <input
                         type="text"
                         value={item.batch_number}
                         onChange={(e) => handleItemChange(index, 'batch_number', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         placeholder="Enter batch number"
                       />
                     </div>
                   </div>
 
                    <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       {t('production.item_notes')}
                     </label>
                     <input
                       type="text"
                       value={item.notes}
                       onChange={(e) => handleItemChange(index, 'notes', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="Enter notes for this item"
                     />
                   </div>
@@ -613,14 +613,14 @@ const MaterialIssueForm: React.FC = () => {
             </div>
 
             {/* Summary */}
-            <div className="p-4 bg-gray-50 rounded-lg">
+            <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div className="text-center">
-                  <div className="font-medium text-gray-900">Total Items</div>
+                  <div className="font-medium text-gray-900 dark:text-white">Total Items</div>
                   <div className="text-blue-600">{getTotalItems()}</div>
                 </div>
                 <div className="text-center">
-                  <div className="font-medium text-gray-900">Total Quantity</div>
+                  <div className="font-medium text-gray-900 dark:text-white">Total Quantity</div>
                   <div className="text-blue-600">{getTotalQuantity().toFixed(2)}</div>
                 </div>
               </div>
@@ -630,7 +630,7 @@ const MaterialIssueForm: React.FC = () => {
           {/* Additional Information */}
           <div className="space-y-6">
              <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 <DocumentTextIcon className="inline h-4 w-4 mr-1" />
                 {t('production.general_notes')}
               </label>
@@ -639,13 +639,13 @@ const MaterialIssueForm: React.FC = () => {
                 value={formData.notes}
                 onChange={handleInputChange}
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter general notes about the material issue..."
               />
             </div>
 
              <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 {t('production.special_instructions')}
               </label>
               <textarea
@@ -653,18 +653,18 @@ const MaterialIssueForm: React.FC = () => {
                 value={formData.special_instructions}
                 onChange={handleInputChange}
                 rows={2}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter special handling or delivery instructions..."
               />
             </div>
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200">
+          <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
             <button
               type="button"
               onClick={() => navigate('/app/production/material-issues')}
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+              className="px-4 py-2 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
             >
               <XMarkIcon className="inline h-4 w-4 mr-2" />{t('common.cancel')}</button>
             <button

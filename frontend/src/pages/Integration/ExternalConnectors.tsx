@@ -181,7 +181,7 @@ const ExternalConnectors: React.FC = () => {
       case 'pending':
         return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>;
       default:
-        return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Never Tested</span>;
+        return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100">Never Tested</span>;
     }
   };
 
@@ -200,10 +200,10 @@ const ExternalConnectors: React.FC = () => {
       <div className="mb-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
               External System Connectors
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-300">
               Manage connections to external systems and APIs
             </p>
           </div>
@@ -221,13 +221,13 @@ const ExternalConnectors: React.FC = () => {
       {/* Connectors Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {connectors.map((connector) => (
-          <div key={connector.id} className="bg-white rounded-lg shadow p-6">
+          <div key={connector.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center">
                 <Link className="h-8 w-8 text-blue-500 mr-3" />
                 <div>
-                  <h3 className="font-semibold text-gray-900">{connector.name}</h3>
-                  <p className="text-sm text-gray-500 capitalize">{connector.type.replace('_', ' ')}</p>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">{connector.name}</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">{connector.type.replace('_', ' ')}</p>
                 </div>
               </div>
               
@@ -241,19 +241,19 @@ const ExternalConnectors: React.FC = () => {
             </div>
 
             <div className="mb-4">
-              <div className="text-sm text-gray-600 break-all">{connector.endpoint_url}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300 break-all">{connector.endpoint_url}</div>
             </div>
 
             <div className="mb-4">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-500">Status:</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">Status:</span>
                 {getStatusBadge(connector.sync_status)}
               </div>
               
               {connector.last_sync && (
                 <div className="flex justify-between items-center mt-1">
-                  <span className="text-sm text-gray-500">Last Sync:</span>
-                  <span className="text-sm text-gray-900">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Last Sync:</span>
+                  <span className="text-sm text-gray-900 dark:text-white">
                     {new Date(connector.last_sync).toLocaleDateString()}
                   </span>
                 </div>
@@ -309,8 +309,8 @@ const ExternalConnectors: React.FC = () => {
       {connectors.length === 0 && (
         <div className="text-center py-12">
           <Link className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No external connectors</h3>
-          <p className="text-gray-500 mb-4">Get started by adding your first external system connector.</p>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No external connectors</h3>
+          <p className="text-gray-500 dark:text-gray-400 mb-4">Get started by adding your first external system connector.</p>
           <button
             onClick={() => setShowModal(true)}
             className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -324,30 +324,30 @@ const ExternalConnectors: React.FC = () => {
       {/* Connector Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
+          <div className="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800">
             <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                 {editingConnector ? 'Edit Connector' : 'Add New Connector'}
               </h3>
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Connector Name</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Connector Name</label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                     placeholder="e.g., SAP Integration"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Connector Type</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Connector Type</label>
                   <select
                     value={formData.type}
                     onChange={(e) => setFormData({...formData, type: e.target.value})}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                   >
                     {connectorTypes.map((type) => (
                       <option key={type.value} value={type.value}>
@@ -358,47 +358,47 @@ const ExternalConnectors: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Endpoint URL</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Endpoint URL</label>
                   <input
                     type="url"
                     value={formData.endpoint_url}
                     onChange={(e) => setFormData({...formData, endpoint_url: e.target.value})}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                     placeholder="https://api.example.com/v1"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">API KeyIcon</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">API KeyIcon</label>
                     <input
                       type="password"
                       value={formData.api_key}
                       onChange={(e) => setFormData({...formData, api_key: e.target.value})}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                      className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                       placeholder="Optional"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Username</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Username</label>
                     <input
                       type="text"
                       value={formData.username}
                       onChange={(e) => setFormData({...formData, username: e.target.value})}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                      className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                       placeholder="Optional"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Password</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Password</label>
                   <input
                     type="password"
                     value={formData.password}
                     onChange={(e) => setFormData({...formData, password: e.target.value})}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                     placeholder={editingConnector ? "Leave blank to keep current password" : "Optional"}
                   />
                 </div>
@@ -411,7 +411,7 @@ const ExternalConnectors: React.FC = () => {
                       onChange={(e) => setFormData({...formData, is_active: e.target.checked})}
                       className="mr-2"
                     />
-                    <span className="text-sm text-gray-700">Active Connector</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-200">Active Connector</span>
                   </label>
                 </div>
               </div>
@@ -432,7 +432,7 @@ const ExternalConnectors: React.FC = () => {
                       config: {}
                     });
                   }}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                  className="px-4 py-2 bg-gray-300 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400"
                 >{t('common.cancel')}</button>
                 <button
                   onClick={saveConnector}

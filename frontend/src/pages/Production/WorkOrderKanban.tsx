@@ -310,7 +310,7 @@ const WorkOrderKanban: React.FC = () => {
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Memuat Work Orders...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-300">Memuat Work Orders...</p>
         </div>
       </div>
     );
@@ -320,13 +320,13 @@ const WorkOrderKanban: React.FC = () => {
     <div>
       {/* Subheader */}
       <div className="flex items-center justify-between mb-4">
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Drag & drop untuk mengubah status &middot; {totalCount} items
         </p>
         <button
           onClick={() => fetchWorkOrders(true)}
           disabled={refreshing}
-          className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
+          className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 disabled:opacity-50 transition-colors"
         >
           <ArrowPathIcon className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
           Refresh
@@ -334,7 +334,7 @@ const WorkOrderKanban: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3 mb-6 bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+      <div className="flex flex-wrap items-center gap-3 mb-6 bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="relative flex-1 min-w-[200px]">
           <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <input
@@ -342,14 +342,14 @@ const WorkOrderKanban: React.FC = () => {
             placeholder="Cari WO number, produk, mesin..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
 
         <select
           value={machineFilter}
           onChange={(e) => setMachineFilter(e.target.value)}
-          className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
+          className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800"
         >
           <option value="">Semua Mesin</option>
           {machines.map((m) => (
@@ -362,7 +362,7 @@ const WorkOrderKanban: React.FC = () => {
         <select
           value={priorityFilter}
           onChange={(e) => setPriorityFilter(e.target.value)}
-          className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
+          className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800"
         >
           <option value="">Semua Priority</option>
           <option value="urgent">Urgent</option>
@@ -480,13 +480,13 @@ const WorkOrderKanban: React.FC = () => {
                             </div>
 
                             {/* Product */}
-                            <p className="text-sm text-gray-900 font-medium truncate" title={wo.product_name}>
+                            <p className="text-sm text-gray-900 dark:text-white font-medium truncate" title={wo.product_name}>
                               {wo.product_name}
                             </p>
 
                             {/* Machine */}
                             {wo.machine_name && (
-                              <p className="text-xs text-gray-500 mt-1 truncate">
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate">
                                 🏭 {wo.machine_name}
                               </p>
                             )}
@@ -494,13 +494,13 @@ const WorkOrderKanban: React.FC = () => {
                             {/* Progress */}
                             {wo.status === 'in_progress' && (
                               <div className="mt-2">
-                                <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+                                <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-300 mb-1">
                                   <span>
                                     {wo.quantity_produced.toLocaleString()}/{wo.quantity.toLocaleString()} {wo.uom}
                                   </span>
                                   <span className="font-medium">{getProgressPercent(wo)}%</span>
                                 </div>
-                                <div className="w-full bg-gray-200 rounded-full h-1.5">
+                                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
                                   <div
                                     className={`h-1.5 rounded-full transition-all ${
                                       getProgressPercent(wo) >= 100
@@ -517,7 +517,7 @@ const WorkOrderKanban: React.FC = () => {
 
                             {/* Quantity for non-in_progress */}
                             {wo.status !== 'in_progress' && (
-                              <p className="text-xs text-gray-500 mt-1">
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                 Target: {wo.quantity.toLocaleString()} {wo.uom}
                               </p>
                             )}
@@ -542,7 +542,7 @@ const WorkOrderKanban: React.FC = () => {
                             </div>
 
                             {updatingWO === wo.id && (
-                              <div className="absolute inset-0 bg-white/60 rounded-lg flex items-center justify-center">
+                              <div className="absolute inset-0 bg-white dark:bg-gray-800/60 rounded-lg flex items-center justify-center">
                                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600" />
                               </div>
                             )}
@@ -560,8 +560,8 @@ const WorkOrderKanban: React.FC = () => {
       </DragDropContext>
 
       {/* Legend */}
-      <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-gray-500 bg-white p-3 rounded-lg border border-gray-200">
-        <span className="font-medium text-gray-700">Transisi valid:</span>
+      <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
+        <span className="font-medium text-gray-700 dark:text-gray-200">Transisi valid:</span>
         <span>Planned → Released → In Progress → Completed</span>
         <span className="text-gray-300">|</span>
         <span>Planned / Released → Cancelled</span>
@@ -569,7 +569,7 @@ const WorkOrderKanban: React.FC = () => {
         <span>Cancelled → Planned</span>
         <span className="text-gray-300">|</span>
         <span className="inline-flex items-center gap-1">
-          <span className="w-3 h-2 border-l-2 border-l-red-500 bg-gray-100 rounded-sm" />
+          <span className="w-3 h-2 border-l-2 border-l-red-500 bg-gray-100 dark:bg-gray-800 rounded-sm" />
           Overdue
         </span>
       </div>

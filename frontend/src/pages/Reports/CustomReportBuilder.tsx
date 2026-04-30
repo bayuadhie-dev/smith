@@ -313,8 +313,8 @@ const navigate = useNavigate()
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Custom Report Builder</h1>
-          <p className="text-gray-600">Create custom reports with your own data sources and filters</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Custom Report Builder</h1>
+          <p className="text-gray-600 dark:text-gray-300">Create custom reports with your own data sources and filters</p>
         </div>
         <button
           onClick={() => navigate('/app/reports')}
@@ -362,10 +362,10 @@ const navigate = useNavigate()
           {/* Step 1: Basic Info */}
           {step === 1 && (
             <div className="card p-6 space-y-4">
-              <h3 className="font-semibold text-gray-900">Report Information</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white">Report Information</h3>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Report Name *
                 </label>
                 <input
@@ -378,7 +378,7 @@ const navigate = useNavigate()
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Description</label>
                 <textarea
                   value={report.description}
                   onChange={(e) => setReport(prev => ({ ...prev, description: e.target.value }))}
@@ -389,7 +389,7 @@ const navigate = useNavigate()
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Refresh Interval
                 </label>
                 <select
@@ -410,7 +410,7 @@ const navigate = useNavigate()
           {/* Step 2: Data Sources */}
           {step === 2 && (
             <div className="card p-6 space-y-4">
-              <h3 className="font-semibold text-gray-900">Select Data Sources</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white">Select Data Sources</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {dataSources.map((source) => (
@@ -429,18 +429,18 @@ const navigate = useNavigate()
                       }
                     }}
                   >
-                    <h4 className="font-medium text-gray-900">{source.name}</h4>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <h4 className="font-medium text-gray-900 dark:text-white">{source.name}</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                       {source.fields.length} fields available
                     </p>
                     <div className="mt-2 flex flex-wrap gap-1">
                       {source.fields.slice(0, 3).map((field) => (
-                        <span key={field.name} className="text-xs bg-gray-100 px-2 py-1 rounded">
+                        <span key={field.name} className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
                           {field.label}
                         </span>
                       ))}
                       {source.fields.length > 3 && (
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
                           +{source.fields.length - 3} more
                         </span>
                       )}
@@ -456,21 +456,21 @@ const navigate = useNavigate()
             <div className="space-y-6">
               {/* Fields Selection */}
               <div className="card p-6">
-                <h3 className="font-semibold text-gray-900 mb-4">Select Fields</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Select Fields</h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">Available Fields</h4>
+                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Available Fields</h4>
                     <div className="border rounded-lg p-3 max-h-60 overflow-y-auto">
                       {getAvailableFields().map((field) => (
                         <div
                           key={`${field.sourceId}-${field.name}`}
-                          className="flex items-center justify-between p-2 hover:bg-gray-50 rounded cursor-pointer"
+                          className="flex items-center justify-between p-2 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 rounded cursor-pointer"
                           onClick={() => addField(field.sourceId, field.name)}
                         >
                           <div>
-                            <span className="text-sm text-gray-900">{field.label}</span>
-                            <span className="text-xs text-gray-500 ml-2">({field.sourceName})</span>
+                            <span className="text-sm text-gray-900 dark:text-white">{field.label}</span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">({field.sourceName})</span>
                           </div>
                           <PlusIcon className="h-4 w-4 text-gray-400" />
                         </div>
@@ -479,12 +479,12 @@ const navigate = useNavigate()
                   </div>
 
                   <div>
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">Selected Fields</h4>
+                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Selected Fields</h4>
                     <div className="border rounded-lg p-3 max-h-60 overflow-y-auto">
                       {report.fields.map((field, index) => (
                         <div key={index} className="flex items-center justify-between p-2 bg-blue-50 rounded mb-2">
                           <div className="flex-1">
-                            <span className="text-sm text-gray-900">{field.label}</span>
+                            <span className="text-sm text-gray-900 dark:text-white">{field.label}</span>
                             <select
                               value={field.aggregation}
                               onChange={(e) => updateFieldAggregation(index, e.target.value)}
@@ -513,7 +513,7 @@ const navigate = useNavigate()
               {/* Filters */}
               <div className="card p-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-semibold text-gray-900">Filters</h3>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">Filters</h3>
                   <button
                     onClick={addFilter}
                     className="btn-secondary text-sm"
@@ -577,7 +577,7 @@ const navigate = useNavigate()
             <div className="space-y-6">
               {/* Chart Type Selection */}
               <div className="card p-6">
-                <h3 className="font-semibold text-gray-900 mb-4">Display Options</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Display Options</h3>
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                   {chartTypes.map((type) => (
                     <button
@@ -599,7 +599,7 @@ const navigate = useNavigate()
               {/* Preview */}
               <div className="card p-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-semibold text-gray-900">Preview</h3>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">Preview</h3>
                   <button
                     onClick={generatePreview}
                     disabled={isGenerating}
@@ -611,24 +611,24 @@ const navigate = useNavigate()
 
                 {previewData.length > 0 ? (
                   <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                      <thead className="bg-gray-50 dark:bg-gray-900">
                         <tr>
                           {report.fields.map((field) => (
                             <th
                               key={field.field}
-                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                             >
                               {field.label}
                             </th>
                           ))}
                         </tr>
                       </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
+                      <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         {previewData.map((row, index) => (
                           <tr key={index}>
                             {report.fields.map((field) => (
-                              <td key={field.field} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              <td key={field.field} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                                 {row[field.label]}
                               </td>
                             ))}
@@ -638,7 +638,7 @@ const navigate = useNavigate()
                     </table>
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                     <ChartBarIcon className="h-12 w-12 mx-auto mb-2 text-gray-300" />
                     <p>Click "Generate Preview" to see sample data</p>
                   </div>
@@ -652,26 +652,26 @@ const navigate = useNavigate()
         <div className="space-y-6">
           {/* Report Summary */}
           <div className="card p-4">
-            <h3 className="font-semibold text-gray-900 mb-3">Report Summary</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Report Summary</h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-600">Name:</span>
+                <span className="text-gray-600 dark:text-gray-300">Name:</span>
                 <span className="font-medium">{report.name || 'Untitled'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Data Sources:</span>
+                <span className="text-gray-600 dark:text-gray-300">Data Sources:</span>
                 <span className="font-medium">{report.dataSources.length}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Fields:</span>
+                <span className="text-gray-600 dark:text-gray-300">Fields:</span>
                 <span className="font-medium">{report.fields.length}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Filters:</span>
+                <span className="text-gray-600 dark:text-gray-300">Filters:</span>
                 <span className="font-medium">{report.filters.length}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Chart Type:</span>
+                <span className="text-gray-600 dark:text-gray-300">Chart Type:</span>
                 <span className="font-medium capitalize">{report.chartType}</span>
               </div>
             </div>

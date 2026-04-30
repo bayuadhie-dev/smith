@@ -203,14 +203,14 @@ export default function EmployeeForm() {
     <div className="p-6 max-w-5xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Link to="/app/hr/employees" className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-          <ArrowLeftIcon className="h-5 w-5 text-gray-600" />
+        <Link to="/app/hr/employees" className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg transition-colors">
+          <ArrowLeftIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             {isEdit ? 'Edit Data Karyawan' : 'Tambah Karyawan Baru'}
           </h1>
-          <p className="text-gray-500 text-sm">
+          <p className="text-gray-500 dark:text-gray-400 text-sm">
             {isEdit ? 'Perbarui informasi karyawan' : 'Lengkapi data karyawan baru'}
           </p>
         </div>
@@ -218,7 +218,7 @@ export default function EmployeeForm() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Data Pribadi */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
             <div className="flex items-center gap-3">
               <UserIcon className="h-6 w-6 text-white" />
@@ -334,7 +334,7 @@ export default function EmployeeForm() {
         </div>
 
         {/* Data Kepegawaian */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div className="bg-gradient-to-r from-green-500 to-green-600 px-6 py-4">
             <div className="flex items-center gap-3">
               <BriefcaseIcon className="h-6 w-6 text-white" />
@@ -369,9 +369,9 @@ export default function EmployeeForm() {
                   type="checkbox"
                   id="has_allowance"
                   {...register('has_allowance')}
-                  className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className="h-4 w-4 text-blue-600 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500"
                 />
-                <label htmlFor="has_allowance" className="ml-2 text-sm font-medium text-gray-700">
+                <label htmlFor="has_allowance" className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-200">
                   Mendapatkan Tunjangan
                 </label>
               </div>
@@ -500,7 +500,7 @@ export default function EmployeeForm() {
         </div>
 
         {/* Kontak Darurat */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div className="bg-gradient-to-r from-red-500 to-red-600 px-6 py-4">
             <div className="flex items-center gap-3">
               <ShieldCheckIcon className="h-6 w-6 text-white" />

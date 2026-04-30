@@ -138,14 +138,14 @@ const { id } = useParams()
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
         {id ? 'Edit Product' : 'Add New Product'}
       </h1>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Tab Navigation */}
         <div className="card">
-          <div className="border-b border-gray-200">
+          <div className="border-b border-gray-200 dark:border-gray-700">
             <nav className="-mb-px flex space-x-8" aria-label="Tabs">
               {tabs.map((tab) => (
                 <button
@@ -169,11 +169,11 @@ const { id } = useParams()
             {/* Basic Info Tab */}
             {activeTab === 'basic' && (
               <div className="space-y-6">
-                <h3 className="text-lg font-medium text-gray-900">Basic Product Information</h3>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Basic Product Information</h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Product Code *
                     </label>
                     <input
@@ -188,7 +188,7 @@ const { id } = useParams()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Product Name *
                     </label>
                     <input
@@ -203,7 +203,7 @@ const { id } = useParams()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('products.bom.category')}</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('products.bom.category')}</label>
                     <select {...register('category_id')} className="input-field">
                       <option value="">Select category</option>
                       {categoriesData?.categories?.map((cat: any) => (
@@ -213,7 +213,7 @@ const { id } = useParams()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Primary UOM *
                     </label>
                     <select {...register('primary_uom')} className="input-field">
@@ -224,7 +224,7 @@ const { id } = useParams()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Material Type *
                     </label>
                     <select {...register('material_type')} className="input-field">
@@ -235,7 +235,7 @@ const { id } = useParams()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Price (IDR)
                     </label>
                     <input
@@ -248,7 +248,7 @@ const { id } = useParams()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Cost (IDR)
                     </label>
                     <input
@@ -261,7 +261,7 @@ const { id } = useParams()
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('common.description')}</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('common.description')}</label>
                     <textarea
                       {...register('description')}
                       rows={3}
@@ -274,9 +274,9 @@ const { id } = useParams()
                     <input
                       type="checkbox"
                       {...register('is_active')}
-                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded"
                     />
-                    <label className="ml-2 block text-sm text-gray-700">
+                    <label className="ml-2 block text-sm text-gray-700 dark:text-gray-200">
                       Active Product
                     </label>
                   </div>
@@ -287,11 +287,11 @@ const { id } = useParams()
             {/* Specifications Tab */}
             {activeTab === 'specifications' && (
               <div className="space-y-6">
-                <h3 className="text-lg font-medium text-gray-900">Technical Specifications</h3>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Technical Specifications</h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       GSM (Grams per Square Meter)
                     </label>
                     <input
@@ -304,7 +304,7 @@ const { id } = useParams()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Width (cm)
                     </label>
                     <input
@@ -317,7 +317,7 @@ const { id } = useParams()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Length (m)
                     </label>
                     <input
@@ -330,7 +330,7 @@ const { id } = useParams()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Thickness (mm)
                     </label>
                     <input
@@ -343,7 +343,7 @@ const { id } = useParams()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     </label>
                     <input
                       type="text"
@@ -354,7 +354,7 @@ const { id } = useParams()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Weight per Sheet (g)
                     </label>
                     <input
@@ -367,7 +367,7 @@ const { id } = useParams()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     </label>
                     <input
                       type="text"
@@ -378,7 +378,7 @@ const { id } = useParams()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Tensile Strength
                     </label>
                     <input
@@ -390,7 +390,7 @@ const { id } = useParams()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       pH Level
                     </label>
                     <input
@@ -402,7 +402,7 @@ const { id } = useParams()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     </label>
                     <input
                       type="text"
@@ -413,7 +413,7 @@ const { id } = useParams()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Alcohol Content
                     </label>
                     <input
@@ -431,7 +431,7 @@ const { id } = useParams()
             {activeTab === 'calculations' && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-medium text-gray-900">Auto-Calculated Metrics</h3>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">Auto-Calculated Metrics</h3>
                   <button
                     type="button"
                     onClick={handleCalculate}
@@ -453,12 +453,12 @@ const { id } = useParams()
                 </div>
 
                 {!calculated ? (
-                  <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                  <div className="text-center py-12 bg-gray-50 dark:bg-gray-900 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
                     <CalculatorIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600 mb-2 font-medium">
+                    <p className="text-gray-600 dark:text-gray-300 mb-2 font-medium">
                       Click "Calculate Metrics" to generate product calculations
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       Make sure GSM, Width, Length, Sheets per Pack, and Packs per Karton are filled
                     </p>
                   </div>
@@ -466,63 +466,63 @@ const { id } = useParams()
                   <>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                           BERAT KERING (Dry Weight)
                         </label>
                         <div className="text-2xl font-bold text-blue-600">
                           {calculated.berat_kering.toFixed(4)} kg
                         </div>
-                        <p className="text-xs text-gray-600 mt-1">Per karton</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">Per karton</p>
                       </div>
 
                       <div className="bg-green-50 rounded-lg p-4 border border-green-200">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                           METER KAIN (Fabric Length)
                         </label>
                         <div className="text-2xl font-bold text-green-600">
                           {calculated.meter_kain.toFixed(4)} m
                         </div>
-                        <p className="text-xs text-gray-600 mt-1">Required length</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">Required length</p>
                       </div>
 
                       <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                           KG KAIN (Fabric Weight)
                         </label>
                         <div className="text-2xl font-bold text-purple-600">
                           {calculated.kg_kain.toFixed(4)} kg
                         </div>
-                        <p className="text-xs text-gray-600 mt-1">Required weight</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">Required weight</p>
                       </div>
 
                       <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                           Total Sheets
                         </label>
                         <div className="text-2xl font-bold text-orange-600">
                           {calculated.total_sheets}
                         </div>
-                        <p className="text-xs text-gray-600 mt-1">Per karton</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">Per karton</p>
                       </div>
 
                       <div className="bg-red-50 rounded-lg p-4 border border-red-200">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                           KEBUTUHAN RAYON
                         </label>
                         <div className="text-2xl font-bold text-red-600">
                           {calculated.kebutuhan_rayon_kg.toFixed(4)} kg
                         </div>
-                        <p className="text-xs text-gray-600 mt-1">Material requirement</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">Material requirement</p>
                       </div>
 
                       <div className="bg-indigo-50 rounded-lg p-4 border border-indigo-200">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                           KEBUTUHAN POLYESTER
                         </label>
                         <div className="text-2xl font-bold text-indigo-600">
                           {calculated.kebutuhan_polyester_kg.toFixed(4)} kg
                         </div>
-                        <p className="text-xs text-gray-600 mt-1">Material requirement</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">Material requirement</p>
                       </div>
                     </div>
 
@@ -545,11 +545,11 @@ const { id } = useParams()
             {/* Packaging Tab */}
             {activeTab === 'packaging' && (
               <div className="space-y-6">
-                <h3 className="text-lg font-medium text-gray-900">Packaging Information</h3>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Packaging Information</h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Sheets per Pack
                     </label>
                     <input
@@ -561,7 +561,7 @@ const { id } = useParams()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Packs per Karton
                     </label>
                     <input
@@ -573,20 +573,20 @@ const { id } = useParams()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Sheets per Karton (Auto)
                     </label>
                     <input
                       type="number"
                       value={sheetsPerPack && packsPerKarton ? sheetsPerPack * packsPerKarton : ''}
                       disabled
-                      className="input-field bg-gray-50"
+                      className="input-field bg-gray-50 dark:bg-gray-900"
                       placeholder="Auto calculated"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Pack Weight (kg)
                     </label>
                     <input
@@ -599,7 +599,7 @@ const { id } = useParams()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Karton Weight (kg)
                     </label>
                     <input
@@ -612,7 +612,7 @@ const { id } = useParams()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Pack Dimensions (L×W×H cm)
                     </label>
                     <input
@@ -624,7 +624,7 @@ const { id } = useParams()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Karton Dimensions (L×W×H cm)
                     </label>
                     <input
@@ -636,7 +636,7 @@ const { id } = useParams()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Pack Barcode
                     </label>
                     <input
@@ -648,7 +648,7 @@ const { id } = useParams()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Karton Barcode
                     </label>
                     <input

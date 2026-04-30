@@ -92,8 +92,8 @@ const APIGateway: React.FC = () => {
       <div className="mb-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">API Gateway</h1>
-            <p className="text-gray-600">Manage API endpoints and access control</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">API Gateway</h1>
+            <p className="text-gray-600 dark:text-gray-300">Manage API endpoints and access control</p>
           </div>
           <button
             onClick={() => setShowModal(true)}
@@ -107,69 +107,69 @@ const APIGateway: React.FC = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <div className="flex items-center">
             <GlobeAltIcon className="h-8 w-8 text-blue-500 mr-3" />
             <div>
-              <div className="text-2xl font-bold text-gray-900">{endpoints.length}</div>
-              <div className="text-sm text-gray-500">Total Endpoints</div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">{endpoints.length}</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Total Endpoints</div>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <div className="flex items-center">
             <ChartBarIcon className="h-8 w-8 text-green-500 mr-3" />
             <div>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
                 {endpoints.reduce((sum, e) => sum + e.request_count, 0)}
               </div>
-              <div className="text-sm text-gray-500">Total Requests</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Total Requests</div>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <div className="flex items-center">
             <ShieldCheckIcon className="h-8 w-8 text-purple-500 mr-3" />
             <div>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
                 {endpoints.filter(e => e.auth_required).length}
               </div>
-              <div className="text-sm text-gray-500">Secured</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Secured</div>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <div className="flex items-center">
             <KeyIcon className="h-8 w-8 text-orange-500 mr-3" />
             <div>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
                 {endpoints.filter(e => e.is_active).length}
               </div>
-              <div className="text-sm text-gray-500">Active</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Active</div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Endpoints Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         <table className="w-full">
-          <thead className="bg-gray-50">
+          <thead className="bg-gray-50 dark:bg-gray-900">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Endpoint</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Method</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.status')}</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Requests</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.actions')}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Endpoint</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Method</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{t('common.status')}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Requests</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{t('common.actions')}</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             {endpoints.map((endpoint) => (
               <tr key={endpoint.id}>
                 <td className="px-6 py-4">
                   <div>
-                    <div className="text-sm font-medium text-gray-900">{endpoint.path}</div>
-                    <div className="text-sm text-gray-500">{endpoint.description}</div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">{endpoint.path}</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">{endpoint.description}</div>
                   </div>
                 </td>
                 <td className="px-6 py-4">
@@ -189,7 +189,7 @@ const APIGateway: React.FC = () => {
                     {endpoint.is_active ? 'Active' : 'Inactive'}
                   </span>
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-900">{endpoint.request_count}</td>
+                <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">{endpoint.request_count}</td>
                 <td className="px-6 py-4">
                   <div className="flex space-x-2">
                     <button className="text-blue-600 hover:text-blue-900">
@@ -212,27 +212,27 @@ const APIGateway: React.FC = () => {
       {/* Add Endpoint Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-full max-w-lg shadow-lg rounded-md bg-white">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Add API Endpoint</h3>
+          <div className="relative top-20 mx-auto p-5 border w-full max-w-lg shadow-lg rounded-md bg-white dark:bg-gray-800">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Add API Endpoint</h3>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Path</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Path</label>
                 <input
                   type="text"
                   value={formData.path}
                   onChange={(e) => setFormData({...formData, path: e.target.value})}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                   placeholder="/api/custom/endpoint"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Method</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Method</label>
                 <select
                   value={formData.method}
                   onChange={(e) => setFormData({...formData, method: e.target.value})}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                 >
                   <option value="GET">GET</option>
                   <option value="POST">POST</option>
@@ -242,22 +242,22 @@ const APIGateway: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">{t('common.description')}</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">{t('common.description')}</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({...formData, description: e.target.value})}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                   rows={3}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Rate Limit (per hour)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Rate Limit (per hour)</label>
                 <input
                   type="number"
                   value={formData.rate_limit}
                   onChange={(e) => setFormData({...formData, rate_limit: parseInt(e.target.value)})}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                 />
               </div>
 
@@ -269,7 +269,7 @@ const APIGateway: React.FC = () => {
                     onChange={(e) => setFormData({...formData, auth_required: e.target.checked})}
                     className="mr-2"
                   />
-                  <span className="text-sm text-gray-700">Require Authentication</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-200">Require Authentication</span>
                 </label>
               </div>
 
@@ -281,7 +281,7 @@ const APIGateway: React.FC = () => {
                     onChange={(e) => setFormData({...formData, is_active: e.target.checked})}
                     className="mr-2"
                   />
-                  <span className="text-sm text-gray-700">Active Endpoint</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-200">Active Endpoint</span>
                 </label>
               </div>
             </div>
@@ -289,7 +289,7 @@ const APIGateway: React.FC = () => {
             <div className="flex justify-end space-x-3 pt-6 mt-6 border-t">
               <button
                 onClick={() => setShowModal(false)}
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                className="px-4 py-2 bg-gray-300 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400"
               >{t('common.cancel')}</button>
               <button
                 onClick={saveEndpoint}

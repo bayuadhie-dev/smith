@@ -277,13 +277,13 @@ const DemandPlanning: React.FC = () => {
         <div className="flex items-center space-x-4">
           <Link
             to="/app/mrp"
-            className="flex items-center text-gray-600 hover:text-gray-900"
+            className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white"
           >
             <ArrowLeftIcon className="h-5 w-5 mr-2" />
             Back to MRP Dashboard
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Demand Planning</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Demand Planning</h1>
             <p className="text-gray-600 mt-1">Forecast demand and plan production requirements</p>
           </div>
         </div>
@@ -306,14 +306,14 @@ const DemandPlanning: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Forecast Period</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Forecast Period</label>
             <select
               value={selectedPeriod}
               onChange={(e) => setSelectedPeriod(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
             >
               <option value="1month">1 Month</option>
               <option value="3months">3 Months</option>
@@ -322,11 +322,11 @@ const DemandPlanning: React.FC = () => {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">{t('products.bom.category')}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('products.bom.category')}</label>
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
             >
               <option value="all">All Categories</option>
               <option value="nonwoven">Nonwoven Fabrics</option>
@@ -337,11 +337,11 @@ const DemandPlanning: React.FC = () => {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">{t('production.product')}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('production.product')}</label>
             <select
               value={selectedProduct}
               onChange={(e) => setSelectedProduct(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
             >
               <option value="all">All Products</option>
               <option value="1">Nonwoven Fabric A</option>
@@ -352,11 +352,11 @@ const DemandPlanning: React.FC = () => {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Forecast Method</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Forecast Method</label>
             <select
               value={forecastMethod}
               onChange={(e) => setForecastMethod(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
             >
               <option value="auto">Auto (Best Fit)</option>
               <option value="linear">Linear Regression</option>
@@ -371,8 +371,8 @@ const DemandPlanning: React.FC = () => {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Historical vs Forecast */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Historical vs Forecasted Demand</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Historical vs Forecasted Demand</h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={historicalData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -389,8 +389,8 @@ const DemandPlanning: React.FC = () => {
         </div>
 
         {/* Seasonality Pattern */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Seasonality Pattern</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Seasonality Pattern</h3>
           <ResponsiveContainer width="100%" height={300}>
             <AreaChart data={seasonalityData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -412,36 +412,36 @@ const DemandPlanning: React.FC = () => {
       </div>
 
       {/* Demand Forecast Table */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Product Demand Forecasts</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Product Demand Forecasts</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('production.product')}</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Current Demand</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Forecasted</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Variance</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Confidence</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trend</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Seasonality</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Last Updated</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{t('production.product')}</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Current Demand</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Forecasted</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Variance</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Confidence</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Trend</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Seasonality</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Last Updated</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {demandForecasts.map((forecast) => (
-                <tr key={forecast.product_id} className="hover:bg-gray-50">
+                <tr key={forecast.product_id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                   <td className="px-4 py-3">
                     <div>
-                      <div className="font-medium text-gray-900">{forecast.product_name}</div>
-                      <div className="text-sm text-gray-500">{forecast.product_code}</div>
+                      <div className="font-medium text-gray-900 dark:text-white">{forecast.product_name}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">{forecast.product_code}</div>
                       <div className="text-xs text-gray-400">{forecast.category}</div>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-gray-900 font-medium">
+                  <td className="px-4 py-3 text-gray-900 dark:text-white font-medium">
                     {formatNumber(forecast.current_demand)}
                   </td>
-                  <td className="px-4 py-3 text-gray-900 font-medium">
+                  <td className="px-4 py-3 text-gray-900 dark:text-white font-medium">
                     {formatNumber(forecast.forecasted_demand)}
                   </td>
                   <td className="px-4 py-3">
@@ -467,13 +467,13 @@ const DemandPlanning: React.FC = () => {
                       <span className="ml-1 capitalize text-sm">{forecast.trend}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-gray-900">
+                  <td className="px-4 py-3 text-gray-900 dark:text-white">
                     {forecast.seasonality_factor !== undefined && forecast.seasonality_factor !== null && !isNaN(forecast.seasonality_factor) 
                       ? `${forecast.seasonality_factor.toFixed(2)}x` 
                       : '1.00x'
                     }
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-500">
+                  <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
                     {new Date(forecast.last_updated).toLocaleDateString()}
                   </td>
                 </tr>
@@ -484,13 +484,13 @@ const DemandPlanning: React.FC = () => {
       </div>
 
       {/* Forecast Accuracy */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Forecast Accuracy Metrics</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Forecast Accuracy Metrics</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           {forecastAccuracy.map((accuracy, index) => (
-            <div key={index} className="border border-gray-200 rounded-lg p-4">
+            <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium text-gray-900 text-sm">{accuracy.product_name}</h4>
+                <h4 className="font-medium text-gray-900 dark:text-white text-sm">{accuracy.product_name}</h4>
                 <span className={`px-2 py-1 text-xs font-semibold rounded ${getAccuracyColor(accuracy.accuracy_grade)}`}>
                   Grade {accuracy.accuracy_grade}
                 </span>

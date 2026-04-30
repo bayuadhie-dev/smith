@@ -146,7 +146,7 @@ const ProductionExecutiveDashboard: React.FC = () => {
 
   if (!data) {
     return (
-      <div className="p-6 text-center text-gray-500">
+      <div className="p-6 text-center text-gray-500 dark:text-gray-400">
         Tidak ada data tersedia
       </div>
     );
@@ -168,12 +168,12 @@ const ProductionExecutiveDashboard: React.FC = () => {
   const isCritical = summary.achievement_pct < 50;
 
   return (
-    <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
+    <div className="p-6 space-y-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">📊 Executive Production Dashboard</h1>
-          <p className="text-gray-500">Ringkasan Target vs Aktual Produksi Bulanan</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">📊 Executive Production Dashboard</h1>
+          <p className="text-gray-500 dark:text-gray-400">Ringkasan Target vs Aktual Produksi Bulanan</p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -217,7 +217,7 @@ const ProductionExecutiveDashboard: React.FC = () => {
                 {isOnTrack ? '✓ On Track' : isCritical ? '⚠ Critical' : '! Behind Target'}
               </p>
             </div>
-            <div className="p-3 bg-white/20 rounded-full">
+            <div className="p-3 bg-white dark:bg-gray-800/20 rounded-full">
               {isOnTrack ? (
                 <ArrowTrendingUpIcon className="h-8 w-8" />
               ) : (
@@ -228,24 +228,24 @@ const ProductionExecutiveDashboard: React.FC = () => {
         </div>
 
         {/* Target vs Actual */}
-        <div className="bg-white rounded-xl p-6 shadow-lg">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-blue-100 rounded-lg">
               <CubeIcon className="h-6 w-6 text-blue-600" />
             </div>
-            <span className="font-medium text-gray-700">Target vs Aktual</span>
+            <span className="font-medium text-gray-700 dark:text-gray-200">Target vs Aktual</span>
           </div>
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-gray-500">Target</span>
+              <span className="text-gray-500 dark:text-gray-400">Target</span>
               <span className="font-bold text-blue-600">{summary.target_ctn.toLocaleString()} karton</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-500">Aktual</span>
+              <span className="text-gray-500 dark:text-gray-400">Aktual</span>
               <span className="font-bold text-green-600">{summary.actual_ctn.toLocaleString()} karton</span>
             </div>
             <div className="flex justify-between border-t pt-2">
-              <span className="text-gray-500">Gap</span>
+              <span className="text-gray-500 dark:text-gray-400">Gap</span>
               <span className={`font-bold ${summary.gap_ctn > 0 ? 'text-red-600' : 'text-green-600'}`}>
                 {summary.gap_ctn > 0 ? '-' : '+'}{Math.abs(summary.gap_ctn).toLocaleString()} karton
               </span>
@@ -254,36 +254,36 @@ const ProductionExecutiveDashboard: React.FC = () => {
         </div>
 
         {/* Quality Rate */}
-        <div className="bg-white rounded-xl p-6 shadow-lg">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-emerald-100 rounded-lg">
               <ChartBarIcon className="h-6 w-6 text-emerald-600" />
             </div>
-            <span className="font-medium text-gray-700">Quality Rate</span>
+            <span className="font-medium text-gray-700 dark:text-gray-200">Quality Rate</span>
           </div>
           <p className="text-3xl font-bold text-emerald-600">{summary.quality_rate}%</p>
           <div className="mt-2 space-y-1 text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-500">Good</span>
+              <span className="text-gray-500 dark:text-gray-400">Good</span>
               <span className="text-green-600">{summary.good_pcs.toLocaleString()} pcs</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-500">Reject</span>
+              <span className="text-gray-500 dark:text-gray-400">Reject</span>
               <span className="text-red-600">{summary.reject_pcs.toLocaleString()} pcs</span>
             </div>
           </div>
         </div>
 
         {/* Total Downtime */}
-        <div className="bg-white rounded-xl p-6 shadow-lg">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-red-100 rounded-lg">
               <ClockIcon className="h-6 w-6 text-red-600" />
             </div>
-            <span className="font-medium text-gray-700">Total Downtime</span>
+            <span className="font-medium text-gray-700 dark:text-gray-200">Total Downtime</span>
           </div>
           <p className="text-3xl font-bold text-red-600">{summary.total_downtime_hours.toLocaleString()} jam</p>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             = {summary.total_downtime_minutes.toLocaleString()} menit
           </p>
         </div>
@@ -292,8 +292,8 @@ const ProductionExecutiveDashboard: React.FC = () => {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Daily Production Trend */}
-        <div className="bg-white rounded-xl p-6 shadow-lg">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">📈 Trend Produksi Harian</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">📈 Trend Produksi Harian</h3>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={daily_trend}>
@@ -313,8 +313,8 @@ const ProductionExecutiveDashboard: React.FC = () => {
         </div>
 
         {/* Downtime by Category */}
-        <div className="bg-white rounded-xl p-6 shadow-lg">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">⏱️ Downtime per Kategori</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">⏱️ Downtime per Kategori</h3>
           <div className="h-80 flex items-center">
             {downtimePieData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
@@ -337,7 +337,7 @@ const ProductionExecutiveDashboard: React.FC = () => {
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="w-full text-center text-gray-500">Tidak ada data downtime</div>
+              <div className="w-full text-center text-gray-500 dark:text-gray-400">Tidak ada data downtime</div>
             )}
           </div>
           {/* Legend */}
@@ -345,7 +345,7 @@ const ProductionExecutiveDashboard: React.FC = () => {
             {Object.entries(DOWNTIME_COLORS).map(([key, color]) => (
               <div key={key} className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
-                <span className="text-sm text-gray-600 capitalize">{key}</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300 capitalize">{key}</span>
               </div>
             ))}
           </div>
@@ -377,8 +377,8 @@ const ProductionExecutiveDashboard: React.FC = () => {
         };
 
         return (
-          <div className="bg-white rounded-xl p-6 shadow-lg">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               <ExclamationTriangleIcon className="h-5 w-5 inline mr-2 text-red-500" />
               Top 10 Downtime
             </h3>
@@ -386,14 +386,14 @@ const ProductionExecutiveDashboard: React.FC = () => {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="bg-gray-50">
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">#</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Tipe</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Alasan</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Kategori</th>
-                      <th className="px-4 py-3 text-right text-sm font-medium text-gray-600">Frekuensi</th>
-                      <th className="px-4 py-3 text-right text-sm font-medium text-gray-600">Total Waktu</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Impact</th>
+                    <tr className="bg-gray-50 dark:bg-gray-900">
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-600 dark:text-gray-300">#</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-600 dark:text-gray-300">Tipe</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-600 dark:text-gray-300">Alasan</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-600 dark:text-gray-300">Kategori</th>
+                      <th className="px-4 py-3 text-right text-sm font-medium text-gray-600 dark:text-gray-300">Frekuensi</th>
+                      <th className="px-4 py-3 text-right text-sm font-medium text-gray-600 dark:text-gray-300">Total Waktu</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-600 dark:text-gray-300">Impact</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
@@ -402,25 +402,25 @@ const ProductionExecutiveDashboard: React.FC = () => {
                       const percentage = (item.total_minutes / maxMinutes) * 100;
                       const isUnplanned = unplannedCategories.includes(item.category);
                       return (
-                        <tr key={index} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 text-sm font-medium text-gray-900">{index + 1}</td>
+                        <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                          <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">{index + 1}</td>
                           <td className="px-4 py-3 text-sm">
                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${isUnplanned ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>
                               {isUnplanned ? 'Unplanned' : 'Planned'}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-700">{item.reason}</td>
+                          <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-200">{item.reason}</td>
                           <td className="px-4 py-3 text-sm">
                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${categoryColors[item.category] || categoryColors.others}`}>
                               {categoryLabels[item.category] || item.category}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-sm text-right text-gray-600">{item.count}x</td>
+                          <td className="px-4 py-3 text-sm text-right text-gray-600 dark:text-gray-300">{item.count}x</td>
                           <td className="px-4 py-3 text-sm text-right font-medium text-red-600">
                             {item.total_minutes} menit
                           </td>
                           <td className="px-4 py-3 w-48">
-                            <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                               <div
                                 className={`h-2 rounded-full ${isUnplanned ? 'bg-red-500' : 'bg-blue-500'}`}
                                 style={{ width: `${percentage}%` }}
@@ -434,15 +434,15 @@ const ProductionExecutiveDashboard: React.FC = () => {
                 </table>
               </div>
             ) : (
-              <p className="text-center text-gray-500 py-8">Tidak ada data downtime</p>
+              <p className="text-center text-gray-500 dark:text-gray-400 py-8">Tidak ada data downtime</p>
             )}
           </div>
         );
       })()}
 
       {/* Products Performance */}
-      <div className="bg-white rounded-xl p-6 shadow-lg">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           <CubeIcon className="h-5 w-5 inline mr-2 text-blue-500" />
           Performa per Produk (Sorted by Achievement)
         </h3>
@@ -450,23 +450,23 @@ const ProductionExecutiveDashboard: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="bg-gray-50">
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Produk</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-gray-600">Target (ctn)</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-gray-600">Aktual (ctn)</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-gray-600">Gap</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-gray-600">Achievement</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-gray-600">Quality</th>
+                <tr className="bg-gray-50 dark:bg-gray-900">
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600 dark:text-gray-300">Produk</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-gray-600 dark:text-gray-300">Target (ctn)</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-gray-600 dark:text-gray-300">Aktual (ctn)</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-gray-600 dark:text-gray-300">Gap</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-gray-600 dark:text-gray-300">Achievement</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-gray-600 dark:text-gray-300">Quality</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
                 {products.map((product, index) => (
                   <tr key={index} className={`hover:bg-gray-50 ${product.achievement_pct < 50 ? 'bg-red-50' : ''}`}>
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{product.product_name}</td>
-                    <td className="px-4 py-3 text-sm text-right text-gray-600">
+                    <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">{product.product_name}</td>
+                    <td className="px-4 py-3 text-sm text-right text-gray-600 dark:text-gray-300">
                       {product.target_ctn.toLocaleString()}
                     </td>
-                    <td className="px-4 py-3 text-sm text-right text-gray-600">
+                    <td className="px-4 py-3 text-sm text-right text-gray-600 dark:text-gray-300">
                       {product.actual_ctn.toLocaleString()}
                     </td>
                     <td className={`px-4 py-3 text-sm text-right font-medium ${product.gap_ctn > 0 ? 'text-red-600' : 'text-green-600'
@@ -481,7 +481,7 @@ const ProductionExecutiveDashboard: React.FC = () => {
                         {product.achievement_pct}%
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-sm text-right text-gray-600">
+                    <td className="px-4 py-3 text-sm text-right text-gray-600 dark:text-gray-300">
                       {product.quality_rate}%
                     </td>
                   </tr>
@@ -490,13 +490,13 @@ const ProductionExecutiveDashboard: React.FC = () => {
             </table>
           </div>
         ) : (
-          <p className="text-center text-gray-500 py-8">Tidak ada data produk</p>
+          <p className="text-center text-gray-500 dark:text-gray-400 py-8">Tidak ada data produk</p>
         )}
       </div>
 
       {/* Machine Performance */}
-      <div className="bg-white rounded-xl p-6 shadow-lg">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           <CogIcon className="h-5 w-5 inline mr-2 text-purple-500" />
           Performa Mesin (Sorted by OEE)
         </h3>
@@ -508,7 +508,7 @@ const ProductionExecutiveDashboard: React.FC = () => {
                   'border-red-200 bg-red-50'
                 }`}>
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-medium text-gray-900">{machine.machine_name}</h4>
+                  <h4 className="font-medium text-gray-900 dark:text-white">{machine.machine_name}</h4>
                   <span className={`text-lg font-bold ${machine.avg_oee >= 60 ? 'text-green-600' :
                     machine.avg_oee >= 40 ? 'text-yellow-600' :
                       'text-red-600'
@@ -518,19 +518,19 @@ const ProductionExecutiveDashboard: React.FC = () => {
                 </div>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Produksi</span>
+                    <span className="text-gray-500 dark:text-gray-400">Produksi</span>
                     <span className="font-medium">{machine.total_produced.toLocaleString()} pcs</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Quality</span>
+                    <span className="text-gray-500 dark:text-gray-400">Quality</span>
                     <span className="font-medium">{machine.quality_rate}%</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Downtime</span>
+                    <span className="text-gray-500 dark:text-gray-400">Downtime</span>
                     <span className="font-medium text-red-600">{machine.total_downtime} min</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Shift Count</span>
+                    <span className="text-gray-500 dark:text-gray-400">Shift Count</span>
                     <span className="font-medium">{machine.shift_count}</span>
                   </div>
                 </div>
@@ -538,7 +538,7 @@ const ProductionExecutiveDashboard: React.FC = () => {
             ))}
           </div>
         ) : (
-          <p className="text-center text-gray-500 py-8">Tidak ada data mesin</p>
+          <p className="text-center text-gray-500 dark:text-gray-400 py-8">Tidak ada data mesin</p>
         )}
       </div>
     </div>

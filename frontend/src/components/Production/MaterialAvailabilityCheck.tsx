@@ -58,7 +58,7 @@ const MaterialAvailabilityCheck: React.FC<Props> = ({ workOrderId, onAvailabilit
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg border border-slate-200 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-slate-200 p-4">
         <div className="flex items-center gap-2">
           <ArrowPathIcon className="h-5 w-5 text-slate-400 animate-spin" />
           <span className="text-sm text-slate-600">Checking material availability...</span>

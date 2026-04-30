@@ -143,8 +143,8 @@ const NotificationsPage: React.FC = () => {
         <div className="flex items-center gap-3">
           <BellIcon className="h-8 w-8 text-blue-600" />
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Notifikasi</h1>
-            <p className="text-sm text-gray-500">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Notifikasi</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               {unreadCount > 0 ? `${unreadCount} belum dibaca` : 'Semua sudah dibaca'}
             </p>
           </div>
@@ -162,7 +162,7 @@ const NotificationsPage: React.FC = () => {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-4 mb-6">
-        <div className="flex bg-gray-100 rounded-lg p-1">
+        <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
           {['all', 'unread', 'read'].map((f) => (
             <button
               key={f}
@@ -182,7 +182,7 @@ const NotificationsPage: React.FC = () => {
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="px-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Semua Kategori</option>
             {categories.map(cat => (
@@ -198,10 +198,10 @@ const NotificationsPage: React.FC = () => {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
         </div>
       ) : filteredNotifications.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 rounded-xl">
+        <div className="text-center py-12 bg-gray-50 dark:bg-gray-900 rounded-xl">
           <BellIcon className="h-16 w-16 mx-auto text-gray-300 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900">Tidak ada notifikasi</h3>
-          <p className="text-gray-500 mt-1">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Tidak ada notifikasi</h3>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">
             {filter === 'unread' ? 'Semua notifikasi sudah dibaca' : 'Belum ada notifikasi'}
           </p>
         </div>
@@ -239,12 +239,12 @@ const NotificationsPage: React.FC = () => {
                     </div>
                   </div>
                   
-                  <p className="mt-1 text-sm text-gray-600">
+                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
                     {notification.message}
                   </p>
                   
-                  <div className="mt-2 flex items-center gap-3 text-xs text-gray-500">
-                    <span className="px-2 py-0.5 bg-gray-100 rounded">{notification.category}</span>
+                  <div className="mt-2 flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+                    <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded">{notification.category}</span>
                     <span>{formatDate(notification.created_at)}</span>
                     {notification.action_url && (
                       <span className="text-blue-600">Klik untuk detail →</span>
@@ -258,7 +258,7 @@ const NotificationsPage: React.FC = () => {
       )}
 
       {/* Summary */}
-      <div className="mt-6 text-center text-sm text-gray-500">
+      <div className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
         Menampilkan {filteredNotifications.length} dari {total} notifikasi
       </div>
     </div>

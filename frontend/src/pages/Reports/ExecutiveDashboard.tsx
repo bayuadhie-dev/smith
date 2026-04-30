@@ -141,10 +141,10 @@ const ExecutiveDashboard: React.FC = () => {
       <div className="mb-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
               Executive Dashboard
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-300">
               High-level business insights and key performance indicators
             </p>
           </div>
@@ -153,7 +153,7 @@ const ExecutiveDashboard: React.FC = () => {
             <select
               value={selectedPeriod}
               onChange={(e) => setSelectedPeriod(e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-2"
+              className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
             >
               <option value="week">This Week</option>
               <option value="month">This Month</option>
@@ -175,12 +175,12 @@ const ExecutiveDashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         
         {/* Financial Metrics */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Revenue</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Revenue</h3>
             <BanknotesIcon className="h-8 w-8 text-green-500" />
           </div>
-          <div className="text-3xl font-bold text-gray-900 mb-2">
+          <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             {formatRupiah(metrics.financial.revenue)}
           </div>
           <div className="flex items-center">
@@ -191,41 +191,41 @@ const ExecutiveDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">{t('navigation.production')}</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('navigation.production')}</h3>
             <CogIcon className="h-8 w-8 text-blue-500" />
           </div>
-          <div className="text-3xl font-bold text-gray-900 mb-2">
+          <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             {metrics.operations.production_output.toLocaleString()}
           </div>
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-gray-500 dark:text-gray-400">
             Units produced
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Quality Rate</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Quality Rate</h3>
             <ChartBarIcon className="h-8 w-8 text-purple-500" />
           </div>
-          <div className="text-3xl font-bold text-gray-900 mb-2">
+          <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             {formatPercentage(metrics.operations.quality_rate)}
           </div>
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-gray-500 dark:text-gray-400">
             Quality compliance
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Employees</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Employees</h3>
             <UsersIcon className="h-8 w-8 text-indigo-500" />
           </div>
-          <div className="text-3xl font-bold text-gray-900 mb-2">
+          <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             {metrics.hr.total_employees}
           </div>
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-gray-500 dark:text-gray-400">
             {formatPercentage(metrics.hr.attendance_rate)} attendance
           </div>
         </div>
@@ -235,28 +235,28 @@ const ExecutiveDashboard: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         
         {/* Financial Performance */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Financial Performance</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Financial Performance</h3>
           
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Revenue</span>
+              <span className="text-gray-600 dark:text-gray-300">Revenue</span>
               <span className="font-semibold">{formatRupiah(metrics.financial.revenue)}</span>
             </div>
             
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Profit</span>
+              <span className="text-gray-600 dark:text-gray-300">Profit</span>
               <span className="font-semibold text-green-600">{formatRupiah(metrics.financial.profit)}</span>
             </div>
             
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Expenses</span>
+              <span className="text-gray-600 dark:text-gray-300">Expenses</span>
               <span className="font-semibold text-red-600">{formatRupiah(metrics.financial.expenses)}</span>
             </div>
             
             <div className="border-t pt-4">
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Profit Margin</span>
+                <span className="text-gray-600 dark:text-gray-300">Profit Margin</span>
                 <span className="font-semibold">
                   {formatPercentage((metrics.financial.profit / metrics.financial.revenue) * 100)}
                 </span>
@@ -266,27 +266,27 @@ const ExecutiveDashboard: React.FC = () => {
         </div>
 
         {/* Operational Metrics */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Operational Excellence</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Operational Excellence</h3>
           
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">On-Time Delivery</span>
+              <span className="text-gray-600 dark:text-gray-300">On-Time Delivery</span>
               <span className="font-semibold">{formatPercentage(metrics.operations.on_time_delivery)}</span>
             </div>
             
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Capacity Utilization</span>
+              <span className="text-gray-600 dark:text-gray-300">Capacity Utilization</span>
               <span className="font-semibold">{formatPercentage(metrics.operations.capacity_utilization)}</span>
             </div>
             
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Quality Rate</span>
+              <span className="text-gray-600 dark:text-gray-300">Quality Rate</span>
               <span className="font-semibold">{formatPercentage(metrics.operations.quality_rate)}</span>
             </div>
             
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Waste Percentage</span>
+              <span className="text-gray-600 dark:text-gray-300">Waste Percentage</span>
               <span className="font-semibold text-red-600">{formatPercentage(metrics.inventory.waste_percentage)}</span>
             </div>
           </div>
@@ -297,54 +297,54 @@ const ExecutiveDashboard: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         
         {/* HR Metrics */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Human Resources</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Human Resources</h3>
           
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Total Employees</span>
+              <span className="text-gray-600 dark:text-gray-300">Total Employees</span>
               <span className="font-semibold">{metrics.hr.total_employees}</span>
             </div>
             
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Attendance Rate</span>
+              <span className="text-gray-600 dark:text-gray-300">Attendance Rate</span>
               <span className="font-semibold">{formatPercentage(metrics.hr.attendance_rate)}</span>
             </div>
             
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Turnover Rate</span>
+              <span className="text-gray-600 dark:text-gray-300">Turnover Rate</span>
               <span className="font-semibold text-yellow-600">{formatPercentage(metrics.hr.turnover_rate)}</span>
             </div>
             
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Training Completion</span>
+              <span className="text-gray-600 dark:text-gray-300">Training Completion</span>
               <span className="font-semibold">{formatPercentage(metrics.hr.training_completion)}</span>
             </div>
           </div>
         </div>
 
         {/* Inventory Metrics */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Inventory Management</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Inventory Management</h3>
           
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Total Value</span>
+              <span className="text-gray-600 dark:text-gray-300">Total Value</span>
               <span className="font-semibold">{formatRupiah(metrics.inventory.total_value)}</span>
             </div>
             
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Turnover Ratio</span>
+              <span className="text-gray-600 dark:text-gray-300">Turnover Ratio</span>
               <span className="font-semibold">{metrics.inventory.turnover_ratio.toFixed(1)}x</span>
             </div>
             
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Stockout Incidents</span>
+              <span className="text-gray-600 dark:text-gray-300">Stockout Incidents</span>
               <span className="font-semibold text-red-600">{metrics.inventory.stockout_incidents}</span>
             </div>
             
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Waste Percentage</span>
+              <span className="text-gray-600 dark:text-gray-300">Waste Percentage</span>
               <span className="font-semibold text-red-600">{formatPercentage(metrics.inventory.waste_percentage)}</span>
             </div>
           </div>
@@ -352,19 +352,19 @@ const ExecutiveDashboard: React.FC = () => {
       </div>
 
       {/* Alerts & Notifications */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Executive Alerts</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Executive Alerts</h3>
         
         {alerts.length > 0 ? (
           <div className="space-y-3">
             {alerts.map((alert) => (
-              <div key={alert.id} className="flex items-start p-3 border border-gray-200 rounded-lg">
+              <div key={alert.id} className="flex items-start p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
                 <div className="flex-shrink-0 mr-3">
                   {getAlertIcon(alert.type)}
                 </div>
                 <div className="flex-1">
-                  <div className="font-medium text-gray-900">{alert.title}</div>
-                  <div className="text-sm text-gray-600 mt-1">{alert.message}</div>
+                  <div className="font-medium text-gray-900 dark:text-white">{alert.title}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-300 mt-1">{alert.message}</div>
                   <div className="text-xs text-gray-400 mt-2">
                     {new Date(alert.timestamp).toLocaleString()}
                   </div>
@@ -375,8 +375,8 @@ const ExecutiveDashboard: React.FC = () => {
         ) : (
           <div className="text-center py-8">
             <ExclamationTriangleIcon className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No alerts</h3>
-            <p className="text-gray-500">All systems are operating normally.</p>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No alerts</h3>
+            <p className="text-gray-500 dark:text-gray-400">All systems are operating normally.</p>
           </div>
         )}
       </div>

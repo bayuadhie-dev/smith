@@ -67,7 +67,7 @@ export default function ProductList() {
                   <th>{t('common.actions')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {data?.products?.map((product: any) => (
                   <tr key={product.id}>
                     <td className="font-medium">{product.code}</td>

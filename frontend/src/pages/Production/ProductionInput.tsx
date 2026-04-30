@@ -380,11 +380,11 @@ const ProductionInput: React.FC = () => {
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
             <Factory className="h-8 w-8 text-blue-600" />
             Input Produksi Shift
           </h1>
-          <p className="text-gray-600 mt-2">Input data produksi per shift dan mesin dengan validasi otomatis</p>
+          <p className="text-gray-600 dark:text-gray-300 mt-2">Input data produksi per shift dan mesin dengan validasi otomatis</p>
         </div>
         <div className="flex items-center gap-4">
           {isDirty && (
@@ -393,7 +393,7 @@ const ProductionInput: React.FC = () => {
               <span className="text-sm">Ada perubahan belum disimpan</span>
             </div>
           )}
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-gray-500 dark:text-gray-400">
             {new Date().toLocaleDateString('id-ID', { 
               weekday: 'long', 
               year: 'numeric', 
@@ -422,16 +422,16 @@ const ProductionInput: React.FC = () => {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Basic Information */}
-          <div className="bg-white rounded-lg shadow-md border">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md border">
             <div className="px-6 py-4 border-b">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                 <Calendar className="h-5 w-5" />
                 Informasi Dasar
               </h3>
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label htmlFor="production_date" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="production_date" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Tanggal Produksi *
                 </label>
                 <input
@@ -450,7 +450,7 @@ const ProductionInput: React.FC = () => {
               </div>
 
               <div>
-                <label htmlFor="shift" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="shift" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Shift *
                 </label>
                 <select
@@ -473,7 +473,7 @@ const ProductionInput: React.FC = () => {
               </div>
 
               <div>
-                <label htmlFor="machine_id" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="machine_id" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Mesin *
                 </label>
                 <select
@@ -498,7 +498,7 @@ const ProductionInput: React.FC = () => {
               </div>
 
               <div>
-                <label htmlFor="product_id" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="product_id" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Produk *
                 </label>
                 <SearchableSelect
@@ -519,16 +519,16 @@ const ProductionInput: React.FC = () => {
           </div>
 
           {/* Production Data */}
-          <div className="bg-white rounded-lg shadow-md border border-gray-200">
-            <div className="border-b border-gray-200 px-6 py-4">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+            <div className="border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                 <Target className="h-5 w-5" />
                 Data Produksi
               </h3>
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label htmlFor="target_quantity" className="block text-sm font-medium text-gray-700 mb-2">{t('production.target_quantity')}</label>
+                <label htmlFor="target_quantity" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('production.target_quantity')}</label>
                 <input
                   id="target_quantity"
                   type="number"
@@ -537,15 +537,15 @@ const ProductionInput: React.FC = () => {
                   onChange={(e) => handleInputChange('target_quantity', e.target.value)}
                   placeholder="Target produksi"
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
                 {selectedProduct && (
-                  <p className="text-sm text-gray-500 mt-1">UOM: {selectedProduct.uom}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">UOM: {selectedProduct.uom}</p>
                 )}
               </div>
 
               <div>
-                <label htmlFor="actual_quantity" className="block text-sm font-medium text-gray-700 mb-2">{t('production.actual_quantity')}</label>
+                <label htmlFor="actual_quantity" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('production.actual_quantity')}</label>
                 <input
                   id="actual_quantity"
                   type="number"
@@ -554,12 +554,12 @@ const ProductionInput: React.FC = () => {
                   onChange={(e) => handleInputChange('actual_quantity', e.target.value)}
                   placeholder="Actual produksi"
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label htmlFor="good_quantity" className="block text-sm font-medium text-gray-700 mb-2">{t('production.good_quantity')}</label>
+                <label htmlFor="good_quantity" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('production.good_quantity')}</label>
                 <input
                   id="good_quantity"
                   type="number"
@@ -568,13 +568,13 @@ const ProductionInput: React.FC = () => {
                   onChange={(e) => handleInputChange('good_quantity', e.target.value)}
                   placeholder="Produk baik"
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label htmlFor="reject_quantity" className="block text-sm font-medium text-gray-700 mb-2">Reject</label>
+                  <label htmlFor="reject_quantity" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Reject</label>
                   <input
                     id="reject_quantity"
                     type="number"
@@ -582,11 +582,11 @@ const ProductionInput: React.FC = () => {
                     value={formData.reject_quantity}
                     onChange={(e) => handleInputChange('reject_quantity', e.target.value)}
                     placeholder="Reject"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
                 <div>
-                  <label htmlFor="rework_quantity" className="block text-sm font-medium text-gray-700 mb-2">Rework</label>
+                  <label htmlFor="rework_quantity" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Rework</label>
                   <input
                     id="rework_quantity"
                     type="number"
@@ -594,7 +594,7 @@ const ProductionInput: React.FC = () => {
                     value={formData.rework_quantity}
                     onChange={(e) => handleInputChange('rework_quantity', e.target.value)}
                     placeholder="Rework"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
               </div>
@@ -602,41 +602,41 @@ const ProductionInput: React.FC = () => {
           </div>
 
           {/* Time & Operators */}
-          <div className="bg-white rounded-lg shadow-md border border-gray-200">
-            <div className="border-b border-gray-200 px-6 py-4">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+            <div className="border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                 <ClockIcon className="h-5 w-5" />
                 Waktu & Operator
               </h3>
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label htmlFor="planned_runtime" className="block text-sm font-medium text-gray-700 mb-2">Planned Runtime (menit)</label>
+                <label htmlFor="planned_runtime" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Planned Runtime (menit)</label>
                 <input
                   id="planned_runtime"
                   type="number"
                   value={formData.planned_runtime}
                   onChange={(e) => handleInputChange('planned_runtime', e.target.value)}
                   placeholder="480"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label htmlFor="actual_runtime" className="block text-sm font-medium text-gray-700 mb-2">Actual Runtime (menit)</label>
+                <label htmlFor="actual_runtime" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Actual Runtime (menit)</label>
                 <input
                   id="actual_runtime"
                   type="number"
                   value={formData.actual_runtime}
                   onChange={(e) => handleInputChange('actual_runtime', e.target.value)}
                   placeholder="Actual runtime"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label htmlFor="downtime_minutes" className="block text-sm font-medium text-gray-700 mb-2">Total Downtime (menit)</label>
+                  <label htmlFor="downtime_minutes" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Total Downtime (menit)</label>
                   <input
                     id="downtime_minutes"
                     type="number"
@@ -648,32 +648,32 @@ const ProductionInput: React.FC = () => {
                       parseInt(formData.downtime_others || '0')
                     }
                     readOnly
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200"
                   />
                 </div>
                 <div>
-                  <label htmlFor="setup_time" className="block text-sm font-medium text-gray-700 mb-2">Setup Time (menit)</label>
+                  <label htmlFor="setup_time" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Setup Time (menit)</label>
                   <input
                     id="setup_time"
                     type="number"
                     value={formData.setup_time}
                     onChange={(e) => handleInputChange('setup_time', e.target.value)}
                     placeholder="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
               </div>
 
               {/* Downtime by Category */}
               <div className="border-t pt-4 mt-4">
-                <h4 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-3 flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4 text-orange-500" />
                   Downtime per Kategori (menit)
                 </h4>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {/* Mesin - max 15% */}
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                       Mesin <span className="text-red-500">(max 15%)</span>
                     </label>
                     <input
@@ -687,7 +687,7 @@ const ProductionInput: React.FC = () => {
                   
                   {/* Operator - max 7% */}
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                       Operator <span className="text-orange-500">(max 7%)</span>
                     </label>
                     <input
@@ -701,7 +701,7 @@ const ProductionInput: React.FC = () => {
                   
                   {/* Raw Material - 0% */}
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                       Raw Material <span className="text-yellow-600">(0%)</span>
                     </label>
                     <input
@@ -715,7 +715,7 @@ const ProductionInput: React.FC = () => {
                   
                   {/* Design Change - max 8% */}
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                       Design Change <span className="text-blue-500">(max 8%)</span>
                     </label>
                     <input
@@ -729,21 +729,21 @@ const ProductionInput: React.FC = () => {
                   
                   {/* Others - max 10% */}
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">
-                      Others <span className="text-gray-500">(max 10%)</span>
+                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
+                      Others <span className="text-gray-500 dark:text-gray-400">(max 10%)</span>
                     </label>
                     <input
                       type="number"
                       value={formData.downtime_others}
                       onChange={(e) => handleInputChange('downtime_others', e.target.value)}
                       placeholder="0"
-                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-500 focus:border-gray-500 bg-gray-50"
+                      className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-gray-500 focus:border-gray-500 bg-gray-50 dark:bg-gray-900"
                     />
                   </div>
                   
                   {/* Idle Time */}
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                       Idle Time
                     </label>
                     <input
@@ -757,35 +757,35 @@ const ProductionInput: React.FC = () => {
                 </div>
                 
                 {/* Downtime Summary */}
-                <div className="mt-3 p-3 bg-gray-100 rounded-lg">
+                <div className="mt-3 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg">
                   <div className="grid grid-cols-5 gap-2 text-xs">
                     <div className="text-center">
                       <div className="font-medium text-red-600">Mesin</div>
-                      <div className="text-gray-700">
+                      <div className="text-gray-700 dark:text-gray-200">
                         {((parseInt(formData.downtime_mesin || '0') / parseInt(formData.planned_runtime || '480')) * 100).toFixed(1)}%
                       </div>
                     </div>
                     <div className="text-center">
                       <div className="font-medium text-orange-600">Operator</div>
-                      <div className="text-gray-700">
+                      <div className="text-gray-700 dark:text-gray-200">
                         {((parseInt(formData.downtime_operator || '0') / parseInt(formData.planned_runtime || '480')) * 100).toFixed(1)}%
                       </div>
                     </div>
                     <div className="text-center">
                       <div className="font-medium text-yellow-600">Material</div>
-                      <div className="text-gray-700">
+                      <div className="text-gray-700 dark:text-gray-200">
                         {((parseInt(formData.downtime_material || '0') / parseInt(formData.planned_runtime || '480')) * 100).toFixed(1)}%
                       </div>
                     </div>
                     <div className="text-center">
                       <div className="font-medium text-blue-600">Design</div>
-                      <div className="text-gray-700">
+                      <div className="text-gray-700 dark:text-gray-200">
                         {((parseInt(formData.downtime_design || '0') / parseInt(formData.planned_runtime || '480')) * 100).toFixed(1)}%
                       </div>
                     </div>
                     <div className="text-center">
-                      <div className="font-medium text-gray-600">Others</div>
-                      <div className="text-gray-700">
+                      <div className="font-medium text-gray-600 dark:text-gray-300">Others</div>
+                      <div className="text-gray-700 dark:text-gray-200">
                         {((parseInt(formData.downtime_others || '0') / parseInt(formData.planned_runtime || '480')) * 100).toFixed(1)}%
                       </div>
                     </div>
@@ -794,12 +794,12 @@ const ProductionInput: React.FC = () => {
               </div>
 
               <div>
-                <label htmlFor="operator_id" className="block text-sm font-medium text-gray-700 mb-2">{t('production.operator')}</label>
+                <label htmlFor="operator_id" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('production.operator')}</label>
                 <select
                   id="operator_id"
                   value={formData.operator_id}
                   onChange={(e) => handleInputChange('operator_id', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Pilih Operator</option>
                   {operators.map((operator) => (
@@ -811,12 +811,12 @@ const ProductionInput: React.FC = () => {
               </div>
 
               <div>
-                <label htmlFor="supervisor_id" className="block text-sm font-medium text-gray-700 mb-2">{t('production.supervisor')}</label>
+                <label htmlFor="supervisor_id" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('production.supervisor')}</label>
                 <select
                   id="supervisor_id"
                   value={formData.supervisor_id}
                   onChange={(e) => handleInputChange('supervisor_id', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Pilih Supervisor</option>
                   {operators.map((operator) => (
@@ -831,10 +831,10 @@ const ProductionInput: React.FC = () => {
         </div>
 
         {/* Enhanced Metrics Display */}
-        <div className="bg-white rounded-lg shadow-lg border">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border">
           <div className="px-6 py-4 border-b">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                 <Calculator className="h-5 w-5 text-blue-600" />
                 Metrics Otomatis & Performance
               </h3>
@@ -880,12 +880,12 @@ const ProductionInput: React.FC = () => {
             
             {/* Performance Indicators */}
             <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-gray-50 rounded-lg p-4">
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <ArrowTrendingUpIcon className="h-4 w-4 text-gray-600" />
-                  <span className="text-sm font-medium text-gray-700">Target vs Actual</span>
+                  <ArrowTrendingUpIcon className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Target vs Actual</span>
                 </div>
-                <div className="text-lg font-semibold text-gray-900">
+                <div className="text-lg font-semibold text-gray-900 dark:text-white">
                   {formData.actual_quantity && formData.target_quantity 
                     ? `${((parseFloat(formData.actual_quantity) / parseFloat(formData.target_quantity)) * 100).toFixed(1)}%`
                     : '0%'
@@ -893,12 +893,12 @@ const ProductionInput: React.FC = () => {
                 </div>
               </div>
               
-              <div className="bg-gray-50 rounded-lg p-4">
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <XCircle className="h-4 w-4 text-gray-600" />
-                  <span className="text-sm font-medium text-gray-700">Defect Rate</span>
+                  <XCircle className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Defect Rate</span>
                 </div>
-                <div className="text-lg font-semibold text-gray-900">
+                <div className="text-lg font-semibold text-gray-900 dark:text-white">
                   {formData.actual_quantity 
                     ? `${(((parseFloat(formData.reject_quantity) || 0) / parseFloat(formData.actual_quantity)) * 100).toFixed(1)}%`
                     : '0%'
@@ -906,12 +906,12 @@ const ProductionInput: React.FC = () => {
                 </div>
               </div>
               
-              <div className="bg-gray-50 rounded-lg p-4">
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <ClockIcon className="h-4 w-4 text-gray-600" />
-                  <span className="text-sm font-medium text-gray-700">Downtime Rate</span>
+                  <ClockIcon className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Downtime Rate</span>
                 </div>
-                <div className="text-lg font-semibold text-gray-900">
+                <div className="text-lg font-semibold text-gray-900 dark:text-white">
                   {formData.planned_runtime 
                     ? `${(((parseFloat(formData.downtime_minutes) || 0) / parseFloat(formData.planned_runtime)) * 100).toFixed(1)}%`
                     : '0%'
@@ -923,31 +923,31 @@ const ProductionInput: React.FC = () => {
         </div>
 
         {/* Notes */}
-        <div className="bg-white rounded-lg shadow-md border border-gray-200">
-          <div className="border-b border-gray-200 px-6 py-4">
-            <h3 className="text-lg font-semibold text-gray-900">Catatan</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+          <div className="border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Catatan</h3>
           </div>
           <div className="p-6 space-y-4">
             <div>
-              <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+              <label htmlFor="notes" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Notes</label>
               <textarea
                 id="notes"
                 value={formData.notes}
                 onChange={(e) => handleInputChange('notes', e.target.value)}
                 placeholder="Catatan produksi..."
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
             <div>
-              <label htmlFor="issues" className="block text-sm font-medium text-gray-700 mb-2">Issues</label>
+              <label htmlFor="issues" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Issues</label>
               <textarea
                 id="issues"
                 value={formData.issues}
                 onChange={(e) => handleInputChange('issues', e.target.value)}
                 placeholder="Masalah yang terjadi..."
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
           </div>
@@ -990,7 +990,7 @@ const ProductionInput: React.FC = () => {
                   setValidationErrors({});
                 }
               }}
-              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 flex items-center gap-2"
+              className="px-4 py-2 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 flex items-center gap-2"
             >
               <RefreshCw className="h-4 w-4" />
               Reset Form

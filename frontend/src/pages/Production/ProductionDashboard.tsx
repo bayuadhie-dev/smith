@@ -184,8 +184,8 @@ const ProductionDashboard = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">🏭 Production Dashboard</h1>
-          <p className="text-gray-600 mt-1">Monitor and manage your production operations</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">🏭 Production Dashboard</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Monitor and manage your production operations</p>
         </div>
         <button
           onClick={loadDashboardData}
@@ -204,8 +204,8 @@ const ProductionDashboard = () => {
                 <stat.icon className="h-6 w-6 text-white" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">{stat.name}</p>
-                <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">{stat.name}</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
               </div>
             </div>
           </div>
@@ -218,7 +218,7 @@ const ProductionDashboard = () => {
       {/* Machine Status Overview */}
       {dashboardData?.machines.status_breakdown && (
         <div className="card p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Machine Status Overview</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Machine Status Overview</h3>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             {Object.entries(dashboardData.machines.status_breakdown).map(([status, count]) => {
               const StatusIcon = getMachineStatusIcon(status)
@@ -228,8 +228,8 @@ const ProductionDashboard = () => {
                     <StatusIcon className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600 capitalize">{status}</p>
-                    <p className="text-xl font-bold text-gray-900">{count}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 capitalize">{status}</p>
+                    <p className="text-xl font-bold text-gray-900 dark:text-white">{count}</p>
                   </div>
                 </div>
               )
@@ -240,7 +240,7 @@ const ProductionDashboard = () => {
 
       {/* Production Modules */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Production Modules</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Production Modules</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {moduleCards.map((module, index) => (
             <Link
@@ -253,11 +253,11 @@ const ProductionDashboard = () => {
                   <module.icon className="h-6 w-6 text-white" />
                 </div>
                 <div className="flex-1">
-                  <h4 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors">
                     {module.title}
                   </h4>
-                  <p className="text-gray-600 text-sm mt-1">{module.description}</p>
-                  <p className="text-xs text-gray-500 mt-2">{module.stats}</p>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm mt-1">{module.description}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">{module.stats}</p>
                 </div>
               </div>
             </Link>
@@ -267,7 +267,7 @@ const ProductionDashboard = () => {
 
       {/* Quick Actions */}
       <div className="card p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
         <div className="flex flex-wrap gap-3">
           <Link to="/app/production/work-orders/new" className="btn-primary">
             + New Work Order

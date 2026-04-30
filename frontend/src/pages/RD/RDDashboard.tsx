@@ -32,7 +32,7 @@ export default function RDDashboard() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+              <div className="p-2 bg-white dark:bg-gray-800/20 rounded-lg backdrop-blur-sm">
                 <LightBulbIcon className="w-6 h-6" />
               </div>
               <h1 className="text-2xl md:text-3xl font-bold">R&D Dashboard</h1>
@@ -42,14 +42,14 @@ export default function RDDashboard() {
           <div className="flex gap-3">
             <Link
               to="/app/rd/projects/new"
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-white text-purple-700 font-semibold rounded-xl hover:bg-purple-50 transition-all shadow-lg"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 text-purple-700 font-semibold rounded-xl hover:bg-purple-50 transition-all shadow-lg"
             >
               <PlusIcon className="h-5 w-5" />
               New Project
             </Link>
             <Link
               to="/app/rd/experiments/new"
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-white/10 border border-white/20 text-white font-semibold rounded-xl hover:bg-white/20 transition-all backdrop-blur-sm"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-white/10 border border-white/20 text-white font-semibold rounded-xl hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/20 transition-all backdrop-blur-sm"
             >
               <BeakerIcon className="h-5 w-5" />
               New Experiment
@@ -62,7 +62,7 @@ export default function RDDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Projects Card */}
         {isLoading ? <CardSkeleton /> : (
-          <div className="group bg-white dark:bg-slate-800 rounded-xl shadow-sm p-5 border border-slate-200 dark:border-slate-700 hover:shadow-md hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300">
+          <div className="group bg-white dark:bg-gray-800 dark:bg-slate-800 rounded-xl shadow-sm p-5 border border-slate-200 dark:border-slate-700 hover:shadow-md hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Research Projects</p>
@@ -90,7 +90,7 @@ export default function RDDashboard() {
 
         {/* Experiments Card */}
         {isLoading ? <CardSkeleton /> : (
-          <div className="group bg-white dark:bg-slate-800 rounded-xl shadow-sm p-5 border border-slate-200 dark:border-slate-700 hover:shadow-md hover:border-purple-300 dark:hover:border-purple-600 transition-all duration-300">
+          <div className="group bg-white dark:bg-gray-800 dark:bg-slate-800 rounded-xl shadow-sm p-5 border border-slate-200 dark:border-slate-700 hover:shadow-md hover:border-purple-300 dark:hover:border-purple-600 transition-all duration-300">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Experiments</p>
@@ -117,7 +117,7 @@ export default function RDDashboard() {
 
         {/* Products Card */}
         {isLoading ? <CardSkeleton /> : (
-          <div className="group bg-white dark:bg-slate-800 rounded-xl shadow-sm p-5 border border-slate-200 dark:border-slate-700 hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-600 transition-all duration-300">
+          <div className="group bg-white dark:bg-gray-800 dark:bg-slate-800 rounded-xl shadow-sm p-5 border border-slate-200 dark:border-slate-700 hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-600 transition-all duration-300">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Product Development</p>
@@ -143,7 +143,7 @@ export default function RDDashboard() {
 
         {/* Budget Card */}
         {isLoading ? <CardSkeleton /> : (
-          <div className="group bg-white dark:bg-slate-800 rounded-xl shadow-sm p-5 border border-slate-200 dark:border-slate-700 hover:shadow-md hover:border-amber-300 dark:hover:border-amber-600 transition-all duration-300">
+          <div className="group bg-white dark:bg-gray-800 dark:bg-slate-800 rounded-xl shadow-sm p-5 border border-slate-200 dark:border-slate-700 hover:shadow-md hover:border-amber-300 dark:hover:border-amber-600 transition-all duration-300">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Budget Utilization</p>
@@ -175,7 +175,7 @@ export default function RDDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-slate-200 dark:border-slate-700">
+      <div className="bg-white dark:bg-gray-800 dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-slate-200 dark:border-slate-700">
         <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Quick Actions</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           {[
@@ -204,7 +204,7 @@ export default function RDDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Recent Projects */}
         {isLoading ? <ListSkeleton rows={4} /> : (
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
             <div className="p-5 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
@@ -244,7 +244,7 @@ export default function RDDashboard() {
 
         {/* Recent Experiments */}
         {isLoading ? <ListSkeleton rows={4} /> : (
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
             <div className="p-5 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
@@ -289,7 +289,7 @@ export default function RDDashboard() {
       </div>
 
       {/* Alerts & Notifications */}
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-slate-200 dark:border-slate-700">
+      <div className="bg-white dark:bg-gray-800 dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-slate-200 dark:border-slate-700">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
             <ExclamationTriangleIcon className="w-5 h-5 text-amber-600 dark:text-amber-400" />

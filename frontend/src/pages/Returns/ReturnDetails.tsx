@@ -33,7 +33,7 @@ const { id } = useParams<{ id: string }>()
       case 'qc_approved': return <CheckCircleIcon className="h-5 w-5 text-green-500" />
       case 'qc_rejected': return <XCircleIcon className="h-5 w-5 text-red-500" />
       case 'processed': return <CheckCircleIcon className="h-5 w-5 text-blue-500" />
-      default: return <ClockIcon className="h-5 w-5 text-gray-500" />
+      default: return <ClockIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
     }
   }
 
@@ -60,7 +60,7 @@ const { id } = useParams<{ id: string }>()
       case 'rework': return <WrenchScrewdriverIcon className="h-5 w-5 text-orange-500" />
       case 'warehouse': return <ArchiveBoxIcon className="h-5 w-5 text-blue-500" />
       case 'waste': return <TrashIcon className="h-5 w-5 text-red-500" />
-      case 'scrap': return <XCircleIcon className="h-5 w-5 text-gray-500" />
+      case 'scrap': return <XCircleIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
       default: return <ClockIcon className="h-5 w-5 text-gray-400" />
     }
   }
@@ -127,8 +127,8 @@ const { id } = useParams<{ id: string }>()
   if (!returnData) {
     return (
       <div className="text-center py-12">
-        <h2 className="text-2xl font-bold text-gray-900">Return not found</h2>
-        <p className="text-gray-600 mt-2">The return you're looking for doesn't exist.</p>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Return not found</h2>
+        <p className="text-gray-600 dark:text-gray-300 mt-2">The return you're looking for doesn't exist.</p>
       </div>
     )
   }
@@ -140,16 +140,16 @@ const { id } = useParams<{ id: string }>()
         <div className="flex items-center space-x-4">
           <Link
             to="/app/returns"
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
           >
-            <ArrowLeftIcon className="h-5 w-5 text-gray-600" />
+            <ArrowLeftIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
               {getStatusIcon(returnData.status)}
               Return {returnData.return_number}
             </h1>
-            <p className="text-gray-600">Customer: {returnData.customer.name}</p>
+            <p className="text-gray-600 dark:text-gray-300">Customer: {returnData.customer.name}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -168,65 +168,65 @@ const { id } = useParams<{ id: string }>()
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           {/* Return Details Card */}
-          <div className="bg-white rounded-lg shadow p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Return Information</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Return Information</h2>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-gray-500">Return Date</label>
-                <p className="text-gray-900">{new Date(returnData.return_date).toLocaleDateString()}</p>
+                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Return Date</label>
+                <p className="text-gray-900 dark:text-white">{new Date(returnData.return_date).toLocaleDateString()}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500">Sales Order</label>
-                <p className="text-gray-900">{returnData.sales_order_number || 'N/A'}</p>
+                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Sales Order</label>
+                <p className="text-gray-900 dark:text-white">{returnData.sales_order_number || 'N/A'}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500">Reason</label>
-                <p className="text-gray-900">{returnData.reason}</p>
+                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Reason</label>
+                <p className="text-gray-900 dark:text-white">{returnData.reason}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500">Total Value</label>
-                <p className="text-gray-900">Rp {returnData.total_value.toLocaleString()}</p>
+                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Value</label>
+                <p className="text-gray-900 dark:text-white">Rp {returnData.total_value.toLocaleString()}</p>
               </div>
               {returnData.description && (
                 <div className="col-span-2">
-                  <label className="text-sm font-medium text-gray-500">{t('common.description')}</label>
-                  <p className="text-gray-900">{returnData.description}</p>
+                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('common.description')}</label>
+                  <p className="text-gray-900 dark:text-white">{returnData.description}</p>
                 </div>
               )}
             </div>
           </div>
 
           {/* Return Items */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Return Items</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Return Items</h2>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-900">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('production.product')}</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.quantity')}</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('production.product')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.quantity')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       QC Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.actions')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {returnData.items.map((item) => (
                     <tr key={item.id}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
-                          <div className="text-sm font-medium text-gray-900">{item.product_name}</div>
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">{item.product_name}</div>
                           {item.batch_number && (
-                            <div className="text-sm text-gray-500">Batch: {item.batch_number}</div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">Batch: {item.batch_number}</div>
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                         {item.quantity_returned}
                         {item.qc_quantity_approved > 0 && (
                           <div className="text-xs text-green-600">
@@ -248,7 +248,7 @@ const { id } = useParams<{ id: string }>()
                           {item.condition_received}
                         </span>
                         {item.defect_description && (
-                          <div className="text-xs text-gray-500 mt-1">{item.defect_description}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{item.defect_description}</div>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -264,7 +264,7 @@ const { id } = useParams<{ id: string }>()
                         {item.disposition ? (
                           <div className="flex items-center gap-1">
                             {getDispositionIcon(item.disposition)}
-                            <span className="text-sm text-gray-900 capitalize">{item.disposition}</span>
+                            <span className="text-sm text-gray-900 dark:text-white capitalize">{item.disposition}</span>
                           </div>
                         ) : (
                           <span className="text-gray-400 text-sm">Pending</span>
@@ -307,41 +307,41 @@ const { id } = useParams<{ id: string }>()
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Customer Info */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Customer Information</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Customer Information</h3>
             <div className="space-y-2">
               <div>
-                <label className="text-sm font-medium text-gray-500">Company</label>
-                <p className="text-gray-900">{returnData.customer.name}</p>
+                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Company</label>
+                <p className="text-gray-900 dark:text-white">{returnData.customer.name}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500">Contact</label>
-                <p className="text-gray-900">{returnData.customer.contact}</p>
+                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Contact</label>
+                <p className="text-gray-900 dark:text-white">{returnData.customer.contact}</p>
               </div>
             </div>
           </div>
 
           {/* QC Records */}
           {returnData.qc_records.length > 0 && (
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">QC Records</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">QC Records</h3>
               <div className="space-y-4">
                 {returnData.qc_records.map((qc) => (
                   <div key={qc.id} className="border-l-4 border-blue-200 pl-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-900">{qc.qc_by}</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">{qc.qc_by}</span>
                       <span className={getStatusBadge(qc.overall_result)}>
                         {qc.overall_result.toUpperCase()}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-500">{new Date(qc.qc_date).toLocaleDateString()}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{new Date(qc.qc_date).toLocaleDateString()}</p>
                     <div className="mt-2 text-sm">
                       <p>Inspected: {qc.quantity_inspected}</p>
                       <p>Approved: {qc.quantity_approved}</p>
                       <p>Rejected: {qc.quantity_rejected}</p>
                     </div>
                     {qc.qc_notes && (
-                      <p className="text-sm text-gray-600 mt-2">{qc.qc_notes}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">{qc.qc_notes}</p>
                     )}
                     {qc.recommendation && (
                       <p className="text-sm text-blue-600 mt-1">Rec: {qc.recommendation}</p>
@@ -403,16 +403,16 @@ function QCInspectionModal({ item, onSubmit, onClose }: any) {
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+      <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
         <div className="mt-3">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">QC Inspection - {item.product_name}</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">QC Inspection - {item.product_name}</h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Visual Inspection</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Visual Inspection</label>
               <select
                 value={formData.visual_inspection}
                 onChange={(e) => setFormData({ ...formData, visual_inspection: e.target.value })}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                 required
               >
                 <option value="">Select result</option>
@@ -422,11 +422,11 @@ function QCInspectionModal({ item, onSubmit, onClose }: any) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">Overall Result</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Overall Result</label>
               <select
                 value={formData.overall_result}
                 onChange={(e) => setFormData({ ...formData, overall_result: e.target.value })}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                 required
               >
                 <option value="">Select result</option>
@@ -438,23 +438,23 @@ function QCInspectionModal({ item, onSubmit, onClose }: any) {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Quantity Approved</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Quantity Approved</label>
                 <input
                   type="number"
                   value={formData.quantity_approved}
                   onChange={(e) => setFormData({ ...formData, quantity_approved: parseInt(e.target.value) || 0 })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                   min="0"
                   max={formData.quantity_inspected}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Quantity Rejected</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Quantity Rejected</label>
                 <input
                   type="number"
                   value={formData.quantity_rejected}
                   onChange={(e) => setFormData({ ...formData, quantity_rejected: parseInt(e.target.value) || 0 })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                   min="0"
                   max={formData.quantity_inspected}
                 />
@@ -462,21 +462,21 @@ function QCInspectionModal({ item, onSubmit, onClose }: any) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">QC Notes</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">QC Notes</label>
               <textarea
                 value={formData.qc_notes}
                 onChange={(e) => setFormData({ ...formData, qc_notes: e.target.value })}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                 rows={3}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">Recommendation</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Recommendation</label>
               <select
                 value={formData.recommendation}
                 onChange={(e) => setFormData({ ...formData, recommendation: e.target.value })}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
               >
                 <option value="">Select recommendation</option>
                 <option value="rework">Rework</option>
@@ -490,7 +490,7 @@ function QCInspectionModal({ item, onSubmit, onClose }: any) {
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-4 py-2 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
               >{t('common.cancel')}</button>
               <button
                 type="submit"
@@ -523,16 +523,16 @@ function DispositionModal({ item, onSubmit, onClose }: any) {
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+      <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
         <div className="mt-3">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Disposition - {item.product_name}</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Disposition - {item.product_name}</h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Disposition Type</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Disposition Type</label>
               <select
                 value={formData.disposition_type}
                 onChange={(e) => setFormData({ ...formData, disposition_type: e.target.value })}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                 required
               >
                 <option value="">Select disposition</option>
@@ -544,12 +544,12 @@ function DispositionModal({ item, onSubmit, onClose }: any) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">{t('common.quantity')}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">{t('common.quantity')}</label>
               <input
                 type="number"
                 value={formData.quantity}
                 onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) || 0 })}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                 min="1"
                 max={item.qc_quantity_approved || item.quantity_returned}
                 required
@@ -558,12 +558,12 @@ function DispositionModal({ item, onSubmit, onClose }: any) {
 
             {formData.disposition_type === 'warehouse' && (
               <div>
-                <label className="block text-sm font-medium text-gray-700">Warehouse Location</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Warehouse Location</label>
                 <input
                   type="text"
                   value={formData.warehouse_location}
                   onChange={(e) => setFormData({ ...formData, warehouse_location: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                   placeholder="e.g., A-01-01"
                 />
               </div>
@@ -571,11 +571,11 @@ function DispositionModal({ item, onSubmit, onClose }: any) {
 
             {formData.disposition_type === 'waste' && (
               <div>
-                <label className="block text-sm font-medium text-gray-700">Waste Category</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Waste Category</label>
                 <select
                   value={formData.waste_category}
                   onChange={(e) => setFormData({ ...formData, waste_category: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                 >
                   <option value="">Select category</option>
                   <option value="defective">Defective</option>
@@ -587,11 +587,11 @@ function DispositionModal({ item, onSubmit, onClose }: any) {
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">Notes</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Notes</label>
               <textarea
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                 rows={3}
                 placeholder="Additional notes..."
               />
@@ -601,7 +601,7 @@ function DispositionModal({ item, onSubmit, onClose }: any) {
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-4 py-2 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
               >{t('common.cancel')}</button>
               <button
                 type="submit"

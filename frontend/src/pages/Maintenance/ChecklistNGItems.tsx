@@ -145,7 +145,7 @@ const ChecklistNGItems: React.FC = () => {
 
   if (loading && items.length === 0) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
+      <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-900">
         <LoadingSpinner />
       </div>
     );
@@ -155,11 +155,11 @@ const ChecklistNGItems: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-orange-50 p-4">
       <div className="max-w-7xl mx-auto space-y-4">
         {/* Header */}
-        <div className="bg-white rounded-xl shadow-lg border overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border overflow-hidden">
           <div className="bg-gradient-to-r from-orange-600 to-red-600 px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className="p-2 bg-white/20 rounded-lg">
+                <div className="p-2 bg-white dark:bg-gray-800/20 rounded-lg">
                   <WrenchScrewdriverIcon className="w-6 h-6 text-white" />
                 </div>
                 <div>
@@ -167,7 +167,7 @@ const ChecklistNGItems: React.FC = () => {
                   <p className="text-orange-100 text-sm">Item yang perlu diperbaiki dari Pre-Shift Checklist</p>
                 </div>
               </div>
-              <button onClick={fetchData} className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition">
+              <button onClick={fetchData} className="p-2 bg-white/20 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/30 rounded-lg transition">
                 <ArrowPathIcon className={`w-5 h-5 text-white ${loading ? 'animate-spin' : ''}`} />
               </button>
             </div>
@@ -176,8 +176,8 @@ const ChecklistNGItems: React.FC = () => {
           {/* Filters */}
           <div className="px-6 py-3 bg-orange-50 border-b flex flex-wrap items-center gap-3">
             <div className="flex items-center space-x-2">
-              <FunnelIcon className="w-4 h-4 text-gray-500" />
-              <span className="text-sm text-gray-600">Filter:</span>
+              <FunnelIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+              <span className="text-sm text-gray-600 dark:text-gray-300">Filter:</span>
             </div>
             <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
               className="px-2 py-1 border rounded text-sm" />
@@ -222,16 +222,16 @@ const ChecklistNGItems: React.FC = () => {
         </div>
 
         {/* NG Items List */}
-        <div className="bg-white rounded-xl shadow-lg border overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border overflow-hidden">
           {items.length === 0 ? (
             <div className="text-center py-12">
               <CheckCircleIcon className="w-12 h-12 text-green-400 mx-auto mb-3" />
-              <p className="text-gray-500">Tidak ada item NG dalam periode ini</p>
+              <p className="text-gray-500 dark:text-gray-400">Tidak ada item NG dalam periode ini</p>
             </div>
           ) : (
             <div className="divide-y">
               {items.map(item => (
-                <div key={item.answer_id} className="hover:bg-gray-50">
+                <div key={item.answer_id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                   {/* Summary Row */}
                   <div 
                     className="px-4 py-3 flex items-center justify-between cursor-pointer"
@@ -247,7 +247,7 @@ const ChecklistNGItems: React.FC = () => {
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center space-x-2 flex-wrap">
-                          <span className="font-semibold text-gray-900">{item.item_name}</span>
+                          <span className="font-semibold text-gray-900 dark:text-white">{item.item_name}</span>
                           <span className="text-xs text-gray-400">[{item.item_category}]</span>
                           {/* Priority Badge */}
                           {item.corrective_action?.priority && item.corrective_action.priority !== 'normal' && (
@@ -256,7 +256,7 @@ const ChecklistNGItems: React.FC = () => {
                             </span>
                           )}
                         </div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
                           {item.machine_name} • {formatDate(item.tanggal)} • Shift {item.shift}
                         </div>
                         {item.catatan && (
@@ -273,7 +273,7 @@ const ChecklistNGItems: React.FC = () => {
                                 <span className="font-medium text-amber-800">Catatan Supervisor:</span>
                                 <span className="text-amber-700 ml-1">{item.corrective_action.supervisor_note}</span>
                                 {item.corrective_action.supervisor_name && (
-                                  <span className="text-gray-500 text-xs ml-2">- {item.corrective_action.supervisor_name}</span>
+                                  <span className="text-gray-500 dark:text-gray-400 text-xs ml-2">- {item.corrective_action.supervisor_name}</span>
                                 )}
                               </div>
                             </div>
@@ -292,7 +292,7 @@ const ChecklistNGItems: React.FC = () => {
 
                   {/* Expanded Detail */}
                   {expandedItem === item.answer_id && (
-                    <div className="px-4 py-4 bg-gray-50 border-t">
+                    <div className="px-4 py-4 bg-gray-50 dark:bg-gray-900 border-t">
                       <CorrectiveActionForm 
                         item={item} 
                         onSave={(data) => handleUpdateCorrectiveAction(item.answer_id, data)}
@@ -340,7 +340,7 @@ const CorrectiveActionForm: React.FC<CorrectiveActionFormProps> = ({ item, onSav
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Status */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Status Perbaikan</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Status Perbaikan</label>
           <select value={status} onChange={e => setStatus(e.target.value)}
             className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-orange-500">
             {REPAIR_STATUS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -350,7 +350,7 @@ const CorrectiveActionForm: React.FC<CorrectiveActionFormProps> = ({ item, onSav
         {/* Conditional: Deferred Until */}
         {status === 'deferred' && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Ditunda Sampai</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Ditunda Sampai</label>
             <input type="date" value={deferredUntil} onChange={e => setDeferredUntil(e.target.value)}
               className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-orange-500" />
           </div>
@@ -359,7 +359,7 @@ const CorrectiveActionForm: React.FC<CorrectiveActionFormProps> = ({ item, onSav
 
       {/* Notes */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Catatan Perbaikan</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Catatan Perbaikan</label>
         <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2}
           className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-orange-500"
           placeholder="Jelaskan tindakan perbaikan yang dilakukan..." />
@@ -378,7 +378,7 @@ const CorrectiveActionForm: React.FC<CorrectiveActionFormProps> = ({ item, onSav
       {/* Deferred Reason */}
       {status === 'deferred' && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Alasan Ditunda *</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Alasan Ditunda *</label>
           <textarea value={deferredReason} onChange={e => setDeferredReason(e.target.value)} rows={2} required
             className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-orange-500"
             placeholder="Jelaskan alasan mengapa ditunda..." />
@@ -387,7 +387,7 @@ const CorrectiveActionForm: React.FC<CorrectiveActionFormProps> = ({ item, onSav
 
       {/* Info dari history */}
       {existing && (
-        <div className="text-xs text-gray-500 space-y-1 bg-gray-100 p-2 rounded">
+        <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1 bg-gray-100 dark:bg-gray-800 p-2 rounded">
           {existing.started_at && <p>Mulai dikerjakan: {new Date(existing.started_at).toLocaleString('id-ID')}</p>}
           {existing.completed_at && <p>Selesai: {new Date(existing.completed_at).toLocaleString('id-ID')}</p>}
           {existing.handled_by_name && <p>Ditangani oleh: {existing.handled_by_name}</p>}

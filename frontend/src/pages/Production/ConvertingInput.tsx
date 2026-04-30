@@ -109,7 +109,7 @@ export default function ConvertingInput() {
     <div className="min-h-screen bg-slate-100 p-6">
       {/* Top bar */}
       <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => navigate('/app/production/converting')} className="p-2 hover:bg-white rounded-lg"><ArrowLeftIcon className="h-5 w-5" /></button>
+        <button onClick={() => navigate('/app/production/converting')} className="p-2 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"><ArrowLeftIcon className="h-5 w-5" /></button>
         <div>
           <h1 className="text-2xl font-bold text-slate-800">Input Produksi Converting</h1>
           {machine && <p className="text-sm text-slate-500">{machine.name} ({machine.code})</p>}
@@ -490,7 +490,7 @@ export default function ConvertingInput() {
       )}
 
       {!machineId && (
-        <div className="bg-white rounded-xl shadow-sm p-12 text-center">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-12 text-center">
           <p className="text-slate-400 text-lg">Pilih mesin untuk mulai input data produksi</p>
         </div>
       )}

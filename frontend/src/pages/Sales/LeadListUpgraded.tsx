@@ -209,7 +209,7 @@ const LeadListUpgraded: React.FC = () => {
             <StarIcon key={i} className="h-4 w-4 text-gray-300" />
           )
         ))}
-        <span className="ml-1 text-xs text-gray-500">({score})</span>
+        <span className="ml-1 text-xs text-gray-500 dark:text-gray-400">({score})</span>
       </div>
     );
   };
@@ -241,14 +241,14 @@ const LeadListUpgraded: React.FC = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={() => loadLeads(pagination.current_page)}
-              className="p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
+              className="p-2 bg-white/10 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/20 rounded-lg transition-colors"
               title="Refresh"
             >
               <ArrowPathIcon className="h-5 w-5" />
             </button>
             <Link
               to="/app/sales/leads/new"
-              className="inline-flex items-center px-4 py-2 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-50 transition-colors shadow-md"
+              className="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 text-blue-600 rounded-lg font-medium hover:bg-blue-50 transition-colors shadow-md"
             >
               <PlusIcon className="h-5 w-5 mr-2" />
               Add Lead
@@ -259,9 +259,9 @@ const LeadListUpgraded: React.FC = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
-          <div className="text-sm text-gray-500">Total Leads</div>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+          <div className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">Total Leads</div>
         </div>
         <div className="bg-blue-50 rounded-lg border border-blue-200 p-4">
           <div className="text-2xl font-bold text-blue-600">{stats.new}</div>
@@ -290,7 +290,7 @@ const LeadListUpgraded: React.FC = () => {
       </div>
 
       {/* Filters & View Toggle */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
         <div className="flex flex-col lg:flex-row lg:items-center gap-4">
           {/* Search */}
           <div className="relative flex-1">
@@ -300,7 +300,7 @@ const LeadListUpgraded: React.FC = () => {
               placeholder="Search by company, contact, email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="pl-10 w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
@@ -308,7 +308,7 @@ const LeadListUpgraded: React.FC = () => {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             {statusOptions.map(option => (
               <option key={option.value} value={option.value}>
@@ -321,7 +321,7 @@ const LeadListUpgraded: React.FC = () => {
           <select
             value={sourceFilter}
             onChange={(e) => setSourceFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             {sourceOptions.map(option => (
               <option key={option.value} value={option.value}>
@@ -331,7 +331,7 @@ const LeadListUpgraded: React.FC = () => {
           </select>
 
           {/* View Toggle */}
-          <div className="flex items-center bg-gray-100 rounded-lg p-1">
+          <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
             <button
               onClick={() => setViewMode('grid')}
               className={`p-2 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'}`}
@@ -349,7 +349,7 @@ const LeadListUpgraded: React.FC = () => {
 
         {/* Bulk Actions */}
         {selectedLeads.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-gray-200 flex items-center gap-4">
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center gap-4">
             <span className="text-sm text-gray-600">{selectedLeads.length} selected</span>
             <button
               onClick={() => handleBulkAction('delete')}
@@ -373,7 +373,7 @@ const LeadListUpgraded: React.FC = () => {
           {leads.map((lead) => (
             <div 
               key={lead.id} 
-              className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-200 overflow-hidden group"
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-200 overflow-hidden group"
             >
               {/* Card Header */}
               <div className="p-5 border-b border-gray-100">
@@ -385,7 +385,7 @@ const LeadListUpgraded: React.FC = () => {
                         {lead.lead_status.charAt(0).toUpperCase() + lead.lead_status.slice(1)}
                       </span>
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900 truncate">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
                       {lead.company_name}
                     </h3>
                     <p className="text-sm text-gray-600">{lead.contact_person}</p>
@@ -394,15 +394,15 @@ const LeadListUpgraded: React.FC = () => {
                   <div className="relative">
                     <button
                       onClick={() => setShowActions(showActions === lead.id ? null : lead.id)}
-                      className="p-1 hover:bg-gray-100 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <EllipsisVerticalIcon className="h-5 w-5 text-gray-400" />
                     </button>
                     {showActions === lead.id && (
-                      <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+                      <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10">
                         <Link
                           to={`/app/sales/leads/${lead.id}/edit`}
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
                         >
                           <PencilIcon className="h-4 w-4 mr-2" />
                           Edit Lead
@@ -455,19 +455,19 @@ const LeadListUpgraded: React.FC = () => {
                   {lead.industry && (
                     <div>
                       <span className="text-gray-400 text-xs">Industry</span>
-                      <p className="text-gray-700 font-medium">{lead.industry}</p>
+                      <p className="text-gray-700 dark:text-gray-200 font-medium">{lead.industry}</p>
                     </div>
                   )}
                   {lead.company_size && (
                     <div>
                       <span className="text-gray-400 text-xs">Size</span>
-                      <p className="text-gray-700 font-medium">{lead.company_size}</p>
+                      <p className="text-gray-700 dark:text-gray-200 font-medium">{lead.company_size}</p>
                     </div>
                   )}
                   {lead.budget && (
                     <div className="col-span-2">
                       <span className="text-gray-400 text-xs">Budget</span>
-                      <p className="text-gray-700 font-medium">{formatCurrency(lead.budget)}</p>
+                      <p className="text-gray-700 dark:text-gray-200 font-medium">{formatCurrency(lead.budget)}</p>
                     </div>
                   )}
                 </div>
@@ -486,8 +486,8 @@ const LeadListUpgraded: React.FC = () => {
               </div>
 
               {/* Card Footer */}
-              <div className="px-5 py-3 bg-gray-50 border-t border-gray-100">
-                <div className="flex justify-between items-center text-xs text-gray-500">
+              <div className="px-5 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-100">
+                <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
                   <span>Created: {new Date(lead.created_at).toLocaleDateString()}</span>
                   {lead.next_followup && (
                     <span className="flex items-center text-orange-600 font-medium">
@@ -504,12 +504,12 @@ const LeadListUpgraded: React.FC = () => {
 
       {/* Leads Table View */}
       {viewMode === 'table' && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     <input
                       type="checkbox"
                       onChange={(e) => {
@@ -519,22 +519,22 @@ const LeadListUpgraded: React.FC = () => {
                           setSelectedLeads([]);
                         }
                       }}
-                      className="rounded border-gray-300"
+                      className="rounded border-gray-300 dark:border-gray-600"
                     />
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lead</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Budget</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assigned</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Lead</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Contact</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Score</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Source</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Budget</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Assigned</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {leads.map((lead) => (
-                  <tr key={lead.id} className="hover:bg-gray-50">
+                  <tr key={lead.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                     <td className="px-4 py-4">
                       <input
                         type="checkbox"
@@ -546,19 +546,19 @@ const LeadListUpgraded: React.FC = () => {
                             setSelectedLeads(selectedLeads.filter(id => id !== lead.id));
                           }
                         }}
-                        className="rounded border-gray-300"
+                        className="rounded border-gray-300 dark:border-gray-600"
                       />
                     </td>
                     <td className="px-4 py-4">
                       <div>
-                        <div className="font-medium text-gray-900">{lead.company_name}</div>
-                        <div className="text-sm text-gray-500">{lead.lead_number}</div>
+                        <div className="font-medium text-gray-900 dark:text-white">{lead.company_name}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">{lead.lead_number}</div>
                       </div>
                     </td>
                     <td className="px-4 py-4">
                       <div className="text-sm">
-                        <div className="text-gray-900">{lead.contact_person}</div>
-                        <div className="text-gray-500">{lead.email}</div>
+                        <div className="text-gray-900 dark:text-white">{lead.contact_person}</div>
+                        <div className="text-gray-500 dark:text-gray-400">{lead.email}</div>
                       </div>
                     </td>
                     <td className="px-4 py-4">
@@ -575,10 +575,10 @@ const LeadListUpgraded: React.FC = () => {
                         {lead.lead_source}
                       </span>
                     </td>
-                    <td className="px-4 py-4 text-sm text-gray-900">
+                    <td className="px-4 py-4 text-sm text-gray-900 dark:text-white">
                       {lead.budget ? formatCurrency(lead.budget) : '-'}
                     </td>
-                    <td className="px-4 py-4 text-sm text-gray-500">
+                    <td className="px-4 py-4 text-sm text-gray-500 dark:text-gray-400">
                       {lead.assigned_user_name || '-'}
                     </td>
                     <td className="px-4 py-4">
@@ -591,7 +591,7 @@ const LeadListUpgraded: React.FC = () => {
                         </Link>
                         <Link
                           to={`/app/sales/leads/${lead.id}/edit`}
-                          className="text-gray-600 hover:text-gray-800"
+                          className="text-gray-600 hover:text-gray-800 dark:text-gray-100"
                         >
                           <PencilIcon className="h-5 w-5" />
                         </Link>
@@ -613,10 +613,10 @@ const LeadListUpgraded: React.FC = () => {
 
       {/* Empty State */}
       {leads.length === 0 && !loading && (
-        <div className="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <UserGroupIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-lg font-medium text-gray-900">No leads found</h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <h3 className="mt-2 text-lg font-medium text-gray-900 dark:text-white">No leads found</h3>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             Get started by creating your first lead.
           </p>
           <div className="mt-6">
@@ -633,8 +633,8 @@ const LeadListUpgraded: React.FC = () => {
 
       {/* Pagination */}
       {pagination.pages > 1 && (
-        <div className="flex items-center justify-between bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-200">
-          <div className="text-sm text-gray-700">
+        <div className="flex items-center justify-between bg-white dark:bg-gray-800 px-4 py-3 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="text-sm text-gray-700 dark:text-gray-200">
             Showing page <span className="font-medium">{pagination.current_page}</span> of{' '}
             <span className="font-medium">{pagination.pages}</span> ({pagination.total} total)
           </div>
@@ -642,7 +642,7 @@ const LeadListUpgraded: React.FC = () => {
             <button
               onClick={() => loadLeads(pagination.current_page - 1)}
               disabled={pagination.current_page === 1}
-              className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
             >
               Previous
             </button>
@@ -665,7 +665,7 @@ const LeadListUpgraded: React.FC = () => {
             <button
               onClick={() => loadLeads(pagination.current_page + 1)}
               disabled={pagination.current_page === pagination.pages}
-              className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
             >
               Next
             </button>

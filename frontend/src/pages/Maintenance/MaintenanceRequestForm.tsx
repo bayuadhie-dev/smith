@@ -301,10 +301,10 @@ const MaintenanceRequestForm: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             {isEdit ? 'Edit Maintenance Request' : 'New Maintenance Request'}
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-300">
             {isEdit ? 'Update maintenance request details' : 'Schedule new maintenance work'}
           </p>
         </div>
@@ -314,7 +314,7 @@ const MaintenanceRequestForm: React.FC = () => {
       </div>
 
       {/* Form */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
             <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
@@ -325,14 +325,14 @@ const MaintenanceRequestForm: React.FC = () => {
 
           {/* Basic Information */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
               <Settings className="inline h-4 w-4 mr-1" />
               Basic Information
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <CubeIcon className="inline h-4 w-4 mr-1" />
                   Machine *
                 </label>
@@ -341,7 +341,7 @@ const MaintenanceRequestForm: React.FC = () => {
                   value={formData.machine_id}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Select Machine</option>
                   {machines.map(machine => (
@@ -353,7 +353,7 @@ const MaintenanceRequestForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <Wrench className="inline h-4 w-4 mr-1" />
                   Maintenance Type *
                 </label>
@@ -362,7 +362,7 @@ const MaintenanceRequestForm: React.FC = () => {
                   value={formData.maintenance_type}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   {maintenanceTypes.map(type => (
                     <option key={type} value={type}>
@@ -373,7 +373,7 @@ const MaintenanceRequestForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <AlertTriangle className="inline h-4 w-4 mr-1" />
                   Priority *
                 </label>
@@ -382,7 +382,7 @@ const MaintenanceRequestForm: React.FC = () => {
                   value={formData.priority}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   {priorities.map(priority => (
                     <option key={priority} value={priority}>
@@ -393,7 +393,7 @@ const MaintenanceRequestForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <Calendar className="inline h-4 w-4 mr-1" />
                   Scheduled Date *
                 </label>
@@ -403,12 +403,12 @@ const MaintenanceRequestForm: React.FC = () => {
                   value={formData.scheduled_date}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <ClockIcon className="inline h-4 w-4 mr-1" />
                   Estimated Duration (hours)
                 </label>
@@ -419,12 +419,12 @@ const MaintenanceRequestForm: React.FC = () => {
                   onChange={handleInputChange}
                   min="0.5"
                   step="0.5"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <User className="inline h-4 w-4 mr-1" />
                   Assigned To
                 </label>
@@ -434,13 +434,13 @@ const MaintenanceRequestForm: React.FC = () => {
                   value={formData.assigned_to}
                   onChange={handleInputChange}
                   placeholder="Technician name"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 <DocumentTextIcon className="inline h-4 w-4 mr-1" />
                 Description *
               </label>
@@ -451,21 +451,21 @@ const MaintenanceRequestForm: React.FC = () => {
                 required
                 rows={3}
                 placeholder="Describe the maintenance work to be performed..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
           </div>
 
           {/* Cost Estimate */}
           <div className="space-y-4">
-            <h3 className="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
               <CurrencyDollarIcon className="inline h-4 w-4 mr-1" />
               Cost Estimate
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Labor Cost Estimate
                 </label>
                 <input
@@ -476,16 +476,16 @@ const MaintenanceRequestForm: React.FC = () => {
                   min="0"
                   step="1000"
                   placeholder="0"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div className="flex items-end">
                 <div className="w-full">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Total Estimated Cost
                   </label>
-                  <div className="px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-700 font-medium">
+                  <div className="px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-200 font-medium">
                     Rp {getTotalEstimatedCost().toLocaleString('id-ID')}
                   </div>
                 </div>
@@ -495,7 +495,7 @@ const MaintenanceRequestForm: React.FC = () => {
 
           {/* Safety Requirements */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               Safety Requirements
             </label>
             <textarea
@@ -504,13 +504,13 @@ const MaintenanceRequestForm: React.FC = () => {
               onChange={handleInputChange}
               rows={2}
               placeholder="List safety precautions and requirements..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
           {/* Notes */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               Additional Notes
             </label>
             <textarea
@@ -519,16 +519,16 @@ const MaintenanceRequestForm: React.FC = () => {
               onChange={handleInputChange}
               rows={2}
               placeholder="Any additional information..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200">
+          <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
             <button
               type="button"
               onClick={() => navigate('/app/maintenance/records')}
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+              className="px-4 py-2 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
             >
               <X className="inline h-4 w-4 mr-2" />{t('common.cancel')}</button>
             <button

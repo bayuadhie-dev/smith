@@ -216,8 +216,8 @@ const ShippingReportsForm: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Shipping Reports</h1>
-          <p className="text-gray-600">Generate comprehensive shipping and delivery reports</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Shipping Reports</h1>
+          <p className="text-gray-600 dark:text-gray-300">Generate comprehensive shipping and delivery reports</p>
         </div>
         
         {reportData && (
@@ -241,22 +241,22 @@ const ShippingReportsForm: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
           <FunnelIcon className="inline h-4 w-4 mr-1" />
           Report Filters
         </h3>
         
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               Report Type
             </label>
             <select
               name="report_type"
               value={filters.report_type}
               onChange={handleFilterChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               {reportTypes.map(type => (
                 <option key={type.value} value={type.value}>
@@ -267,7 +267,7 @@ const ShippingReportsForm: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               From Date
             </label>
             <input
@@ -275,12 +275,12 @@ const ShippingReportsForm: React.FC = () => {
               name="date_from"
               value={filters.date_from}
               onChange={handleFilterChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               To Date
             </label>
             <input
@@ -288,18 +288,18 @@ const ShippingReportsForm: React.FC = () => {
               name="date_to"
               value={filters.date_to}
               onChange={handleFilterChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
             </label>
             <select
               name="customer_id"
               value={filters.customer_id}
               onChange={handleFilterChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">All Customers</option>
               {customers.map(customer => (
@@ -311,13 +311,13 @@ const ShippingReportsForm: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
             </label>
             <select
               name="carrier"
               value={filters.carrier}
               onChange={handleFilterChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">All Carriers</option>
               {carriers.map(carrier => (
@@ -329,12 +329,12 @@ const ShippingReportsForm: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">{t('common.status')}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('common.status')}</label>
             <select
               name="status"
               value={filters.status}
               onChange={handleFilterChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">All Status</option>
               {statusOptions.map(status => (
@@ -346,14 +346,14 @@ const ShippingReportsForm: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               Shipping Method
             </label>
             <select
               name="shipping_method"
               value={filters.shipping_method}
               onChange={handleFilterChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">All Methods</option>
               {shippingMethods.map(method => (
@@ -388,64 +388,64 @@ const ShippingReportsForm: React.FC = () => {
         <div className="space-y-6">
           {/* Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
               <div className="flex items-center">
                 <CubeIcon className="h-8 w-8 text-blue-600" />
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-500">Total Shipments</p>
-                  <p className="text-2xl font-bold text-gray-900">{reportData.summary.total_shipments}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Shipments</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{reportData.summary.total_shipments}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
               <div className="flex items-center">
                 <CurrencyDollarIcon className="h-8 w-8 text-green-600" />
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-500">Total Value</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Value</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     {formatCurrency(reportData.summary.total_value)}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
               <div className="flex items-center">
                 <CubeIcon className="h-8 w-8 text-purple-600" />
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-500">Total Weight</p>
-                  <p className="text-2xl font-bold text-gray-900">{reportData.summary.total_weight} kg</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Weight</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{reportData.summary.total_weight} kg</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
               <div className="flex items-center">
                 <ClockIcon className="h-8 w-8 text-orange-600" />
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-500">Avg Delivery Time</p>
-                  <p className="text-2xl font-bold text-gray-900">{reportData.summary.average_delivery_time} days</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Avg Delivery Time</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{reportData.summary.average_delivery_time} days</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
               <div className="flex items-center">
                 <ArrowTrendingUpIcon className="h-8 w-8 text-green-600" />
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-500">On-Time Rate</p>
-                  <p className="text-2xl font-bold text-gray-900">{reportData.summary.on_time_delivery_rate}%</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">On-Time Rate</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{reportData.summary.on_time_delivery_rate}%</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
               <div className="flex items-center">
                 <ExclamationCircleIcon className="h-8 w-8 text-red-600" />
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-500">Damaged</p>
-                  <p className="text-2xl font-bold text-gray-900">{reportData.summary.damaged_shipments}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Damaged</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{reportData.summary.damaged_shipments}</p>
                 </div>
               </div>
             </div>
@@ -454,8 +454,8 @@ const ShippingReportsForm: React.FC = () => {
           {/* Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Shipments by Status */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Shipments by Status</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Shipments by Status</h3>
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
@@ -478,8 +478,8 @@ const ShippingReportsForm: React.FC = () => {
             </div>
 
             {/* Shipments by Method */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Shipments by Method</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Shipments by Method</h3>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={reportData.charts.shipments_by_method}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -492,8 +492,8 @@ const ShippingReportsForm: React.FC = () => {
             </div>
 
             {/* Delivery Performance */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Delivery Performance</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Delivery Performance</h3>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={reportData.charts.delivery_performance}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -508,8 +508,8 @@ const ShippingReportsForm: React.FC = () => {
             </div>
 
             {/* Cost Analysis */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Cost Analysis</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Cost Analysis</h3>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={reportData.charts.cost_analysis}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -526,43 +526,43 @@ const ShippingReportsForm: React.FC = () => {
 
           {/* Detailed Table */}
           {filters.report_type === 'detailed' && reportData.details.length > 0 && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Detailed Report</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Detailed Report</h3>
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-900">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Shipping Number
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Shipping Date
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Delivery Date
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.status')}</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     {reportData.details.map((item, index) => (
                       <tr key={index}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                           {item.shipping_number}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                           {item.customer_name}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                           {new Date(item.shipping_date).toLocaleDateString()}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                           {item.delivery_date ? new Date(item.delivery_date).toLocaleDateString() : '-'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -570,10 +570,10 @@ const ShippingReportsForm: React.FC = () => {
                             {item.status.replace('_', ' ').toUpperCase()}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                           {formatCurrency(item.shipping_cost)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                           {item.carrier}
                         </td>
                       </tr>
@@ -588,11 +588,11 @@ const ShippingReportsForm: React.FC = () => {
 
       {/* Empty State */}
       {!reportData && !loading && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8">
           <div className="text-center">
             <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No Report Generated</h3>
-            <p className="text-gray-600 mb-4">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Report Generated</h3>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">
               Configure your filters and click "Generate Report" to view shipping analytics.
             </p>
           </div>

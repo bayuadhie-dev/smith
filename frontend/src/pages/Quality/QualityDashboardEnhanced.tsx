@@ -135,8 +135,8 @@ export default function QualityDashboardEnhanced() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <ExclamationTriangleIcon className="h-16 w-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Dashboard</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Error Loading Dashboard</h2>
+          <p className="text-gray-600 dark:text-gray-300 mb-4">{error}</p>
           <button onClick={fetchDashboardData} className="btn-primary">
           </button>
         </div>
@@ -149,11 +149,11 @@ export default function QualityDashboardEnhanced() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Quality Management Dashboard</h1>
-          <p className="text-gray-600">Enhanced quality analytics and monitoring</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Quality Management Dashboard</h1>
+          <p className="text-gray-600 dark:text-gray-300">Enhanced quality analytics and monitoring</p>
         </div>
         <div className="flex items-center gap-4">
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-gray-500 dark:text-gray-400">
             Last updated: {dashboardData ? new Date(dashboardData.last_updated).toLocaleTimeString() : ''}
           </div>
           <Link to="/app/quality/to-warehouse" className="btn-primary inline-flex items-center gap-2">
@@ -171,7 +171,7 @@ export default function QualityDashboardEnhanced() {
         <Link to="/app/quality/pending-qc" className="card p-4 hover:shadow-md transition-shadow border-l-4 border-blue-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Pending QC</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Pending QC</p>
               <p className="text-lg font-semibold">Work Orders</p>
             </div>
             <ClockIcon className="h-8 w-8 text-blue-500" />
@@ -181,7 +181,7 @@ export default function QualityDashboardEnhanced() {
         <Link to="/app/quality/to-warehouse" className="card p-4 hover:shadow-md transition-shadow border-l-4 border-green-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">QC Selesai</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">QC Selesai</p>
               <p className="text-lg font-semibold">Transfer ke Warehouse</p>
             </div>
             <BuildingStorefrontIcon className="h-8 w-8 text-green-500" />
@@ -191,7 +191,7 @@ export default function QualityDashboardEnhanced() {
         <Link to="/app/quality/tests/new" className="card p-4 hover:shadow-md transition-shadow border-l-4 border-purple-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Buat</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Buat</p>
               <p className="text-lg font-semibold">QC Test Baru</p>
             </div>
             <DocumentTextIcon className="h-8 w-8 text-purple-500" />
@@ -201,7 +201,7 @@ export default function QualityDashboardEnhanced() {
         <Link to="/app/shipping/orders/from-qc" className="card p-4 hover:shadow-md transition-shadow border-l-4 border-orange-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Siap Kirim</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Siap Kirim</p>
               <p className="text-lg font-semibold">Buat Shipping</p>
             </div>
             <ArrowRightIcon className="h-8 w-8 text-orange-500" />
@@ -243,36 +243,36 @@ export default function QualityDashboardEnhanced() {
 
       {/* KeyIcon Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Pass Rate (This Week)</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Pass Rate (This Week)</p>
               <p className={`text-2xl font-bold ${getPassRateColor(dashboardData?.summary.pass_rate || 0)}`}>
                 {dashboardData?.summary.pass_rate || 0}%
               </p>
             </div>
             <CheckCircleIcon className="h-8 w-8 text-green-500" />
           </div>
-          <div className="mt-2 text-sm text-gray-500">
+          <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
             {dashboardData?.summary.inspections_this_week || 0} inspections
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Inspections Today</p>
-              <p className="text-2xl font-bold text-gray-900">{dashboardData?.summary.inspections_today || 0}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Inspections Today</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardData?.summary.inspections_today || 0}</p>
             </div>
             <DocumentTextIcon className="h-8 w-8 text-blue-500" />
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Active Alerts</p>
-              <p className="text-2xl font-bold text-gray-900">{dashboardData?.summary.active_alerts || 0}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Active Alerts</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardData?.summary.active_alerts || 0}</p>
             </div>
             <ExclamationTriangleIcon className="h-8 w-8 text-yellow-500" />
           </div>
@@ -281,11 +281,11 @@ export default function QualityDashboardEnhanced() {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Open CAPAs</p>
-              <p className="text-2xl font-bold text-gray-900">{dashboardData?.summary.open_capas || 0}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Open CAPAs</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardData?.summary.open_capas || 0}</p>
             </div>
             <ClockIcon className="h-8 w-8 text-purple-500" />
           </div>
@@ -297,8 +297,8 @@ export default function QualityDashboardEnhanced() {
 
       {/* Pass Rate Trend Chart */}
       {dashboardData?.trends.pass_rate && dashboardData.trends.pass_rate.length > 0 && (
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Pass Rate Trend (Last 7 Days)</h3>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Pass Rate Trend (Last 7 Days)</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={dashboardData.trends.pass_rate}>
@@ -321,20 +321,20 @@ export default function QualityDashboardEnhanced() {
 
       {/* Machine Performance */}
       {dashboardData?.machine_performance && dashboardData.machine_performance.length > 0 && (
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Machine Quality Performance</h3>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Machine Quality Performance</h3>
           <div className="space-y-4">
             {dashboardData.machine_performance.map((machine, index) => (
-              <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div key={index} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
                 <div>
-                  <h4 className="font-medium text-gray-900">{machine.machine}</h4>
-                  <p className="text-sm text-gray-600">{machine.total_inspections} inspections</p>
+                  <h4 className="font-medium text-gray-900 dark:text-white">{machine.machine}</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{machine.total_inspections} inspections</p>
                 </div>
                 <div className="text-right">
                   <p className={`text-lg font-semibold ${getPassRateColor(machine.pass_rate)}`}>
                     {machine.pass_rate}%
                   </p>
-                  <p className="text-sm text-gray-500">Pass Rate</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Pass Rate</p>
                 </div>
               </div>
             ))}
@@ -344,66 +344,66 @@ export default function QualityDashboardEnhanced() {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Link to="/app/quality/inspections/new" className="group bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200">
+        <Link to="/app/quality/inspections/new" className="group bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
           <div className="flex items-center justify-between mb-4">
             <DocumentTextIcon className="h-8 w-8 text-blue-500" />
-            <ArrowTrendingUpIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600" />
+            <ArrowTrendingUpIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600 dark:text-gray-300" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">New Inspection</h3>
-          <p className="text-sm text-gray-600">Create quality inspection record</p>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">New Inspection</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-300">Create quality inspection record</p>
         </Link>
 
-        <Link to="/app/quality-enhanced/alerts" className="group bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200">
+        <Link to="/app/quality-enhanced/alerts" className="group bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
           <div className="flex items-center justify-between mb-4">
             <BellIcon className="h-8 w-8 text-yellow-500" />
             <span className="text-xs px-2 py-1 bg-red-100 text-red-800 rounded-full">
               {dashboardData?.summary.active_alerts || 0}
             </span>
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Quality Alerts</h3>
-          <p className="text-sm text-gray-600">Manage quality alerts and issues</p>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Quality Alerts</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-300">Manage quality alerts and issues</p>
         </Link>
 
-        <Link to="/app/quality-enhanced/analytics" className="group bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200">
+        <Link to="/app/quality-enhanced/analytics" className="group bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
           <div className="flex items-center justify-between mb-4">
             <ChartBarIcon className="h-8 w-8 text-purple-500" />
-            <EyeIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600" />
+            <EyeIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600 dark:text-gray-300" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Analytics</h3>
-          <p className="text-sm text-gray-600">Quality metrics and trends</p>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Analytics</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-300">Quality metrics and trends</p>
         </Link>
 
-        <Link to="/app/quality-enhanced/audits" className="group bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200">
+        <Link to="/app/quality-enhanced/audits" className="group bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
           <div className="flex items-center justify-between mb-4">
             <AcademicCapIcon className="h-8 w-8 text-green-500" />
-            <ArrowTrendingUpIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600" />
+            <ArrowTrendingUpIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600 dark:text-gray-300" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Quality Audits</h3>
-          <p className="text-sm text-gray-600">Audit planning and management</p>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Quality Audits</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-300">Audit planning and management</p>
         </Link>
       </div>
 
       {/* Recent Alerts Summary */}
       {alerts.length > 0 && (
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Recent Quality Alerts</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Quality Alerts</h3>
             <Link to="/app/quality-enhanced/alerts" className="text-blue-600 hover:text-blue-800 text-sm font-medium">
               View All
             </Link>
           </div>
           <div className="space-y-3">
             {alerts.slice(0, 5).map((alert) => (
-              <div key={alert.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div key={alert.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <span className={`px-2 py-1 text-xs rounded-full ${getSeverityColor(alert.severity)}`}>
                       {alert.severity}
                     </span>
-                    <span className="font-medium text-gray-900">{alert.title}</span>
+                    <span className="font-medium text-gray-900 dark:text-white">{alert.title}</span>
                   </div>
-                  <p className="text-sm text-gray-600 mt-1">{alert.message}</p>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{alert.message}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     {new Date(alert.created_at).toLocaleDateString('id-ID')}
                   </p>
                 </div>

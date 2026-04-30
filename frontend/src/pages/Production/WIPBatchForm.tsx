@@ -89,13 +89,13 @@ const WIPBatchForm: React.FC = () => {
       <div className="flex items-center gap-4 mb-6">
         <button
           onClick={() => navigate(-1)}
-          className="p-2 hover:bg-gray-100 rounded-lg"
+          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
         >
           <ArrowLeftIcon className="h-5 w-5" />
         </button>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Buat WIP Batch</h1>
-          <p className="text-gray-600">Buat batch Work in Progress dari Work Order</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Buat WIP Batch</h1>
+          <p className="text-gray-600 dark:text-gray-300">Buat batch Work in Progress dari Work Order</p>
         </div>
       </div>
 
@@ -108,11 +108,11 @@ const WIPBatchForm: React.FC = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="bg-white shadow rounded-lg p-6">
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
           <h2 className="text-lg font-medium mb-4">Pilih Work Order</h2>
           
           {workOrders.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
               <CubeIcon className="h-12 w-12 mx-auto text-gray-300 mb-2" />
               <p>Tidak ada Work Order yang tersedia</p>
               <p className="text-sm">Semua Work Order sudah memiliki WIP Batch atau belum ada Work Order aktif</p>
@@ -120,13 +120,13 @@ const WIPBatchForm: React.FC = () => {
           ) : (
             <>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Work Order <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={formData.work_order_id}
                   onChange={(e) => handleWOChange(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   required
                 >
                   <option value="">-- Pilih Work Order --</option>
@@ -139,23 +139,23 @@ const WIPBatchForm: React.FC = () => {
               </div>
 
               {selectedWO && (
-                <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                  <h3 className="font-medium text-gray-900 mb-2">Detail Work Order</h3>
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 mb-4">
+                  <h3 className="font-medium text-gray-900 dark:text-white mb-2">Detail Work Order</h3>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="text-gray-500">No. WO:</span>
+                      <span className="text-gray-500 dark:text-gray-400">No. WO:</span>
                       <span className="ml-2 font-medium">{selectedWO.wo_number}</span>
                     </div>
                     <div>
-                      <span className="text-gray-500">Produk:</span>
+                      <span className="text-gray-500 dark:text-gray-400">Produk:</span>
                       <span className="ml-2 font-medium">{selectedWO.product_name}</span>
                     </div>
                     <div>
-                      <span className="text-gray-500">Quantity:</span>
+                      <span className="text-gray-500 dark:text-gray-400">Quantity:</span>
                       <span className="ml-2 font-medium">{selectedWO.quantity} pcs</span>
                     </div>
                     <div>
-                      <span className="text-gray-500">Mesin:</span>
+                      <span className="text-gray-500 dark:text-gray-400">Mesin:</span>
                       <span className="ml-2 font-medium">{selectedWO.machine_name || '-'}</span>
                     </div>
                   </div>
@@ -164,13 +164,13 @@ const WIPBatchForm: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Stage Awal
                   </label>
                   <select
                     value={formData.current_stage}
                     onChange={(e) => setFormData({ ...formData, current_stage: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="ready_to_start">Ready to Start</option>
                     <option value="production">Production</option>
@@ -181,13 +181,13 @@ const WIPBatchForm: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Shift
                   </label>
                   <select
                     value={formData.shift}
                     onChange={(e) => setFormData({ ...formData, shift: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="shift_1">Shift 1 (06:30 - 15:00)</option>
                     <option value="shift_2">Shift 2 (15:00 - 23:00)</option>
@@ -197,14 +197,14 @@ const WIPBatchForm: React.FC = () => {
               </div>
 
               <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Catatan
                 </label>
                 <textarea
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   rows={3}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Catatan tambahan (opsional)"
                 />
               </div>
@@ -217,7 +217,7 @@ const WIPBatchForm: React.FC = () => {
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
           >
             Batal
           </button>

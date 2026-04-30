@@ -112,8 +112,8 @@ const [alertFilter, setAlertFilter] = useState('active')
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Enhanced Warehouse Dashboard</h1>
-          <p className="text-gray-600">Advanced inventory analytics and optimization</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Enhanced Warehouse Dashboard</h1>
+          <p className="text-gray-600 dark:text-gray-300">Advanced inventory analytics and optimization</p>
         </div>
         <div className="flex space-x-3">
           <Link
@@ -142,47 +142,47 @@ const [alertFilter, setAlertFilter] = useState('active')
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Products</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Products</p>
               <p className="text-2xl font-bold text-blue-600">{summary.total_products || 0}</p>
             </div>
             <CubeIcon className="h-8 w-8 text-blue-500" />
           </div>
-          <p className="text-sm text-gray-500 mt-2">Across all locations</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Across all locations</p>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Value</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Value</p>
               <p className="text-2xl font-bold text-green-600">
                 ${(summary.total_value || 0).toLocaleString()}
               </p>
             </div>
             <ChartBarIcon className="h-8 w-8 text-green-500" />
           </div>
-          <p className="text-sm text-gray-500 mt-2">Inventory valuation</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Inventory valuation</p>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Storage Utilization</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Storage Utilization</p>
               <p className="text-2xl font-bold text-purple-600">
                 {summary.location_utilization || 0}%
               </p>
             </div>
             <BuildingStorefrontIcon className="h-8 w-8 text-purple-500" />
           </div>
-          <p className="text-sm text-gray-500 mt-2">Location capacity used</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Location capacity used</p>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Active Alerts</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Active Alerts</p>
               <p className="text-2xl font-bold text-red-600">{summary.active_alerts || 0}</p>
               {summary.critical_alerts > 0 && (
                 <p className="text-sm text-red-500">{summary.critical_alerts} critical</p>
@@ -190,44 +190,44 @@ const [alertFilter, setAlertFilter] = useState('active')
             </div>
             <ExclamationTriangleIcon className="h-8 w-8 text-red-500" />
           </div>
-          <p className="text-sm text-gray-500 mt-2">Require attention</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Require attention</p>
         </div>
       </div>
 
       {/* KeyIcon Metrics Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Low Stock Items</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Low Stock Items</h3>
             <ExclamationTriangleIcon className="h-6 w-6 text-orange-500" />
           </div>
           <div className="text-center">
             <p className="text-3xl font-bold text-orange-600">{summary.low_stock_items || 0}</p>
-            <p className="text-sm text-gray-500">Below reorder point</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Below reorder point</p>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Expiring Soon</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Expiring Soon</h3>
             <ClockIcon className="h-6 w-6 text-yellow-500" />
           </div>
           <div className="text-center">
             <p className="text-3xl font-bold text-yellow-600">{summary.expiring_soon || 0}</p>
-            <p className="text-sm text-gray-500">Next 30 days</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Next 30 days</p>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Total Locations</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Total Locations</h3>
             <BuildingStorefrontIcon className="h-6 w-6 text-blue-500" />
           </div>
           <div className="text-center">
             <p className="text-3xl font-bold text-blue-600">
               {summary.total_locations || locations.length || 0}
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               {locations.filter(l => l.is_available !== false).length} available
             </p>
           </div>
@@ -237,8 +237,8 @@ const [alertFilter, setAlertFilter] = useState('active')
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Movement Analysis */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Stock Movements (Last 7 Days)</h3>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Stock Movements (Last 7 Days)</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -262,8 +262,8 @@ const [alertFilter, setAlertFilter] = useState('active')
         </div>
 
         {/* ABC Analysis */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">ABC Analysis</h3>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">ABC Analysis</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={abcChartData}>
@@ -279,23 +279,23 @@ const [alertFilter, setAlertFilter] = useState('active')
       </div>
 
       {/* Warehouse Management Section */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Warehouse Management</h3>
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Warehouse Management</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Zones Management */}
-          <div className="border border-gray-200 rounded-lg p-4">
+          <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
             <div className="flex items-center justify-between mb-3">
-              <h4 className="font-medium text-gray-900">Zones</h4>
+              <h4 className="font-medium text-gray-900 dark:text-white">Zones</h4>
               <Link to="/app/warehouse/zones" className="text-blue-600 hover:text-blue-800 text-sm">
               </Link>
             </div>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Total Zones:</span>
+                <span className="text-gray-600 dark:text-gray-300">Total Zones:</span>
                 <span className="font-medium">{zones.length}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Active:</span>
+                <span className="text-gray-600 dark:text-gray-300">Active:</span>
                 <span className="font-medium text-green-600">
                   {zones.filter(z => z.is_active !== false).length}
                 </span>
@@ -304,7 +304,7 @@ const [alertFilter, setAlertFilter] = useState('active')
             <div className="mt-3 space-y-1">
               {zones.slice(0, 3).map((zone, index) => (
                 <div key={index} className="flex justify-between text-xs">
-                  <span className="text-gray-500 truncate">{zone.name}</span>
+                  <span className="text-gray-500 dark:text-gray-400 truncate">{zone.name}</span>
                   <span className="text-gray-400">{zone.material_type}</span>
                 </div>
               ))}
@@ -315,19 +315,19 @@ const [alertFilter, setAlertFilter] = useState('active')
           </div>
 
           {/* Locations Management */}
-          <div className="border border-gray-200 rounded-lg p-4">
+          <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
             <div className="flex items-center justify-between mb-3">
-              <h4 className="font-medium text-gray-900">Locations</h4>
+              <h4 className="font-medium text-gray-900 dark:text-white">Locations</h4>
               <Link to="/app/warehouse/locations" className="text-blue-600 hover:text-blue-800 text-sm">
               </Link>
             </div>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Total Locations:</span>
+                <span className="text-gray-600 dark:text-gray-300">Total Locations:</span>
                 <span className="font-medium">{locations.length}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Available:</span>
+                <span className="text-gray-600 dark:text-gray-300">Available:</span>
                 <span className="font-medium text-green-600">
                   {locations.filter(l => l.is_available !== false).length}
                 </span>
@@ -336,7 +336,7 @@ const [alertFilter, setAlertFilter] = useState('active')
             <div className="mt-3 space-y-1">
               {locations.slice(0, 3).map((location, index) => (
                 <div key={index} className="flex justify-between text-xs">
-                  <span className="text-gray-500 truncate">{location.location_code}</span>
+                  <span className="text-gray-500 dark:text-gray-400 truncate">{location.location_code}</span>
                   <span className="text-gray-400">
                     {location.occupied || 0}/{location.capacity || 0}
                   </span>
@@ -349,19 +349,19 @@ const [alertFilter, setAlertFilter] = useState('active')
           </div>
 
           {/* Inventory Management */}
-          <div className="border border-gray-200 rounded-lg p-4">
+          <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
             <div className="flex items-center justify-between mb-3">
-              <h4 className="font-medium text-gray-900">Inventory</h4>
+              <h4 className="font-medium text-gray-900 dark:text-white">Inventory</h4>
               <Link to="/app/warehouse/inventory" className="text-blue-600 hover:text-blue-800 text-sm">
               </Link>
             </div>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">SKUs:</span>
+                <span className="text-gray-600 dark:text-gray-300">SKUs:</span>
                 <span className="font-medium">{inventory.length}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Low Stock:</span>
+                <span className="text-gray-600 dark:text-gray-300">Low Stock:</span>
                 <span className="font-medium text-orange-600">
                   {inventory.filter(i => (i.available_quantity || 0) < 10).length}
                 </span>
@@ -370,7 +370,7 @@ const [alertFilter, setAlertFilter] = useState('active')
             <div className="mt-3 space-y-1">
               {inventory.slice(0, 3).map((item, index) => (
                 <div key={index} className="flex justify-between text-xs">
-                  <span className="text-gray-500 truncate">
+                  <span className="text-gray-500 dark:text-gray-400 truncate">
                     {item.product?.name || `Product ${item.product_id}`}
                   </span>
                   <span className="text-gray-400">{item.quantity || 0}</span>
@@ -387,24 +387,24 @@ const [alertFilter, setAlertFilter] = useState('active')
       {/* Recent Activity & Alerts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Movements */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Recent Movements</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Movements</h3>
             <Link to="/app/warehouse/movements" className="text-blue-600 hover:text-blue-800 text-sm">
               View All
             </Link>
           </div>
           <div className="space-y-3">
             {recentMovements.slice(0, 5).map((movement, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
                 <div className="flex items-center">
                   <div 
                     className="w-3 h-3 rounded-full mr-3"
                     style={{ backgroundColor: getMovementTypeColor(movement.type) }}
                   ></div>
                   <div>
-                    <p className="font-medium text-gray-900">{movement.product}</p>
-                    <p className="text-sm text-gray-500">
+                    <p className="font-medium text-gray-900 dark:text-white">{movement.product}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       {movement.type} • {movement.quantity} units • {movement.location}
                     </p>
                   </div>
@@ -418,9 +418,9 @@ const [alertFilter, setAlertFilter] = useState('active')
         </div>
 
         {/* Active Alerts */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Active Alerts</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Active Alerts</h3>
             <Link to="/app/warehouse/alerts" className="text-blue-600 hover:text-blue-800 text-sm">
               View All
             </Link>
@@ -464,34 +464,34 @@ const [alertFilter, setAlertFilter] = useState('active')
       </div>
 
       {/* Top Products by Value */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Products by Value</h3>
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Top Products by Value</h3>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('production.product')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.quantity')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('production.product')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.quantity')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   % of Total
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {topProducts.map((product, index) => (
-                <tr key={index} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                     {product.name}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {product.quantity.toLocaleString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     ${product.value.toLocaleString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {summary.total_value > 0 ? ((product.value / summary.total_value) * 100).toFixed(1) : 0}%
                   </td>
                 </tr>
@@ -502,27 +502,27 @@ const [alertFilter, setAlertFilter] = useState('active')
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {/* Enhanced Features */}
           <Link
             to="/app/warehouse/analytics"
-            className="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+            className="flex flex-col items-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
           >
             <ChartBarIcon className="h-8 w-8 text-blue-500 mb-2" />
             <span className="text-sm font-medium">Analytics</span>
           </Link>
           <Link
             to="/app/warehouse/abc-analysis"
-            className="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+            className="flex flex-col items-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
           >
             <CubeIcon className="h-8 w-8 text-green-500 mb-2" />
             <span className="text-sm font-medium">ABC Analysis</span>
           </Link>
           <Link
             to="/app/warehouse/reorder-points"
-            className="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+            className="flex flex-col items-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
           >
             <ExclamationTriangleIcon className="h-8 w-8 text-orange-500 mb-2" />
             <span className="text-sm font-medium">Reorder Points</span>
@@ -531,21 +531,21 @@ const [alertFilter, setAlertFilter] = useState('active')
           {/* Traditional Features */}
           <Link
             to="/app/warehouse/zones"
-            className="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+            className="flex flex-col items-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
           >
             <BuildingStorefrontIcon className="h-8 w-8 text-purple-500 mb-2" />
             <span className="text-sm font-medium">Zones</span>
           </Link>
           <Link
             to="/app/warehouse/locations"
-            className="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+            className="flex flex-col items-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
           >
             <Cog6ToothIcon className="h-8 w-8 text-indigo-500 mb-2" />
             <span className="text-sm font-medium">Locations</span>
           </Link>
           <Link
             to="/app/warehouse/inventory"
-            className="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+            className="flex flex-col items-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
           >
             <CubeIcon className="h-8 w-8 text-teal-500 mb-2" />
             <span className="text-sm font-medium">Inventory</span>

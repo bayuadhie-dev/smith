@@ -140,11 +140,11 @@ export default function ProductionByProductReport() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
             <ChartBarIcon className="h-8 w-8 text-blue-600" />
             Laporan Produksi per Produk
           </h1>
-          <p className="text-gray-600 mt-1">Analisis produksi berdasarkan produk dan periode</p>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Analisis produksi berdasarkan produk dan periode</p>
         </div>
         <button
           onClick={exportToExcel}
@@ -156,19 +156,19 @@ export default function ProductionByProductReport() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl shadow-sm border p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border p-4">
         <div className="flex items-center gap-2 mb-4">
-          <FunnelIcon className="h-5 w-5 text-gray-500" />
-          <span className="font-medium text-gray-700">Filter</span>
+          <FunnelIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+          <span className="font-medium text-gray-700 dark:text-gray-200">Filter</span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           {/* Period Type */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Periode</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Periode</label>
             <select
               value={periodType}
               onChange={(e) => setPeriodType(e.target.value as PeriodType)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
             >
               <option value="daily">Harian</option>
               <option value="weekly">Mingguan</option>
@@ -179,33 +179,33 @@ export default function ProductionByProductReport() {
 
           {/* Start Date */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Dari Tanggal</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Dari Tanggal</label>
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           {/* End Date */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Sampai Tanggal</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Sampai Tanggal</label>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           {/* Product Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Produk</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Produk</label>
             <select
               value={selectedProduct}
               onChange={(e) => setSelectedProduct(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Semua Produk</option>
               {products.map((p) => (
@@ -261,33 +261,33 @@ export default function ProductionByProductReport() {
       {loading ? (
         <LoadingSpinner />
       ) : data.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border p-12 text-center">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border p-12 text-center">
           <CubeIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900">Tidak ada data</h3>
-          <p className="text-gray-500 mt-1">Tidak ada data produksi untuk periode yang dipilih</p>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Tidak ada data</h3>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">Tidak ada data produksi untuk periode yang dipilih</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50">
+              <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Periode
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Total Produksi
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Baik
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Reject
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Reject Rate
                   </th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Detail
                   </th>
                 </tr>
@@ -295,14 +295,14 @@ export default function ProductionByProductReport() {
               <tbody className="divide-y divide-gray-100">
                 {data.map((period) => (
                   <React.Fragment key={period.period}>
-                    <tr className="hover:bg-gray-50">
+                    <tr className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <CalendarIcon className="h-4 w-4 text-gray-400" />
-                          <span className="font-medium text-gray-900">{period.period_label}</span>
+                          <span className="font-medium text-gray-900 dark:text-white">{period.period_label}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-right font-medium text-gray-900">
+                      <td className="px-4 py-3 text-right font-medium text-gray-900 dark:text-white">
                         {formatNumber(period.total_produced)}
                       </td>
                       <td className="px-4 py-3 text-right text-green-600">
@@ -343,12 +343,12 @@ export default function ProductionByProductReport() {
                     {/* Expanded Product Details */}
                     {expandedPeriod === period.period && period.products && (
                       <tr>
-                        <td colSpan={6} className="px-4 py-3 bg-gray-50">
+                        <td colSpan={6} className="px-4 py-3 bg-gray-50 dark:bg-gray-900">
                           <div className="ml-6">
-                            <h4 className="font-medium text-gray-700 mb-2">Detail per Produk:</h4>
+                            <h4 className="font-medium text-gray-700 dark:text-gray-200 mb-2">Detail per Produk:</h4>
                             <table className="w-full text-sm">
                               <thead>
-                                <tr className="text-gray-500">
+                                <tr className="text-gray-500 dark:text-gray-400">
                                   <th className="text-left py-2">Kode</th>
                                   <th className="text-left py-2">Nama Produk</th>
                                   <th className="text-right py-2">Produksi</th>
@@ -361,7 +361,7 @@ export default function ProductionByProductReport() {
                               </thead>
                               <tbody>
                                 {period.products.map((product) => (
-                                  <tr key={product.product_id} className="border-t border-gray-200">
+                                  <tr key={product.product_id} className="border-t border-gray-200 dark:border-gray-700">
                                     <td className="py-2 font-mono text-xs">{product.product_code}</td>
                                     <td className="py-2">{product.product_name}</td>
                                     <td className="py-2 text-right">{formatNumber(product.total_produced)}</td>
@@ -398,7 +398,7 @@ export default function ProductionByProductReport() {
                 ))}
               </tbody>
               {/* Footer Totals */}
-              <tfoot className="bg-gray-100 font-semibold">
+              <tfoot className="bg-gray-100 dark:bg-gray-800 font-semibold">
                 <tr>
                   <td className="px-4 py-3">TOTAL</td>
                   <td className="px-4 py-3 text-right">{formatNumber(totals.total_produced)}</td>

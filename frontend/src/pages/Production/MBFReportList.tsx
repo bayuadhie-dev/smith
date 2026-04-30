@@ -105,10 +105,10 @@ const MBFReportList: React.FC = () => {
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             Laporan Target & Produksi MBF
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             Mahakam Beta Farma — Octenic & Gloveclean
           </p>
         </div>
@@ -139,54 +139,54 @@ const MBFReportList: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white shadow rounded-lg overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center h-48">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
           </div>
         ) : reports.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-48 text-gray-500">
+          <div className="flex flex-col items-center justify-center h-48 text-gray-500 dark:text-gray-400">
             <DocumentTextIcon className="h-12 w-12 mb-3 text-gray-300" />
             <p className="text-lg font-medium">Belum ada laporan</p>
             <p className="text-sm">Klik "Buat Laporan Baru" untuk memulai</p>
           </div>
         ) : (
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Laporan</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tgl Pengiriman</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Periode</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Target</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Aktual</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Pencapaian</th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Laporan</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tgl Pengiriman</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Periode</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Target</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aktual</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Pencapaian</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {reports.map(report => (
                 <tr
                   key={report.id}
-                  className="hover:bg-gray-50 cursor-pointer transition-colors"
+                  className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 cursor-pointer transition-colors"
                   onClick={() => navigate(`/app/production/mbf-report/${report.id}`)}
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       {getStatusIcon(report.status)}
-                      <span className="ml-2 text-sm font-medium text-gray-900">{report.report_number}</span>
+                      <span className="ml-2 text-sm font-medium text-gray-900 dark:text-white">{report.report_number}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {format(new Date(report.delivery_date), 'dd MMM yyyy')}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {format(new Date(report.period_start), 'dd MMM')} — {format(new Date(report.period_end), 'dd MMM yyyy')}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 font-medium">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-white font-medium">
                     {report.total_target.toLocaleString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 font-medium">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-white font-medium">
                     {report.total_actual.toLocaleString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
@@ -227,21 +227,21 @@ const MBFReportList: React.FC = () => {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="px-6 py-3 bg-gray-50 border-t flex items-center justify-between">
+          <div className="px-6 py-3 bg-gray-50 dark:bg-gray-900 border-t flex items-center justify-between">
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page <= 1}
-              className="px-3 py-1 bg-white border rounded text-sm disabled:opacity-50"
+              className="px-3 py-1 bg-white dark:bg-gray-800 border rounded text-sm disabled:opacity-50"
             >
               Sebelumnya
             </button>
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-gray-500 dark:text-gray-400">
               Halaman {page} dari {totalPages}
             </span>
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page >= totalPages}
-              className="px-3 py-1 bg-white border rounded text-sm disabled:opacity-50"
+              className="px-3 py-1 bg-white dark:bg-gray-800 border rounded text-sm disabled:opacity-50"
             >
               Selanjutnya
             </button>

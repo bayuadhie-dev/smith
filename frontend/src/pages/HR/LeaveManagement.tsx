@@ -70,7 +70,7 @@ const navigate = useNavigate()
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Leave Management</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Leave Management</h1>
         <button 
           onClick={() => navigate('/app/hr/leaves/new')}
           className="btn-primary inline-flex items-center gap-2"
@@ -84,7 +84,7 @@ const navigate = useNavigate()
       <div className="card">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('common.status')}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('common.status')}</label>
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
@@ -98,7 +98,7 @@ const navigate = useNavigate()
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Leave Type
             </label>
             <select
@@ -217,8 +217,8 @@ const navigate = useNavigate()
                     <td>
                       <div>
                         <div className="font-medium">{leave.employee.full_name}</div>
-                        <div className="text-sm text-gray-500">{leave.employee.employee_number}</div>
-                        <div className="text-sm text-gray-500">{leave.employee.department}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">{leave.employee.employee_number}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">{leave.employee.department}</div>
                       </div>
                     </td>
                     <td>
@@ -229,7 +229,7 @@ const navigate = useNavigate()
                     <td>
                       <div>
                         <div>{new Date(leave.start_date).toLocaleDateString()}</div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
                           to {new Date(leave.end_date).toLocaleDateString()}
                         </div>
                       </div>
@@ -251,7 +251,7 @@ const navigate = useNavigate()
                       {leave.approved_by ? (
                         <div>
                           <div className="font-medium">{leave.approved_by}</div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
                             {leave.approved_at ? new Date(leave.approved_at).toLocaleDateString() : ''}
                           </div>
                         </div>

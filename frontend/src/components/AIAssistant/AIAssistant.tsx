@@ -304,11 +304,11 @@ const AIAssistant = () => {
       }}
       className={`fixed z-50 ${isMinimized ? 'w-72' : 'w-96'} transition-all duration-300`}
     >
-      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-white/20 rounded-lg">
+            <div className="p-2 bg-white dark:bg-gray-800/20 rounded-lg">
               <SparklesIcon className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -321,13 +321,13 @@ const AIAssistant = () => {
           <div className="flex items-center gap-1">
             <button
               onClick={() => setIsMinimized(!isMinimized)}
-              className="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
+              className="p-1.5 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/20 rounded-lg transition-colors"
             >
               <MinusIcon className="w-4 h-4 text-white" />
             </button>
             <button
               onClick={() => setIsOpen(false)}
-              className="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
+              className="p-1.5 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/20 rounded-lg transition-colors"
             >
               <XMarkIcon className="w-4 h-4 text-white" />
             </button>
@@ -405,7 +405,7 @@ const AIAssistant = () => {
 
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="bg-white dark:bg-slate-800 rounded-2xl rounded-bl-md px-4 py-3 border border-slate-200 dark:border-slate-700 shadow-sm">
+                  <div className="bg-white dark:bg-gray-800 dark:bg-slate-800 rounded-2xl rounded-bl-md px-4 py-3 border border-slate-200 dark:border-slate-700 shadow-sm">
                     <div className="flex items-center gap-2">
                       <div className="flex gap-1">
                         <span className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
@@ -423,7 +423,7 @@ const AIAssistant = () => {
 
             {/* Quick Actions */}
             {messages.length <= 2 && (
-              <div className="px-4 py-3 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+              <div className="px-4 py-3 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-gray-800 dark:bg-slate-800">
                 <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">Pertanyaan cepat:</p>
                 <div className="flex flex-wrap gap-2">
                   {quickActions.map((action, i) => (
@@ -441,7 +441,7 @@ const AIAssistant = () => {
             )}
 
             {/* Input */}
-            <div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+            <div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-gray-800 dark:bg-slate-800">
               <div className="flex items-center gap-2">
                 <input
                   ref={inputRef}

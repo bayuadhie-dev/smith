@@ -93,8 +93,8 @@ export default function Departments() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Manajemen Departemen</h1>
-          <p className="text-gray-600">Kelola data departemen perusahaan</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Manajemen Departemen</h1>
+          <p className="text-gray-600 dark:text-gray-300">Kelola data departemen perusahaan</p>
         </div>
         <button
           onClick={openAddModal}
@@ -106,7 +106,7 @@ export default function Departments() {
       </div>
 
       {/* Search */}
-      <div className="bg-white shadow rounded-lg p-4">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
         <div className="relative">
           <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input
@@ -124,45 +124,45 @@ export default function Departments() {
         {isLoading ? (
           <div className="col-span-full text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Memuat data...</p>
+            <p className="mt-4 text-gray-600 dark:text-gray-300">Memuat data...</p>
           </div>
         ) : filteredDepartments.length === 0 ? (
-          <div className="col-span-full text-center py-12 bg-white rounded-lg shadow">
+          <div className="col-span-full text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow">
             <BuildingOfficeIcon className="h-12 w-12 text-gray-400 mx-auto" />
-            <p className="mt-4 text-gray-600">Tidak ada departemen ditemukan</p>
+            <p className="mt-4 text-gray-600 dark:text-gray-300">Tidak ada departemen ditemukan</p>
           </div>
         ) : (
           filteredDepartments.map(dept => (
-            <div key={dept.id} className="bg-white rounded-lg shadow p-4 hover:shadow-md transition">
+            <div key={dept.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 hover:shadow-md transition">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-blue-100 rounded-lg">
                     <BuildingOfficeIcon className="h-6 w-6 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">{dept.name}</h3>
-                    <p className="text-sm text-gray-500">{dept.code}</p>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">{dept.name}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{dept.code}</p>
                   </div>
                 </div>
                 <div className="flex gap-1">
                   <button
                     onClick={() => openEditModal(dept)}
-                    className="p-1 text-gray-500 hover:text-blue-600"
+                    className="p-1 text-gray-500 dark:text-gray-400 hover:text-blue-600"
                   >
                     <PencilIcon className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => handleDelete(dept)}
-                    className="p-1 text-gray-500 hover:text-red-600"
+                    className="p-1 text-gray-500 dark:text-gray-400 hover:text-red-600"
                   >
                     <TrashIcon className="h-4 w-4" />
                   </button>
                 </div>
               </div>
               {dept.description && (
-                <p className="mt-2 text-sm text-gray-600">{dept.description}</p>
+                <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{dept.description}</p>
               )}
-              <div className="mt-3 flex items-center gap-2 text-sm text-gray-500">
+              <div className="mt-3 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                 <UserGroupIcon className="h-4 w-4" />
                 <span>{dept.employee_count || 0} karyawan</span>
               </div>
@@ -179,13 +179,13 @@ export default function Departments() {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg w-full max-w-md p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-md p-6">
             <h3 className="text-lg font-semibold mb-4">
               {editingDept ? 'Edit Departemen' : 'Tambah Departemen'}
             </h3>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Kode</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Kode</label>
                 <input
                   type="text"
                   value={formData.code}
@@ -196,7 +196,7 @@ export default function Departments() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nama Departemen</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Nama Departemen</label>
                 <input
                   type="text"
                   value={formData.name}
@@ -207,7 +207,7 @@ export default function Departments() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Deskripsi</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -220,7 +220,7 @@ export default function Departments() {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                  className="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
                 >
                   Batal
                 </button>

@@ -103,23 +103,23 @@ const RNDApprovals: React.FC = () => {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Approval Pending</h1>
-        <p className="text-gray-500">Permintaan persetujuan tahap proyek R&D</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Approval Pending</h1>
+        <p className="text-gray-500 dark:text-gray-400">Permintaan persetujuan tahap proyek R&D</p>
       </div>
 
       {/* Approvals List */}
       {approvals.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm p-12 border border-gray-100 text-center">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-12 border border-gray-100 text-center">
           <CheckCircle2 className="w-16 h-16 text-green-400 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Tidak ada permintaan pending</h3>
-          <p className="text-gray-500">Semua permintaan approval telah diproses</p>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Tidak ada permintaan pending</h3>
+          <p className="text-gray-500 dark:text-gray-400">Semua permintaan approval telah diproses</p>
         </div>
       ) : (
         <div className="space-y-4">
           {approvals.map((approval) => (
             <div
               key={approval.id}
-              className="bg-white rounded-xl shadow-sm p-6 border border-gray-100"
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100"
             >
               <div className="flex justify-between items-start">
                 <div className="flex-1">
@@ -135,8 +135,8 @@ const RNDApprovals: React.FC = () => {
                     </Link>
                   </div>
 
-                  <div className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-3">
-                    <span className="px-2 py-1 bg-gray-100 rounded">
+                  <div className="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                    <span className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded">
                       {stageLabels[approval.from_stage || ''] || approval.from_stage}
                     </span>
                     <ChevronRight className="w-5 h-5 text-gray-400" />
@@ -145,7 +145,7 @@ const RNDApprovals: React.FC = () => {
                     </span>
                   </div>
 
-                  <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+                  <div className="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
                     <div className="flex items-center gap-1">
                       <User className="w-4 h-4" />
                       <span>Diminta oleh: {approval.requested_by_name || 'Unknown'}</span>
@@ -163,8 +163,8 @@ const RNDApprovals: React.FC = () => {
                   </div>
 
                   {approval.notes && (
-                    <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-gray-600">
+                    <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
                         <span className="font-medium">Catatan:</span> {approval.notes}
                       </p>
                     </div>
@@ -198,16 +198,16 @@ const RNDApprovals: React.FC = () => {
       {/* Reject Modal */}
       {showRejectModal && selectedApproval && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
             <h3 className="text-lg font-semibold mb-4">Tolak Permintaan</h3>
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-600 dark:text-gray-300 mb-4">
               Berikan alasan penolakan untuk permintaan ini.
             </p>
             <textarea
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
               placeholder="Alasan penolakan..."
-              className="w-full p-3 border border-gray-300 rounded-lg mb-4"
+              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg mb-4"
               rows={4}
               required
             />
@@ -217,7 +217,7 @@ const RNDApprovals: React.FC = () => {
                   setShowRejectModal(false);
                   setSelectedApproval(null);
                 }}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
               >
                 Batal
               </button>

@@ -133,30 +133,30 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ className = '' }) =
   const getNotificationColor = (type: string) => {
     switch (type) {
       case 'success':
-        return 'text-green-600 bg-green-50';
+        return 'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-900/30';
       case 'warning':
-        return 'text-yellow-600 bg-yellow-50';
+        return 'text-yellow-600 bg-yellow-50 dark:text-yellow-400 dark:bg-yellow-900/30';
       case 'error':
-        return 'text-red-600 bg-red-50';
+        return 'text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-900/30';
       case 'info':
-        return 'text-blue-600 bg-blue-50';
+        return 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900/30';
       default:
-        return 'text-gray-600 bg-gray-50';
+        return 'text-gray-600 bg-gray-50 dark:text-gray-400 dark:bg-gray-700';
     }
   };
 
   const getPriorityBadge = (priority: string) => {
     switch (priority) {
       case 'urgent':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
       case 'high':
-        return 'bg-orange-100 text-orange-800';
+        return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400';
       case 'normal':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
       case 'low':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
     }
   };
 
@@ -176,11 +176,11 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ className = '' }) =
       {/* Bell Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg transition-colors"
+        className="relative p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg transition-colors"
         aria-label="Notifications"
       >
         {unreadCount > 0 ? (
-          <BellSolidIcon className="h-6 w-6 text-blue-600 animate-pulse" />
+          <BellSolidIcon className="h-6 w-6 text-blue-600 dark:text-blue-400 animate-pulse" />
         ) : (
           <BellIcon className="h-6 w-6" />
         )}
@@ -203,15 +203,15 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ className = '' }) =
           />
           
           {/* Notification Panel */}
-          <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-[600px] overflow-hidden flex flex-col">
+          <div className="absolute right-0 mt-2 w-96 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50 max-h-[600px] overflow-hidden flex flex-col">
             {/* Header */}
-            <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+            <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 dark:bg-gray-700/50">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Notifications
                 </h3>
                 {unreadCount > 0 && (
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
                     {unreadCount} unread
                   </span>
                 )}
@@ -221,23 +221,23 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ className = '' }) =
             {/* Notification List */}
             <div className="overflow-y-auto flex-1">
               {loading ? (
-                <div className="p-8 text-center text-gray-500">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400 mx-auto"></div>
                   <p className="mt-2">Loading...</p>
                 </div>
               ) : notifications.length === 0 ? (
-                <div className="p-8 text-center text-gray-500">
-                  <BellIcon className="h-12 w-12 mx-auto mb-2 text-gray-400" />
+                <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+                  <BellIcon className="h-12 w-12 mx-auto mb-2 text-gray-400 dark:text-gray-600" />
                   <p>No notifications</p>
                 </div>
               ) : (
-                <div className="divide-y divide-gray-100">
+                <div className="divide-y divide-gray-100 dark:divide-gray-700">
                   {notifications.map((notification) => (
                     <div
                       key={notification.id}
                       onClick={() => handleNotificationClick(notification)}
-                      className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
-                        !notification.is_read ? 'bg-blue-50' : ''
+                      className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors ${
+                        !notification.is_read ? 'bg-blue-50 dark:bg-blue-900/20' : ''
                       }`}
                     >
                       <div className="flex items-start space-x-3">
@@ -251,15 +251,15 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ className = '' }) =
                         {/* Content */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between">
-                            <p className={`text-sm font-medium text-gray-900 ${!notification.is_read ? 'font-semibold' : ''}`}>
+                            <p className={`text-sm font-medium text-gray-900 dark:text-white ${!notification.is_read ? 'font-semibold' : ''}`}>
                               {notification.title}
                             </p>
                             {!notification.is_read && (
-                              <span className="ml-2 w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"></span>
+                              <span className="ml-2 w-2 h-2 bg-blue-600 dark:bg-blue-400 rounded-full flex-shrink-0"></span>
                             )}
                           </div>
                           
-                          <p className="mt-1 text-sm text-gray-600 line-clamp-2">
+                          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
                             {notification.message}
                           </p>
                           
@@ -267,10 +267,10 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ className = '' }) =
                             <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getPriorityBadge(notification.priority)}`}>
                               {notification.priority}
                             </span>
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
                               {formatTimeAgo(notification.created_at)}
                             </span>
-                            <span className="text-xs text-gray-400">
+                            <span className="text-xs text-gray-400 dark:text-gray-500">
                               • {notification.category}
                             </span>
                           </div>
@@ -284,13 +284,13 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ className = '' }) =
 
             {/* Footer */}
             {notifications.length > 0 && (
-              <div className="px-4 py-3 border-t border-gray-200 bg-gray-50">
+              <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 dark:bg-gray-700/50">
                 <button
                   onClick={() => {
                     navigate('/app/notifications');
                     setIsOpen(false);
                   }}
-                  className="w-full text-center text-sm text-blue-600 hover:text-blue-800 font-medium"
+                  className="w-full text-center text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
                 >
                   View all notifications
                 </button>

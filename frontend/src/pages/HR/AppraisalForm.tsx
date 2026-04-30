@@ -242,16 +242,16 @@ const AppraisalForm: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             {isEdit ? 'Edit Performance Appraisal' : 'New Performance Appraisal'}
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-300">
             {isEdit ? 'Update employee performance appraisal' : 'Create new performance appraisal record'}
           </p>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
             <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
@@ -262,13 +262,13 @@ const AppraisalForm: React.FC = () => {
 
           {/* Basic Information */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
               Appraisal Information
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Appraisal Number *
                 </label>
                 <input
@@ -278,12 +278,12 @@ const AppraisalForm: React.FC = () => {
                   onChange={handleInputChange}
                   required
                   readOnly
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-700"
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-200"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <Calendar className="inline h-4 w-4 mr-1" />
                   Appraisal Cycle *
                 </label>
@@ -292,7 +292,7 @@ const AppraisalForm: React.FC = () => {
                   value={formData.cycle_id}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Select Cycle</option>
                   {cycles.map(cycle => (
@@ -306,7 +306,7 @@ const AppraisalForm: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <User className="inline h-4 w-4 mr-1" />
                   Employee *
                 </label>
@@ -315,7 +315,7 @@ const AppraisalForm: React.FC = () => {
                   value={formData.employee_id}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Select Employee</option>
                   {employees.map(employee => (
@@ -327,7 +327,7 @@ const AppraisalForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Appraisal Template *
                 </label>
                 <select
@@ -335,7 +335,7 @@ const AppraisalForm: React.FC = () => {
                   value={formData.template_id}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Select Template</option>
                   {templates.map(template => (
@@ -350,13 +350,13 @@ const AppraisalForm: React.FC = () => {
 
           {/* Self Assessment */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
               Self Assessment
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <Star className="inline h-4 w-4 mr-1" />
                   Self Overall Score (1-5)
                 </label>
@@ -368,17 +368,17 @@ const AppraisalForm: React.FC = () => {
                   min="1"
                   max="5"
                   step="0.1"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">{t('common.status')}</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('common.status')}</label>
                 <select
                   name="overall_status"
                   value={formData.overall_status}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   {statusOptions.map(status => (
                     <option key={status.value} value={status.value}>
@@ -390,7 +390,7 @@ const AppraisalForm: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 <MessageSquare className="inline h-4 w-4 mr-1" />
                 Self Comments
               </label>
@@ -399,7 +399,7 @@ const AppraisalForm: React.FC = () => {
                 value={formData.self_comments}
                 onChange={handleInputChange}
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Employee's self-assessment comments..."
               />
             </div>
@@ -407,13 +407,13 @@ const AppraisalForm: React.FC = () => {
 
           {/* Manager Assessment */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
               Manager Assessment
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Manager Overall Score (1-5)
                 </label>
                 <input
@@ -424,19 +424,19 @@ const AppraisalForm: React.FC = () => {
                   min="1"
                   max="5"
                   step="0.1"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Final Rating
                 </label>
                 <select
                   name="final_rating"
                   value={formData.final_rating}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Select Rating</option>
                   {ratingOptions.map(rating => (
@@ -449,7 +449,7 @@ const AppraisalForm: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Manager Comments
               </label>
               <textarea
@@ -457,7 +457,7 @@ const AppraisalForm: React.FC = () => {
                 value={formData.manager_comments}
                 onChange={handleInputChange}
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Manager's assessment comments..."
               />
             </div>
@@ -465,13 +465,13 @@ const AppraisalForm: React.FC = () => {
 
           {/* Development Plan */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
               <Target className="inline h-4 w-4 mr-1" />
               Development Planning
             </h3>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Goals for Next Period
               </label>
               <textarea
@@ -479,13 +479,13 @@ const AppraisalForm: React.FC = () => {
                 value={formData.goals_next_period}
                 onChange={handleInputChange}
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Set goals and objectives for the next performance period..."
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Development Plan
               </label>
               <textarea
@@ -493,7 +493,7 @@ const AppraisalForm: React.FC = () => {
                 value={formData.development_plan}
                 onChange={handleInputChange}
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Professional development plan and training recommendations..."
               />
             </div>
@@ -501,37 +501,37 @@ const AppraisalForm: React.FC = () => {
 
           {/* Summary */}
           {(formData.self_overall_score > 0 || formData.manager_overall_score > 0) && (
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <h4 className="font-medium text-gray-900 mb-3">Performance Summary</h4>
+            <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+              <h4 className="font-medium text-gray-900 dark:text-white mb-3">Performance Summary</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                 <div>
                   <div className="text-2xl font-bold text-blue-600">
                     {formData.self_overall_score || 'N/A'}
                   </div>
-                  <div className="text-sm text-gray-600">Self Score</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">Self Score</div>
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-green-600">
                     {formData.manager_overall_score || 'N/A'}
                   </div>
-                  <div className="text-sm text-gray-600">Manager Score</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">Manager Score</div>
                 </div>
                 <div>
                   <div className={`text-lg font-bold ${selectedRating?.color || 'text-gray-600'}`}>
                     {selectedRating?.label.split(' ')[0] || 'Not Set'}
                   </div>
-                  <div className="text-sm text-gray-600">Final Rating</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">Final Rating</div>
                 </div>
               </div>
             </div>
           )}
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200">
+          <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
             <button
               type="button"
               onClick={() => navigate('/app/hr/appraisals')}
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="px-4 py-2 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
             >
               <X className="inline h-4 w-4 mr-2" />{t('common.cancel')}</button>
             <button

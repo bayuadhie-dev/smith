@@ -64,8 +64,8 @@ const RNDDashboard: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">R&D Dashboard</h1>
-          <p className="text-gray-500">Research & Development Management</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">R&D Dashboard</h1>
+          <p className="text-gray-500 dark:text-gray-400">Research & Development Management</p>
         </div>
         <Link
           to="/app/rnd/projects/new"
@@ -78,65 +78,65 @@ const RNDDashboard: React.FC = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-blue-100 rounded-lg">
               <FolderKanban className="w-6 h-6 text-blue-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">Total Proyek</p>
-              <p className="text-2xl font-bold text-gray-900">{data?.total_projects || 0}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Total Proyek</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{data?.total_projects || 0}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-yellow-100 rounded-lg">
               <Clock className="w-6 h-6 text-yellow-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">Proyek Aktif</p>
-              <p className="text-2xl font-bold text-gray-900">{data?.active_projects || 0}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Proyek Aktif</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{data?.active_projects || 0}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-green-100 rounded-lg">
               <CheckCircle2 className="w-6 h-6 text-green-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">Selesai</p>
-              <p className="text-2xl font-bold text-gray-900">{data?.completed_projects || 0}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Selesai</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{data?.completed_projects || 0}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-orange-100 rounded-lg">
               <AlertTriangle className="w-6 h-6 text-orange-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">Pending Approval</p>
-              <p className="text-2xl font-bold text-gray-900">{data?.pending_approvals || 0}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Pending Approval</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{data?.pending_approvals || 0}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Projects by Stage */}
-      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Proyek per Tahap</h2>
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Proyek per Tahap</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {['LAB_SCALE', 'PILOT_SCALE', 'VALIDATION', 'COMPLETION'].map((stage) => (
-            <div key={stage} className="text-center p-4 bg-gray-50 rounded-lg">
+            <div key={stage} className="text-center p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
               <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${stageColors[stage]}`}>
                 {stageLabels[stage]}
               </span>
-              <p className="text-3xl font-bold text-gray-900 mt-2">
+              <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
                 {data?.projects_by_stage?.[stage] || 0}
               </p>
             </div>
@@ -146,18 +146,18 @@ const RNDDashboard: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Experiments */}
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Eksperimen Terbaru</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Eksperimen Terbaru</h2>
             <Beaker className="w-5 h-5 text-gray-400" />
           </div>
           {data?.recent_experiments && data.recent_experiments.length > 0 ? (
             <div className="space-y-3">
               {data.recent_experiments.map((exp: any) => (
-                <div key={exp.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div key={exp.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
                   <div>
-                    <p className="font-medium text-gray-900">{exp.experiment_number}</p>
-                    <p className="text-sm text-gray-500">{exp.trial_date}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{exp.experiment_number}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{exp.trial_date}</p>
                   </div>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                     exp.status === 'PASSED' ? 'bg-green-100 text-green-800' :
@@ -171,32 +171,32 @@ const RNDDashboard: React.FC = () => {
               ))}
             </div>
           ) : (
-            <p className="text-gray-500 text-center py-4">Belum ada eksperimen</p>
+            <p className="text-gray-500 dark:text-gray-400 text-center py-4">Belum ada eksperimen</p>
           )}
         </div>
 
         {/* Recent Conversions */}
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Konversi ke Produksi</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Konversi ke Produksi</h2>
             <FileCheck className="w-5 h-5 text-gray-400" />
           </div>
           {data?.recent_conversions && data.recent_conversions.length > 0 ? (
             <div className="space-y-3">
               {data.recent_conversions.map((conv: any) => (
-                <div key={conv.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div key={conv.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
                   <div>
-                    <p className="font-medium text-gray-900">{conv.project_number}</p>
-                    <p className="text-sm text-gray-500">{conv.product_name}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{conv.project_number}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{conv.product_name}</p>
                   </div>
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
                     {new Date(conv.conversion_date).toLocaleDateString('id-ID')}
                   </span>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-gray-500 text-center py-4">Belum ada konversi</p>
+            <p className="text-gray-500 dark:text-gray-400 text-center py-4">Belum ada konversi</p>
           )}
         </div>
       </div>
@@ -205,33 +205,33 @@ const RNDDashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Link
           to="/app/rnd/projects"
-          className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm border border-gray-100 hover:border-blue-300 transition-colors"
+          className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 hover:border-blue-300 transition-colors"
         >
           <div className="flex items-center gap-3">
             <FolderKanban className="w-5 h-5 text-blue-600" />
-            <span className="font-medium text-gray-900">Daftar Proyek</span>
+            <span className="font-medium text-gray-900 dark:text-white">Daftar Proyek</span>
           </div>
           <ArrowRight className="w-4 h-4 text-gray-400" />
         </Link>
 
         <Link
           to="/app/rnd/approvals"
-          className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm border border-gray-100 hover:border-blue-300 transition-colors"
+          className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 hover:border-blue-300 transition-colors"
         >
           <div className="flex items-center gap-3">
             <CheckCircle2 className="w-5 h-5 text-green-600" />
-            <span className="font-medium text-gray-900">Approval Pending</span>
+            <span className="font-medium text-gray-900 dark:text-white">Approval Pending</span>
           </div>
           <ArrowRight className="w-4 h-4 text-gray-400" />
         </Link>
 
         <Link
           to="/app/rnd/projects/new"
-          className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm border border-gray-100 hover:border-blue-300 transition-colors"
+          className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 hover:border-blue-300 transition-colors"
         >
           <div className="flex items-center gap-3">
             <FlaskConical className="w-5 h-5 text-purple-600" />
-            <span className="font-medium text-gray-900">Proyek Baru</span>
+            <span className="font-medium text-gray-900 dark:text-white">Proyek Baru</span>
           </div>
           <ArrowRight className="w-4 h-4 text-gray-400" />
         </Link>

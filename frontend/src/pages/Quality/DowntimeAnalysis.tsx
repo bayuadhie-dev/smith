@@ -193,7 +193,7 @@ const DowntimeAnalysis: React.FC = () => {
             </div>
           </div>
           
-          <div className="flex items-center gap-2 bg-white rounded-lg border border-slate-200 px-3 py-2">
+          <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg border border-slate-200 px-3 py-2">
             <CalendarIcon className="h-5 w-5 text-slate-400" />
             <select
               value={selectedMonth}
@@ -216,7 +216,7 @@ const DowntimeAnalysis: React.FC = () => {
       {/* Machine Downtime Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {machines.map(machine => (
-          <div key={machine.machine_id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <div key={machine.machine_id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 overflow-hidden">
             <div className="p-4 bg-slate-50 border-b border-slate-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -310,7 +310,7 @@ const DowntimeAnalysis: React.FC = () => {
       </div>
 
       {/* Root Cause Analysis Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="p-4 border-b border-slate-200">
           <h2 className="text-lg font-semibold text-slate-800">
             Laporan Pencapaian Tujuan & Sasaran - {period}
@@ -397,7 +397,7 @@ const DowntimeAnalysis: React.FC = () => {
       {/* Root Cause Modal */}
       {showRootCauseModal && editingRecord && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
             <div className="p-4 border-b border-slate-200 flex items-center justify-between">
               <h3 className="text-lg font-semibold text-slate-800">
                 {editingRecord.id ? 'Edit' : 'Tambah'} Root Cause Analysis

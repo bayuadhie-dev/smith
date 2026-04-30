@@ -172,7 +172,7 @@ const QualityObjectiveProduction: React.FC = () => {
           
           {/* Period Selector & Actions */}
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 bg-white rounded-lg border border-slate-200 px-3 py-2">
+            <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg border border-slate-200 px-3 py-2">
               <CalendarIcon className="h-5 w-5 text-slate-400" />
               <select
                 value={selectedMonth}
@@ -236,7 +236,7 @@ const QualityObjectiveProduction: React.FC = () => {
             </div>
 
             {/* Machines Achieved */}
-            <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-slate-200 shadow-sm">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
                   <CheckCircleIcon className="h-6 w-6 text-green-600" />
@@ -249,7 +249,7 @@ const QualityObjectiveProduction: React.FC = () => {
             </div>
 
             {/* Machines Not Achieved */}
-            <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-slate-200 shadow-sm">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
                   <XCircleIcon className="h-6 w-6 text-red-600" />
@@ -262,7 +262,7 @@ const QualityObjectiveProduction: React.FC = () => {
             </div>
 
             {/* Achievement Rate */}
-            <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-slate-200 shadow-sm">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
                   <ChartBarIcon className="h-6 w-6 text-blue-600" />
@@ -299,7 +299,7 @@ const QualityObjectiveProduction: React.FC = () => {
           </div>
 
           {/* Machine Details Table */}
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 overflow-hidden">
             <div className="p-4 border-b border-slate-200">
               <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
                 <CogIcon className="h-5 w-5 text-slate-500" />
@@ -406,7 +406,7 @@ const QualityObjectiveProduction: React.FC = () => {
       {/* Target Modal */}
       {showTargetModal && data && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
             <div className="p-4 border-b border-slate-200 flex items-center justify-between">
               <h3 className="text-lg font-semibold text-slate-800">
                 Set Target Bulanan - {data.period}

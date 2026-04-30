@@ -186,8 +186,8 @@ const [accounts, setAccounts] = useState<Account[]>([])
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">📊 Chart of Accounts</h1>
-          <p className="text-gray-600 mt-1">Manage your accounting structure and account balances</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">📊 Chart of Accounts</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Manage your accounting structure and account balances</p>
         </div>
         <div className="flex gap-3">
           <button 
@@ -208,8 +208,8 @@ const [accounts, setAccounts] = useState<Account[]>([])
               <span className="text-2xl">🏢</span>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Assets</p>
-              <p className="text-xl font-bold text-gray-900">{formatRupiah(getTotalByType('Asset'))}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Assets</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-white">{formatRupiah(getTotalByType('Asset'))}</p>
             </div>
           </div>
         </div>
@@ -220,8 +220,8 @@ const [accounts, setAccounts] = useState<Account[]>([])
               <span className="text-2xl">💳</span>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Liabilities</p>
-              <p className="text-xl font-bold text-gray-900">{formatRupiah(getTotalByType('Liability'))}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Liabilities</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-white">{formatRupiah(getTotalByType('Liability'))}</p>
             </div>
           </div>
         </div>
@@ -232,8 +232,8 @@ const [accounts, setAccounts] = useState<Account[]>([])
               <span className="text-2xl">📈</span>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Equity</p>
-              <p className="text-xl font-bold text-gray-900">{formatRupiah(getTotalByType('Equity'))}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Equity</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-white">{formatRupiah(getTotalByType('Equity'))}</p>
             </div>
           </div>
         </div>
@@ -244,8 +244,8 @@ const [accounts, setAccounts] = useState<Account[]>([])
               <span className="text-2xl">💰</span>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Revenue</p>
-              <p className="text-xl font-bold text-gray-900">{formatRupiah(getTotalByType('Revenue'))}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Revenue</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-white">{formatRupiah(getTotalByType('Revenue'))}</p>
             </div>
           </div>
         </div>
@@ -256,8 +256,8 @@ const [accounts, setAccounts] = useState<Account[]>([])
               <span className="text-2xl">💸</span>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Expenses</p>
-              <p className="text-xl font-bold text-gray-900">{formatRupiah(getTotalByType('Expense'))}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Expenses</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-white">{formatRupiah(getTotalByType('Expense'))}</p>
             </div>
           </div>
         </div>
@@ -302,44 +302,44 @@ const [accounts, setAccounts] = useState<Account[]>([])
       <div className="space-y-6">
         {Object.entries(groupedAccounts).map(([type, typeAccounts]) => (
           <div key={type} className="card overflow-hidden">
-            <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+            <div className="bg-gray-50 dark:bg-gray-900 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <span className="text-2xl mr-3">{getTypeIcon(type)}</span>
-                  <h3 className="text-lg font-medium text-gray-900">{type}</h3>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">{type}</h3>
                   <span className={`ml-3 px-2.5 py-0.5 rounded-full text-xs font-medium ${getTypeColor(type)}`}>
                     {typeAccounts.length} accounts
                   </span>
                 </div>
-                <div className="text-lg font-bold text-gray-900">
+                <div className="text-lg font-bold text-gray-900 dark:text-white">
                   {formatRupiah(getTotalByType(type))}
                 </div>
               </div>
             </div>
             
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-900">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Account Code
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Account Name
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.actions')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {typeAccounts.map((account) => (
-                    <tr key={account.code} className="hover:bg-gray-50">
+                    <tr key={account.code} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{account.code}</div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">{account.code}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{account.name}</div>
+                        <div className="text-sm text-gray-900 dark:text-white">{account.name}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">
                         <div className={`text-sm font-medium ${
@@ -376,12 +376,12 @@ const [accounts, setAccounts] = useState<Account[]>([])
       {/* Add Account Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">{editingAccount ? 'Edit Account' : 'Add New Account'}</h3>
               <button 
                 onClick={() => setShowAddModal(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-300"
               >
                 ✕
               </button>
@@ -389,7 +389,7 @@ const [accounts, setAccounts] = useState<Account[]>([])
             
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Account Code *
                 </label>
                 <input 
@@ -404,7 +404,7 @@ const [accounts, setAccounts] = useState<Account[]>([])
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Account Name *
                 </label>
                 <input 
@@ -418,7 +418,7 @@ const [accounts, setAccounts] = useState<Account[]>([])
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Account Type *
                 </label>
                 <select 
@@ -437,7 +437,7 @@ const [accounts, setAccounts] = useState<Account[]>([])
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   {editingAccount ? 'Current Balance' : 'Opening Balance'}
                 </label>
                 <input 
@@ -451,7 +451,7 @@ const [accounts, setAccounts] = useState<Account[]>([])
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Description
                 </label>
                 <textarea 
@@ -481,8 +481,8 @@ const [accounts, setAccounts] = useState<Account[]>([])
       {filteredAccounts.length === 0 && !loading && (
         <div className="text-center py-12">
           <ListBulletIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No accounts found</h3>
-          <p className="mt-1 text-sm text-gray-500">Try adjusting your search criteria or add a new account</p>
+          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No accounts found</h3>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Try adjusting your search criteria or add a new account</p>
         </div>
       )}
     </div>

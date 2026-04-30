@@ -306,17 +306,17 @@ const BudgetForm: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             {isEdit ? 'Edit Budget' : 'New Budget'}
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-300">
             {isEdit ? 'Update budget details and allocations' : 'Create new budget plan with account allocations'}
           </p>
         </div>
       </div>
 
       {/* Form */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
             <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
@@ -327,13 +327,13 @@ const BudgetForm: React.FC = () => {
 
           {/* Budget Header Information */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
               Budget Information
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <DocumentTextIcon className="inline h-4 w-4 mr-1" />
                   Budget Name *
                 </label>
@@ -343,13 +343,13 @@ const BudgetForm: React.FC = () => {
                   value={formData.budget_name}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Enter budget name"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <Hash className="inline h-4 w-4 mr-1" />
                   Budget Year *
                 </label>
@@ -361,14 +361,14 @@ const BudgetForm: React.FC = () => {
                   required
                   min="2020"
                   max="2030"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Budget Period *
                 </label>
                 <select
@@ -376,7 +376,7 @@ const BudgetForm: React.FC = () => {
                   value={formData.budget_period}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   {budgetPeriods.map(period => (
                     <option key={period.value} value={period.value}>
@@ -385,14 +385,14 @@ const BudgetForm: React.FC = () => {
                   ))}
                 </select>
                 {selectedPeriod && (
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     Duration: {selectedPeriod.months} month(s)
                   </p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <Calendar className="inline h-4 w-4 mr-1" />
                   Start Date *
                 </label>
@@ -402,12 +402,12 @@ const BudgetForm: React.FC = () => {
                   value={formData.start_date}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   End Date *
                 </label>
                 <input
@@ -417,19 +417,19 @@ const BudgetForm: React.FC = () => {
                   onChange={handleInputChange}
                   required
                   min={formData.start_date}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">{t('common.status')}</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('common.status')}</label>
                 <select
                   name="status"
                   value={formData.status}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   {statusOptions.map(status => (
                     <option key={status.value} value={status.value}>
@@ -444,12 +444,12 @@ const BudgetForm: React.FC = () => {
                 )}
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
                 <div>
-                  <label className="text-sm font-medium text-gray-700">
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
                     Active Budget
                   </label>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     Enable this budget for tracking
                   </p>
                 </div>
@@ -473,7 +473,7 @@ const BudgetForm: React.FC = () => {
           {/* Budget Lines */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-gray-900">Budget Allocations</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">Budget Allocations</h3>
               <button
                 type="button"
                 onClick={addLine}
@@ -486,9 +486,9 @@ const BudgetForm: React.FC = () => {
 
             <div className="space-y-4">
               {formData.lines.map((line, index) => (
-                <div key={index} className="p-4 border border-gray-200 rounded-lg space-y-4">
+                <div key={index} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg space-y-4">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-medium text-gray-900">
+                    <h4 className="font-medium text-gray-900 dark:text-white">
                       Budget Line {index + 1}
                     </h4>
                     {formData.lines.length > 1 && (
@@ -504,7 +504,7 @@ const BudgetForm: React.FC = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                         <Building className="inline h-4 w-4 mr-1" />
                         Account *
                       </label>
@@ -512,7 +512,7 @@ const BudgetForm: React.FC = () => {
                         value={line.account_id}
                         onChange={(e) => handleLineChange(index, 'account_id', e.target.value)}
                         required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       >
                         <option value="">Select Account</option>
                         {accounts.map(account => (
@@ -524,14 +524,14 @@ const BudgetForm: React.FC = () => {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                         Category *
                       </label>
                       <select
                         value={line.category}
                         onChange={(e) => handleLineChange(index, 'category', e.target.value)}
                         required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       >
                         <option value="">Select Category</option>
                         {budgetCategories.map(category => (
@@ -545,7 +545,7 @@ const BudgetForm: React.FC = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                         <CurrencyDollarIcon className="inline h-4 w-4 mr-1" />
                         Budget Amount *
                       </label>
@@ -556,19 +556,19 @@ const BudgetForm: React.FC = () => {
                         required
                         min="0"
                         step="0.01"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         placeholder="Enter budget amount"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       </label>
                       <input
                         type="text"
                         value={line.notes}
                         onChange={(e) => handleLineChange(index, 'notes', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         placeholder="Enter notes"
                       />
                     </div>
@@ -578,8 +578,8 @@ const BudgetForm: React.FC = () => {
             </div>
 
             {/* Budget Summary */}
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <h4 className="font-medium text-gray-900 mb-3">
+            <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+              <h4 className="font-medium text-gray-900 dark:text-white mb-3">
                 <Calculator className="inline h-4 w-4 mr-1" />
                 Budget Summary
               </h4>
@@ -588,13 +588,13 @@ const BudgetForm: React.FC = () => {
                   <div className="text-2xl font-bold text-blue-600">
                     IDR {getTotalBudget().toLocaleString('id-ID')}
                   </div>
-                  <div className="text-sm text-gray-600">Total Budget Amount</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">Total Budget Amount</div>
                 </div>
                 <div>
-                  <div className="text-lg font-medium text-gray-900">
+                  <div className="text-lg font-medium text-gray-900 dark:text-white">
                     {formData.lines.length} Budget Lines
                   </div>
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-gray-600 dark:text-gray-300">
                     Period: {formData.start_date} to {formData.end_date}
                   </div>
                 </div>
@@ -603,11 +603,11 @@ const BudgetForm: React.FC = () => {
               {/* Category Breakdown */}
               {Object.keys(getLinesByCategory()).length > 0 && (
                 <div className="mt-4">
-                  <h5 className="font-medium text-gray-900 mb-2">Category Breakdown</h5>
+                  <h5 className="font-medium text-gray-900 dark:text-white mb-2">Category Breakdown</h5>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
                     {Object.entries(getLinesByCategory()).map(([category, amount]) => (
                       <div key={category} className="flex justify-between">
-                        <span className="text-gray-600">{category}:</span>
+                        <span className="text-gray-600 dark:text-gray-300">{category}:</span>
                         <span className="font-medium">IDR {amount.toLocaleString('id-ID')}</span>
                       </div>
                     ))}
@@ -618,11 +618,11 @@ const BudgetForm: React.FC = () => {
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200">
+          <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
             <button
               type="button"
               onClick={() => navigate('/app/finance/budget')}
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+              className="px-4 py-2 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
             >
               <X className="inline h-4 w-4 mr-2" />{t('common.cancel')}</button>
             <button

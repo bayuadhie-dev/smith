@@ -64,8 +64,8 @@ const [page, setPage] = useState(1)
     return (
       <div className="p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
+          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+          <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
         </div>
       </div>
     )
@@ -76,7 +76,7 @@ const [page, setPage] = useState(1)
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Sales Forecasts</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Sales Forecasts</h1>
           <p className="text-gray-600">Manage sales forecasts and predictions</p>
         </div>
         <Link
@@ -92,7 +92,7 @@ const [page, setPage] = useState(1)
       <div className="card p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('common.search')}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('common.search')}</label>
             <input
               type="text"
               value={search}
@@ -103,7 +103,7 @@ const [page, setPage] = useState(1)
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('common.status')}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('common.status')}</label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -139,7 +139,7 @@ const [page, setPage] = useState(1)
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Total Forecasts</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {forecastsData?.total || 0}
               </p>
             </div>
@@ -151,7 +151,7 @@ const [page, setPage] = useState(1)
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Approved</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {forecastsData?.forecasts?.filter((f: any) => f.status === 'approved').length || 0}
               </p>
             </div>
@@ -163,7 +163,7 @@ const [page, setPage] = useState(1)
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Pending</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {forecastsData?.forecasts?.filter((f: any) => f.status === 'submitted').length || 0}
               </p>
             </div>
@@ -175,7 +175,7 @@ const [page, setPage] = useState(1)
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Total Value</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {forecastsData?.forecasts?.reduce((sum: number, f: any) => sum + (f.most_likely || 0), 0).toLocaleString() || 0}
               </p>
             </div>
@@ -187,64 +187,64 @@ const [page, setPage] = useState(1)
       {/* Forecasts Table */}
       <div className="card">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Product/Customer
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.status')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.actions')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {forecastsData?.forecasts?.map((forecast: any) => (
-                <tr key={forecast.id} className="hover:bg-gray-50">
+                <tr key={forecast.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">
                         {forecast.name}
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
                         {forecast.forecast_number}
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
-                      <div className="text-sm text-gray-900">
+                      <div className="text-sm text-gray-900 dark:text-white">
                         {forecast.product_name || 'All Products'}
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
                         {forecast.customer_name || 'All Customers'}
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
+                    <div className="text-sm text-gray-900 dark:text-white">
                       <div className={`badge ${forecast.forecast_type === 'monthly' ? 'badge-blue' : 
                         forecast.forecast_type === 'quarterly' ? 'badge-purple' : 'badge-green'}`}>
                         {forecast.forecast_type}
                       </div>
-                      <div className="text-xs text-gray-500 mt-1">
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         {new Date(forecast.period_start).toLocaleDateString()} - {new Date(forecast.period_end).toLocaleDateString()}
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm">
-                      <div className="text-gray-900 font-medium">
+                      <div className="text-gray-900 dark:text-white font-medium">
                         Most Likely: {forecast.most_likely?.toLocaleString()}
                       </div>
-                      <div className="text-gray-500 text-xs">
+                      <div className="text-gray-500 dark:text-gray-400 text-xs">
                         Best: {forecast.best_case?.toLocaleString()} | Worst: {forecast.worst_case?.toLocaleString()}
                       </div>
                     </div>
@@ -270,7 +270,7 @@ const [page, setPage] = useState(1)
                       </Link>
                       <Link
                         to={`/app/sales/forecasts/${forecast.id}/edit`}
-                        className="text-gray-600 hover:text-gray-900"
+                        className="text-gray-600 hover:text-gray-900 dark:text-white"
                         title={t('common.edit')}
                       >
                         <PencilIcon className="h-4 w-4" />
@@ -292,9 +292,9 @@ const [page, setPage] = useState(1)
 
         {/* Pagination */}
         {forecastsData?.pages > 1 && (
-          <div className="px-6 py-3 border-t border-gray-200">
+          <div className="px-6 py-3 border-t border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-700">
+              <div className="text-sm text-gray-700 dark:text-gray-200">
                 Showing page {page} of {forecastsData.pages}
               </div>
               <div className="flex gap-2">
@@ -320,7 +320,7 @@ const [page, setPage] = useState(1)
       {!isLoading && (!forecastsData?.forecasts || forecastsData.forecasts.length === 0) && (
         <div className="card p-12 text-center">
           <CalendarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No forecasts found</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No forecasts found</h3>
           <p className="text-gray-600 mb-4">
             {search || statusFilter ? 'Try adjusting your filters' : 'Get started by creating your first sales forecast'}
           </p>

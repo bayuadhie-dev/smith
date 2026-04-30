@@ -142,11 +142,11 @@ export default function WhatIfSimulation() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <BeakerIcon className="h-8 w-8 text-purple-600" />
             MRP What-If Simulation
           </h1>
-          <p className="text-gray-600">Compare different planning scenarios and their impact on material requirements</p>
+          <p className="text-gray-600 dark:text-gray-300">Compare different planning scenarios and their impact on material requirements</p>
         </div>
         <button
           onClick={runWhatIfSimulation}
@@ -162,13 +162,13 @@ export default function WhatIfSimulation() {
         {/* Scenario Configuration */}
         <div className="lg:col-span-1 space-y-6">
           {/* Planning Period */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
               <ClockIcon className="h-5 w-5" />
               Planning Period
             </h3>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Days Ahead
               </label>
               <input
@@ -177,24 +177,24 @@ export default function WhatIfSimulation() {
                 onChange={(e) => setDaysAhead(Number(e.target.value))}
                 min="1"
                 max="365"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 Planning horizon: {daysAhead} days from today
               </p>
             </div>
           </div>
 
           {/* Template Scenarios */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               Quick Templates
             </h3>
             <div className="space-y-2">
               <select
                 value={selectedTemplate}
                 onChange={(e) => setSelectedTemplate(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Select a template...</option>
                 {templatesData?.templates?.map((template: any) => (
@@ -204,16 +204,16 @@ export default function WhatIfSimulation() {
                 ))}
               </select>
               {selectedTemplate && (
-                <div className="p-3 bg-gray-50 rounded text-sm">
+                <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded text-sm">
                   <p className="font-medium">
                     {templatesData?.templates?.find((t: any) => t.id === selectedTemplate)?.name}
                   </p>
-                  <p className="text-gray-600 text-xs">
+                  <p className="text-gray-600 dark:text-gray-300 text-xs">
                     {templatesData?.templates?.find((t: any) => t.id === selectedTemplate)?.description}
                   </p>
                   <button
                     onClick={() => addTemplateScenario(selectedTemplate)}
-                    className="inline-flex items-center px-3 py-1 bg-gray-200 text-gray-700 text-xs font-medium rounded hover:bg-gray-300 transition-colors mt-2"
+                    className="inline-flex items-center px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-medium rounded hover:bg-gray-300 transition-colors mt-2"
                   >
                     Add Template
                   </button>
@@ -223,20 +223,20 @@ export default function WhatIfSimulation() {
           </div>
 
           {/* Custom Scenario */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               Custom Scenario
             </h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Scenario Name
                 </label>
                 <input
                   type="text"
                   value={customScenario.name}
                   onChange={(e) => setCustomScenario({...customScenario, name: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="My Custom Scenario"
                 />
               </div>
@@ -248,19 +248,19 @@ export default function WhatIfSimulation() {
                     checked={customScenario.include_forecasts}
                     onChange={(e) => setCustomScenario({...customScenario, include_forecasts: e.target.checked})}
                   />
-                  <span className="text-sm font-medium text-gray-700">Include Forecasts</span>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Include Forecasts</span>
                 </label>
               </div>
 
               {customScenario.include_forecasts && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Forecast Confidence
                   </label>
                   <select
                     value={customScenario.forecast_confidence}
                     onChange={(e) => setCustomScenario({...customScenario, forecast_confidence: e.target.value as any})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="best_case">Best Case (Optimistic)</option>
                     <option value="most_likely">Most Likely (Realistic)</option>
@@ -270,7 +270,7 @@ export default function WhatIfSimulation() {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Demand Multiplier
                 </label>
                 <input
@@ -278,9 +278,9 @@ export default function WhatIfSimulation() {
                   step="0.1"
                   value={customScenario.demand_multiplier}
                   onChange={(e) => setCustomScenario({...customScenario, demand_multiplier: Number(e.target.value)})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   {customScenario.demand_multiplier > 1 ? 
                     `${((customScenario.demand_multiplier - 1) * 100).toFixed(0)}% increase` :
                     customScenario.demand_multiplier < 1 ?
@@ -292,7 +292,7 @@ export default function WhatIfSimulation() {
 
               <button
                 onClick={() => addScenario(customScenario)}
-                className="w-full px-4 py-2 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition-colors"
+                className="w-full px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium rounded-lg hover:bg-gray-300 transition-colors"
               >
                 Add Scenario
               </button>
@@ -300,16 +300,16 @@ export default function WhatIfSimulation() {
           </div>
 
           {/* Current Scenarios */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               Scenarios ({scenarios.length})
             </h3>
             <div className="space-y-2">
               {scenarios.map((scenario, index) => (
-                <div key={index} className="p-3 bg-gray-50 rounded flex justify-between items-start">
+                <div key={index} className="p-3 bg-gray-50 dark:bg-gray-900 rounded flex justify-between items-start">
                   <div className="flex-1">
                     <div className="font-medium text-sm">{scenario.name}</div>
-                    <div className="text-xs text-gray-600 space-y-1">
+                    <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1">
                       <div>Forecasts: {scenario.include_forecasts ? 'Yes' : 'No'}</div>
                       {scenario.include_forecasts && (
                         <div>Confidence: <span className={`badge ${getConfidenceBadge(scenario.forecast_confidence)} text-xs`}>
@@ -328,7 +328,7 @@ export default function WhatIfSimulation() {
                 </div>
               ))}
               {scenarios.length === 0 && (
-                <p className="text-gray-500 text-sm text-center py-4">
+                <p className="text-gray-500 dark:text-gray-400 text-sm text-center py-4">
                   No scenarios added yet
                 </p>
               )}
@@ -341,8 +341,8 @@ export default function WhatIfSimulation() {
           {simulationResults.length > 0 ? (
             <>
               {/* Results Summary */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                   <ChartBarIcon className="h-5 w-5" />
                   Simulation Results Summary
                 </h3>
@@ -352,28 +352,28 @@ export default function WhatIfSimulation() {
                     return (
                       <div key={index} className="p-4 border rounded-lg">
                         <div className="flex justify-between items-start mb-3">
-                          <h4 className="font-medium text-gray-900">{result.scenario_name}</h4>
+                          <h4 className="font-medium text-gray-900 dark:text-white">{result.scenario_name}</h4>
                           <span className={`px-2 py-1 rounded text-xs ${risk.bg} ${risk.color}`}>
                             {risk.level} Risk
                           </span>
                         </div>
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
-                            <span className="text-gray-600">Total Materials:</span>
+                            <span className="text-gray-600 dark:text-gray-300">Total Materials:</span>
                             <span className="font-medium">{result.summary.total_materials}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-gray-600">Critical Materials:</span>
+                            <span className="text-gray-600 dark:text-gray-300">Critical Materials:</span>
                             <span className={`font-medium ${result.summary.critical_materials > 0 ? 'text-red-600' : 'text-green-600'}`}>
                               {result.summary.critical_materials}
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-gray-600">Orders:</span>
+                            <span className="text-gray-600 dark:text-gray-300">Orders:</span>
                             <span className="font-medium">{result.summary.confirmed_orders_count}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-gray-600">Forecasts:</span>
+                            <span className="text-gray-600 dark:text-gray-300">Forecasts:</span>
                             <span className="font-medium">{result.summary.forecasts_included}</span>
                           </div>
                         </div>
@@ -384,26 +384,26 @@ export default function WhatIfSimulation() {
               </div>
 
               {/* Detailed Comparison */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                   <ArrowsRightLeftIcon className="h-5 w-5" />
                   Scenario Comparison
                 </h3>
                 
                 {/* Material Requirements Comparison */}
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-900">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('products.bom.material')}</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('products.bom.material')}</th>
                         {simulationResults.map((result, index) => (
-                          <th key={index} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th key={index} className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                             {result.scenario_name}
                           </th>
                         ))}
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                       {/* Get unique materials across all scenarios */}
                       {Array.from(new Set(
                         simulationResults.flatMap(result => 
@@ -415,10 +415,10 @@ export default function WhatIfSimulation() {
                           <tr key={materialId}>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div>
-                                <div className="text-sm font-medium text-gray-900">
+                                <div className="text-sm font-medium text-gray-900 dark:text-white">
                                   {materialInfo?.material_code}
                                 </div>
-                                <div className="text-sm text-gray-500">
+                                <div className="text-sm text-gray-500 dark:text-gray-400">
                                   {materialInfo?.material_name}
                                 </div>
                               </div>
@@ -435,10 +435,10 @@ export default function WhatIfSimulation() {
                                           'Sufficient'
                                         }
                                       </div>
-                                      <div className="text-gray-500">
+                                      <div className="text-gray-500 dark:text-gray-400">
                                         Need: {req.total_quantity.toFixed(2)} {req.uom}
                                       </div>
-                                      <div className="text-gray-500">
+                                      <div className="text-gray-500 dark:text-gray-400">
                                         Stock: {req.current_stock.toFixed(2)} {req.uom}
                                       </div>
                                     </div>
@@ -457,8 +457,8 @@ export default function WhatIfSimulation() {
               </div>
 
               {/* Insights & Recommendations */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                   <ExclamationTriangleIcon className="h-5 w-5" />
                   Insights & Recommendations
                 </h3>
@@ -509,11 +509,11 @@ export default function WhatIfSimulation() {
           ) : (
             <div className="card p-12 text-center">
               <BeakerIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No Simulation Results</h3>
-              <p className="text-gray-600 mb-4">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Simulation Results</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
                 Add scenarios and run simulation to see results and comparisons
               </p>
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-gray-500 dark:text-gray-400">
                 <p>• Add multiple scenarios to compare different planning approaches</p>
                 <p>• Use templates for quick setup or create custom scenarios</p>
                 <p>• Compare material requirements across scenarios</p>

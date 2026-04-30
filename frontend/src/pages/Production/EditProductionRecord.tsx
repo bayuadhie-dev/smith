@@ -584,13 +584,13 @@ export default function EditProductionRecord() {
       <div className="flex items-center space-x-4">
         <Link
           to={`/app/production/work-orders/${workOrderId}`}
-          className="p-2 hover:bg-gray-100 rounded-lg"
+          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
         >
           <ArrowLeftIcon className="h-5 w-5" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Edit Data Produksi</h1>
-          <p className="text-gray-600">{workOrder.wo_number} - {workOrder.product_name}</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Edit Data Produksi</h1>
+          <p className="text-gray-600 dark:text-gray-300">{workOrder.wo_number} - {workOrder.product_name}</p>
         </div>
       </div>
 
@@ -603,12 +603,12 @@ export default function EditProductionRecord() {
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="bg-white shadow rounded-lg p-6 space-y-6">
+      <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 space-y-6">
         {/* Product Selection */}
         <div className="relative product-dropdown-container">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
             Produk *
-            <span className="text-xs text-gray-500 font-normal ml-2">(Default: produk WO, bisa diganti jika perlu)</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400 font-normal ml-2">(Default: produk WO, bisa diganti jika perlu)</span>
           </label>
           <div className="flex gap-2">
             <div className="flex-1 relative">
@@ -621,16 +621,16 @@ export default function EditProductionRecord() {
                 }}
                 onFocus={() => setShowProductDropdown(true)}
                 placeholder="Cari produk..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
               {showProductDropdown && (
-                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                   {/* Default WO Product */}
                   {workOrder && (
                     <button
                       type="button"
                       onClick={() => handleProductSelect({ id: workOrder.product_id, code: '', name: workOrder.product_name })}
-                      className="w-full px-3 py-2 text-left hover:bg-blue-50 border-b border-gray-200 bg-blue-50"
+                      className="w-full px-3 py-2 text-left hover:bg-blue-50 border-b border-gray-200 dark:border-gray-700 bg-blue-50"
                     >
                       <span className="text-xs text-blue-600 font-medium">Default WO:</span>
                       <span className="block text-sm font-medium">{workOrder.product_name}</span>
@@ -643,14 +643,14 @@ export default function EditProductionRecord() {
                         key={product.id}
                         type="button"
                         onClick={() => handleProductSelect(product)}
-                        className="w-full px-3 py-2 text-left hover:bg-gray-100 border-b border-gray-100 last:border-0"
+                        className="w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 border-b border-gray-100 last:border-0"
                       >
-                        <span className="text-xs text-gray-500">{product.code}</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">{product.code}</span>
                         <span className="block text-sm">{product.name}</span>
                       </button>
                     ))
                   ) : productSearch && (
-                    <div className="px-3 py-2 text-sm text-gray-500">Tidak ada produk ditemukan</div>
+                    <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">Tidak ada produk ditemukan</div>
                   )}
                 </div>
               )}
@@ -680,25 +680,25 @@ export default function EditProductionRecord() {
         {/* Date & Shift */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Tanggal Produksi *
             </label>
             <input
               type="date"
               value={formData.production_date}
               onChange={(e) => handleChange('production_date', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Shift *
             </label>
             <select
               value={formData.shift}
               onChange={(e) => handleChange('shift', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               required
             >
               <option value="1">Shift 1 (06:30 - 15:00)</option>
@@ -707,22 +707,22 @@ export default function EditProductionRecord() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Waktu Kerja Shift (menit)
-              <span className="text-xs text-gray-500 font-normal block">Kurangi jika shift berhenti lebih awal</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400 font-normal block">Kurangi jika shift berhenti lebih awal</span>
             </label>
             <input
               type="number"
               value={formData.average_time}
               onChange={(e) => handleChange('average_time', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="510"
               min="0"
             />
             <p className="text-xs text-gray-400 mt-1">Default: Shift 1=510, Shift 2=480, Shift 3=450</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Speed Mesin (pcs/menit)
             </label>
             <input
@@ -737,24 +737,24 @@ export default function EditProductionRecord() {
         </div>
 
         {/* Time Calculation Summary */}
-        <div className="bg-gray-100 rounded-lg p-4">
-          <h4 className="text-sm font-semibold text-gray-700 mb-3">Perhitungan Waktu</h4>
+        <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
+          <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">Perhitungan Waktu</h4>
           <div className="grid grid-cols-2 md:grid-cols-6 gap-3 text-center">
             <div>
-              <p className="text-xs text-gray-500">Average Time</p>
-              <p className="text-lg font-bold text-gray-700">{getAverageTime()}m</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Average Time</p>
+              <p className="text-lg font-bold text-gray-700 dark:text-gray-200">{getAverageTime()}m</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500">Runtime</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Runtime</p>
               <p className="text-lg font-bold text-blue-600">{getRuntime()}m</p>
               <p className="text-xs text-gray-400">= A ÷ Speed</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500">Downtime</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Downtime</p>
               <p className="text-lg font-bold text-orange-600">{getTotalDowntime()}m</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500">Waktu Tercatat</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Waktu Tercatat</p>
               <p className={`text-lg font-bold ${getWaktuTercatat() > getAverageTime() ? 'text-red-600' : 'text-green-600'}`}>
                 {getWaktuTercatat()}m
               </p>
@@ -765,11 +765,11 @@ export default function EditProductionRecord() {
               )}
             </div>
             <div>
-              <p className="text-xs text-gray-500">Waktu Tidak Tercatat</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Waktu Tidak Tercatat</p>
               <p className="text-lg font-bold text-red-600">{getWaktuTidakTercatat()}m</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500">Efisiensi</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Efisiensi</p>
               <p className={`text-lg font-bold ${getEfficiency() >= 60 ? 'text-green-600' : 'text-red-600'}`}>
                 {getEfficiency().toFixed(1)}%
               </p>
@@ -779,10 +779,10 @@ export default function EditProductionRecord() {
 
         {/* Quantity Section */}
         <div className="border-t pt-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Hasil Produksi</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Hasil Produksi</h3>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Grade A <span className="text-green-600">(Good)</span> *
               </label>
               <input
@@ -796,7 +796,7 @@ export default function EditProductionRecord() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Grade B <span className="text-yellow-600">(Rework)</span>
               </label>
               <input
@@ -809,7 +809,7 @@ export default function EditProductionRecord() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Grade C <span className="text-red-500">(Reject)</span>
               </label>
               <input
@@ -822,7 +822,7 @@ export default function EditProductionRecord() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Setting Sticker <span className="text-purple-500">(pack)</span>
               </label>
               <input
@@ -835,7 +835,7 @@ export default function EditProductionRecord() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Setting Packaging <span className="text-indigo-500">(pack)</span>
               </label>
               <input
@@ -850,7 +850,7 @@ export default function EditProductionRecord() {
           </div>
 
           {/* Auto-calculated */}
-          <div className="grid grid-cols-2 gap-4 mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="grid grid-cols-2 gap-4 mt-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
             <div>
               <label className="block text-sm font-medium text-blue-700 mb-1">
                 Qty Produksi (Auto)
@@ -861,7 +861,7 @@ export default function EditProductionRecord() {
                 readOnly
                 className="w-full px-3 py-2 bg-blue-50 border border-blue-300 rounded-lg text-blue-800 font-medium cursor-not-allowed"
               />
-              <span className="text-xs text-gray-500">= A + B + C</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">= A + B + C</span>
             </div>
             <div>
               <label className="block text-sm font-medium text-orange-700 mb-1">
@@ -873,7 +873,7 @@ export default function EditProductionRecord() {
                 readOnly
                 className="w-full px-3 py-2 bg-orange-50 border border-orange-300 rounded-lg text-orange-700 font-medium cursor-not-allowed"
               />
-              <span className="text-xs text-gray-500">= C + Setting</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">= C + Setting</span>
             </div>
           </div>
         </div>
@@ -947,7 +947,7 @@ export default function EditProductionRecord() {
         {/* Downtime Section */}
         <div className="border-t pt-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white flex items-center gap-2">
               <ClockIcon className="h-5 w-5 text-orange-500" />
               Downtime Entries
             </h3>
@@ -962,9 +962,9 @@ export default function EditProductionRecord() {
           </div>
 
           {downtimeEntries.length === 0 ? (
-            <div className="text-center py-6 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+            <div className="text-center py-6 bg-gray-50 dark:bg-gray-900 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700">
               <ClockIcon className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-              <p className="text-gray-500 text-sm">Tidak ada downtime</p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">Tidak ada downtime</p>
               <button
                 type="button"
                 onClick={addDowntimeEntry}
@@ -989,21 +989,21 @@ export default function EditProductionRecord() {
                       <div className="flex-1 grid grid-cols-1 md:grid-cols-6 gap-3">
                         {/* Reason */}
                         <div className="md:col-span-2">
-                          <label className="block text-xs font-medium text-gray-600 mb-1">
+                          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                             Alasan Downtime
                           </label>
                           <input
                             type="text"
                             value={entry.reason}
                             onChange={(e) => updateDowntimeEntry(entry.id, 'reason', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm"
                             placeholder="Contoh: temperature suhu rendah..."
                           />
                         </div>
                         
                         {/* Duration */}
                         <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">
+                          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                             Durasi (menit)
                           </label>
                           <input
@@ -1011,7 +1011,7 @@ export default function EditProductionRecord() {
                             value={entry.duration_minutes}
                             onChange={(e) => updateDowntimeEntry(entry.id, 'duration_minutes', e.target.value)}
                             onWheel={disableScrollOnNumberInput}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm text-center"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm text-center"
                             placeholder="0"
                             min="1"
                           />
@@ -1019,7 +1019,7 @@ export default function EditProductionRecord() {
                         
                         {/* Frequency */}
                         <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">
+                          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                             Frekuensi
                           </label>
                           <input
@@ -1027,7 +1027,7 @@ export default function EditProductionRecord() {
                             value={entry.frequency}
                             onChange={(e) => updateDowntimeEntry(entry.id, 'frequency', e.target.value)}
                             onWheel={disableScrollOnNumberInput}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm text-center"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm text-center"
                             placeholder="1"
                             min="1"
                           />
@@ -1035,7 +1035,7 @@ export default function EditProductionRecord() {
                         
                         {/* Total */}
                         <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">
+                          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                             Total (menit)
                           </label>
                           <div className="px-3 py-2 bg-orange-100 border border-orange-300 rounded-lg text-sm text-center font-bold text-orange-700">
@@ -1045,7 +1045,7 @@ export default function EditProductionRecord() {
                         
                         {/* Category */}
                         <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">
+                          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                             Kategori
                           </label>
                           {entry.category ? (
@@ -1056,7 +1056,7 @@ export default function EditProductionRecord() {
                               </div>
                             </div>
                           ) : (
-                            <div className="px-3 py-2 rounded-lg text-sm bg-gray-100 text-gray-500 border border-gray-200 italic">
+                            <div className="px-3 py-2 rounded-lg text-sm bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 italic">
                               Auto
                             </div>
                           )}
@@ -1110,13 +1110,13 @@ export default function EditProductionRecord() {
         <div className="border-t pt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Operator
               </label>
               <select
                 value={formData.operator_id}
                 onChange={(e) => handleChange('operator_id', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">-- Pilih Operator --</option>
                 {employees.map(emp => (
@@ -1127,13 +1127,13 @@ export default function EditProductionRecord() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Catatan
               </label>
               <textarea
                 value={formData.notes}
                 onChange={(e) => handleChange('notes', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 rows={3}
                 placeholder="Catatan tambahan..."
               />
@@ -1145,7 +1145,7 @@ export default function EditProductionRecord() {
         <div className="flex justify-end gap-3 pt-6 border-t">
           <Link
             to={`/app/production/work-orders/${workOrderId}`}
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
           >
             Batal
           </Link>

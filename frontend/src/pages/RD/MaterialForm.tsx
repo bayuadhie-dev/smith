@@ -208,7 +208,7 @@ const MaterialForm: React.FC = () => {
           to="/app/rd/materials"
           className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
         >
-          <ArrowLeftIcon className="w-5 h-5 text-gray-500" />
+          <ArrowLeftIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
         </Link>
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
@@ -489,7 +489,7 @@ const MaterialForm: React.FC = () => {
         <div className="flex justify-end gap-4">
           <Link
             to="/app/rd/materials"
-            className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-700 transition-colors"
           >
             Cancel
           </Link>

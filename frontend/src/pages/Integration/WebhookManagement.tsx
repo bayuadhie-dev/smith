@@ -147,10 +147,10 @@ const WebhookManagement: React.FC = () => {
       <div className="mb-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
               Webhook Management
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-300">
               Manage webhook endpoints and event notifications
             </p>
           </div>
@@ -166,45 +166,45 @@ const WebhookManagement: React.FC = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <div className="flex items-center">
             <BoltIcon className="h-8 w-8 text-blue-500 mr-3" />
             <div>
-              <div className="text-2xl font-bold text-gray-900">{webhooks.length}</div>
-              <div className="text-sm text-gray-500">Total Webhooks</div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">{webhooks.length}</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Total Webhooks</div>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <div className="flex items-center">
             <CheckCircleIcon className="h-8 w-8 text-green-500 mr-3" />
             <div>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
                 {webhooks.reduce((sum, w) => sum + w.success_count, 0)}
               </div>
-              <div className="text-sm text-gray-500">Successful</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Successful</div>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <div className="flex items-center">
             <XCircleIcon className="h-8 w-8 text-red-500 mr-3" />
             <div>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
                 {webhooks.reduce((sum, w) => sum + w.failure_count, 0)}
               </div>
-              <div className="text-sm text-gray-500">Failed</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Failed</div>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <div className="flex items-center">
             <ClockIcon className="h-8 w-8 text-purple-500 mr-3" />
             <div>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
                 {webhooks.filter(w => w.is_active).length}
               </div>
-              <div className="text-sm text-gray-500">Active</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Active</div>
             </div>
           </div>
         </div>
@@ -213,13 +213,13 @@ const WebhookManagement: React.FC = () => {
       {/* Webhooks Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {webhooks.map((webhook) => (
-          <div key={webhook.id} className="bg-white rounded-lg shadow p-6">
+          <div key={webhook.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center">
                 <BoltIcon className="h-8 w-8 text-blue-500 mr-3" />
                 <div>
-                  <h3 className="font-semibold text-gray-900">{webhook.name}</h3>
-                  <p className="text-sm text-gray-500 break-all">{webhook.url}</p>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">{webhook.name}</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 break-all">{webhook.url}</p>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
@@ -232,7 +232,7 @@ const WebhookManagement: React.FC = () => {
             </div>
 
             <div className="mb-4">
-              <div className="text-sm text-gray-600 mb-2">Events:</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300 mb-2">Events:</div>
               <div className="flex flex-wrap gap-1">
                 {webhook.events.slice(0, 3).map((event) => (
                   <span
@@ -243,7 +243,7 @@ const WebhookManagement: React.FC = () => {
                   </span>
                 ))}
                 {webhook.events.length > 3 && (
-                  <span className="inline-flex px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded">
+                  <span className="inline-flex px-2 py-1 text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded">
                     +{webhook.events.length - 3} more
                   </span>
                 )}
@@ -252,19 +252,19 @@ const WebhookManagement: React.FC = () => {
 
             <div className="mb-4 grid grid-cols-2 gap-4 text-sm">
               <div>
-                <div className="text-gray-500">{t('common.success')}</div>
+                <div className="text-gray-500 dark:text-gray-400">{t('common.success')}</div>
                 <div className="font-medium text-green-600">{webhook.success_count}</div>
               </div>
               <div>
-                <div className="text-gray-500">Failed</div>
+                <div className="text-gray-500 dark:text-gray-400">Failed</div>
                 <div className="font-medium text-red-600">{webhook.failure_count}</div>
               </div>
             </div>
 
             {webhook.last_triggered && (
               <div className="mb-4 text-sm">
-                <div className="text-gray-500">Last Triggered:</div>
-                <div className="text-gray-900">
+                <div className="text-gray-500 dark:text-gray-400">Last Triggered:</div>
+                <div className="text-gray-900 dark:text-white">
                   {new Date(webhook.last_triggered).toLocaleString()}
                 </div>
               </div>
@@ -309,8 +309,8 @@ const WebhookManagement: React.FC = () => {
       {webhooks.length === 0 && (
         <div className="text-center py-12">
           <BoltIcon className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No webhooks configured</h3>
-          <p className="text-gray-500 mb-4">Create webhooks to receive real-time event notifications.</p>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No webhooks configured</h3>
+          <p className="text-gray-500 dark:text-gray-400 mb-4">Create webhooks to receive real-time event notifications.</p>
           <button
             onClick={() => setShowModal(true)}
             className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -324,35 +324,35 @@ const WebhookManagement: React.FC = () => {
       {/* Add Webhook Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Add New Webhook</h3>
+          <div className="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Add New Webhook</h3>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Webhook Name</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Webhook Name</label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                   placeholder="e.g., Order Notifications"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Webhook URL</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Webhook URL</label>
                 <input
                   type="url"
                   value={formData.url}
                   onChange={(e) => setFormData({...formData, url: e.target.value})}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                   placeholder="https://your-app.com/webhooks/orders"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Events to Subscribe</label>
-                <div className="max-h-40 overflow-y-auto border border-gray-200 rounded-md p-3">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Events to Subscribe</label>
+                <div className="max-h-40 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-md p-3">
                   {availableEvents.map((event) => (
                     <label key={event} className="flex items-center mb-2">
                       <input
@@ -373,7 +373,7 @@ const WebhookManagement: React.FC = () => {
                         }}
                         className="mr-2"
                       />
-                      <span className="text-sm text-gray-700">{event}</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-200">{event}</span>
                     </label>
                   ))}
                 </div>
@@ -381,23 +381,23 @@ const WebhookManagement: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Secret KeyIcon</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Secret KeyIcon</label>
                   <input
                     type="password"
                     value={formData.secret_key}
                     onChange={(e) => setFormData({...formData, secret_key: e.target.value})}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                     placeholder="Optional"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Timeout (seconds)</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Timeout (seconds)</label>
                   <input
                     type="number"
                     value={formData.timeout_seconds}
                     onChange={(e) => setFormData({...formData, timeout_seconds: parseInt(e.target.value)})}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                     min="5"
                     max="300"
                   />
@@ -405,12 +405,12 @@ const WebhookManagement: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Retry Count</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Retry Count</label>
                 <input
                   type="number"
                   value={formData.retry_count}
                   onChange={(e) => setFormData({...formData, retry_count: parseInt(e.target.value)})}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                   min="0"
                   max="10"
                 />
@@ -424,7 +424,7 @@ const WebhookManagement: React.FC = () => {
                     onChange={(e) => setFormData({...formData, is_active: e.target.checked})}
                     className="mr-2"
                   />
-                  <span className="text-sm text-gray-700">Active Webhook</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-200">Active Webhook</span>
                 </label>
               </div>
             </div>
@@ -432,7 +432,7 @@ const WebhookManagement: React.FC = () => {
             <div className="flex justify-end space-x-3 pt-6 mt-6 border-t">
               <button
                 onClick={() => setShowModal(false)}
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                className="px-4 py-2 bg-gray-300 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400"
               >{t('common.cancel')}</button>
               <button
                 onClick={saveWebhook}

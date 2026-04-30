@@ -267,17 +267,17 @@ const LeaveForm: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             {isEdit ? 'Edit Leave Request' : 'New Leave Request'}
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-300">
             {isEdit ? 'Update leave request details' : 'Submit new leave request for employee'}
           </p>
         </div>
       </div>
 
       {/* Form */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
             <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
@@ -288,13 +288,13 @@ const LeaveForm: React.FC = () => {
 
           {/* Basic Information */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
               Leave Request Information
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <Hash className="inline h-4 w-4 mr-1" />
                   Leave Number *
                 </label>
@@ -305,12 +305,12 @@ const LeaveForm: React.FC = () => {
                   onChange={handleInputChange}
                   required
                   readOnly
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-700"
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-200"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <User className="inline h-4 w-4 mr-1" />
                   Employee *
                 </label>
@@ -319,7 +319,7 @@ const LeaveForm: React.FC = () => {
                   value={formData.employee_id}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Select Employee</option>
                   {employees.map(employee => (
@@ -329,7 +329,7 @@ const LeaveForm: React.FC = () => {
                   ))}
                 </select>
                 {selectedEmployee && (
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     Department: {selectedEmployee.department?.name || 'N/A'}
                   </p>
                 )}
@@ -338,7 +338,7 @@ const LeaveForm: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Leave Type *
                 </label>
                 <select
@@ -346,7 +346,7 @@ const LeaveForm: React.FC = () => {
                   value={formData.leave_type}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   {leaveTypes.map(type => (
                     <option key={type.value} value={type.value}>
@@ -362,12 +362,12 @@ const LeaveForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">{t('common.status')}</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('common.status')}</label>
                 <select
                   name="status"
                   value={formData.status}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   {statusOptions.map(status => (
                     <option key={status.value} value={status.value}>
@@ -387,13 +387,13 @@ const LeaveForm: React.FC = () => {
 
           {/* Date Information */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
               Leave Period
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <Calendar className="inline h-4 w-4 mr-1" />
                   Start Date *
                 </label>
@@ -404,12 +404,12 @@ const LeaveForm: React.FC = () => {
                   onChange={handleInputChange}
                   required
                   min={new Date().toISOString().split('T')[0]}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   End Date *
                 </label>
                 <input
@@ -419,12 +419,12 @@ const LeaveForm: React.FC = () => {
                   onChange={handleInputChange}
                   required
                   min={getMinEndDate()}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <ClockIcon className="inline h-4 w-4 mr-1" />
                   Business Days
                 </label>
@@ -435,28 +435,28 @@ const LeaveForm: React.FC = () => {
             </div>
 
             {/* Date Summary */}
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <h4 className="font-medium text-gray-900 mb-2">Leave Summary</h4>
+            <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+              <h4 className="font-medium text-gray-900 dark:text-white mb-2">Leave Summary</h4>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
                 <div>
-                  <span className="text-gray-600">Start:</span>
+                  <span className="text-gray-600 dark:text-gray-300">Start:</span>
                   <div className="font-medium">
                     {formData.start_date ? new Date(formData.start_date).toLocaleDateString('id-ID') : 'Not set'}
                   </div>
                 </div>
                 <div>
-                  <span className="text-gray-600">End:</span>
+                  <span className="text-gray-600 dark:text-gray-300">End:</span>
                   <div className="font-medium">
                     {formData.end_date ? new Date(formData.end_date).toLocaleDateString('id-ID') : 'Not set'}
                   </div>
                 </div>
                 <div>
-                  <span className="text-gray-600">Duration:</span>
+                  <span className="text-gray-600 dark:text-gray-300">Duration:</span>
                   <div className="font-medium text-blue-600">{formData.total_days} business days</div>
                 </div>
                 <div>
-                  <span className="text-gray-600">Calendar Days:</span>
-                  <div className="font-medium text-gray-600">{getDateDifference()} total days</div>
+                  <span className="text-gray-600 dark:text-gray-300">Calendar Days:</span>
+                  <div className="font-medium text-gray-600 dark:text-gray-300">{getDateDifference()} total days</div>
                 </div>
               </div>
             </div>
@@ -464,12 +464,12 @@ const LeaveForm: React.FC = () => {
 
           {/* Reason and Notes */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
               Leave Details
             </h3>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 <DocumentTextIcon className="inline h-4 w-4 mr-1" />
                 Reason for Leave *
               </label>
@@ -479,13 +479,13 @@ const LeaveForm: React.FC = () => {
                 onChange={handleInputChange}
                 required
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Please provide a detailed reason for your leave request..."
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Additional Notes
               </label>
               <textarea
@@ -493,7 +493,7 @@ const LeaveForm: React.FC = () => {
                 value={formData.notes}
                 onChange={handleInputChange}
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Any additional information or special instructions..."
               />
             </div>
@@ -528,11 +528,11 @@ const LeaveForm: React.FC = () => {
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200">
+          <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
             <button
               type="button"
               onClick={() => navigate('/app/hr/leaves')}
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+              className="px-4 py-2 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
             >
               <X className="inline h-4 w-4 mr-2" />{t('common.cancel')}</button>
             <button

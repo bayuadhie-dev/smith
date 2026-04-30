@@ -417,15 +417,15 @@ const navigate = useNavigate()
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/app/production/work-orders')}
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
           >
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
               {isEdit ? '✏️ Edit Work Order' : '📋 Create Work Order'}
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-gray-600 dark:text-gray-300 mt-1">
               {isEdit ? 'Update work order details' : 'Schedule production for a specific product'}
             </p>
           </div>
@@ -438,7 +438,7 @@ const navigate = useNavigate()
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Product Selection */}
             <div className="lg:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Product *
               </label>
               <Controller
@@ -506,8 +506,8 @@ const navigate = useNavigate()
             {selectedProduct && (
               <div className="lg:col-span-2">
                 {loadingBOM ? (
-                  <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                    <p className="text-sm text-gray-600">Loading BOM information...</p>
+                  <div className="p-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <p className="text-sm text-gray-600 dark:text-gray-300">Loading BOM information...</p>
                   </div>
                 ) : bom ? (
                   <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
@@ -562,25 +562,25 @@ const navigate = useNavigate()
                         <h5 className="text-sm font-medium text-green-900 mb-2">
                           Material Requirements {selectedQuantity > 0 && `(for ${selectedQuantity} ${selectedProduct.batch_uom})`}
                         </h5>
-                        <div className="bg-white rounded-lg overflow-hidden">
-                          <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
+                        <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden">
+                          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead className="bg-gray-50 dark:bg-gray-900">
                               <tr>
-                                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Material</th>
-                                <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">Per Batch</th>
+                                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Material</th>
+                                <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Per Batch</th>
                                 {selectedQuantity > 0 && (
-                                  <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">Required</th>
+                                  <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Required</th>
                                 )}
-                                <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">Scrap %</th>
-                                <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">Cost</th>
+                                <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Scrap %</th>
+                                <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Cost</th>
                               </tr>
                             </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
+                            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                               {bom.items.map((item) => (
-                                <tr key={item.id} className="hover:bg-gray-50">
+                                <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                                   <td className="px-3 py-2 text-sm">
-                                    <div className="font-medium text-gray-900">{item.item_name}</div>
-                                    <div className="text-gray-500 text-xs">{item.item_code}</div>
+                                    <div className="font-medium text-gray-900 dark:text-white">{item.item_name}</div>
+                                    <div className="text-gray-500 dark:text-gray-400 text-xs">{item.item_code}</div>
                                   </td>
                                   <td className="px-3 py-2 text-sm text-right">
                                     {formatNumber(item.quantity)} {item.uom}
@@ -643,7 +643,7 @@ const navigate = useNavigate()
                         {/* MRP Shortage Analysis */}
                         {selectedQuantity > 0 && totalCartonsNeeded > 0 && (
                           <div className="mt-4 border-t border-green-300 pt-4">
-                            <h5 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                            <h5 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
                               <svg className="h-5 w-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                               </svg>
@@ -651,7 +651,7 @@ const navigate = useNavigate()
                             </h5>
                             
                             {loadingShortage ? (
-                              <div className="flex items-center gap-2 text-sm text-gray-600">
+                              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
                                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
                                 Checking material availability...
                               </div>
@@ -675,10 +675,10 @@ const navigate = useNavigate()
                                             {item.is_critical && (
                                               <span className="ml-2 px-1.5 py-0.5 bg-red-600 text-white text-xs rounded">CRITICAL</span>
                                             )}
-                                            <p className="text-xs text-gray-600">{item.item_code}</p>
+                                            <p className="text-xs text-gray-600 dark:text-gray-300">{item.item_code}</p>
                                           </div>
                                           <div className="text-right">
-                                            <p className="text-xs text-gray-600">
+                                            <p className="text-xs text-gray-600 dark:text-gray-300">
                                               Need: {formatNumber(item.required_quantity, 2)} | Have: {formatNumber(item.available_quantity, 2)}
                                             </p>
                                             <p className={`font-bold ${item.is_critical ? 'text-red-700' : 'text-orange-700'}`}>
@@ -687,7 +687,7 @@ const navigate = useNavigate()
                                           </div>
                                         </div>
                                         {item.supplier_name && (
-                                          <p className="text-xs text-gray-500 mt-1">
+                                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                             Supplier: {item.supplier_name} | Lead Time: {item.lead_time_days} days
                                           </p>
                                         )}
@@ -738,7 +738,7 @@ const navigate = useNavigate()
             {/* Quantity with Calculator */}
             <div className="lg:col-span-2">
               <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
                   Quantity to Produce *
                 </label>
                 <button
@@ -771,7 +771,7 @@ const navigate = useNavigate()
                         type="number"
                         value={targetCalc.machine_speed}
                         onChange={(e) => setTargetCalc(prev => ({ ...prev, machine_speed: e.target.value }))}
-                        className="w-full px-2 py-1.5 text-sm border border-green-300 rounded focus:ring-1 focus:ring-green-500 focus:border-green-500 bg-white"
+                        className="w-full px-2 py-1.5 text-sm border border-green-300 rounded focus:ring-1 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-800"
                         placeholder="0"
                         min="0"
                         step="0.1"
@@ -785,7 +785,7 @@ const navigate = useNavigate()
                         type="number"
                         value={targetCalc.minutes_per_hour}
                         onChange={(e) => setTargetCalc(prev => ({ ...prev, minutes_per_hour: e.target.value }))}
-                        className="w-full px-2 py-1.5 text-sm border border-green-300 rounded focus:ring-1 focus:ring-green-500 focus:border-green-500 bg-white"
+                        className="w-full px-2 py-1.5 text-sm border border-green-300 rounded focus:ring-1 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-800"
                         placeholder="60"
                         min="1"
                         max="60"
@@ -799,7 +799,7 @@ const navigate = useNavigate()
                         type="number"
                         value={targetCalc.work_hours}
                         onChange={(e) => setTargetCalc(prev => ({ ...prev, work_hours: e.target.value }))}
-                        className="w-full px-2 py-1.5 text-sm border border-green-300 rounded focus:ring-1 focus:ring-green-500 focus:border-green-500 bg-white"
+                        className="w-full px-2 py-1.5 text-sm border border-green-300 rounded focus:ring-1 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-800"
                         placeholder="8.5"
                         min="0"
                         step="0.5"
@@ -813,7 +813,7 @@ const navigate = useNavigate()
                         type="number"
                         value={targetCalc.efficiency}
                         onChange={(e) => setTargetCalc(prev => ({ ...prev, efficiency: e.target.value }))}
-                        className="w-full px-2 py-1.5 text-sm border border-green-300 rounded focus:ring-1 focus:ring-green-500 focus:border-green-500 bg-white"
+                        className="w-full px-2 py-1.5 text-sm border border-green-300 rounded focus:ring-1 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-800"
                         placeholder="60"
                         min="0"
                         max="100"
@@ -827,7 +827,7 @@ const navigate = useNavigate()
                         type="number"
                         value={targetCalc.pack_per_karton}
                         onChange={(e) => setTargetCalc(prev => ({ ...prev, pack_per_karton: e.target.value }))}
-                        className="w-full px-2 py-1.5 text-sm border border-green-300 rounded focus:ring-1 focus:ring-green-500 focus:border-green-500 bg-white"
+                        className="w-full px-2 py-1.5 text-sm border border-green-300 rounded focus:ring-1 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-800"
                         placeholder="1"
                         min="1"
                       />
@@ -847,7 +847,7 @@ const navigate = useNavigate()
                     const targetKarton = packPerKarton > 0 ? Math.round((targetPack / packPerKarton) * 100) / 100 : 0;
                     
                     return (
-                      <div className="bg-white rounded-lg p-3 border border-green-200">
+                      <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-green-200">
                         <div className="text-xs text-green-600 mb-2">
                           Formula: Speed × {minutesPerHour} menit × {workHours} jam × {efficiency}%
                         </div>
@@ -893,13 +893,13 @@ const navigate = useNavigate()
                     <p className="mt-1 text-sm text-red-600">{errors.quantity.message}</p>
                   )}
                   {selectedProduct && (
-                    <p className="mt-1 text-xs text-gray-500">Unit: PCS (Pack)</p>
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Unit: PCS (Pack)</p>
                   )}
                 </div>
                 
                 {/* Pack per Karton */}
                 <div className="w-32">
-                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                     Pack/Karton
                   </label>
                   <input
@@ -914,7 +914,7 @@ const navigate = useNavigate()
                     className="input text-center"
                     placeholder="1"
                   />
-                  <p className="mt-1 text-xs text-gray-500">dari BOM</p>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">dari BOM</p>
                 </div>
               </div>
               
@@ -935,7 +935,7 @@ const navigate = useNavigate()
 
             {/* Priority */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               </label>
               <select {...register('priority')} className="input">
                 {priorities.map((priority) => (
@@ -955,7 +955,7 @@ const navigate = useNavigate()
 
             {/* Machine */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Assigned Machine
               </label>
               <select {...register('machine_id')} className="input">
@@ -970,7 +970,7 @@ const navigate = useNavigate()
 
             {/* Supervisor */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Production Supervisor
               </label>
               <select {...register('supervisor_id')} className="input">
@@ -988,13 +988,13 @@ const navigate = useNavigate()
         {/* Scheduling */}
         <div className="card p-6">
           <div className="flex items-center gap-2 mb-4">
-            <CalendarDaysIcon className="h-5 w-5 text-gray-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Production Schedule</h3>
+            <CalendarDaysIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Production Schedule</h3>
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Scheduled Start Date
               </label>
               <input
@@ -1005,7 +1005,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Scheduled End Date
               </label>
               <input
@@ -1016,7 +1016,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Jumlah Shift per Hari
               </label>
               <select {...register('shift_count')} className="input">
@@ -1024,7 +1024,7 @@ const navigate = useNavigate()
                 <option value={2}>2 Shift (06:30 - 23:00)</option>
                 <option value={3}>3 Shift (24 Jam)</option>
               </select>
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                 Pilih berapa shift yang akan digunakan per hari
               </p>
             </div>
@@ -1033,7 +1033,7 @@ const navigate = useNavigate()
 
         {/* Notes */}
         <div className="card p-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
             Notes & Special Instructions
           </label>
           <textarea

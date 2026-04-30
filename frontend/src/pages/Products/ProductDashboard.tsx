@@ -178,8 +178,8 @@ const ProductDashboard: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Product Dashboard</h1>
-          <p className="text-gray-600 mt-1">Comprehensive overview of your product portfolio</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Product Dashboard</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Comprehensive overview of your product portfolio</p>
         </div>
         <div className="flex space-x-3">
           <Link
@@ -200,14 +200,14 @@ const ProductDashboard: React.FC = () => {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="p-2 bg-blue-100 rounded-lg">
               <CubeIcon className="h-6 w-6 text-blue-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Products</p>
-              <p className="text-2xl font-bold text-gray-900">{formatNumber(kpis.total_products ?? 0)}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Products</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatNumber(kpis.total_products ?? 0)}</p>
             </div>
           </div>
           <div className="mt-4 flex items-center text-sm">
@@ -217,14 +217,14 @@ const ProductDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="p-2 bg-green-100 rounded-lg">
               <TagIcon className="h-6 w-6 text-green-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Categories</p>
-              <p className="text-2xl font-bold text-gray-900">{formatNumber(kpis.total_categories ?? 0)}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Categories</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatNumber(kpis.total_categories ?? 0)}</p>
             </div>
           </div>
           <div className="mt-4">
@@ -234,14 +234,14 @@ const ProductDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="p-2 bg-yellow-100 rounded-lg">
               <ExclamationTriangleIcon className="h-6 w-6 text-yellow-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Stock Alerts</p>
-              <p className="text-2xl font-bold text-gray-900">{formatNumber((kpis.low_stock_products ?? 0) + (kpis.out_of_stock_products ?? 0))}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Stock Alerts</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatNumber((kpis.low_stock_products ?? 0) + (kpis.out_of_stock_products ?? 0))}</p>
             </div>
           </div>
           <div className="mt-4 flex items-center text-sm">
@@ -251,18 +251,18 @@ const ProductDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="p-2 bg-purple-100 rounded-lg">
               <BanknotesIcon className="h-6 w-6 text-purple-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Portfolio Value</p>
-              <p className="text-2xl font-bold text-gray-900">{formatRupiah(kpis.total_value ?? 0)}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Portfolio Value</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatRupiah(kpis.total_value ?? 0)}</p>
             </div>
           </div>
           <div className="mt-4">
-            <span className="text-sm text-gray-600">Avg Price: {formatRupiah(kpis.avg_price ?? 0)}</span>
+            <span className="text-sm text-gray-600 dark:text-gray-300">Avg Price: {formatRupiah(kpis.avg_price ?? 0)}</span>
           </div>
         </div>
       </div>
@@ -270,8 +270,8 @@ const ProductDashboard: React.FC = () => {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top Products Chart */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Selling Products</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Top Selling Products</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={topProducts}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -287,8 +287,8 @@ const ProductDashboard: React.FC = () => {
         </div>
 
         {/* Category Distribution */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Products by Category</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Products by Category</h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
@@ -314,19 +314,19 @@ const ProductDashboard: React.FC = () => {
       {/* Bottom Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Stock Alerts */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Stock Alerts</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Stock Alerts</h3>
             <Link to="/app/warehouse/inventory" className="text-sm text-blue-600 hover:text-blue-800">
               View All →
             </Link>
           </div>
           <div className="space-y-3">
             {stockAlerts.map((alert) => (
-              <div key={alert.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div key={alert.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
                 <div className="flex-1">
-                  <p className="font-medium text-gray-900">{alert.product_name}</p>
-                  <p className="text-sm text-gray-600">
+                  <p className="font-medium text-gray-900 dark:text-white">{alert.product_name}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
                     Stock: {alert.current_stock} / Min: {alert.min_stock}
                   </p>
                 </div>
@@ -339,8 +339,8 @@ const ProductDashboard: React.FC = () => {
         </div>
 
         {/* Product Trends */}
-        <div className="lg:col-span-2 bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Product Trends</h3>
+        <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Product Trends</h3>
           <ResponsiveContainer width="100%" height={250}>
             <LineChart data={trendData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -356,56 +356,56 @@ const ProductDashboard: React.FC = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <Link
             to="/app/products/list"
-            className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-colors"
+            className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-colors"
           >
             <div className="text-center">
               <ListBulletIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-              <span className="text-sm font-medium text-gray-600">Product List</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Product List</span>
             </div>
           </Link>
           
           <Link
             to="/app/products/new"
-            className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
+            className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
           >
             <div className="text-center">
               <PlusIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-              <span className="text-sm font-medium text-gray-600">Add Product</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Add Product</span>
             </div>
           </Link>
           
           <Link
             to="/app/products/categories"
-            className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors"
+            className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors"
           >
             <div className="text-center">
               <TagIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-              <span className="text-sm font-medium text-gray-600">Manage Categories</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Manage Categories</span>
             </div>
           </Link>
           
           <Link
             to="/app/products/bom"
-            className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors"
+            className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors"
           >
             <div className="text-center">
               <CubeIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-              <span className="text-sm font-medium text-gray-600">{t('products.bom.title')}</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">{t('products.bom.title')}</span>
             </div>
           </Link>
           
           <Link
             to="/app/products/analytics"
-            className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-colors"
+            className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-colors"
           >
             <div className="text-center">
               <ChartBarIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-              <span className="text-sm font-medium text-gray-600">Analytics</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Analytics</span>
             </div>
           </Link>
         </div>

@@ -207,15 +207,15 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-gray-900">
+        <div className="sticky top-0 bg-white dark:bg-gray-800 border-b px-6 py-4 flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
             {product ? 'Edit Produk' : 'Tambah Produk Baru'}
           </h2>
           <button
             onClick={onCancel}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 hover:text-gray-600 dark:text-gray-300 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -227,12 +227,12 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
             
             {/* Basic Information */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium text-gray-900 border-b pb-2">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b pb-2">
                 Informasi Dasar
               </h3>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Kode Produk *
                 </label>
                 <input
@@ -250,7 +250,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Nama Produk *
                 </label>
                 <input
@@ -268,13 +268,13 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Status Aktif
                 </label>
                 <select
                   value={formData.is_active ? 'true' : 'false'}
                   onChange={(e) => handleInputChange('is_active', e.target.value === 'true')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="true">Aktif</option>
                   <option value="false">Tidak Aktif</option>
@@ -282,13 +282,13 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 </label>
                 <textarea
                   value={formData.notes || ''}
                   onChange={(e) => handleInputChange('notes', e.target.value)}
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Catatan tambahan..."
                 />
               </div>
@@ -296,11 +296,11 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
 
             {/* Specifications */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium text-gray-900 border-b pb-2">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b pb-2">
               </h3>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Gramasi (GSM)
                 </label>
                 <input
@@ -308,13 +308,13 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                   step="0.1"
                   value={formData.gramasi || ''}
                   onChange={(e) => handleInputChange('gramasi', parseFloat(e.target.value) || undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: 40"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   CD (Lebar Kain - mm)
                 </label>
                 <input
@@ -322,13 +322,13 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                   step="0.1"
                   value={formData.cd || ''}
                   onChange={(e) => handleInputChange('cd', parseFloat(e.target.value) || undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: 150"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   MD (Panjang Kain - mm)
                 </label>
                 <input
@@ -336,13 +336,13 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                   step="0.1"
                   value={formData.md || ''}
                   onChange={(e) => handleInputChange('md', parseFloat(e.target.value) || undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: 200"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Berat Kering (g/pack)
                 </label>
                 <input
@@ -350,7 +350,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                   step="0.01"
                   value={formData.berat_kering || ''}
                   onChange={(e) => handleInputChange('berat_kering', parseFloat(e.target.value) || undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: 0.864"
                 />
               </div>
@@ -358,37 +358,37 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
 
             {/* Packaging */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium text-gray-900 border-b pb-2">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b pb-2">
               </h3>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Sheet per Pack
                 </label>
                 <input
                   type="number"
                   value={formData.sheet_per_pack || ''}
                   onChange={(e) => handleInputChange('sheet_per_pack', parseInt(e.target.value) || undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: 10"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Pack per Karton
                 </label>
                 <input
                   type="number"
                   value={formData.pack_per_karton || ''}
                   onChange={(e) => handleInputChange('pack_per_karton', parseInt(e.target.value) || undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: 72"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Volume per Batch
                 </label>
                 <input
@@ -396,13 +396,13 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                   step="0.1"
                   value={formData.ukuran_batch_vol || ''}
                   onChange={(e) => handleInputChange('ukuran_batch_vol', parseFloat(e.target.value) || undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: 712.8"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Karton per Batch
                 </label>
                 <input
@@ -410,7 +410,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                   step="0.1"
                   value={formData.ukuran_batch_ctn || ''}
                   onChange={(e) => handleInputChange('ukuran_batch_ctn', parseFloat(e.target.value) || undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: 300"
                 />
               </div>
@@ -418,18 +418,18 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
 
             {/* Material Composition */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium text-gray-900 border-b pb-2">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b pb-2">
                 Komposisi Material
               </h3>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Jenis Spunlace
                 </label>
                 <select
                   value={formData.spunlace || ''}
                   onChange={(e) => handleInputChange('spunlace', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Pilih Jenis Spunlace</option>
                   {spunlaceOptions.map(option => (
@@ -439,7 +439,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Rayon (%)
                 </label>
                 <input
@@ -447,13 +447,13 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                   step="0.1"
                   value={formData.rayon || ''}
                   onChange={(e) => handleInputChange('rayon', parseFloat(e.target.value) || undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: 50"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Polyester (%)
                 </label>
                 <input
@@ -461,13 +461,13 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                   step="0.1"
                   value={formData.polyester || ''}
                   onChange={(e) => handleInputChange('polyester', parseFloat(e.target.value) || undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: 50"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   ES (%)
                 </label>
                 <input
@@ -475,7 +475,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                   step="0.1"
                   value={formData.es || ''}
                   onChange={(e) => handleInputChange('es', parseFloat(e.target.value) || undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: 0"
                 />
               </div>
@@ -487,12 +487,12 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
 
             {/* Production Process */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium text-gray-900 border-b pb-2">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b pb-2">
                 Proses Produksi
               </h3>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Slitting (cm)
                 </label>
                 <input
@@ -500,13 +500,13 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                   step="0.1"
                   value={formData.slitting_cm || ''}
                   onChange={(e) => handleInputChange('slitting_cm', parseFloat(e.target.value) || undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: 30"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Lebar MR Nett (cm)
                 </label>
                 <input
@@ -514,13 +514,13 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                   step="0.1"
                   value={formData.lebar_mr_net_cm || ''}
                   onChange={(e) => handleInputChange('lebar_mr_net_cm', parseFloat(e.target.value) || undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: 150"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Lebar MR Gross (cm)
                 </label>
                 <input
@@ -528,32 +528,32 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                   step="0.1"
                   value={formData.lebar_mr_gross_cm || ''}
                   onChange={(e) => handleInputChange('lebar_mr_gross_cm', parseFloat(e.target.value) || undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: 160"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Keterangan Slitting
                 </label>
                 <input
                   type="text"
                   value={formData.keterangan_slitting || ''}
                   onChange={(e) => handleInputChange('keterangan_slitting', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: 5 REPEAT"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   No. Mesin EPD
                 </label>
                 <select
                   value={formData.no_mesin_epd || ''}
                   onChange={(e) => handleInputChange('no_mesin_epd', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   disabled={loadingMachines}
                 >
                   <option value="">-- Pilih Mesin --</option>
@@ -567,12 +567,12 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                   }
                 </select>
                 {loadingMachines && (
-                  <p className="text-xs text-gray-500 mt-1">Loading machines...</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Loading machines...</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Speed EPD (pack/menit)
                 </label>
                 <input
@@ -580,19 +580,19 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                   step="0.1"
                   value={formData.speed_epd_pack_menit || ''}
                   onChange={(e) => handleInputChange('speed_epd_pack_menit', parseFloat(e.target.value) || undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: 60"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Process Produksi
                 </label>
                 <select
                   value={formData.process_produksi || ''}
                   onChange={(e) => handleInputChange('process_produksi', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Pilih Process Produksi</option>
                   {processOptions.map(option => (
@@ -604,12 +604,12 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
 
             {/* Material Requirements */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium text-gray-900 border-b pb-2">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b pb-2">
                 Kebutuhan Material
               </h3>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Meter Kain
                 </label>
                 <input
@@ -617,13 +617,13 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                   step="0.1"
                   value={formData.meter_kain || ''}
                   onChange={(e) => handleInputChange('meter_kain', parseFloat(e.target.value) || undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: 14.4"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   KG Kain
                 </label>
                 <input
@@ -631,13 +631,13 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                   step="0.001"
                   value={formData.kg_kain || ''}
                   onChange={(e) => handleInputChange('kg_kain', parseFloat(e.target.value) || undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: 0.922"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Kebutuhan Rayon (kg)
                 </label>
                 <input
@@ -645,13 +645,13 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                   step="0.001"
                   value={formData.kebutuhan_rayon_kg || ''}
                   onChange={(e) => handleInputChange('kebutuhan_rayon_kg', parseFloat(e.target.value) || undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: 0.507"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Kebutuhan Polyester (kg)
                 </label>
                 <input
@@ -659,13 +659,13 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                   step="0.001"
                   value={formData.kebutuhan_polyester_kg || ''}
                   onChange={(e) => handleInputChange('kebutuhan_polyester_kg', parseFloat(e.target.value) || undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: 0.461"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Kebutuhan ES (kg)
                 </label>
                 <input
@@ -673,13 +673,13 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                   step="0.001"
                   value={formData.kebutuhan_es_kg || ''}
                   onChange={(e) => handleInputChange('kebutuhan_es_kg', parseFloat(e.target.value) || undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: 0"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Ratio (mm)
                 </label>
                 <input
@@ -687,13 +687,13 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                   step="0.01"
                   value={formData.ratio || ''}
                   onChange={(e) => handleInputChange('ratio', parseFloat(e.target.value) || undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: 2.75"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Ingredient (mm)
                 </label>
                 <input
@@ -701,7 +701,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                   step="0.01"
                   value={formData.ingredient || ''}
                   onChange={(e) => handleInputChange('ingredient', parseFloat(e.target.value) || undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: 2.376"
                 />
               </div>
@@ -709,58 +709,58 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
 
             {/* Roll Information */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium text-gray-900 border-b pb-2">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b pb-2">
                 Informasi Roll
               </h3>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Kode Jumbo Roll
                 </label>
                 <input
                   type="text"
                   value={formData.kode_jumbo_roll || ''}
                   onChange={(e) => handleInputChange('kode_jumbo_roll', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: 3020201002"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Nama Jumbo Roll
                 </label>
                 <input
                   type="text"
                   value={formData.nama_jumbo_roll || ''}
                   onChange={(e) => handleInputChange('nama_jumbo_roll', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: JR FN 45-76 H 50% R/50%P 30 CM"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Kode Main Roll
                 </label>
                 <input
                   type="text"
                   value={formData.kode_main_roll || ''}
                   onChange={(e) => handleInputChange('kode_main_roll', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: 3010302001"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Nama Main Roll
                 </label>
                 <input
                   type="text"
                   value={formData.nama_main_roll || ''}
                   onChange={(e) => handleInputChange('nama_main_roll', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: MR FN 40-25 D 50%R/50%P 160 CM"
                 />
               </div>
@@ -768,12 +768,12 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
 
             {/* Mixing Process */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium text-gray-900 border-b pb-2">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b pb-2">
                 Proses Mixing
               </h3>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Kapasitas Mixing (kg)
                 </label>
                 <input
@@ -781,13 +781,13 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                   step="0.1"
                   value={formData.kapasitas_mixing_kg || ''}
                   onChange={(e) => handleInputChange('kapasitas_mixing_kg', parseFloat(e.target.value) || undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: 2060"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Actual Mixing (kg)
                 </label>
                 <input
@@ -795,13 +795,13 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                   step="0.1"
                   value={formData.actual_mixing_kg || ''}
                   onChange={(e) => handleInputChange('actual_mixing_kg', parseFloat(e.target.value) || undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: 1930"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Dosing (kg)
                 </label>
                 <input
@@ -809,7 +809,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                   step="0.1"
                   value={formData.dosing_kg || ''}
                   onChange={(e) => handleInputChange('dosing_kg', parseFloat(e.target.value) || undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: 900"
                 />
               </div>
@@ -821,7 +821,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
             <button
               type="button"
               onClick={onCancel}
-              className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+              className="px-4 py-2 text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:bg-gray-700 rounded-md transition-colors"
             >
             </button>
             <button

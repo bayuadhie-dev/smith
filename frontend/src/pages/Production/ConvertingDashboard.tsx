@@ -130,7 +130,7 @@ const ConvertingDashboard: React.FC = () => {
           </button>
           <button
             onClick={fetchData}
-            className="p-2 bg-white rounded-lg hover:bg-slate-50 border"
+            className="p-2 bg-white dark:bg-gray-800 rounded-lg hover:bg-slate-50 border"
           >
             <ArrowPathIcon className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
           </button>
@@ -139,16 +139,16 @@ const ConvertingDashboard: React.FC = () => {
 
       {/* Date Navigation */}
       <div className="flex items-center justify-center gap-4 mb-6">
-        <button onClick={() => changeDate(-1)} className="p-2 bg-white rounded-lg hover:bg-slate-50 border">
+        <button onClick={() => changeDate(-1)} className="p-2 bg-white dark:bg-gray-800 rounded-lg hover:bg-slate-50 border">
           <ChevronLeftIcon className="h-5 w-5" />
         </button>
         <input
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          className="px-4 py-2 bg-white border rounded-lg font-medium"
+          className="px-4 py-2 bg-white dark:bg-gray-800 border rounded-lg font-medium"
         />
-        <button onClick={() => changeDate(1)} className="p-2 bg-white rounded-lg hover:bg-slate-50 border">
+        <button onClick={() => changeDate(1)} className="p-2 bg-white dark:bg-gray-800 rounded-lg hover:bg-slate-50 border">
           <ChevronRightIcon className="h-5 w-5" />
         </button>
       </div>
@@ -156,27 +156,27 @@ const ConvertingDashboard: React.FC = () => {
       {/* Summary Cards */}
       {summary && (
         <div className="grid grid-cols-5 gap-4 mb-6">
-          <div className="bg-white rounded-xl p-4 shadow-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
             <p className="text-sm text-slate-500">Total Mesin</p>
             <p className="text-2xl font-bold text-slate-800">{summary.total_machines}</p>
             <p className="text-xs text-green-600">{summary.active_machines} aktif</p>
           </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
             <p className="text-sm text-slate-500">Total Output</p>
             <p className="text-2xl font-bold text-blue-600">{summary.total_output.toLocaleString()}</p>
             <p className="text-xs text-slate-500">pcs</p>
           </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
             <p className="text-sm text-slate-500">Grade A</p>
             <p className="text-2xl font-bold text-green-600">{summary.total_good.toLocaleString()}</p>
             <p className="text-xs text-slate-500">pcs</p>
           </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
             <p className="text-sm text-slate-500">Reject</p>
             <p className="text-2xl font-bold text-red-600">{summary.total_reject.toLocaleString()}</p>
             <p className="text-xs text-slate-500">pcs</p>
           </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
             <p className="text-sm text-slate-500">Quality Rate</p>
             <p className={`text-2xl font-bold ${summary.quality_rate >= 95 ? 'text-green-600' : 'text-yellow-600'}`}>
               {summary.quality_rate}%
@@ -204,7 +204,7 @@ const ConvertingDashboard: React.FC = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {typeMachines.map((machine) => (
-              <div key={machine.id} className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <div key={machine.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
                 {/* Machine Header */}
                 <div className="p-4 border-b bg-slate-50">
                   <div className="flex items-center justify-between">
@@ -282,7 +282,7 @@ const ConvertingDashboard: React.FC = () => {
 
       {/* Empty State */}
       {!loading && machines.length === 0 && (
-        <div className="bg-white rounded-xl shadow-sm p-12 text-center">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-12 text-center">
           <CogIcon className="h-12 w-12 mx-auto text-slate-300 mb-4" />
           <h3 className="text-lg font-semibold text-slate-600 mb-2">Belum ada mesin converting</h3>
           <p className="text-slate-500 mb-4">Klik tombol di bawah untuk menambahkan mesin default</p>

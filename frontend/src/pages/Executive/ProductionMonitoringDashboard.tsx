@@ -84,7 +84,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
   }, [data]);
 
   if (loading) return <div className="flex items-center justify-center h-96"><LoadingSpinner /></div>;
-  if (!data) return <div className="p-6 text-center text-gray-500">Tidak ada data tersedia</div>;
+  if (!data) return <div className="p-6 text-center text-gray-500 dark:text-gray-400">Tidak ada data tersedia</div>;
 
   const { summary, period } = data;
   const isCritical = summary.achievement_pct < 50;
@@ -99,7 +99,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
   ];
 
   return (
-    <div className="p-4 md:p-6 space-y-5 bg-gray-50 min-h-screen">
+    <div className="p-4 md:p-6 space-y-5 bg-gray-50 dark:bg-gray-900 min-h-screen">
       {/* HEADER */}
       <div className="bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 rounded-2xl p-5 text-white shadow-xl">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -113,7 +113,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <div className="flex bg-white/20 rounded-lg p-0.5">
+            <div className="flex bg-white dark:bg-gray-800/20 rounded-lg p-0.5">
               <button onClick={() => { setViewMode('monthly'); setWeekNumber(0); }}
                 className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${viewMode === 'monthly' ? 'bg-white text-blue-700' : 'text-white hover:bg-white/10'}`}>Monthly</button>
               <button onClick={() => setViewMode('weekly')}
@@ -121,18 +121,18 @@ const ProductionMonitoringDashboard: React.FC = () => {
             </div>
             {viewMode === 'weekly' && period.weeks && (
               <select value={weekNumber} onChange={e => setWeekNumber(+e.target.value)}
-                className="px-3 py-1.5 bg-white/20 border border-white/30 rounded-lg text-white text-sm focus:outline-none">
-                <option value={0} className="text-gray-900">Semua Week</option>
-                {period.weeks.map((w: any) => <option key={w.week} value={w.week} className="text-gray-900">{w.label}</option>)}
+                className="px-3 py-1.5 bg-white dark:bg-gray-800/20 border border-white/30 rounded-lg text-white text-sm focus:outline-none">
+                <option value={0} className="text-gray-900 dark:text-white">Semua Week</option>
+                {period.weeks.map((w: any) => <option key={w.week} value={w.week} className="text-gray-900 dark:text-white">{w.label}</option>)}
               </select>
             )}
             <select value={month} onChange={e => setMonth(+e.target.value)}
-              className="px-3 py-1.5 bg-white/20 border border-white/30 rounded-lg text-white text-sm focus:outline-none">
-              {MONTHS.map(m => <option key={m.value} value={m.value} className="text-gray-900">{m.label}</option>)}
+              className="px-3 py-1.5 bg-white dark:bg-gray-800/20 border border-white/30 rounded-lg text-white text-sm focus:outline-none">
+              {MONTHS.map(m => <option key={m.value} value={m.value} className="text-gray-900 dark:text-white">{m.label}</option>)}
             </select>
             <select value={year} onChange={e => setYear(+e.target.value)}
-              className="px-3 py-1.5 bg-white/20 border border-white/30 rounded-lg text-white text-sm focus:outline-none">
-              {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y} className="text-gray-900">{y}</option>)}
+              className="px-3 py-1.5 bg-white dark:bg-gray-800/20 border border-white/30 rounded-lg text-white text-sm focus:outline-none">
+              {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y} className="text-gray-900 dark:text-white">{y}</option>)}
             </select>
           </div>
         </div>
@@ -141,21 +141,21 @@ const ProductionMonitoringDashboard: React.FC = () => {
       {/* KPI CARDS */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         {/* 1. TARGET */}
-        <div className="bg-white rounded-xl p-4 shadow-lg border">
-          <p className="text-xs text-gray-500 font-medium">Target Bulanan</p>
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg border">
+          <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Target Bulanan</p>
           <p className="text-xl font-bold text-blue-600">{fmtNum(summary.target_ctn)} ctn</p>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             Per hari: <span className="font-semibold text-blue-500">{fmtNum(summary.daily_target_ctn || 0)} ctn</span>
           </p>
           <p className="text-[10px] text-gray-400">({summary.total_working_days || 22} hari kerja/bulan)</p>
         </div>
         {/* 2. GAP + Achievement % */}
-        <div className="bg-white rounded-xl p-4 shadow-lg border">
-          <p className="text-xs text-gray-500 font-medium">Gap dari Target</p>
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg border">
+          <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Gap dari Target</p>
           <p className={`text-xl font-bold ${summary.gap_ctn > 0 ? 'text-red-600' : 'text-green-600'}`}>
             {summary.gap_ctn > 0 ? '-' : '+'}{fmtNum(Math.abs(Math.round(summary.gap_ctn)))} ctn
           </p>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             Tercapai: <span className={`font-semibold ${summary.achievement_pct >= 80 ? 'text-green-600' : summary.achievement_pct >= 50 ? 'text-yellow-600' : 'text-red-600'}`}>{summary.achievement_pct}%</span> dari target
           </p>
           <p className="text-[10px] text-gray-400">Aktual {fmtNum(Math.round(summary.actual_ctn))} ctn &bull; Hari {summary.working_days}/{summary.total_working_days || 22}</p>
@@ -168,15 +168,15 @@ const ProductionMonitoringDashboard: React.FC = () => {
             Seharusnya: {summary.expected_achievement_pct || 0}% (hari ke-{summary.working_days})
           </p>
           {summary.is_behind && (
-            <div className="mt-1 bg-white/20 rounded px-1.5 py-0.5 inline-flex items-center gap-1">
+            <div className="mt-1 bg-white dark:bg-gray-800/20 rounded px-1.5 py-0.5 inline-flex items-center gap-1">
               <ExclamationTriangleIcon className="h-3 w-3" />
               <span className="text-[10px] font-bold">BEHIND {summary.behind_pct}%</span>
             </div>
           )}
         </div>
         {/* 4. GRADE A/B/C */}
-        <div className="bg-white rounded-xl p-4 shadow-lg border">
-          <p className="text-xs text-gray-500 font-medium">Grade A / B / C</p>
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg border">
+          <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Grade A / B / C</p>
           <div className="flex items-baseline gap-1 mt-1">
             <span className="text-lg font-bold text-green-600">{fmtNum(summary.total_grade_a)}</span>
             <span className="text-gray-400">/</span>
@@ -184,11 +184,11 @@ const ProductionMonitoringDashboard: React.FC = () => {
             <span className="text-gray-400">/</span>
             <span className="text-sm font-semibold text-red-500">{fmtNum(summary.total_grade_c)}</span>
           </div>
-          <p className="text-xs text-gray-500 mt-1">Quality: {summary.quality_rate}% &bull; Reject: <span className="text-red-500 font-semibold">{summary.total_pcs > 0 ? ((summary.total_grade_c / summary.total_pcs) * 100).toFixed(2) : 0}%</span></p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Quality: {summary.quality_rate}% &bull; Reject: <span className="text-red-500 font-semibold">{summary.total_pcs > 0 ? ((summary.total_grade_c / summary.total_pcs) * 100).toFixed(2) : 0}%</span></p>
         </div>
         {/* 5. WAKTU (RT / DT / IDLE gabungan) */}
-        <div className="bg-white rounded-xl p-4 shadow-lg border">
-          <p className="text-xs text-gray-500 font-medium">Waktu Produksi <span className="text-gray-400">(Planned: {summary.planned_runtime_minutes > 0 ? (summary.planned_runtime_minutes / 60).toFixed(1) : 0}j)</span></p>
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg border">
+          <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Waktu Produksi <span className="text-gray-400">(Planned: {summary.planned_runtime_minutes > 0 ? (summary.planned_runtime_minutes / 60).toFixed(1) : 0}j)</span></p>
           {/* Stacked bar */}
           <div className="flex rounded-full h-3 overflow-hidden mt-2 mb-2">
             {summary.planned_runtime_minutes > 0 ? (<>
@@ -200,15 +200,15 @@ const ProductionMonitoringDashboard: React.FC = () => {
           <div className="space-y-0.5 text-[11px]">
             <div className="flex justify-between">
               <span className="text-green-600 font-medium">Runtime</span>
-              <span className="text-gray-700">{summary.runtime_hours}j <span className="text-green-600 font-semibold">({summary.planned_runtime_minutes > 0 ? (summary.runtime_minutes / summary.planned_runtime_minutes * 100).toFixed(1) : 0}%)</span></span>
+              <span className="text-gray-700 dark:text-gray-200">{summary.runtime_hours}j <span className="text-green-600 font-semibold">({summary.planned_runtime_minutes > 0 ? (summary.runtime_minutes / summary.planned_runtime_minutes * 100).toFixed(1) : 0}%)</span></span>
             </div>
             <div className="flex justify-between">
               <span className="text-red-500 font-medium">Downtime</span>
-              <span className="text-gray-700">{summary.downtime_hours}j <span className="text-red-500 font-semibold">({summary.planned_runtime_minutes > 0 ? (summary.downtime_minutes / summary.planned_runtime_minutes * 100).toFixed(1) : 0}%)</span></span>
+              <span className="text-gray-700 dark:text-gray-200">{summary.downtime_hours}j <span className="text-red-500 font-semibold">({summary.planned_runtime_minutes > 0 ? (summary.downtime_minutes / summary.planned_runtime_minutes * 100).toFixed(1) : 0}%)</span></span>
             </div>
             <div className="flex justify-between">
               <span className="text-yellow-500 font-medium">Idle</span>
-              <span className="text-gray-700">{summary.idle_time_hours}j <span className="text-yellow-500 font-semibold">({summary.planned_runtime_minutes > 0 ? (summary.idle_time_minutes / summary.planned_runtime_minutes * 100).toFixed(1) : 0}%)</span></span>
+              <span className="text-gray-700 dark:text-gray-200">{summary.idle_time_hours}j <span className="text-yellow-500 font-semibold">({summary.planned_runtime_minutes > 0 ? (summary.idle_time_minutes / summary.planned_runtime_minutes * 100).toFixed(1) : 0}%)</span></span>
             </div>
           </div>
           <p className="text-[10px] text-gray-400 mt-1">WO: {data.work_orders.completed}/{data.work_orders.total} selesai</p>
@@ -216,7 +216,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
       </div>
 
       {/* TAB NAVIGATION */}
-      <div className="flex gap-1 bg-white rounded-xl p-1 shadow border overflow-x-auto">
+      <div className="flex gap-1 bg-white dark:bg-gray-800 rounded-xl p-1 shadow border overflow-x-auto">
         {tabs.map(t => (
           <button key={t.id} onClick={() => setActiveTab(t.id as any)}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition ${activeTab === t.id ? 'bg-blue-600 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}>
@@ -240,8 +240,8 @@ const OverviewTab: React.FC<{ data: any; dailyChartData: any[]; timePieData: any
   <div className="space-y-5">
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
       {/* Daily Production Trend */}
-      <div className="bg-white rounded-xl p-5 shadow border">
-        <h3 className="text-sm font-semibold text-gray-900 mb-3">Trend Produksi Harian (pcs)</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Trend Produksi Harian (pcs)</h3>
         <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={dailyChartData}>
@@ -258,8 +258,8 @@ const OverviewTab: React.FC<{ data: any; dailyChartData: any[]; timePieData: any
         </div>
       </div>
       {/* Time Distribution */}
-      <div className="bg-white rounded-xl p-5 shadow border">
-        <h3 className="text-sm font-semibold text-gray-900 mb-3">Distribusi Waktu</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Distribusi Waktu</h3>
         <div className="h-72 flex items-center">
           {timePieData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
@@ -275,15 +275,15 @@ const OverviewTab: React.FC<{ data: any; dailyChartData: any[]; timePieData: any
         </div>
         <div className="flex justify-center gap-5 mt-2">
           {[{ l: 'Runtime', c: '#22C55E' }, { l: 'Downtime', c: '#EF4444' }, { l: 'Idle', c: '#F59E0B' }].map(x => (
-            <div key={x.l} className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full" style={{ backgroundColor: x.c }} /><span className="text-xs text-gray-600">{x.l}</span></div>
+            <div key={x.l} className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full" style={{ backgroundColor: x.c }} /><span className="text-xs text-gray-600 dark:text-gray-300">{x.l}</span></div>
           ))}
         </div>
       </div>
     </div>
 
     {/* Runtime / Downtime / Idle per Day */}
-    <div className="bg-white rounded-xl p-5 shadow border">
-      <h3 className="text-sm font-semibold text-gray-900 mb-3">Runtime / Downtime / Idle Harian (jam)</h3>
+    <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
+      <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Runtime / Downtime / Idle Harian (jam)</h3>
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={dailyChartData}>
@@ -301,12 +301,12 @@ const OverviewTab: React.FC<{ data: any; dailyChartData: any[]; timePieData: any
     </div>
 
     {/* Product Achievement Summary (top 10) */}
-    <div className="bg-white rounded-xl p-5 shadow border">
-      <h3 className="text-sm font-semibold text-gray-900 mb-3">Achievement per Produk</h3>
+    <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
+      <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Achievement per Produk</h3>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-gray-50 text-gray-600">
+            <tr className="bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300">
               <th className="px-3 py-2 text-left">Produk</th>
               <th className="px-3 py-2 text-right">Target (ctn)</th>
               <th className="px-3 py-2 text-right">Aktual (ctn)</th>
@@ -319,9 +319,9 @@ const OverviewTab: React.FC<{ data: any; dailyChartData: any[]; timePieData: any
           <tbody className="divide-y">
             {data.products.slice(0, 10).map((p: any, i: number) => (
               <tr key={i} className={`hover:bg-gray-50 ${p.achievement_pct < 50 ? 'bg-red-50/50' : ''}`}>
-                <td className="px-3 py-2 font-medium text-gray-900">{p.product_name}</td>
-                <td className="px-3 py-2 text-right text-gray-600">{fmtNum(p.target_ctn)}</td>
-                <td className="px-3 py-2 text-right text-gray-600">{fmtNum(Math.round(p.actual_ctn))}</td>
+                <td className="px-3 py-2 font-medium text-gray-900 dark:text-white">{p.product_name}</td>
+                <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">{fmtNum(p.target_ctn)}</td>
+                <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">{fmtNum(Math.round(p.actual_ctn))}</td>
                 <td className={`px-3 py-2 text-right font-medium ${p.gap_ctn > 0 ? 'text-red-600' : 'text-green-600'}`}>
                   {p.gap_ctn > 0 ? '-' : '+'}{fmtNum(Math.abs(Math.round(p.gap_ctn)))}
                 </td>
@@ -338,7 +338,7 @@ const OverviewTab: React.FC<{ data: any; dailyChartData: any[]; timePieData: any
                   </span>
                 </td>
                 <td className="px-3 py-2 w-32">
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div className={`h-2 rounded-full ${p.achievement_pct >= 80 ? 'bg-green-500' : p.achievement_pct >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`}
                       style={{ width: `${Math.min(p.achievement_pct, 100)}%` }} />
                   </div>
@@ -361,16 +361,16 @@ const DailyTab: React.FC<{ data: any; expandedDays: Set<string>; toggleDay: (d: 
 
   return (
     <div className="space-y-3">
-      <div className="bg-white rounded-xl shadow border overflow-hidden">
-        <div className="p-4 border-b bg-gray-50">
-          <h3 className="text-sm font-semibold text-gray-900">Detail Harian - Produksi per Hari per Produk</h3>
-          <p className="text-xs text-gray-500 mt-0.5">Klik tanggal untuk melihat detail shift, mesin, dan work order</p>
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow border overflow-hidden">
+        <div className="p-4 border-b bg-gray-50 dark:bg-gray-900">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Detail Harian - Produksi per Hari per Produk</h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Klik tanggal untuk melihat detail shift, mesin, dan work order</p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
-              <tr className="bg-gray-100 text-gray-600 font-medium">
-                <th className="px-3 py-2.5 text-left sticky left-0 bg-gray-100 z-10">Tanggal</th>
+              <tr className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 font-medium">
+                <th className="px-3 py-2.5 text-left sticky left-0 bg-gray-100 dark:bg-gray-800 z-10">Tanggal</th>
                 <th className="px-3 py-2.5 text-left">Produk</th>
                 <th className="px-2 py-2.5 text-right text-green-700">Grade A</th>
                 <th className="px-2 py-2.5 text-right text-yellow-700">Grade B</th>
@@ -417,10 +417,10 @@ const DailyTab: React.FC<{ data: any; expandedDays: Set<string>; toggleDay: (d: 
                     </tr>
                     {/* Product rows */}
                     {day.products.map((p: any, pIdx: number) => (
-                      <tr key={`${day.date}-${pIdx}`} className="hover:bg-gray-50 border-t border-gray-100">
-                        <td className="px-3 py-1.5 sticky left-0 bg-white z-10"></td>
+                      <tr key={`${day.date}-${pIdx}`} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 border-t border-gray-100">
+                        <td className="px-3 py-1.5 sticky left-0 bg-white dark:bg-gray-800 z-10"></td>
                         <td className="px-3 py-1.5">
-                          <span className="font-medium text-gray-800">{p.product_name}</span>
+                          <span className="font-medium text-gray-800 dark:text-gray-100">{p.product_name}</span>
                           {p.product_code && <span className="text-[10px] text-gray-400 ml-1">({p.product_code})</span>}
                         </td>
                         <td className="px-2 py-1.5 text-right text-green-600">{fmtNum(Math.round(p.grade_a))}</td>
@@ -429,7 +429,7 @@ const DailyTab: React.FC<{ data: any; expandedDays: Set<string>; toggleDay: (d: 
                         <td className="px-2 py-1.5 text-right">{fmtNum(Math.round(p.total_pcs))}</td>
                         <td className="px-2 py-1.5 text-right">{fmtNum(Math.round(p.total_ctn))}</td>
                         <td className="px-2 py-1.5 text-right text-blue-600 font-medium">{fmtNum(Math.round(p.cumulative_ctn))}</td>
-                        <td className="px-2 py-1.5 text-right text-gray-500">{fmtNum(Math.round(p.target_monthly_ctn))}</td>
+                        <td className="px-2 py-1.5 text-right text-gray-500 dark:text-gray-400">{fmtNum(Math.round(p.target_monthly_ctn))}</td>
                         <td className={`px-2 py-1.5 text-right font-medium ${p.gap_ctn > 0 ? 'text-red-600' : 'text-green-600'}`}>
                           {p.gap_ctn > 0 ? '-' : '+'}{fmtNum(Math.abs(Math.round(p.gap_ctn)))}
                         </td>
@@ -506,7 +506,7 @@ const DailyTab: React.FC<{ data: any; expandedDays: Set<string>; toggleDay: (d: 
                                   <tr key={`top5-${day.date}-${shiftNum}-${dtIdx}`} className="bg-red-50/40 text-[11px]">
                                     <td className="px-3 py-1 sticky left-0 bg-red-50/40 z-10 text-red-500 text-center font-bold">{dtIdx + 1}</td>
                                     <td className="px-3 py-1" colSpan={4}>
-                                      <span className="text-gray-800 font-medium">{dt.reason}</span>
+                                      <span className="text-gray-800 dark:text-gray-100 font-medium">{dt.reason}</span>
                                       <span className={`ml-2 px-1.5 py-0.5 rounded text-[9px] font-medium border ${catColors[dt.category]}`}>
                                         {catLabels[dt.category]}
                                       </span>
@@ -515,8 +515,8 @@ const DailyTab: React.FC<{ data: any; expandedDays: Set<string>; toggleDay: (d: 
                                     <td className="px-2 py-1 text-center">
                                       <span className="px-1.5 py-0.5 bg-indigo-100 text-indigo-700 rounded text-[9px] font-medium">{dt.pic}</span>
                                     </td>
-                                    <td className="px-2 py-1 text-gray-600 text-[10px] font-medium">{dt.machine_name}</td>
-                                    <td className="px-2 py-1 text-gray-500 text-[10px]" colSpan={2}>{dt.product_name}</td>
+                                    <td className="px-2 py-1 text-gray-600 dark:text-gray-300 text-[10px] font-medium">{dt.machine_name}</td>
+                                    <td className="px-2 py-1 text-gray-500 dark:text-gray-400 text-[10px]" colSpan={2}>{dt.product_name}</td>
                                     <td className="px-2 py-1 text-blue-600 text-[10px]" colSpan={2}>{dt.wo_number}</td>
                                   </tr>
                                 ))}
@@ -556,7 +556,7 @@ const DailyTab: React.FC<{ data: any; expandedDays: Set<string>; toggleDay: (d: 
                                   <tr key={`all-${day.date}-${shiftNum}-${dtIdx}`} className="bg-slate-50/30 text-[11px]">
                                     <td className="px-3 py-1 sticky left-0 bg-slate-50/30 z-10 text-gray-400 text-center">{dtIdx + 1}</td>
                                     <td className="px-3 py-1" colSpan={4}>
-                                      <span className="text-gray-800 font-medium">{dt.reason}</span>
+                                      <span className="text-gray-800 dark:text-gray-100 font-medium">{dt.reason}</span>
                                       <span className={`ml-2 px-1.5 py-0.5 rounded text-[9px] font-medium border ${catColors[dt.category] || catColors.others}`}>
                                         {catLabels[dt.category] || dt.category}
                                       </span>
@@ -565,8 +565,8 @@ const DailyTab: React.FC<{ data: any; expandedDays: Set<string>; toggleDay: (d: 
                                     <td className="px-2 py-1 text-center">
                                       <span className="px-1.5 py-0.5 bg-indigo-100 text-indigo-700 rounded text-[9px] font-medium">{dt.pic}</span>
                                     </td>
-                                    <td className="px-2 py-1 text-gray-600 text-[10px] font-medium">{dt.machine_name}</td>
-                                    <td className="px-2 py-1 text-gray-500 text-[10px]" colSpan={2}>{dt.product_name}</td>
+                                    <td className="px-2 py-1 text-gray-600 dark:text-gray-300 text-[10px] font-medium">{dt.machine_name}</td>
+                                    <td className="px-2 py-1 text-gray-500 dark:text-gray-400 text-[10px]" colSpan={2}>{dt.product_name}</td>
                                     <td className="px-2 py-1 text-blue-600 text-[10px]" colSpan={2}>{dt.wo_number}</td>
                                   </tr>
                                 ))}
@@ -577,7 +577,7 @@ const DailyTab: React.FC<{ data: any; expandedDays: Set<string>; toggleDay: (d: 
                       );
                     })()}
                     {isExpanded && (!day.downtime_records || day.downtime_records.length === 0) && (
-                      <tr className="bg-gray-50/50">
+                      <tr className="bg-gray-50 dark:bg-gray-900/50">
                         <td colSpan={13} className="px-6 py-3 text-center text-gray-400 text-xs">
                           Tidak ada downtime tercatat untuk hari ini
                         </td>
@@ -604,8 +604,8 @@ const ProductsTab: React.FC<{ data: any }> = ({ data }) => {
   return (
     <div className="space-y-5">
       {/* Chart */}
-      <div className="bg-white rounded-xl p-5 shadow border">
-        <h3 className="text-sm font-semibold text-gray-900 mb-3">Target vs Aktual per Produk (karton)</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Target vs Aktual per Produk (karton)</h3>
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData} layout="vertical" margin={{ left: 10 }}>
@@ -621,12 +621,12 @@ const ProductsTab: React.FC<{ data: any }> = ({ data }) => {
         </div>
       </div>
       {/* Full Table */}
-      <div className="bg-white rounded-xl p-5 shadow border">
-        <h3 className="text-sm font-semibold text-gray-900 mb-3">Detail Lengkap per Produk</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Detail Lengkap per Produk</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
-              <tr className="bg-gray-50 text-gray-600 font-medium">
+              <tr className="bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300 font-medium">
                 <th className="px-3 py-2 text-left">Produk</th>
                 <th className="px-2 py-2 text-right">Target (ctn)</th>
                 <th className="px-2 py-2 text-right">Aktual (ctn)</th>
@@ -647,10 +647,10 @@ const ProductsTab: React.FC<{ data: any }> = ({ data }) => {
               {data.products.map((p: any, i: number) => (
                 <tr key={i} className={`hover:bg-gray-50 ${p.achievement_pct < 50 ? 'bg-red-50/50' : ''}`}>
                   <td className="px-3 py-2">
-                    <div className="font-medium text-gray-900">{p.product_name}</div>
+                    <div className="font-medium text-gray-900 dark:text-white">{p.product_name}</div>
                     {p.product_code && <div className="text-[10px] text-gray-400">{p.product_code}</div>}
                   </td>
-                  <td className="px-2 py-2 text-right text-gray-600">{fmtNum(p.target_ctn)}</td>
+                  <td className="px-2 py-2 text-right text-gray-600 dark:text-gray-300">{fmtNum(p.target_ctn)}</td>
                   <td className="px-2 py-2 text-right font-medium">{fmtNum(Math.round(p.actual_ctn))}</td>
                   <td className={`px-2 py-2 text-right font-medium ${p.gap_ctn > 0 ? 'text-red-600' : 'text-green-600'}`}>
                     {p.gap_ctn > 0 ? '-' : '+'}{fmtNum(Math.abs(Math.round(p.gap_ctn)))}
@@ -668,12 +668,12 @@ const ProductsTab: React.FC<{ data: any }> = ({ data }) => {
                   <td className="px-2 py-2 text-right text-green-600">{fmtMin(p.runtime)}</td>
                   <td className="px-2 py-2 text-right text-red-500">{fmtMin(p.downtime)}</td>
                   <td className="px-2 py-2 text-right text-yellow-500">{fmtMin(p.idle_time)}</td>
-                  <td className="px-2 py-2 text-right text-gray-500">{p.pack_per_ctn}</td>
+                  <td className="px-2 py-2 text-right text-gray-500 dark:text-gray-400">{p.pack_per_ctn}</td>
                 </tr>
               ))}
             </tbody>
             <tfoot>
-              <tr className="bg-gray-100 font-semibold text-xs">
+              <tr className="bg-gray-100 dark:bg-gray-800 font-semibold text-xs">
                 <td className="px-3 py-2">TOTAL</td>
                 <td className="px-2 py-2 text-right">{fmtNum(data.summary.target_ctn)}</td>
                 <td className="px-2 py-2 text-right">{fmtNum(Math.round(data.summary.actual_ctn))}</td>
@@ -711,7 +711,7 @@ const MachinesTab: React.FC<{ data: any }> = ({ data }) => (
         return (
           <div key={i} className={`bg-white rounded-xl p-4 shadow border-l-4 ${m.avg_oee >= 60 ? 'border-l-green-500' : m.avg_oee >= 40 ? 'border-l-yellow-500' : 'border-l-red-500'}`}>
             <div className="flex items-center justify-between mb-3">
-              <h4 className="font-semibold text-gray-900 text-sm">{m.machine_name}</h4>
+              <h4 className="font-semibold text-gray-900 dark:text-white text-sm">{m.machine_name}</h4>
               <span className={`text-lg font-bold ${m.avg_oee >= 60 ? 'text-green-600' : m.avg_oee >= 40 ? 'text-yellow-600' : 'text-red-600'}`}>
                 {m.avg_oee}%
               </span>
@@ -736,12 +736,12 @@ const MachinesTab: React.FC<{ data: any }> = ({ data }) => (
               <div className="bg-red-500" style={{ width: `${dtPct}%` }} title={`Downtime: ${fmtMin(m.downtime)}`} />
               <div className="bg-yellow-400" style={{ width: `${idlePct}%` }} title={`Idle: ${fmtMin(m.idle_time)}`} />
             </div>
-            <div className="flex justify-between text-[10px] text-gray-500">
+            <div className="flex justify-between text-[10px] text-gray-500 dark:text-gray-400">
               <span className="text-green-600">RT: {fmtMin(m.runtime)}</span>
               <span className="text-red-500">DT: {fmtMin(m.downtime)}</span>
               <span className="text-yellow-500">Idle: {fmtMin(m.idle_time)}</span>
             </div>
-            <div className="flex justify-between mt-2 text-[10px] text-gray-500">
+            <div className="flex justify-between mt-2 text-[10px] text-gray-500 dark:text-gray-400">
               <span>Total: {fmtNum(m.total_produced)} pcs</span>
               <span>Quality: {m.quality_rate}%</span>
               <span>{m.shift_count} shift</span>
@@ -758,8 +758,8 @@ const DowntimeTab: React.FC<{ data: any; downtimePieData: any[] }> = ({ data, do
   <div className="space-y-5">
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
       {/* Category Pie */}
-      <div className="bg-white rounded-xl p-5 shadow border">
-        <h3 className="text-sm font-semibold text-gray-900 mb-3">Downtime per Kategori</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Downtime per Kategori</h3>
         <div className="h-72 flex items-center">
           {downtimePieData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
@@ -777,15 +777,15 @@ const DowntimeTab: React.FC<{ data: any; downtimePieData: any[] }> = ({ data, do
           {Object.entries(DOWNTIME_COLORS).map(([k, c]) => (
             <div key={k} className="flex items-center gap-1.5">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: c }} />
-              <span className="text-xs text-gray-600">{CATEGORY_LABELS[k]}</span>
+              <span className="text-xs text-gray-600 dark:text-gray-300">{CATEGORY_LABELS[k]}</span>
               <span className="text-xs text-gray-400">({fmtMin(data.downtime_by_category[k] || 0)})</span>
             </div>
           ))}
         </div>
       </div>
       {/* Category Breakdown Cards */}
-      <div className="bg-white rounded-xl p-5 shadow border">
-        <h3 className="text-sm font-semibold text-gray-900 mb-3">Breakdown Waktu Downtime</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Breakdown Waktu Downtime</h3>
         <div className="space-y-3">
           {Object.entries(data.downtime_by_category).map(([k, v]) => {
             const total = Object.values(data.downtime_by_category).reduce((a: number, b: any) => a + b, 0) as number;
@@ -793,10 +793,10 @@ const DowntimeTab: React.FC<{ data: any; downtimePieData: any[] }> = ({ data, do
             return (
               <div key={k}>
                 <div className="flex justify-between text-xs mb-1">
-                  <span className="font-medium text-gray-700">{CATEGORY_LABELS[k]}</span>
-                  <span className="text-gray-500">{fmtMin(v as number)} ({pct.toFixed(1)}%)</span>
+                  <span className="font-medium text-gray-700 dark:text-gray-200">{CATEGORY_LABELS[k]}</span>
+                  <span className="text-gray-500 dark:text-gray-400">{fmtMin(v as number)} ({pct.toFixed(1)}%)</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
                   <div className="h-2.5 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: DOWNTIME_COLORS[k] }} />
                 </div>
               </div>
@@ -816,8 +816,8 @@ const DowntimeTab: React.FC<{ data: any; downtimePieData: any[] }> = ({ data, do
       });
 
       return (
-        <div className="bg-white rounded-xl p-5 shadow border">
-          <h3 className="text-sm font-semibold text-gray-900 mb-3">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
             <ExclamationTriangleIcon className="h-4 w-4 inline mr-1 text-red-500" />
             Top 10 Downtime
           </h3>
@@ -825,7 +825,7 @@ const DowntimeTab: React.FC<{ data: any; downtimePieData: any[] }> = ({ data, do
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="bg-gray-50 text-gray-600">
+                  <tr className="bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300">
                     <th className="px-3 py-2 text-left">#</th>
                     <th className="px-3 py-2 text-left">Tipe</th>
                     <th className="px-3 py-2 text-left">Alasan</th>
@@ -841,14 +841,14 @@ const DowntimeTab: React.FC<{ data: any; downtimePieData: any[] }> = ({ data, do
                     const pct = (item.total_minutes / maxMin) * 100;
                     const isUnplanned = unplannedCategories.includes(item.category);
                     return (
-                      <tr key={idx} className="hover:bg-gray-50">
+                      <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                         <td className="px-3 py-2 font-medium">{idx + 1}</td>
                         <td className="px-3 py-2">
                           <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${isUnplanned ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>
                             {isUnplanned ? 'Unplanned' : 'Planned'}
                           </span>
                         </td>
-                        <td className="px-3 py-2 text-gray-700">{item.reason}</td>
+                        <td className="px-3 py-2 text-gray-700 dark:text-gray-200">{item.reason}</td>
                         <td className="px-3 py-2">
                           <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium" style={{
                             backgroundColor: DOWNTIME_COLORS[item.category] ? DOWNTIME_COLORS[item.category] + '20' : '#F3F4F6',
@@ -858,7 +858,7 @@ const DowntimeTab: React.FC<{ data: any; downtimePieData: any[] }> = ({ data, do
                         <td className="px-3 py-2 text-right">{item.count}x</td>
                         <td className="px-3 py-2 text-right font-medium text-red-600">{fmtMin(item.total_minutes)}</td>
                         <td className="px-3 py-2 w-36">
-                          <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                             <div className={`h-2 rounded-full ${isUnplanned ? 'bg-red-500' : 'bg-blue-500'}`} style={{ width: `${pct}%` }} />
                           </div>
                         </td>

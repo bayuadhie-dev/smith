@@ -214,42 +214,42 @@ const navigate = useNavigate()
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               {isProductionCost ? '🏭 Production Cost' : 'Invoice Detail'}
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-300">
               {invoiceData.invoice_number} - {invoiceData.status?.toUpperCase()}
             </p>
           </div>
           <button
             onClick={() => navigate(-1)}
-            className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
           >
             Kembali
           </button>
         </div>
 
         {/* Invoice Info Card */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div>
-              <p className="text-sm text-gray-500">Nomor Invoice</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Nomor Invoice</p>
               <p className="text-lg font-semibold">{invoiceData.invoice_number}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Tipe</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Tipe</p>
               <p className="text-lg font-semibold capitalize">
                 {invoiceData.invoice_type === 'production_cost' ? 'Production Cost' : invoiceData.invoice_type}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Tanggal</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Tanggal</p>
               <p className="text-lg font-semibold">
                 {new Date(invoiceData.invoice_date).toLocaleDateString('id-ID')}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Status</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Status</p>
               <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${
                 invoiceData.status === 'posted' ? 'bg-green-100 text-green-800' :
                 invoiceData.status === 'draft' ? 'bg-gray-100 text-gray-800' :
@@ -269,16 +269,16 @@ const navigate = useNavigate()
           )}
 
           {invoiceData.notes && (
-            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-500">Catatan</p>
-              <p className="text-gray-700">{invoiceData.notes}</p>
+            <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+              <p className="text-sm text-gray-500 dark:text-gray-400">Catatan</p>
+              <p className="text-gray-700 dark:text-gray-200">{invoiceData.notes}</p>
             </div>
           )}
         </div>
 
         {/* Cost Breakdown */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="px-6 py-4 border-b bg-gray-50">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+          <div className="px-6 py-4 border-b bg-gray-50 dark:bg-gray-900">
             <h3 className="text-lg font-semibold">Rincian Biaya</h3>
           </div>
           <div className="p-6">
@@ -303,12 +303,12 @@ const navigate = useNavigate()
                   ))}
                 </tbody>
                 <tfoot>
-                  <tr className="bg-gray-50">
+                  <tr className="bg-gray-50 dark:bg-gray-900">
                     <td colSpan={3} className="py-3 px-4 text-right font-semibold">Subtotal</td>
                     <td className="py-3 px-4 text-right font-semibold">{formatCurrency(invoiceData.subtotal || 0)}</td>
                   </tr>
                   {invoiceData.tax_amount > 0 && (
-                    <tr className="bg-gray-50">
+                    <tr className="bg-gray-50 dark:bg-gray-900">
                       <td colSpan={3} className="py-3 px-4 text-right">Pajak</td>
                       <td className="py-3 px-4 text-right">{formatCurrency(invoiceData.tax_amount || 0)}</td>
                     </tr>
@@ -322,13 +322,13 @@ const navigate = useNavigate()
                 </tfoot>
               </table>
             ) : (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <p>Tidak ada rincian item</p>
-                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
                   <p className="text-2xl font-bold text-blue-600">
                     {formatCurrency(invoiceData.total_amount || 0)}
                   </p>
-                  <p className="text-sm text-gray-500">Total Biaya Produksi</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Total Biaya Produksi</p>
                 </div>
               </div>
             )}
@@ -342,8 +342,8 @@ const navigate = useNavigate()
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Create Invoice</h1>
-          <p className="text-gray-600">Generate invoice for sales or purchases</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Create Invoice</h1>
+          <p className="text-gray-600 dark:text-gray-300">Generate invoice for sales or purchases</p>
         </div>
         <button
           onClick={() => navigate('/app/finance/invoices')}
@@ -356,14 +356,14 @@ const navigate = useNavigate()
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Invoice Header */}
         <div className="card p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <DocumentTextIcon className="h-5 w-5" />
             Invoice Information
           </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Invoice Type *
               </label>
               <select
@@ -379,7 +379,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 {watchedInvoiceType === 'sales' ? 'Customer *' : 'Supplier *'}
               </label>
               {watchedInvoiceType === 'sales' ? (
@@ -410,7 +410,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Related {watchedInvoiceType === 'sales' ? [t('navigation.sales')] : 'Purchase'} Order
               </label>
               {watchedInvoiceType === 'sales' ? (
@@ -441,7 +441,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Payment Terms
               </label>
               <select {...register('payment_terms')} className="input-field">
@@ -455,7 +455,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Invoice Date *
               </label>
               <input
@@ -469,7 +469,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Due Date *
               </label>
               <input
@@ -484,7 +484,7 @@ const navigate = useNavigate()
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               </label>
               <textarea
                 {...register('notes')}
@@ -528,7 +528,7 @@ const navigate = useNavigate()
         {/* Invoice Items */}
         <div className="card p-6">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium text-gray-900">Invoice Items</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Invoice Items</h3>
             <button
               type="button"
               onClick={addItem}
@@ -541,10 +541,10 @@ const navigate = useNavigate()
 
           <div className="space-y-4">
             {fields.map((field, index) => (
-              <div key={field.id} className="border border-gray-200 rounded-lg p-4">
+              <div key={field.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                 <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Description *
                     </label>
                     <input
@@ -558,7 +558,7 @@ const navigate = useNavigate()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Quantity *
                     </label>
                     <input
@@ -574,7 +574,7 @@ const navigate = useNavigate()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Unit Price *
                     </label>
                     <input
@@ -591,7 +591,7 @@ const navigate = useNavigate()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Discount %
                     </label>
                     <input
@@ -619,7 +619,7 @@ const navigate = useNavigate()
                 </div>
 
                 <div className="mt-2 text-right">
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-gray-600 dark:text-gray-300">
                     Line Total: Rp {calculateItemTotal(index).toLocaleString()}
                   </span>
                 </div>
@@ -630,12 +630,12 @@ const navigate = useNavigate()
 
         {/* Invoice Totals */}
         <div className="card p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Invoice Totals</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Invoice Totals</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Tax Rate (%)
                 </label>
                 <input
@@ -650,7 +650,7 @@ const navigate = useNavigate()
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Discount Amount (Rp)
                 </label>
                 <input
@@ -664,7 +664,7 @@ const navigate = useNavigate()
               </div>
             </div>
 
-            <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Subtotal:</span>
                 <span>Rp {calculateSubtotal().toLocaleString()}</span>

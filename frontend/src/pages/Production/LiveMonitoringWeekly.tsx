@@ -117,28 +117,28 @@ const LiveMonitoringWeekly: React.FC = () => {
 
   if (loading && !data) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
+      <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-900">
         <LoadingSpinner />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-emerald-50 p-4 print:p-2 print:bg-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-emerald-50 p-4 print:p-2 print:bg-white dark:bg-gray-800">
       <div className="max-w-full mx-auto space-y-4 print:space-y-2">
         
         {/* Header */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden print:shadow-none print:border">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 overflow-hidden print:shadow-none print:border">
           <div className="bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-4 print:py-2 print:bg-emerald-600">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <button 
                   onClick={() => navigate('/app/production/live-monitoring')}
-                  className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors print:hidden"
+                  className="p-2 bg-white/20 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/30 rounded-lg transition-colors print:hidden"
                 >
                   <ArrowLeftIcon className="w-5 h-5 text-white" />
                 </button>
-                <div className="p-2 bg-white/20 rounded-lg print:hidden">
+                <div className="p-2 bg-white dark:bg-gray-800/20 rounded-lg print:hidden">
                   <SignalIcon className="w-6 h-6 text-white" />
                 </div>
                 <div>
@@ -152,15 +152,15 @@ const LiveMonitoringWeekly: React.FC = () => {
                 <select 
                   value={shift} 
                   onChange={e => setShift(e.target.value)}
-                  className="px-3 py-1.5 bg-white/20 border border-white/30 rounded-lg text-white text-sm focus:outline-none"
+                  className="px-3 py-1.5 bg-white dark:bg-gray-800/20 border border-white/30 rounded-lg text-white text-sm focus:outline-none"
                 >
-                  <option value="shift_1" className="text-gray-900">Shift 1</option>
-                  <option value="shift_2" className="text-gray-900">Shift 2</option>
-                  <option value="shift_3" className="text-gray-900">Shift 3</option>
+                  <option value="shift_1" className="text-gray-900 dark:text-white">Shift 1</option>
+                  <option value="shift_2" className="text-gray-900 dark:text-white">Shift 2</option>
+                  <option value="shift_3" className="text-gray-900 dark:text-white">Shift 3</option>
                 </select>
                 <button
                   onClick={() => handleWeekChange(-1)}
-                  className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors"
+                  className="p-2 bg-white/20 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/30 rounded-lg transition-colors"
                 >
                   <ChevronLeftIcon className="w-5 h-5 text-white" />
                 </button>
@@ -171,19 +171,19 @@ const LiveMonitoringWeekly: React.FC = () => {
                 </div>
                 <button
                   onClick={() => handleWeekChange(1)}
-                  className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors"
+                  className="p-2 bg-white/20 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/30 rounded-lg transition-colors"
                 >
                   <ChevronRightIcon className="w-5 h-5 text-white" />
                 </button>
                 <button
                   onClick={goToThisWeek}
-                  className="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-white text-sm font-medium transition-colors"
+                  className="px-3 py-1.5 bg-white/20 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/30 rounded-lg text-white text-sm font-medium transition-colors"
                 >
                   Minggu Ini
                 </button>
                 <button
                   onClick={handlePrint}
-                  className="flex items-center space-x-1 px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-white text-sm font-medium transition-colors"
+                  className="flex items-center space-x-1 px-3 py-1.5 bg-white/20 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/30 rounded-lg text-white text-sm font-medium transition-colors"
                 >
                   <PrinterIcon className="w-4 h-4" />
                   <span>Print</span>
@@ -197,7 +197,7 @@ const LiveMonitoringWeekly: React.FC = () => {
             <div className="flex justify-between items-center">
               <div>
                 <p className="text-sm font-semibold">Periode: {data?.week_start && formatDate(data.week_start)} - {data?.week_end && formatDate(data.week_end)}</p>
-                <p className="text-xs text-gray-500">{getShiftLabel()}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{getShiftLabel()}</p>
               </div>
               <p className="text-xs text-gray-400">Dicetak: {new Date().toLocaleString('id-ID')}</p>
             </div>
@@ -208,41 +208,41 @@ const LiveMonitoringWeekly: React.FC = () => {
             <div className="flex items-center space-x-6 text-sm print:text-xs">
               <div className="flex items-center space-x-2">
                 <CheckCircleSolid className="w-5 h-5 text-green-600 print:w-4 print:h-4" />
-                <span className="text-gray-700"><strong>{stats.runningCount}</strong> Running</span>
+                <span className="text-gray-700 dark:text-gray-200"><strong>{stats.runningCount}</strong> Running</span>
               </div>
               <div className="flex items-center space-x-2">
                 <XCircleIcon className="w-5 h-5 text-red-500 print:w-4 print:h-4" />
-                <span className="text-gray-700"><strong>{stats.stoppedCount}</strong> Stopped</span>
+                <span className="text-gray-700 dark:text-gray-200"><strong>{stats.stoppedCount}</strong> Stopped</span>
               </div>
               <div className="flex items-center space-x-2">
-                <div className="w-5 h-5 bg-gray-200 rounded print:w-4 print:h-4"></div>
-                <span className="text-gray-700"><strong>{stats.pendingCount}</strong> Belum dicek</span>
+                <div className="w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded print:w-4 print:h-4"></div>
+                <span className="text-gray-700 dark:text-gray-200"><strong>{stats.pendingCount}</strong> Belum dicek</span>
               </div>
             </div>
-            <div className="text-sm text-gray-600 print:text-xs">
+            <div className="text-sm text-gray-600 dark:text-gray-300 print:text-xs">
               Total: <strong>{stats.totalChecks}</strong> / {stats.totalPossible} checks
             </div>
           </div>
         </div>
 
         {/* Weekly Grid */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden print:shadow-none print:border">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 overflow-hidden print:shadow-none print:border">
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="sticky left-0 bg-gray-50 px-3 py-2 text-left font-semibold text-gray-700 border-r border-gray-200 min-w-[100px] print:min-w-[80px]">
+                <tr className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                  <th className="sticky left-0 bg-gray-50 dark:bg-gray-900 px-3 py-2 text-left font-semibold text-gray-700 dark:text-gray-200 border-r border-gray-200 dark:border-gray-700 min-w-[100px] print:min-w-[80px]">
                     Mesin
                   </th>
                   {data?.dates?.map((dateStr: string) => (
-                    <th key={dateStr} colSpan={data?.slots?.length || 4} className="px-1 py-2 text-center font-semibold text-gray-700 border-r border-gray-200">
+                    <th key={dateStr} colSpan={data?.slots?.length || 4} className="px-1 py-2 text-center font-semibold text-gray-700 dark:text-gray-200 border-r border-gray-200 dark:border-gray-700">
                       <div className="text-[10px]">{getDayName(dateStr)}</div>
-                      <div className="text-gray-500 font-normal text-[10px]">{formatDate(dateStr)}</div>
+                      <div className="text-gray-500 dark:text-gray-400 font-normal text-[10px]">{formatDate(dateStr)}</div>
                     </th>
                   ))}
                 </tr>
-                <tr className="bg-gray-100 border-b border-gray-200">
-                  <th className="sticky left-0 bg-gray-100 px-3 py-1 text-left text-gray-500 border-r border-gray-200 text-[10px]">
+                <tr className="bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                  <th className="sticky left-0 bg-gray-100 dark:bg-gray-800 px-3 py-1 text-left text-gray-500 dark:text-gray-400 border-r border-gray-200 dark:border-gray-700 text-[10px]">
                     Slot →
                   </th>
                   {data?.dates?.map((dateStr: string) => (
@@ -263,8 +263,8 @@ const LiveMonitoringWeekly: React.FC = () => {
               </thead>
               <tbody>
                 {data?.summary?.map((machineData) => (
-                  <tr key={machineData.machine_id} className="border-b border-gray-100 hover:bg-gray-50 print:hover:bg-white">
-                    <td className="sticky left-0 bg-white px-2 py-1.5 font-medium text-gray-900 border-r border-gray-200 text-[10px] print:text-[9px]">
+                  <tr key={machineData.machine_id} className="border-b border-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 print:hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800">
+                    <td className="sticky left-0 bg-white dark:bg-gray-800 px-2 py-1.5 font-medium text-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-700 text-[10px] print:text-[9px]">
                       {machineData.machine_name}
                     </td>
                     {data?.dates?.map((dateStr: string) => (
@@ -294,7 +294,7 @@ const LiveMonitoringWeekly: React.FC = () => {
                                   )}
                                 </button>
                               ) : (
-                                <div className="w-full h-6 rounded bg-gray-100 flex items-center justify-center">
+                                <div className="w-full h-6 rounded bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
                                   <div className="w-2 h-2 rounded-full bg-gray-300"></div>
                                 </div>
                               )}
@@ -311,25 +311,25 @@ const LiveMonitoringWeekly: React.FC = () => {
         </div>
 
         {/* Legend */}
-        <div className="bg-white rounded-xl shadow border border-gray-100 px-4 py-3 print:shadow-none print:py-2">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-100 px-4 py-3 print:shadow-none print:py-2">
           <div className="flex items-center justify-center space-x-6 text-xs print:text-[10px]">
             <div className="flex items-center space-x-2">
               <div className="w-6 h-6 bg-green-100 rounded flex items-center justify-center print:w-5 print:h-5">
                 <CheckCircleSolid className="w-4 h-4 text-green-600 print:w-3 print:h-3" />
               </div>
-              <span className="text-gray-600">Running</span>
+              <span className="text-gray-600 dark:text-gray-300">Running</span>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-6 h-6 bg-red-100 rounded flex items-center justify-center print:w-5 print:h-5">
                 <XCircleIcon className="w-4 h-4 text-red-600 print:w-3 print:h-3" />
               </div>
-              <span className="text-gray-600">Stopped</span>
+              <span className="text-gray-600 dark:text-gray-300">Stopped</span>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 bg-gray-100 rounded flex items-center justify-center print:w-5 print:h-5">
+              <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center print:w-5 print:h-5">
                 <div className="w-2 h-2 rounded-full bg-gray-300"></div>
               </div>
-              <span className="text-gray-600">Belum dicek</span>
+              <span className="text-gray-600 dark:text-gray-300">Belum dicek</span>
             </div>
           </div>
         </div>

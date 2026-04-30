@@ -29,15 +29,15 @@ const { id } = useParams<{ id: string }>()
     return (
       <div className="p-6">
         <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
-              <div className="h-64 bg-gray-200 rounded"></div>
-              <div className="h-48 bg-gray-200 rounded"></div>
+              <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              <div className="h-48 bg-gray-200 dark:bg-gray-700 rounded"></div>
             </div>
             <div className="space-y-6">
-              <div className="h-32 bg-gray-200 rounded"></div>
-              <div className="h-48 bg-gray-200 rounded"></div>
+              <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              <div className="h-48 bg-gray-200 dark:bg-gray-700 rounded"></div>
             </div>
           </div>
         </div>
@@ -50,8 +50,8 @@ const { id } = useParams<{ id: string }>()
       <div className="p-6">
         <div className="text-center py-12">
           <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">Project not found</h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Project not found</h3>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             The project you're looking for doesn't exist or has been deleted.
           </p>
           <div className="mt-6">
@@ -103,13 +103,13 @@ const { id } = useParams<{ id: string }>()
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/app/rd/projects')}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg transition-colors"
           >
-            <ArrowLeftIcon className="h-5 w-5 text-gray-600" />
+            <ArrowLeftIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{project.project_name}</h1>
-            <p className="text-gray-600">{project.project_number}</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{project.project_name}</h1>
+            <p className="text-gray-600 dark:text-gray-300">{project.project_number}</p>
           </div>
         </div>
         <Link
@@ -126,38 +126,38 @@ const { id } = useParams<{ id: string }>()
         <div className="lg:col-span-2 space-y-6">
           {/* Project Overview */}
           <div className="card p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Project Overview</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Project Overview</h2>
             <div className="space-y-4">
               <div>
-                <h3 className="text-sm font-medium text-gray-700 mb-2">{t('common.description')}</h3>
-                <p className="text-gray-600">{project.description || 'No description provided'}</p>
+                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('common.description')}</h3>
+                <p className="text-gray-600 dark:text-gray-300">{project.description || 'No description provided'}</p>
               </div>
               
               {project.objective && (
                 <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">Objective</h3>
-                  <p className="text-gray-600">{project.objective}</p>
+                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Objective</h3>
+                  <p className="text-gray-600 dark:text-gray-300">{project.objective}</p>
                 </div>
               )}
 
               {project.expected_outcomes && (
                 <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">Expected Outcomes</h3>
-                  <p className="text-gray-600">{project.expected_outcomes}</p>
+                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Expected Outcomes</h3>
+                  <p className="text-gray-600 dark:text-gray-300">{project.expected_outcomes}</p>
                 </div>
               )}
 
               {project.success_criteria && (
                 <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">Success Criteria</h3>
-                  <p className="text-gray-600">{project.success_criteria}</p>
+                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Success Criteria</h3>
+                  <p className="text-gray-600 dark:text-gray-300">{project.success_criteria}</p>
                 </div>
               )}
 
               {project.risk_assessment && (
                 <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">Risk Assessment</h3>
-                  <p className="text-gray-600">{project.risk_assessment}</p>
+                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Risk Assessment</h3>
+                  <p className="text-gray-600 dark:text-gray-300">{project.risk_assessment}</p>
                 </div>
               )}
             </div>
@@ -165,14 +165,14 @@ const { id } = useParams<{ id: string }>()
 
           {/* Progress */}
           <div className="card p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Progress</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Progress</h2>
             <div className="space-y-4">
               <div>
-                <div className="flex justify-between text-sm text-gray-600 mb-2">
+                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300 mb-2">
                   <span>Overall Progress</span>
                   <span>{project.progress_percentage || 0}%</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
                   <div 
                     className="bg-blue-500 h-3 rounded-full transition-all duration-300"
                     style={{ width: `${project.progress_percentage || 0}%` }}
@@ -182,19 +182,19 @@ const { id } = useParams<{ id: string }>()
 
               {project.milestones && project.milestones.length > 0 && (
                 <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">Milestones</h3>
+                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Milestones</h3>
                   <div className="space-y-2">
                     {project.milestones.map((milestone: any, index: number) => (
-                      <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                      <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
                         <div className={`w-3 h-3 rounded-full ${milestone.completed ? 'bg-green-500' : 'bg-gray-300'}`} />
                         <div className="flex-1">
-                          <div className="text-sm font-medium text-gray-900">{milestone.title}</div>
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">{milestone.title}</div>
                           {milestone.description && (
-                            <div className="text-xs text-gray-500">{milestone.description}</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">{milestone.description}</div>
                           )}
                         </div>
                         {milestone.due_date && (
-                          <div className="text-xs text-gray-500">
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
                             {new Date(milestone.due_date).toLocaleDateString()}
                           </div>
                         )}
@@ -209,8 +209,8 @@ const { id } = useParams<{ id: string }>()
           {/* Notes */}
           {project.notes && (
             <div className="card p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Notes</h2>
-              <p className="text-gray-600 whitespace-pre-wrap">{project.notes}</p>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Notes</h2>
+              <p className="text-gray-600 dark:text-gray-300 whitespace-pre-wrap">{project.notes}</p>
             </div>
           )}
         </div>
@@ -219,7 +219,7 @@ const { id } = useParams<{ id: string }>()
         <div className="space-y-6">
           {/* Project Info */}
           <div className="card p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Project Information</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Project Information</h2>
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getTypeColor(project.project_type || 'research')}`}>
@@ -243,8 +243,8 @@ const { id } = useParams<{ id: string }>()
                 <div className="flex items-center gap-3">
                   <UserIcon className="h-5 w-5 text-gray-400" />
                   <div>
-                    <div className="text-sm font-medium text-gray-900">Project Leader</div>
-                    <div className="text-sm text-gray-500">{project.project_leader}</div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">Project Leader</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">{project.project_leader}</div>
                   </div>
                 </div>
               )}
@@ -253,8 +253,8 @@ const { id } = useParams<{ id: string }>()
                 <div className="flex items-start gap-3">
                   <UserIcon className="h-5 w-5 text-gray-400 mt-0.5" />
                   <div>
-                    <div className="text-sm font-medium text-gray-900">Team Members</div>
-                    <div className="text-sm text-gray-500">{project.team_members.length} members</div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">Team Members</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">{project.team_members.length} members</div>
                   </div>
                 </div>
               )}
@@ -263,14 +263,14 @@ const { id } = useParams<{ id: string }>()
 
           {/* Timeline */}
           <div className="card p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Timeline</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Timeline</h2>
             <div className="space-y-4">
               {project.start_date && (
                 <div className="flex items-center gap-3">
                   <CalendarIcon className="h-5 w-5 text-gray-400" />
                   <div>
-                    <div className="text-sm font-medium text-gray-900">Start Date</div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">Start Date</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
                       {new Date(project.start_date).toLocaleDateString()}
                     </div>
                   </div>
@@ -281,8 +281,8 @@ const { id } = useParams<{ id: string }>()
                 <div className="flex items-center gap-3">
                   <ClockIcon className="h-5 w-5 text-gray-400" />
                   <div>
-                    <div className="text-sm font-medium text-gray-900">Target Completion</div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">Target Completion</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
                       {new Date(project.target_completion_date).toLocaleDateString()}
                     </div>
                   </div>
@@ -293,8 +293,8 @@ const { id } = useParams<{ id: string }>()
                 <div className="flex items-center gap-3">
                   <CalendarIcon className="h-5 w-5 text-green-400" />
                   <div>
-                    <div className="text-sm font-medium text-gray-900">Actual Completion</div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">Actual Completion</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
                       {new Date(project.actual_completion_date).toLocaleDateString()}
                     </div>
                   </div>
@@ -305,13 +305,13 @@ const { id } = useParams<{ id: string }>()
 
           {/* Budget */}
           <div className="card p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Budget</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Budget</h2>
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <BanknotesIcon className="h-5 w-5 text-gray-400" />
                 <div>
-                  <div className="text-sm font-medium text-gray-900">Total Budget</div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm font-medium text-gray-900 dark:text-white">Total Budget</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
                     Rp {((project.budget || 0) / 1000000).toFixed(1)}M
                   </div>
                 </div>
@@ -320,8 +320,8 @@ const { id } = useParams<{ id: string }>()
               <div className="flex items-center gap-3">
                 <ChartBarIcon className="h-5 w-5 text-gray-400" />
                 <div>
-                  <div className="text-sm font-medium text-gray-900">Actual Cost</div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm font-medium text-gray-900 dark:text-white">Actual Cost</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
                     Rp {((project.actual_cost || 0) / 1000000).toFixed(1)}M
                   </div>
                 </div>
@@ -329,11 +329,11 @@ const { id } = useParams<{ id: string }>()
 
               {project.budget > 0 && (
                 <div>
-                  <div className="flex justify-between text-sm text-gray-600 mb-2">
+                  <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300 mb-2">
                     <span>Budget Utilization</span>
                     <span>{((project.actual_cost || 0) / project.budget * 100).toFixed(1)}%</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div 
                       className="bg-green-500 h-2 rounded-full transition-all duration-300"
                       style={{ width: `${Math.min(((project.actual_cost || 0) / project.budget * 100), 100)}%` }}
@@ -346,38 +346,38 @@ const { id } = useParams<{ id: string }>()
 
           {/* Related Items */}
           <div className="card p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Related Items</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Related Items</h2>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <BeakerIcon className="h-4 w-4 text-gray-400" />
-                  <span className="text-sm text-gray-600">Experiments</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">Experiments</span>
                 </div>
-                <span className="text-sm font-medium text-gray-900">{project.experiments_count || 0}</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">{project.experiments_count || 0}</span>
               </div>
               
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <CogIcon className="h-4 w-4 text-gray-400" />
-                  <span className="text-sm text-gray-600">Product Developments</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">Product Developments</span>
                 </div>
-                <span className="text-sm font-medium text-gray-900">{project.product_developments_count || 0}</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">{project.product_developments_count || 0}</span>
               </div>
               
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <ClipboardDocumentListIcon className="h-4 w-4 text-gray-400" />
-                  <span className="text-sm text-gray-600">Materials</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">Materials</span>
                 </div>
-                <span className="text-sm font-medium text-gray-900">{project.materials_count || 0}</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">{project.materials_count || 0}</span>
               </div>
               
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <DocumentTextIcon className="h-4 w-4 text-gray-400" />
-                  <span className="text-sm text-gray-600">Reports</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">Reports</span>
                 </div>
-                <span className="text-sm font-medium text-gray-900">{project.reports_count || 0}</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">{project.reports_count || 0}</span>
               </div>
             </div>
           </div>

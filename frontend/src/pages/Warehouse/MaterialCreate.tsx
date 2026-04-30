@@ -130,13 +130,13 @@ const MaterialCreate: React.FC = () => {
         <div className="flex items-center space-x-4">
           <button
             onClick={() => navigate('/app/warehouse/materials/list')}
-            className="flex items-center text-gray-600 hover:text-gray-900"
+            className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white"
           >
             <ArrowLeftIcon className="h-5 w-5 mr-1" />
             Back to Materials
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Create New Material</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Create New Material</h1>
             <p className="text-gray-600">Add a new material to your inventory</p>
           </div>
         </div>
@@ -158,11 +158,11 @@ const MaterialCreate: React.FC = () => {
           {/* Main Form */}
           <div className="lg:col-span-2 space-y-6">
             {/* Basic Information */}
-            <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Basic Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Material Code *
                   </label>
                   <input
@@ -170,13 +170,13 @@ const MaterialCreate: React.FC = () => {
                     name="code"
                     value={formData.code}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                     placeholder="e.g., MAT001"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Material Name *
                   </label>
                   <input
@@ -184,20 +184,20 @@ const MaterialCreate: React.FC = () => {
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                     placeholder="e.g., Polyester Fiber"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Material Type *
                   </label>
                   <select
                     name="material_type"
                     value={formData.material_type}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   >
                     {materialTypes.map(type => (
@@ -208,14 +208,14 @@ const MaterialCreate: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Kategori *
                   </label>
                   <select
                     name="category"
                     value={formData.category}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   >
                     <option value="">Pilih Kategori...</option>
@@ -227,13 +227,13 @@ const MaterialCreate: React.FC = () => {
                   </select>
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('common.description')}</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('common.description')}</label>
                   <textarea
                     name="description"
                     value={formData.description}
                     onChange={handleInputChange}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Material description..."
                   />
                 </div>
@@ -241,18 +241,18 @@ const MaterialCreate: React.FC = () => {
             </div>
 
             {/* Units and Pricing */}
-            <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Units & Pricing</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Units & Pricing</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Primary UOM *
                   </label>
                   <select
                     name="primary_uom"
                     value={formData.primary_uom}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   >
                     {uomOptions.map(uom => (
@@ -263,14 +263,14 @@ const MaterialCreate: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Secondary UOM
                   </label>
                   <select
                     name="secondary_uom"
                     value={formData.secondary_uom}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="">Select UOM</option>
                     {uomOptions.map(uom => (
@@ -281,7 +281,7 @@ const MaterialCreate: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Cost per Unit (Rp) *
                   </label>
                   <input
@@ -292,15 +292,15 @@ const MaterialCreate: React.FC = () => {
                     step="0.01"
                     min="0"
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Enter cost per unit"
                   />
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                     This cost will be used in BOM calculations
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Lead Time (days)
                   </label>
                   <input
@@ -309,7 +309,7 @@ const MaterialCreate: React.FC = () => {
                     value={formData.lead_time_days}
                     onChange={handleInputChange}
                     min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="0"
                   />
                 </div>
@@ -317,11 +317,11 @@ const MaterialCreate: React.FC = () => {
             </div>
 
             {/* Stock Levels */}
-            <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Stock Management</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Stock Management</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Minimum Stock Level
                   </label>
                   <input
@@ -331,12 +331,12 @@ const MaterialCreate: React.FC = () => {
                     onChange={handleInputChange}
                     step="0.01"
                     min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="0"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Maximum Stock Level
                   </label>
                   <input
@@ -346,12 +346,12 @@ const MaterialCreate: React.FC = () => {
                     onChange={handleInputChange}
                     step="0.01"
                     min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="0"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Reorder Point
                   </label>
                   <input
@@ -361,7 +361,7 @@ const MaterialCreate: React.FC = () => {
                     onChange={handleInputChange}
                     step="0.01"
                     min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="0"
                   />
                 </div>
@@ -372,8 +372,8 @@ const MaterialCreate: React.FC = () => {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Status */}
-            <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('common.status')}</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('common.status')}</h3>
               <div className="space-y-4">
                 <div className="flex items-center">
                   <input
@@ -381,9 +381,9 @@ const MaterialCreate: React.FC = () => {
                     name="is_active"
                     checked={formData.is_active}
                     onChange={handleInputChange}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded"
                   />
-                  <label className="ml-2 block text-sm text-gray-900">
+                  <label className="ml-2 block text-sm text-gray-900 dark:text-white">
                     Active Material
                   </label>
                 </div>
@@ -393,9 +393,9 @@ const MaterialCreate: React.FC = () => {
                     name="is_hazardous"
                     checked={formData.is_hazardous}
                     onChange={handleInputChange}
-                    className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 dark:border-gray-600 rounded"
                   />
-                  <label className="ml-2 block text-sm text-gray-900">
+                  <label className="ml-2 block text-sm text-gray-900 dark:text-white">
                     Hazardous Material
                   </label>
                 </div>
@@ -403,11 +403,11 @@ const MaterialCreate: React.FC = () => {
             </div>
 
             {/* Storage Information */}
-            <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Storage</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Storage</h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Storage Conditions
                   </label>
                   <textarea
@@ -415,12 +415,12 @@ const MaterialCreate: React.FC = () => {
                     value={formData.storage_conditions}
                     onChange={handleInputChange}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="e.g., Store in cool, dry place"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Shelf Life (days)
                   </label>
                   <input
@@ -429,7 +429,7 @@ const MaterialCreate: React.FC = () => {
                     value={formData.expiry_days || ''}
                     onChange={handleInputChange}
                     min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="e.g., 365"
                   />
                 </div>
@@ -437,7 +437,7 @@ const MaterialCreate: React.FC = () => {
             </div>
 
             {/* Create Button */}
-            <div className="bg-white rounded-lg shadow-sm border p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6">
               <button
                 type="submit"
                 disabled={saving}

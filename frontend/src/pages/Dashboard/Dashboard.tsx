@@ -152,13 +152,13 @@ export default function Dashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">{t('dashboard.title')}</h1>
-          <p className="text-gray-600">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('dashboard.title')}</h1>
+          <p className="text-gray-600 dark:text-gray-300">
             {t('dashboard.welcome')} {companyName} - {t('analytics.business_intelligence')}
           </p>
         </div>
         <div className="flex items-center gap-4">
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-gray-500 dark:text-gray-400">
             Last updated: {executiveData ? new Date(executiveData.summary.last_updated).toLocaleTimeString() : ''}
           </div>
           <button
@@ -183,7 +183,7 @@ export default function Dashboard() {
               <div key={index} className={`p-3 rounded-md border ${getSeverityColor(issue.severity)}`}>
                 <div className="flex items-center justify-between">
                   <span className="font-medium">{issue.message}</span>
-                  <span className="text-xs px-2 py-1 rounded-full bg-white">{issue.module}</span>
+                  <span className="text-xs px-2 py-1 rounded-full bg-white dark:bg-gray-800">{issue.module}</span>
                 </div>
               </div>
             ))}
@@ -193,11 +193,11 @@ export default function Dashboard() {
 
       {/* KeyIcon Metrics Summary */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Monthly Sales</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Monthly Sales</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {formatRupiah(executiveData?.financial.sales_this_month || 0)}
               </p>
             </div>
@@ -212,31 +212,31 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Production Efficiency</p>
-              <p className="text-2xl font-bold text-gray-900">{executiveData?.production.efficiency || 0}%</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Production Efficiency</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{executiveData?.production.efficiency || 0}%</p>
             </div>
             <CogIcon className="h-8 w-8 text-green-500" />
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Average OEE</p>
-              <p className="text-2xl font-bold text-gray-900">{executiveData?.oee.average_oee || 0}%</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Average OEE</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{executiveData?.oee.average_oee || 0}%</p>
             </div>
             <ChartBarIcon className="h-8 w-8 text-purple-500" />
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Quality Pass Rate</p>
-              <p className="text-2xl font-bold text-gray-900">{executiveData?.quality.pass_rate || 0}%</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Quality Pass Rate</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{executiveData?.quality.pass_rate || 0}%</p>
             </div>
             <CheckCircleIcon className="h-8 w-8 text-teal-500" />
           </div>
@@ -245,8 +245,8 @@ export default function Dashboard() {
 
       {/* Sales Trend Chart */}
       {executiveData?.trends.sales && executiveData.trends.sales.length > 0 && (
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Sales Trend (Last 7 Days)</h3>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Sales Trend (Last 7 Days)</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={executiveData.trends.sales}>
@@ -270,184 +270,184 @@ export default function Dashboard() {
       {/* Module Summary Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {/* Sales Module */}
-        <Link to="/app/sales" className="group bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200 hover:border-gray-300">
+        <Link to="/app/sales" className="group bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 hover:border-gray-300 dark:border-gray-600">
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 rounded-lg bg-blue-500">
                 <BuildingStorefrontIcon className="h-6 w-6 text-white" />
               </div>
-              <ArrowRightIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
+              <ArrowRightIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600 dark:text-gray-300 transition-colors" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Sales & CRM</h3>
-            <p className="text-sm text-gray-600 mb-4">Customer management and sales tracking</p>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Sales & CRM</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">Customer management and sales tracking</p>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">Today Sales</span>
-                <span className="text-sm font-semibold text-gray-900">{formatRupiah(executiveData?.financial.sales_today || 0)}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">Today Sales</span>
+                <span className="text-sm font-semibold text-gray-900 dark:text-white">{formatRupiah(executiveData?.financial.sales_today || 0)}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">Growth</span>
-                <span className="text-sm font-semibold text-gray-900">{executiveData?.financial.revenue_growth || 0}%</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">Growth</span>
+                <span className="text-sm font-semibold text-gray-900 dark:text-white">{executiveData?.financial.revenue_growth || 0}%</span>
               </div>
             </div>
           </div>
         </Link>
 
         {/* Production Module */}
-        <Link to="/app/production" className="group bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200 hover:border-gray-300">
+        <Link to="/app/production" className="group bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 hover:border-gray-300 dark:border-gray-600">
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 rounded-lg bg-green-500">
                 <CogIcon className="h-6 w-6 text-white" />
               </div>
-              <ArrowRightIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
+              <ArrowRightIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600 dark:text-gray-300 transition-colors" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('navigation.production')}</h3>
-            <p className="text-sm text-gray-600 mb-4">Manufacturing and work order management</p>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('navigation.production')}</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">Manufacturing and work order management</p>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">Active Orders</span>
-                <span className="text-sm font-semibold text-gray-900">{executiveData?.production.active_work_orders || 0}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">Active Orders</span>
+                <span className="text-sm font-semibold text-gray-900 dark:text-white">{executiveData?.production.active_work_orders || 0}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">Efficiency</span>
-                <span className="text-sm font-semibold text-gray-900">{executiveData?.production.efficiency || 0}%</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">Efficiency</span>
+                <span className="text-sm font-semibold text-gray-900 dark:text-white">{executiveData?.production.efficiency || 0}%</span>
               </div>
             </div>
           </div>
         </Link>
 
         {/* OEE Module */}
-        <Link to="/app/oee" className="group bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200 hover:border-gray-300">
+        <Link to="/app/oee" className="group bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 hover:border-gray-300 dark:border-gray-600">
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 rounded-lg bg-purple-500">
                 <ChartBarIcon className="h-6 w-6 text-white" />
               </div>
-              <ArrowRightIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
+              <ArrowRightIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600 dark:text-gray-300 transition-colors" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">OEE Analytics</h3>
-            <p className="text-sm text-gray-600 mb-4">Overall Equipment Effectiveness monitoring</p>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">OEE Analytics</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">Overall Equipment Effectiveness monitoring</p>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">Avg OEE</span>
-                <span className="text-sm font-semibold text-gray-900">{executiveData?.oee.average_oee || 0}%</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">Avg OEE</span>
+                <span className="text-sm font-semibold text-gray-900 dark:text-white">{executiveData?.oee.average_oee || 0}%</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">Utilization</span>
-                <span className="text-sm font-semibold text-gray-900">{executiveData?.oee.machine_utilization || 0}%</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">Utilization</span>
+                <span className="text-sm font-semibold text-gray-900 dark:text-white">{executiveData?.oee.machine_utilization || 0}%</span>
               </div>
             </div>
           </div>
         </Link>
 
         {/* Inventory Module */}
-        <Link to="/app/inventory" className="group bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200 hover:border-gray-300">
+        <Link to="/app/inventory" className="group bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 hover:border-gray-300 dark:border-gray-600">
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 rounded-lg bg-orange-500">
                 <CubeIcon className="h-6 w-6 text-white" />
               </div>
-              <ArrowRightIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
+              <ArrowRightIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600 dark:text-gray-300 transition-colors" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Inventory</h3>
-            <p className="text-sm text-gray-600 mb-4">Stock management and warehouse operations</p>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Inventory</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">Stock management and warehouse operations</p>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">Total Value</span>
-                <span className="text-sm font-semibold text-gray-900">{formatRupiah(executiveData?.inventory.total_value || 0)}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">Total Value</span>
+                <span className="text-sm font-semibold text-gray-900 dark:text-white">{formatRupiah(executiveData?.inventory.total_value || 0)}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">Low Stock</span>
-                <span className="text-sm font-semibold text-gray-900">{executiveData?.inventory.low_stock_items || 0}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">Low Stock</span>
+                <span className="text-sm font-semibold text-gray-900 dark:text-white">{executiveData?.inventory.low_stock_items || 0}</span>
               </div>
             </div>
           </div>
         </Link>
 
         {/* Quality Module */}
-        <Link to="/app/quality" className="group bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200 hover:border-gray-300">
+        <Link to="/app/quality" className="group bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 hover:border-gray-300 dark:border-gray-600">
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 rounded-lg bg-teal-500">
                 <CheckCircleIcon className="h-6 w-6 text-white" />
               </div>
-              <ArrowRightIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
+              <ArrowRightIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600 dark:text-gray-300 transition-colors" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Quality Control</h3>
-            <p className="text-sm text-gray-600 mb-4">Quality assurance and testing</p>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Quality Control</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">Quality assurance and testing</p>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">Pass Rate</span>
-                <span className="text-sm font-semibold text-gray-900">{executiveData?.quality.pass_rate || 0}%</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">Pass Rate</span>
+                <span className="text-sm font-semibold text-gray-900 dark:text-white">{executiveData?.quality.pass_rate || 0}%</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">Today Tests</span>
-                <span className="text-sm font-semibold text-gray-900">{executiveData?.quality.inspections_today || 0}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">Today Tests</span>
+                <span className="text-sm font-semibold text-gray-900 dark:text-white">{executiveData?.quality.inspections_today || 0}</span>
               </div>
             </div>
           </div>
         </Link>
 
         {/* HR Module */}
-        <Link to="/app/hr" className="group bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200 hover:border-gray-300">
+        <Link to="/app/hr" className="group bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 hover:border-gray-300 dark:border-gray-600">
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 rounded-lg bg-pink-500">
                 <UsersIcon className="h-6 w-6 text-white" />
               </div>
-              <ArrowRightIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
+              <ArrowRightIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600 dark:text-gray-300 transition-colors" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Human Resources</h3>
-            <p className="text-sm text-gray-600 mb-4">Employee management and payroll</p>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Human Resources</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">Employee management and payroll</p>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">Employees</span>
-                <span className="text-sm font-semibold text-gray-900">{executiveData?.hr.total_employees || 0}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">Employees</span>
+                <span className="text-sm font-semibold text-gray-900 dark:text-white">{executiveData?.hr.total_employees || 0}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">Today Roster</span>
-                <span className="text-sm font-semibold text-gray-900">{executiveData?.hr.today_roster || 0}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">Today Roster</span>
+                <span className="text-sm font-semibold text-gray-900 dark:text-white">{executiveData?.hr.today_roster || 0}</span>
               </div>
             </div>
           </div>
         </Link>
 
         {/* Maintenance Module */}
-        <Link to="/app/maintenance" className="group bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200 hover:border-gray-300">
+        <Link to="/app/maintenance" className="group bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 hover:border-gray-300 dark:border-gray-600">
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 rounded-lg bg-red-500">
                 <WrenchScrewdriverIcon className="h-6 w-6 text-white" />
               </div>
-              <ArrowRightIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
+              <ArrowRightIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600 dark:text-gray-300 transition-colors" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('navigation.maintenance')}</h3>
-            <p className="text-sm text-gray-600 mb-4">Equipment maintenance scheduling</p>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('navigation.maintenance')}</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">Equipment maintenance scheduling</p>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">Overdue</span>
-                <span className="text-sm font-semibold text-gray-900">{executiveData?.maintenance.overdue || 0}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">Overdue</span>
+                <span className="text-sm font-semibold text-gray-900 dark:text-white">{executiveData?.maintenance.overdue || 0}</span>
               </div>
             </div>
           </div>
         </Link>
 
         {/* R&D Module */}
-        <Link to="/app/rd" className="group bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200 hover:border-gray-300">
+        <Link to="/app/rd" className="group bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 hover:border-gray-300 dark:border-gray-600">
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 rounded-lg bg-violet-500">
                 <BeakerIcon className="h-6 w-6 text-white" />
               </div>
-              <ArrowRightIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
+              <ArrowRightIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600 dark:text-gray-300 transition-colors" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">R&D</h3>
-            <p className="text-sm text-gray-600 mb-4">Research and development projects</p>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">R&D</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">Research and development projects</p>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">Active Projects</span>
-                <span className="text-sm font-semibold text-gray-900">{executiveData?.rd.active_projects || 0}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">Active Projects</span>
+                <span className="text-sm font-semibold text-gray-900 dark:text-white">{executiveData?.rd.active_projects || 0}</span>
               </div>
             </div>
           </div>
@@ -455,8 +455,8 @@ export default function Dashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Link to="/app/oee/records/new" className="btn-primary text-center">
             New OEE Record

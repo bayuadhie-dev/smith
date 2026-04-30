@@ -131,11 +131,11 @@ const ProductChangeover: React.FC = () => {
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
           <ArrowPathIcon className="h-7 w-7 text-orange-500" />
           Product Changeover
         </h1>
-        <p className="text-gray-600 mt-1">
+        <p className="text-gray-600 dark:text-gray-300 mt-1">
           Ganti produk di tengah produksi
         </p>
       </div>
@@ -149,7 +149,7 @@ const ProductChangeover: React.FC = () => {
 
       {/* Current Work Order Info */}
       {currentWO && (
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <CubeIcon className="h-5 w-5 text-blue-500" />
             Work Order Saat Ini
@@ -157,15 +157,15 @@ const ProductChangeover: React.FC = () => {
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <p className="text-sm text-gray-500">No. WO</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">No. WO</p>
               <p className="font-semibold">{currentWO.wo_number}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Produk</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Produk</p>
               <p className="font-semibold">{currentWO.product?.name || currentWO.product_name || '-'}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Status</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Status</p>
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                 currentWO.status === 'in_progress' ? 'bg-green-100 text-green-800' :
                 currentWO.status === 'paused' ? 'bg-yellow-100 text-yellow-800' :
@@ -175,7 +175,7 @@ const ProductChangeover: React.FC = () => {
               </span>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Mesin</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Mesin</p>
               <p className="font-semibold">{currentWO.machine?.name || currentWO.machine_name || '-'}</p>
             </div>
           </div>
@@ -186,7 +186,7 @@ const ProductChangeover: React.FC = () => {
               <span>Progress Produksi</span>
               <span className="font-medium">{currentWO.quantity_produced || 0} / {currentWO.quantity} ({progressPercentage}%)</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-3">
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
               <div 
                 className={`h-3 rounded-full ${progressPercentage >= 100 ? 'bg-green-500' : 'bg-blue-500'}`}
                 style={{ width: `${Math.min(progressPercentage, 100)}%` }}
@@ -197,7 +197,7 @@ const ProductChangeover: React.FC = () => {
       )}
 
       {/* Changeover Form */}
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-6">
+      <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <WrenchScrewdriverIcon className="h-5 w-5 text-orange-500" />
           Form Changeover
@@ -205,7 +205,7 @@ const ProductChangeover: React.FC = () => {
 
         {/* Reason Selection */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
             Alasan Changeover <span className="text-red-500">*</span>
           </label>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -229,21 +229,21 @@ const ProductChangeover: React.FC = () => {
 
         {/* Reason Detail */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
             Detail Alasan
           </label>
           <textarea
             value={form.reason_detail}
             onChange={(e) => setForm({ ...form, reason_detail: e.target.value })}
             rows={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
             placeholder="Jelaskan detail alasan changeover..."
           />
         </div>
 
         {/* Select Next Work Order */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
             Work Order Selanjutnya (Opsional)
           </label>
           {availableWOs.length > 0 ? (
@@ -257,8 +257,8 @@ const ProductChangeover: React.FC = () => {
                     : 'border-gray-200 hover:bg-gray-50'
                 }`}
               >
-                <p className="font-medium text-gray-600">Pilih nanti</p>
-                <p className="text-sm text-gray-500">Tentukan WO selanjutnya setelah changeover</p>
+                <p className="font-medium text-gray-600 dark:text-gray-300">Pilih nanti</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Tentukan WO selanjutnya setelah changeover</p>
               </button>
               
               {availableWOs.map((wo) => (
@@ -275,7 +275,7 @@ const ProductChangeover: React.FC = () => {
                   <div className="flex justify-between items-start">
                     <div>
                       <p className="font-medium">{wo.wo_number}</p>
-                      <p className="text-sm text-gray-600">{wo.product_name}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">{wo.product_name}</p>
                     </div>
                     <div className="text-right">
                       <span className={`px-2 py-1 rounded-full text-xs ${
@@ -285,14 +285,14 @@ const ProductChangeover: React.FC = () => {
                       }`}>
                         {wo.priority}
                       </span>
-                      <p className="text-sm text-gray-500 mt-1">Qty: {wo.quantity}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Qty: {wo.quantity}</p>
                     </div>
                   </div>
                 </button>
               ))}
             </div>
           ) : (
-            <p className="text-gray-500 text-sm p-3 bg-gray-50 rounded-lg">
+            <p className="text-gray-500 dark:text-gray-400 text-sm p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
               Tidak ada Work Order yang tersedia untuk mesin ini
             </p>
           )}
@@ -300,14 +300,14 @@ const ProductChangeover: React.FC = () => {
 
         {/* Notes */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
             Catatan Tambahan
           </label>
           <textarea
             value={form.notes}
             onChange={(e) => setForm({ ...form, notes: e.target.value })}
             rows={2}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
             placeholder="Catatan tambahan..."
           />
         </div>
@@ -317,7 +317,7 @@ const ProductChangeover: React.FC = () => {
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
           >
             Batal
           </button>

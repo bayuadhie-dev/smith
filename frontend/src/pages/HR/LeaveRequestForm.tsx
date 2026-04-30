@@ -50,14 +50,14 @@ const navigate = useNavigate()
           <ArrowLeftIcon className="h-4 w-4" />
           Back to Leave Management
         </button>
-        <h1 className="text-2xl font-bold text-gray-900">New Leave Request</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">New Leave Request</h1>
       </div>
 
       <div className="card">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Employee *
               </label>
               <select
@@ -77,7 +77,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Leave Type *
               </label>
               <select
@@ -96,7 +96,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Start Date *
               </label>
               <input
@@ -110,7 +110,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 End Date *
               </label>
               <input
@@ -124,7 +124,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Emergency Contact
               </label>
               <input
@@ -138,7 +138,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Emergency Phone
               </label>
               <input
@@ -153,7 +153,7 @@ const navigate = useNavigate()
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Reason *
             </label>
             <textarea

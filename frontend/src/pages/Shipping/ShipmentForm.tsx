@@ -127,8 +127,8 @@ const navigate = useNavigate()
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Create Shipment</h1>
-          <p className="text-gray-600">Create a new shipment for delivery</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Create Shipment</h1>
+          <p className="text-gray-600 dark:text-gray-300">Create a new shipment for delivery</p>
         </div>
         <button
           onClick={() => navigate('/app/shipping/orders')}
@@ -141,11 +141,11 @@ const navigate = useNavigate()
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Shipment Information */}
         <div className="card p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Shipment Information</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Shipment Information</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               </label>
               <select
                 {...register('customer_id')}
@@ -161,7 +161,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Related Sales Orders
               </label>
               <select
@@ -175,11 +175,11 @@ const navigate = useNavigate()
                   </option>
                 ))}
               </select>
-              <p className="mt-1 text-xs text-gray-500">Hold Ctrl/Cmd to select multiple orders</p>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Hold Ctrl/Cmd to select multiple orders</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Shipping Date *
               </label>
               <input
@@ -193,7 +193,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Expected Delivery Date
               </label>
               <input
@@ -205,7 +205,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Shipping Method *
               </label>
               <select
@@ -222,7 +222,7 @@ const navigate = useNavigate()
 
             {watchedShippingMethod === 'third_party' && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Courier/Carrier
                 </label>
                 <select {...register('carrier')} className="input-field">
@@ -237,7 +237,7 @@ const navigate = useNavigate()
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Tracking Number
               </label>
               <input
@@ -249,7 +249,7 @@ const navigate = useNavigate()
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Shipping Notes
               </label>
               <textarea
@@ -278,14 +278,14 @@ const navigate = useNavigate()
         {/* Vehicle & Driver Information */}
         {(watchedShippingMethod === 'company_vehicle' || watchedShippingMethod === 'express') && (
           <div className="card p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center gap-2">
               <TruckIcon className="h-5 w-5" />
               Vehicle & Driver Information
             </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Driver Name
                 </label>
                 <input
@@ -297,7 +297,7 @@ const navigate = useNavigate()
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Driver Phone
                 </label>
                 <input
@@ -309,7 +309,7 @@ const navigate = useNavigate()
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Vehicle Number
                 </label>
                 <input
@@ -321,7 +321,7 @@ const navigate = useNavigate()
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Vehicle Type
                 </label>
                 <select {...register('vehicle_type')} className="input-field">
@@ -340,7 +340,7 @@ const navigate = useNavigate()
         {/* Items to Ship */}
         <div className="card p-6">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium text-gray-900">Items to Ship</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Items to Ship</h3>
             <button
               type="button"
               onClick={addItem}
@@ -353,10 +353,10 @@ const navigate = useNavigate()
 
           <div className="space-y-4">
             {fields.map((field, index) => (
-              <div key={field.id} className="border border-gray-200 rounded-lg p-4">
+              <div key={field.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                 <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Product Name *
                     </label>
                     <input
@@ -370,7 +370,7 @@ const navigate = useNavigate()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Quantity *
                     </label>
                     <input
@@ -386,7 +386,7 @@ const navigate = useNavigate()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     </label>
                     <select {...register(`items.${index}.unit` as const)} className="input-field">
                       <option value="PCS">PCS</option>
@@ -399,7 +399,7 @@ const navigate = useNavigate()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Weight (kg)
                     </label>
                     <input
@@ -426,7 +426,7 @@ const navigate = useNavigate()
                 </div>
 
                 <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Dimensions (L x W x H)
                   </label>
                   <input
@@ -442,19 +442,19 @@ const navigate = useNavigate()
 
           {/* Shipping Summary */}
           <div className="mt-6 pt-4 border-t">
-            <div className="grid grid-cols-3 gap-4 text-sm bg-gray-50 p-4 rounded-lg">
+            <div className="grid grid-cols-3 gap-4 text-sm bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
               <div>
-                <span className="text-gray-600">Total Items:</span>
+                <span className="text-gray-600 dark:text-gray-300">Total Items:</span>
                 <p className="font-medium">{fields.length}</p>
               </div>
               <div>
-                <span className="text-gray-600">Total Weight:</span>
+                <span className="text-gray-600 dark:text-gray-300">Total Weight:</span>
                 <p className="font-medium">
                   {watch('items')?.reduce((total, item) => total + (parseFloat(item.weight_kg?.toString() || '0')), 0).toFixed(2)} kg
                 </p>
               </div>
               <div>
-                <span className="text-gray-600">Shipping Method:</span>
+                <span className="text-gray-600 dark:text-gray-300">Shipping Method:</span>
                 <p className="font-medium">
                   {shippingMethods.find(m => m.value === watchedShippingMethod)?.label}
                 </p>

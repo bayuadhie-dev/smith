@@ -1348,133 +1348,92 @@ def get_alerts():  # executive_alerts():
 
 
 @executive_dashboard_bp.route('/active-users', methods=['GET'])
-
 @jwt_required(optional=True)
-
 def get_active_users():
-
     """Get list of active users with their recent activity"""
-
     try:
-
+        from models.group_chat import ChatUserStatus
+        from utils.timezone import utc_to_local
+        
         users = db.session.query(User).filter(User.is_active == True).all()
-
         
-
         now = get_local_now()
-
-        online_threshold = now - timedelta(minutes=15)
-
+        online_threshold = now - timedelta(minutes=5)
         recent_threshold = now - timedelta(hours=24)
-
         
-
         active_users = []
-
         online_count = 0
-
         recent_count = 0
-
         
-
         for user in users:
-
-            if user.last_login:
-
-                if user.last_login >= online_threshold:
-
+            # Get chat status for real-time online detection
+            chat_status = db.session.query(ChatUserStatus).filter(
+                ChatUserStatus.user_id == user.id
+            ).first()
+            
+            # Determine status based on chat heartbeat
+            last_activity = None
+            if chat_status and chat_status.last_seen:
+                last_activity = utc_to_local(chat_status.last_seen)
+            elif user.last_login:
+                last_activity = utc_to_local(user.last_login)
+            
+            if last_activity:
+                if last_activity >= online_threshold:
                     status = 'online'
-
                     online_count += 1
-
-                elif user.last_login >= recent_threshold:
-
+                elif last_activity >= recent_threshold:
                     status = 'recent'
-
                     recent_count += 1
-
                 else:
-
                     status = 'offline'
-
             else:
-
                 status = 'never'
-
             
-
             user_roles = [ur.role.name for ur in user.roles if ur.role] if user.roles else []
-
             
-
             time_ago = None
-
-            if user.last_login:
-
-                delta = now - user.last_login
-
+            if last_activity:
+                delta = now - last_activity
                 if delta.days > 0:
-
                     time_ago = f"{delta.days}d ago"
-
                 elif delta.seconds >= 3600:
-
                     time_ago = f"{delta.seconds // 3600}h ago"
-
                 elif delta.seconds >= 60:
-
                     time_ago = f"{delta.seconds // 60}m ago"
-
                 else:
-
                     time_ago = "Just now"
-
             
-
             active_users.append({
-
                 'id': user.id,
-            'username': user.username,
-            'full_name': user.full_name,
-            'email': user.email,
-            'roles': user_roles,
-            'is_admin': user.is_admin,
-            'status': status,
-            'last_login': user.last_login.isoformat() if user.last_login else None,
-            'time_ago': time_ago
-
+                'username': user.username,
+                'full_name': user.full_name,
+                'email': user.email,
+                'roles': user_roles,
+                'is_admin': user.is_admin,
+                'status': status,
+                'last_login': last_activity.isoformat() if last_activity else None,
+                'time_ago': time_ago
             })
-
         
-
         status_order = {'online': 0, 'recent': 1, 'offline': 2, 'never': 3}
-
         active_users.sort(key=lambda x: (status_order.get(x['status'], 4), x['full_name']))
-
         
-
         return jsonify({
-
             'success': True,
             'data': {
-
                 'total_users': len(users),
-            'online_count': online_count,
-            'recent_count': recent_count,
-            'users': active_users
-
+                'online_count': online_count,
+                'recent_count': recent_count,
+                'users': active_users
             }
-
         }), 200
-
         
-
     except Exception as e:
-
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-
-
+        return jsonify({
+            'success': False,
+            'message': f'Error fetching active users: {str(e)}'
+        }), 500
 
 
 @executive_dashboard_bp.route('/production-executive', methods=['GET'])

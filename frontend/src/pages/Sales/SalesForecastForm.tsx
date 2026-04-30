@@ -341,8 +341,8 @@ const navigate = useNavigate()
     return (
       <div className="p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
+          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+          <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
         </div>
       </div>
     )
@@ -353,10 +353,10 @@ const navigate = useNavigate()
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             {isEdit ? 'Edit Sales Forecast' : 'Create Sales Forecast'}
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-300">
             {isEdit ? 'Update forecast details' : 'Create a new sales forecast for planning'}
           </p>
         </div>
@@ -374,14 +374,14 @@ const navigate = useNavigate()
           <div className="lg:col-span-2 space-y-6">
             {/* Basic Information */}
             <div className="card p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <ChartBarIcon className="h-5 w-5" />
                 Basic Information
               </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Forecast Number *
                   </label>
                   <input
@@ -397,7 +397,7 @@ const navigate = useNavigate()
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Forecast Name *
                   </label>
                   <input
@@ -413,7 +413,7 @@ const navigate = useNavigate()
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Forecast Type *
                   </label>
                   <select
@@ -428,7 +428,7 @@ const navigate = useNavigate()
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   </label>
                   <select
                     value={formData.methodology}
@@ -446,14 +446,14 @@ const navigate = useNavigate()
 
             {/* Period & Scope */}
             <div className="card p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <CalendarIcon className="h-5 w-5" />
                 Period & Scope
               </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Period Start *
                   </label>
                   <input
@@ -468,7 +468,7 @@ const navigate = useNavigate()
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Period End *
                   </label>
                   <input
@@ -483,7 +483,7 @@ const navigate = useNavigate()
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Customer (Optional)
                   </label>
                   <select
@@ -501,7 +501,7 @@ const navigate = useNavigate()
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Product (Optional)
                   </label>
                   <select
@@ -522,14 +522,14 @@ const navigate = useNavigate()
 
             {/* Forecast Values */}
             <div className="card p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <ChartBarIcon className="h-5 w-5" />
                 Forecast Values
               </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Most Likely * (Base Forecast)
                   </label>
                   <input
@@ -546,7 +546,7 @@ const navigate = useNavigate()
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Committed (Confirmed)
                   </label>
                   <input
@@ -560,7 +560,7 @@ const navigate = useNavigate()
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Best Case (Optimistic)
                   </label>
                   <input
@@ -577,7 +577,7 @@ const navigate = useNavigate()
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Worst Case (Pessimistic)
                   </label>
                   <input
@@ -598,7 +598,7 @@ const navigate = useNavigate()
             {/* Material Requirements (BOM Integration) */}
             {formData.product_id && (
               <div className="card p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                   <CubeIcon className="h-5 w-5" />
                   Material Requirements Planning
                 </h3>
@@ -606,7 +606,7 @@ const navigate = useNavigate()
                 {loadingBOM ? (
                   <div className="text-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                    <p className="text-sm text-gray-600 mt-2">Loading BOM data...</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">Loading BOM data...</p>
                   </div>
                 ) : bomData ? (
                   <div className="space-y-4">
@@ -645,24 +645,24 @@ const navigate = useNavigate()
 
                     {/* Material Requirements Table */}
                     {showMaterialRequirements && bomData.items && bomData.items.length > 0 && (
-                      <div className="border border-gray-200 rounded-lg overflow-hidden">
+                      <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
                         <div className="overflow-x-auto">
-                          <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
+                          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead className="bg-gray-50 dark:bg-gray-900">
                               <tr>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Material</th>
-                                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Per Batch</th>
-                                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Most Likely</th>
-                                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Best Case</th>
-                                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Worst Case</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Material</th>
+                                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Per Batch</th>
+                                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Most Likely</th>
+                                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Best Case</th>
+                                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Worst Case</th>
                               </tr>
                             </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
+                            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                               {bomData.items.map((item: any) => (
-                                <tr key={item.id} className="hover:bg-gray-50">
+                                <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                                   <td className="px-4 py-3 text-sm">
-                                    <div className="font-medium text-gray-900">{item.material_name}</div>
-                                    <div className="text-gray-500 text-xs">{item.material_code}</div>
+                                    <div className="font-medium text-gray-900 dark:text-white">{item.material_name}</div>
+                                    <div className="text-gray-500 dark:text-gray-400 text-xs">{item.material_code}</div>
                                   </td>
                                   <td className="px-4 py-3 text-sm text-right">
                                     {formatNumber(item.quantity)} {item.uom}
@@ -683,22 +683,22 @@ const navigate = useNavigate()
                         </div>
 
                         {/* Cost Summary */}
-                        <div className="bg-gray-50 px-4 py-3 border-t border-gray-200">
+                        <div className="bg-gray-50 dark:bg-gray-900 px-4 py-3 border-t border-gray-200 dark:border-gray-700">
                           <div className="grid grid-cols-3 gap-4 text-sm">
                             <div>
-                              <span className="text-gray-600">Most Likely Cost:</span>
+                              <span className="text-gray-600 dark:text-gray-300">Most Likely Cost:</span>
                               <p className="font-bold text-blue-900">
                                 {formatRupiah((bomData.total_cost / bomData.batch_size) * formData.most_likely)}
                               </p>
                             </div>
                             <div>
-                              <span className="text-gray-600">Best Case Cost:</span>
+                              <span className="text-gray-600 dark:text-gray-300">Best Case Cost:</span>
                               <p className="font-bold text-green-900">
                                 {formatRupiah((bomData.total_cost / bomData.batch_size) * formData.best_case)}
                               </p>
                             </div>
                             <div>
-                              <span className="text-gray-600">Worst Case Cost:</span>
+                              <span className="text-gray-600 dark:text-gray-300">Worst Case Cost:</span>
                               <p className="font-bold text-yellow-900">
                                 {formatRupiah((bomData.total_cost / bomData.batch_size) * formData.worst_case)}
                               </p>
@@ -710,8 +710,8 @@ const navigate = useNavigate()
 
                     {/* MRP Shortage Analysis */}
                     {formData.most_likely > 0 && (
-                      <div className="mt-4 border-t border-gray-200 pt-4">
-                        <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                      <div className="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+                        <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
                           <svg className="h-5 w-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                           </svg>
@@ -719,7 +719,7 @@ const navigate = useNavigate()
                         </h4>
                         
                         {loadingShortage ? (
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
                             Checking material availability...
                           </div>
@@ -802,7 +802,7 @@ const navigate = useNavigate()
 
             {/* Notes */}
             <div className="card p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                 Additional Notes
               </h3>
               <textarea
@@ -819,12 +819,12 @@ const navigate = useNavigate()
           <div className="space-y-6">
             {/* Resource Planning */}
             <div className="card p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                 Resource Planning
               </h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Kebutuhan Man Power
                   </label>
                   <input
@@ -832,33 +832,33 @@ const navigate = useNavigate()
                     value={formData.required_manpower}
                     onChange={(e) => handleInputChange('required_manpower', parseInt(e.target.value) || 0)}
                     min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                     placeholder="Jumlah operator yang dibutuhkan"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Total operator yang dibutuhkan untuk produksi</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Total operator yang dibutuhkan untuk produksi</p>
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Jumlah Shift per Hari
                   </label>
                   <select
                     value={formData.shifts_per_day}
                     onChange={(e) => handleInputChange('shifts_per_day', parseInt(e.target.value))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="1">1 Shift (8 jam)</option>
                     <option value="2">2 Shift (16 jam)</option>
                     <option value="3">3 Shift (24 jam)</option>
                   </select>
-                  <p className="text-xs text-gray-500 mt-1">Jumlah shift operasional per hari</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Jumlah shift operasional per hari</p>
                 </div>
               </div>
             </div>
 
             {/* Confidence Level */}
             <div className="card p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                 Confidence Level
               </h3>
               <div className="space-y-3">
@@ -880,7 +880,7 @@ const navigate = useNavigate()
                       <div className={`text-sm font-medium text-${option.color}-700`}>
                         {option.label}
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
                         {option.desc}
                       </div>
                     </div>
@@ -891,12 +891,12 @@ const navigate = useNavigate()
 
             {/* Forecast Summary */}
             <div className="card p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                 Forecast Summary
               </h3>
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Period:</span>
+                  <span className="text-gray-600 dark:text-gray-300">Period:</span>
                   <span className="font-medium">
                     {formData.period_start && formData.period_end ? 
                       `${new Date(formData.period_start).toLocaleDateString()} - ${new Date(formData.period_end).toLocaleDateString()}` : 
@@ -905,21 +905,21 @@ const navigate = useNavigate()
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Type:</span>
+                  <span className="text-gray-600 dark:text-gray-300">Type:</span>
                   <span className="font-medium capitalize">{formData.forecast_type}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Most Likely:</span>
+                  <span className="text-gray-600 dark:text-gray-300">Most Likely:</span>
                   <span className="font-medium">{formData.most_likely.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Range:</span>
+                  <span className="text-gray-600 dark:text-gray-300">Range:</span>
                   <span className="font-medium">
                     {formData.worst_case.toLocaleString()} - {formData.best_case.toLocaleString()}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Confidence:</span>
+                  <span className="text-gray-600 dark:text-gray-300">Confidence:</span>
                   <span className={`font-medium capitalize ${
                     formData.confidence_level === 'high' ? 'text-green-600' :
                     formData.confidence_level === 'medium' ? 'text-yellow-600' :
@@ -949,7 +949,7 @@ const navigate = useNavigate()
         </div>
 
         {/* Form Actions */}
-        <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
+        <div className="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
           <button
             type="button"
             onClick={() => navigate('/app/sales/forecasts')}

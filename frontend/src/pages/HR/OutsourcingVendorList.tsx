@@ -129,8 +129,8 @@ export default function OutsourcingVendorList() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Vendor Outsourcing</h1>
-          <p className="text-sm text-gray-500">Kelola vendor/perusahaan outsourcing</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Vendor Outsourcing</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Kelola vendor/perusahaan outsourcing</p>
         </div>
         <button
           onClick={() => { resetForm(); setEditingVendor(null); setShowForm(true) }}
@@ -143,20 +143,20 @@ export default function OutsourcingVendorList() {
 
       {/* Vendor Cards */}
       {loading ? (
-        <div className="text-center py-12 text-gray-500">Memuat data...</div>
+        <div className="text-center py-12 text-gray-500 dark:text-gray-400">Memuat data...</div>
       ) : vendors.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-xl shadow-sm border border-gray-200">
+        <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
           <BuildingOffice2Icon className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500">Belum ada vendor outsourcing.</p>
+          <p className="text-gray-500 dark:text-gray-400">Belum ada vendor outsourcing.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {vendors.map(vendor => (
-            <div key={vendor.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow">
+            <div key={vendor.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <h3 className="font-semibold text-gray-900">{vendor.name}</h3>
-                  <p className="text-xs text-gray-500">{vendor.code}</p>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">{vendor.name}</h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{vendor.code}</p>
                 </div>
                 <button
                   onClick={() => handleEdit(vendor)}
@@ -168,19 +168,19 @@ export default function OutsourcingVendorList() {
 
               <div className="space-y-2 text-sm">
                 {vendor.contact_person && (
-                  <div className="flex items-center gap-2 text-gray-600">
+                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
                     <UserGroupIcon className="h-4 w-4 text-gray-400" />
                     {vendor.contact_person}
                   </div>
                 )}
                 {vendor.phone && (
-                  <div className="flex items-center gap-2 text-gray-600">
+                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
                     <PhoneIcon className="h-4 w-4 text-gray-400" />
                     {vendor.phone}
                   </div>
                 )}
                 {vendor.email && (
-                  <div className="flex items-center gap-2 text-gray-600">
+                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
                     <EnvelopeIcon className="h-4 w-4 text-gray-400" />
                     {vendor.email}
                   </div>
@@ -191,7 +191,7 @@ export default function OutsourcingVendorList() {
                 <div className="flex items-center gap-1 text-sm">
                   <UserGroupIcon className="h-4 w-4 text-blue-500" />
                   <span className="font-medium text-blue-700">{vendor.employee_count}</span>
-                  <span className="text-gray-500">karyawan</span>
+                  <span className="text-gray-500 dark:text-gray-400">karyawan</span>
                 </div>
                 {vendor.management_fee_percent > 0 && (
                   <span className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
@@ -215,13 +215,13 @@ export default function OutsourcingVendorList() {
       {/* Form Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200">
-              <h2 className="text-lg font-bold text-gray-900">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">
                 {editingVendor ? 'Edit Vendor' : 'Tambah Vendor Baru'}
               </h2>
-              <button onClick={() => { setShowForm(false); setEditingVendor(null) }} className="p-1.5 hover:bg-gray-100 rounded-lg">
-                <XMarkIcon className="h-5 w-5 text-gray-500" />
+              <button onClick={() => { setShowForm(false); setEditingVendor(null) }} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg">
+                <XMarkIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
               </button>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
@@ -303,9 +303,9 @@ export default function OutsourcingVendorList() {
                   onChange={e => setFormData({...formData, notes: e.target.value})} />
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <button type="button" onClick={() => { setShowForm(false); setEditingVendor(null) }}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                   Batal
                 </button>
                 <button type="submit"

@@ -55,20 +55,20 @@ export default function QualityAnalytics() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Quality Analytics</h1>
-          <p className="text-gray-600">Comprehensive quality metrics and trend analysis</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Quality Analytics</h1>
+          <p className="text-gray-600 dark:text-gray-300">Comprehensive quality metrics and trend analysis</p>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-2">
             <CalendarIcon className="h-5 w-5 text-gray-400" />
             <select
               value={period}
               onChange={(e) => setPeriod(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="daily">Daily</option>
               <option value="weekly">Weekly</option>
@@ -81,7 +81,7 @@ export default function QualityAnalytics() {
             <select
               value={productId || ''}
               onChange={(e) => setProductId(e.target.value ? parseInt(e.target.value) : undefined)}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">All Products</option>
               <option value="1">Product A</option>
@@ -94,60 +94,60 @@ export default function QualityAnalytics() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Overall Pass Rate</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Overall Pass Rate</p>
               <p className="text-2xl font-bold text-green-600">
                 {summary.overall_pass_rate ? `${summary.overall_pass_rate}%` : 'No Data'}
               </p>
             </div>
             {summary.overall_pass_rate ? getTrendIcon('improving') : <div className="h-5 w-5 bg-gray-300 rounded-full"></div>}
           </div>
-          <p className="text-sm text-gray-500 mt-2">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
             {summary.overall_pass_rate ? '+2.3% from last period' : 'No data available'}
           </p>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Inspections</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Inspections</p>
               <p className="text-2xl font-bold text-blue-600">
                 {summary.total_inspected || 0}
               </p>
             </div>
             <ChartBarIcon className="h-8 w-8 text-blue-500" />
           </div>
-          <p className="text-sm text-gray-500 mt-2">This period</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">This period</p>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Defect Rate</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Defect Rate</p>
               <p className="text-2xl font-bold text-red-600">
                 {summary.defect_rate ? `${summary.defect_rate}%` : 'No Data'}
               </p>
             </div>
             {summary.defect_rate ? getTrendIcon('declining') : <div className="h-5 w-5 bg-gray-300 rounded-full"></div>}
           </div>
-          <p className="text-sm text-gray-500 mt-2">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
             {summary.defect_rate ? '-0.5% from last period' : 'No data available'}
           </p>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Cost of Quality</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Cost of Quality</p>
               <p className="text-2xl font-bold text-purple-600">
                 {summary.cost_of_quality ? `$${summary.cost_of_quality}` : 'No Data'}
               </p>
             </div>
             {summary.cost_of_quality ? getTrendIcon('improving') : <div className="h-5 w-5 bg-gray-300 rounded-full"></div>}
           </div>
-          <p className="text-sm text-gray-500 mt-2">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
             {summary.cost_of_quality ? '-8.2% from last period' : 'No data available'}
           </p>
         </div>
@@ -156,8 +156,8 @@ export default function QualityAnalytics() {
       {/* Charts Row 1 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Pass Rate Trend */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Pass Rate Trend</h3>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Pass Rate Trend</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={analytics}>
@@ -179,8 +179,8 @@ export default function QualityAnalytics() {
         </div>
 
         {/* Defect Distribution */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Defect Type Distribution</h3>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Defect Type Distribution</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -207,8 +207,8 @@ export default function QualityAnalytics() {
       {/* Charts Row 2 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Cost of Quality */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Cost of Quality Breakdown</h3>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Cost of Quality Breakdown</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={defaultCostData}>
@@ -226,8 +226,8 @@ export default function QualityAnalytics() {
         </div>
 
         {/* Inspection Volume */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Inspection Volume</h3>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Inspection Volume</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={analytics}>
@@ -249,36 +249,36 @@ export default function QualityAnalytics() {
       </div>
 
       {/* Quality Metrics Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="p-6 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Detailed Quality Metrics</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Detailed Quality Metrics</h3>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Pass Rate
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   First Pass Yield
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Defect Density
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Cost of Quality
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {analytics.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
                     <ChartBarIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
                     <p>No quality metrics data available</p>
                     <p className="text-sm">Data will appear here once quality inspections are recorded</p>
@@ -286,25 +286,25 @@ export default function QualityAnalytics() {
                 </tr>
               ) : (
                 analytics.map((item, index) => (
-                <tr key={index} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                     {item.date}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {item.inspections || item.total_inspected || 0}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     <span className={`font-medium ${item.pass_rate >= 95 ? 'text-green-600' : item.pass_rate >= 90 ? 'text-yellow-600' : 'text-red-600'}`}>
                       {item.pass_rate || item.overall_pass_rate || 0}%
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {item.first_pass_yield ? `${item.first_pass_yield}%` : '-'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {item.defect_density ? `${item.defect_density} DPM` : '-'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {item.cost_of_poor_quality ? `$${item.cost_of_poor_quality}` : '-'}
                   </td>
                 </tr>

@@ -238,7 +238,7 @@ const BackupRestore: React.FC = () => {
       case 'in_progress':
         return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">In Progress</span>;
       default:
-        return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Unknown</span>;
+        return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100">Unknown</span>;
     }
   };
 
@@ -255,10 +255,10 @@ const BackupRestore: React.FC = () => {
     <div className="p-6">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
           Backup & Restore
         </h1>
-        <p className="text-gray-600">
+        <p className="text-gray-600 dark:text-gray-300">
           Manage system backups and restore points
         </p>
       </div>
@@ -269,8 +269,8 @@ const BackupRestore: React.FC = () => {
         <div className="lg:col-span-2">
           
           {/* Quick Actions */}
-          <div className="bg-white rounded-lg shadow p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <button
@@ -318,38 +318,38 @@ const BackupRestore: React.FC = () => {
                 </button>
               </div>
             </div>
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
               Supported formats: .db (SQLite database), .zip (compressed backup)
             </p>
           </div>
 
           {/* Backup History */}
-          <div className="bg-white rounded-lg shadow">
-            <div className="p-6 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">Backup History</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Backup History</h2>
             </div>
             
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50">
+                <thead className="bg-gray-50 dark:bg-gray-900">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Backup Info
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       {t('common.size')}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.status')}</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.actions')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {backups.map((backup) => (
                     <tr key={backup.id}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
-                          <div className="text-sm font-medium text-gray-900">{backup.filename}</div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">{backup.filename}</div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
                             {new Date(backup.created_at).toLocaleString()} 
                             <span className="ml-2 capitalize">({backup.backup_type})</span>
                           </div>
@@ -358,7 +358,7 @@ const BackupRestore: React.FC = () => {
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                         {formatFileSize(backup.size)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -401,8 +401,8 @@ const BackupRestore: React.FC = () => {
               {backups.length === 0 && (
                 <div className="text-center py-12">
                   <CloudArrowUpIcon className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No backups found</h3>
-                  <p className="text-gray-500">Create your first backup to get started.</p>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No backups found</h3>
+                  <p className="text-gray-500 dark:text-gray-400">Create your first backup to get started.</p>
                 </div>
               )}
             </div>
@@ -411,8 +411,8 @@ const BackupRestore: React.FC = () => {
 
         {/* Backup Settings */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Backup Settings</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Backup Settings</h2>
             
             <div className="space-y-4">
               <div>
@@ -423,18 +423,18 @@ const BackupRestore: React.FC = () => {
                     onChange={(e) => setSettings({...settings, auto_backup_enabled: e.target.checked})}
                     className="mr-2"
                   />
-                  <span className="text-sm text-gray-700">Enable Automatic Backups</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-200">Enable Automatic Backups</span>
                 </label>
               </div>
 
               {settings.auto_backup_enabled && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Frequency</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Frequency</label>
                     <select
                       value={settings.backup_frequency}
                       onChange={(e) => setSettings({...settings, backup_frequency: e.target.value})}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2"
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                     >
                       <option value="daily">Daily</option>
                       <option value="weekly">Weekly</option>
@@ -443,28 +443,28 @@ const BackupRestore: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Backup Time</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Backup Time</label>
                     <input
                       type="time"
                       value={settings.backup_time}
                       onChange={(e) => setSettings({...settings, backup_time: e.target.value})}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2"
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                     />
                   </div>
                 </>
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Retention (days)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Retention (days)</label>
                 <input
                   type="number"
                   value={settings.retention_days}
                   onChange={(e) => setSettings({...settings, retention_days: parseInt(e.target.value)})}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                   min="1"
                   max="365"
                 />
-                <p className="text-xs text-gray-500 mt-1">Backups older than this will be automatically deleted</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Backups older than this will be automatically deleted</p>
               </div>
 
               <div>
@@ -475,7 +475,7 @@ const BackupRestore: React.FC = () => {
                     onChange={(e) => setSettings({...settings, include_files: e.target.checked})}
                     className="mr-2"
                   />
-                  <span className="text-sm text-gray-700">Include uploaded files</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-200">Include uploaded files</span>
                 </label>
               </div>
 
@@ -487,7 +487,7 @@ const BackupRestore: React.FC = () => {
                     onChange={(e) => setSettings({...settings, compress_backup: e.target.checked})}
                     className="mr-2"
                   />
-                  <span className="text-sm text-gray-700">Compress backups</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-200">Compress backups</span>
                 </label>
               </div>
 

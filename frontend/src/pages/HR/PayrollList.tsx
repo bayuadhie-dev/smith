@@ -71,7 +71,7 @@ const navigate = useNavigate()
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Payroll Management</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Payroll Management</h1>
         <div className="flex items-center gap-2">
           <button 
             onClick={() => navigate('/app/hr/payroll/outsourcing-vendors')}
@@ -101,7 +101,7 @@ const navigate = useNavigate()
       <div className="card">
         <div className="flex gap-4 items-center">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('common.status')}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('common.status')}</label>
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}

@@ -60,7 +60,7 @@ const ProductionPlanningDashboard: React.FC = () => {
   if (loading || !dashboardData) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500">Loading dashboard...</div>
+        <div className="text-gray-500 dark:text-gray-400">Loading dashboard...</div>
       </div>
     );
   }
@@ -102,8 +102,8 @@ const ProductionPlanningDashboard: React.FC = () => {
       <div className="mb-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Production Planning Dashboard</h1>
-            <p className="text-gray-600">Master Production Schedule (MPS) Overview</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Production Planning Dashboard</h1>
+            <p className="text-gray-600 dark:text-gray-300">Master Production Schedule (MPS) Overview</p>
           </div>
           <button
             onClick={() => navigate('/app/production/planning')}
@@ -115,28 +115,28 @@ const ProductionPlanningDashboard: React.FC = () => {
       </div>
 
       {/* Date Range Filter */}
-      <div className="bg-white rounded-lg shadow p-4 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               Start Date
             </label>
             <input
               type="date"
               value={dateRange.start_date}
               onChange={(e) => setDateRange({ ...dateRange, start_date: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               End Date
             </label>
             <input
               type="date"
               value={dateRange.end_date}
               onChange={(e) => setDateRange({ ...dateRange, end_date: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
@@ -144,51 +144,51 @@ const ProductionPlanningDashboard: React.FC = () => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-blue-100 rounded-lg">
               <Package className="text-blue-600" size={24} />
             </div>
           </div>
-          <h3 className="text-gray-600 text-sm font-medium mb-1">Total Planned</h3>
-          <p className="text-3xl font-bold text-gray-900">
+          <h3 className="text-gray-600 dark:text-gray-300 text-sm font-medium mb-1">Total Planned</h3>
+          <p className="text-3xl font-bold text-gray-900 dark:text-white">
             {dashboardData.summary.total_planned.toLocaleString()}
           </p>
-          <p className="text-sm text-gray-500 mt-1">Units planned for production</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Units planned for production</p>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-green-100 rounded-lg">
               <CheckCircle className="text-green-600" size={24} />
             </div>
           </div>
-          <h3 className="text-gray-600 text-sm font-medium mb-1">Total Actual</h3>
-          <p className="text-3xl font-bold text-gray-900">
+          <h3 className="text-gray-600 dark:text-gray-300 text-sm font-medium mb-1">Total Actual</h3>
+          <p className="text-3xl font-bold text-gray-900 dark:text-white">
             {dashboardData.summary.total_actual.toLocaleString()}
           </p>
-          <p className="text-sm text-gray-500 mt-1">Units actually produced</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Units actually produced</p>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-purple-100 rounded-lg">
               <TrendingUp className="text-purple-600" size={24} />
             </div>
           </div>
-          <h3 className="text-gray-600 text-sm font-medium mb-1">Completion Rate</h3>
-          <p className="text-3xl font-bold text-gray-900">
+          <h3 className="text-gray-600 dark:text-gray-300 text-sm font-medium mb-1">Completion Rate</h3>
+          <p className="text-3xl font-bold text-gray-900 dark:text-white">
             {dashboardData.summary.completion_rate.toFixed(1)}%
           </p>
-          <p className="text-sm text-gray-500 mt-1">Overall plan completion</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Overall plan completion</p>
         </div>
       </div>
 
       {/* Charts */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {/* Status Distribution */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Plans by Status</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Plans by Status</h2>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
@@ -211,8 +211,8 @@ const ProductionPlanningDashboard: React.FC = () => {
         </div>
 
         {/* Priority Distribution */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Plans by Priority</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Plans by Priority</h2>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={priorityData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -227,52 +227,52 @@ const ProductionPlanningDashboard: React.FC = () => {
       </div>
 
       {/* Upcoming Plans */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Upcoming Production Plans</h2>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Upcoming Production Plans</h2>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Plan Number</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Plan Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Period</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Priority</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Plan Number</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Plan Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Product</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Quantity</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Period</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Priority</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {dashboardData.upcoming_plans.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan={7} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                     No upcoming plans
                   </td>
                 </tr>
               ) : (
                 dashboardData.upcoming_plans.map((plan) => (
-                  <tr key={plan.id} className="hover:bg-gray-50">
+                  <tr key={plan.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{plan.plan_number}</div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">{plan.plan_number}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900">{plan.plan_name}</div>
+                      <div className="text-sm text-gray-900 dark:text-white">{plan.plan_name}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900">{plan.product_name}</div>
+                      <div className="text-sm text-gray-900 dark:text-white">{plan.product_name}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
+                      <div className="text-sm text-gray-900 dark:text-white">
                         {plan.planned_quantity.toLocaleString()}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
+                      <div className="text-sm text-gray-900 dark:text-white">
                         {new Date(plan.period_start).toLocaleDateString()}
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
                         to {new Date(plan.period_end).toLocaleDateString()}
                       </div>
                     </td>

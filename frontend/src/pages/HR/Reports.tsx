@@ -140,13 +140,13 @@ export default function Reports() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Laporan HR</h1>
-        <p className="text-gray-600">Generate dan export laporan HR</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Laporan HR</h1>
+        <p className="text-gray-600 dark:text-gray-300">Generate dan export laporan HR</p>
       </div>
 
       {/* Report Types */}
-      <div className="bg-white shadow rounded-lg p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Pilih Jenis Laporan</h2>
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Pilih Jenis Laporan</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {REPORT_TYPES.map(report => {
             const Icon = report.icon;
@@ -166,8 +166,8 @@ export default function Reports() {
                     <Icon className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900">{report.name}</h3>
-                    <p className="text-sm text-gray-500">{report.description}</p>
+                    <h3 className="font-medium text-gray-900 dark:text-white">{report.name}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{report.description}</p>
                   </div>
                 </div>
               </button>
@@ -177,14 +177,14 @@ export default function Reports() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white shadow rounded-lg p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <FunnelIcon className="h-5 w-5" />
           Filter
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Dari Tanggal</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Dari Tanggal</label>
             <input
               type="date"
               value={dateFrom}
@@ -193,7 +193,7 @@ export default function Reports() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Sampai Tanggal</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Sampai Tanggal</label>
             <input
               type="date"
               value={dateTo}
@@ -202,7 +202,7 @@ export default function Reports() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Departemen</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Departemen</label>
             <select
               value={department}
               onChange={(e) => setDepartment(e.target.value)}
@@ -247,25 +247,25 @@ export default function Reports() {
 
       {/* Report Preview */}
       {reportData && (
-        <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Preview Laporan</h2>
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Preview Laporan</h2>
           <div className="overflow-x-auto">
             {reportData.headers && reportData.rows ? (
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-900">
                   <tr>
                     {reportData.headers.map((header: string, idx: number) => (
-                      <th key={idx} className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                      <th key={idx} className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">
                         {header}
                       </th>
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                   {reportData.rows.map((row: any[], rowIdx: number) => (
-                    <tr key={rowIdx} className="hover:bg-gray-50">
+                    <tr key={rowIdx} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                       {row.map((cell, cellIdx) => (
-                        <td key={cellIdx} className="px-4 py-3 text-sm text-gray-900">
+                        <td key={cellIdx} className="px-4 py-3 text-sm text-gray-900 dark:text-white">
                           {cell}
                         </td>
                       ))}
@@ -274,7 +274,7 @@ export default function Reports() {
                 </tbody>
               </table>
             ) : (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <DocumentChartBarIcon className="h-12 w-12 mx-auto mb-2" />
                 <p>Tidak ada data untuk ditampilkan</p>
               </div>

@@ -270,7 +270,7 @@ const MaintenanceForm: React.FC = () => {
       <div className="flex items-center gap-4 mb-6">
         <Link
           to="/app/maintenance/list"
-          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          className="p-2 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-lg transition-colors"
         >
           <ArrowLeftIcon className="w-5 h-5 text-gray-500" />
         </Link>
@@ -620,7 +620,7 @@ const MaintenanceForm: React.FC = () => {
         <div className="flex justify-end gap-4">
           <Link
             to="/app/maintenance/list"
-            className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-700 transition-colors"
           >
             Cancel
           </Link>

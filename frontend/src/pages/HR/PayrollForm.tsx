@@ -339,17 +339,17 @@ const PayrollForm: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             {isEdit ? 'Edit Payroll Record' : 'New Payroll Record'}
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-300">
             {isEdit ? 'Update employee payroll calculation' : 'Create new payroll record for employee'}
           </p>
         </div>
       </div>
 
       {/* Form */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
             <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
@@ -360,13 +360,13 @@ const PayrollForm: React.FC = () => {
 
           {/* Basic Information */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
               Payroll Information
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <Calendar className="inline h-4 w-4 mr-1" />
                   Payroll Period *
                 </label>
@@ -375,7 +375,7 @@ const PayrollForm: React.FC = () => {
                   value={formData.payroll_period_id}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Select Payroll Period</option>
                   {payrollPeriods.map(period => (
@@ -385,14 +385,14 @@ const PayrollForm: React.FC = () => {
                   ))}
                 </select>
                 {selectedPeriod && (
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     Status: {selectedPeriod.status}
                   </p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <User className="inline h-4 w-4 mr-1" />
                   Employee *
                 </label>
@@ -401,7 +401,7 @@ const PayrollForm: React.FC = () => {
                   value={formData.employee_id}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Select Employee</option>
                   {employees.map(employee => (
@@ -411,7 +411,7 @@ const PayrollForm: React.FC = () => {
                   ))}
                 </select>
                 {selectedEmployee && (
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     Department: {selectedEmployee.department?.name || 'N/A'}
                   </p>
                 )}
@@ -421,14 +421,14 @@ const PayrollForm: React.FC = () => {
 
           {/* Salary Components */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
               <Plus className="inline h-4 w-4 mr-1" />
               Salary Components
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <CurrencyDollarIcon className="inline h-4 w-4 mr-1" />
                   Basic Salary *
                 </label>
@@ -440,12 +440,12 @@ const PayrollForm: React.FC = () => {
                   required
                   min="0"
                   step="1000"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 </label>
                 <input
                   type="number"
@@ -454,7 +454,7 @@ const PayrollForm: React.FC = () => {
                   onChange={handleInputChange}
                   min="0"
                   step="1000"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Transport, meal, etc."
                 />
               </div>
@@ -462,7 +462,7 @@ const PayrollForm: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Overtime Amount
                 </label>
                 <input
@@ -472,12 +472,12 @@ const PayrollForm: React.FC = () => {
                   onChange={handleInputChange}
                   min="0"
                   step="1000"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 </label>
                 <input
                   type="number"
@@ -486,12 +486,12 @@ const PayrollForm: React.FC = () => {
                   onChange={handleInputChange}
                   min="0"
                   step="1000"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 </label>
                 <input
                   type="number"
@@ -500,7 +500,7 @@ const PayrollForm: React.FC = () => {
                   onChange={handleInputChange}
                   min="0"
                   step="1000"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             </div>
@@ -508,14 +508,14 @@ const PayrollForm: React.FC = () => {
 
           {/* Attendance Information */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
               <ClockIcon className="inline h-4 w-4 mr-1" />
               Attendance Information
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Total Working Days
                 </label>
                 <input
@@ -525,12 +525,12 @@ const PayrollForm: React.FC = () => {
                   onChange={handleInputChange}
                   min="1"
                   max="31"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Days Worked
                 </label>
                 <input
@@ -540,12 +540,12 @@ const PayrollForm: React.FC = () => {
                   onChange={handleInputChange}
                   min="0"
                   max="31"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Days Absent
                 </label>
                 <input
@@ -555,12 +555,12 @@ const PayrollForm: React.FC = () => {
                   onChange={handleInputChange}
                   min="0"
                   max="31"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Overtime Hours
                 </label>
                 <input
@@ -570,7 +570,7 @@ const PayrollForm: React.FC = () => {
                   onChange={handleInputChange}
                   min="0"
                   step="0.5"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             </div>
@@ -578,14 +578,14 @@ const PayrollForm: React.FC = () => {
 
           {/* Deductions */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
               <Minus className="inline h-4 w-4 mr-1" />
               Potongan
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   PPh 21 (Progresif)
                 </label>
                 <input
@@ -595,12 +595,12 @@ const PayrollForm: React.FC = () => {
                   onChange={handleInputChange}
                   min="0"
                   step="1000"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   BPJS Kesehatan (1%)
                 </label>
                 <input
@@ -610,14 +610,14 @@ const PayrollForm: React.FC = () => {
                   onChange={handleInputChange}
                   min="0"
                   step="1000"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   BPJS Ketenagakerjaan (2%)
                 </label>
                 <input
@@ -627,12 +627,12 @@ const PayrollForm: React.FC = () => {
                   onChange={handleInputChange}
                   min="0"
                   step="1000"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Loan Deduction
                 </label>
                 <input
@@ -642,12 +642,12 @@ const PayrollForm: React.FC = () => {
                   onChange={handleInputChange}
                   min="0"
                   step="1000"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Other Deductions
                 </label>
                 <input
@@ -657,15 +657,15 @@ const PayrollForm: React.FC = () => {
                   onChange={handleInputChange}
                   min="0"
                   step="1000"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             </div>
           </div>
 
           {/* Salary Summary */}
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <h4 className="font-medium text-gray-900 mb-3">
+          <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+            <h4 className="font-medium text-gray-900 dark:text-white mb-3">
               <Calculator className="inline h-4 w-4 mr-1" />
               Salary Summary
             </h4>
@@ -674,37 +674,37 @@ const PayrollForm: React.FC = () => {
                 <div className="text-2xl font-bold text-green-600">
                   IDR {getGrossSalary().toLocaleString('id-ID')}
                 </div>
-                <div className="text-sm text-gray-600">Gross Salary</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">Gross Salary</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-red-600">
                   IDR {getTotalDeductions().toLocaleString('id-ID')}
                 </div>
-                <div className="text-sm text-gray-600">Total Deductions</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">Total Deductions</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-blue-600">
                   IDR {getNetSalary().toLocaleString('id-ID')}
                 </div>
-                <div className="text-sm text-gray-600">Net Salary</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">Net Salary</div>
               </div>
             </div>
           </div>
 
           {/* Payment Information */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
               Payment Information
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">{t('common.status')}</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('common.status')}</label>
                 <select
                   name="status"
                   value={formData.status}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   {statusOptions.map(status => (
                     <option key={status.value} value={status.value}>
@@ -720,14 +720,14 @@ const PayrollForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Payment Method
                 </label>
                 <select
                   name="payment_method"
                   value={formData.payment_method}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   {paymentMethods.map(method => (
                     <option key={method.value} value={method.value}>
@@ -736,7 +736,7 @@ const PayrollForm: React.FC = () => {
                   ))}
                 </select>
                 {selectedPaymentMethod && (
-                  <div className="mt-1 flex items-center gap-1 text-sm text-gray-500">
+                  <div className="mt-1 flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
                     <PaymentIcon className="h-4 w-4" />
                     <span>{selectedPaymentMethod.label}</span>
                   </div>
@@ -744,7 +744,7 @@ const PayrollForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Payment Date
                 </label>
                 <input
@@ -752,7 +752,7 @@ const PayrollForm: React.FC = () => {
                   name="payment_date"
                   value={formData.payment_date}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             </div>
@@ -760,7 +760,7 @@ const PayrollForm: React.FC = () => {
 
           {/* Notes */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               <DocumentTextIcon className="inline h-4 w-4 mr-1" />
             </label>
             <textarea
@@ -768,17 +768,17 @@ const PayrollForm: React.FC = () => {
               value={formData.notes}
               onChange={handleInputChange}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Enter any additional notes about this payroll record..."
             />
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200">
+          <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
             <button
               type="button"
               onClick={() => navigate('/app/hr/payroll')}
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+              className="px-4 py-2 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
             >
               <X className="inline h-4 w-4 mr-2" />{t('common.cancel')}</button>
             <button

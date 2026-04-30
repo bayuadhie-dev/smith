@@ -470,10 +470,10 @@ const RosterManagementComplete: React.FC = () => {
     <div className="p-6">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
           HR Roster Management - Complete
         </h1>
-        <p className="text-gray-600">
+        <p className="text-gray-600 dark:text-gray-300">
           Integrated employee scheduling with drag & drop functionality
         </p>
         
@@ -541,13 +541,13 @@ const RosterManagementComplete: React.FC = () => {
           
           {/* Employee Pool */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-lg">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg">
               <div className="p-4 border-b">
                 <div className="flex items-center">
                   <UserIcon className="h-5 w-5 text-blue-600 mr-2" />
                   <h2 className="text-lg font-semibold">Available Employees</h2>
                 </div>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                   Drag employees to assign them to machines
                 </p>
               </div>
@@ -590,7 +590,7 @@ const RosterManagementComplete: React.FC = () => {
                                     isAssignedThisWeek ? 'bg-gray-200' : 'bg-blue-100'
                                   }`}>
                                     {isAssignedThisWeek ? (
-                                      <CheckCircleIcon className="h-5 w-5 text-gray-500" />
+                                      <CheckCircleIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                                     ) : (
                                       <UserIcon className="h-5 w-5 text-blue-600" />
                                     )}
@@ -619,7 +619,7 @@ const RosterManagementComplete: React.FC = () => {
                       {provided.placeholder}
                       
                       {employees.length === 0 && (
-                        <div className="text-center py-8 text-gray-500">
+                        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                           <UserIcon className="h-12 w-12 mx-auto mb-2 text-gray-300" />
                           <p>No active employees found</p>
                         </div>
@@ -633,7 +633,7 @@ const RosterManagementComplete: React.FC = () => {
 
           {/* Roster Grid */}
           <div className="lg:col-span-3">
-            <div className="bg-white rounded-lg shadow-lg">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg">
               
               {/* Controls */}
               <div className="p-4 border-b">
@@ -643,24 +643,24 @@ const RosterManagementComplete: React.FC = () => {
                   <div className="flex items-center space-x-4">
                     <button
                       onClick={() => navigateWeek('prev')}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg transition-colors"
                       title="Previous Week"
                     >
                       <ArrowLeftIcon className="h-5 w-5" />
                     </button>
                     
                     <div className="text-center">
-                      <div className="font-semibold text-gray-900">
+                      <div className="font-semibold text-gray-900 dark:text-white">
                         Week of {selectedWeek.toLocaleDateString()}
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
                         {weekDates[0]} to {weekDates[6]}
                       </div>
                     </div>
                     
                     <button
                       onClick={() => navigateWeek('next')}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg transition-colors"
                       title="Next Week"
                     >
                       <ArrowRightIcon className="h-5 w-5" />
@@ -672,7 +672,7 @@ const RosterManagementComplete: React.FC = () => {
                     <select
                       value={selectedShift}
                       onChange={(e) => setSelectedShift(parseInt(e.target.value))}
-                      className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                       {shifts.map(shift => (
                         <option key={shift.id} value={shift.id}>
@@ -704,32 +704,32 @@ const RosterManagementComplete: React.FC = () => {
               {/* Roster Table */}
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-gray-50 dark:bg-gray-900">
                     <tr>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 min-w-[200px]">{t('production.machine')}</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-200 min-w-[200px]">{t('production.machine')}</th>
                       {weekDates.map(date => (
-                        <th key={date} className="px-3 py-3 text-center text-sm font-medium text-gray-700 min-w-[150px]">
+                        <th key={date} className="px-3 py-3 text-center text-sm font-medium text-gray-700 dark:text-gray-200 min-w-[150px]">
                           <div className="font-semibold">
                             {new Date(date).toLocaleDateString('en-US', { weekday: 'short' })}
                           </div>
-                          <div className="text-xs text-gray-500 font-normal">
+                          <div className="text-xs text-gray-500 dark:text-gray-400 font-normal">
                             {new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                           </div>
                         </th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200">
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                     {machines.map(machine => (
-                      <tr key={machine.id} className="hover:bg-gray-50">
+                      <tr key={machine.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                         <td className="px-4 py-4">
                           <div className="flex items-center">
                             <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
                               <CogIcon className="h-5 w-5 text-green-600" />
                             </div>
                             <div>
-                              <div className="font-medium text-gray-900">{machine.name}</div>
-                              <div className="text-sm text-gray-500">{machine.code}</div>
+                              <div className="font-medium text-gray-900 dark:text-white">{machine.name}</div>
+                              <div className="text-sm text-gray-500 dark:text-gray-400">{machine.code}</div>
                               <div className="text-xs text-gray-400">
                                 {machine.machine_type} - {machine.department}
                               </div>
@@ -800,7 +800,7 @@ const RosterManagementComplete: React.FC = () => {
                 </table>
                 
                 {machines.length === 0 && (
-                  <div className="text-center py-12 text-gray-500">
+                  <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                     <CogIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                     <p className="text-lg">No machines found</p>
                     <p className="text-sm">Add machines in Production module first</p>
@@ -815,7 +815,7 @@ const RosterManagementComplete: React.FC = () => {
       {/* Loading Overlay */}
       {saving && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl">
             <div className="flex items-center">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mr-3"></div>
               <span className="text-lg">Processing...</span>

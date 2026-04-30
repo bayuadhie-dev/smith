@@ -75,15 +75,15 @@ interface ModuleStats {
 
 const getStatusColor = (status: string) => {
   const statusColors: Record<string, string> = {
-    'pending': 'bg-yellow-100 text-yellow-800',
-    'in_progress': 'bg-blue-100 text-blue-800',
-    'completed': 'bg-green-100 text-green-800',
-    'cancelled': 'bg-red-100 text-red-800',
-    'approved': 'bg-green-100 text-green-800',
-    'rejected': 'bg-red-100 text-red-800',
-    'draft': 'bg-gray-100 text-gray-800',
+    'pending': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+    'in_progress': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+    'completed': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+    'cancelled': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+    'approved': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+    'rejected': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+    'draft': 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
   }
-  return statusColors[status] || 'bg-gray-100 text-gray-800'
+  return statusColors[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
 }
 
 const getPriorityColor = (priority: string) => {
@@ -433,90 +433,192 @@ export default function DeskPage() {
   }
 
   return (
-    <div className="px-4 py-6">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          Welcome back, {user?.full_name || 'User'}!
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Here's what's happening across your business today.
-        </p>
+    <div className="px-4 py-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
+      {/* Header with Gradient */}
+      <div className="mb-8 relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 p-8 shadow-2xl">
+        {/* Animated background pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0" style={{
+            backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
+            backgroundSize: '40px 40px'
+          }}></div>
+        </div>
+        
+        {/* Content */}
+        <div className="relative">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">
+                Welcome back, {user?.full_name || 'User'}! 👋
+              </h1>
+              <p className="text-blue-100 text-lg">
+                Here's what's happening across your business today.
+              </p>
+            </div>
+            <div className="hidden lg:block">
+              <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/20">
+                <div className="text-center">
+                  <p className="text-blue-100 text-sm mb-1">Current Time</p>
+                  <p className="text-white text-2xl font-bold">
+                    {new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                  <p className="text-blue-100 text-xs mt-1">
+                    {new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short' })}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Decorative elements */}
+        <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/5 rounded-full blur-3xl"></div>
+        <div className="absolute -top-10 -left-10 w-40 h-40 bg-white/5 rounded-full blur-3xl"></div>
       </div>
 
-      {/* Search Bar */}
+      {/* Search Bar with Glassmorphism */}
       <div className="mb-8">
-        <form onSubmit={handleSearch} className="max-w-2xl">
-          <div className="relative">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search for anything... (e.g., work orders, customers, products)"
-              className="w-full px-4 py-3 pl-12 pr-4 text-gray-900 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:placeholder-gray-400"
-            />
-            <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-              <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
+        <form onSubmit={handleSearch} className="max-w-3xl mx-auto">
+          <div className="relative group">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-2xl blur opacity-20 group-hover:opacity-30 transition duration-300"></div>
+            <div className="relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search for anything... (work orders, customers, products, documents)"
+                className="w-full px-6 py-4 pl-14 pr-32 text-gray-900 dark:text-white bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border-2 border-gray-200 dark:border-gray-600 rounded-2xl 
+                         focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white dark:focus:bg-gray-800
+                         transition-all duration-300 shadow-lg hover:shadow-xl
+                         placeholder:text-gray-400 dark:placeholder:text-gray-500 text-base"
+              />
+              <div className="absolute inset-y-0 left-0 flex items-center pl-5">
+                <svg className="w-6 h-6 text-gray-400 dark:text-gray-500 group-focus-within:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <button
+                type="submit"
+                className="absolute inset-y-0 right-2 my-2 px-6 text-sm font-semibold text-white 
+                         bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl 
+                         hover:from-blue-700 hover:to-indigo-700 
+                         focus:ring-4 focus:ring-blue-500/50
+                         transition-all duration-200 shadow-md hover:shadow-lg
+                         flex items-center gap-2"
+              >
+                <span>Search</span>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </button>
             </div>
-            <button
-              type="submit"
-              className="absolute inset-y-0 right-0 px-4 py-3 text-sm font-medium text-white bg-blue-600 rounded-r-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
-            >
-              Search
-            </button>
           </div>
+          <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-3">
+            <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded">Ctrl</kbd>
+            {' + '}
+            <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded">K</kbd>
+            {' for quick search'}
+          </p>
         </form>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      {/* Quick Stats with Modern Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {quickStats.map((stat: QuickStat, index: number) => {
           const IconComponent = iconMap[stat.icon] || ChartBarIcon
+          const gradients = [
+            'from-blue-500 to-indigo-600',
+            'from-green-500 to-emerald-600',
+            'from-purple-500 to-violet-600',
+            'from-orange-500 to-amber-600'
+          ]
+          const gradient = gradients[index % gradients.length]
+          
           return (
-            <div key={index} className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{stat.label}</p>
-                  <p className="text-2xl font-semibold text-gray-900 dark:text-white">{stat.value}</p>
+            <div 
+              key={index} 
+              className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 overflow-hidden border border-gray-200 dark:border-gray-700"
+            >
+              {/* Gradient background */}
+              <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-300`}></div>
+              
+              {/* Content */}
+              <div className="relative">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase tracking-wide">{stat.label}</p>
+                    <p className="text-3xl font-bold text-gray-900 dark:text-white tabular-nums">{stat.value}</p>
+                  </div>
+                  <div className={`p-3 rounded-xl bg-gradient-to-br ${gradient} shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                    <IconComponent className="h-6 w-6 text-white" />
+                  </div>
                 </div>
-                <IconComponent className={`h-8 w-8 ${stat.color}`} />
+                
+                {stat.change !== undefined && (
+                  <div className="flex items-center gap-2">
+                    <div className={`flex items-center gap-1 px-2 py-1 rounded-lg ${
+                      stat.change > 0 ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'
+                    }`}>
+                      {stat.change > 0 ? (
+                        <ArrowUpIcon className="h-4 w-4 text-green-600 dark:text-green-400" />
+                      ) : (
+                        <ArrowDownIcon className="h-4 w-4 text-red-600 dark:text-red-400" />
+                      )}
+                      <span className={`text-sm font-semibold ${
+                        stat.change > 0 ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'
+                      }`}>
+                        {Math.abs(stat.change)}
+                      </span>
+                    </div>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">from yesterday</span>
+                  </div>
+                )}
               </div>
-              {stat.change !== undefined && (
-                <div className="mt-2 flex items-center text-sm">
-                  {stat.change > 0 ? (
-                    <ArrowUpIcon className="h-4 w-4 text-green-500 mr-1" />
-                  ) : (
-                    <ArrowDownIcon className="h-4 w-4 text-red-500 mr-1" />
-                  )}
-                  <span className={stat.change > 0 ? 'text-green-600' : 'text-red-600'}>
-                    {Math.abs(stat.change)} from yesterday
-                  </span>
-                </div>
-              )}
+
+              {/* Decorative corner */}
+              <div className="absolute top-0 right-0 w-20 h-20 opacity-10">
+                <div className={`absolute inset-0 bg-gradient-to-br ${gradient} rounded-bl-full`}></div>
+              </div>
             </div>
           )
         })}
       </div>
 
-      {/* Quick Shortcuts (Single Pages) */}
+      {/* Quick Shortcuts with Modern Pills */}
       <div className="mb-8">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Shortcuts</h2>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <SparklesIcon className="w-5 h-5 text-blue-600" />
+          Quick Shortcuts
+        </h2>
         <div className="flex flex-wrap gap-3">
           {menuGroups
             .filter((group) => group.groupName === 'MAIN')
             .flatMap((group) => group.items)
-            .map((item) => (
-              <button
-                key={item.name}
-                onClick={() => navigate(item.href)}
-                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <item.icon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{item.name}</span>
-              </button>
-            ))}
+            .map((item, index) => {
+              const colors = [
+                'from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700',
+                'from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700',
+                'from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700',
+                'from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700',
+              ]
+              const gradient = colors[index % colors.length]
+              
+              return (
+                <button
+                  key={item.name}
+                  onClick={() => navigate(item.href)}
+                  className={`group flex items-center gap-3 px-5 py-3 bg-gradient-to-r ${gradient} text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-0.5`}
+                >
+                  <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm group-hover:scale-110 transition-transform">
+                    <item.icon className="h-5 w-5" />
+                  </div>
+                  <span className="text-sm font-semibold">{item.name}</span>
+                  <svg className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              )
+            })}
         </div>
       </div>
 
@@ -553,18 +655,18 @@ export default function DeskPage() {
       {/* Recent Documents */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div>
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Documents</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Documents</h3>
             <div className="space-y-3">
               {recentDocuments?.slice(0, 5).map((doc, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                   <div className="flex items-center space-x-3">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center bg-blue-100`}>
-                      <DocumentTextIcon className="w-5 h-5 text-blue-600" />
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center bg-blue-100 dark:bg-blue-900/30`}>
+                      <DocumentTextIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900">{doc.name}</p>
-                      <p className="text-sm text-gray-500">{doc.type} • {doc.number} • {doc.date}</p>
+                      <p className="font-medium text-gray-900 dark:text-white">{doc.name}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{doc.type} • {doc.number} • {doc.date}</p>
                     </div>
                   </div>
                   <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(doc.status)}`}>
@@ -573,7 +675,7 @@ export default function DeskPage() {
                 </div>
               ))}
               {recentDocuments?.length === 0 && (
-                <p className="text-gray-500 text-center py-8">No recent documents</p>
+                <p className="text-gray-500 dark:text-gray-400 text-center py-8">No recent documents</p>
               )}
             </div>
           </div>
@@ -581,18 +683,18 @@ export default function DeskPage() {
 
         {/* Recent Work Orders */}
         <div>
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Work Orders</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Work Orders</h3>
             <div className="space-y-3">
               {recentWorkOrders?.slice(0, 5).map((wo, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                   <div className="flex items-center space-x-3">
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${getPriorityColor(wo.priority)}`}>
                       <ClipboardDocumentListIcon className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900">{wo.name}</p>
-                      <p className="text-sm text-gray-500">{wo.product} • {wo.date}</p>
+                      <p className="font-medium text-gray-900 dark:text-white">{wo.name}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{wo.product} • {wo.date}</p>
                     </div>
                   </div>
                   <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(wo.status)}`}>
@@ -601,7 +703,7 @@ export default function DeskPage() {
                 </div>
               ))}
               {recentWorkOrders?.length === 0 && (
-                <p className="text-gray-500 text-center py-8">No recent work orders</p>
+                <p className="text-gray-500 dark:text-gray-400 text-center py-8">No recent work orders</p>
               )}
             </div>
           </div>
@@ -613,37 +715,37 @@ export default function DeskPage() {
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => navigate('/app/production/work-orders/new')}
-              className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+              className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shadow-md hover:shadow-lg"
             >
               Create Work Order
             </button>
             <button
               onClick={() => navigate('/app/sales/orders/new')}
-              className="px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+              className="px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium shadow-md hover:shadow-lg"
             >
               New Sales Order
             </button>
             <button
               onClick={() => navigate('/app/purchasing/orders/new')}
-              className="px-4 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm font-medium"
+              className="px-4 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm font-medium shadow-md hover:shadow-lg"
             >
               Create PO
             </button>
             <button
               onClick={() => navigate('/app/quality/incoming')}
-              className="px-4 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors text-sm font-medium"
+              className="px-4 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors text-sm font-medium shadow-md hover:shadow-lg"
             >
               QC Inspection
             </button>
             <button
               onClick={() => navigate('/app/warehouse/material-issues/new')}
-              className="px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
+              className="px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium shadow-md hover:shadow-lg"
             >
               Issue Material
             </button>
             <button
               onClick={() => navigate('/app/finance/reports')}
-              className="px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
+              className="px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium shadow-md hover:shadow-lg"
             >
               View Reports
             </button>

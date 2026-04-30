@@ -58,7 +58,7 @@ const MobileOptimizedTable: React.FC<MobileOptimizedTableProps> = ({
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="p-8 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-2 text-gray-500">{t('common.loading')}</p>
@@ -69,7 +69,7 @@ const MobileOptimizedTable: React.FC<MobileOptimizedTableProps> = ({
 
   if (data.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="p-8 text-center text-gray-500">
           {emptyMessage}
         </div>
@@ -78,11 +78,11 @@ const MobileOptimizedTable: React.FC<MobileOptimizedTableProps> = ({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
       {/* Desktop Table */}
       <div className="hidden lg:block overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead className="bg-gray-50 dark:bg-gray-900">
             <tr>
               {columns.map((column) => (
                 <th
@@ -97,11 +97,11 @@ const MobileOptimizedTable: React.FC<MobileOptimizedTableProps> = ({
               )}
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             {data.map((row, index) => (
-              <tr key={index} className="hover:bg-gray-50">
+              <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                 {columns.map((column) => (
-                  <td key={column.key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td key={column.key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {column.render ? column.render(row[column.key], row) : row[column.key]}
                   </td>
                 ))}
@@ -147,7 +147,7 @@ const MobileOptimizedTable: React.FC<MobileOptimizedTableProps> = ({
           const isExpanded = expandedRows.has(index);
           
           return (
-            <div key={index} className="border-b border-gray-200 last:border-b-0">
+            <div key={index} className="border-b border-gray-200 dark:border-gray-700 last:border-b-0">
               {/* Main Card Content */}
               <div className="p-4">
                 {/* High Priority Fields - Always Visible */}
@@ -155,7 +155,7 @@ const MobileOptimizedTable: React.FC<MobileOptimizedTableProps> = ({
                   {highPriorityColumns.map((column) => (
                     <div key={column.key} className="flex justify-between items-start">
                       <span className="text-sm font-medium text-gray-500">{column.label}:</span>
-                      <span className="text-sm text-gray-900 text-right flex-1 ml-2">
+                      <span className="text-sm text-gray-900 dark:text-white text-right flex-1 ml-2">
                         {column.render ? column.render(row[column.key], row) : row[column.key]}
                       </span>
                     </div>
@@ -168,7 +168,7 @@ const MobileOptimizedTable: React.FC<MobileOptimizedTableProps> = ({
                     {mediumPriorityColumns.map((column) => (
                       <div key={column.key} className="flex justify-between items-start">
                         <span className="text-sm font-medium text-gray-500">{column.label}:</span>
-                        <span className="text-sm text-gray-900 text-right flex-1 ml-2">
+                        <span className="text-sm text-gray-900 dark:text-white text-right flex-1 ml-2">
                           {column.render ? column.render(row[column.key], row) : row[column.key]}
                         </span>
                       </div>
@@ -212,7 +212,7 @@ const MobileOptimizedTable: React.FC<MobileOptimizedTableProps> = ({
                   {lowPriorityColumns.length > 0 && (
                     <button
                       onClick={() => toggleRow(index)}
-                      className="flex items-center text-sm text-gray-500 hover:text-gray-700"
+                      className="flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-200"
                     >
                       {isExpanded ? 'Less' : 'More'}
                       {isExpanded ? (
@@ -230,7 +230,7 @@ const MobileOptimizedTable: React.FC<MobileOptimizedTableProps> = ({
                     {lowPriorityColumns.map((column) => (
                       <div key={column.key} className="flex justify-between items-start">
                         <span className="text-sm font-medium text-gray-500">{column.label}:</span>
-                        <span className="text-sm text-gray-900 text-right flex-1 ml-2">
+                        <span className="text-sm text-gray-900 dark:text-white text-right flex-1 ml-2">
                           {column.render ? column.render(row[column.key], row) : row[column.key]}
                         </span>
                       </div>

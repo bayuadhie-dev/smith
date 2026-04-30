@@ -65,13 +65,13 @@ const AttendanceNotClockedOut: React.FC = () => {
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate(-1)}
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Belum Clock Out Hari Ini</h1>
-            <p className="text-gray-500 text-sm">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Belum Clock Out Hari Ini</h1>
+            <p className="text-gray-500 dark:text-gray-400 text-sm">
               {date && new Date(date).toLocaleDateString('id-ID', { 
                 weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' 
               })}
@@ -79,7 +79,7 @@ const AttendanceNotClockedOut: React.FC = () => {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-500">
+          <span className="text-sm text-gray-500 dark:text-gray-400">
             Update terakhir: {lastRefresh.toLocaleTimeString('id-ID')}
           </span>
           <button
@@ -95,38 +95,38 @@ const AttendanceNotClockedOut: React.FC = () => {
 
       {/* Stats Card */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
               <Users className="w-5 h-5 text-orange-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900">{records.length}</p>
-              <p className="text-sm text-gray-500">Belum Clock Out</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{records.length}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Belum Clock Out</p>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
               <AlertTriangle className="w-5 h-5 text-red-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {records.filter(r => r.hours_since_clock_in >= 10).length}
               </p>
-              <p className="text-sm text-gray-500">Lebih dari 10 Jam</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Lebih dari 10 Jam</p>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
               <Clock className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900">17:00</p>
-              <p className="text-sm text-gray-500">Jam Pulang Standar</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">17:00</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Jam Pulang Standar</p>
             </div>
           </div>
         </div>
@@ -140,44 +140,44 @@ const AttendanceNotClockedOut: React.FC = () => {
       )}
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
         {loading ? (
           <div className="p-8 text-center">
             <RefreshCw className="w-8 h-8 animate-spin mx-auto text-blue-600 mb-2" />
-            <p className="text-gray-500">Memuat data...</p>
+            <p className="text-gray-500 dark:text-gray-400">Memuat data...</p>
           </div>
         ) : records.length === 0 ? (
           <div className="p-8 text-center">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Clock className="w-8 h-8 text-green-600" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-1">Semua Sudah Clock Out! 🎉</h3>
-            <p className="text-gray-500">Tidak ada staff yang belum clock out hari ini.</p>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Semua Sudah Clock Out! 🎉</h3>
+            <p className="text-gray-500 dark:text-gray-400">Tidak ada staff yang belum clock out hari ini.</p>
           </div>
         ) : (
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jabatan</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Departemen</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Clock In</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Durasi</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nama</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Jabatan</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Departemen</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Clock In</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Durasi</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {records.map((record, index) => (
-                <tr key={record.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-sm text-gray-500">{index + 1}</td>
+                <tr key={record.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                  <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{index + 1}</td>
                   <td className="px-4 py-3">
-                    <span className="font-medium text-gray-900">{record.name}</span>
+                    <span className="font-medium text-gray-900 dark:text-white">{record.name}</span>
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{record.jabatan || '-'}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{record.departemen || '-'}</td>
-                  <td className="px-4 py-3 text-sm font-mono text-gray-600">{formatTime(record.clock_in)}</td>
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{record.jabatan || '-'}</td>
+                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{record.departemen || '-'}</td>
+                  <td className="px-4 py-3 text-sm font-mono text-gray-600 dark:text-gray-300">{formatTime(record.clock_in)}</td>
+                  <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">
                     {record.hours_since_clock_in.toFixed(1)} jam
                   </td>
                   <td className="px-4 py-3">{getStatusBadge(record.hours_since_clock_in)}</td>

@@ -144,8 +144,8 @@ const [dashboardData, setDashboardData] = useState<ExecutiveDashboardData | null
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <ExclamationTriangleIcon className="h-16 w-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Dashboard</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Error Loading Dashboard</h2>
+          <p className="text-gray-600 dark:text-gray-300 mb-4">{error}</p>
           <button
             onClick={fetchDashboardData}
             className="btn-primary"
@@ -295,18 +295,18 @@ const [dashboardData, setDashboardData] = useState<ExecutiveDashboardData | null
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="py-6">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Executive Dashboard</h1>
-                <p className="text-gray-600">Comprehensive business intelligence and KPIs</p>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Executive Dashboard</h1>
+                <p className="text-gray-600 dark:text-gray-300">Comprehensive business intelligence and KPIs</p>
               </div>
               <div className="flex items-center gap-4">
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-gray-500 dark:text-gray-400">
                   Last updated: {dashboardData ? new Date(dashboardData.summary.last_updated).toLocaleTimeString() : ''}
                 </div>
                 <button
@@ -336,7 +336,7 @@ const [dashboardData, setDashboardData] = useState<ExecutiveDashboardData | null
                   <div key={index} className={`p-3 rounded-md border ${getSeverityColor(issue.severity)}`}>
                     <div className="flex items-center justify-between">
                       <span className="font-medium">{issue.message}</span>
-                      <span className="text-xs px-2 py-1 rounded-full bg-white">{issue.module}</span>
+                      <span className="text-xs px-2 py-1 rounded-full bg-white dark:bg-gray-800">{issue.module}</span>
                     </div>
                   </div>
                 ))}
@@ -347,11 +347,11 @@ const [dashboardData, setDashboardData] = useState<ExecutiveDashboardData | null
 
         {/* KeyIcon Metrics Summary */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Monthly Sales</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Monthly Sales</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {formatRupiah(dashboardData?.financial.sales_this_month || 0)}
                 </p>
               </div>
@@ -366,31 +366,31 @@ const [dashboardData, setDashboardData] = useState<ExecutiveDashboardData | null
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Production Efficiency</p>
-                <p className="text-2xl font-bold text-gray-900">{dashboardData?.production.efficiency || 0}%</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Production Efficiency</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardData?.production.efficiency || 0}%</p>
               </div>
               <CogIcon className="h-8 w-8 text-green-500" />
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Average OEE</p>
-                <p className="text-2xl font-bold text-gray-900">{dashboardData?.oee.average_oee || 0}%</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Average OEE</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardData?.oee.average_oee || 0}%</p>
               </div>
               <ChartBarIcon className="h-8 w-8 text-purple-500" />
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Quality Pass Rate</p>
-                <p className="text-2xl font-bold text-gray-900">{dashboardData?.quality.pass_rate || 0}%</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Quality Pass Rate</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardData?.quality.pass_rate || 0}%</p>
               </div>
               <CheckCircleIcon className="h-8 w-8 text-teal-500" />
             </div>
@@ -399,8 +399,8 @@ const [dashboardData, setDashboardData] = useState<ExecutiveDashboardData | null
 
         {/* Sales Trend Chart */}
         {dashboardData?.trends.sales && dashboardData.trends.sales.length > 0 && (
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-8">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Sales Trend (Last 7 Days)</h3>
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-8">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Sales Trend (Last 7 Days)</h3>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={dashboardData.trends.sales}>
@@ -427,29 +427,29 @@ const [dashboardData, setDashboardData] = useState<ExecutiveDashboardData | null
             <Link
               key={module.id}
               to={module.route}
-              className="group bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200 hover:border-gray-300"
+              className="group bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 hover:border-gray-300 dark:border-gray-600"
             >
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className={`p-3 rounded-lg ${module.color}`}>
                     <module.icon className="h-6 w-6 text-white" />
                   </div>
-                  <ArrowRightIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                  <ArrowRightIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600 dark:text-gray-300 transition-colors" />
                 </div>
                 
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{module.name}</h3>
-                <p className="text-sm text-gray-600 mb-4">{module.description}</p>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{module.name}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">{module.description}</p>
                 
                 {module.metrics && (
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500">{module.metrics.primary.label}</span>
-                      <span className="text-sm font-semibold text-gray-900">{module.metrics.primary.value}</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">{module.metrics.primary.label}</span>
+                      <span className="text-sm font-semibold text-gray-900 dark:text-white">{module.metrics.primary.value}</span>
                     </div>
                     {module.metrics.secondary && (
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-500">{module.metrics.secondary.label}</span>
-                        <span className="text-sm font-semibold text-gray-900">{module.metrics.secondary.value}</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">{module.metrics.secondary.label}</span>
+                        <span className="text-sm font-semibold text-gray-900 dark:text-white">{module.metrics.secondary.value}</span>
                       </div>
                     )}
                   </div>
@@ -460,8 +460,8 @@ const [dashboardData, setDashboardData] = useState<ExecutiveDashboardData | null
         </div>
 
         {/* Quick Actions */}
-        <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+        <div className="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Link to="/app/oee/records/new" className="btn-primary text-center">
               New OEE Record

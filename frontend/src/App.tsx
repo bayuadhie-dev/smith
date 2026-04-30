@@ -18,8 +18,10 @@ import ResetPassword from './pages/Auth/ResetPassword'
 import OAuthCallback from './pages/Auth/OAuthCallback'
 import CompleteProfile from './pages/Auth/CompleteProfile'
 import Dashboard from './pages/Dashboard/Dashboard'
+import DashboardEnhanced from './pages/Dashboard/DashboardEnhanced'
 import DeskPage from './pages/Desk/DeskPage'
 import WorkspacePage from './pages/Workspace/WorkspacePage'
+import GlobalSearchPage from './pages/Search/GlobalSearchPage'
 import ProductList from './pages/Products/ProductList'
 import NonwovenCalculator from './pages/Products/NonwovenCalculator'
 import ProductDashboard from './pages/Products/ProductDashboard'
@@ -263,7 +265,6 @@ import AdvancedReportBuilder from './pages/Reports/AdvancedReportBuilder'
 import ScheduledReports from './pages/Reports/ScheduledReports'
 import ExecutiveDashboard from './pages/Reports/ExecutiveDashboard'
 import ProductionByProductReport from './pages/Reports/ProductionByProductReport'
-import ExecutiveDashboardAdvanced from './pages/Executive/ExecutiveDashboard'
 import ProductionExecutiveDashboard from './pages/Executive/ProductionExecutiveDashboard'
 import ProductionMonitoringDashboard from './pages/Executive/ProductionMonitoringDashboard'
 import LiveMonitoringDashboard from './pages/Production/LiveMonitoringDashboard'
@@ -417,6 +418,11 @@ function App() {
                 <Route index element={<DeskPage />} />
               </Route>
 
+              {/* Global Search Route */}
+              <Route path="/app/search" element={isAuthenticated ? <Layout /> : <Navigate to="/login" />}>
+                <Route index element={<GlobalSearchPage />} />
+              </Route>
+
               {/* Workspace Routes */}
               <Route path="/workspace/:module" element={isAuthenticated ? <Layout /> : <Navigate to="/login" />}>
                 <Route index element={<WorkspacePage />} />
@@ -502,7 +508,7 @@ function App() {
 
               {/* Bypass auth for specific debug route */}
               <Route path="/app/debug/roster" element={
-                <div className="min-h-screen bg-gray-50">
+                <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
                   <div className="p-6">
                     <h1 className="text-2xl font-bold text-purple-600">🔧 DEBUG ROSTER (Bypass Auth)</h1>
                     <p className="mt-2">This route completely bypasses authentication.</p>
@@ -521,14 +527,12 @@ function App() {
               } />
 
               <Route path="/app" element={isAuthenticated ? <Layout /> : <Navigate to="/" />}>
-                <Route index element={<ExecutiveDashboardAdvanced />} />
+                <Route index element={<DashboardEnhanced />} />
 
                 {/* Old Dashboard */}
                 <Route path="dashboard-old" element={<Dashboard />} />
 
-                {/* Executive Dashboard */}
-                <Route path="executive" element={<ExecutiveDashboardAdvanced />} />
-                <Route path="executive/dashboard" element={<ExecutiveDashboardAdvanced />} />
+                {/* Production Monitoring */}
                 <Route path="executive/production-monitoring" element={<ProductionMonitoringDashboard />} />
                 <Route path="production/live-monitoring" element={<LiveMonitoringDashboard />} />
                 <Route path="production/live-monitoring/weekly" element={<LiveMonitoringWeekly />} />

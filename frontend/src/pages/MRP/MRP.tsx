@@ -39,8 +39,8 @@ const MRP: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Material Requirements Planning (MRP)</h1>
-          <p className="text-gray-600">Integrated planning based on Sales Orders & Forecasts</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Material Requirements Planning (MRP)</h1>
+          <p className="text-gray-600 dark:text-gray-300">Integrated planning based on Sales Orders & Forecasts</p>
         </div>
         <div className="flex gap-3">
           <label className="flex items-center gap-2">
@@ -68,11 +68,11 @@ const MRP: React.FC = () => {
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-lg shadow border-l-4 border-blue-500">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border-l-4 border-blue-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Total Requirements</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm text-gray-600 dark:text-gray-300">Total Requirements</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {requirementsData?.requirements?.length || 0}
               </p>
             </div>
@@ -80,11 +80,11 @@ const MRP: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-lg shadow border-l-4 border-green-500">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border-l-4 border-green-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Confirmed Orders</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm text-gray-600 dark:text-gray-300">Confirmed Orders</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {requirementsData?.settings?.confirmed_orders || 0}
               </p>
             </div>
@@ -92,11 +92,11 @@ const MRP: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-lg shadow border-l-4 border-yellow-500">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border-l-4 border-yellow-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Active Forecasts</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm text-gray-600 dark:text-gray-300">Active Forecasts</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {requirementsData?.settings?.forecasts_included || 0}
               </p>
             </div>
@@ -104,11 +104,11 @@ const MRP: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-lg shadow border-l-4 border-red-500">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border-l-4 border-red-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Critical Shortages</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm text-gray-600 dark:text-gray-300">Critical Shortages</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {requirementsData?.requirements?.filter((r: any) => r.net_requirement > 0).length || 0}
               </p>
             </div>
@@ -118,8 +118,8 @@ const MRP: React.FC = () => {
       </div>
 
       {/* Tab Navigation */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+        <div className="border-b border-gray-200 dark:border-gray-700">
           <nav className="-mb-px flex space-x-8 px-6">
             {[
               { id: 'requirements', name: 'Material Requirements', icon: ClipboardDocumentListIcon },
@@ -153,40 +153,40 @@ const MRP: React.FC = () => {
                 <div className="text-center py-8">Loading requirements...</div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-900">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('products.bom.material')}</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Current Stock</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Confirmed Demand</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Forecast Demand</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Required</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Net Requirement</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.status')}</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{t('products.bom.material')}</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Current Stock</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Confirmed Demand</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Forecast Demand</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total Required</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Net Requirement</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{t('common.status')}</th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                       {requirementsData?.requirements?.map((req: any) => (
                         <tr key={req.material_id}>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div>
-                              <div className="text-sm font-medium text-gray-900">{req.material_name}</div>
-                              <div className="text-sm text-gray-500">{req.material_code}</div>
+                              <div className="text-sm font-medium text-gray-900 dark:text-white">{req.material_name}</div>
+                              <div className="text-sm text-gray-500 dark:text-gray-400">{req.material_code}</div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                             {req.current_stock?.toFixed(2)} {req.uom}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                             {req.confirmed_quantity?.toFixed(2)} {req.uom}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                             {req.forecast_quantity?.toFixed(2)} {req.uom}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                             {req.total_quantity?.toFixed(2)} {req.uom}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                             {req.net_requirement?.toFixed(2)} {req.uom}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
@@ -211,8 +211,8 @@ const MRP: React.FC = () => {
             <div className="space-y-4">
               <div className="text-center py-12">
                 <BeakerIcon className="h-16 w-16 text-purple-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">What-If Simulation</h3>
-                <p className="text-gray-600 mb-6">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">What-If Simulation</h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-6">
                   Compare different planning scenarios and analyze their impact on material requirements
                 </p>
                 <button
@@ -268,33 +268,33 @@ const MRP: React.FC = () => {
                 <div className="text-center py-8">Loading forecasts...</div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-900">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Forecast</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('production.product')}</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Period</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Most Likely</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Confidence</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.status')}</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Forecast</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{t('production.product')}</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Period</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Most Likely</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Confidence</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{t('common.status')}</th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                       {forecastsData?.forecasts?.map((forecast: any) => (
                         <tr key={forecast.id}>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div>
-                              <div className="text-sm font-medium text-gray-900">{forecast.name}</div>
-                              <div className="text-sm text-gray-500">{forecast.forecast_number}</div>
+                              <div className="text-sm font-medium text-gray-900 dark:text-white">{forecast.name}</div>
+                              <div className="text-sm text-gray-500 dark:text-gray-400">{forecast.forecast_number}</div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                             {forecast.product_name}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                             {forecast.period_start} to {forecast.period_end}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                             {forecast.most_likely?.toFixed(2)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
@@ -332,8 +332,8 @@ const MRP: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {materialsData?.materials?.map((material: any) => (
                     <div key={material.id} className="border rounded-lg p-4">
-                      <h4 className="font-medium text-gray-900">{material.name}</h4>
-                      <p className="text-sm text-gray-500">{material.code}</p>
+                      <h4 className="font-medium text-gray-900 dark:text-white">{material.name}</h4>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{material.code}</p>
                       <div className="mt-2 space-y-1">
                         <div className="flex justify-between text-sm">
                           <span>Type:</span>
@@ -364,8 +364,8 @@ const MRP: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {bomsData?.boms?.map((bom: any) => (
                     <div key={bom.id} className="border rounded-lg p-4">
-                      <h4 className="font-medium text-gray-900">{bom.product_name}</h4>
-                      <p className="text-sm text-gray-500">{bom.bom_number}</p>
+                      <h4 className="font-medium text-gray-900 dark:text-white">{bom.product_name}</h4>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{bom.bom_number}</p>
                       <div className="mt-2 space-y-1">
                         <div className="flex justify-between text-sm">
                           <span>Version:</span>

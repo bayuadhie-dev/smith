@@ -75,7 +75,7 @@ const [statusFilter, setStatusFilter] = useState('');
       case 'external': return <DocumentTextIcon className="h-5 w-5 text-green-500" />;
       case 'supplier': return <UserIcon className="h-5 w-5 text-purple-500" />;
       case 'customer': return <CheckCircleIcon className="h-5 w-5 text-orange-500" />;
-      default: return <AcademicCapIcon className="h-5 w-5 text-gray-500" />;
+      default: return <AcademicCapIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />;
     }
   };
 
@@ -94,7 +94,7 @@ const [statusFilter, setStatusFilter] = useState('');
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Quality Audits</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Quality Audits</h1>
           <p className="text-gray-600">Plan, conduct, and track quality audits</p>
         </div>
         <button
@@ -108,17 +108,17 @@ const [statusFilter, setStatusFilter] = useState('');
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Total Audits</p>
-              <p className="text-2xl font-bold text-gray-900">{displayAudits.length}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{displayAudits.length}</p>
             </div>
             <AcademicCapIcon className="h-8 w-8 text-blue-500" />
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Completed</p>
@@ -130,7 +130,7 @@ const [statusFilter, setStatusFilter] = useState('');
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">In Progress</p>
@@ -142,7 +142,7 @@ const [statusFilter, setStatusFilter] = useState('');
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Critical Findings</p>
@@ -156,14 +156,14 @@ const [statusFilter, setStatusFilter] = useState('');
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-700">Status:</span>
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Status:</span>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">All Status</option>
               <option value="planned">Planned</option>
@@ -174,11 +174,11 @@ const [statusFilter, setStatusFilter] = useState('');
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-700">Type:</span>
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Type:</span>
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">All Types</option>
               <option value="internal">Internal</option>
@@ -191,38 +191,38 @@ const [statusFilter, setStatusFilter] = useState('');
       </div>
 
       {/* Audits List */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="p-6 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Audit Schedule</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Audit Schedule</h3>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Type & Scope
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Lead Auditor
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.status')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.actions')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {displayAudits.map((audit) => (
-                <tr key={audit.id} className="hover:bg-gray-50">
+                <tr key={audit.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       {getTypeIcon(audit.audit_type)}
                       <div className="ml-3">
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
                           {audit.audit_number}
                         </div>
                         {audit.overall_rating && (
@@ -234,26 +234,26 @@ const [statusFilter, setStatusFilter] = useState('');
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900 font-medium">
+                    <div className="text-sm text-gray-900 dark:text-white font-medium">
                       {audit.audit_type.charAt(0).toUpperCase() + audit.audit_type.slice(1)}
                     </div>
-                    <div className="text-sm text-gray-500 max-w-xs truncate">
+                    <div className="text-sm text-gray-500 dark:text-gray-400 max-w-xs truncate">
                       {audit.audit_scope}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
+                    <div className="text-sm text-gray-900 dark:text-white">
                       <div className="flex items-center gap-1">
                         <CalendarIcon className="h-4 w-4 text-gray-400" />
                         {new Date(audit.planned_date).toLocaleDateString('id-ID')}
                       </div>
                       {audit.actual_date && (
-                        <div className="text-xs text-gray-500 mt-1">
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                           Actual: {new Date(audit.actual_date).toLocaleDateString('id-ID')}
                         </div>
                       )}
                       {audit.duration_hours && (
-                        <div className="text-xs text-gray-500 flex items-center gap-1 mt-1">
+                        <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
                           <ClockIcon className="h-3 w-3" />
                           {audit.duration_hours}h
                         </div>
@@ -263,7 +263,7 @@ const [statusFilter, setStatusFilter] = useState('');
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <UserIcon className="h-4 w-4 text-gray-400 mr-2" />
-                      <span className="text-sm text-gray-900">{audit.lead_auditor}</span>
+                      <span className="text-sm text-gray-900 dark:text-white">{audit.lead_auditor}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -272,7 +272,7 @@ const [statusFilter, setStatusFilter] = useState('');
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
+                    <div className="text-sm text-gray-900 dark:text-white">
                       <div className="flex items-center gap-4">
                         {audit.critical_findings > 0 && (
                           <span className="text-red-600 font-medium">
@@ -294,7 +294,7 @@ const [statusFilter, setStatusFilter] = useState('');
                         )}
                       </div>
                       {audit.observations > 0 && (
-                        <div className="text-xs text-gray-500 mt-1">
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                           {audit.observations} observations
                         </div>
                       )}
@@ -305,7 +305,7 @@ const [statusFilter, setStatusFilter] = useState('');
                       <button className="text-blue-600 hover:text-blue-900">
                         <EyeIcon className="h-4 w-4" />
                       </button>
-                      <button className="text-gray-600 hover:text-gray-900">
+                      <button className="text-gray-600 hover:text-gray-900 dark:text-white">
                         <PencilIcon className="h-4 w-4" />
                       </button>
                     </div>
@@ -320,13 +320,13 @@ const [statusFilter, setStatusFilter] = useState('');
       {/* New Audit Form Modal */}
       {showNewAuditForm && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
             <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Schedule New Audit</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Schedule New Audit</h3>
               <form className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Audit Type</label>
-                  <select className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Audit Type</label>
+                  <select className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2">
                     <option>Internal</option>
                     <option>External</option>
                     <option>Supplier</option>
@@ -334,23 +334,23 @@ const [statusFilter, setStatusFilter] = useState('');
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Audit Scope</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Audit Scope</label>
                   <textarea 
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                     rows={3}
                     placeholder="Describe the audit scope..."
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Planned Date</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Planned Date</label>
                   <input 
                     type="date" 
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Lead Auditor</label>
-                  <select className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Lead Auditor</label>
+                  <select className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2">
                     <option>John Smith</option>
                     <option>Sarah Johnson</option>
                     <option>Mike Wilson</option>

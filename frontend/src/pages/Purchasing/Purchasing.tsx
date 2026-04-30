@@ -135,8 +135,8 @@ export default function Purchasing() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Purchasing Management</h1>
-          <p className="text-gray-600">Comprehensive procurement and supplier management system</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Purchasing Management</h1>
+          <p className="text-gray-600 dark:text-gray-300">Comprehensive procurement and supplier management system</p>
         </div>
         <div className="flex space-x-3">
           <Link
@@ -148,7 +148,7 @@ export default function Purchasing() {
           </Link>
           <Link
             to="/app/purchasing/price-comparison"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-medium rounded-lg hover:bg-gray-200 dark:bg-gray-700 transition-colors"
           >
             <ChartBarIcon className="h-5 w-5" />
             Price Analysis
@@ -164,7 +164,7 @@ export default function Purchasing() {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-gray-200 dark:border-gray-700">
         <nav className="-mb-px flex space-x-8">
           {tabs.map((tab) => {
             const Icon = tab.icon
@@ -197,15 +197,15 @@ export default function Purchasing() {
                 <Link
                   key={stat.name}
                   to={stat.link}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+                  className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-center">
                     <div className={`p-3 rounded-lg ${stat.color}`}>
                       <Icon className="h-6 w-6 text-white" />
                     </div>
                     <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">{stat.name}</p>
-                      <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-300">{stat.name}</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
                     </div>
                   </div>
                 </Link>
@@ -215,9 +215,9 @@ export default function Purchasing() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Recent Activities */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h3 className="text-lg font-medium text-gray-900">Recent Activities</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Recent Activities</h3>
               </div>
               <div className="p-6">
                 <div className="space-y-4">
@@ -229,8 +229,8 @@ export default function Purchasing() {
                           <Icon className={`h-4 w-4 ${activity.color}`} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900">{activity.title}</p>
-                          <p className="text-sm text-gray-500">{activity.description}</p>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">{activity.title}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">{activity.description}</p>
                           <p className="text-xs text-gray-400 mt-1">{activity.time}</p>
                         </div>
                       </div>
@@ -241,9 +241,9 @@ export default function Purchasing() {
             </div>
 
             {/* Pending Approvals */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h3 className="text-lg font-medium text-gray-900">Pending Approvals</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Pending Approvals</h3>
               </div>
               <div className="p-6">
                 <div className="space-y-4">
@@ -252,13 +252,13 @@ export default function Purchasing() {
                       <div className="flex items-center space-x-3">
                         <ClockIcon className="h-5 w-5 text-yellow-600" />
                         <div>
-                          <p className="text-sm font-medium text-gray-900">{item.title}</p>
-                          <p className="text-sm text-gray-500">{item.supplier}</p>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">{item.title}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">{item.supplier}</p>
                           <p className="text-xs text-gray-400">{item.description}</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-medium text-gray-900">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">
                           ${item.amount.toLocaleString()}
                         </p>
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -283,50 +283,50 @@ export default function Purchasing() {
           </div>
 
           {/* Quick Actions */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Quick Actions</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <Link
                 to="/app/purchasing/suppliers/new"
-                className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 transition-colors"
               >
                 <BuildingOfficeIcon className="h-6 w-6 text-blue-600" />
                 <div>
-                  <p className="font-medium text-gray-900">Add Supplier</p>
-                  <p className="text-sm text-gray-500">Register new supplier</p>
+                  <p className="font-medium text-gray-900 dark:text-white">Add Supplier</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Register new supplier</p>
                 </div>
               </Link>
               
               <Link
                 to="/app/purchasing/rfqs/new"
-                className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 transition-colors"
               >
                 <DocumentTextIcon className="h-6 w-6 text-green-600" />
                 <div>
-                  <p className="font-medium text-gray-900">Create RFQ</p>
-                  <p className="text-sm text-gray-500">Request for quotation</p>
+                  <p className="font-medium text-gray-900 dark:text-white">Create RFQ</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Request for quotation</p>
                 </div>
               </Link>
               
               <Link
                 to="/app/purchasing/contracts/new"
-                className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 transition-colors"
               >
                 <ClipboardDocumentListIcon className="h-6 w-6 text-purple-600" />
                 <div>
-                  <p className="font-medium text-gray-900">New Contract</p>
-                  <p className="text-sm text-gray-500">Create supplier contract</p>
+                  <p className="font-medium text-gray-900 dark:text-white">New Contract</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Create supplier contract</p>
                 </div>
               </Link>
               
               <Link
                 to="/app/purchasing/price-comparison"
-                className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 transition-colors"
               >
                 <ChartBarIcon className="h-6 w-6 text-orange-600" />
                 <div>
-                  <p className="font-medium text-gray-900">Price Analysis</p>
-                  <p className="text-sm text-gray-500">Compare supplier prices</p>
+                  <p className="font-medium text-gray-900 dark:text-white">Price Analysis</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Compare supplier prices</p>
                 </div>
               </Link>
             </div>
@@ -336,11 +336,11 @@ export default function Purchasing() {
 
       {/* Other tab contents would be rendered here based on activeTab */}
       {activeTab === 'suppliers' && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="text-center">
             <BuildingOfficeIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">Supplier Management</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Supplier Management</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               This section will show the SupplierList component
             </p>
             <div className="mt-6">
@@ -356,11 +356,11 @@ export default function Purchasing() {
       )}
 
       {activeTab === 'purchase-orders' && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="text-center">
             <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">Purchase Order Management</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Purchase Order Management</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               This section will show the PurchaseOrderList component
             </p>
             <div className="mt-6">
@@ -376,11 +376,11 @@ export default function Purchasing() {
       )}
 
       {activeTab === 'contracts' && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="text-center">
             <ClipboardDocumentListIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">Contract Management</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Contract Management</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               This section will show the ContractList component
             </p>
             <div className="mt-6">
@@ -396,11 +396,11 @@ export default function Purchasing() {
       )}
 
       {activeTab === 'price-comparison' && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="text-center">
             <ChartBarIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">Price Analysis</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Price Analysis</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               This section will show the PriceComparison component
             </p>
             <div className="mt-6">

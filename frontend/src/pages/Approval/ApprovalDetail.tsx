@@ -175,10 +175,10 @@ export default function ApprovalDetail() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             Approval Workflow Detail
           </h1>
-          <p className="text-gray-600">{workflow.transaction_number}</p>
+          <p className="text-gray-600 dark:text-gray-300">{workflow.transaction_number}</p>
         </div>
         <span className={`px-4 py-2 rounded-full text-sm font-semibold ${
           workflow.status === 'approved' ? 'bg-green-100 text-green-800' :
@@ -194,23 +194,23 @@ export default function ApprovalDetail() {
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
           {/* Workflow Info */}
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
             <h2 className="text-lg font-semibold mb-4">Workflow Information</h2>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-gray-600">Transaction Type</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Transaction Type</p>
                 <p className="font-medium">{workflow.transaction_type}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Transaction Number</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Transaction Number</p>
                 <p className="font-medium">{workflow.transaction_number}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Submitted By</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Submitted By</p>
                 <p className="font-medium">{workflow.submitted_by}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Submitted At</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Submitted At</p>
                 <p className="font-medium">
                   {new Date(workflow.submitted_at).toLocaleString()}
                 </p>
@@ -218,11 +218,11 @@ export default function ApprovalDetail() {
               {workflow.reviewer && (
                 <>
                   <div>
-                    <p className="text-sm text-gray-600">Reviewed By</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">Reviewed By</p>
                     <p className="font-medium">{workflow.reviewer}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Reviewed At</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">Reviewed At</p>
                     <p className="font-medium">
                       {workflow.reviewed_at ? new Date(workflow.reviewed_at).toLocaleString() : '-'}
                     </p>
@@ -232,11 +232,11 @@ export default function ApprovalDetail() {
               {workflow.approver && (
                 <>
                   <div>
-                    <p className="text-sm text-gray-600">Approved By</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">Approved By</p>
                     <p className="font-medium">{workflow.approver}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Approved At</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">Approved At</p>
                     <p className="font-medium">
                       {workflow.approved_at ? new Date(workflow.approved_at).toLocaleString() : '-'}
                     </p>
@@ -248,7 +248,7 @@ export default function ApprovalDetail() {
 
           {/* Journal Entry */}
           {journalLines.length > 0 && (
-            <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold">Journal Entry</h2>
                 {canReview() && !isEditing && (
@@ -271,24 +271,24 @@ export default function ApprovalDetail() {
               </div>
               
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-900">
                     <tr>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         Account
                       </th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         Description
                       </th>
-                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         Debit
                       </th>
-                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         Credit
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     {journalLines.map((line, index) => (
                       <tr key={index}>
                         <td className="px-4 py-2 text-sm">
@@ -332,7 +332,7 @@ export default function ApprovalDetail() {
                         </td>
                       </tr>
                     ))}
-                    <tr className="bg-gray-50 font-semibold">
+                    <tr className="bg-gray-50 dark:bg-gray-900 font-semibold">
                       <td colSpan={2} className="px-4 py-2 text-sm text-right">Total:</td>
                       <td className="px-4 py-2 text-sm text-right">
                         {journalLines.reduce((sum, line) => sum + line.debit, 0).toLocaleString()}
@@ -349,21 +349,21 @@ export default function ApprovalDetail() {
 
           {/* Action Buttons */}
           {(canReview() || canApprove()) && (
-            <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
               <h2 className="text-lg font-semibold mb-4">
                 {canReview() ? 'Review Workflow' : 'Approve Workflow'}
               </h2>
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Notes
                   </label>
                   <textarea
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Add your notes here..."
                   />
                 </div>
@@ -410,7 +410,7 @@ export default function ApprovalDetail() {
 
         {/* Sidebar - History */}
         <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
             <h2 className="text-lg font-semibold mb-4">Workflow History</h2>
             <div className="space-y-4">
               {history.map((item) => (
@@ -418,17 +418,17 @@ export default function ApprovalDetail() {
                   <div className="flex items-start space-x-2">
                     <ClockIcon className="h-5 w-5 text-gray-400 mt-0.5" />
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
                         {item.action.toUpperCase()}
                       </p>
-                      <p className="text-xs text-gray-600">
+                      <p className="text-xs text-gray-600 dark:text-gray-300">
                         by {item.action_by}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         {new Date(item.action_at).toLocaleString()}
                       </p>
                       {item.notes && (
-                        <p className="text-sm text-gray-700 mt-1">
+                        <p className="text-sm text-gray-700 dark:text-gray-200 mt-1">
                           {item.notes}
                         </p>
                       )}

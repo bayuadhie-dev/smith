@@ -287,12 +287,12 @@ const ProductionApprovalDetail: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-lg">
+          <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg">
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{approval.approval_number}</h1>
-            <p className="text-gray-600">Approval Produksi - {approval.wo_number}</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{approval.approval_number}</h1>
+            <p className="text-gray-600 dark:text-gray-300">Approval Produksi - {approval.wo_number}</p>
           </div>
         </div>
         
@@ -319,36 +319,36 @@ const ProductionApprovalDetail: React.FC = () => {
       </div>
 
       {/* Work Order Info */}
-      <div className="bg-white shadow rounded-lg p-6">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
         <h2 className="text-lg font-medium mb-4 flex items-center gap-2">
-          <DocumentTextIcon className="h-5 w-5 text-gray-500" />
+          <DocumentTextIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
           Informasi Work Order
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
-            <p className="text-sm text-gray-500">No. WO</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">No. WO</p>
             <p className="font-medium">{approval.work_order?.wo_number}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Produk</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Produk</p>
             <p className="font-medium">{approval.product_name}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Target Qty</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Target Qty</p>
             <p className="font-medium">{approval.work_order?.quantity?.toLocaleString()}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Status WO</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Status WO</p>
             <p className="font-medium capitalize">{approval.work_order?.status}</p>
           </div>
         </div>
       </div>
 
       {/* Production Summary - Editable */}
-      <div className="bg-white shadow rounded-lg p-6">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-medium flex items-center gap-2">
-            <CubeIcon className="h-5 w-5 text-gray-500" />
+            <CubeIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
             Ringkasan Produksi
           </h2>
           {approval.status === 'pending' && !editing && (
@@ -366,62 +366,62 @@ const ProductionApprovalDetail: React.FC = () => {
           <div className="space-y-4">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Qty Good</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Qty Good</label>
                 <input
                   type="number"
                   value={editForm.quantity_good}
                   onChange={(e) => setEditForm({ ...editForm, quantity_good: parseFloat(e.target.value) || 0 })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Qty Reject</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Qty Reject</label>
                 <input
                   type="number"
                   value={editForm.quantity_reject}
                   onChange={(e) => setEditForm({ ...editForm, quantity_reject: parseFloat(e.target.value) || 0 })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2"
                 />
               </div>
             </div>
             
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Material Cost</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Material Cost</label>
                 <input
                   type="number"
                   value={editForm.material_cost}
                   onChange={(e) => setEditForm({ ...editForm, material_cost: parseFloat(e.target.value) || 0 })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Labor Cost</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Labor Cost</label>
                 <input
                   type="number"
                   value={editForm.labor_cost}
                   onChange={(e) => setEditForm({ ...editForm, labor_cost: parseFloat(e.target.value) || 0 })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Overhead Cost</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Overhead Cost</label>
                 <input
                   type="number"
                   value={editForm.overhead_cost}
                   onChange={(e) => setEditForm({ ...editForm, overhead_cost: parseFloat(e.target.value) || 0 })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Alasan Perubahan</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Alasan Perubahan</label>
               <textarea
                 value={editForm.adjustment_reason}
                 onChange={(e) => setEditForm({ ...editForm, adjustment_reason: e.target.value })}
                 rows={2}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2"
                 placeholder="Jelaskan alasan perubahan data..."
               />
             </div>
@@ -429,7 +429,7 @@ const ProductionApprovalDetail: React.FC = () => {
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setEditing(false)}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
               >
                 Batal
               </button>
@@ -448,7 +448,7 @@ const ProductionApprovalDetail: React.FC = () => {
               <p className="text-sm text-green-600">Qty Good</p>
               <p className="text-2xl font-bold text-green-800">{approval.quantity_good.toLocaleString()}</p>
               {hasChanges && approval.original_quantity_good && (
-                <p className="text-xs text-gray-500">Original: {approval.original_quantity_good.toLocaleString()}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Original: {approval.original_quantity_good.toLocaleString()}</p>
               )}
             </div>
             <div className="bg-red-50 p-4 rounded-lg">
@@ -469,13 +469,13 @@ const ProductionApprovalDetail: React.FC = () => {
 
       {/* Material Usage */}
       {approval.material_usage && approval.material_usage.length > 0 && (
-        <div className="bg-white shadow rounded-lg p-6">
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-medium flex items-center gap-2">
-              <BeakerIcon className="h-5 w-5 text-gray-500" />
+              <BeakerIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
               Material yang Dibutuhkan
             </h2>
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-gray-500 dark:text-gray-400">
               Batch Size: {approval.material_usage[0]?.packs_per_karton || 1} PCS
             </div>
           </div>
@@ -499,29 +499,29 @@ const ProductionApprovalDetail: React.FC = () => {
           </div>
           
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">No</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Kode</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Material</th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">Tipe</th>
-                  <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">Qty/Karton</th>
-                  <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">Qty/Pack</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Kode</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Material</th>
+                  <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tipe</th>
+                  <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Qty/Karton</th>
+                  <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Qty/Pack</th>
                   <th className="px-3 py-2 text-right text-xs font-medium text-blue-600 uppercase">Qty Dibutuhkan</th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">UOM</th>
+                  <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">UOM</th>
                   <th className="px-3 py-2 text-center text-xs font-medium text-orange-600 uppercase">Scrap %</th>
                   <th className="px-3 py-2 text-right text-xs font-medium text-green-600 uppercase">Qty Efektif</th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">Critical</th>
+                  <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Critical</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {approval.material_usage.map((mat, idx) => (
-                  <tr key={idx} className="hover:bg-gray-50">
-                    <td className="px-3 py-2 text-sm text-gray-500">{idx + 1}</td>
-                    <td className="px-3 py-2 text-sm font-medium text-gray-900">{mat.material_code}</td>
+                  <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                    <td className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">{idx + 1}</td>
+                    <td className="px-3 py-2 text-sm font-medium text-gray-900 dark:text-white">{mat.material_code}</td>
                     <td className="px-3 py-2">
-                      <div className="text-sm font-medium text-gray-900">{mat.material_name}</div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">{mat.material_name}</div>
                     </td>
                     <td className="px-3 py-2 text-center">
                       <span className={`px-2 py-0.5 text-xs rounded-full ${
@@ -552,25 +552,25 @@ const ProductionApprovalDetail: React.FC = () => {
 
       {/* Consumption per Grade */}
       {approval.production_summary?.consumption_per_grade && approval.production_summary.consumption_per_grade.length > 0 && (
-        <div className="bg-white shadow rounded-lg p-6">
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
           <h2 className="text-lg font-medium mb-4 flex items-center gap-2">
-            <BeakerIcon className="h-5 w-5 text-gray-500" />
+            <BeakerIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
             Consumption per Grade (Auto-calculated)
           </h2>
           
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Grade</th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Qty (pack)</th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Kain (kg)</th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Ingredient (kg)</th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Packaging (pcs)</th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Stiker (pcs)</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Grade</th>
+                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Qty (pack)</th>
+                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Kain (kg)</th>
+                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Ingredient (kg)</th>
+                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Packaging (pcs)</th>
+                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Stiker (pcs)</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {approval.production_summary.consumption_per_grade.map((row: any, idx: number) => (
                   <tr key={idx} className={`${
                     row.grade === 'TOTAL' ? 'bg-blue-50 font-bold' :
@@ -623,9 +623,9 @@ const ProductionApprovalDetail: React.FC = () => {
 
       {/* Downtime Breakdown */}
       {approval.production_summary && approval.production_summary.downtime_breakdown && (
-        <div className="bg-white shadow rounded-lg p-6">
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
           <h2 className="text-lg font-medium mb-4 flex items-center gap-2">
-            <WrenchScrewdriverIcon className="h-5 w-5 text-gray-500" />
+            <WrenchScrewdriverIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
             Breakdown Downtime
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -645,42 +645,42 @@ const ProductionApprovalDetail: React.FC = () => {
               <p className="text-sm text-blue-600">Design</p>
               <p className="text-xl font-bold text-blue-800">{approval.production_summary.downtime_breakdown.design} menit</p>
             </div>
-            <div className="bg-gray-100 p-4 rounded-lg">
-              <p className="text-sm text-gray-600">Others</p>
-              <p className="text-xl font-bold text-gray-800">{approval.production_summary.downtime_breakdown.others} menit</p>
+            <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
+              <p className="text-sm text-gray-600 dark:text-gray-300">Others</p>
+              <p className="text-xl font-bold text-gray-800 dark:text-gray-100">{approval.production_summary.downtime_breakdown.others} menit</p>
             </div>
           </div>
-          <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between items-center">
-            <span className="text-gray-600">Total Downtime</span>
-            <span className="text-xl font-bold text-gray-900">{approval.production_summary.total_downtime_minutes} menit</span>
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
+            <span className="text-gray-600 dark:text-gray-300">Total Downtime</span>
+            <span className="text-xl font-bold text-gray-900 dark:text-white">{approval.production_summary.total_downtime_minutes} menit</span>
           </div>
         </div>
       )}
 
       {/* Shift Productions */}
       {approval.shift_productions && approval.shift_productions.length > 0 && (
-        <div className="bg-white shadow rounded-lg p-6">
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
           <h2 className="text-lg font-medium mb-4 flex items-center gap-2">
-            <CalendarDaysIcon className="h-5 w-5 text-gray-500" />
+            <CalendarDaysIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
             Riwayat Produksi per Shift ({approval.shift_productions.length} shift)
           </h2>
           <div className="overflow-x-auto max-h-64 overflow-y-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50 sticky top-0">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900 sticky top-0">
                 <tr>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Tanggal</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Shift</th>
-                  <th className="px-3 py-2 text-right text-xs font-medium text-gray-500">Actual</th>
-                  <th className="px-3 py-2 text-right text-xs font-medium text-gray-500">Good</th>
-                  <th className="px-3 py-2 text-right text-xs font-medium text-gray-500">Reject</th>
-                  <th className="px-3 py-2 text-right text-xs font-medium text-gray-500">Efficiency</th>
-                  <th className="px-3 py-2 text-right text-xs font-medium text-gray-500">OEE</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Operator</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Tanggal</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Shift</th>
+                  <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400">Actual</th>
+                  <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400">Good</th>
+                  <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400">Reject</th>
+                  <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400">Efficiency</th>
+                  <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400">OEE</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Operator</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {approval.shift_productions.map((sp) => (
-                  <tr key={sp.id} className="hover:bg-gray-50">
+                  <tr key={sp.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                     <td className="px-3 py-2 text-sm">{new Date(sp.production_date).toLocaleDateString('id-ID')}</td>
                     <td className="px-3 py-2 text-sm">{sp.shift.replace('shift_', 'Shift ')}</td>
                     <td className="px-3 py-2 text-sm text-right">{sp.actual_quantity.toLocaleString()}</td>
@@ -698,9 +698,9 @@ const ProductionApprovalDetail: React.FC = () => {
       )}
 
       {/* Cost Breakdown */}
-      <div className="bg-white shadow rounded-lg p-6">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
         <h2 className="text-lg font-medium mb-4 flex items-center gap-2">
-          <CurrencyDollarIcon className="h-5 w-5 text-gray-500" />
+          <CurrencyDollarIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
           Breakdown Biaya
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -720,34 +720,34 @@ const ProductionApprovalDetail: React.FC = () => {
             <p className="text-sm text-orange-600">Total Cost</p>
             <p className="text-xl font-bold text-orange-800">{formatCurrency(approval.total_cost)}</p>
             {hasChanges && approval.original_total_cost && (
-              <p className="text-xs text-gray-500">Original: {formatCurrency(approval.original_total_cost)}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Original: {formatCurrency(approval.original_total_cost)}</p>
             )}
           </div>
         </div>
-        <div className="mt-4 pt-4 border-t border-gray-200">
+        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
           <div className="flex justify-between items-center">
-            <span className="text-gray-600">Cost per Unit</span>
-            <span className="text-xl font-bold text-gray-900">{formatCurrency(approval.cost_per_unit)}</span>
+            <span className="text-gray-600 dark:text-gray-300">Cost per Unit</span>
+            <span className="text-xl font-bold text-gray-900 dark:text-white">{formatCurrency(approval.cost_per_unit)}</span>
           </div>
         </div>
       </div>
 
       {/* Job Cost Entries */}
       {approval.job_cost_entries && approval.job_cost_entries.length > 0 && (
-        <div className="bg-white shadow rounded-lg p-6">
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
           <h2 className="text-lg font-medium mb-4">Detail Job Cost Entries</h2>
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Type</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Category</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Description</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500">Qty</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500">Unit Cost</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500">Total</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Type</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Category</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Description</th>
+                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400">Qty</th>
+                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400">Unit Cost</th>
+                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400">Total</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {approval.job_cost_entries.map((entry: any, idx: number) => (
                 <tr key={idx}>
                   <td className="px-4 py-2 text-sm capitalize">{entry.cost_type}</td>
@@ -764,20 +764,20 @@ const ProductionApprovalDetail: React.FC = () => {
       )}
 
       {/* Approval Info */}
-      <div className="bg-white shadow rounded-lg p-6">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
         <h2 className="text-lg font-medium mb-4 flex items-center gap-2">
-          <UserIcon className="h-5 w-5 text-gray-500" />
+          <UserIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
           Informasi Approval
         </h2>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <p className="text-sm text-gray-500">Disubmit oleh</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Disubmit oleh</p>
             <p className="font-medium">{approval.submitter_name}</p>
             <p className="text-sm text-gray-400">{formatDate(approval.submitted_at)}</p>
           </div>
           {approval.reviewer_name && (
             <div>
-              <p className="text-sm text-gray-500">Direview oleh</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Direview oleh</p>
               <p className="font-medium">{approval.reviewer_name}</p>
               <p className="text-sm text-gray-400">{approval.reviewed_at && formatDate(approval.reviewed_at)}</p>
             </div>
@@ -785,29 +785,29 @@ const ProductionApprovalDetail: React.FC = () => {
         </div>
         
         {approval.manager_notes && (
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <p className="text-sm text-gray-500">Catatan Manager</p>
-            <p className="mt-1 text-gray-900">{approval.manager_notes}</p>
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <p className="text-sm text-gray-500 dark:text-gray-400">Catatan Manager</p>
+            <p className="mt-1 text-gray-900 dark:text-white">{approval.manager_notes}</p>
           </div>
         )}
         
         {approval.adjustment_reason && (
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <p className="text-sm text-gray-500">Alasan Perubahan</p>
-            <p className="mt-1 text-gray-900">{approval.adjustment_reason}</p>
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <p className="text-sm text-gray-500 dark:text-gray-400">Alasan Perubahan</p>
+            <p className="mt-1 text-gray-900 dark:text-white">{approval.adjustment_reason}</p>
           </div>
         )}
       </div>
 
       {/* Manager Notes */}
       {approval.status === 'pending' && !editing && (
-        <div className="bg-white shadow rounded-lg p-6">
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
           <h2 className="text-lg font-medium mb-4">Catatan Manager</h2>
           <textarea
             value={editForm.manager_notes}
             onChange={(e) => setEditForm({ ...editForm, manager_notes: e.target.value })}
             rows={3}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2"
+            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2"
             placeholder="Tambahkan catatan (opsional)..."
           />
         </div>
@@ -861,20 +861,20 @@ const ProductionApprovalDetail: React.FC = () => {
       {/* Reject Modal */}
       {showRejectModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
             <h3 className="text-lg font-medium mb-4">Tolak Approval</h3>
-            <p className="text-gray-600 mb-4">Berikan alasan penolakan:</p>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">Berikan alasan penolakan:</p>
             <textarea
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
               rows={4}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-4"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 mb-4"
               placeholder="Alasan penolakan..."
             />
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setShowRejectModal(false)}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
               >
                 Batal
               </button>

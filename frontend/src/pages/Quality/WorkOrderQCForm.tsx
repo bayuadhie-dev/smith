@@ -467,7 +467,7 @@ export default function WorkOrderQCForm() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Visual Inspection */}
-            <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+            <div className="p-4 bg-gray-50 dark:bg-gray-900 dark:bg-gray-700/50 rounded-lg">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Visual Inspection *
               </label>
@@ -504,7 +504,7 @@ export default function WorkOrderQCForm() {
             </div>
 
             {/* Packaging Check */}
-            <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+            <div className="p-4 bg-gray-50 dark:bg-gray-900 dark:bg-gray-700/50 rounded-lg">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Packaging Check *
               </label>
@@ -541,7 +541,7 @@ export default function WorkOrderQCForm() {
             </div>
 
             {/* Label Check */}
-            <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+            <div className="p-4 bg-gray-50 dark:bg-gray-900 dark:bg-gray-700/50 rounded-lg">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Label Check *
               </label>
@@ -578,7 +578,7 @@ export default function WorkOrderQCForm() {
             </div>
 
             {/* Dimension Check */}
-            <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+            <div className="p-4 bg-gray-50 dark:bg-gray-900 dark:bg-gray-700/50 rounded-lg">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Dimension Check
               </label>
@@ -835,7 +835,7 @@ export default function WorkOrderQCForm() {
           <button
             type="button"
             onClick={() => navigate('/app/quality/pending-qc')}
-            className="px-6 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            className="px-6 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-700 transition-colors"
           >
             Batal
           </button>

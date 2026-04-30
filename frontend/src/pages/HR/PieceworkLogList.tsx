@@ -155,8 +155,8 @@ export default function PieceworkLogList() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Log Kerja Borongan</h1>
-          <p className="text-sm text-gray-500">Catat dan verifikasi output kerja borongan karyawan</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Log Kerja Borongan</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Catat dan verifikasi output kerja borongan karyawan</p>
         </div>
         <button
           onClick={() => setShowForm(true)}
@@ -169,29 +169,29 @@ export default function PieceworkLogList() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-          <p className="text-sm text-gray-500">Total Log</p>
-          <p className="text-xl font-bold text-gray-900">{total}</p>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400">Total Log</p>
+          <p className="text-xl font-bold text-gray-900 dark:text-white">{total}</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-          <p className="text-sm text-gray-500">Total Nilai</p>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400">Total Nilai</p>
           <p className="text-lg font-bold text-orange-700">{formatCurrency(totalAmount)}</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-          <p className="text-sm text-gray-500">Verified</p>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400">Verified</p>
           <p className="text-xl font-bold text-green-700">{verifiedCount}</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-          <p className="text-sm text-gray-500">Pending</p>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400">Pending</p>
           <p className="text-xl font-bold text-yellow-700">{pendingCount}</p>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
         <div className="flex items-center gap-2 mb-3">
-          <FunnelIcon className="h-4 w-4 text-gray-500" />
-          <span className="text-sm font-medium text-gray-700">Filter</span>
+          <FunnelIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Filter</span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <select value={filterEmployee} onChange={e => setFilterEmployee(e.target.value)} className={inputClass}>
@@ -213,35 +213,35 @@ export default function PieceworkLogList() {
 
       {/* Table */}
       {loading ? (
-        <div className="text-center py-12 text-gray-500">Memuat data...</div>
+        <div className="text-center py-12 text-gray-500 dark:text-gray-400">Memuat data...</div>
       ) : logs.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-xl shadow-sm border border-gray-200">
+        <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
           <ClipboardDocumentListIcon className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500">Belum ada log borongan.</p>
+          <p className="text-gray-500 dark:text-gray-400">Belum ada log borongan.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Karyawan</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Deskripsi</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Qty</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Satuan</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Tarif/Unit</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tanggal</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Karyawan</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Deskripsi</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Qty</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Satuan</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tarif/Unit</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {logs.map(log => (
-                  <tr key={log.id} className="hover:bg-gray-50">
+                  <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                     <td className="px-4 py-3 text-sm">{new Date(log.work_date).toLocaleDateString('id-ID')}</td>
                     <td className="px-4 py-3 text-sm font-medium">{log.employee_name || '-'}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600 max-w-[200px] truncate">{log.description || '-'}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300 max-w-[200px] truncate">{log.description || '-'}</td>
                     <td className="px-4 py-3 text-sm text-right font-mono">{log.quantity.toLocaleString('id-ID')}</td>
                     <td className="px-4 py-3 text-sm text-center">{log.unit}</td>
                     <td className="px-4 py-3 text-sm text-right font-mono">{formatCurrency(log.rate_per_unit)}</td>
@@ -281,11 +281,11 @@ export default function PieceworkLogList() {
       {/* Add Form Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200">
-              <h2 className="text-lg font-bold text-gray-900">Tambah Log Borongan</h2>
-              <button onClick={() => setShowForm(false)} className="p-1.5 hover:bg-gray-100 rounded-lg">
-                <XMarkIcon className="h-5 w-5 text-gray-500" />
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Tambah Log Borongan</h2>
+              <button onClick={() => setShowForm(false)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg">
+                <XMarkIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
               </button>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
@@ -331,7 +331,7 @@ export default function PieceworkLogList() {
 
               {formData.quantity && formData.rate_per_unit && (
                 <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center">
-                  <span className="text-sm text-gray-600">Total: </span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">Total: </span>
                   <span className="text-lg font-bold text-orange-700">
                     {formatCurrency(parseFloat(formData.quantity || '0') * parseFloat(formData.rate_per_unit || '0'))}
                   </span>
@@ -351,9 +351,9 @@ export default function PieceworkLogList() {
                   onChange={e => setFormData({...formData, notes: e.target.value})} />
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <button type="button" onClick={() => setShowForm(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                   Batal
                 </button>
                 <button type="submit"

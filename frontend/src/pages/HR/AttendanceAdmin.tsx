@@ -66,11 +66,11 @@ const AttendanceAdmin: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Kelola Data Absensi</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Kelola Data Absensi</h1>
       </div>
 
       {/* Search */}
-      <div className="bg-white rounded-xl shadow p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
         <div className="flex gap-3">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -80,7 +80,7 @@ const AttendanceAdmin: React.FC = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               placeholder="Cari nama staff (contoh: Test, nama double, dll)..."
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
           <button
@@ -111,26 +111,26 @@ const AttendanceAdmin: React.FC = () => {
 
       {/* Results */}
       {records.length > 0 && (
-        <div className="bg-white rounded-xl shadow overflow-hidden">
-          <div className="p-4 border-b bg-gray-50">
-            <p className="text-sm text-gray-600">Ditemukan {records.length} data</p>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden">
+          <div className="p-4 border-b bg-gray-50 dark:bg-gray-900">
+            <p className="text-sm text-gray-600 dark:text-gray-300">Ditemukan {records.length} data</p>
           </div>
           <div className="divide-y">
             {records.map(record => (
-              <div key={record.id} className="p-4 hover:bg-gray-50 flex items-center justify-between">
+              <div key={record.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 flex items-center justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3">
-                    <p className="font-medium text-gray-900">{record.name}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{record.name}</p>
                     <span className={`px-2 py-0.5 rounded text-xs font-medium ${getStatusBadge(record.status)}`}>
                       {record.status}
                     </span>
                   </div>
-                  <div className="text-sm text-gray-500 mt-1">
+                  <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                     <span>{record.date}</span>
                     {record.jabatan && <span> • {record.jabatan}</span>}
                     {record.departemen && <span> • {record.departemen}</span>}
                   </div>
-                  <div className="text-sm text-gray-600 mt-1">
+                  <div className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                     Clock In: {record.clock_in || '-'} | Clock Out: {record.clock_out || '-'}
                   </div>
                 </div>
@@ -153,7 +153,7 @@ const AttendanceAdmin: React.FC = () => {
       )}
 
       {records.length === 0 && searchQuery && !loading && (
-        <div className="bg-white rounded-xl shadow p-8 text-center text-gray-500">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-8 text-center text-gray-500 dark:text-gray-400">
           <p>Tidak ada data ditemukan untuk "{searchQuery}"</p>
         </div>
       )}

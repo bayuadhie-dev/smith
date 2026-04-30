@@ -45,7 +45,7 @@ const ACTION_ICONS: { [key: string]: React.ReactNode } = {
   create: <PlusCircleIcon className="h-4 w-4 text-green-500" />,
   update: <PencilSquareIcon className="h-4 w-4 text-blue-500" />,
   delete: <TrashIcon className="h-4 w-4 text-red-500" />,
-  read: <EyeIcon className="h-4 w-4 text-gray-500" />,
+  read: <EyeIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />,
   login: <ArrowRightOnRectangleIcon className="h-4 w-4 text-emerald-500" />,
   logout: <ArrowLeftOnRectangleIcon className="h-4 w-4 text-orange-500" />,
 };
@@ -212,12 +212,12 @@ const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl mx-4 max-h-[90vh] overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl mx-4 max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-slate-700 to-slate-800 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="bg-white/20 p-2 rounded-lg">
+              <div className="bg-white dark:bg-gray-800/20 p-2 rounded-lg">
                 <ClockIcon className="h-6 w-6 text-white" />
               </div>
               <div>
@@ -229,7 +229,7 @@ const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+              className="p-2 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/20 rounded-lg transition-colors"
             >
               <XMarkIcon className="h-6 w-6 text-white" />
             </button>
@@ -237,13 +237,13 @@ const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
         </div>
 
         {/* Filters */}
-        <div className="px-6 py-3 bg-gray-50 border-b flex items-center gap-4">
+        <div className="px-6 py-3 bg-gray-50 dark:bg-gray-900 border-b flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <FunnelIcon className="h-4 w-4 text-gray-500" />
+            <FunnelIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
             <select
               value={actionFilter}
               onChange={(e) => { setActionFilter(e.target.value); setPage(1); }}
-              className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Semua Aksi</option>
               <option value="create">Dibuat</option>
@@ -253,7 +253,7 @@ const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
           </div>
           <button
             onClick={fetchLogs}
-            className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors"
+            className="p-1.5 hover:bg-gray-200 dark:bg-gray-700 rounded-lg transition-colors"
             title="Refresh"
           >
             <ArrowPathIcon className={`h-4 w-4 text-gray-600 ${loading ? 'animate-spin' : ''}`} />
@@ -269,7 +269,7 @@ const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
           ) : logs.length === 0 ? (
             <div className="text-center py-12">
               <DocumentTextIcon className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500">Belum ada log aktivitas</p>
+              <p className="text-gray-500 dark:text-gray-400">Belum ada log aktivitas</p>
             </div>
           ) : (
             <div className="divide-y divide-gray-100">
@@ -282,7 +282,7 @@ const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
                 return (
                   <div
                     key={log.id}
-                    className="px-6 py-4 hover:bg-gray-50 transition-colors"
+                    className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 transition-colors"
                   >
                     <div className="flex items-start gap-4">
                       {/* Icon */}
@@ -300,12 +300,12 @@ const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
                             {ACTION_LABELS[log.action] || log.action}
                           </span>
                           {log.resource_name && (
-                            <span className="text-sm font-medium text-gray-800">
+                            <span className="text-sm font-medium text-gray-800 dark:text-gray-100">
                               {log.resource_name}
                             </span>
                           )}
                           {log.resource_id && (
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
                               (ID: {log.resource_id})
                             </span>
                           )}
@@ -345,24 +345,24 @@ const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
                             </button>
                             
                             {isExpanded && (
-                              <div className="mt-2 bg-gray-50 rounded-lg p-4 text-sm">
+                              <div className="mt-2 bg-gray-50 dark:bg-gray-900 rounded-lg p-4 text-sm">
                                 {/* For update action - show changes */}
                                 {log.action === 'update' && changes && changes.length > 0 && (
                                   <div>
-                                    <h4 className="font-semibold text-gray-700 mb-2">Perubahan Data:</h4>
+                                    <h4 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">Perubahan Data:</h4>
                                     <div className="overflow-x-auto">
                                       <table className="w-full text-xs">
                                         <thead>
-                                          <tr className="bg-gray-100">
-                                            <th className="text-left py-2 px-3 font-semibold text-gray-600">Field</th>
-                                            <th className="text-left py-2 px-3 font-semibold text-gray-600">Nilai Lama</th>
-                                            <th className="text-left py-2 px-3 font-semibold text-gray-600">Nilai Baru</th>
+                                          <tr className="bg-gray-100 dark:bg-gray-800">
+                                            <th className="text-left py-2 px-3 font-semibold text-gray-600 dark:text-gray-300">Field</th>
+                                            <th className="text-left py-2 px-3 font-semibold text-gray-600 dark:text-gray-300">Nilai Lama</th>
+                                            <th className="text-left py-2 px-3 font-semibold text-gray-600 dark:text-gray-300">Nilai Baru</th>
                                           </tr>
                                         </thead>
                                         <tbody>
                                           {changes.map((change, idx) => (
-                                            <tr key={idx} className="border-t border-gray-200">
-                                              <td className="py-2 px-3 font-medium text-gray-700">
+                                            <tr key={idx} className="border-t border-gray-200 dark:border-gray-700">
+                                              <td className="py-2 px-3 font-medium text-gray-700 dark:text-gray-200">
                                                 {formatFieldLabel(change.field)}
                                               </td>
                                               <td className="py-2 px-3 text-red-600 bg-red-50">
@@ -382,14 +382,14 @@ const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
                                 {/* For create action - show all input data */}
                                 {log.action === 'create' && inputData && inputData.length > 0 && (
                                   <div>
-                                    <h4 className="font-semibold text-gray-700 mb-2">Data yang Diinput:</h4>
+                                    <h4 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">Data yang Diinput:</h4>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                       {inputData.map(([key, value], idx) => (
-                                        <div key={idx} className="flex items-start gap-2 py-1 px-2 bg-white rounded border">
-                                          <span className="font-medium text-gray-600 text-xs min-w-[100px]">
+                                        <div key={idx} className="flex items-start gap-2 py-1 px-2 bg-white dark:bg-gray-800 rounded border">
+                                          <span className="font-medium text-gray-600 dark:text-gray-300 text-xs min-w-[100px]">
                                             {formatFieldLabel(key)}:
                                           </span>
-                                          <span className="text-gray-800 text-xs break-all">
+                                          <span className="text-gray-800 dark:text-gray-100 text-xs break-all">
                                             {formatValue(value)}
                                           </span>
                                         </div>
@@ -401,14 +401,14 @@ const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
                                 {/* For other actions - show new_values if available */}
                                 {log.action !== 'create' && log.action !== 'update' && inputData && inputData.length > 0 && (
                                   <div>
-                                    <h4 className="font-semibold text-gray-700 mb-2">Data:</h4>
+                                    <h4 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">Data:</h4>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                       {inputData.map(([key, value], idx) => (
-                                        <div key={idx} className="flex items-start gap-2 py-1 px-2 bg-white rounded border">
-                                          <span className="font-medium text-gray-600 text-xs min-w-[100px]">
+                                        <div key={idx} className="flex items-start gap-2 py-1 px-2 bg-white dark:bg-gray-800 rounded border">
+                                          <span className="font-medium text-gray-600 dark:text-gray-300 text-xs min-w-[100px]">
                                             {formatFieldLabel(key)}:
                                           </span>
-                                          <span className="text-gray-800 text-xs break-all">
+                                          <span className="text-gray-800 dark:text-gray-100 text-xs break-all">
                                             {formatValue(value)}
                                           </span>
                                         </div>
@@ -431,22 +431,22 @@ const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="px-6 py-3 bg-gray-50 border-t flex items-center justify-between">
-            <p className="text-sm text-gray-500">
+          <div className="px-6 py-3 bg-gray-50 dark:bg-gray-900 border-t flex items-center justify-between">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               Halaman {page} dari {totalPages}
             </p>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="p-2 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ChevronLeftIcon className="h-4 w-4" />
               </button>
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="p-2 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ChevronRightIcon className="h-4 w-4" />
               </button>

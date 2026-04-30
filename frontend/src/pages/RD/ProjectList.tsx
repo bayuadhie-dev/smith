@@ -88,15 +88,15 @@ export default function ProjectList() {
     return (
       <div className="p-6">
         <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-24 bg-gray-200 rounded"></div>
+              <div key={i} className="h-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
             ))}
           </div>
           <div className="space-y-4">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-32 bg-gray-200 rounded"></div>
+              <div key={i} className="h-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
             ))}
           </div>
         </div>
@@ -108,8 +108,8 @@ export default function ProjectList() {
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">R&D Projects</h1>
-          <p className="text-gray-600">Research and development project management</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">R&D Projects</h1>
+          <p className="text-gray-600 dark:text-gray-300">Research and development project management</p>
         </div>
         <Link
           to="/app/rd/projects/new"
@@ -180,8 +180,8 @@ export default function ProjectList() {
         <div className="card p-6">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-2xl font-bold text-gray-900">{summary.total_projects || 0}</div>
-              <div className="text-sm text-gray-500">Total Projects</div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">{summary.total_projects || 0}</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Total Projects</div>
             </div>
             <ChartBarIcon className="h-8 w-8 text-gray-400" />
           </div>
@@ -190,7 +190,7 @@ export default function ProjectList() {
           <div className="flex items-center justify-between">
             <div>
               <div className="text-2xl font-bold text-blue-600">{summary.active_projects || 0}</div>
-              <div className="text-sm text-gray-500">Active Projects</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Active Projects</div>
             </div>
             <UsersIcon className="h-8 w-8 text-blue-400" />
           </div>
@@ -199,7 +199,7 @@ export default function ProjectList() {
           <div className="flex items-center justify-between">
             <div>
               <div className="text-2xl font-bold text-green-600">{summary.completed_projects || 0}</div>
-              <div className="text-sm text-gray-500">Completed</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Completed</div>
             </div>
             <CalendarIcon className="h-8 w-8 text-green-400" />
           </div>
@@ -210,7 +210,7 @@ export default function ProjectList() {
               <div className="text-2xl font-bold text-purple-600">
                 Rp {((summary.total_budget || 0) / 1000000).toFixed(0)}M
               </div>
-              <div className="text-sm text-gray-500">Total Budget</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Total Budget</div>
             </div>
             <BanknotesIcon className="h-8 w-8 text-purple-400" />
           </div>
@@ -220,32 +220,32 @@ export default function ProjectList() {
       {/* Projects Table */}
       <div className="card overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.status')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.actions')}</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {projects.map((project: any) => (
-                <tr key={project.id} className="hover:bg-gray-50">
+                <tr key={project.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
-                      <div className="text-sm font-medium text-gray-900">{project.project_name}</div>
-                      <div className="text-sm text-gray-500">{project.project_number}</div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">{project.project_name}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">{project.project_number}</div>
                       {project.description && (
                         <div className="text-xs text-gray-400 mt-1 line-clamp-1">{project.description}</div>
                       )}
@@ -269,10 +269,10 @@ export default function ProjectList() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-1">
-                        <div className="flex justify-between text-xs text-gray-500 mb-1">
+                        <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
                           <span>{project.progress_percentage || 0}%</span>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                           <div 
                             className="bg-blue-500 h-2 rounded-full transition-all duration-300"
                             style={{ width: `${project.progress_percentage || 0}%` }}
@@ -283,11 +283,11 @@ export default function ProjectList() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <div>
-                      <div className="text-gray-900">Rp {((project.budget || 0) / 1000000).toFixed(1)}M</div>
-                      <div className="text-gray-500">Used: Rp {((project.actual_cost || 0) / 1000000).toFixed(1)}M</div>
+                      <div className="text-gray-900 dark:text-white">Rp {((project.budget || 0) / 1000000).toFixed(1)}M</div>
+                      <div className="text-gray-500 dark:text-gray-400">Used: Rp {((project.actual_cost || 0) / 1000000).toFixed(1)}M</div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     <div>
                       {project.start_date && (
                         <div>Start: {new Date(project.start_date).toLocaleDateString()}</div>
@@ -330,9 +330,9 @@ export default function ProjectList() {
         
         {/* Pagination */}
         {data && data.pages > 1 && (
-          <div className="px-6 py-3 border-t border-gray-200">
+          <div className="px-6 py-3 border-t border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-gray-500 dark:text-gray-400">
                 Showing {((page - 1) * 20) + 1} to {Math.min(page * 20, data.total)} of {data.total} projects
               </div>
               <div className="flex gap-2">
@@ -342,7 +342,7 @@ export default function ProjectList() {
                   className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                 </button>
-                <span className="px-3 py-2 text-sm text-gray-700">
+                <span className="px-3 py-2 text-sm text-gray-700 dark:text-gray-200">
                   Page {page} of {data.pages}
                 </span>
                 <button
@@ -362,8 +362,8 @@ export default function ProjectList() {
         <div className="card">
           <div className="text-center py-12">
             <ChartBarIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No research projects found</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No research projects found</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               {search || statusFilter || priorityFilter || typeFilter
                 ? 'Try adjusting your search or filter criteria.'
                 : 'Get started by creating your first research project.'}

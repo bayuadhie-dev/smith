@@ -287,11 +287,11 @@ export default function SessionTimeoutModal({ onExtendSession }: SessionTimeoutM
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
       
       {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden animate-in fade-in zoom-in duration-200">
+      <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden animate-in fade-in zoom-in duration-200">
         {/* Header */}
         <div className={`px-6 py-4 ${showExpired ? 'bg-red-500' : 'bg-orange-500'}`}>
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-white/20 rounded-full">
+            <div className="p-2 bg-white dark:bg-gray-800/20 rounded-full">
               {showExpired ? (
                 <ExclamationTriangleIcon className="h-6 w-6 text-white" />
               ) : (
@@ -317,10 +317,10 @@ export default function SessionTimeoutModal({ onExtendSession }: SessionTimeoutM
                 <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <ExclamationTriangleIcon className="h-10 w-10 text-red-500" />
                 </div>
-                <p className="text-gray-600">
+                <p className="text-gray-600 dark:text-gray-300">
                   Sesi login Anda telah berakhir karena tidak ada aktivitas dalam waktu yang lama.
                 </p>
-                <p className="text-gray-500 text-sm mt-2">
+                <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">
                   Untuk keamanan, silakan login kembali untuk melanjutkan.
                 </p>
               </div>
@@ -342,16 +342,16 @@ export default function SessionTimeoutModal({ onExtendSession }: SessionTimeoutM
                     {formatTime(remainingTime)}
                   </div>
                 </div>
-                <p className="text-gray-600">
+                <p className="text-gray-600 dark:text-gray-300">
                   Sesi login Anda akan berakhir dalam <span className="font-bold text-orange-600">{formatTime(remainingTime)}</span>
                 </p>
-                <p className="text-gray-500 text-sm mt-2">
+                <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">
                   Apakah Anda ingin tetap login?
                 </p>
               </div>
 
               {/* Progress bar */}
-              <div className="w-full bg-gray-200 rounded-full h-2 mb-6 overflow-hidden">
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-6 overflow-hidden">
                 <div 
                   className="bg-orange-500 h-2 rounded-full transition-all duration-1000"
                   style={{ width: `${(remainingTime / WARNING_BEFORE_TIMEOUT) * 100}%` }}
@@ -361,7 +361,7 @@ export default function SessionTimeoutModal({ onExtendSession }: SessionTimeoutM
               <div className="flex gap-3">
                 <button
                   onClick={handleLogout}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-xl hover:bg-gray-200 dark:bg-gray-700 transition-colors font-medium"
                 >
                   <ArrowRightOnRectangleIcon className="h-5 w-5" />
                   Logout
@@ -389,8 +389,8 @@ export default function SessionTimeoutModal({ onExtendSession }: SessionTimeoutM
         </div>
 
         {/* Footer info */}
-        <div className="px-6 py-3 bg-gray-50 border-t">
-          <p className="text-xs text-gray-500 text-center">
+        <div className="px-6 py-3 bg-gray-50 dark:bg-gray-900 border-t">
+          <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
             💡 Tips: Sesi akan otomatis diperpanjang selama ada aktivitas di aplikasi
           </p>
         </div>

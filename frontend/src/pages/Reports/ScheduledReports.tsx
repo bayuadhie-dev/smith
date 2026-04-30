@@ -222,10 +222,10 @@ const ScheduledReports: React.FC = () => {
       <div className="mb-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
               Scheduled Reports
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-300">
               Automate report generation and delivery on schedule
             </p>
           </div>
@@ -241,37 +241,37 @@ const ScheduledReports: React.FC = () => {
       </div>
 
       {/* Scheduled Reports Table */}
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.status')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Last Run
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.actions')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {scheduledReports.map((report) => (
-                <tr key={report.id} className="hover:bg-gray-50">
+                <tr key={report.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <DocumentTextIcon className="h-5 w-5 text-gray-400 mr-3" />
                       <div>
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
                           {report.name}
                         </div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
                           {report.description}
                         </div>
                       </div>
@@ -283,13 +283,13 @@ const ScheduledReports: React.FC = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center text-sm text-gray-900">
+                    <div className="flex items-center text-sm text-gray-900 dark:text-white">
                       <ClockIcon className="h-4 w-4 text-gray-400 mr-1" />
                       {getFrequencyDisplay(report.schedule_frequency, report.schedule_day, report.schedule_time)}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center text-sm text-gray-900">
+                    <div className="flex items-center text-sm text-gray-900 dark:text-white">
                       <EnvelopeIcon className="h-4 w-4 text-gray-400 mr-1" />
                       {report.recipients.length} recipient(s)
                     </div>
@@ -297,7 +297,7 @@ const ScheduledReports: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     {getStatusBadge(report.is_active)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {report.last_run 
                       ? new Date(report.last_run).toLocaleDateString()
                       : 'Never'
@@ -338,8 +338,8 @@ const ScheduledReports: React.FC = () => {
           {scheduledReports.length === 0 && (
             <div className="text-center py-12">
               <CalendarIcon className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No scheduled reports</h3>
-              <p className="text-gray-500 mb-4">Get started by creating your first scheduled report.</p>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No scheduled reports</h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-4">Get started by creating your first scheduled report.</p>
               <button
                 onClick={() => setShowCreateModal(true)}
                 className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -355,38 +355,38 @@ const ScheduledReports: React.FC = () => {
       {/* Create Schedule Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
             <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Schedule New Report</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Schedule New Report</h3>
               
               <form onSubmit={createScheduledReport} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Report Name</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Report Name</label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">{t('common.description')}</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">{t('common.description')}</label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({...formData, description: e.target.value})}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                     rows={2}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Report Type</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Report Type</label>
                   <select
                     value={formData.report_type}
                     onChange={(e) => setFormData({...formData, report_type: e.target.value})}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                   >
                     {reportTypes.map((type) => (
                       <option key={type.value} value={type.value}>
@@ -397,11 +397,11 @@ const ScheduledReports: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Frequency</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Frequency</label>
                   <select
                     value={formData.schedule_frequency}
                     onChange={(e) => setFormData({...formData, schedule_frequency: e.target.value})}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                   >
                     {frequencies.map((freq) => (
                       <option key={freq.value} value={freq.value}>
@@ -413,11 +413,11 @@ const ScheduledReports: React.FC = () => {
 
                 {formData.schedule_frequency === 'weekly' && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Day of Week</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Day of Week</label>
                     <select
                       value={formData.schedule_day}
                       onChange={(e) => setFormData({...formData, schedule_day: e.target.value})}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                      className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                     >
                       {weekDays.map((day) => (
                         <option key={day.value} value={day.value}>
@@ -429,21 +429,21 @@ const ScheduledReports: React.FC = () => {
                 )}
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Time</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Time</label>
                   <input
                     type="time"
                     value={formData.schedule_time}
                     onChange={(e) => setFormData({...formData, schedule_time: e.target.value})}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Recipients (comma-separated emails)</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Recipients (comma-separated emails)</label>
                   <textarea
                     value={formData.recipients}
                     onChange={(e) => setFormData({...formData, recipients: e.target.value})}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                     rows={2}
                     placeholder="email1@company.com, email2@company.com"
                     required
@@ -451,11 +451,11 @@ const ScheduledReports: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Format</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Format</label>
                   <select
                     value={formData.format}
                     onChange={(e) => setFormData({...formData, format: e.target.value})}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                   >
                     {formats.map((format) => (
                       <option key={format.value} value={format.value}>
@@ -469,7 +469,7 @@ const ScheduledReports: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowCreateModal(false)}
-                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                    className="px-4 py-2 bg-gray-300 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400"
                   >{t('common.cancel')}</button>
                   <button
                     type="submit"

@@ -257,7 +257,7 @@ const AccessibleDropdown: React.FC<AccessibleDropdownProps> = ({
           tabIndex={-1}
           className="
             absolute z-50 w-full mt-1
-            bg-white dark:bg-slate-800
+            bg-white dark:bg-gray-800 dark:bg-slate-800
             border border-slate-200 dark:border-slate-700
             rounded-lg shadow-lg
             max-h-60 overflow-auto

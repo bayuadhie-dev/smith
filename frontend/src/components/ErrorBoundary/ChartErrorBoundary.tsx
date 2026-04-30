@@ -33,11 +33,11 @@ class ChartErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg border border-gray-200">
+        <div className="flex items-center justify-center h-64 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
           <div className="text-center">
             <ExclamationTriangleIcon className="h-12 w-12 mx-auto mb-4 text-red-400" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Chart Error</h3>
-            <p className="text-sm text-gray-600 mb-4">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Chart Error</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
               Unable to render chart due to data issues
             </p>
             <button

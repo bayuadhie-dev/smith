@@ -106,8 +106,8 @@ export default function WIPLedger() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">WIP Ledger</h1>
-        <p className="text-gray-600">Work in Progress cost tracking and variance analysis</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">WIP Ledger</h1>
+        <p className="text-gray-600 dark:text-gray-300">Work in Progress cost tracking and variance analysis</p>
       </div>
 
       {/* Statistics Cards */}
@@ -164,7 +164,7 @@ export default function WIPLedger() {
       </div>
 
       {/* Filter Tabs */}
-      <div className="bg-white rounded-lg shadow-md p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
         <div className="flex space-x-2">
           <button
             onClick={() => setFilter('all')}
@@ -210,66 +210,66 @@ export default function WIPLedger() {
       </div>
 
       {/* WIP Ledger List */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Work Order
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Product
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Quantity
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Standard Cost
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Actual Cost
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Variance
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {ledgers.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={8} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
                     <CubeIcon className="h-12 w-12 mx-auto text-gray-400 mb-4" />
                     <p>No WIP ledgers found</p>
                   </td>
                 </tr>
               ) : (
                 ledgers.map((ledger) => (
-                  <tr key={ledger.id} className="hover:bg-gray-50">
+                  <tr key={ledger.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">
                         {ledger.work_order_number}
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900">{ledger.product_name}</div>
+                      <div className="text-sm text-gray-900 dark:text-white">{ledger.product_name}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <div className="text-sm text-gray-900">
+                      <div className="text-sm text-gray-900 dark:text-white">
                         {ledger.planned_quantity.toLocaleString()} / {ledger.actual_quantity.toLocaleString()}
                       </div>
-                      <div className="text-xs text-gray-500">Plan / Actual</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Plan / Actual</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900 dark:text-white">
                       {formatCurrency(ledger.standard_total_cost)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900 dark:text-white">
                       {formatCurrency(ledger.actual_total_cost)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
@@ -285,7 +285,7 @@ export default function WIPLedger() {
                           {formatCurrency(Math.abs(ledger.total_variance))}
                         </span>
                       </div>
-                      <div className="text-xs text-gray-500 text-right">
+                      <div className="text-xs text-gray-500 dark:text-gray-400 text-right">
                         {ledger.total_variance > 0 ? 'Unfavorable' : 'Favorable'}
                       </div>
                     </td>

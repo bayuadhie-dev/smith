@@ -491,12 +491,12 @@ const MBFReportPage: React.FC = () => {
   if (isNew) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden transform transition-all">
+        <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-3xl shadow-2xl border border-slate-100 overflow-hidden transform transition-all">
            {/* Header with gradient */}
            <div className="bg-gradient-to-br from-indigo-600 via-blue-600 to-blue-500 px-6 py-10 text-center text-white relative">
               <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
               <div className="relative z-10">
-                <div className="mx-auto w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-md border border-white/30 shadow-inner">
+                <div className="mx-auto w-14 h-14 bg-white dark:bg-gray-800/20 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-md border border-white/30 shadow-inner">
                    <DocumentPlusIcon className="h-7 w-7 text-white" />
                 </div>
                 <h2 className="text-2xl font-black uppercase tracking-tight">New Report</h2>
@@ -512,7 +512,7 @@ const MBFReportPage: React.FC = () => {
                       Period Start
                     </label>
                     <Controller name="period_start" control={control} render={({ field }) => (
-                       <input {...field} type="date" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none" />
+                       <input {...field} type="date" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-800 dark:bg-gray-800 transition-all outline-none" />
                     )} />
                  </div>
                  <div className="space-y-1.5">
@@ -521,7 +521,7 @@ const MBFReportPage: React.FC = () => {
                       Period End
                     </label>
                     <Controller name="period_end" control={control} render={({ field }) => (
-                       <input {...field} type="date" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none" />
+                       <input {...field} type="date" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-800 dark:bg-gray-800 transition-all outline-none" />
                     )} />
                  </div>
               </div>
@@ -532,7 +532,7 @@ const MBFReportPage: React.FC = () => {
                     Delivery Date
                  </label>
                  <Controller name="delivery_date" control={control} render={({ field }) => (
-                    <input {...field} type="date" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none" />
+                    <input {...field} type="date" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-800 dark:bg-gray-800 transition-all outline-none" />
                  )} />
               </div>
 
@@ -540,13 +540,13 @@ const MBFReportPage: React.FC = () => {
                  <div className="space-y-1.5">
                     <label className="text-[10px] font-black text-blue-600 uppercase tracking-widest ml-1">Target Octn (Ctn)</label>
                     <Controller name="target_octenic" control={control} render={({ field }) => (
-                       <input {...field} type="number" placeholder="0" className="w-full bg-blue-50/30 border border-blue-100 rounded-xl px-4 py-2.5 text-base font-black text-blue-900 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none" />
+                       <input {...field} type="number" placeholder="0" className="w-full bg-blue-50/30 border border-blue-100 rounded-xl px-4 py-2.5 text-base font-black text-blue-900 focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-800 dark:bg-gray-800 outline-none" />
                     )} />
                  </div>
                  <div className="space-y-1.5">
                     <label className="text-[10px] font-black text-indigo-600 uppercase tracking-widest ml-1">Target Glvc (Ctn)</label>
                     <Controller name="target_gloveclean" control={control} render={({ field }) => (
-                       <input {...field} type="number" placeholder="0" className="w-full bg-indigo-50/30 border border-indigo-100 rounded-xl px-4 py-2.5 text-base font-black text-indigo-900 focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none" />
+                       <input {...field} type="number" placeholder="0" className="w-full bg-indigo-50/30 border border-indigo-100 rounded-xl px-4 py-2.5 text-base font-black text-indigo-900 focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-gray-800 dark:bg-gray-800 outline-none" />
                     )} />
                  </div>
               </div>
@@ -581,17 +581,17 @@ const MBFReportPage: React.FC = () => {
     <div className="min-h-screen bg-[#f8fafc] p-2 md:p-3">
       <div className="max-w-[1600px] mx-auto space-y-3">
         {/* Header Section */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="px-4 py-2 border-b border-gray-50 flex justify-between items-center bg-white">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="px-4 py-2 border-b border-gray-50 flex justify-between items-center bg-white dark:bg-gray-800">
             <div className="flex items-center space-x-3">
               <button 
                 onClick={() => navigate('/app/production')} 
-                className="p-1 hover:bg-gray-50 rounded-full transition-colors"
+                className="p-1 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 rounded-full transition-colors"
               >
                 <ArrowLeftIcon className="h-4 w-4 text-gray-400" />
               </button>
               <div>
-                <h1 className="text-[13px] font-black text-gray-900 flex items-center gap-2 uppercase tracking-tight">
+                <h1 className="text-[13px] font-black text-gray-900 dark:text-white flex items-center gap-2 uppercase tracking-tight">
                   MBF Production & Delivery Target
                   <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase ${report?.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
                     {report?.status || 'Draft'}
@@ -626,7 +626,7 @@ const MBFReportPage: React.FC = () => {
           <div className="p-2 md:p-3">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
               {/* Basic Info Group */}
-              <div className="lg:col-span-8 p-3 bg-gray-50/50 rounded-xl border border-gray-100/50">
+              <div className="lg:col-span-8 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100/50">
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
                   <div className="flex flex-col space-y-0.5">
                     <label className="text-[8px] font-bold text-gray-400 uppercase ml-1">Period Start</label>
@@ -634,7 +634,7 @@ const MBFReportPage: React.FC = () => {
                       name="period_start"
                       control={control}
                       render={({ field }) => (
-                        <input {...field} type="date" className="bg-white border border-gray-200 rounded-lg px-2 py-0.5 text-[11px] font-bold text-gray-700 transition-all" disabled={!canEdit} />
+                        <input {...field} type="date" className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-0.5 text-[11px] font-bold text-gray-700 dark:text-gray-200 transition-all" disabled={!canEdit} />
                       )}
                     />
                   </div>
@@ -644,7 +644,7 @@ const MBFReportPage: React.FC = () => {
                       name="period_end"
                       control={control}
                       render={({ field }) => (
-                        <input {...field} type="date" className="bg-white border border-gray-200 rounded-lg px-2 py-0.5 text-[11px] font-bold text-gray-700 transition-all" disabled={!canEdit} />
+                        <input {...field} type="date" className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-0.5 text-[11px] font-bold text-gray-700 dark:text-gray-200 transition-all" disabled={!canEdit} />
                       )}
                     />
                   </div>
@@ -654,7 +654,7 @@ const MBFReportPage: React.FC = () => {
                       name="delivery_date"
                       control={control}
                       render={({ field }) => (
-                        <input {...field} type="date" className="bg-white border border-gray-200 rounded-lg px-2 py-0.5 text-[11px] font-bold text-gray-700 transition-all" disabled={!canEdit} />
+                        <input {...field} type="date" className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-0.5 text-[11px] font-bold text-gray-700 dark:text-gray-200 transition-all" disabled={!canEdit} />
                       )}
                     />
                   </div>
@@ -664,7 +664,7 @@ const MBFReportPage: React.FC = () => {
                       name="target_octenic"
                       control={control}
                       render={({ field }) => (
-                        <input {...field} type="number" onChange={e => field.onChange(parseFloat(e.target.value) || 0)} className="bg-white border border-gray-200 rounded-lg px-2 py-0.5 text-[11px] font-black text-blue-900 transition-all" disabled={!canEdit} />
+                        <input {...field} type="number" onChange={e => field.onChange(parseFloat(e.target.value) || 0)} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-0.5 text-[11px] font-black text-blue-900 transition-all" disabled={!canEdit} />
                       )}
                     />
                   </div>
@@ -674,13 +674,13 @@ const MBFReportPage: React.FC = () => {
                       name="target_gloveclean"
                       control={control}
                       render={({ field }) => (
-                        <input {...field} type="number" onChange={e => field.onChange(parseFloat(e.target.value) || 0)} className="bg-white border border-gray-200 rounded-lg px-2 py-0.5 text-[11px] font-black text-purple-900 transition-all" disabled={!canEdit} />
+                        <input {...field} type="number" onChange={e => field.onChange(parseFloat(e.target.value) || 0)} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-0.5 text-[11px] font-black text-purple-900 transition-all" disabled={!canEdit} />
                       )}
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-4 gap-2 mt-3 pt-3 border-t border-gray-200/50">
+                <div className="grid grid-cols-4 gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700/50">
                   <div className="flex flex-col">
                     <span className="text-[8px] font-black text-blue-600 uppercase tracking-tighter leading-none">Total Target</span>
                     <span className="text-sm font-black text-blue-900 leading-tight">{computedTotalTargetKarton.toLocaleString()} <span className="text-[8px] font-bold opacity-60 uppercase">Ctn</span></span>
@@ -703,7 +703,7 @@ const MBFReportPage: React.FC = () => {
               </div>
 
               {/* Remarks/Issue Group */}
-              <div className="lg:col-span-4 p-2.5 bg-white border border-gray-100 rounded-xl flex flex-col">
+              <div className="lg:col-span-4 p-2.5 bg-white dark:bg-gray-800 border border-gray-100 rounded-xl flex flex-col">
                 <div className="flex items-center gap-2 mb-1">
                   <InformationCircleIcon className="h-3.5 w-3.5 text-gray-300" />
                   <span className="text-[9px] font-bold text-gray-300 uppercase">Remarks & Issues</span>
@@ -728,10 +728,10 @@ const MBFReportPage: React.FC = () => {
         {report && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 pb-1">
             {/* Box 1: Overall Achievement Gauge */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 flex flex-col h-[180px] relative overflow-hidden group">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 p-3 flex flex-col h-[180px] relative overflow-hidden group">
                <div className="flex items-center gap-1.5 mb-2 relative z-10">
                   <div className="w-1 h-3 bg-emerald-500 rounded-full"></div>
-                  <h3 className="text-[10px] font-black text-gray-800 uppercase tracking-widest">Efficiency Gauge</h3>
+                  <h3 className="text-[10px] font-black text-gray-800 dark:text-gray-100 uppercase tracking-widest">Efficiency Gauge</h3>
                </div>
                <div className="flex-grow flex items-center justify-center relative">
                   <ResponsiveContainer width="100%" height="100%">
@@ -759,10 +759,10 @@ const MBFReportPage: React.FC = () => {
             </div>
 
             {/* Box 2: Production Benchmark */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 flex flex-col h-[180px]">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 p-3 flex flex-col h-[180px]">
                <div className="flex items-center gap-1.5 mb-4">
                   <div className="w-1 h-3 bg-indigo-600 rounded-full"></div>
-                  <h3 className="text-[10px] font-black text-gray-800 uppercase tracking-widest">Product Benchmark</h3>
+                  <h3 className="text-[10px] font-black text-gray-800 dark:text-gray-100 uppercase tracking-widest">Product Benchmark</h3>
                </div>
                <div className="flex-grow">
                   <ResponsiveContainer width="100%" height="100%">
@@ -774,7 +774,7 @@ const MBFReportPage: React.FC = () => {
                         content={({ active, payload }) => {
                           if (active && payload) {
                              return (
-                               <div className="bg-white/95 backdrop-blur-md border border-gray-100 p-2 rounded-xl shadow-xl">
+                               <div className="bg-white dark:bg-gray-800/95 backdrop-blur-md border border-gray-100 p-2 rounded-xl shadow-xl">
                                   {payload.map((e: any, i: number) => (
                                     <p key={i} className="text-[8px] font-bold flex justify-between gap-4">
                                       <span className="text-gray-400">{e.name}:</span>
@@ -795,10 +795,10 @@ const MBFReportPage: React.FC = () => {
             </div>
 
             {/* Box 3: Detailed Waste Distribution */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 flex flex-col h-[180px]">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 p-3 flex flex-col h-[180px]">
                <div className="flex items-center gap-1.5 mb-2">
                   <div className="w-1 h-3 bg-purple-600 rounded-full"></div>
-                  <h3 className="text-[10px] font-black text-gray-800 uppercase tracking-widest">Waste Analytics</h3>
+                  <h3 className="text-[10px] font-black text-gray-800 dark:text-gray-100 uppercase tracking-widest">Waste Analytics</h3>
                </div>
                <div className="flex-grow grid grid-cols-2 gap-3 divide-x divide-gray-50 mt-1">
                    {/* Octenic Waste Column */}
@@ -812,7 +812,7 @@ const MBFReportPage: React.FC = () => {
                        <span className="text-[7px] font-bold text-gray-400">CHEMICAL GRAMS</span>
                        <span className="text-[9px] font-black text-indigo-900">{Math.round(wasteMetrics.octn.chem)}<span className="text-[6px] ml-0.5">GRAMS</span></span>
                      </div>
-                     <div className="flex justify-between items-center bg-gray-50/50 px-1 py-0.5 rounded">
+                     <div className="flex justify-between items-center bg-gray-50 dark:bg-gray-900/50 px-1 py-0.5 rounded">
                        <span className="text-[7px] font-bold text-gray-400 text-opacity-60 uppercase">PACKAGING / STICKER WASTE</span>
                        <span className="text-[9px] font-black text-slate-700">{wasteMetrics.octn.pkg}/{wasteMetrics.octn.stc}</span>
                      </div>
@@ -833,7 +833,7 @@ const MBFReportPage: React.FC = () => {
                        <span className="text-[7px] font-bold text-gray-400">CHEMICAL GRAMS</span>
                        <span className="text-[9px] font-black text-purple-900">{Math.round(wasteMetrics.glvcn.chem)}<span className="text-[6px] ml-0.5">GRAMS</span></span>
                      </div>
-                     <div className="flex justify-between items-center bg-gray-50/50 px-1 py-0.5 rounded">
+                     <div className="flex justify-between items-center bg-gray-50 dark:bg-gray-900/50 px-1 py-0.5 rounded">
                        <span className="text-[7px] font-bold text-gray-400 text-opacity-60 uppercase tracking-tighter">PACKAGING WASTE</span>
                        <span className="text-[9px] font-black text-slate-700">{wasteMetrics.glvcn.pkg}</span>
                      </div>
@@ -849,9 +849,9 @@ const MBFReportPage: React.FC = () => {
 
         {/* Daily Production Cards */}
         {report && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 p-3">
             <div className="flex items-center justify-between mb-3 px-1">
-              <h3 className="text-xs font-black text-gray-800 flex items-center gap-1.5 uppercase tracking-widest">
+              <h3 className="text-xs font-black text-gray-800 dark:text-gray-100 flex items-center gap-1.5 uppercase tracking-widest">
                 <span className="w-1 h-3 bg-blue-600 rounded-full"></span>
                 Daily Production Cards
               </h3>
@@ -918,7 +918,7 @@ const MBFReportPage: React.FC = () => {
                                   </button>
                                 )}
                               </div>
-                              <div className="h-[1px] flex-grow bg-gray-50"></div>
+                              <div className="h-[1px] flex-grow bg-gray-50 dark:bg-gray-900"></div>
                             </div>
 
                             <div className="space-y-2 mt-1">
@@ -929,33 +929,33 @@ const MBFReportPage: React.FC = () => {
                                   <div className="flex gap-4">
                                     <div className="flex flex-col items-end">
                                       <span className="text-[6px] font-bold text-gray-400 uppercase tracking-widest">Target Pcs</span>
-                                      <input type="number" value={detail.target_octenic || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'target_octenic', parseFloat(e.target.value) || 0)} className="w-16 bg-white border border-blue-200 rounded text-[10px] font-black text-center text-blue-900 focus:ring-1 focus:ring-blue-600 outline-none transition-all" disabled={!canEdit} />
+                                      <input type="number" value={detail.target_octenic || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'target_octenic', parseFloat(e.target.value) || 0)} className="w-16 bg-white dark:bg-gray-800 border border-blue-200 rounded text-[10px] font-black text-center text-blue-900 focus:ring-1 focus:ring-blue-600 outline-none transition-all" disabled={!canEdit} />
                                     </div>
                                     <div className="flex flex-col items-end">
                                       <span className="text-[6px] font-bold text-gray-400 uppercase tracking-widest">Actual Pcs</span>
-                                      <input type="number" value={detail.actual_octenic || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'actual_octenic', parseFloat(e.target.value) || 0)} className="w-16 bg-white border border-green-200 rounded text-[10px] font-black text-center text-green-700 focus:ring-1 focus:ring-green-600 outline-none transition-all" disabled={!canEdit} />
+                                      <input type="number" value={detail.actual_octenic || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'actual_octenic', parseFloat(e.target.value) || 0)} className="w-16 bg-white dark:bg-gray-800 border border-green-200 rounded text-[10px] font-black text-center text-green-700 focus:ring-1 focus:ring-green-600 outline-none transition-all" disabled={!canEdit} />
                                     </div>
-                                    <div className="flex flex-col items-end bg-gray-50 px-2 rounded-lg border border-gray-100">
+                                    <div className="flex flex-col items-end bg-gray-50 dark:bg-gray-900 px-2 rounded-lg border border-gray-100">
                                       <span className="text-[6px] font-bold text-gray-400 uppercase tracking-widest">Cartons</span>
-                                      <span className="text-[10px] font-black text-gray-800">{(detail.actual_octenic / 39).toFixed(2)}</span>
+                                      <span className="text-[10px] font-black text-gray-800 dark:text-gray-100">{(detail.actual_octenic / 39).toFixed(2)}</span>
                                     </div>
                                   </div>
                                 </div>
                                 
                                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-2">
-                                  <div className="bg-white/60 p-1.5 rounded-lg border border-blue-100/50">
+                                  <div className="bg-white dark:bg-gray-800/60 p-1.5 rounded-lg border border-blue-100/50">
                                     <span className="text-[6px] font-black text-blue-400 uppercase block mb-1">CLOTH METERS</span>
                                     <span className="text-[10px] font-black text-blue-900">{detail.actual_cloth_octenic?.toFixed(1) || 0} <span className="text-[6px] text-gray-400">m</span></span>
                                   </div>
-                                  <div className="bg-white/60 p-1.5 rounded-lg border border-blue-100/50">
+                                  <div className="bg-white dark:bg-gray-800/60 p-1.5 rounded-lg border border-blue-100/50">
                                     <span className="text-[6px] font-black text-blue-400 uppercase block mb-1">ISOLASI ROLL</span>
                                     <input type="number" step="0.01" value={typeof detail.actual_isolation_roll === 'number' ? detail.actual_isolation_roll.toFixed(2) : detail.actual_isolation_roll || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'actual_isolation_roll', parseFloat(e.target.value) || 0)} className="w-full bg-transparent border-none p-0 text-[10px] font-black text-blue-900 focus:ring-0 outline-none" disabled={!canEdit} />
                                   </div>
-                                  <div className="bg-white/60 p-1.5 rounded-lg border border-blue-100/50">
+                                  <div className="bg-white dark:bg-gray-800/60 p-1.5 rounded-lg border border-blue-100/50">
                                     <span className="text-[6px] font-black text-blue-400 uppercase block mb-1">PACKAGING ROLL</span>
                                     <input type="number" step="0.01" value={typeof detail.actual_roll_packaging_octenic === 'number' ? detail.actual_roll_packaging_octenic.toFixed(2) : detail.actual_roll_packaging_octenic || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'actual_roll_packaging_octenic', parseFloat(e.target.value) || 0)} className="w-full bg-transparent border-none p-0 text-[10px] font-black text-blue-900 focus:ring-0 outline-none" disabled={!canEdit} />
                                   </div>
-                                  <div className="bg-white/60 p-1.5 rounded-lg border border-blue-100/50">
+                                  <div className="bg-white dark:bg-gray-800/60 p-1.5 rounded-lg border border-blue-100/50">
                                     <span className="text-[6px] font-black text-blue-400 uppercase block mb-1">STICKER ROLL</span>
                                     <input type="number" step="0.01" value={typeof detail.actual_roll_sticker_octenic === 'number' ? detail.actual_roll_sticker_octenic.toFixed(2) : detail.actual_roll_sticker_octenic || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'actual_roll_sticker_octenic', parseFloat(e.target.value) || 0)} className="w-full bg-transparent border-none p-0 text-[10px] font-black text-blue-900 focus:ring-0 outline-none" disabled={!canEdit} />
                                   </div>
@@ -970,12 +970,12 @@ const MBFReportPage: React.FC = () => {
                                     </div>
                                   </div>
                                   <div className="grid grid-cols-5 gap-1">
-                                    <div className="bg-white/80 p-1 rounded border border-yellow-100 flex flex-col items-center">
+                                    <div className="bg-white dark:bg-gray-800/80 p-1 rounded border border-yellow-100 flex flex-col items-center">
                                       <span className="text-[5px] font-bold text-gray-400 uppercase">Waste METERS/GRAMS</span>
                                       <span className="text-[8px] font-black text-yellow-800">{detail.octn_waste_cloth_chem || '0M / 0G'}</span>
                                     </div>
                                     {['octn_setting_packaging', 'octn_setting_sticker', 'octn_grade_b', 'octn_grade_c'].map(f => (
-                                      <div key={f} className="bg-white/80 p-0.5 rounded border border-yellow-100 flex flex-col items-center">
+                                      <div key={f} className="bg-white dark:bg-gray-800/80 p-0.5 rounded border border-yellow-100 flex flex-col items-center">
                                         <span className="text-[5px] font-bold text-gray-400 uppercase">{f.split('_').slice(1).join(' ')}</span>
                                         <input type="number" value={(detail as any)[f] || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, f, parseFloat(e.target.value) || 0)} className="w-full bg-transparent border-none p-0 text-[9px] font-black text-center text-yellow-900 focus:ring-0 outline-none" disabled={!canEdit} />
                                       </div>
@@ -991,25 +991,25 @@ const MBFReportPage: React.FC = () => {
                                   <div className="flex gap-4">
                                     <div className="flex flex-col items-end">
                                       <span className="text-[6px] font-bold text-gray-400 uppercase tracking-widest">Target Pcs</span>
-                                      <input type="number" value={detail.target_gloveclean || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'target_gloveclean', parseFloat(e.target.value) || 0)} className="w-16 bg-white border border-purple-200 rounded text-[10px] font-black text-center text-purple-900 focus:ring-1 focus:ring-purple-600 outline-none transition-all" disabled={!canEdit} />
+                                      <input type="number" value={detail.target_gloveclean || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'target_gloveclean', parseFloat(e.target.value) || 0)} className="w-16 bg-white dark:bg-gray-800 border border-purple-200 rounded text-[10px] font-black text-center text-purple-900 focus:ring-1 focus:ring-purple-600 outline-none transition-all" disabled={!canEdit} />
                                     </div>
                                     <div className="flex flex-col items-end">
                                       <span className="text-[6px] font-bold text-gray-400 uppercase tracking-widest">Actual Pcs</span>
-                                      <input type="number" value={detail.actual_gloveclean || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'actual_gloveclean', parseFloat(e.target.value) || 0)} className="w-16 bg-white border border-green-200 rounded text-[10px] font-black text-center text-green-700 focus:ring-1 focus:ring-green-600 outline-none transition-all" disabled={!canEdit} />
+                                      <input type="number" value={detail.actual_gloveclean || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'actual_gloveclean', parseFloat(e.target.value) || 0)} className="w-16 bg-white dark:bg-gray-800 border border-green-200 rounded text-[10px] font-black text-center text-green-700 focus:ring-1 focus:ring-green-600 outline-none transition-all" disabled={!canEdit} />
                                     </div>
-                                    <div className="flex flex-col items-end bg-gray-50 px-2 rounded-lg border border-gray-100">
+                                    <div className="flex flex-col items-end bg-gray-50 dark:bg-gray-900 px-2 rounded-lg border border-gray-100">
                                       <span className="text-[6px] font-bold text-gray-400 uppercase tracking-widest">Cartons</span>
-                                      <span className="text-[10px] font-black text-gray-800">{(detail.actual_gloveclean / 72).toFixed(2)}</span>
+                                      <span className="text-[10px] font-black text-gray-800 dark:text-gray-100">{(detail.actual_gloveclean / 72).toFixed(2)}</span>
                                     </div>
                                   </div>
                                 </div>
                                 
                                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-2">
-                                  <div className="bg-white/60 p-1.5 rounded-lg border border-purple-100/50">
+                                  <div className="bg-white dark:bg-gray-800/60 p-1.5 rounded-lg border border-purple-100/50">
                                     <span className="text-[6px] font-black text-purple-400 uppercase block mb-1">CLOTH METERS</span>
                                     <span className="text-[10px] font-black text-purple-900">{detail.actual_cloth_gloveclean?.toFixed(1) || 0} <span className="text-[6px] text-gray-400">m</span></span>
                                   </div>
-                                  <div className="bg-white/60 p-1.5 rounded-lg border border-purple-100/50">
+                                  <div className="bg-white dark:bg-gray-800/60 p-1.5 rounded-lg border border-purple-100/50">
                                     <span className="text-[6px] font-black text-purple-400 uppercase block mb-1">PACKAGING ROLL</span>
                                     <input type="number" step="0.01" value={typeof detail.actual_roll_packaging_gloveclean === 'number' ? detail.actual_roll_packaging_gloveclean.toFixed(2) : detail.actual_roll_packaging_gloveclean || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'actual_roll_packaging_gloveclean', parseFloat(e.target.value) || 0)} className="w-full bg-transparent border-none p-0 text-[10px] font-black text-purple-900 focus:ring-0 outline-none" disabled={!canEdit} />
                                   </div>
@@ -1023,12 +1023,12 @@ const MBFReportPage: React.FC = () => {
                                     </div>
                                   </div>
                                   <div className="grid grid-cols-4 gap-1">
-                                    <div className="bg-white/80 p-1 rounded border border-emerald-100 flex flex-col items-center">
+                                    <div className="bg-white dark:bg-gray-800/80 p-1 rounded border border-emerald-100 flex flex-col items-center">
                                       <span className="text-[5px] font-bold text-gray-400 uppercase">Waste METERS/GRAMS</span>
                                       <span className="text-[8px] font-black text-emerald-800">{detail.glvcn_waste_cloth_chem || '0M / 0ML'}</span>
                                     </div>
                                     {['glvcn_setting_packaging', 'glvcn_grade_b', 'glvcn_grade_c'].map(f => (
-                                      <div key={f} className="bg-white/80 p-0.5 rounded border border-emerald-100 flex flex-col items-center">
+                                      <div key={f} className="bg-white dark:bg-gray-800/80 p-0.5 rounded border border-emerald-100 flex flex-col items-center">
                                         <span className="text-[5px] font-bold text-gray-400 uppercase">{f.split('_').slice(1).join(' ')}</span>
                                         <input type="number" value={(detail as any)[f] || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, f, parseFloat(e.target.value) || 0)} className="w-full bg-transparent border-none p-0 text-[9px] font-black text-center text-emerald-900 focus:ring-0 outline-none" disabled={!canEdit} />
                                       </div>
@@ -1039,13 +1039,13 @@ const MBFReportPage: React.FC = () => {
                             </div>
                             
                             {/* Shift Notes Overlay */}
-                            <div className="mt-1 flex items-center gap-1.5 p-1 bg-gray-50/50 rounded-md border border-gray-100">
+                            <div className="mt-1 flex items-center gap-1.5 p-1 bg-gray-50 dark:bg-gray-900/50 rounded-md border border-gray-100">
                                <ChatBubbleBottomCenterTextIcon className="h-2.5 w-2.5 text-gray-300" />
                                <input 
                                  type="text" 
                                  value={detail.notes || ''} 
                                  onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'notes', e.target.value)}
-                                 className="bg-transparent border-none focus:ring-0 p-0 text-[8px] font-medium text-gray-500 italic flex-grow"
+                                 className="bg-transparent border-none focus:ring-0 p-0 text-[8px] font-medium text-gray-500 dark:text-gray-400 italic flex-grow"
                                  placeholder="Kendala harian (misal: mesin trouble)..."
                                  disabled={!canEdit}
                                />
@@ -1066,12 +1066,12 @@ const MBFReportPage: React.FC = () => {
                 <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-red-500"></div> MINUS</span>
               </div>
               <div className="flex flex-wrap items-center gap-x-3">
-                <span title="Waste Packaging (Kg)">PAC: <span className="text-gray-900">W. PACKAGING</span></span>
-                <span title="Waste Sticker (Pcs)">STI: <span className="text-gray-900">W. STICKER</span></span>
-                <span title="Setting Mesin (Pcs)">SET: <span className="text-gray-900">SETTING</span></span>
-                <span title="Produksi Grade B/C (Pcs)">B/C: <span className="text-gray-900">GRADE REJECT</span></span>
-                <span title="Kebutuhan Kain (Mtr) & Obat (Gram/Ml)">K&O: <span className="text-gray-900">WASTE KAIN+OBAT</span></span>
-                <span title="Penggunaan Roll (Isolasi, Packaging, Sticker)">ROLLS: <span className="text-gray-900">ISOLASI, PKG, STC</span></span>
+                <span title="Waste Packaging (Kg)">PAC: <span className="text-gray-900 dark:text-white">W. PACKAGING</span></span>
+                <span title="Waste Sticker (Pcs)">STI: <span className="text-gray-900 dark:text-white">W. STICKER</span></span>
+                <span title="Setting Mesin (Pcs)">SET: <span className="text-gray-900 dark:text-white">SETTING</span></span>
+                <span title="Produksi Grade B/C (Pcs)">B/C: <span className="text-gray-900 dark:text-white">GRADE REJECT</span></span>
+                <span title="Kebutuhan Kain (Mtr) & Obat (Gram/Ml)">K&O: <span className="text-gray-900 dark:text-white">WASTE KAIN+OBAT</span></span>
+                <span title="Penggunaan Roll (Isolasi, Packaging, Sticker)">ROLLS: <span className="text-gray-900 dark:text-white">ISOLASI, PKG, STC</span></span>
               </div>
             </div>
           </div>
@@ -1090,7 +1090,7 @@ const MBFReportPage: React.FC = () => {
                </div>
                <div className="flex-grow">
                   <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">{item.label}</p>
-                  <p className="text-[10px] font-bold text-gray-800 leading-none">{item.name || '---'}</p>
+                  <p className="text-[10px] font-bold text-gray-800 dark:text-gray-100 leading-none">{item.name || '---'}</p>
                   {item.date && (
                     <p className="text-[7px] text-gray-400 mt-0.5">{format(new Date(item.date), 'dd/MM/yy HH:mm')}</p>
                   )}

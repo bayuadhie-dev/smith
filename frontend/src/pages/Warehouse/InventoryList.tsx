@@ -55,49 +55,49 @@ const { data: inventory, isLoading } = useGetInventoryQuery({})
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Inventory</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Inventory</h1>
 
       {dashboard?.summary && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-white p-6 rounded-lg shadow">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Items</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Items</p>
                 <p className="text-2xl font-bold text-blue-600">{dashboard.summary.total_items || 0}</p>
-                <p className="text-xs text-gray-500 mt-1">Products + Materials</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Products + Materials</p>
               </div>
               <Box className="h-8 w-8 text-blue-500" />
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Products</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Products</p>
                 <p className="text-2xl font-bold text-green-600">{dashboard.summary.total_products || 0}</p>
-                <p className="text-xs text-gray-500 mt-1">Finished Goods</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Finished Goods</p>
               </div>
               <Package className="h-8 w-8 text-green-500" />
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Materials</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Materials</p>
                 <p className="text-2xl font-bold text-purple-600">{dashboard.summary.total_materials || 0}</p>
-                <p className="text-xs text-gray-500 mt-1">Raw Materials</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Raw Materials</p>
               </div>
               <Layers className="h-8 w-8 text-purple-500" />
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Quantity</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Quantity</p>
                 <p className="text-2xl font-bold text-orange-600">{dashboard.summary.total_quantity?.toLocaleString() || 0}</p>
-                <p className="text-xs text-gray-500 mt-1">All Units</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">All Units</p>
               </div>
               <Box className="h-8 w-8 text-orange-500" />
             </div>
@@ -123,7 +123,7 @@ const { data: inventory, isLoading } = useGetInventoryQuery({})
                   <th>Reserved</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {inventory?.inventory?.map((item: any) => (
                   <tr key={item.id}>
                     <td className="font-medium">{item.item_code}</td>
@@ -141,7 +141,7 @@ const { data: inventory, isLoading } = useGetInventoryQuery({})
                           <span className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full ${getCategoryColor(item.category)}`}>
                             {getCategoryGroup(item.category)}
                           </span>
-                          <span className="text-xs text-gray-500">{getCategoryLabel(item.category)}</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">{getCategoryLabel(item.category)}</span>
                         </div>
                       ) : (
                         <span className="text-gray-400">-</span>

@@ -213,10 +213,10 @@ const MaintenanceSchedule: React.FC = () => {
       <div className="mb-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
               Maintenance Schedules
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-300">
               Manage preventive maintenance schedules and automated planning
             </p>
           </div>
@@ -241,52 +241,52 @@ const MaintenanceSchedule: React.FC = () => {
       </div>
 
       {/* Schedules Table */}
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('production.machine')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('production.machine')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Type & Frequency
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Next Maintenance
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.status')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.actions')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {schedules.map((schedule) => (
-                <tr key={schedule.id} className="hover:bg-gray-50">
+                <tr key={schedule.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">
                       {schedule.schedule_number}
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
                       Duration: {schedule.estimated_duration_hours || 'N/A'}h
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <CogIcon className="h-5 w-5 text-gray-400 mr-2" />
-                      <div className="text-sm text-gray-900">{schedule.machine_name}</div>
+                      <div className="text-sm text-gray-900 dark:text-white">{schedule.machine_name}</div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 capitalize">{schedule.maintenance_type}</div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-gray-900 dark:text-white capitalize">{schedule.maintenance_type}</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
                       {getFrequencyDisplay(schedule.frequency, schedule.frequency_value)}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
+                    <div className="text-sm text-gray-900 dark:text-white">
                       {new Date(schedule.next_maintenance_date).toLocaleDateString()}
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
                       {schedule.last_maintenance_date 
                         ? `Last: ${new Date(schedule.last_maintenance_date).toLocaleDateString()}`
                         : 'No previous maintenance'
@@ -331,8 +331,8 @@ const MaintenanceSchedule: React.FC = () => {
           {schedules.length === 0 && (
             <div className="text-center py-12">
               <CalendarIcon className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No maintenance schedules</h3>
-              <p className="text-gray-500 mb-4">Get started by creating your first maintenance schedule.</p>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No maintenance schedules</h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-4">Get started by creating your first maintenance schedule.</p>
               <button
                 onClick={() => setShowCreateModal(true)}
                 className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -348,17 +348,17 @@ const MaintenanceSchedule: React.FC = () => {
       {/* Create Schedule Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
             <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Create Maintenance Schedule</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Create Maintenance Schedule</h3>
               
               <form onSubmit={createSchedule} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">{t('production.machine')}</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">{t('production.machine')}</label>
                   <select
                     value={formData.machine_id}
                     onChange={(e) => setFormData({...formData, machine_id: e.target.value})}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                     required
                   >
                     <option value="">Select Machine</option>
@@ -371,11 +371,11 @@ const MaintenanceSchedule: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Maintenance Type</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Maintenance Type</label>
                   <select
                     value={formData.maintenance_type}
                     onChange={(e) => setFormData({...formData, maintenance_type: e.target.value})}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                   >
                     <option value="preventive">Preventive</option>
                     <option value="predictive">Predictive</option>
@@ -384,11 +384,11 @@ const MaintenanceSchedule: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Frequency</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Frequency</label>
                   <select
                     value={formData.frequency}
                     onChange={(e) => setFormData({...formData, frequency: e.target.value})}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                   >
                     <option value="daily">Daily</option>
                     <option value="weekly">Weekly</option>
@@ -399,46 +399,46 @@ const MaintenanceSchedule: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Frequency Value</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Frequency Value</label>
                   <input
                     type="number"
                     value={formData.frequency_value}
                     onChange={(e) => setFormData({...formData, frequency_value: parseInt(e.target.value)})}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                     min="1"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Next Maintenance Date</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Next Maintenance Date</label>
                   <input
                     type="datetime-local"
                     value={formData.next_maintenance_date}
                     onChange={(e) => setFormData({...formData, next_maintenance_date: e.target.value})}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Estimated Duration (hours)</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Estimated Duration (hours)</label>
                   <input
                     type="number"
                     value={formData.estimated_duration_hours}
                     onChange={(e) => setFormData({...formData, estimated_duration_hours: parseInt(e.target.value)})}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                     min="0.5"
                     step="0.5"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Notes</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Notes</label>
                   <textarea
                     value={formData.notes}
                     onChange={(e) => setFormData({...formData, notes: e.target.value})}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                     rows={3}
                   />
                 </div>
@@ -447,7 +447,7 @@ const MaintenanceSchedule: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowCreateModal(false)}
-                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                    className="px-4 py-2 bg-gray-300 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400"
                   >{t('common.cancel')}</button>
                   <button
                     type="submit"

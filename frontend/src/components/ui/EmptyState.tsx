@@ -152,7 +152,7 @@ export const EmptyTableState: React.FC<EmptyStateProps> = (props) => (
 
 // Inline version for cards
 export const EmptyCardState: React.FC<EmptyStateProps> = (props) => (
-  <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+  <div className="bg-white dark:bg-gray-800 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
     <EmptyState {...props} />
   </div>
 );

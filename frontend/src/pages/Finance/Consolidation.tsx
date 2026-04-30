@@ -102,8 +102,8 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">🏢 Consolidation</h1>
-          <p className="text-gray-600 mt-1">Consolidated financial statements and group performance</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">🏢 Consolidation</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Consolidated financial statements and group performance</p>
         </div>
         <div className="flex gap-3">
           <select
@@ -151,8 +151,8 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
                 <BuildingOffice2Icon className="h-6 w-6 text-white" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Entities</p>
-                <p className="text-2xl font-bold text-gray-900">{summary.total_entities}</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Entities</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{summary.total_entities}</p>
               </div>
             </div>
           </div>
@@ -163,8 +163,8 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
                 <ChartBarIcon className="h-6 w-6 text-white" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Consolidated Revenue</p>
-                <p className="text-2xl font-bold text-gray-900">{formatRupiah(summary.consolidated_revenue)}</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Consolidated Revenue</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatRupiah(summary.consolidated_revenue)}</p>
               </div>
             </div>
           </div>
@@ -175,7 +175,7 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
                 <DocumentChartBarIcon className="h-6 w-6 text-white" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Consolidated Net Income</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Consolidated Net Income</p>
                 <p className="text-2xl font-bold text-purple-600">{formatRupiah(summary.consolidated_net_income)}</p>
               </div>
             </div>
@@ -187,7 +187,7 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
                 <span className="text-2xl text-white">💰</span>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Consolidated Assets</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Consolidated Assets</p>
                 <p className="text-2xl font-bold text-orange-600">{formatRupiah(summary.consolidated_assets)}</p>
               </div>
             </div>
@@ -199,7 +199,7 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
       <div className="card p-4">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold">Entity Analysis - {selectedPeriod}</h3>
-          <div className="flex rounded-lg border border-gray-300">
+          <div className="flex rounded-lg border border-gray-300 dark:border-gray-600">
             <button
               onClick={() => setViewMode('financial')}
               className={`px-4 py-2 text-sm font-medium rounded-l-lg ${
@@ -228,38 +228,38 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
       {viewMode === 'financial' && (
         <div className="card overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Net Income
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {consolidatedData.map((entity, index) => (
-                  <tr key={index} className="hover:bg-gray-50">
+                  <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <span className="text-2xl mr-3">{getEntityIcon(entity.entity_name)}</span>
-                        <div className="text-sm font-medium text-gray-900">{entity.entity_name}</div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">{entity.entity_name}</div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900 dark:text-white">
                       {formatRupiah(entity.revenue)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-red-600">
@@ -270,7 +270,7 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
                         {formatRupiah(entity.net_income)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900 dark:text-white">
                       {formatRupiah(entity.assets)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-red-600">
@@ -285,10 +285,10 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
                   </tr>
                 ))}
               </tbody>
-              <tfoot className="bg-gray-50">
+              <tfoot className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <td className="px-6 py-4 text-sm font-bold text-gray-900">CONSOLIDATED TOTALS</td>
-                  <td className="px-6 py-4 text-right text-sm font-bold text-gray-900">
+                  <td className="px-6 py-4 text-sm font-bold text-gray-900 dark:text-white">CONSOLIDATED TOTALS</td>
+                  <td className="px-6 py-4 text-right text-sm font-bold text-gray-900 dark:text-white">
                     {formatRupiah(consolidatedData.reduce((sum, e) => sum + e.revenue, 0))}
                   </td>
                   <td className="px-6 py-4 text-right text-sm font-bold text-red-600">
@@ -297,7 +297,7 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
                   <td className="px-6 py-4 text-right text-sm font-bold text-green-600">
                     {formatRupiah(consolidatedData.reduce((sum, e) => sum + e.net_income, 0))}
                   </td>
-                  <td className="px-6 py-4 text-right text-sm font-bold text-gray-900">
+                  <td className="px-6 py-4 text-right text-sm font-bold text-gray-900 dark:text-white">
                     {formatRupiah(consolidatedData.reduce((sum, e) => sum + e.assets, 0))}
                   </td>
                   <td className="px-6 py-4 text-right text-sm font-bold text-red-600">
@@ -320,31 +320,31 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
       {viewMode === 'performance' && (
         <div className="card overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Profit Margin %
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     ROA %
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     ROE %
                   </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Performance Rating
                   </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Contribution %
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {consolidatedData.map((entity, index) => {
                   const profitMargin = getProfitMargin(entity)
                   const roa = getROA(entity)
@@ -353,14 +353,14 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
                   const contribution = totalRevenue > 0 ? (entity.revenue / totalRevenue) * 100 : 0
 
                   return (
-                    <tr key={index} className="hover:bg-gray-50">
+                    <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <span className="text-2xl mr-3">{getEntityIcon(entity.entity_name)}</span>
-                          <div className="text-sm font-medium text-gray-900">{entity.entity_name}</div>
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">{entity.entity_name}</div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900 dark:text-white">
                         {formatRupiah(entity.revenue)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -405,8 +405,8 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
         <h3 className="text-lg font-semibold mb-4">📋 Consolidation Notes</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <h4 className="font-medium text-gray-900 mb-2">Elimination Adjustments</h4>
-            <ul className="text-sm text-gray-600 space-y-1">
+            <h4 className="font-medium text-gray-900 dark:text-white mb-2">Elimination Adjustments</h4>
+            <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
               <li>• Intercompany sales and purchases eliminated</li>
               <li>• Investment in subsidiaries eliminated against equity</li>
               <li>• Intercompany receivables and payables eliminated</li>
@@ -414,8 +414,8 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
             </ul>
           </div>
           <div>
-            <h4 className="font-medium text-gray-900 mb-2">Consolidation Policies</h4>
-            <ul className="text-sm text-gray-600 space-y-1">
+            <h4 className="font-medium text-gray-900 dark:text-white mb-2">Consolidation Policies</h4>
+            <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
               <li>• Full consolidation for subsidiaries with &gt;50% ownership</li>
               <li>• Equity method for associates with 20-50% ownership</li>
               <li>• Consistent accounting policies across entities</li>
@@ -428,20 +428,20 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
       {consolidatedData.length === 0 && !loading && (
         <div className="text-center py-12">
           <BuildingOffice2Icon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No consolidation data found</h3>
-          <p className="mt-1 text-sm text-gray-500">Add entities to begin consolidation process</p>
+          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No consolidation data found</h3>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Add entities to begin consolidation process</p>
         </div>
       )}
 
       {/* Add Entity Modal */}
       {showAddEntityModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">🏢 Add Subsidiary Entity</h3>
               <button 
                 onClick={() => setShowAddEntityModal(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-300"
               >
                 ✕
               </button>
@@ -486,7 +486,7 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Entity Name *
                   </label>
                   <input 
@@ -499,7 +499,7 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Entity Type *
                   </label>
                   <select name="entity_type" className="input w-full" required>
@@ -512,7 +512,7 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Ownership Percentage *
                   </label>
                   <input 
@@ -528,7 +528,7 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Functional Currency
                   </label>
                   <select name="functional_currency" className="input w-full">
@@ -541,10 +541,10 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
               </div>
 
               <div className="border-t pt-4">
-                <h4 className="font-medium text-gray-900 mb-3">Financial Information (Optional)</h4>
+                <h4 className="font-medium text-gray-900 dark:text-white mb-3">Financial Information (Optional)</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Revenue (IDR)
                     </label>
                     <input 
@@ -558,7 +558,7 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Expenses (IDR)
                     </label>
                     <input 
@@ -572,7 +572,7 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Total Assets (IDR)
                     </label>
                     <input 
@@ -586,7 +586,7 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Total Liabilities (IDR)
                     </label>
                     <input 

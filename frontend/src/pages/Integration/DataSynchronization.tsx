@@ -96,7 +96,7 @@ const DataSynchronization: React.FC = () => {
       case 'running':
         return <ArrowPathIcon className="h-5 w-5 text-blue-500 animate-spin" />;
       default:
-        return <ClockIcon className="h-5 w-5 text-gray-500" />;
+        return <ClockIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />;
     }
   };
 
@@ -109,7 +109,7 @@ const DataSynchronization: React.FC = () => {
       case 'running':
         return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Running</span>;
       default:
-        return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Pending</span>;
+        return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100">Pending</span>;
     }
   };
 
@@ -125,107 +125,107 @@ const DataSynchronization: React.FC = () => {
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
           Data Synchronization
         </h1>
-        <p className="text-gray-600">
+        <p className="text-gray-600 dark:text-gray-300">
           Manage data synchronization between systems
         </p>
       </div>
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <div className="flex items-center">
             <ArrowPathIcon className="h-8 w-8 text-blue-500 mr-3" />
             <div>
-              <div className="text-2xl font-bold text-gray-900">{syncJobs.length}</div>
-              <div className="text-sm text-gray-500">Total Jobs</div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">{syncJobs.length}</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Total Jobs</div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <div className="flex items-center">
             <CheckCircleIcon className="h-8 w-8 text-green-500 mr-3" />
             <div>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
                 {syncJobs.filter(job => job.status === 'success').length}
               </div>
-              <div className="text-sm text-gray-500">Successful</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Successful</div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <div className="flex items-center">
             <XCircleIcon className="h-8 w-8 text-red-500 mr-3" />
             <div>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
                 {syncJobs.filter(job => job.status === 'failed').length}
               </div>
-              <div className="text-sm text-gray-500">Failed</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Failed</div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <div className="flex items-center">
             <ClockIcon className="h-8 w-8 text-yellow-500 mr-3" />
             <div>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
                 {syncJobs.filter(job => job.is_active).length}
               </div>
-              <div className="text-sm text-gray-500">Active</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Active</div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Sync Jobs */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Synchronization Jobs</h2>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Synchronization Jobs</h2>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Last Run
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.status')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.actions')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {syncJobs.map((job) => (
                 <tr key={job.id}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       {getStatusIcon(job.status)}
                       <div className="ml-3">
-                        <div className="text-sm font-medium text-gray-900">{job.name}</div>
-                        <div className="text-sm text-gray-500 capitalize">{job.sync_type} sync</div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">{job.name}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400 capitalize">{job.sync_type} sync</div>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
+                    <div className="text-sm text-gray-900 dark:text-white">
                       {job.source_system} → {job.target_system}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{job.schedule}</div>
+                    <div className="text-sm text-gray-900 dark:text-white">{job.schedule}</div>
                     {job.next_run && (
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
                         Next: {new Date(job.next_run).toLocaleString()}
                       </div>
                     )}
@@ -233,15 +233,15 @@ const DataSynchronization: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     {job.last_run ? (
                       <div>
-                        <div className="text-sm text-gray-900">
+                        <div className="text-sm text-gray-900 dark:text-white">
                           {new Date(job.last_run).toLocaleString()}
                         </div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
                           {job.records_synced} records
                         </div>
                       </div>
                     ) : (
-                      <span className="text-sm text-gray-500">Never</span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">Never</span>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -289,8 +289,8 @@ const DataSynchronization: React.FC = () => {
           {syncJobs.length === 0 && (
             <div className="text-center py-12">
               <ArrowPathIcon className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No sync jobs configured</h3>
-              <p className="text-gray-500">Configure data synchronization jobs to keep systems in sync.</p>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No sync jobs configured</h3>
+              <p className="text-gray-500 dark:text-gray-400">Configure data synchronization jobs to keep systems in sync.</p>
             </div>
           )}
         </div>

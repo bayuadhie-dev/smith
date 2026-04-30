@@ -521,6 +521,7 @@ def create_app(config_class=Config):
 
     from routes.desk import desk_bp
     from routes.workspace import workspace_bp
+    from routes.search import search_bp
     
 
     app.register_blueprint(health_bp, url_prefix='/api')
@@ -593,6 +594,7 @@ def create_app(config_class=Config):
 
     app.register_blueprint(desk_bp, url_prefix='/api/desk')  # Desk interface
     app.register_blueprint(workspace_bp, url_prefix='/api/workspace')  # Workspace API
+    app.register_blueprint(search_bp, url_prefix='/api/search')  # Global Search API
     app.register_blueprint(converting_bp)  # Converting module - routes have /api/converting prefix
 
     app.register_blueprint(staff_leave_bp, url_prefix='/api/staff-leave')  # Staff Leave Request

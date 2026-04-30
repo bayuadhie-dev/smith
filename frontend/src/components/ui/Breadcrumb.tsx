@@ -125,7 +125,7 @@ const Breadcrumb = () => {
 
   return (
     <nav className="mb-6" aria-label="Breadcrumb">
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 px-4 py-3">
+      <div className="bg-white dark:bg-gray-800 dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 px-4 py-3">
         <ol className="flex items-center flex-wrap gap-1 text-sm">
           {/* Home */}
           <li>

@@ -189,27 +189,27 @@ const SupplierIntegration: React.FC = () => {
         <div className="flex items-center space-x-4">
           <Link
             to="/app/mrp"
-            className="flex items-center text-gray-600 hover:text-gray-900"
+            className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white"
           >
             <ArrowLeftIcon className="h-5 w-5 mr-2" />
             Back to MRP Dashboard
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Supplier Integration</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Supplier Integration</h1>
             <p className="text-gray-600 mt-1">Manage supplier relationships and capacity planning</p>
           </div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Material Category</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Material Category</label>
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
             >
               <option value="all">All Categories</option>
               <option value="raw_materials">Raw Materials</option>
@@ -224,8 +224,8 @@ const SupplierIntegration: React.FC = () => {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Supplier Capacity Utilization */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Supplier Capacity Utilization</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Supplier Capacity Utilization</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={capacityData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -242,8 +242,8 @@ const SupplierIntegration: React.FC = () => {
         </div>
 
         {/* On-Time Delivery Performance */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">On-Time Delivery Performance</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">On-Time Delivery Performance</h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
@@ -267,58 +267,58 @@ const SupplierIntegration: React.FC = () => {
       </div>
 
       {/* Supplier Performance Table */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Supplier Performance Overview</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Supplier Performance Overview</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Supplier</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Orders</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">On-Time %</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Avg Lead Time</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quality Rating</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Value</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contracts</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.status')}</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Supplier</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Contact</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Orders</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">On-Time %</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Avg Lead Time</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Quality Rating</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total Value</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Contracts</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{t('common.status')}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {suppliers.map((supplier) => (
-                <tr key={supplier.supplier_id} className="hover:bg-gray-50">
+                <tr key={supplier.supplier_id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                   <td className="px-4 py-3">
                     <div className="flex items-center">
                       <BuildingOfficeIcon className="h-5 w-5 text-gray-400 mr-2" />
                       <div>
-                        <div className="font-medium text-gray-900">{supplier.supplier_name}</div>
-                        <div className="text-sm text-gray-500">Last delivery: {new Date(supplier.last_delivery).toLocaleDateString()}</div>
+                        <div className="font-medium text-gray-900 dark:text-white">{supplier.supplier_name}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">Last delivery: {new Date(supplier.last_delivery).toLocaleDateString()}</div>
                       </div>
                     </div>
                   </td>
                   <td className="px-4 py-3">
                     <div>
-                      <div className="font-medium text-gray-900">{supplier.contact_person}</div>
-                      <div className="text-sm text-gray-500 flex items-center">
+                      <div className="font-medium text-gray-900 dark:text-white">{supplier.contact_person}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
                         <PhoneIcon className="h-3 w-3 mr-1" />
                         {supplier.phone}
                       </div>
-                      <div className="text-sm text-gray-500 flex items-center">
+                      <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
                         <EnvelopeIcon className="h-3 w-3 mr-1" />
                         {supplier.email}
                       </div>
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <div className="text-gray-900">{formatNumber(supplier.total_orders)}</div>
-                    <div className="text-sm text-gray-500">{formatNumber(supplier.on_time_deliveries)} on-time</div>
+                    <div className="text-gray-900 dark:text-white">{formatNumber(supplier.total_orders)}</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">{formatNumber(supplier.on_time_deliveries)} on-time</div>
                   </td>
                   <td className="px-4 py-3">
                     <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getPerformanceColor(supplier.on_time_percentage)}`}>
                       {formatPercent(supplier.on_time_percentage)}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-900">
+                  <td className="px-4 py-3 text-gray-900 dark:text-white">
                     {supplier.avg_lead_time} days
                   </td>
                   <td className="px-4 py-3">
@@ -327,10 +327,10 @@ const SupplierIntegration: React.FC = () => {
                       <span className="ml-2 text-sm text-gray-600">({supplier.quality_rating})</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-gray-900">
+                  <td className="px-4 py-3 text-gray-900 dark:text-white">
                     {formatRupiah(supplier.total_value)}
                   </td>
-                  <td className="px-4 py-3 text-gray-900">
+                  <td className="px-4 py-3 text-gray-900 dark:text-white">
                     {formatNumber(supplier.active_contracts)}
                   </td>
                   <td className="px-4 py-3">
@@ -346,14 +346,14 @@ const SupplierIntegration: React.FC = () => {
       </div>
 
       {/* Supplier Capacity Details */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Supplier Capacity Details</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Supplier Capacity Details</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {capacityData.map((capacity, index) => (
-            <div key={index} className="border border-gray-200 rounded-lg p-4">
+            <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
               <div className="flex items-center justify-between mb-3">
-                <h4 className="font-medium text-gray-900">{capacity.supplier_name}</h4>
-                <span className="text-sm text-gray-500">{capacity.material_category}</span>
+                <h4 className="font-medium text-gray-900 dark:text-white">{capacity.supplier_name}</h4>
+                <span className="text-sm text-gray-500 dark:text-gray-400">{capacity.material_category}</span>
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
@@ -372,7 +372,7 @@ const SupplierIntegration: React.FC = () => {
                   <span className="text-gray-600">Lead Time:</span>
                   <span className="font-medium">{capacity.lead_time_days} days</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
                   <div 
                     className="bg-blue-600 h-2 rounded-full" 
                     style={{ width: `${capacity.utilization_percent}%` }}

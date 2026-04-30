@@ -157,7 +157,7 @@ const MaterialIssueDetail: React.FC = () => {
           </span>
         )
       default:
-        return <span className="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">{status}</span>
+        return <span className="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100">{status}</span>
     }
   }
 
@@ -172,7 +172,7 @@ const MaterialIssueDetail: React.FC = () => {
       case 'returned':
         return <span className="px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">Returned</span>
       default:
-        return <span className="px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">{status}</span>
+        return <span className="px-2 py-1 rounded text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100">{status}</span>
     }
   }
 
@@ -189,7 +189,7 @@ const MaterialIssueDetail: React.FC = () => {
       <div className="p-6">
         <div className="text-center py-12">
           <DocumentTextIcon className="h-12 w-12 mx-auto text-gray-300" />
-          <p className="mt-2 text-gray-500">Data tidak ditemukan</p>
+          <p className="mt-2 text-gray-500 dark:text-gray-400">Data tidak ditemukan</p>
           <button onClick={() => navigate(-1)} className="mt-4 btn btn-primary">
             Kembali
           </button>
@@ -203,12 +203,12 @@ const MaterialIssueDetail: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
-          <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-lg">
+          <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg">
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{issue.issue_number}</h1>
-            <p className="text-gray-600">Detail Pengeluaran Material</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{issue.issue_number}</h1>
+            <p className="text-gray-600 dark:text-gray-300">Detail Pengeluaran Material</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -281,25 +281,25 @@ const MaterialIssueDetail: React.FC = () => {
           <h3 className="text-lg font-semibold mb-4">Informasi Issue</h3>
           <div className="space-y-3">
             <div className="flex justify-between">
-              <span className="text-gray-600">No. Issue</span>
+              <span className="text-gray-600 dark:text-gray-300">No. Issue</span>
               <span className="font-medium">{issue.issue_number}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Work Order</span>
+              <span className="text-gray-600 dark:text-gray-300">Work Order</span>
               <Link to={`/app/production/work-orders/${issue.work_order_id}`} className="font-medium text-blue-600 hover:underline">
                 {issue.wo_number}
               </Link>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Produk</span>
+              <span className="text-gray-600 dark:text-gray-300">Produk</span>
               <span className="font-medium">{issue.product_name || '-'}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Tipe</span>
+              <span className="text-gray-600 dark:text-gray-300">Tipe</span>
               <span className="font-medium capitalize">{issue.issue_type}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Prioritas</span>
+              <span className="text-gray-600 dark:text-gray-300">Prioritas</span>
               <span className="font-medium capitalize">{issue.priority}</span>
             </div>
           </div>
@@ -310,31 +310,31 @@ const MaterialIssueDetail: React.FC = () => {
           <h3 className="text-lg font-semibold mb-4">Tanggal & Pengguna</h3>
           <div className="space-y-3">
             <div className="flex justify-between">
-              <span className="text-gray-600">Tanggal Issue</span>
+              <span className="text-gray-600 dark:text-gray-300">Tanggal Issue</span>
               <span className="font-medium">
                 {issue.issue_date ? new Date(issue.issue_date).toLocaleDateString('id-ID') : '-'}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Diminta oleh</span>
+              <span className="text-gray-600 dark:text-gray-300">Diminta oleh</span>
               <span className="font-medium">{issue.requested_by || '-'}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Disetujui oleh</span>
+              <span className="text-gray-600 dark:text-gray-300">Disetujui oleh</span>
               <span className="font-medium">{issue.approved_by || '-'}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Tanggal Disetujui</span>
+              <span className="text-gray-600 dark:text-gray-300">Tanggal Disetujui</span>
               <span className="font-medium">
                 {issue.approved_date ? new Date(issue.approved_date).toLocaleDateString('id-ID') : '-'}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Dikeluarkan oleh</span>
+              <span className="text-gray-600 dark:text-gray-300">Dikeluarkan oleh</span>
               <span className="font-medium">{issue.issued_by || '-'}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Tanggal Dikeluarkan</span>
+              <span className="text-gray-600 dark:text-gray-300">Tanggal Dikeluarkan</span>
               <span className="font-medium">
                 {issue.issued_date ? new Date(issue.issued_date).toLocaleDateString('id-ID') : '-'}
               </span>
@@ -349,14 +349,14 @@ const MaterialIssueDetail: React.FC = () => {
           <h3 className="text-lg font-semibold mb-4">Catatan</h3>
           {issue.notes && (
             <div className="mb-3">
-              <p className="text-sm text-gray-600">Catatan:</p>
-              <p className="text-gray-900">{issue.notes}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Catatan:</p>
+              <p className="text-gray-900 dark:text-white">{issue.notes}</p>
             </div>
           )}
           {issue.special_instructions && (
             <div>
-              <p className="text-sm text-gray-600">Instruksi Khusus:</p>
-              <p className="text-gray-900">{issue.special_instructions}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Instruksi Khusus:</p>
+              <p className="text-gray-900 dark:text-white">{issue.special_instructions}</p>
             </div>
           )}
         </div>
@@ -364,31 +364,31 @@ const MaterialIssueDetail: React.FC = () => {
 
       {/* Items Table */}
       <div className="card overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-semibold">Daftar Material ({issue.items.length} item)</h3>
         </div>
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead className="bg-gray-50 dark:bg-gray-900">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Material</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lokasi</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Dibutuhkan</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Dikeluarkan</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Sisa</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">#</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Material</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Lokasi</th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Dibutuhkan</th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Dikeluarkan</th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Sisa</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             {issue.items.map((item) => (
-              <tr key={item.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+              <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                   {item.line_number}
                 </td>
                 <td className="px-4 py-3">
                   <div>
-                    <p className="font-medium text-gray-900">{item.material_name}</p>
-                    <p className="text-sm text-gray-500">{item.material_code}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{item.material_name}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{item.material_code}</p>
                     {item.batch_number && (
                       <p className="text-xs text-gray-400">Batch: {item.batch_number}</p>
                     )}
@@ -396,7 +396,7 @@ const MaterialIssueDetail: React.FC = () => {
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
                   {item.location_code ? (
-                    <span className="inline-flex items-center gap-1 text-sm text-gray-600">
+                    <span className="inline-flex items-center gap-1 text-sm text-gray-600 dark:text-gray-300">
                       <MapPinIcon className="h-4 w-4" />
                       {item.location_code}
                     </span>

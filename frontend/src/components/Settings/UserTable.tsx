@@ -21,8 +21,8 @@ const UserTable: React.FC<UserTableProps> = ({ users, onEdit, onDelete, onView }
     return (
       <div className="text-center py-12">
         <UserIcon className="mx-auto h-12 w-12 text-gray-400" />
-        <h3 className="mt-2 text-sm font-medium text-gray-900">No users found</h3>
-        <p className="mt-1 text-sm text-gray-500">
+        <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No users found</h3>
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
           Get started by creating a new user account.
         </p>
       </div>
@@ -30,37 +30,37 @@ const UserTable: React.FC<UserTableProps> = ({ users, onEdit, onDelete, onView }
   }
 
   return (
-    <div className="bg-white shadow overflow-hidden sm:rounded-md">
+    <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead className="bg-gray-50 dark:bg-gray-900">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.status')}</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Last Login
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.actions')}</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             {users.map((user) => (
-              <tr key={user.id} className="hover:bg-gray-50">
+              <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="h-10 w-10 flex-shrink-0">
                       <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                        <UserIcon className="h-6 w-6 text-gray-600" />
+                        <UserIcon className="h-6 w-6 text-gray-600 dark:text-gray-300" />
                       </div>
                     </div>
                     <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">
                         {user.full_name}
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
                         {user.username} • {user.email}
                       </div>
                     </div>
@@ -76,7 +76,7 @@ const UserTable: React.FC<UserTableProps> = ({ users, onEdit, onDelete, onView }
                         {role.name || 'Unknown Role'}
                       </span>
                     )) : (
-                      <span className="text-sm text-gray-500">No roles assigned</span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">No roles assigned</span>
                     )}
                   </div>
                 </td>
@@ -95,7 +95,7 @@ const UserTable: React.FC<UserTableProps> = ({ users, onEdit, onDelete, onView }
                     )}
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                   {user.last_login 
                     ? new Date(user.last_login).toLocaleDateString()
                     : 'Never'

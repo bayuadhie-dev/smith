@@ -150,13 +150,13 @@ export default function OEERecordForm() {
       <div className="flex items-center gap-4">
         <button
           onClick={() => navigate('/app/oee')}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg transition-colors"
         >
-          <ArrowLeftIcon className="h-5 w-5 text-gray-600" />
+          <ArrowLeftIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
         </button>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{t('oee.create_record')}</h1>
-          <p className="text-gray-600">{t('oee.description')}</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('oee.create_record')}</h1>
+          <p className="text-gray-600 dark:text-gray-300">{t('oee.description')}</p>
         </div>
       </div>
       
@@ -166,10 +166,10 @@ export default function OEERecordForm() {
           <div className="lg:col-span-2 space-y-6">
             {/* Basic Information */}
             <div className="card p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('common.basic_info')}</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('common.basic_info')}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     {t('production.machine')} *
                   </label>
                   <select
@@ -189,7 +189,7 @@ export default function OEERecordForm() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     {t('production.work_order')} ID
                   </label>
                   <input
@@ -203,7 +203,7 @@ export default function OEERecordForm() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     {t('production.production_date')} *
                   </label>
                   <input
@@ -217,7 +217,7 @@ export default function OEERecordForm() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('production.shift')}</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('production.shift')}</label>
                   <select
                     name="shift"
                     value={formData.shift}
@@ -235,13 +235,13 @@ export default function OEERecordForm() {
             
             {/* Time Metrics */}
             <div className="card p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <ClockIcon className="h-5 w-5" />
                 {t('oee.time_metrics')}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     {t('oee.planned_production_time')} *
                   </label>
                   <input
@@ -256,7 +256,7 @@ export default function OEERecordForm() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     {t('oee.downtime')} (min)
                   </label>
                   <input
@@ -270,7 +270,7 @@ export default function OEERecordForm() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     {t('oee.actual_production_time')} (min)
                   </label>
                   <input
@@ -287,13 +287,13 @@ export default function OEERecordForm() {
             
             {/* Production Metrics */}
             <div className="card p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <CogIcon className="h-5 w-5" />
                 Production Metrics
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     {t('oee.ideal_cycle_time')} (sec/unit)
                   </label>
                   <input
@@ -308,7 +308,7 @@ export default function OEERecordForm() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     {t('production.actual_quantity')}
                   </label>
                   <input
@@ -322,7 +322,7 @@ export default function OEERecordForm() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     {t('production.good_quantity')}
                   </label>
                   <input
@@ -336,7 +336,7 @@ export default function OEERecordForm() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     {t('production.rejected_pieces')}
                   </label>
                   <input
@@ -354,7 +354,7 @@ export default function OEERecordForm() {
             {/* Downtime Records */}
             <div className="card p-6">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                   <ExclamationTriangleIcon className="h-5 w-5" />
                   {t('production.downtime_records')}
                 </h3>
@@ -369,9 +369,9 @@ export default function OEERecordForm() {
               
               <div className="space-y-4">
                 {downtimeRecords.map((record, index) => (
-                  <div key={index} className="border border-gray-200 rounded-lg p-4">
+                  <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                     <div className="flex justify-between items-center mb-3">
-                      <h4 className="text-sm font-medium text-gray-700">Downtime #{index + 1}</h4>
+                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-200">Downtime #{index + 1}</h4>
                       {downtimeRecords.length > 1 && (
                         <button
                           type="button"
@@ -384,7 +384,7 @@ export default function OEERecordForm() {
                     
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">{t('common.category')}</label>
+                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">{t('common.category')}</label>
                         <select
                           value={record.downtime_category}
                           onChange={(e) => handleDowntimeChange(index, 'downtime_category', e.target.value)}
@@ -401,7 +401,7 @@ export default function OEERecordForm() {
                       </div>
                       
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                           {t('common.quantity')} (min)
                         </label>
                         <input
@@ -414,7 +414,7 @@ export default function OEERecordForm() {
                       </div>
                       
                       <div className="md:col-span-2">
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                         </label>
                         <input
                           type="text"
@@ -432,7 +432,7 @@ export default function OEERecordForm() {
             
             {/* Notes */}
             <div className="card p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Notes</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Notes</h3>
               <textarea
                 name="notes"
                 value={formData.notes}
@@ -447,31 +447,31 @@ export default function OEERecordForm() {
           {/* Sidebar - Calculated Metrics */}
           <div className="space-y-6">
             <div className="card p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <CheckCircleIcon className="h-5 w-5" />
                 Calculated OEE
               </h3>
               
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Availability</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">Availability</span>
                   <span className="text-lg font-semibold text-blue-600">{metrics.availability}%</span>
                 </div>
                 
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Performance</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">Performance</span>
                   <span className="text-lg font-semibold text-green-600">{metrics.performance}%</span>
                 </div>
                 
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">{t('navigation.quality')}</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">{t('navigation.quality')}</span>
                   <span className="text-lg font-semibold text-purple-600">{metrics.quality}%</span>
                 </div>
                 
                 <hr />
                 
                 <div className="flex justify-between items-center">
-                  <span className="text-base font-medium text-gray-900">Overall OEE</span>
+                  <span className="text-base font-medium text-gray-900 dark:text-white">Overall OEE</span>
                   <span className={`text-2xl font-bold ${
                     parseFloat(metrics.oee) >= 85 ? 'text-green-600' :
                     parseFloat(metrics.oee) >= 70 ? 'text-yellow-600' :
@@ -482,9 +482,9 @@ export default function OEERecordForm() {
                 </div>
               </div>
               
-              <div className="mt-6 p-3 bg-gray-50 rounded-lg">
-                <h4 className="text-sm font-medium text-gray-700 mb-2">OEE Targets</h4>
-                <div className="text-xs text-gray-600 space-y-1">
+              <div className="mt-6 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">OEE Targets</h4>
+                <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1">
                   <div>• World Class: ≥85%</div>
                   <div>• Good: 70-84%</div>
                   <div>• Needs Improvement: &lt;70%</div>

@@ -116,7 +116,7 @@ export default function ShippingDashboard() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard Pengiriman</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard Pengiriman</h1>
         <div className="flex items-center gap-4">
           <input
             type="date"
@@ -226,7 +226,7 @@ export default function ShippingDashboard() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
           </div>
         ) : readyForShipping.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
             <CubeIcon className="h-12 w-12 mx-auto mb-2 text-gray-300" />
             <p>Tidak ada item siap kirim</p>
             <p className="text-sm">Pastikan ada Work Order yang sudah lulus QC</p>
@@ -245,26 +245,26 @@ export default function ShippingDashboard() {
                   <th className="px-4 py-3 text-left text-xs font-medium text-green-800 uppercase">Aksi</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-green-100">
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-green-100">
                 {readyForShipping.slice(0, 5).map((item) => (
                   <tr key={item.work_order_id} className="hover:bg-green-50">
                     <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-blue-600">
                       {item.work_order_number}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{item.product_name}</div>
-                      <div className="text-xs text-gray-500">{item.product_code}</div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">{item.product_name}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{item.product_code}</div>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {item.quantity_passed.toLocaleString()} {item.uom}
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                       {item.customer_name}
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {item.sales_order_number || '-'}
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {item.qc_date ? new Date(item.qc_date).toLocaleDateString('id-ID') : '-'}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
@@ -295,7 +295,7 @@ export default function ShippingDashboard() {
 
       {/* Quick Actions */}
       <div className="card">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">Aksi Cepat</h2>
+        <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Aksi Cepat</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <button
             onClick={() => navigate('/app/shipping/orders/from-qc')}
@@ -338,7 +338,7 @@ export default function ShippingDashboard() {
       {/* Recent Shipments */}
       <div className="card">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-medium text-gray-900">Pengiriman Terbaru</h2>
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white">Pengiriman Terbaru</h2>
           <button
             onClick={() => navigate('/app/shipping/orders')}
             className="text-blue-600 hover:text-blue-500 text-sm font-medium"
@@ -348,32 +348,32 @@ export default function ShippingDashboard() {
         </div>
         
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   No. Pengiriman
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Tanggal Kirim
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.status')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {shippingData?.shipping_orders?.slice(0, 5).map((shipment: any) => (
-                <tr key={shipment.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <tr key={shipment.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                     {shipment.shipping_number}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {shipment.customer_name}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {new Date(shipment.shipping_date).toLocaleDateString('id-ID')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -381,7 +381,7 @@ export default function ShippingDashboard() {
                       {getStatusText(shipment.status)}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {shipment.tracking_number || '-'}
                   </td>
                 </tr>
@@ -394,7 +394,7 @@ export default function ShippingDashboard() {
       {/* Alerts & Notifications */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="card">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Peringatan</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Peringatan</h3>
           <div className="space-y-3">
             {pending > 0 && (
               <div className="flex items-center p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
@@ -416,25 +416,25 @@ export default function ShippingDashboard() {
         </div>
 
         <div className="card">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Statistik Hari Ini</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Statistik Hari Ini</h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Pengiriman Baru</span>
-              <span className="text-sm font-medium text-gray-900">
+              <span className="text-sm text-gray-600 dark:text-gray-300">Pengiriman Baru</span>
+              <span className="text-sm font-medium text-gray-900 dark:text-white">
                 {shippingData?.shipping_orders?.filter((s: any) => 
                   new Date(s.shipping_date).toDateString() === new Date().toDateString()
                 ).length || 0}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Terkirim Hari Ini</span>
-              <span className="text-sm font-medium text-gray-900">
+              <span className="text-sm text-gray-600 dark:text-gray-300">Terkirim Hari Ini</span>
+              <span className="text-sm font-medium text-gray-900 dark:text-white">
                 {delivered}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Rata-rata Waktu Kirim</span>
-              <span className="text-sm font-medium text-gray-900">2-3 hari</span>
+              <span className="text-sm text-gray-600 dark:text-gray-300">Rata-rata Waktu Kirim</span>
+              <span className="text-sm font-medium text-gray-900 dark:text-white">2-3 hari</span>
             </div>
           </div>
         </div>

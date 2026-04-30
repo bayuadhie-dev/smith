@@ -302,8 +302,8 @@ const MonthlyProductionPlan: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Rencana Produksi Bulanan</h1>
-          <p className="text-gray-500">Kelola target produksi per bulan sebagai sumber jadwal mingguan</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Rencana Produksi Bulanan</h1>
+          <p className="text-gray-500 dark:text-gray-400">Kelola target produksi per bulan sebagai sumber jadwal mingguan</p>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -343,25 +343,25 @@ const MonthlyProductionPlan: React.FC = () => {
       </div>
 
       {/* Month Navigation */}
-      <div className="bg-white rounded-xl shadow-md p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
         <div className="flex items-center justify-between">
           <button
             onClick={() => navigateMonth(-1)}
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
           >
             <ChevronLeftIcon className="h-6 w-6" />
           </button>
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
               {MONTHS[currentMonth - 1]} {currentYear}
             </h2>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               {schedules.length} produk dijadwalkan
             </p>
           </div>
           <button
             onClick={() => navigateMonth(1)}
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
           >
             <ChevronRightIcon className="h-6 w-6" />
           </button>
@@ -370,75 +370,75 @@ const MonthlyProductionPlan: React.FC = () => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl p-4 shadow-md border-l-4 border-blue-500">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md border-l-4 border-blue-500">
           <div className="flex items-center gap-3">
             <div className="bg-blue-100 p-2 rounded-lg">
               <CubeIcon className="h-6 w-6 text-blue-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-800">{schedules.length}</p>
-              <p className="text-xs text-gray-500">Total Produk</p>
+              <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{schedules.length}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Total Produk</p>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 shadow-md border-l-4 border-amber-500">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md border-l-4 border-amber-500">
           <div className="flex items-center gap-3">
             <div className="bg-amber-100 p-2 rounded-lg">
               <CalendarDaysIcon className="h-6 w-6 text-amber-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-800">{totalTargetCtn.toLocaleString()}</p>
-              <p className="text-xs text-gray-500">Target CTN</p>
+              <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{totalTargetCtn.toLocaleString()}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Target CTN</p>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 shadow-md border-l-4 border-green-500">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md border-l-4 border-green-500">
           <div className="flex items-center gap-3">
             <div className="bg-green-100 p-2 rounded-lg">
               <CheckCircleIcon className="h-6 w-6 text-green-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-800">{totalScheduledCtn.toLocaleString()}</p>
-              <p className="text-xs text-gray-500">Sudah Dijadwalkan</p>
+              <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{totalScheduledCtn.toLocaleString()}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Sudah Dijadwalkan</p>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 shadow-md border-l-4 border-orange-500">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md border-l-4 border-orange-500">
           <div className="flex items-center gap-3">
             <div className="bg-orange-100 p-2 rounded-lg">
               <ClockIcon className="h-6 w-6 text-orange-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-800">{totalRemainingCtn.toLocaleString()}</p>
-              <p className="text-xs text-gray-500">Sisa Belum Dijadwalkan</p>
+              <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{totalRemainingCtn.toLocaleString()}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Sisa Belum Dijadwalkan</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Schedule Table */}
-      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
           <h3 className="text-lg font-semibold text-white">Target Produksi {MONTHS[currentMonth - 1]} {currentYear}</h3>
         </div>
         
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Produk</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mesin</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Target CTN</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Target Pack</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Dijadwalkan</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Sisa</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Progress</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Priority</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Produk</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Mesin</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Target CTN</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Target Pack</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Dijadwalkan</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Sisa</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Progress</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Priority</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {loading ? (
                 <tr>
                   <td colSpan={10} className="text-center py-8">
@@ -450,7 +450,7 @@ const MonthlyProductionPlan: React.FC = () => {
                   <td colSpan={10} className="text-center py-12">
                     <div className="flex flex-col items-center gap-3">
                       <CalendarDaysIcon className="h-12 w-12 text-gray-300" />
-                      <p className="text-gray-500">Belum ada target produksi untuk bulan ini</p>
+                      <p className="text-gray-500 dark:text-gray-400">Belum ada target produksi untuk bulan ini</p>
                       <button
                         onClick={() => { resetForm(); setShowAddModal(true); }}
                         className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -466,19 +466,19 @@ const MonthlyProductionPlan: React.FC = () => {
                   const priorityBadge = getPriorityBadge(item.priority);
                   
                   return (
-                    <tr key={item.id} className="hover:bg-gray-50">
+                    <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <div className={`w-3 h-3 rounded-full ${item.color}`}></div>
                           <div>
-                            <p className="font-medium text-gray-900">{item.product_name}</p>
-                            <p className="text-xs text-gray-500">{item.product_code}</p>
+                            <p className="font-medium text-gray-900 dark:text-white">{item.product_name}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">{item.product_code}</p>
                           </div>
                         </div>
                       </td>
                       <td className="px-4 py-3">
                         {item.machine_code ? (
-                          <span className="text-sm text-gray-700">{item.machine_code}</span>
+                          <span className="text-sm text-gray-700 dark:text-gray-200">{item.machine_code}</span>
                         ) : (
                           <span className="text-sm text-gray-400">-</span>
                         )}
@@ -487,7 +487,7 @@ const MonthlyProductionPlan: React.FC = () => {
                         <span className="font-bold text-amber-600">{item.target_ctn.toLocaleString()}</span>
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <span className="text-gray-600">{item.target_pack.toLocaleString()}</span>
+                        <span className="text-gray-600 dark:text-gray-300">{item.target_pack.toLocaleString()}</span>
                         <span className="text-xs text-gray-400 ml-1">({item.qty_per_ctn}/ctn)</span>
                       </td>
                       <td className="px-4 py-3 text-center">
@@ -499,13 +499,13 @@ const MonthlyProductionPlan: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                           <div
                             className={`h-2 rounded-full ${item.progress_percent >= 100 ? 'bg-green-500' : 'bg-blue-500'}`}
                             style={{ width: `${Math.min(item.progress_percent, 100)}%` }}
                           ></div>
                         </div>
-                        <p className="text-xs text-center text-gray-500 mt-1">{item.progress_percent}%</p>
+                        <p className="text-xs text-center text-gray-500 dark:text-gray-400 mt-1">{item.progress_percent}%</p>
                       </td>
                       <td className="px-4 py-3 text-center">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${priorityBadge.color}`}>
@@ -563,7 +563,7 @@ const MonthlyProductionPlan: React.FC = () => {
       {/* Add/Edit Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg mx-4">
             <div className={`px-6 py-4 rounded-t-2xl ${editingItem ? 'bg-amber-500' : 'bg-blue-600'}`}>
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-bold text-white">
@@ -571,7 +571,7 @@ const MonthlyProductionPlan: React.FC = () => {
                 </h3>
                 <button
                   onClick={() => { setShowAddModal(false); setEditingItem(null); }}
-                  className="p-2 hover:bg-white/20 rounded-lg"
+                  className="p-2 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/20 rounded-lg"
                 >
                   <XMarkIcon className="h-5 w-5 text-white" />
                 </button>
@@ -580,7 +580,7 @@ const MonthlyProductionPlan: React.FC = () => {
             
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Produk <span className="text-red-500">*</span>
                 </label>
                 <SearchableSelect
@@ -597,7 +597,7 @@ const MonthlyProductionPlan: React.FC = () => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Mesin (Opsional)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Mesin (Opsional)</label>
                 <SearchableSelect
                   options={machines.map((m) => ({
                     id: m.id,
@@ -611,7 +611,7 @@ const MonthlyProductionPlan: React.FC = () => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Target (CTN) <span className="text-red-500">*</span>
                 </label>
                 <div className="flex gap-2">
@@ -619,7 +619,7 @@ const MonthlyProductionPlan: React.FC = () => {
                     type="number"
                     value={formData.target_ctn}
                     onChange={(e) => setFormData({ ...formData, target_ctn: e.target.value })}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                     placeholder="0"
                   />
                   <button
@@ -629,25 +629,25 @@ const MonthlyProductionPlan: React.FC = () => {
                       setCalcExpression('');
                       setShowCalculator(true);
                     }}
-                    className="px-3 py-2 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-lg text-sm"
+                    className="px-3 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm"
                     title="Kalkulator"
                   >
                     🧮
                   </button>
                 </div>
                 {formData.target_ctn && formData.product_id && (
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     ≈ {(parseFloat(formData.target_ctn) * (products.find(p => p.id === parseInt(formData.product_id))?.packs_per_karton || 0)).toLocaleString()} pack
                   </p>
                 )}
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Priority</label>
                 <select
                   value={formData.priority}
                   onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                 >
                   {PRIORITIES.map((p) => (
                     <option key={p.value} value={p.value}>{p.label}</option>
@@ -656,18 +656,18 @@ const MonthlyProductionPlan: React.FC = () => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Spek Kain</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Spek Kain</label>
                 <input
                   type="text"
                   value={formData.spek_kain}
                   onChange={(e) => setFormData({ ...formData, spek_kain: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: 60x60"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Warna Penanda</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Warna Penanda</label>
                 <div className="flex gap-2 flex-wrap">
                   {SCHEDULE_COLORS.map((color) => (
                     <button
@@ -680,21 +680,21 @@ const MonthlyProductionPlan: React.FC = () => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Catatan</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Catatan</label>
                 <textarea
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                   rows={2}
                   placeholder="Catatan tambahan..."
                 />
               </div>
             </div>
             
-            <div className="px-6 py-4 bg-gray-50 rounded-b-2xl flex justify-end gap-3">
+            <div className="px-6 py-4 bg-gray-50 dark:bg-gray-900 rounded-b-2xl flex justify-end gap-3">
               <button
                 onClick={() => { setShowAddModal(false); setEditingItem(null); }}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800"
               >
                 Batal
               </button>
@@ -712,12 +712,12 @@ const MonthlyProductionPlan: React.FC = () => {
       {/* Calculator Modal */}
       {showCalculator && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl w-72 overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-72 overflow-hidden">
             <div className="bg-gray-800 p-4">
               <div className="text-right text-gray-400 text-sm h-5">{calcExpression || ' '}</div>
               <div className="text-right text-white text-3xl font-mono">{calcDisplay}</div>
             </div>
-            <div className="grid grid-cols-4 gap-1 p-2 bg-gray-100">
+            <div className="grid grid-cols-4 gap-1 p-2 bg-gray-100 dark:bg-gray-800">
               {['C', '±', '%', '÷', '7', '8', '9', '×', '4', '5', '6', '-', '1', '2', '3', '+', '0', '00', '.', '='].map((btn) => (
                 <button
                   key={btn}
@@ -754,10 +754,10 @@ const MonthlyProductionPlan: React.FC = () => {
                 </button>
               ))}
             </div>
-            <div className="flex gap-2 p-3 bg-gray-50 border-t">
+            <div className="flex gap-2 p-3 bg-gray-50 dark:bg-gray-900 border-t">
               <button
                 onClick={() => setShowCalculator(false)}
-                className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-100"
+                className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800"
               >
                 Batal
               </button>

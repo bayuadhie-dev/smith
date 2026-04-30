@@ -96,13 +96,13 @@ const UserManagementHeader: React.FC<UserManagementHeaderProps> = ({
   };
 
   return (
-    <div className="bg-white shadow rounded-lg mb-6">
+    <div className="bg-white dark:bg-gray-800 shadow rounded-lg mb-6">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-gray-200">
+      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">User & Role Management</h1>
-            <p className="text-sm text-gray-600 mt-1">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">User & Role Management</h1>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
               Manage users, roles, and permissions for your ERP system
             </p>
           </div>
@@ -111,7 +111,7 @@ const UserManagementHeader: React.FC<UserManagementHeaderProps> = ({
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-gray-200 dark:border-gray-700">
         <nav className="flex space-x-8 px-6" aria-label="Tabs">
           {tabs.map((tab) => {
             const Icon = tab.icon;
@@ -144,7 +144,7 @@ const UserManagementHeader: React.FC<UserManagementHeaderProps> = ({
 
       {/* Filters */}
       {(activeTab === 'users' || activeTab === 'roles') && (
-        <div className="px-6 py-4 bg-gray-50">
+        <div className="px-6 py-4 bg-gray-50 dark:bg-gray-900">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
             {/* Search */}
             <div className="flex-1 max-w-lg">
@@ -156,7 +156,7 @@ const UserManagementHeader: React.FC<UserManagementHeaderProps> = ({
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-800 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 dark:placeholder-gray-500 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   placeholder={`Search ${activeTab}...`}
                 />
               </div>
@@ -168,7 +168,7 @@ const UserManagementHeader: React.FC<UserManagementHeaderProps> = ({
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value as 'all' | 'active' | 'inactive')}
-                className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
               >
                 <option value="all">All Status</option>
                 <option value="active">Active Only</option>
@@ -179,7 +179,7 @@ const UserManagementHeader: React.FC<UserManagementHeaderProps> = ({
 
           {/* Active Tab Description */}
           <div className="mt-3">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               {tabs.find(tab => tab.id === activeTab)?.description}
             </p>
           </div>

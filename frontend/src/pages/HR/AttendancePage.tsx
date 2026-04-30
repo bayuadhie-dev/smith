@@ -278,7 +278,7 @@ const AttendancePage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Camera Section */}
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div className="p-4 border-b border-slate-200 bg-slate-50">
               <h2 className="font-semibold text-slate-900 flex items-center gap-2">
                 <Camera className="w-5 h-5" />
@@ -446,7 +446,7 @@ const AttendancePage: React.FC = () => {
         {/* Status & History Section */}
         <div className="space-y-6">
           {/* Today's Status */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div className="p-4 border-b border-slate-200 bg-slate-50">
               <h2 className="font-semibold text-slate-900 flex items-center gap-2">
                 <User className="w-5 h-5" />
@@ -520,7 +520,7 @@ const AttendancePage: React.FC = () => {
           </div>
 
           {/* Recent History */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div className="p-4 border-b border-slate-200 bg-slate-50">
               <h2 className="font-semibold text-slate-900 flex items-center gap-2">
                 <History className="w-5 h-5" />

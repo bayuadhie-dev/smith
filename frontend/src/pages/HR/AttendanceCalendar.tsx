@@ -166,7 +166,7 @@ const AttendanceCalendar: React.FC = () => {
     <div className="p-6">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
           <Calendar className="h-6 w-6" />
           Kalender Kehadiran
         </h1>
@@ -181,11 +181,11 @@ const AttendanceCalendar: React.FC = () => {
       </div>
 
       {/* Calendar Navigation */}
-      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
         <div className="flex items-center justify-between p-4 border-b">
           <button
             onClick={() => navigateMonth(-1)}
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
@@ -194,7 +194,7 @@ const AttendanceCalendar: React.FC = () => {
           </h2>
           <button
             onClick={() => navigateMonth(1)}
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
           >
             <ChevronRight className="h-5 w-5" />
           </button>
@@ -211,7 +211,7 @@ const AttendanceCalendar: React.FC = () => {
               {dayNames.map(day => (
                 <div
                   key={day}
-                  className="p-3 text-center text-sm font-semibold text-gray-600 bg-gray-50"
+                  className="p-3 text-center text-sm font-semibold text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-900"
                 >
                   {day}
                 </div>
@@ -252,7 +252,7 @@ const AttendanceCalendar: React.FC = () => {
                         </div>
                       ))}
                       {day.attendances.length > 3 && (
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
                           +{day.attendances.length - 3} lagi
                         </div>
                       )}
@@ -282,7 +282,7 @@ const AttendanceCalendar: React.FC = () => {
       </div>
 
       {/* Legend */}
-      <div className="mt-4 bg-white rounded-lg shadow p-4">
+      <div className="mt-4 bg-white dark:bg-gray-800 rounded-lg shadow p-4">
         <h3 className="font-medium mb-2">Keterangan:</h3>
         <div className="flex flex-wrap gap-4 text-sm">
           <div className="flex items-center gap-2">
@@ -319,7 +319,7 @@ const AttendanceCalendar: React.FC = () => {
       {/* Detail Modal */}
       {showModal && selectedDay && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[80vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-lg w-full max-h-[80vh] overflow-y-auto">
             <div className="p-4 border-b flex justify-between items-center">
               <h3 className="font-semibold text-lg">
                 {selectedDay.date.toLocaleDateString('id-ID', { 
@@ -331,7 +331,7 @@ const AttendanceCalendar: React.FC = () => {
               </h3>
               <button
                 onClick={() => setShowModal(false)}
-                className="p-1 hover:bg-gray-100 rounded"
+                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded"
               >
                 <XCircle className="h-5 w-5" />
               </button>
@@ -346,18 +346,18 @@ const AttendanceCalendar: React.FC = () => {
                   </h4>
                   <div className="space-y-2">
                     {selectedDay.attendances.map((att, i) => (
-                      <div key={i} className="p-3 bg-gray-50 rounded-lg">
+                      <div key={i} className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
                         <div className="flex justify-between items-start">
                           <div>
                             <p className="font-medium">{extractName(att)}</p>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
                               <Clock className="h-3 w-3 inline mr-1" />
                               {att.clock_in ? new Date(att.clock_in).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-'}
                               {' → '}
                               {att.clock_out ? new Date(att.clock_out).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-'}
                             </p>
                             {att.worked_hours > 0 && (
-                              <p className="text-sm text-gray-500">
+                              <p className="text-sm text-gray-500 dark:text-gray-400">
                                 Jam kerja: {att.worked_hours.toFixed(1)} jam
                               </p>
                             )}
@@ -396,7 +396,7 @@ const AttendanceCalendar: React.FC = () => {
                         <p className="text-sm" style={{ color: leave.color }}>
                           {leave.title.split(' - ')[1]}
                         </p>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
                           {new Date(leave.start).toLocaleDateString('id-ID')} - {new Date(leave.end).toLocaleDateString('id-ID')}
                         </p>
                       </div>

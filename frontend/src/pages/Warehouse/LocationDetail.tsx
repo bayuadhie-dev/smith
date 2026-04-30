@@ -153,7 +153,7 @@ const LocationDetail: React.FC = () => {
     return (
       <div className="text-center py-12">
         <MapPinIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-        <h3 className="text-lg font-medium text-gray-900">Lokasi tidak ditemukan</h3>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white">Lokasi tidak ditemukan</h3>
         <button onClick={() => navigate('/app/warehouse/locations')} className="mt-4 text-blue-600 hover:underline">
           Kembali ke daftar lokasi
         </button>
@@ -170,13 +170,13 @@ const LocationDetail: React.FC = () => {
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/app/warehouse/locations')}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+            className="p-2 text-gray-400 hover:text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
           >
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{location.location_code}</h1>
-            <p className="text-gray-600">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{location.location_code}</h1>
+            <p className="text-gray-600 dark:text-gray-300">
               Zone: {location.zone_code} - {location.zone_name}
             </p>
           </div>
@@ -200,54 +200,54 @@ const LocationDetail: React.FC = () => {
 
       {/* Info Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-blue-100 rounded-lg">
               <BuildingOfficeIcon className="h-5 w-5 text-blue-600" />
             </div>
-            <span className="text-sm text-gray-600">Zone</span>
+            <span className="text-sm text-gray-600 dark:text-gray-300">Zone</span>
           </div>
-          <p className="text-lg font-semibold text-gray-900">{location.zone_code}</p>
-          <p className="text-sm text-gray-500">{location.zone_material_type}</p>
+          <p className="text-lg font-semibold text-gray-900 dark:text-white">{location.zone_code}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{location.zone_material_type}</p>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-purple-100 rounded-lg">
               <MapPinIcon className="h-5 w-5 text-purple-600" />
             </div>
-            <span className="text-sm text-gray-600">Posisi</span>
+            <span className="text-sm text-gray-600 dark:text-gray-300">Posisi</span>
           </div>
-          <p className="text-lg font-semibold text-gray-900">
+          <p className="text-lg font-semibold text-gray-900 dark:text-white">
             R{location.rack} - L{location.level} - P{location.position}
           </p>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-green-100 rounded-lg">
               <CubeIcon className="h-5 w-5 text-green-600" />
             </div>
-            <span className="text-sm text-gray-600">Kapasitas</span>
+            <span className="text-sm text-gray-600 dark:text-gray-300">Kapasitas</span>
           </div>
-          <p className="text-lg font-semibold text-gray-900">
+          <p className="text-lg font-semibold text-gray-900 dark:text-white">
             {location.capacity.toLocaleString()} {location.capacity_uom}
           </p>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             Terpakai: {location.occupied.toLocaleString()} | Sisa: {location.available.toLocaleString()}
           </p>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center gap-3 mb-2">
-            <span className="text-sm text-gray-600">Utilisasi</span>
+            <span className="text-sm text-gray-600 dark:text-gray-300">Utilisasi</span>
           </div>
           <p className={`text-2xl font-bold ${
             utilPct >= 90 ? 'text-red-600' : utilPct >= 75 ? 'text-orange-600' : utilPct >= 50 ? 'text-yellow-600' : 'text-green-600'
           }`}>
             {utilPct.toFixed(1)}%
           </p>
-          <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
             <div
               className={`h-2 rounded-full ${getUtilizationColor(utilPct)}`}
               style={{ width: `${Math.min(utilPct, 100)}%` }}
@@ -257,8 +257,8 @@ const LocationDetail: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="border-b border-gray-200 dark:border-gray-700">
           <nav className="flex -mb-px">
             <button
               onClick={() => setActiveTab('inventory')}
@@ -287,32 +287,32 @@ const LocationDetail: React.FC = () => {
           {activeTab === 'inventory' && (
             <>
               {inventoryItems.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                   <CubeIcon className="mx-auto h-10 w-10 text-gray-300 mb-3" />
                   <p>Tidak ada inventory di lokasi ini</p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-900">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipe</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Batch</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">On Hand</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Reserved</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Available</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal Masuk</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Item</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tipe</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Batch</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">On Hand</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Reserved</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Available</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tanggal Masuk</th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                       {inventoryItems.map((item) => (
-                        <tr key={item.id} className="hover:bg-gray-50">
+                        <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                           <td className="px-4 py-3">
                             <div>
-                              <p className="text-sm font-medium text-gray-900">{item.item_name}</p>
-                              <p className="text-xs text-gray-500">{item.item_code}</p>
+                              <p className="text-sm font-medium text-gray-900 dark:text-white">{item.item_name}</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">{item.item_code}</p>
                             </div>
                           </td>
                           <td className="px-4 py-3">
@@ -322,11 +322,11 @@ const LocationDetail: React.FC = () => {
                               {item.item_type === 'product' ? 'Produk' : 'Material'}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-600">
+                          <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
                             {item.batch_number || '-'}
                             {item.lot_number && <span className="text-xs text-gray-400 block">Lot: {item.lot_number}</span>}
                           </td>
-                          <td className="px-4 py-3 text-sm text-right font-medium text-gray-900">
+                          <td className="px-4 py-3 text-sm text-right font-medium text-gray-900 dark:text-white">
                             {item.quantity_on_hand.toLocaleString()}
                           </td>
                           <td className="px-4 py-3 text-sm text-right text-orange-600">
@@ -340,7 +340,7 @@ const LocationDetail: React.FC = () => {
                               {item.stock_status}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-500">
+                          <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
                             {item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID') : '-'}
                           </td>
                         </tr>
@@ -355,28 +355,28 @@ const LocationDetail: React.FC = () => {
           {activeTab === 'movements' && (
             <>
               {movements.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                   <ClockIcon className="mx-auto h-10 w-10 text-gray-300 mb-3" />
                   <p>Belum ada riwayat pergerakan</p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-900">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipe</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Qty</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Batch</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Referensi</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Unit Cost</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total Cost</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tipe</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Item</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Qty</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Batch</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Referensi</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Unit Cost</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total Cost</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tanggal</th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                       {movements.map((mv) => (
-                        <tr key={mv.id} className="hover:bg-gray-50">
+                        <tr key={mv.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-2">
                               {getMovementIcon(mv.movement_type)}
@@ -385,26 +385,26 @@ const LocationDetail: React.FC = () => {
                               </span>
                             </div>
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-900">{mv.item_name || '-'}</td>
-                          <td className="px-4 py-3 text-sm text-right font-medium text-gray-900">
+                          <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{mv.item_name || '-'}</td>
+                          <td className="px-4 py-3 text-sm text-right font-medium text-gray-900 dark:text-white">
                             {mv.movement_type === 'stock_out' ? '-' : '+'}{mv.quantity.toLocaleString()}
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-600">{mv.batch_number || '-'}</td>
+                          <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{mv.batch_number || '-'}</td>
                           <td className="px-4 py-3">
                             <div>
-                              <p className="text-sm text-gray-900">{mv.reference_number || '-'}</p>
+                              <p className="text-sm text-gray-900 dark:text-white">{mv.reference_number || '-'}</p>
                               {mv.reference_type && (
-                                <p className="text-xs text-gray-500">{mv.reference_type.replace('_', ' ')}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{mv.reference_type.replace('_', ' ')}</p>
                               )}
                             </div>
                           </td>
-                          <td className="px-4 py-3 text-sm text-right text-gray-600">
+                          <td className="px-4 py-3 text-sm text-right text-gray-600 dark:text-gray-300">
                             {mv.unit_cost ? `Rp ${mv.unit_cost.toLocaleString()}` : '-'}
                           </td>
-                          <td className="px-4 py-3 text-sm text-right text-gray-600">
+                          <td className="px-4 py-3 text-sm text-right text-gray-600 dark:text-gray-300">
                             {mv.total_cost ? `Rp ${mv.total_cost.toLocaleString()}` : '-'}
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-500">
+                          <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
                             {mv.created_at ? new Date(mv.created_at).toLocaleDateString('id-ID', {
                               day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
                             }) : '-'}

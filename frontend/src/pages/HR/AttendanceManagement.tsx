@@ -60,7 +60,7 @@ const navigate = useNavigate()
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Attendance Management</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Attendance Management</h1>
         <div className="flex gap-2">
           <button 
             onClick={() => alert('Bulk Mark Attendance feature - Coming Soon!')}
@@ -83,7 +83,7 @@ const navigate = useNavigate()
       <div className="card">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('common.date')}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('common.date')}</label>
             <input
               type="date"
               value={selectedDate}
@@ -92,7 +92,7 @@ const navigate = useNavigate()
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
             </label>
             <select
               value={selectedDepartment}
@@ -107,7 +107,7 @@ const navigate = useNavigate()
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
             </label>
             <select
               value={selectedEmployee}
@@ -219,7 +219,7 @@ const navigate = useNavigate()
                     <td>
                       <div>
                         <div className="font-medium">{attendance.employee.full_name}</div>
-                        <div className="text-sm text-gray-500">{attendance.employee.employee_number}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">{attendance.employee.employee_number}</div>
                       </div>
                     </td>
                     <td>{attendance.employee.department || '-'}</td>
@@ -227,7 +227,7 @@ const navigate = useNavigate()
                       {attendance.shift ? (
                         <div>
                           <div className="font-medium">{attendance.shift.name}</div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
                             {attendance.shift.start_time} - {attendance.shift.end_time}
                           </div>
                         </div>

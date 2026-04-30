@@ -182,7 +182,7 @@ const RNDProjectDetail: React.FC = () => {
     return (
       <div className="p-6 text-center">
         <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-2" />
-        <p className="text-gray-600">Proyek tidak ditemukan</p>
+        <p className="text-gray-600 dark:text-gray-300">Proyek tidak ditemukan</p>
       </div>
     );
   }
@@ -194,18 +194,18 @@ const RNDProjectDetail: React.FC = () => {
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/app/rnd/projects')}
-            className="p-2 rounded-lg hover:bg-gray-100"
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold text-gray-900">{project.project_number}</h1>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{project.project_number}</h1>
               {project.is_locked && (
-                <Lock className="w-5 h-5 text-gray-500" title="Proyek terkunci" />
+                <Lock className="w-5 h-5 text-gray-500 dark:text-gray-400" title="Proyek terkunci" />
               )}
             </div>
-            <p className="text-gray-500">{project.name}</p>
+            <p className="text-gray-500 dark:text-gray-400">{project.name}</p>
           </div>
         </div>
 
@@ -214,7 +214,7 @@ const RNDProjectDetail: React.FC = () => {
             <>
               <button
                 onClick={() => navigate(`/app/rnd/projects/${id}/edit`)}
-                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
               >
                 <Edit className="w-4 h-4" />
                 Edit
@@ -241,7 +241,7 @@ const RNDProjectDetail: React.FC = () => {
       </div>
 
       {/* Stage Progress */}
-      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100">
         <h2 className="text-lg font-semibold mb-4">Progress Tahap</h2>
         <div className="flex items-center justify-between">
           {['LAB_SCALE', 'PILOT_SCALE', 'VALIDATION', 'COMPLETION'].map((stage, index) => (
@@ -279,7 +279,7 @@ const RNDProjectDetail: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-gray-200 dark:border-gray-700">
         <nav className="flex gap-4">
           {[
             { id: 'overview', label: 'Overview' },
@@ -305,39 +305,39 @@ const RNDProjectDetail: React.FC = () => {
       {activeTab === 'overview' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Project Info */}
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100">
             <h3 className="text-lg font-semibold mb-4">Informasi Proyek</h3>
             <dl className="space-y-3">
               <div className="flex justify-between">
-                <dt className="text-gray-500">Tipe Proyek</dt>
+                <dt className="text-gray-500 dark:text-gray-400">Tipe Proyek</dt>
                 <dd className="font-medium">{project.project_type}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-gray-500">Prioritas</dt>
+                <dt className="text-gray-500 dark:text-gray-400">Prioritas</dt>
                 <dd className="font-medium">{project.priority}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-gray-500">Target Produk</dt>
+                <dt className="text-gray-500 dark:text-gray-400">Target Produk</dt>
                 <dd className="font-medium">{project.target_product_name || '-'}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-gray-500">Project Leader</dt>
+                <dt className="text-gray-500 dark:text-gray-400">Project Leader</dt>
                 <dd className="font-medium">{project.project_leader_name || '-'}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-gray-500">Tanggal Mulai</dt>
+                <dt className="text-gray-500 dark:text-gray-400">Tanggal Mulai</dt>
                 <dd className="font-medium">
                   {project.start_date ? new Date(project.start_date).toLocaleDateString('id-ID') : '-'}
                 </dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-gray-500">Target Selesai</dt>
+                <dt className="text-gray-500 dark:text-gray-400">Target Selesai</dt>
                 <dd className="font-medium">
                   {project.target_completion_date ? new Date(project.target_completion_date).toLocaleDateString('id-ID') : '-'}
                 </dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-gray-500">Estimasi Budget</dt>
+                <dt className="text-gray-500 dark:text-gray-400">Estimasi Budget</dt>
                 <dd className="font-medium">
                   {project.estimated_budget ? `Rp ${project.estimated_budget.toLocaleString()}` : '-'}
                 </dd>
@@ -346,7 +346,7 @@ const RNDProjectDetail: React.FC = () => {
           </div>
 
           {/* Selected Formula */}
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100">
             <h3 className="text-lg font-semibold mb-4">Formula Terpilih</h3>
             {project.selected_formula ? (
               <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
@@ -369,8 +369,8 @@ const RNDProjectDetail: React.FC = () => {
 
             {project.description && (
               <div className="mt-4">
-                <h4 className="text-sm font-medium text-gray-500 mb-2">Deskripsi</h4>
-                <p className="text-gray-700">{project.description}</p>
+                <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Deskripsi</h4>
+                <p className="text-gray-700 dark:text-gray-200">{project.description}</p>
               </div>
             )}
           </div>
@@ -392,9 +392,9 @@ const RNDProjectDetail: React.FC = () => {
           )}
 
           {project.formulas.length === 0 ? (
-            <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-100 text-center">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8 border border-gray-100 text-center">
               <FlaskConical className="w-12 h-12 text-gray-300 mx-auto mb-2" />
-              <p className="text-gray-500">Belum ada formula</p>
+              <p className="text-gray-500 dark:text-gray-400">Belum ada formula</p>
             </div>
           ) : (
             <div className="grid gap-4">
@@ -423,7 +423,7 @@ const RNDProjectDetail: React.FC = () => {
                           {formula.status}
                         </span>
                       </div>
-                      <p className="text-gray-600 mt-1">{formula.name || 'Tanpa nama'}</p>
+                      <p className="text-gray-600 dark:text-gray-300 mt-1">{formula.name || 'Tanpa nama'}</p>
                     </div>
                     
                     <div className="flex items-center gap-2">
@@ -452,21 +452,21 @@ const RNDProjectDetail: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-200">
+                  <div className="grid grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                     <div>
-                      <p className="text-sm text-gray-500">Batch Size</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Batch Size</p>
                       <p className="font-medium">{formula.batch_size} {formula.batch_uom}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Material</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Material</p>
                       <p className="font-medium">{formula.item_count} item</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Eksperimen</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Eksperimen</p>
                       <p className="font-medium">{formula.experiment_count}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Est. Cost</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Est. Cost</p>
                       <p className="font-medium">
                         {formula.total_estimated_cost 
                           ? `Rp ${formula.total_estimated_cost.toLocaleString()}` 
@@ -476,8 +476,8 @@ const RNDProjectDetail: React.FC = () => {
                   </div>
 
                   {formula.last_experiment_status && (
-                    <div className="mt-4 pt-4 border-t border-gray-200">
-                      <span className="text-sm text-gray-500 mr-2">Eksperimen Terakhir:</span>
+                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                      <span className="text-sm text-gray-500 dark:text-gray-400 mr-2">Eksperimen Terakhir:</span>
                       <span className={`px-2 py-1 text-xs rounded-full ${experimentStatusColors[formula.last_experiment_status]}`}>
                         {formula.last_experiment_status}
                       </span>
@@ -491,8 +491,8 @@ const RNDProjectDetail: React.FC = () => {
       )}
 
       {activeTab === 'experiments' && (
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          <p className="text-gray-500 text-center py-8">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100">
+          <p className="text-gray-500 dark:text-gray-400 text-center py-8">
             Pilih formula untuk melihat eksperimen
           </p>
         </div>
@@ -501,7 +501,7 @@ const RNDProjectDetail: React.FC = () => {
       {/* Approval Request Modal */}
       {showApprovalModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
             <h3 className="text-lg font-semibold mb-4">Request Approval</h3>
             <form onSubmit={(e) => {
               e.preventDefault();
@@ -511,14 +511,14 @@ const RNDProjectDetail: React.FC = () => {
               <textarea
                 name="notes"
                 placeholder="Catatan (opsional)"
-                className="w-full p-3 border border-gray-300 rounded-lg mb-4"
+                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg mb-4"
                 rows={4}
               />
               <div className="flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setShowApprovalModal(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
                 >
                   Batal
                 </button>

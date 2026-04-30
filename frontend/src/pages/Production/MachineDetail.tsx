@@ -220,7 +220,7 @@ const MachineDetail: React.FC = () => {
       case 'idle': return <PauseIcon className="w-5 h-5 text-yellow-600" />;
       case 'maintenance': return <WrenchScrewdriverIcon className="w-5 h-5 text-blue-600" />;
       case 'breakdown': return <ExclamationTriangleIcon className="w-5 h-5 text-red-600" />;
-      default: return <CogIcon className="w-5 h-5 text-gray-600" />;
+      default: return <CogIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />;
     }
   };
 
@@ -235,7 +235,7 @@ const MachineDetail: React.FC = () => {
   if (!machine) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">Machine not found</p>
+        <p className="text-gray-500 dark:text-gray-400">Machine not found</p>
         <button onClick={() => navigate('/app/production/machines')} className="mt-4 text-blue-600 hover:underline">
           Back to Machine List
         </button>
@@ -256,13 +256,13 @@ const MachineDetail: React.FC = () => {
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/app/production/machines')}
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
           >
             <ArrowLeftIcon className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{machine.name}</h1>
-            <p className="text-gray-500">{machine.code} • {machine.machine_type}</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{machine.name}</h1>
+            <p className="text-gray-500 dark:text-gray-400">{machine.code} • {machine.machine_type}</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -281,7 +281,7 @@ const MachineDetail: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-gray-200 dark:border-gray-700">
         <nav className="flex gap-8">
           {[
             { id: 'overview', label: 'Overview', icon: CubeIcon },
@@ -307,63 +307,63 @@ const MachineDetail: React.FC = () => {
       {activeTab === 'overview' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Machine Info */}
-          <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border p-6">
+          <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6">
             <h3 className="text-lg font-semibold mb-4">Machine Information</h3>
             <div className="grid grid-cols-2 gap-4">
               <div className="flex items-center gap-3">
                 <CogIcon className="w-5 h-5 text-gray-400" />
                 <div>
-                  <p className="text-sm text-gray-500">Type</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Type</p>
                   <p className="font-medium">{machine.machine_type}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <BuildingOfficeIcon className="w-5 h-5 text-gray-400" />
                 <div>
-                  <p className="text-sm text-gray-500">Manufacturer</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Manufacturer</p>
                   <p className="font-medium">{machine.manufacturer || '-'}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <CubeIcon className="w-5 h-5 text-gray-400" />
                 <div>
-                  <p className="text-sm text-gray-500">Model</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Model</p>
                   <p className="font-medium">{machine.model || '-'}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <MapPinIcon className="w-5 h-5 text-gray-400" />
                 <div>
-                  <p className="text-sm text-gray-500">Location</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Location</p>
                   <p className="font-medium">{machine.location || '-'}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <ChartBarIcon className="w-5 h-5 text-gray-400" />
                 <div>
-                  <p className="text-sm text-gray-500">Capacity</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Capacity</p>
                   <p className="font-medium">{machine.capacity_per_hour || 0} {machine.capacity_uom || 'units/hour'}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <CalendarIcon className="w-5 h-5 text-gray-400" />
                 <div>
-                  <p className="text-sm text-gray-500">Next Maintenance</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Next Maintenance</p>
                   <p className="font-medium">{machine.next_maintenance || 'Not scheduled'}</p>
                 </div>
               </div>
             </div>
             {machine.notes && (
-              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-600">{machine.notes}</p>
+              <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                <p className="text-sm text-gray-600 dark:text-gray-300">{machine.notes}</p>
               </div>
             )}
           </div>
 
           {/* Quick Stats */}
           <div className="space-y-4">
-            <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h3 className="text-sm font-medium text-gray-500 mb-2">Average OEE (30 days)</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6">
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Average OEE (30 days)</h3>
               <div className="flex items-end gap-2">
                 <span className="text-3xl font-bold text-blue-600">{avgOEE}%</span>
               </div>
@@ -376,18 +376,18 @@ const MachineDetail: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h3 className="text-sm font-medium text-gray-500 mb-2">Availability</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6">
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Availability</h3>
               <div className="flex items-end gap-2">
                 <span className="text-3xl font-bold text-green-600">{machine.availability || 100}%</span>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h3 className="text-sm font-medium text-gray-500 mb-2">Total Downtime (30 days)</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6">
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Total Downtime (30 days)</h3>
               <div className="flex items-end gap-2">
                 <span className="text-3xl font-bold text-red-600">{Math.round(totalDowntime / 60)}h</span>
-                <span className="text-gray-500 mb-1">{totalDowntime % 60}m</span>
+                <span className="text-gray-500 dark:text-gray-400 mb-1">{totalDowntime % 60}m</span>
               </div>
             </div>
           </div>
@@ -397,16 +397,16 @@ const MachineDetail: React.FC = () => {
       {/* Controller Tab - Daily Efficiency Report */}
       {activeTab === 'controller' && (
         <div className="space-y-4">
-          <div className="bg-white rounded-lg shadow-sm border p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-lg font-semibold">📊 Daily Efficiency Report</h3>
-                <p className="text-sm text-gray-500">Click on a row to expand details</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Click on a row to expand details</p>
               </div>
               <div className="flex items-center gap-2">
                 <select
                   id="export-period"
-                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500"
+                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-green-500"
                   defaultValue="day"
                   onChange={(e) => {
                     const dateInput = document.getElementById('export-date') as HTMLInputElement;
@@ -422,7 +422,7 @@ const MachineDetail: React.FC = () => {
                 <input
                   type="date"
                   id="export-date"
-                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500"
+                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-green-500"
                   defaultValue={new Date().toISOString().split('T')[0]}
                 />
                 <button
@@ -494,8 +494,8 @@ const MachineDetail: React.FC = () => {
                           <div className="flex items-center gap-3">
                             <div className={`w-3 h-3 rounded-full ${isGood ? 'bg-green-500' : 'bg-red-500'}`} />
                             <div className="text-left">
-                              <p className="font-medium text-gray-900">{day.product_name || 'N/A'}</p>
-                              <p className="text-sm text-gray-500">{day.date}</p>
+                              <p className="font-medium text-gray-900 dark:text-white">{day.product_name || 'N/A'}</p>
+                              <p className="text-sm text-gray-500 dark:text-gray-400">{day.date}</p>
                             </div>
                           </div>
                           {/* Target vs Actual in header - converted to karton */}
@@ -517,7 +517,7 @@ const MachineDetail: React.FC = () => {
                             <p className={`text-lg font-bold ${isGood ? 'text-green-600' : 'text-red-600'}`}>
                               {efficiency.toFixed(1)}%
                             </p>
-                            <p className="text-xs text-gray-500">Efficiency</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Efficiency</p>
                           </div>
                           <svg
                             className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
@@ -532,18 +532,18 @@ const MachineDetail: React.FC = () => {
                       
                       {/* Expanded Detail */}
                       {isExpanded && (
-                        <div className="p-4 bg-white border-t">
+                        <div className="p-4 bg-white dark:bg-gray-800 border-t">
                           {/* Production per Shift - with Runtime, Downtime, Idle Time */}
                           <div className="mb-4">
-                            <p className="text-sm font-medium text-gray-700 mb-3">📦 Detail per Shift</p>
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-3">📦 Detail per Shift</p>
                             {day.shifts && day.shifts.length > 0 ? (
                               <div className="space-y-3">
                                 {day.shifts.map((shift) => (
-                                  <div key={shift.shift} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                  <div key={shift.shift} className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
                                     <div className="flex items-center justify-between mb-3">
-                                      <span className="font-semibold text-gray-800 text-base">
+                                      <span className="font-semibold text-gray-800 dark:text-gray-100 text-base">
                                         Shift {shift.shift} 
-                                        <span className="text-xs font-normal text-gray-500 ml-2">
+                                        <span className="text-xs font-normal text-gray-500 dark:text-gray-400 ml-2">
                                           ({shift.shift === 1 ? '06:30-15:00' : shift.shift === 2 ? '15:00-23:00' : '23:00-06:30'})
                                         </span>
                                       </span>
@@ -553,15 +553,15 @@ const MachineDetail: React.FC = () => {
                                     {/* Production Grades */}
                                     <div className="grid grid-cols-3 gap-2 text-sm mb-3">
                                       <div className="p-2 bg-green-100 rounded text-center">
-                                        <p className="text-xs text-gray-500">Grade A</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">Grade A</p>
                                         <p className="font-bold text-green-600">{shift.grade_a.toLocaleString()}</p>
                                       </div>
                                       <div className="p-2 bg-yellow-100 rounded text-center">
-                                        <p className="text-xs text-gray-500">Grade B</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">Grade B</p>
                                         <p className="font-bold text-yellow-600">{shift.grade_b.toLocaleString()}</p>
                                       </div>
                                       <div className="p-2 bg-red-100 rounded text-center">
-                                        <p className="text-xs text-gray-500">Grade C</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">Grade C</p>
                                         <p className="font-bold text-red-600">{shift.grade_c.toLocaleString()}</p>
                                       </div>
                                     </div>
@@ -569,15 +569,15 @@ const MachineDetail: React.FC = () => {
                                     {/* Runtime, Downtime, Idle per Shift */}
                                     <div className="grid grid-cols-3 gap-2 text-sm">
                                       <div className="p-2 bg-green-50 rounded text-center border border-green-200">
-                                        <p className="text-xs text-gray-500">Runtime</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">Runtime</p>
                                         <p className="font-bold text-green-600">{shift.runtime_minutes || 480} menit</p>
                                       </div>
                                       <div className="p-2 bg-red-50 rounded text-center border border-red-200">
-                                        <p className="text-xs text-gray-500">Downtime</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">Downtime</p>
                                         <p className="font-bold text-red-600">{shift.downtime_minutes || 0} menit</p>
                                       </div>
                                       <div className="p-2 bg-orange-50 rounded text-center border border-orange-200">
-                                        <p className="text-xs text-gray-500">Idle Time</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">Idle Time</p>
                                         <p className="font-bold text-orange-600">{shift.idle_time_minutes || 0} menit</p>
                                       </div>
                                     </div>
@@ -593,27 +593,27 @@ const MachineDetail: React.FC = () => {
                           <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
                             <p className="text-sm font-semibold text-blue-800 mb-2">📊 Total Hari Ini</p>
                             <div className="grid grid-cols-4 gap-3">
-                              <div className="p-2 bg-white rounded text-center">
-                                <p className="text-xs text-gray-500">Runtime</p>
+                              <div className="p-2 bg-white dark:bg-gray-800 rounded text-center">
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Runtime</p>
                                 <p className="text-lg font-bold text-green-600">
                                   {day.runtime_minutes !== undefined ? day.runtime_minutes : 
                                     Math.round((day.planned_runtime_minutes || 480))} menit
                                 </p>
                               </div>
-                              <div className="p-2 bg-white rounded text-center">
-                                <p className="text-xs text-gray-500">Total Downtime</p>
+                              <div className="p-2 bg-white dark:bg-gray-800 rounded text-center">
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Total Downtime</p>
                                 <p className="text-lg font-bold text-red-600">
                                   {day.total_downtime_minutes !== undefined ? day.total_downtime_minutes : 0} menit
                                 </p>
                               </div>
-                              <div className="p-2 bg-white rounded text-center">
-                                <p className="text-xs text-gray-500">Idle Time</p>
+                              <div className="p-2 bg-white dark:bg-gray-800 rounded text-center">
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Idle Time</p>
                                 <p className="text-lg font-bold text-orange-600">
                                   {day.idle_time_minutes || 0} menit
                                 </p>
                               </div>
-                              <div className="p-2 bg-white rounded text-center">
-                                <p className="text-xs text-gray-500">Quality</p>
+                              <div className="p-2 bg-white dark:bg-gray-800 rounded text-center">
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Quality</p>
                                 <p className="text-lg font-bold text-purple-600">{day.quality?.toFixed(1) || 0}%</p>
                               </div>
                             </div>
@@ -621,7 +621,7 @@ const MachineDetail: React.FC = () => {
                           
                           {/* Top 3 Downtime */}
                           <div className="mt-4">
-                            <p className="text-sm font-medium text-gray-700 mb-2">🔴 Top 3 Downtime</p>
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">🔴 Top 3 Downtime</p>
                             {dayDowntimes.length > 0 ? (
                               <div className="space-y-2">
                                 {dayDowntimes.map((dt, idx) => {
@@ -633,7 +633,7 @@ const MachineDetail: React.FC = () => {
                                         <span className="w-5 h-5 flex items-center justify-center bg-red-100 text-red-600 text-xs font-bold rounded">
                                           {idx + 1}
                                         </span>
-                                        <span className="text-sm text-gray-700">{dt.reason}</span>
+                                        <span className="text-sm text-gray-700 dark:text-gray-200">{dt.reason}</span>
                                       </div>
                                       <div className="flex items-center gap-2">
                                         <span className="text-sm font-medium text-red-600">{dt.duration_minutes} menit</span>
@@ -654,7 +654,7 @@ const MachineDetail: React.FC = () => {
                 })}
               </div>
             ) : (
-              <div className="p-12 text-center text-gray-500">
+              <div className="p-12 text-center text-gray-500 dark:text-gray-400">
                 <ChartBarIcon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                 <p>No efficiency data available</p>
               </div>

@@ -209,9 +209,9 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
             <button
               type="button"
               onClick={handleClear}
-              className="p-0.5 hover:bg-gray-200 rounded"
+              className="p-0.5 hover:bg-gray-200 dark:bg-gray-700 rounded"
             >
-              <XMarkIcon className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+              <XMarkIcon className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:text-gray-300" />
             </button>
           )}
           <ChevronDownIcon className={`h-4 w-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
@@ -220,9 +220,9 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
 
       {/* Dropdown */}
       {isOpen && !disabled && (
-        <div className="absolute z-50 min-w-[300px] w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg overflow-hidden lg:min-w-[400px]">
+        <div className="absolute z-50 min-w-[300px] w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg overflow-hidden lg:min-w-[400px]">
           {/* Search Input */}
-          <div className="p-2 border-b border-gray-200 sticky top-0 bg-white">
+          <div className="p-2 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800">
             <div className="relative">
               <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <input
@@ -239,7 +239,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                   }
                 }}
                 placeholder="Ketik untuk mencari..."
-                className="w-full pl-10 pr-3 py-2.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-10 pr-3 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 autoFocus
                 onClick={(e) => e.stopPropagation()}
               />
@@ -266,7 +266,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                   {option.code ? (
                     <div className="flex flex-col">
                       <div className="font-semibold text-sm text-blue-700">{option.code}</div>
-                      <div className="text-sm text-gray-600 font-medium">{option.name}</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-300 font-medium">{option.name}</div>
                     </div>
                   ) : (
                     <div className="text-sm font-medium">{option.label || option.name}</div>
@@ -274,14 +274,14 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                 </div>
               ))
             ) : (
-              <div className="px-3 py-6 text-sm text-gray-500 text-center">
+              <div className="px-3 py-6 text-sm text-gray-500 dark:text-gray-400 text-center">
                 Tidak ada hasil ditemukan
               </div>
             )}
           </div>
           
           {/* Footer hint */}
-          <div className="px-3 py-2 bg-gray-50 border-t text-xs text-gray-400">
+          <div className="px-3 py-2 bg-gray-50 dark:bg-gray-900 border-t text-xs text-gray-400">
             ↑↓ navigasi • Enter pilih • Esc tutup
           </div>
         </div>

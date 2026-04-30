@@ -85,10 +85,10 @@ const PreShiftChecklist = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
+      <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-600 font-medium">Memuat data checklist...</p>
+          <p className="text-gray-600 dark:text-gray-300 font-medium">Memuat data checklist...</p>
         </div>
       </div>
     )
@@ -99,11 +99,11 @@ const PreShiftChecklist = () => {
       <div className="max-w-7xl mx-auto space-y-6">
         
         {/* Header Card */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                <div className="p-3 bg-white dark:bg-gray-800/20 rounded-xl backdrop-blur-sm">
                   <ClipboardDocumentCheckIcon className="w-8 h-8 text-white" />
                 </div>
                 <div>
@@ -116,12 +116,12 @@ const PreShiftChecklist = () => {
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => handleDateChange(-1)}
-                  className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors"
+                  className="p-2 bg-white/20 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/30 rounded-lg transition-colors"
                 >
                   <ChevronLeftIcon className="w-5 h-5 text-white" />
                 </button>
                 
-                <div className="flex items-center space-x-2 bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
+                <div className="flex items-center space-x-2 bg-white dark:bg-gray-800/20 backdrop-blur-sm rounded-lg px-4 py-2">
                   <CalendarIcon className="w-5 h-5 text-white" />
                   <input
                     type="date"
@@ -133,7 +133,7 @@ const PreShiftChecklist = () => {
                 
                 <button
                   onClick={() => handleDateChange(1)}
-                  className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors"
+                  className="p-2 bg-white/20 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/30 rounded-lg transition-colors"
                 >
                   <ChevronRightIcon className="w-5 h-5 text-white" />
                 </button>
@@ -141,7 +141,7 @@ const PreShiftChecklist = () => {
                 {!isToday && (
                   <button
                     onClick={() => setSelectedDate(new Date().toISOString().split('T')[0])}
-                    className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white text-sm font-medium transition-colors"
+                    className="px-3 py-2 bg-white/20 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/30 rounded-lg text-white text-sm font-medium transition-colors"
                   >
                     Hari Ini
                   </button>
@@ -150,14 +150,14 @@ const PreShiftChecklist = () => {
                 <button
                   onClick={() => refetch()}
                   disabled={isFetching}
-                  className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors disabled:opacity-50"
+                  className="p-2 bg-white/20 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/30 rounded-lg transition-colors disabled:opacity-50"
                 >
                   <ArrowPathIcon className={`w-5 h-5 text-white ${isFetching ? 'animate-spin' : ''}`} />
                 </button>
                 
                 <button
                   onClick={() => navigate('/app/production/pre-shift-checklist/weekly')}
-                  className="flex items-center space-x-2 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white text-sm font-medium transition-colors"
+                  className="flex items-center space-x-2 px-3 py-2 bg-white/20 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/30 rounded-lg text-white text-sm font-medium transition-colors"
                 >
                   <TableCellsIcon className="w-5 h-5" />
                   <span>Summary Mingguan</span>
@@ -183,38 +183,38 @@ const PreShiftChecklist = () => {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Progress Card */}
-          <div className="bg-white rounded-xl shadow-md border border-gray-100 p-5 col-span-1 md:col-span-1">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 p-5 col-span-1 md:col-span-1">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-medium text-gray-500">Progress</span>
+              <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Progress</span>
               <span className="text-2xl font-bold text-blue-600">{stats.percentage}%</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-3">
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
               <div 
                 className="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-500"
                 style={{ width: `${stats.percentage}%` }}
               ></div>
             </div>
-            <p className="text-xs text-gray-500 mt-2">{stats.submitted} dari {stats.total} checklist</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">{stats.submitted} dari {stats.total} checklist</p>
           </div>
           
           {/* Total Card */}
-          <div className="bg-white rounded-xl shadow-md border border-gray-100 p-5">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500">Total Mesin</p>
-                <p className="text-3xl font-bold text-gray-900 mt-1">{data?.machines?.length || 0}</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Mesin</p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{data?.machines?.length || 0}</p>
               </div>
-              <div className="p-3 bg-gray-100 rounded-xl">
-                <CogIcon className="w-7 h-7 text-gray-600" />
+              <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-xl">
+                <CogIcon className="w-7 h-7 text-gray-600 dark:text-gray-300" />
               </div>
             </div>
           </div>
           
           {/* Submitted Card */}
-          <div className="bg-white rounded-xl shadow-md border border-green-100 p-5">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-green-100 p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500">Selesai</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Selesai</p>
                 <p className="text-3xl font-bold text-green-600 mt-1">{stats.submitted}</p>
               </div>
               <div className="p-3 bg-green-100 rounded-xl">
@@ -224,10 +224,10 @@ const PreShiftChecklist = () => {
           </div>
           
           {/* Pending Card */}
-          <div className="bg-white rounded-xl shadow-md border border-amber-100 p-5">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-amber-100 p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500">Belum Diisi</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Belum Diisi</p>
                 <p className="text-3xl font-bold text-amber-600 mt-1">{stats.pending}</p>
               </div>
               <div className="p-3 bg-amber-100 rounded-xl">
@@ -238,32 +238,32 @@ const PreShiftChecklist = () => {
         </div>
 
         {/* Shift Legend */}
-        <div className="flex items-center justify-center space-x-6 bg-white rounded-xl shadow-md border border-gray-100 py-3 px-6">
+        <div className="flex items-center justify-center space-x-6 bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 py-3 px-6">
           {SHIFT_CONFIG.map((shift) => (
             <div key={shift.id} className="flex items-center space-x-2">
               <div className={`w-3 h-3 rounded-full ${shift.bgDark}`}></div>
-              <span className="text-sm font-medium text-gray-700">{shift.name}</span>
-              <span className="text-xs text-gray-500">({shift.time})</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{shift.name}</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">({shift.time})</span>
             </div>
           ))}
         </div>
 
         {/* Machine Grid */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 bg-gray-50">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-100 bg-gray-50 dark:bg-gray-900">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <CogIcon className="w-5 h-5 text-gray-600" />
-                <h2 className="text-lg font-semibold text-gray-900">Status Checklist per Mesin</h2>
+                <CogIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Status Checklist per Mesin</h2>
               </div>
               <div className="flex items-center space-x-4 text-sm">
                 <div className="flex items-center space-x-1">
                   <div className="w-4 h-4 bg-green-500 rounded"></div>
-                  <span className="text-gray-600">Selesai</span>
+                  <span className="text-gray-600 dark:text-gray-300">Selesai</span>
                 </div>
                 <div className="flex items-center space-x-1">
                   <div className="w-4 h-4 bg-amber-400 rounded"></div>
-                  <span className="text-gray-600">Belum Diisi</span>
+                  <span className="text-gray-600 dark:text-gray-300">Belum Diisi</span>
                 </div>
               </div>
             </div>
@@ -272,15 +272,15 @@ const PreShiftChecklist = () => {
           <div className="overflow-x-auto">
             <table className="min-w-full">
               <thead>
-                <tr className="bg-gray-50">
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-64">
+                <tr className="bg-gray-50 dark:bg-gray-900">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider w-64">
                     Mesin
                   </th>
                   {SHIFT_CONFIG.map((shift) => (
                     <th key={shift.id} className="px-4 py-4 text-center">
                       <div className={`inline-flex flex-col items-center px-4 py-2 rounded-lg ${shift.bgLight} ${shift.border} border`}>
                         <span className={`text-xs font-bold ${shift.text}`}>{shift.name}</span>
-                        <span className="text-xs text-gray-500">{shift.time}</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">{shift.time}</span>
                       </div>
                     </th>
                   ))}
@@ -295,8 +295,8 @@ const PreShiftChecklist = () => {
                           <span className="text-white font-bold text-sm">{machine.machine_code?.substring(0, 3) || 'MC'}</span>
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-gray-900">{machine.machine_name}</p>
-                          <p className="text-xs text-gray-500 flex items-center">
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white">{machine.machine_name}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center">
                             <CogIcon className="w-3 h-3 mr-1" />
                             {machine.machine_code}
                           </p>
@@ -351,7 +351,7 @@ const PreShiftChecklist = () => {
           {(!data?.machines || data.machines.length === 0) && (
             <div className="p-12 text-center">
               <ExclamationCircleIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500 font-medium">Tidak ada data mesin aktif</p>
+              <p className="text-gray-500 dark:text-gray-400 font-medium">Tidak ada data mesin aktif</p>
               <p className="text-gray-400 text-sm mt-1">Pastikan mesin sudah ditambahkan di sistem</p>
             </div>
           )}

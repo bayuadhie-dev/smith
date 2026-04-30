@@ -80,7 +80,7 @@ const ChatInputBox: React.FC<InputBoxProps> = ({
             <PencilIcon className="h-3.5 w-3.5 text-yellow-400" />
             <span className="text-yellow-300">Mengedit pesan</span>
           </>}
-          <button onClick={onCancelReply} className="ml-auto text-gray-500 hover:text-white transition-colors">
+          <button onClick={onCancelReply} className="ml-auto text-gray-500 dark:text-gray-400 hover:text-white transition-colors">
             <XMarkIcon className="h-3.5 w-3.5" />
           </button>
         </div>
@@ -99,7 +99,7 @@ const ChatInputBox: React.FC<InputBoxProps> = ({
           onKeyDown={handleKey}
           placeholder={placeholder}
           rows={1}
-          className="flex-1 bg-transparent text-gray-100 text-sm placeholder-gray-400 resize-none outline-none leading-relaxed"
+          className="flex-1 bg-transparent text-gray-100 text-sm placeholder-gray-400 dark:placeholder-gray-500 dark:placeholder-gray-400 resize-none outline-none leading-relaxed"
           style={{ minHeight: 22, maxHeight: 160 }}
           onInput={e => {
             const el = e.currentTarget;
@@ -112,7 +112,7 @@ const ChatInputBox: React.FC<InputBoxProps> = ({
           <FaceSmileIcon className="h-5 w-5" />
         </button>
         <button onClick={onSend} disabled={!value.trim()}
-          className="p-1 shrink-0 text-[#5865f2] hover:text-blue-300 disabled:text-gray-600 transition-colors">
+          className="p-1 shrink-0 text-[#5865f2] hover:text-blue-300 disabled:text-gray-600 dark:text-gray-300 transition-colors">
           <PaperAirplaneIcon className="h-5 w-5" />
         </button>
       </div>
@@ -751,7 +751,7 @@ const GroupChat: React.FC = () => {
         {/* Avatar or timestamp */}
         <div className="w-9 flex-shrink-0 flex justify-center mt-0.5">
           {compact ? (
-            <span className="text-[10px] text-gray-500 opacity-0 group-hover:opacity-100 mt-1 select-none">{formatTime(msg.created_at)}</span>
+            <span className="text-[10px] text-gray-500 dark:text-gray-400 opacity-0 group-hover:opacity-100 mt-1 select-none">{formatTime(msg.created_at)}</span>
           ) : (
             <Avatar name={msg.user?.full_name || msg.user?.username || '?'} size={36} />
           )}
@@ -763,7 +763,7 @@ const GroupChat: React.FC = () => {
             <div className="flex items-baseline gap-2 mb-0.5">
               <span className="font-semibold text-sm text-white hover:underline cursor-pointer">{msg.user?.full_name || msg.user?.username}</span>
               <span className="text-[11px] text-gray-400">{formatTime(msg.created_at)}</span>
-              {msg.is_edited && <span className="text-[10px] text-gray-500">(diedit)</span>}
+              {msg.is_edited && <span className="text-[10px] text-gray-500 dark:text-gray-400">(diedit)</span>}
             </div>
           )}
 
@@ -778,7 +778,7 @@ const GroupChat: React.FC = () => {
           {!msg.is_deleted ? (
             <p className="text-sm text-gray-100 whitespace-pre-wrap break-words leading-relaxed">{msg.content}</p>
           ) : (
-            <p className="text-xs text-gray-500 italic">Pesan dihapus</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 italic">Pesan dihapus</p>
           )}
 
           {/* Attachments */}
@@ -820,7 +820,7 @@ const GroupChat: React.FC = () => {
             {/* Emoji quick pick */}
             <div className="relative">
               <button onClick={() => setShowEmojiPicker(showEmojiPicker === msg.id ? null : msg.id)}
-                className="p-1.5 text-gray-400 hover:text-yellow-400 hover:bg-white/10 rounded" title="Reaksi">
+                className="p-1.5 text-gray-400 hover:text-yellow-400 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/10 rounded" title="Reaksi">
                 <FaceSmileIcon className="h-4 w-4" />
               </button>
               {showEmojiPicker === msg.id && (
@@ -833,26 +833,26 @@ const GroupChat: React.FC = () => {
               )}
             </div>
             {/* Reply */}
-            <button onClick={onReply} className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded" title="Balas">
+            <button onClick={onReply} className="p-1.5 text-gray-400 hover:text-white hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/10 rounded" title="Balas">
               <ArrowUturnLeftIcon className="h-4 w-4" />
             </button>
             {/* Thread */}
             {!isThread && (
-              <button onClick={onThread} className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded" title="Buka Thread">
+              <button onClick={onThread} className="p-1.5 text-gray-400 hover:text-white hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/10 rounded" title="Buka Thread">
                 <ChatBubbleOvalLeftEllipsisIcon className="h-4 w-4" />
               </button>
             )}
             {/* Edit (own only) */}
             {isMine && (
               <button onClick={() => { setEditingMessage(msg); setMessageInput(msg.content); inputRef.current?.focus(); }}
-                className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded" title="Edit">
+                className="p-1.5 text-gray-400 hover:text-white hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/10 rounded" title="Edit">
                 <PencilIcon className="h-4 w-4" />
               </button>
             )}
             {/* Delete */}
             {(isMine || selectedServer?.owner_id === currentUserId) && (
               <button onClick={() => wsDelete(msg.id)}
-                className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-white/10 rounded" title="Hapus">
+                className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/10 rounded" title="Hapus">
                 <TrashIcon className="h-4 w-4" />
               </button>
             )}
@@ -873,9 +873,9 @@ const GroupChat: React.FC = () => {
   if (servers.length === 0 && !loading) return (
     <div className="fixed inset-0 top-16 flex items-center justify-center bg-[#313338] text-gray-100">
       <div className="text-center">
-        <UserGroupIcon className="h-16 w-16 mx-auto text-gray-600 mb-4" />
+        <UserGroupIcon className="h-16 w-16 mx-auto text-gray-600 dark:text-gray-300 mb-4" />
         <h2 className="text-xl font-semibold text-gray-400">Akses Chat Tidak Tersedia</h2>
-        <p className="text-gray-500 mt-2">Role Anda tidak memiliki akses ke fitur Group Chat</p>
+        <p className="text-gray-500 dark:text-gray-400 mt-2">Role Anda tidak memiliki akses ke fitur Group Chat</p>
       </div>
     </div>
   );
@@ -893,7 +893,7 @@ const GroupChat: React.FC = () => {
       <div className="w-60 bg-[#2b2d31] flex flex-col flex-shrink-0">
         {/* Server header */}
         {selectedServer && (
-          <div className="h-12 px-4 flex items-center justify-between border-b border-black/30 shadow-sm cursor-pointer hover:bg-white/5">
+          <div className="h-12 px-4 flex items-center justify-between border-b border-black/30 shadow-sm cursor-pointer hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/5">
             <div className="flex items-center gap-2 min-w-0">
               <span className="text-xl">{selectedServer.icon || '🏢'}</span>
               <h2 className="font-bold text-sm text-white truncate">{selectedServer.name}</h2>
@@ -950,7 +950,7 @@ const GroupChat: React.FC = () => {
                 <div className="flex-1 min-w-0 text-left">
                   <p className="text-[13px] font-medium truncate text-white">{conv.other_user?.full_name}</p>
                   {conv.last_message && (
-                    <p className="text-[11px] text-gray-500 truncate">{conv.last_message.content}</p>
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate">{conv.last_message.content}</p>
                   )}
                 </div>
                 {conv.unread_count > 0 && (
@@ -972,7 +972,7 @@ const GroupChat: React.FC = () => {
               <div className="space-y-1 max-h-60 overflow-y-auto">
                 {dmPickerUsers.map(u => (
                   <button key={u.id} onClick={() => openDmWithUser(u.id)}
-                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded hover:bg-white/10 text-sm text-gray-300">
+                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/10 text-sm text-gray-300">
                     <Avatar name={u.full_name || u.username} size={28} status={u.status} />
                     <span>{u.full_name || u.username}</span>
                   </button>
@@ -1017,7 +1017,7 @@ const GroupChat: React.FC = () => {
         {showSearch && (
           <div className="px-4 py-2 bg-[#2b2d31] border-b border-black/30 flex items-center gap-2">
             <MagnifyingGlassIcon className="h-4 w-4 text-gray-400" />
-            <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Cari pesan..." className="flex-1 bg-transparent text-sm text-gray-100 placeholder-gray-500 outline-none" />
+            <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Cari pesan..." className="flex-1 bg-transparent text-sm text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 outline-none" />
             <button onClick={() => { setShowSearch(false); setSearchQuery(''); }}><XMarkIcon className="h-4 w-4 text-gray-400 hover:text-white" /></button>
           </div>
         )}
@@ -1077,7 +1077,7 @@ const GroupChat: React.FC = () => {
                       {isFile && msg.file_url && (
                         <a href={msg.file_url} target="_blank" rel="noopener noreferrer"
                           className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm cursor-pointer hover:opacity-90 transition-opacity ${ isMine ? 'bg-[#5865f2] text-white rounded-br-sm' : 'bg-[#383a40] text-gray-100 rounded-bl-sm'}`}>
-                          <div className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <div className="w-9 h-9 bg-white dark:bg-gray-800/20 rounded-lg flex items-center justify-center flex-shrink-0">
                             <PhotoIcon className="h-5 w-5" />
                           </div>
                           <div className="min-w-0">
@@ -1097,7 +1097,7 @@ const GroupChat: React.FC = () => {
                       {/* Timestamp */}
                       {showTime && (
                         <div className={`flex items-center gap-1 mt-0.5 px-1 ${ isMine ? 'flex-row-reverse' : ''}`}>
-                          <span className="text-[10px] text-gray-500">{formatTime(msg.created_at)}</span>
+                          <span className="text-[10px] text-gray-500 dark:text-gray-400">{formatTime(msg.created_at)}</span>
                           {isMine && (
                             <span className={`text-[10px] ${ msg.is_read ? 'text-blue-400' : 'text-gray-500'}`}>
                               {msg.is_read ? '✓✓' : '✓'}
@@ -1111,12 +1111,12 @@ const GroupChat: React.FC = () => {
                     {hoveredDmMsg === msg.id && (
                       <div className={`flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity ${ isMine ? 'mr-1' : 'ml-1'}`}>
                         <button onClick={() => copyToClipboard(msg.content)}
-                          className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded" title="Salin">
+                          className="p-1.5 text-gray-400 hover:text-white hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/10 rounded" title="Salin">
                           <ClipboardIcon className="h-3.5 w-3.5" />
                         </button>
                         {isMine && (
                           <button onClick={() => deleteDmMessage(msg.id)}
-                            className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-white/10 rounded" title="Hapus">
+                            className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/10 rounded" title="Hapus">
                             <TrashIcon className="h-3.5 w-3.5" />
                           </button>
                         )}
@@ -1243,11 +1243,11 @@ const GroupChat: React.FC = () => {
                 <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-2 mb-1">Online — {onlineMembers.length}</p>
                 {onlineMembers.map(m => (
                   <button key={m.id} onClick={() => { fetchDmPickerUsers(); openDmWithUser(m.id); }}
-                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded hover:bg-white/10 transition-colors group">
+                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/10 transition-colors group">
                     <Avatar name={m.full_name || m.username} size={30} status={m.status || 'online'} />
                     <div className="text-left min-w-0">
                       <p className="text-sm text-gray-200 truncate group-hover:text-white">{m.full_name || m.username}</p>
-                      {m.custom_status && <p className="text-[10px] text-gray-500 truncate">{m.custom_status}</p>}
+                      {m.custom_status && <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate">{m.custom_status}</p>}
                     </div>
                   </button>
                 ))}
@@ -1259,7 +1259,7 @@ const GroupChat: React.FC = () => {
                 {offlineMembers.map(m => (
                   <div key={m.id} className="flex items-center gap-2 px-2 py-1.5 rounded">
                     <Avatar name={m.full_name || m.username} size={30} status="offline" />
-                    <p className="text-sm text-gray-500 truncate">{m.full_name || m.username}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{m.full_name || m.username}</p>
                   </div>
                 ))}
               </>

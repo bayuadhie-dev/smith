@@ -115,13 +115,13 @@ const LiveMonitoringDashboard: React.FC = () => {
   };
 
   if (loading) return <div className="flex items-center justify-center h-96"><LoadingSpinner /></div>;
-  if (!data) return <div className="p-6 text-center text-gray-500">Tidak ada data</div>;
+  if (!data) return <div className="p-6 text-center text-gray-500 dark:text-gray-400">Tidak ada data</div>;
 
   const { summary } = data;
   const noMachines = data.machines.length === 0;
 
   return (
-    <div className="p-4 md:p-6 space-y-5 bg-gray-50 min-h-screen">
+    <div className="p-4 md:p-6 space-y-5 bg-gray-50 dark:bg-gray-900 min-h-screen">
       {/* HEADER */}
       <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 rounded-2xl p-5 text-white shadow-xl">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -138,13 +138,13 @@ const LiveMonitoringDashboard: React.FC = () => {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <input type="date" value={checkDate} onChange={e => setCheckDate(e.target.value)}
-              className="px-3 py-1.5 bg-white/20 border border-white/30 rounded-lg text-white text-sm focus:outline-none" />
+              className="px-3 py-1.5 bg-white dark:bg-gray-800/20 border border-white/30 rounded-lg text-white text-sm focus:outline-none" />
             <select value={shift} onChange={e => setShift(e.target.value)}
-              className="px-3 py-1.5 bg-white/20 border border-white/30 rounded-lg text-white text-sm focus:outline-none">
-              {SHIFTS.map(s => <option key={s.value} value={s.value} className="text-gray-900">{s.label}</option>)}
+              className="px-3 py-1.5 bg-white dark:bg-gray-800/20 border border-white/30 rounded-lg text-white text-sm focus:outline-none">
+              {SHIFTS.map(s => <option key={s.value} value={s.value} className="text-gray-900 dark:text-white">{s.label}</option>)}
             </select>
             <button onClick={fetchMismatches}
-              className="relative px-4 py-1.5 bg-white/20 hover:bg-white/30 border border-white/30 rounded-lg text-white text-sm font-medium transition flex items-center gap-1.5">
+              className="relative px-4 py-1.5 bg-white/20 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/30 border border-white/30 rounded-lg text-white text-sm font-medium transition flex items-center gap-1.5">
               <ExclamationTriangleIcon className="h-4 w-4" />
               Mismatch
               {mismatchCount > 0 && (
@@ -155,7 +155,7 @@ const LiveMonitoringDashboard: React.FC = () => {
             </button>
             <button 
               onClick={() => navigate('/app/production/live-monitoring/weekly')}
-              className="px-4 py-1.5 bg-white/20 hover:bg-white/30 border border-white/30 rounded-lg text-white text-sm font-medium transition flex items-center gap-1.5">
+              className="px-4 py-1.5 bg-white/20 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/30 border border-white/30 rounded-lg text-white text-sm font-medium transition flex items-center gap-1.5">
               <TableCellsIcon className="h-4 w-4" />
               Summary Mingguan
             </button>
@@ -165,31 +165,31 @@ const LiveMonitoringDashboard: React.FC = () => {
 
       {/* SUMMARY CARDS */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        <div className="bg-white rounded-xl p-3 shadow border">
-          <p className="text-[10px] text-gray-500 uppercase font-medium">Mesin Terjadwal</p>
-          <p className="text-2xl font-bold text-gray-900">{summary.total_machines}</p>
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow border">
+          <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase font-medium">Mesin Terjadwal</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">{summary.total_machines}</p>
           <p className="text-[10px] text-gray-400">Dari shift production</p>
         </div>
-        <div className="bg-white rounded-xl p-3 shadow border">
-          <p className="text-[10px] text-gray-500 uppercase font-medium">Patrol Selesai</p>
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow border">
+          <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase font-medium">Patrol Selesai</p>
           <p className="text-2xl font-bold text-blue-600">{summary.total_checks}/{summary.total_possible}</p>
-          <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-1">
             <div className="bg-blue-500 h-1.5 rounded-full" style={{ width: `${summary.completion_pct}%` }} />
           </div>
         </div>
-        <div className="bg-white rounded-xl p-3 shadow border">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow border">
           <p className="text-[10px] text-green-600 uppercase font-medium">Running</p>
           <p className="text-2xl font-bold text-green-600">{summary.running_count}</p>
         </div>
-        <div className="bg-white rounded-xl p-3 shadow border">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow border">
           <p className="text-[10px] text-red-600 uppercase font-medium">Stopped</p>
           <p className="text-2xl font-bold text-red-600">{summary.stopped_count}</p>
         </div>
-        <div className="bg-white rounded-xl p-3 shadow border">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow border">
           <p className="text-[10px] text-yellow-600 uppercase font-medium">Start Telat</p>
           <p className="text-2xl font-bold text-yellow-600">{summary.delayed_count}</p>
         </div>
-        <div className="bg-white rounded-xl p-3 shadow border">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow border">
           <p className="text-[10px] text-red-500 uppercase font-medium">Total Stop</p>
           <p className="text-2xl font-bold text-red-500">{summary.total_stop_minutes}m</p>
           <p className="text-[10px] text-gray-400">{(summary.total_stop_minutes / 60).toFixed(1)} jam</p>
@@ -197,30 +197,30 @@ const LiveMonitoringDashboard: React.FC = () => {
       </div>
 
       {noMachines ? (
-        <div className="bg-white rounded-xl shadow border p-12 text-center">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow border p-12 text-center">
           <ClockIcon className="h-16 w-16 text-gray-300 mx-auto mb-3" />
-          <p className="text-lg font-semibold text-gray-500">Tidak ada mesin terjadwal</p>
+          <p className="text-lg font-semibold text-gray-500 dark:text-gray-400">Tidak ada mesin terjadwal</p>
           <p className="text-sm text-gray-400 mt-1">Belum ada input produksi (ShiftProduction) untuk tanggal & shift ini.</p>
         </div>
       ) : (
         /* MACHINE GRID */
-        <div className="bg-white rounded-xl shadow border overflow-hidden">
-          <div className="p-4 border-b bg-gray-50 flex items-center justify-between flex-wrap gap-2">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow border overflow-hidden">
+          <div className="p-4 border-b bg-gray-50 dark:bg-gray-900 flex items-center justify-between flex-wrap gap-2">
             <div>
-              <h3 className="text-sm font-semibold text-gray-900">Patrol Check per Mesin</h3>
-              <p className="text-xs text-gray-500 mt-0.5">Hanya mesin yang ada di jadwal produksi. Klik slot untuk input.</p>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Patrol Check per Mesin</h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Hanya mesin yang ada di jadwal produksi. Klik slot untuk input.</p>
             </div>
             <div className="flex gap-3 text-[10px]">
               <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-green-100 border border-green-300" /> Running</span>
               <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-red-100 border border-red-300" /> Stopped</span>
-              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-gray-100 border border-dashed border-gray-300" /> Belum dicek</span>
+              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-gray-100 dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600" /> Belum dicek</span>
             </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="bg-gray-100 text-gray-600 font-medium">
-                  <th className="px-3 py-2.5 text-left sticky left-0 bg-gray-100 z-10 min-w-[180px]">Mesin / WO</th>
+                <tr className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 font-medium">
+                  <th className="px-3 py-2.5 text-left sticky left-0 bg-gray-100 dark:bg-gray-800 z-10 min-w-[180px]">Mesin / WO</th>
                   {data.slots.map(s => (
                     <th key={s.slot} className="px-2 py-2.5 text-center min-w-[150px]">
                       <div className="font-bold">{s.label}</div>
@@ -232,9 +232,9 @@ const LiveMonitoringDashboard: React.FC = () => {
               </thead>
               <tbody className="divide-y">
                 {data.machines.map((m) => (
-                  <tr key={m.machine_id} className="hover:bg-gray-50">
-                    <td className="px-3 py-2.5 sticky left-0 bg-white z-10 border-r">
-                      <div className="font-semibold text-gray-900">{m.machine_name}</div>
+                  <tr key={m.machine_id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                    <td className="px-3 py-2.5 sticky left-0 bg-white dark:bg-gray-800 z-10 border-r">
+                      <div className="font-semibold text-gray-900 dark:text-white">{m.machine_name}</div>
                       <div className="text-[10px] text-gray-400">{m.machine_code}</div>
                       <div className="text-[10px] text-blue-600 mt-0.5 truncate max-w-[170px]">
                         {m.shift_productions.length > 1
@@ -274,7 +274,7 @@ const LiveMonitoringDashboard: React.FC = () => {
                                   <button onClick={() => navigate(`/app/production/live-monitoring/view/${d.id}`)}
                                     className="px-1.5 py-0.5 bg-blue-500 hover:bg-blue-600 text-white rounded text-[9px]">View</button>
                                   <button onClick={() => setEditingSlot({ machineId: m.machine_id, slot: slot.slot, machine: m })}
-                                    className="px-1.5 py-0.5 bg-gray-500 hover:bg-gray-600 text-white rounded text-[9px]">Edit</button>
+                                    className="px-1.5 py-0.5 bg-gray-50 dark:bg-gray-9000 hover:bg-gray-600 text-white rounded text-[9px]">Edit</button>
                                 </div>
                               </div>
                             ) : (
@@ -465,7 +465,7 @@ const CheckInputModal: React.FC<CheckInputModalProps> = ({ machineId, machine, s
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="p-4 border-b bg-gradient-to-r from-emerald-600 to-teal-600 rounded-t-2xl flex items-center justify-between">
           <div>
             <h3 className="font-bold text-white">{machine.machine_name}</h3>
@@ -526,7 +526,7 @@ const CheckInputModal: React.FC<CheckInputModalProps> = ({ machineId, machine, s
 
               {/* Status */}
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-2">Status Mesin Saat Dicek</label>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-2">Status Mesin Saat Dicek</label>
                 <div className="grid grid-cols-2 gap-2">
                   <button type="button" onClick={() => setStatus('running')}
                     className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border text-sm font-medium transition ${
@@ -582,17 +582,17 @@ const CheckInputModal: React.FC<CheckInputModalProps> = ({ machineId, machine, s
 
               {/* Notes */}
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Catatan</label>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">Catatan</label>
                 <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2}
                   className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500" placeholder="Opsional..." />
               </div>
 
               {/* Info from shift production */}
               {machine.shift_productions.length > 0 && (
-                <div className="p-3 rounded-lg bg-gray-50 border text-xs">
-                  <p className="font-semibold text-gray-700 mb-1">Ref. Input Produksi:</p>
+                <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-900 border text-xs">
+                  <p className="font-semibold text-gray-700 dark:text-gray-200 mb-1">Ref. Input Produksi:</p>
                   {machine.shift_productions.map((sp, i) => (
-                    <div key={i} className="flex justify-between text-gray-600">
+                    <div key={i} className="flex justify-between text-gray-600 dark:text-gray-300">
                       <span>{sp.wo_number}</span>
                       <span>T:{sp.target_quantity} A:{sp.actual_quantity} DT:{sp.downtime_minutes}m</span>
                     </div>
@@ -608,12 +608,12 @@ const CheckInputModal: React.FC<CheckInputModalProps> = ({ machineId, machine, s
               {loadingChecklist ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent mx-auto mb-2"></div>
-                  <p className="text-sm text-gray-500">Memuat checklist...</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Memuat checklist...</p>
                 </div>
               ) : checklistItems.length === 0 ? (
                 <div className="text-center py-8">
                   <CogIcon className="h-10 w-10 text-gray-300 mx-auto mb-2" />
-                  <p className="text-sm text-gray-500">Tidak ada item checklist untuk mesin ini</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Tidak ada item checklist untuk mesin ini</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -622,8 +622,8 @@ const CheckInputModal: React.FC<CheckInputModalProps> = ({ machineId, machine, s
                     <div>
                       <div className="flex items-center space-x-2 mb-2">
                         <CogIcon className="h-4 w-4 text-blue-600" />
-                        <h4 className="text-sm font-semibold text-gray-800">Kondisi Mesin</h4>
-                        <span className="text-xs text-gray-500">({kondisiMesinItems.length} item)</span>
+                        <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Kondisi Mesin</h4>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">({kondisiMesinItems.length} item)</span>
                       </div>
                       <div className="space-y-1">
                         {kondisiMesinItems.map(item => {
@@ -633,7 +633,7 @@ const CheckInputModal: React.FC<CheckInputModalProps> = ({ machineId, machine, s
                               answer?.status === 'NG' ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'
                             }`}>
                               <div className="flex items-center justify-between">
-                                <span className="text-xs text-gray-700 flex-1">{item.item_name}</span>
+                                <span className="text-xs text-gray-700 dark:text-gray-200 flex-1">{item.item_name}</span>
                                 <div className="flex items-center space-x-1">
                                   <button type="button" onClick={() => handleAnswerChange(item.id, 'OK')}
                                     className={`p-1.5 rounded ${answer?.status === 'OK' ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500 hover:bg-green-100'}`}>
@@ -655,7 +655,7 @@ const CheckInputModal: React.FC<CheckInputModalProps> = ({ machineId, machine, s
                                   value={answer?.catatan || ''}
                                   onChange={(e) => handleCatatanChange(item.id, e.target.value)}
                                   placeholder="Keterangan NG (wajib diisi)..."
-                                  className="mt-2 w-full px-2 py-1.5 text-xs border border-red-300 rounded bg-white focus:ring-1 focus:ring-red-500"
+                                  className="mt-2 w-full px-2 py-1.5 text-xs border border-red-300 rounded bg-white dark:bg-gray-800 focus:ring-1 focus:ring-red-500"
                                 />
                               )}
                             </div>
@@ -670,8 +670,8 @@ const CheckInputModal: React.FC<CheckInputModalProps> = ({ machineId, machine, s
                     <div>
                       <div className="flex items-center space-x-2 mb-2">
                         <UserGroupIcon className="h-4 w-4 text-purple-600" />
-                        <h4 className="text-sm font-semibold text-gray-800">Man Power</h4>
-                        <span className="text-xs text-gray-500">({manpowerItems.length} item)</span>
+                        <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Man Power</h4>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">({manpowerItems.length} item)</span>
                       </div>
                       <div className="space-y-1">
                         {manpowerItems.map(item => {
@@ -681,7 +681,7 @@ const CheckInputModal: React.FC<CheckInputModalProps> = ({ machineId, machine, s
                               answer?.status === 'NG' ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'
                             }`}>
                               <div className="flex items-center justify-between">
-                                <span className="text-xs text-gray-700 flex-1">{item.item_name}</span>
+                                <span className="text-xs text-gray-700 dark:text-gray-200 flex-1">{item.item_name}</span>
                                 <div className="flex items-center space-x-1">
                                   <button type="button" onClick={() => handleAnswerChange(item.id, 'OK')}
                                     className={`p-1.5 rounded ${answer?.status === 'OK' ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500 hover:bg-green-100'}`}>
@@ -703,7 +703,7 @@ const CheckInputModal: React.FC<CheckInputModalProps> = ({ machineId, machine, s
                                   value={answer?.catatan || ''}
                                   onChange={(e) => handleCatatanChange(item.id, e.target.value)}
                                   placeholder="Keterangan NG (wajib diisi)..."
-                                  className="mt-2 w-full px-2 py-1.5 text-xs border border-red-300 rounded bg-white focus:ring-1 focus:ring-red-500"
+                                  className="mt-2 w-full px-2 py-1.5 text-xs border border-red-300 rounded bg-white dark:bg-gray-800 focus:ring-1 focus:ring-red-500"
                                 />
                               )}
                             </div>
@@ -732,7 +732,7 @@ const CheckInputModal: React.FC<CheckInputModalProps> = ({ machineId, machine, s
               {saving ? 'Menyimpan...' : existingData ? 'Update Check' : 'Simpan Check'}
             </button>
             <button type="button" onClick={onClose}
-              className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium text-sm transition">Batal</button>
+              className="px-4 py-2.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg font-medium text-sm transition">Batal</button>
           </div>
         </form>
       </div>
@@ -756,7 +756,7 @@ const MismatchModal: React.FC<{ data: any; onClose: () => void }> = ({ data, onC
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="p-5 border-b bg-red-50 rounded-t-2xl flex items-center justify-between">
           <div>
             <h3 className="font-bold text-red-900 flex items-center gap-2">
@@ -782,7 +782,7 @@ const MismatchModal: React.FC<{ data: any; onClose: () => void }> = ({ data, onC
             <div className="text-center py-8">
               <CheckCircleIcon className="h-12 w-12 text-green-400 mx-auto mb-2" />
               <p className="text-green-700 font-medium">Tidak ada mismatch!</p>
-              <p className="text-gray-500 text-sm">Data live monitoring sesuai dengan input produksi.</p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">Data live monitoring sesuai dengan input produksi.</p>
             </div>
           ) : (
             data.mismatches.map((m: any, i: number) => {
@@ -793,10 +793,10 @@ const MismatchModal: React.FC<{ data: any; onClose: () => void }> = ({ data, onC
                 }`}>
                   <div className="flex items-center gap-2 mb-1">
                     <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${c.bg} ${c.color} border`}>{c.label}</span>
-                    <span className="text-[10px] text-gray-500 px-1.5 py-0.5 rounded bg-gray-100">{typeLabels[m.type] || m.type}</span>
+                    <span className="text-[10px] text-gray-500 dark:text-gray-400 px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800">{typeLabels[m.type] || m.type}</span>
                   </div>
-                  <p className="text-sm font-semibold text-gray-900">{m.machine_name}</p>
-                  <p className="text-xs text-gray-600 mt-1">{m.description}</p>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">{m.machine_name}</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">{m.description}</p>
                   {m.stops && (
                     <div className="mt-2 space-y-1">
                       {m.stops.map((s: any, si: number) => (

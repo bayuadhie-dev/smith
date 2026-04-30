@@ -187,11 +187,11 @@ export default function CompleteProfile() {
         </div>
 
         {/* Form Card */}
-        <div className="bg-white rounded-2xl shadow-2xl p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Full Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Nama Lengkap <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -202,7 +202,7 @@ export default function CompleteProfile() {
                   value={formData.full_name}
                   onChange={handleChange}
                   required
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Masukkan nama lengkap"
                 />
               </div>
@@ -210,7 +210,7 @@ export default function CompleteProfile() {
 
             {/* Email (Read-only) */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Email
               </label>
               <div className="relative">
@@ -220,17 +220,17 @@ export default function CompleteProfile() {
                   name="email"
                   value={formData.email}
                   readOnly
-                  className="w-full pl-10 pr-10 py-2.5 border border-gray-200 rounded-xl bg-gray-50 text-gray-500"
+                  className="w-full pl-10 pr-10 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400"
                 />
                 <CheckCircleIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-green-500" />
               </div>
-              <p className="text-xs text-gray-500 mt-1">Email terverifikasi dari Google</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Email terverifikasi dari Google</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               {/* Phone */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Nomor Telepon
                 </label>
                 <div className="relative">
@@ -240,7 +240,7 @@ export default function CompleteProfile() {
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="08xxxxxxxxxx"
                   />
                 </div>
@@ -248,7 +248,7 @@ export default function CompleteProfile() {
 
               {/* Department */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Departemen
                 </label>
                 <div className="relative">
@@ -257,7 +257,7 @@ export default function CompleteProfile() {
                     name="department"
                     value={formData.department}
                     onChange={handleChange}
-                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
+                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white dark:bg-gray-800"
                   >
                     <option value="">Pilih</option>
                     <option value="Production">Produksi</option>
@@ -277,7 +277,7 @@ export default function CompleteProfile() {
 
             {/* Position */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Jabatan
               </label>
               <div className="relative">
@@ -287,7 +287,7 @@ export default function CompleteProfile() {
                   name="position"
                   value={formData.position}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Contoh: Staff, Supervisor, Manager"
                 />
               </div>
@@ -295,7 +295,7 @@ export default function CompleteProfile() {
 
             {/* Role Selection */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Pilih Role <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -306,7 +306,7 @@ export default function CompleteProfile() {
                   onChange={handleChange}
                   required
                   disabled={loadingRoles}
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white disabled:bg-gray-100"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white dark:bg-gray-800 disabled:bg-gray-100 dark:bg-gray-800"
                 >
                   <option value="">-- Pilih Role --</option>
                   {roles.map((role) => (
@@ -317,7 +317,7 @@ export default function CompleteProfile() {
                 </select>
               </div>
               {loadingRoles && (
-                <p className="text-xs text-gray-500 mt-1">Memuat daftar role...</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Memuat daftar role...</p>
               )}
             </div>
 
@@ -359,7 +359,7 @@ export default function CompleteProfile() {
               <button
                 type="button"
                 onClick={handleSkipClick}
-                className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors text-sm font-medium"
+                className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 transition-colors text-sm font-medium"
               >
                 Lewati
               </button>
@@ -390,15 +390,15 @@ export default function CompleteProfile() {
       {/* Skip Warning Modal */}
       {showSkipWarning && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
             <div className="text-center">
               <div className="mx-auto w-14 h-14 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
                 <ExclamationTriangleIcon className="h-8 w-8 text-yellow-600" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
                 Yakin Ingin Melewati?
               </h3>
-              <p className="text-gray-600 text-sm mb-4">
+              <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
                 Jika Anda melewati langkah ini, Anda akan masuk dengan <strong>akses sangat terbatas</strong>:
               </p>
               
@@ -428,7 +428,7 @@ export default function CompleteProfile() {
                 </button>
                 <button
                   onClick={confirmSkip}
-                  className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-medium"
+                  className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 font-medium"
                 >
                   Tetap Lewati
                 </button>

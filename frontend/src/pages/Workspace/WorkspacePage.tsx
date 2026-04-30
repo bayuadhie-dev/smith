@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useGetWorkspaceDataQuery } from '../../services/api'
 import { usePermissions } from '../../contexts/PermissionContext'
 import { ArrowLeftIcon, ChartBarIcon, DocumentTextIcon, PlusIcon } from '@heroicons/react/24/outline'
+import RelatedModuleCard from '../../components/Workspace/RelatedModuleCard'
 import clsx from 'clsx'
 
 interface WorkspaceData {
@@ -39,6 +40,20 @@ interface WorkspaceData {
     href: string
     icon: string
     permission?: string
+  }>
+  relatedModules?: Array<{
+    key: string
+    name: string
+    description: string
+    icon: string
+    color: string
+    permission: string
+    href: string
+    stats?: Array<{
+      label: string
+      value: string | number
+      icon?: string
+    }>
   }>
 }
 
@@ -102,6 +117,11 @@ export default function WorkspacePage() {
     )
   }
 
+  // Filter related modules by permission
+  const relatedModules = (data.relatedModules || []).filter(
+    relatedModule => !relatedModule.permission || hasPermission(relatedModule.permission)
+  )
+
   const getIcon = (iconName: string) => {
     // Map icon names to actual icon components
     const iconMap: Record<string, any> = {
@@ -124,7 +144,7 @@ export default function WorkspacePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
@@ -195,21 +215,21 @@ export default function WorkspacePage() {
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {(data.stats || []).map((stat, index) => (
-                <div key={index} className="bg-white rounded-lg shadow p-6">
+                <div key={index} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">{stat.label}</p>
-                      <p className="text-2xl font-semibold text-gray-900">{stat.value}</p>
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{stat.label}</p>
+                      <p className="text-2xl font-semibold text-gray-900 dark:text-white">{stat.value}</p>
                       {stat.change !== undefined && (
                         <p className={clsx(
                           'text-sm mt-1',
-                          stat.change >= 0 ? 'text-green-600' : 'text-red-600'
+                          stat.change >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                         )}>
                           {stat.change >= 0 ? '+' : ''}{stat.change}% from last month
                         </p>
                       )}
                     </div>
-                    <div className="bg-blue-100 rounded-full p-3">
+                    <div className="bg-blue-100 dark:bg-blue-900/30 rounded-full p-3">
                       {getIcon(stat.icon)}
                     </div>
                   </div>
@@ -219,7 +239,7 @@ export default function WorkspacePage() {
 
             {/* Quick Actions */}
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {(data.quickActions || [])
                   .filter(action => !action.permission || hasPermission(action.permission))
@@ -227,21 +247,39 @@ export default function WorkspacePage() {
                     <button
                       key={index}
                       onClick={() => navigate(action.href)}
-                      className="bg-white rounded-lg shadow p-6 text-left hover:shadow-md transition-shadow"
+                      className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 text-left hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700"
                     >
                       <div className="flex items-center space-x-3">
-                        <div className="bg-gray-100 rounded-lg p-2">
+                        <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-2">
                           {getIcon(action.icon)}
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">{action.name}</p>
-                          <p className="text-sm text-gray-600">{action.description}</p>
+                          <p className="font-medium text-gray-900 dark:text-white">{action.name}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">{action.description}</p>
                         </div>
                       </div>
                     </button>
                   ))}
               </div>
             </div>
+
+            {/* Related Modules Section */}
+            {relatedModules.length > 0 && (
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">Related Modules</h2>
+                <p className="text-sm text-gray-600 mb-4">
+                  Quick access to modules that work together with {data.module.name}
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {relatedModules.map((relatedModule) => (
+                    <RelatedModuleCard
+                      key={relatedModule.key}
+                      module={relatedModule}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -250,9 +288,9 @@ export default function WorkspacePage() {
             <div className="px-6 py-4 border-b border-gray-200">
               <h2 className="text-lg font-medium text-gray-900">Recent Items</h2>
             </div>
-            <div className="divide-y divide-gray-200">
+            <div className="divide-y divide-gray-200 dark:divide-gray-700">
               {(data.recentItems || []).map((item, index) => (
-                <div key={index} className="px-6 py-4 hover:bg-gray-50">
+                <div key={index} className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium text-gray-900">{item.name}</p>

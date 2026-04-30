@@ -248,13 +248,13 @@ export default function QCToWarehouse() {
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/app/quality')}
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
           >
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Transfer QC ke Warehouse</h1>
-            <p className="text-gray-600">Transfer produk yang sudah lulus QC ke gudang barang jadi</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Transfer QC ke Warehouse</h1>
+            <p className="text-gray-600 dark:text-gray-300">Transfer produk yang sudah lulus QC ke gudang barang jadi</p>
           </div>
         </div>
       </div>
@@ -346,7 +346,7 @@ export default function QCToWarehouse() {
 
           <div className="flex items-center gap-2">
             {selectedItems.length > 0 && (
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-gray-600 dark:text-gray-300">
                 {selectedItems.length} item dipilih
               </span>
             )}
@@ -382,36 +382,36 @@ export default function QCToWarehouse() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           </div>
         ) : filteredItems.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
+          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
             <CubeIcon className="h-12 w-12 mx-auto mb-3 text-gray-300" />
             <p className="font-medium">Tidak ada item pending</p>
             <p className="text-sm">Semua QC sudah ditransfer ke warehouse</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
                   <th className="px-4 py-3 text-left">
                     <input
                       type="checkbox"
                       checked={selectedItems.length === filteredItems.length && filteredItems.length > 0}
                       onChange={handleSelectAll}
-                      className="rounded border-gray-300"
+                      className="rounded border-gray-300 dark:border-gray-600"
                     />
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Inspeksi</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Produk</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Work Order</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Batch</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Qty Passed</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Checklist</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Disposition</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Inspeksi</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Produk</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Work Order</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Batch</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Qty Passed</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Checklist</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Disposition</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tanggal</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {filteredItems.map((item) => (
                   <tr key={item.id} className={`hover:bg-gray-50 ${selectedItems.includes(item.id) ? 'bg-blue-50' : ''}`}>
                     <td className="px-4 py-3">
@@ -419,7 +419,7 @@ export default function QCToWarehouse() {
                         type="checkbox"
                         checked={selectedItems.includes(item.id)}
                         onChange={() => handleSelectItem(item.id)}
-                        className="rounded border-gray-300"
+                        className="rounded border-gray-300 dark:border-gray-600"
                       />
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
@@ -427,24 +427,24 @@ export default function QCToWarehouse() {
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div>
-                        <p className="font-medium text-gray-900">{item.product_name}</p>
-                        <p className="text-xs text-gray-500">{item.product_code}</p>
+                        <p className="font-medium text-gray-900 dark:text-white">{item.product_name}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{item.product_code}</p>
                       </div>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                       {item.work_order_number || '-'}
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                       {item.batch_number || '-'}
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                       {item.quantity_passed.toLocaleString()}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div className="flex items-center gap-1 text-sm">
                         <span className="text-green-600">{item.passed_checklist_items}</span>
                         <span className="text-gray-400">/</span>
-                        <span className="text-gray-600">{item.total_checklist_items}</span>
+                        <span className="text-gray-600 dark:text-gray-300">{item.total_checklist_items}</span>
                         {item.failed_checklist_items > 0 && (
                           <span className="text-red-500 text-xs ml-1">({item.failed_checklist_items} fail)</span>
                         )}
@@ -453,7 +453,7 @@ export default function QCToWarehouse() {
                     <td className="px-4 py-3 whitespace-nowrap">
                       {getDispositionBadge(item.disposition)}
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {formatDate(item.disposition_date)}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
@@ -474,28 +474,28 @@ export default function QCToWarehouse() {
       </div>
 
       {/* Legend */}
-      <div className="card p-4 bg-gray-50">
-        <h3 className="font-medium text-gray-900 mb-3">Keterangan Disposition:</h3>
+      <div className="card p-4 bg-gray-50 dark:bg-gray-900">
+        <h3 className="font-medium text-gray-900 dark:text-white mb-3">Keterangan Disposition:</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div className="flex items-start gap-2">
             <CheckCircleIcon className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-medium text-green-800">Released</p>
-              <p className="text-gray-600">Semua checklist PASS. Produk siap dijual/kirim.</p>
+              <p className="text-gray-600 dark:text-gray-300">Semua checklist PASS. Produk siap dijual/kirim.</p>
             </div>
           </div>
           <div className="flex items-start gap-2">
             <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-medium text-yellow-800">Quarantine</p>
-              <p className="text-gray-600">Sebagian checklist FAIL. Perlu review sebelum release.</p>
+              <p className="text-gray-600 dark:text-gray-300">Sebagian checklist FAIL. Perlu review sebelum release.</p>
             </div>
           </div>
           <div className="flex items-start gap-2">
             <XCircleIcon className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-medium text-red-800">Reject</p>
-              <p className="text-gray-600">Semua checklist FAIL. Perlu rework, tidak bisa transfer.</p>
+              <p className="text-gray-600 dark:text-gray-300">Semua checklist FAIL. Perlu rework, tidak bisa transfer.</p>
             </div>
           </div>
         </div>

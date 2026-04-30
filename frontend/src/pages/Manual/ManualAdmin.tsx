@@ -303,7 +303,7 @@ const ManualAdmin: React.FC = () => {
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate('/app/manual')}
-              className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg"
+              className="p-2 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-700 rounded-lg"
             >
               <ArrowLeftIcon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
             </button>
@@ -335,7 +335,7 @@ const ManualAdmin: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total_categories}</p>
-                  <p className="text-sm text-gray-500">Kategori</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Kategori</p>
                 </div>
               </div>
             </div>
@@ -346,7 +346,7 @@ const ManualAdmin: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total_articles}</p>
-                  <p className="text-sm text-gray-500">Artikel</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Artikel</p>
                 </div>
               </div>
             </div>
@@ -357,7 +357,7 @@ const ManualAdmin: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total_faqs}</p>
-                  <p className="text-sm text-gray-500">FAQ</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">FAQ</p>
                 </div>
               </div>
             </div>
@@ -370,7 +370,7 @@ const ManualAdmin: React.FC = () => {
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     {stats.popular_articles?.[0]?.views || 0}
                   </p>
-                  <p className="text-sm text-gray-500">Top Views</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Top Views</p>
                 </div>
               </div>
             </div>
@@ -424,11 +424,11 @@ const ManualAdmin: React.FC = () => {
                   <table className="w-full">
                     <thead className="bg-gray-50 dark:bg-gray-700">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Deskripsi</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Artikel</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Urutan</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nama</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Deskripsi</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Artikel</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Urutan</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -479,11 +479,11 @@ const ManualAdmin: React.FC = () => {
                   <table className="w-full">
                     <thead className="bg-gray-50 dark:bg-gray-700">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Judul</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kategori</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Views</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Judul</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Kategori</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Views</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -492,7 +492,7 @@ const ManualAdmin: React.FC = () => {
                           <td className="px-4 py-3">
                             <div>
                               <p className="font-medium text-gray-900 dark:text-white">{article.title}</p>
-                              <p className="text-sm text-gray-500 truncate max-w-xs">{article.summary}</p>
+                              <p className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">{article.summary}</p>
                             </div>
                           </td>
                           <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{article.category_name}</td>
@@ -553,10 +553,10 @@ const ManualAdmin: React.FC = () => {
                   <table className="w-full">
                     <thead className="bg-gray-50 dark:bg-gray-700">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pertanyaan</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kategori</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Pertanyaan</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Kategori</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">

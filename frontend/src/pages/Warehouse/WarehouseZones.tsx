@@ -120,8 +120,8 @@ const [showModal, setShowModal] = useState(false)
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Warehouse Zones</h1>
-          <p className="text-gray-600">Manage warehouse zones and storage areas</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Warehouse Zones</h1>
+          <p className="text-gray-600 dark:text-gray-300">Manage warehouse zones and storage areas</p>
         </div>
         <button
           onClick={openCreateModal}
@@ -143,8 +143,8 @@ const [showModal, setShowModal] = useState(false)
                   <BuildingStorefrontIcon className="h-5 w-5 text-primary-600" />
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-600">{type.label}</p>
-                  <p className="text-xl font-bold text-gray-900">{typeZones.length}</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300">{type.label}</p>
+                  <p className="text-xl font-bold text-gray-900 dark:text-white">{typeZones.length}</p>
                 </div>
               </div>
             </div>
@@ -165,8 +165,8 @@ const [showModal, setShowModal] = useState(false)
                     <BuildingStorefrontIcon className="h-6 w-6 text-blue-600" />
                   </div>
                   <div className="ml-3">
-                    <h3 className="text-lg font-semibold text-gray-900">{zone.name}</h3>
-                    <p className="text-sm text-gray-500">{zone.code}</p>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{zone.name}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{zone.code}</p>
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -187,14 +187,14 @@ const [showModal, setShowModal] = useState(false)
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Material Type</span>
-                  <span className="px-2 py-1 bg-gray-100 rounded text-xs font-medium">
+                  <span className="text-sm text-gray-600 dark:text-gray-300">Material Type</span>
+                  <span className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs font-medium">
                     {materialTypes.find(t => t.value === zone.material_type)?.label}
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Locations</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">Locations</span>
                   <div className="flex items-center gap-1">
                     <MapPinIcon className="h-4 w-4 text-gray-400" />
                     <span className="text-sm font-medium">{zone.location_count}</span>
@@ -203,7 +203,7 @@ const [showModal, setShowModal] = useState(false)
 
                 {zone.capacity && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Capacity</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-300">Capacity</span>
                     <span className="text-sm font-medium">
                       {zone.capacity.toLocaleString()} {zone.capacity_uom}
                     </span>
@@ -228,8 +228,8 @@ const [showModal, setShowModal] = useState(false)
       {!zonesLoading && (!zones?.zones || zones.zones.length === 0) && (
         <div className="text-center py-12">
           <BuildingStorefrontIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No zones</h3>
-          <p className="mt-1 text-sm text-gray-500">Get started by creating a new warehouse zone.</p>
+          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No zones</h3>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by creating a new warehouse zone.</p>
           <div className="mt-6">
             <button onClick={openCreateModal} className="btn-primary">
               <PlusIcon className="h-5 w-5 mr-2" />
@@ -242,7 +242,7 @@ const [showModal, setShowModal] = useState(false)
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-lg">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg">
             <h3 className="text-lg font-semibold mb-4">
               {editingZone ? 'Edit Zone' : 'Create New Zone'}
             </h3>

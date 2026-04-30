@@ -229,7 +229,7 @@ export default function InProcessQC() {
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:text-gray-100">
             <ClockIcon className="w-3.5 h-3.5" />
             Belum Dicek
           </span>
@@ -472,7 +472,7 @@ export default function InProcessQC() {
                 <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Parameter Proses</h3>
                 <div className="space-y-3">
                   {formData.parameter_checks.map((param, index) => (
-                    <div key={index} className="grid grid-cols-4 gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                    <div key={index} className="grid grid-cols-4 gap-3 p-3 bg-gray-50 dark:bg-gray-900 dark:bg-gray-700/50 rounded-lg">
                       <div>
                         <label className="text-xs text-gray-500">Parameter</label>
                         <p className="font-medium text-gray-900 dark:text-white">{param.name}</p>
@@ -514,7 +514,7 @@ export default function InProcessQC() {
 
               {/* Visual & Compliance */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <div className="p-4 bg-gray-50 dark:bg-gray-900 dark:bg-gray-700/50 rounded-lg">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Visual Check
                   </label>
@@ -550,7 +550,7 @@ export default function InProcessQC() {
                   </div>
                 </div>
 
-                <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <div className="p-4 bg-gray-50 dark:bg-gray-900 dark:bg-gray-700/50 rounded-lg">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Kepatuhan SOP
                   </label>
@@ -687,7 +687,7 @@ export default function InProcessQC() {
             <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
               <button
                 onClick={() => setShowInspectionModal(false)}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-700"
               >
                 Batal
               </button>

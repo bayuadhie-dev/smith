@@ -103,8 +103,8 @@ const [customers, setCustomers] = useState<Customer[]>([])
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">🏢 Customers</h1>
-          <p className="text-gray-600 mt-1">Manage customer database and relationships</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">🏢 Customers</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Manage customer database and relationships</p>
         </div>
         <div className="flex gap-3">
           <Link to="/app/sales/customers/new" className="btn-primary inline-flex items-center gap-2">
@@ -122,8 +122,8 @@ const [customers, setCustomers] = useState<Customer[]>([])
               <BuildingOfficeIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Customers</p>
-              <p className="text-2xl font-bold text-gray-900">{customers.length}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Customers</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{customers.length}</p>
             </div>
           </div>
         </div>
@@ -134,8 +134,8 @@ const [customers, setCustomers] = useState<Customer[]>([])
               <ChartBarIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Active</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Active</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {customers.filter(c => c.is_active).length}
               </p>
             </div>
@@ -148,8 +148,8 @@ const [customers, setCustomers] = useState<Customer[]>([])
               <BuildingOfficeIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Corporate</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Corporate</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {customers.filter(c => c.customer_type === 'corporate').length}
               </p>
             </div>
@@ -162,8 +162,8 @@ const [customers, setCustomers] = useState<Customer[]>([])
               <BanknotesIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Credit Limit</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Credit Limit</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 Rp {customers.reduce((sum, c) => sum + (c.credit_limit || 0), 0).toLocaleString()}
               </p>
             </div>
@@ -175,12 +175,12 @@ const [customers, setCustomers] = useState<Customer[]>([])
       <div className="card p-4">
         <div className="flex items-center gap-4 mb-4">
           <FunnelIcon className="h-5 w-5 text-gray-400" />
-          <h3 className="text-lg font-medium text-gray-900">Filters</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Filters</h3>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">{t('common.search')}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">{t('common.search')}</label>
             <div className="relative mt-1">
               <input
                 type="text"
@@ -194,7 +194,7 @@ const [customers, setCustomers] = useState<Customer[]>([])
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700">Customer Type</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Customer Type</label>
             <select
               value={filters.customer_type}
               onChange={(e) => handleFilterChange('customer_type', e.target.value)}
@@ -209,7 +209,7 @@ const [customers, setCustomers] = useState<Customer[]>([])
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700">{t('common.status')}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">{t('common.status')}</label>
             <select
               value={filters.is_active}
               onChange={(e) => handleFilterChange('is_active', e.target.value)}
@@ -234,44 +234,44 @@ const [customers, setCustomers] = useState<Customer[]>([])
 
       {/* Customers Table */}
       <div className="card">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Customer Database</h3>
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Customer Database</h3>
         </div>
         
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Contact Info
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Type & Industry
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Credit Limit
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.status')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.actions')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {customers.map((customer) => (
-                <tr key={customer.id} className="hover:bg-gray-50">
+                <tr key={customer.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="bg-blue-100 p-2 rounded-lg mr-3">
                         <BuildingOfficeIcon className="h-5 w-5 text-blue-600" />
                       </div>
                       <div>
-                        <div className="text-sm font-medium text-gray-900">{customer.company_name}</div>
-                        <div className="text-xs text-gray-500">{customer.code}</div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">{customer.company_name}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{customer.code}</div>
                         {customer.contact_person && (
-                          <div className="text-xs text-gray-500 flex items-center mt-1">
+                          <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center mt-1">
                             <UserIcon className="h-3 w-3 mr-1" />
                             {customer.contact_person}
                           </div>
@@ -283,13 +283,13 @@ const [customers, setCustomers] = useState<Customer[]>([])
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="space-y-1">
                       {customer.email && (
-                        <div className="text-sm text-gray-900 flex items-center">
+                        <div className="text-sm text-gray-900 dark:text-white flex items-center">
                           <EnvelopeIcon className="h-4 w-4 text-gray-400 mr-2" />
                           {customer.email}
                         </div>
                       )}
                       {customer.phone && (
-                        <div className="text-sm text-gray-900 flex items-center">
+                        <div className="text-sm text-gray-900 dark:text-white flex items-center">
                           <PhoneIcon className="h-4 w-4 text-gray-400 mr-2" />
                           {customer.phone}
                         </div>
@@ -304,7 +304,7 @@ const [customers, setCustomers] = useState<Customer[]>([])
                     {customer.city || customer.state || customer.country ? (
                       <div className="flex items-start">
                         <MapPinIcon className="h-4 w-4 text-gray-400 mr-2 mt-0.5" />
-                        <div className="text-sm text-gray-900">
+                        <div className="text-sm text-gray-900 dark:text-white">
                           {[customer.city, customer.state, customer.country].filter(Boolean).join(', ')}
                         </div>
                       </div>
@@ -319,17 +319,17 @@ const [customers, setCustomers] = useState<Customer[]>([])
                         {customer.customer_type?.replace('_', ' ') || 'N/A'}
                       </div>
                       {customer.industry && (
-                        <div className="text-xs text-gray-500">{customer.industry}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{customer.industry}</div>
                       )}
                     </div>
                   </td>
                   
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 font-medium">
+                    <div className="text-sm text-gray-900 dark:text-white font-medium">
                       {customer.credit_limit ? `Rp ${customer.credit_limit.toLocaleString()}` : 'No limit'}
                     </div>
                     {customer.payment_terms && (
-                      <div className="text-xs text-gray-500">{customer.payment_terms}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{customer.payment_terms}</div>
                     )}
                   </td>
                   
@@ -362,8 +362,8 @@ const [customers, setCustomers] = useState<Customer[]>([])
         
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-gray-200 flex justify-between items-center">
-            <div className="text-sm text-gray-500">
+          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
+            <div className="text-sm text-gray-500 dark:text-gray-400">
               Page {currentPage} of {totalPages}
             </div>
             <div className="flex gap-2">
@@ -387,8 +387,8 @@ const [customers, setCustomers] = useState<Customer[]>([])
         {customers.length === 0 && !loading && (
           <div className="text-center py-12">
             <BuildingOfficeIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No customers found</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No customers found</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               Get started by adding your first customer
             </p>
             <div className="mt-6">

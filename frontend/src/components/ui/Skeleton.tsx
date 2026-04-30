@@ -17,7 +17,7 @@ export const Skeleton = ({ className }: SkeletonProps) => {
 
 // Card Skeleton
 export const CardSkeleton = () => (
-  <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-slate-200 dark:border-slate-700">
+  <div className="bg-white dark:bg-gray-800 dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-slate-200 dark:border-slate-700">
     <div className="flex items-center justify-between">
       <div className="space-y-2">
         <Skeleton className="h-4 w-24" />
@@ -34,7 +34,7 @@ export const CardSkeleton = () => (
 
 // Chart Skeleton
 export const ChartSkeleton = () => (
-  <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-slate-200 dark:border-slate-700">
+  <div className="bg-white dark:bg-gray-800 dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-slate-200 dark:border-slate-700">
     <Skeleton className="h-6 w-48 mb-4" />
     <div className="space-y-3">
       <div className="flex items-end gap-2 h-[250px]">
@@ -67,7 +67,7 @@ export const TableRowSkeleton = () => (
 
 // List Skeleton
 export const ListSkeleton = ({ rows = 5 }: { rows?: number }) => (
-  <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+  <div className="bg-white dark:bg-gray-800 dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
     <div className="p-4 border-b border-slate-200 dark:border-slate-700">
       <Skeleton className="h-6 w-40" />
     </div>

@@ -172,12 +172,12 @@ const KPITargetSettings: React.FC = () => {
             <table className="w-full">
               <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">KPI</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Target</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Warning (%)</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Critical (%)</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Period</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">KPI</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Target</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Warning (%)</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Critical (%)</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Period</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -186,7 +186,7 @@ const KPITargetSettings: React.FC = () => {
                     <td className="px-6 py-4">
                       <div>
                         <div className="font-medium text-gray-900 dark:text-white">{target.kpi_name}</div>
-                        <div className="text-sm text-gray-500">{target.kpi_code}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">{target.kpi_code}</div>
                         {target.description && (
                           <div className="text-xs text-gray-400 mt-1">{target.description}</div>
                         )}

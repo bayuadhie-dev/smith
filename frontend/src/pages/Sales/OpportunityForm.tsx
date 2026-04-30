@@ -178,7 +178,7 @@ const OpportunityForm = () => {
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/app/sales/opportunities')}
-            className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
+            className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800"
           >
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
@@ -197,7 +197,7 @@ const OpportunityForm = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Opportunity Name */}
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 <DocumentTextIcon className="h-4 w-4 inline mr-1" />
                 Opportunity Name *
               </label>
@@ -213,7 +213,7 @@ const OpportunityForm = () => {
 
             {/* Description */}
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">{t('common.description')}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('common.description')}</label>
               <textarea
                 className="input w-full"
                 rows={3}
@@ -225,7 +225,7 @@ const OpportunityForm = () => {
 
             {/* Lead Selection */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 <UserIcon className="h-4 w-4 inline mr-1" />
                 Related Lead
               </label>
@@ -251,7 +251,7 @@ const OpportunityForm = () => {
 
             {/* Customer Selection */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 <BuildingOfficeIcon className="h-4 w-4 inline mr-1" />
                 Related Customer
               </label>
@@ -278,7 +278,7 @@ const OpportunityForm = () => {
 
             {/* Pipeline */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 <ChartBarIcon className="h-4 w-4 inline mr-1" />
                 Sales Pipeline *
               </label>
@@ -299,7 +299,7 @@ const OpportunityForm = () => {
 
             {/* Stage */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 <TagIcon className="h-4 w-4 inline mr-1" />
                 Pipeline Stage *
               </label>
@@ -324,7 +324,7 @@ const OpportunityForm = () => {
 
             {/* Value */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 <BanknotesIcon className="h-4 w-4 inline mr-1" />
                 Opportunity Value (Rp)
               </label>
@@ -341,7 +341,7 @@ const OpportunityForm = () => {
 
             {/* Probability */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Probability (%)
               </label>
               <input
@@ -357,7 +357,7 @@ const OpportunityForm = () => {
 
             {/* Expected Close Date */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 <CalendarDaysIcon className="h-4 w-4 inline mr-1" />
                 Expected Close Date
               </label>
@@ -372,7 +372,7 @@ const OpportunityForm = () => {
 
             {/* Assigned To */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 <UserIcon className="h-4 w-4 inline mr-1" />
                 Assigned To
               </label>
@@ -392,7 +392,7 @@ const OpportunityForm = () => {
 
             {/* Source */}
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               </label>
               <select
                 className="input w-full"

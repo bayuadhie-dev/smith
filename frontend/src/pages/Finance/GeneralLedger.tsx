@@ -141,8 +141,8 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">📚 General Ledger</h1>
-          <p className="text-gray-600 mt-1">View all accounting entries and transaction details</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">📚 General Ledger</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">View all accounting entries and transaction details</p>
         </div>
         <div className="flex gap-3">
           <button 
@@ -163,8 +163,8 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
               <BookOpenIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Debits</p>
-              <p className="text-2xl font-bold text-gray-900">{formatRupiah(getTotalDebits())}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Debits</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatRupiah(getTotalDebits())}</p>
             </div>
           </div>
         </div>
@@ -175,8 +175,8 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
               <BookOpenIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Credits</p>
-              <p className="text-2xl font-bold text-gray-900">{formatRupiah(getTotalCredits())}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Credits</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatRupiah(getTotalCredits())}</p>
             </div>
           </div>
         </div>
@@ -189,7 +189,7 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
               <BookOpenIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Balance Check</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Balance Check</p>
               <p className={`text-2xl font-bold ${
                 getTotalDebits() === getTotalCredits() ? 'text-green-600' : 'text-red-600'
               }`}>
@@ -275,43 +275,43 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
       {/* Ledger Table */}
       <div className="card overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.date')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.date')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.description')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.description')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Running Balance
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Created By
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.actions')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {entries.map((entry, index) => (
-                <tr key={entry.id} className="hover:bg-gray-50">
+                <tr key={entry.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{formatDate(entry.entry_date)}</div>
+                    <div className="text-sm text-gray-900 dark:text-white">{formatDate(entry.entry_date)}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{entry.account_code}</div>
-                    <div className="text-sm text-gray-500">{entry.account_name}</div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">{entry.account_code}</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">{entry.account_name}</div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900 max-w-xs truncate">{entry.description}</div>
+                    <div className="text-sm text-gray-900 dark:text-white max-w-xs truncate">{entry.description}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{entry.reference_number || '-'}</div>
+                    <div className="text-sm text-gray-900 dark:text-white">{entry.reference_number || '-'}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
                     <div className="text-sm font-medium text-green-600">
@@ -331,7 +331,7 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{entry.created_by}</div>
+                    <div className="text-sm text-gray-900 dark:text-white">{entry.created_by}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
@@ -353,9 +353,9 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
               ))}
             </tbody>
             {entries.length > 0 && (
-              <tfoot className="bg-gray-50">
+              <tfoot className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-right text-sm font-medium text-gray-900">
+                  <td colSpan={5} className="px-6 py-4 text-right text-sm font-medium text-gray-900 dark:text-white">
                     Totals:
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
@@ -385,32 +385,32 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
         {entries.length === 0 && !loading && (
           <div className="text-center py-12">
             <BookOpenIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No entries found</h3>
-            <p className="mt-1 text-sm text-gray-500">Try adjusting your search criteria</p>
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No entries found</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Try adjusting your search criteria</p>
           </div>
         )}
       </div>
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+        <div className="flex items-center justify-between border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 sm:px-6">
           <div className="flex flex-1 justify-between sm:hidden">
             <button
               onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="relative inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
             >
             </button>
             <button
               onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
-              className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
             >
             </button>
           </div>
           <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-gray-700 dark:text-gray-200">
                 Page <span className="font-medium">{currentPage}</span> of{' '}
                 <span className="font-medium">{totalPages}</span>
               </p>
@@ -442,12 +442,12 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
       {/* New Journal Entry Modal */}
       {showNewEntryModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-semibold text-gray-900">📚 New Journal Entry</h3>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">📚 New Journal Entry</h3>
               <button 
                 onClick={() => setShowNewEntryModal(false)}
-                className="text-gray-400 hover:text-gray-600 text-2xl"
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-300 text-2xl"
               >
                 ✕
               </button>
@@ -491,7 +491,7 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Entry Date *
                   </label>
                   <input 
@@ -504,7 +504,7 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Account Code *
                   </label>
                   <select name="account_code" className="input w-full" required>
@@ -524,7 +524,7 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Description *
                 </label>
                 <textarea 
@@ -537,7 +537,7 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Reference Number
                 </label>
                 <input 
@@ -550,7 +550,7 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Debit Amount
                   </label>
                   <input 
@@ -561,11 +561,11 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
                     min="0"
                     step="0.01"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Enter amount for debit transactions</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Enter amount for debit transactions</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Credit Amount
                   </label>
                   <input 
@@ -576,7 +576,7 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
                     min="0"
                     step="0.01"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Enter amount for credit transactions</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Enter amount for credit transactions</p>
                 </div>
               </div>
 

@@ -158,8 +158,8 @@ const ProductDevelopmentForm: React.FC = () => {
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <div className="flex items-center gap-4 mb-6">
-        <Link to="/app/rd/products" className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
-          <ArrowLeftIcon className="w-5 h-5 text-gray-500" />
+        <Link to="/app/rd/products" className="p-2 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-lg">
+          <ArrowLeftIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
         </Link>
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
@@ -277,7 +277,7 @@ const ProductDevelopmentForm: React.FC = () => {
 
         <div className="flex justify-end gap-4">
           <Link to="/app/rd/products"
-            className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+            className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-700">
             Cancel
           </Link>
           <button type="submit" disabled={saving}

@@ -164,7 +164,7 @@ const WIPDashboard: React.FC = () => {
       case 'completed':
         return <CheckCircleIcon className="h-5 w-5 text-green-500" />;
       default:
-        return <PauseIcon className="h-5 w-5 text-gray-500" />;
+        return <PauseIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />;
     }
   };
 
@@ -211,8 +211,8 @@ const WIPDashboard: React.FC = () => {
         <div className="text-red-600 mb-4">
           <ExclamationTriangleIcon className="h-12 w-12 mx-auto" />
         </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Dashboard</h3>
-        <p className="text-gray-500 mb-4">{error}</p>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Error Loading Dashboard</h3>
+        <p className="text-gray-500 dark:text-gray-400 mb-4">{error}</p>
         <button onClick={fetchDashboardData} className="btn-primary">
         </button>
       </div>
@@ -224,14 +224,14 @@ const WIPDashboard: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">WIP Dashboard</h1>
-          <p className="text-gray-600">Work in Progress Monitoring & Job Costing</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">WIP Dashboard</h1>
+          <p className="text-gray-600 dark:text-gray-300">Work in Progress Monitoring & Job Costing</p>
         </div>
         
         {/* Date Range FunnelIcon */}
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
-            <label className="text-sm font-medium text-gray-700">From:</label>
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-200">From:</label>
             <input
               type="date"
               value={dateRange.from}
@@ -240,7 +240,7 @@ const WIPDashboard: React.FC = () => {
             />
           </div>
           <div className="flex items-center space-x-2">
-            <label className="text-sm font-medium text-gray-700">To:</label>
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-200">To:</label>
             <input
               type="date"
               value={dateRange.to}
@@ -260,8 +260,8 @@ const WIPDashboard: React.FC = () => {
                 <CurrencyDollarIcon className="h-8 w-8 text-blue-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Total WIP Value</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total WIP Value</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {formatCurrency(dashboardData.summary.total_wip_value)}
                 </p>
               </div>
@@ -274,11 +274,11 @@ const WIPDashboard: React.FC = () => {
                 <ChartBarIcon className="h-8 w-8 text-green-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Active Batches</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Active Batches</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {dashboardData.summary.active_batches}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   of {dashboardData.summary.total_batches} total
                 </p>
               </div>
@@ -291,11 +291,11 @@ const WIPDashboard: React.FC = () => {
                 <CheckCircleIcon className="h-8 w-8 text-green-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Completed Batches</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Completed Batches</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {dashboardData.summary.completed_batches}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   {((dashboardData.summary.completed_batches / dashboardData.summary.total_batches) * 100).toFixed(1)}% completion rate
                 </p>
               </div>
@@ -308,11 +308,11 @@ const WIPDashboard: React.FC = () => {
                 <ExclamationTriangleIcon className="h-8 w-8 text-red-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Bottlenecks</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Bottlenecks</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {bottleneckData?.total_bottlenecks || 0}
                 </p>
-                <p className="text-xs text-gray-500">stages need attention</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">stages need attention</p>
               </div>
             </div>
           </div>
@@ -479,13 +479,13 @@ const WIPDashboard: React.FC = () => {
                       </td>
                       <td>
                         <div className="flex items-center">
-                          <div className="w-full bg-gray-200 rounded-full h-2 mr-2">
+                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mr-2">
                             <div
                               className="bg-blue-600 h-2 rounded-full"
                               style={{ width: `${batch.completion_percentage}%` }}
                             ></div>
                           </div>
-                          <span className="text-xs text-gray-600">
+                          <span className="text-xs text-gray-600 dark:text-gray-300">
                             {batch.completion_percentage.toFixed(1)}%
                           </span>
                         </div>
@@ -513,8 +513,8 @@ const WIPDashboard: React.FC = () => {
           ) : (
             <div className="text-center py-8">
               <ChartBarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No Active WIP Batches</h3>
-              <p className="text-gray-500">No work in progress batches found for the selected date range.</p>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Active WIP Batches</h3>
+              <p className="text-gray-500 dark:text-gray-400">No work in progress batches found for the selected date range.</p>
             </div>
           )}
         </div>
@@ -525,24 +525,24 @@ const WIPDashboard: React.FC = () => {
         <Link to="/app/production/wip-batches/new" className="card hover:shadow-lg transition-shadow">
           <div className="card-body text-center">
             <PlayIcon className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-            <h3 className="text-lg font-medium text-gray-900">Start New WIP Batch</h3>
-            <p className="text-gray-500">Create WIP batch from work order</p>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Start New WIP Batch</h3>
+            <p className="text-gray-500 dark:text-gray-400">Create WIP batch from work order</p>
           </div>
         </Link>
 
         <Link to="/app/production/job-costs" className="card hover:shadow-lg transition-shadow">
           <div className="card-body text-center">
             <CurrencyDollarIcon className="h-8 w-8 text-green-600 mx-auto mb-2" />
-            <h3 className="text-lg font-medium text-gray-900">Job Costing</h3>
-            <p className="text-gray-500">Track production costs</p>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Job Costing</h3>
+            <p className="text-gray-500 dark:text-gray-400">Track production costs</p>
           </div>
         </Link>
 
         <Link to="/app/production/wip-analytics" className="card hover:shadow-lg transition-shadow">
           <div className="card-body text-center">
             <ChartBarIcon className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-            <h3 className="text-lg font-medium text-gray-900">WIP Analytics</h3>
-            <p className="text-gray-500">Advanced WIP analysis</p>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">WIP Analytics</h3>
+            <p className="text-gray-500 dark:text-gray-400">Advanced WIP analysis</p>
           </div>
         </Link>
       </div>

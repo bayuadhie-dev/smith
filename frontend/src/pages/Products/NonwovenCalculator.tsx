@@ -106,7 +106,7 @@ const NonwovenCalculator: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Calculator Type Selection */}
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
           <h2 className="text-xl font-semibold mb-4">Calculator Type</h2>
           <div className="space-y-2">
             {[
@@ -130,7 +130,7 @@ const NonwovenCalculator: React.FC = () => {
         </div>
 
         {/* Calculator Interface */}
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
           {calculatorType === 'gsm' && (
             <div>
               <h2 className="text-xl font-semibold mb-4">GSM Calculator</h2>
@@ -320,7 +320,7 @@ const NonwovenCalculator: React.FC = () => {
       </div>
 
       {/* Categories Reference */}
-      <div className="bg-white p-6 rounded-lg shadow">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
         <h2 className="text-xl font-semibold mb-4">Nonwoven Categories Reference</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
@@ -335,7 +335,7 @@ const NonwovenCalculator: React.FC = () => {
           ].map((category: any, index: number) => (
             <div key={index} className="p-3 border rounded">
               <h3 className="font-medium">{category.name}</h3>
-              <div className="text-sm text-gray-600 mt-1">
+              <div className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                 <p>GSM: {category.gsm_range[0]}-{category.gsm_range[1]}</p>
                 <p>Width: {category.width_range[0]}-{category.width_range[1]} cm</p>
                 <p>Length: {category.length_range[0]}-{category.length_range[1]} cm</p>

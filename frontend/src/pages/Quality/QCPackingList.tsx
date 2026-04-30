@@ -128,14 +128,14 @@ export default function QCPackingList() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <ClipboardDocumentCheckIcon className="h-7 w-7 text-purple-600" />
             QC Packing List
           </h1>
-          <p className="text-sm text-gray-500">Review dan approval packing list sebelum masuk gudang Finished Goods</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Review dan approval packing list sebelum masuk gudang Finished Goods</p>
         </div>
-        <button onClick={fetchData} className="p-2 hover:bg-gray-100 rounded-lg">
-          <ArrowPathIcon className="h-5 w-5 text-gray-500" />
+        <button onClick={fetchData} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg">
+          <ArrowPathIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
         </button>
       </div>
 
@@ -168,7 +168,7 @@ export default function QCPackingList() {
       </div>
 
       {/* Tabs + Search */}
-      <div className="bg-white rounded-lg shadow mb-0">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow mb-0">
         <div className="flex items-center justify-between border-b px-4">
           <div className="flex">
             <button
@@ -199,7 +199,7 @@ export default function QCPackingList() {
               placeholder="Cari packing list..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 w-64"
+              className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 w-64"
             />
           </div>
         </div>
@@ -210,25 +210,25 @@ export default function QCPackingList() {
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-purple-600"></div>
           </div>
         ) : (
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Packing</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Produk</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Karton</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Selesai Timbang</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Packing</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Produk</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Customer</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Karton</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Selesai Timbang</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
                 {activeTab === 'history' && (
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">QC Info</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">QC Info</th>
                 )}
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {(activeTab === 'pending' ? filteredPending : filteredHistory).length === 0 ? (
                 <tr>
-                  <td colSpan={activeTab === 'history' ? 8 : 7} className="px-4 py-12 text-center text-gray-500">
+                  <td colSpan={activeTab === 'history' ? 8 : 7} className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">
                     {activeTab === 'pending' 
                       ? 'Tidak ada packing list yang menunggu QC'
                       : 'Belum ada riwayat QC'
@@ -237,25 +237,25 @@ export default function QCPackingList() {
                 </tr>
               ) : (
                 (activeTab === 'pending' ? filteredPending : filteredHistory).map((pl) => (
-                  <tr key={pl.id} className="hover:bg-gray-50">
+                  <tr key={pl.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                     <td className="px-4 py-3 whitespace-nowrap">
                       <span className="font-medium text-purple-600">{pl.packing_number}</span>
                       {pl.packing_date && (
-                        <p className="text-xs text-gray-500">{new Date(pl.packing_date).toLocaleDateString('id-ID')}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(pl.packing_date).toLocaleDateString('id-ID')}</p>
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      <p className="font-medium text-gray-900 text-sm">{pl.product_name}</p>
-                      <p className="text-xs text-gray-500">{pl.product_code}</p>
+                      <p className="font-medium text-gray-900 dark:text-white text-sm">{pl.product_name}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{pl.product_code}</p>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                       {pl.customer_name || '-'}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-center">
-                      <span className="font-bold text-gray-900">{pl.total_carton}</span>
-                      <p className="text-xs text-gray-500">{pl.total_pcs.toLocaleString()} pcs</p>
+                      <span className="font-bold text-gray-900 dark:text-white">{pl.total_carton}</span>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{pl.total_pcs.toLocaleString()} pcs</p>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-600">
+                    <td className="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-600 dark:text-gray-300">
                       {pl.completed_at 
                         ? new Date(pl.completed_at).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' })
                         : '-'
@@ -266,9 +266,9 @@ export default function QCPackingList() {
                     </td>
                     {activeTab === 'history' && (
                       <td className="px-4 py-3 whitespace-nowrap text-sm">
-                        {pl.qc_by && <p className="text-gray-600">Oleh: {pl.qc_by}</p>}
+                        {pl.qc_by && <p className="text-gray-600 dark:text-gray-300">Oleh: {pl.qc_by}</p>}
                         {pl.qc_date && (
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
                             {new Date(pl.qc_date).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' })}
                           </p>
                         )}
@@ -327,8 +327,8 @@ export default function QCPackingList() {
       {/* QC Notes Modal */}
       {qcNotesModal.show && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md p-6">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
               {qcNotesModal.action === 'released' && 'Release Packing List'}
               {qcNotesModal.action === 'quarantine' && 'Quarantine Packing List'}
               {qcNotesModal.action === 'rejected' && 'Reject Packing List'}
@@ -343,21 +343,21 @@ export default function QCPackingList() {
               {qcNotesModal.action === 'rejected' && 'Stok WIP akan dikembalikan.'}
             </div>
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Catatan QC {qcNotesModal.action === 'rejected' ? '*' : '(opsional)'}
               </label>
               <textarea
                 value={qcNotes}
                 onChange={(e) => setQcNotes(e.target.value)}
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500"
                 placeholder="Catatan QC..."
               />
             </div>
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setQcNotesModal({ show: false, plId: 0, action: '' })}
-                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm"
+                className="px-4 py-2 text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:bg-gray-700 text-sm"
               >
                 Batal
               </button>

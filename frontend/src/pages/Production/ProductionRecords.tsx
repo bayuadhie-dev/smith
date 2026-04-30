@@ -134,8 +134,8 @@ const [records, setRecords] = useState<ProductionRecord[]>([])
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">📊 Production Records</h1>
-          <p className="text-gray-600 mt-1">Track daily production output and quality metrics</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">📊 Production Records</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Track daily production output and quality metrics</p>
         </div>
         <div className="flex gap-3">
           <button className="btn-secondary inline-flex items-center gap-2">
@@ -155,8 +155,8 @@ const [records, setRecords] = useState<ProductionRecord[]>([])
               <ChartBarIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Produced</p>
-              <p className="text-2xl font-bold text-gray-900">{getTotalProduced().toLocaleString()}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Produced</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{getTotalProduced().toLocaleString()}</p>
             </div>
           </div>
         </div>
@@ -167,8 +167,8 @@ const [records, setRecords] = useState<ProductionRecord[]>([])
               <ChartBarIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Quality Rate</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Quality Rate</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {calculateQualityRate(getTotalGood(), getTotalProduced())}%
               </p>
             </div>
@@ -181,8 +181,8 @@ const [records, setRecords] = useState<ProductionRecord[]>([])
               <ChartBarIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Scrap Rate</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Scrap Rate</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {calculateScrapRate(getTotalScrap(), getTotalProduced())}%
               </p>
             </div>
@@ -195,8 +195,8 @@ const [records, setRecords] = useState<ProductionRecord[]>([])
               <CalendarDaysIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Downtime</p>
-              <p className="text-2xl font-bold text-gray-900">{(getTotalDowntime() / 60).toFixed(1)}h</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Downtime</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{(getTotalDowntime() / 60).toFixed(1)}h</p>
             </div>
           </div>
         </div>
@@ -206,12 +206,12 @@ const [records, setRecords] = useState<ProductionRecord[]>([])
       <div className="card p-4">
         <div className="flex items-center gap-4 mb-4">
           <FunnelIcon className="h-5 w-5 text-gray-400" />
-          <h3 className="text-lg font-medium text-gray-900">Filters</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Filters</h3>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Work Order</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Work Order</label>
             <input
               type="text"
               placeholder="Enter WO number..."
@@ -222,7 +222,7 @@ const [records, setRecords] = useState<ProductionRecord[]>([])
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700">{t('production.machine')}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">{t('production.machine')}</label>
             <input
               type="text"
               placeholder="Machine ID..."
@@ -233,7 +233,7 @@ const [records, setRecords] = useState<ProductionRecord[]>([])
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700">Start Date</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Start Date</label>
             <input
               type="date"
               value={filters.start_date}
@@ -243,7 +243,7 @@ const [records, setRecords] = useState<ProductionRecord[]>([])
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700">End Date</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">End Date</label>
             <input
               type="date"
               value={filters.end_date}
@@ -265,38 +265,38 @@ const [records, setRecords] = useState<ProductionRecord[]>([])
 
       {/* Records Table */}
       <div className="card">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Production Records</h3>
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Production Records</h3>
         </div>
         
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Date & Shift
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Work Order
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('production.machine')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('production.operator')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('navigation.production')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('navigation.quality')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('production.machine')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('production.operator')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('navigation.production')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('navigation.quality')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.actions')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {records.map((record) => (
-                <tr key={record.id} className="hover:bg-gray-50">
+                <tr key={record.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">
                       {new Date(record.production_date).toLocaleDateString()}
                     </div>
                     {record.shift && (
-                      <div className="text-xs text-gray-500">{record.shift}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{record.shift}</div>
                     )}
                   </td>
                   
@@ -304,10 +304,10 @@ const [records, setRecords] = useState<ProductionRecord[]>([])
                     <div className="flex items-center">
                       <ClipboardDocumentListIcon className="h-4 w-4 text-gray-400 mr-2" />
                       <div>
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
                           {record.work_order.wo_number}
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
                           {record.work_order.product_name}
                         </div>
                       </div>
@@ -319,8 +319,8 @@ const [records, setRecords] = useState<ProductionRecord[]>([])
                       <div className="flex items-center">
                         <CogIcon className="h-4 w-4 text-gray-400 mr-2" />
                         <div>
-                          <div className="text-sm font-medium text-gray-900">{record.machine.name}</div>
-                          <div className="text-xs text-gray-500">{record.machine.code}</div>
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">{record.machine.name}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">{record.machine.code}</div>
                         </div>
                       </div>
                     ) : (
@@ -333,8 +333,8 @@ const [records, setRecords] = useState<ProductionRecord[]>([])
                       <div className="flex items-center">
                         <UserIcon className="h-4 w-4 text-gray-400 mr-2" />
                         <div>
-                          <div className="text-sm font-medium text-gray-900">{record.operator.name}</div>
-                          <div className="text-xs text-gray-500">{record.operator.employee_number}</div>
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">{record.operator.name}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">{record.operator.employee_number}</div>
                         </div>
                       </div>
                     ) : (
@@ -343,9 +343,9 @@ const [records, setRecords] = useState<ProductionRecord[]>([])
                   </td>
                   
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
+                    <div className="text-sm text-gray-900 dark:text-white">
                       <div className="font-medium">{record.quantity_produced.toLocaleString()} {record.uom}</div>
-                      <div className="text-xs text-gray-500">Produced</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Produced</div>
                     </div>
                   </td>
                   
@@ -360,14 +360,14 @@ const [records, setRecords] = useState<ProductionRecord[]>([])
                           {record.quantity_scrap.toLocaleString()}
                         </span>
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
                         Good / Scrap ({calculateQualityRate(record.quantity_good, record.quantity_produced)}% quality)
                       </div>
                     </div>
                   </td>
                   
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
+                    <div className="text-sm text-gray-900 dark:text-white">
                       {record.downtime_minutes > 0 ? (
                         <span className="text-red-600 font-medium">{record.downtime_minutes}m</span>
                       ) : (
@@ -391,8 +391,8 @@ const [records, setRecords] = useState<ProductionRecord[]>([])
         
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-gray-200 flex justify-between items-center">
-            <div className="text-sm text-gray-500">
+          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
+            <div className="text-sm text-gray-500 dark:text-gray-400">
               Page {currentPage} of {totalPages}
             </div>
             <div className="flex gap-2">
@@ -415,8 +415,8 @@ const [records, setRecords] = useState<ProductionRecord[]>([])
         {records.length === 0 && !loading && (
           <div className="text-center py-12">
             <ChartBarIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No production records found</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No production records found</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               Get started by creating your first production record
             </p>
             <div className="mt-6">

@@ -200,7 +200,7 @@ const MonthlyController: React.FC = () => {
       </div>
 
       {/* Month Navigation */}
-      <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 mb-6">
         <div className="flex items-center justify-between">
           <button
             onClick={() => changeMonth(-1)}
@@ -225,35 +225,35 @@ const MonthlyController: React.FC = () => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-6 gap-4 mb-6">
-        <div className="bg-white rounded-xl shadow-sm p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
           <p className="text-sm text-slate-500">Total Mesin</p>
           <p className="text-2xl font-bold text-slate-800">{totalMachines}</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
           <p className="text-sm text-slate-500">Rata-rata Efisiensi</p>
           <p className={`text-2xl font-bold ${avgEfficiency >= 85 ? 'text-green-600' : avgEfficiency >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
             {avgEfficiency}%
           </p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
           <div className="flex items-center gap-2">
             <ArrowTrendingUpIcon className="h-5 w-5 text-green-600" />
             <p className="text-sm text-slate-500">On Target</p>
           </div>
           <p className="text-2xl font-bold text-green-600">{machinesOnTarget}</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
           <div className="flex items-center gap-2">
             <ArrowTrendingDownIcon className="h-5 w-5 text-red-600" />
             <p className="text-sm text-slate-500">Below Target</p>
           </div>
           <p className="text-2xl font-bold text-red-600">{machinesBelowTarget}</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
           <p className="text-sm text-slate-500">Total Output</p>
           <p className="text-2xl font-bold text-slate-800">{totalOutput.toLocaleString()}</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
           <p className="text-sm text-slate-500">Total Grade A</p>
           <p className="text-2xl font-bold text-green-600">{totalGradeA.toLocaleString()}</p>
         </div>
@@ -300,7 +300,7 @@ const MonthlyController: React.FC = () => {
 
       {/* Machines Tab */}
       {activeTab === 'machines' && (
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-slate-50">
@@ -382,7 +382,7 @@ const MonthlyController: React.FC = () => {
 
       {/* Products Tab */}
       {activeTab === 'products' && (
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
           <div className="p-4 border-b">
             <h3 className="text-lg font-semibold text-slate-800">Produk yang Diproduksi - {monthName} {year}</h3>
             <p className="text-sm text-slate-500">Total {products.length} produk, {products.reduce((sum, p) => sum + p.quantity, 0).toLocaleString()} pcs</p>
@@ -427,7 +427,7 @@ const MonthlyController: React.FC = () => {
       {activeTab === 'products_machine' && (
         <div className="space-y-4">
           {productsPerMachine.map((machine) => (
-            <div key={machine.machine_name} className="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div key={machine.machine_name} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
               <div className="p-4 border-b bg-purple-50">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -472,7 +472,7 @@ const MonthlyController: React.FC = () => {
             </div>
           ))}
           {productsPerMachine.length === 0 && (
-            <div className="bg-white rounded-xl shadow-sm p-8 text-center text-slate-500">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8 text-center text-slate-500">
               Tidak ada data produk per mesin
             </div>
           )}
@@ -483,7 +483,7 @@ const MonthlyController: React.FC = () => {
       {activeTab === 'downtime' && (
         <div className="grid grid-cols-2 gap-6">
           {/* Top 10 Downtime - Single list with Unplanned/Planned badge */}
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
             <div className="p-4 border-b bg-red-50">
               <h3 className="text-lg font-semibold text-red-800">Top 10 Downtime</h3>
               <p className="text-sm text-red-600">Berdasarkan durasi (menit)</p>
@@ -526,7 +526,7 @@ const MonthlyController: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
             <div className="p-4 border-b">
               <h3 className="text-lg font-semibold text-slate-800">Semua Downtime</h3>
               <p className="text-sm text-slate-500">Total {allDowntime.length} jenis, {allDowntime.reduce((sum, d) => sum + d.duration, 0).toLocaleString()} menit</p>
@@ -558,7 +558,7 @@ const MonthlyController: React.FC = () => {
       {/* Charts Tab */}
       {activeTab === 'charts' && (
         <div className="grid grid-cols-2 gap-6">
-          <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
             <h3 className="text-lg font-semibold text-slate-800 mb-4">Trend Mingguan</h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={chartData}>
@@ -574,7 +574,7 @@ const MonthlyController: React.FC = () => {
             </ResponsiveContainer>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
             <h3 className="text-lg font-semibold text-slate-800 mb-4">Distribusi Top 10 Downtime</h3>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
@@ -597,7 +597,7 @@ const MonthlyController: React.FC = () => {
             </ResponsiveContainer>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
             <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
               <ArrowTrendingUpIcon className="h-5 w-5 text-green-600" />
               Top 5 Mesin Efisien
@@ -619,7 +619,7 @@ const MonthlyController: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
             <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
               <ArrowTrendingDownIcon className="h-5 w-5 text-red-600" />
               Perlu Perbaikan

@@ -108,8 +108,8 @@ const MaterialsDashboard: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Materials Dashboard</h1>
-          <p className="text-gray-600">Overview of your materials inventory and activities</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Materials Dashboard</h1>
+          <p className="text-gray-600 dark:text-gray-300">Overview of your materials inventory and activities</p>
         </div>
         <div className="flex space-x-3">
           <button 
@@ -124,7 +124,7 @@ const MaterialsDashboard: React.FC = () => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -132,15 +132,15 @@ const MaterialsDashboard: React.FC = () => {
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Total Materials</p>
-              <p className="text-2xl font-semibold text-gray-900">
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Materials</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white">
                 {dashboardData.summary.total_materials.toLocaleString()}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
@@ -148,15 +148,15 @@ const MaterialsDashboard: React.FC = () => {
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Active Materials</p>
-              <p className="text-2xl font-semibold text-gray-900">
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Active Materials</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white">
                 {dashboardData.summary.active_materials.toLocaleString()}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
@@ -164,15 +164,15 @@ const MaterialsDashboard: React.FC = () => {
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">With Stock</p>
-              <p className="text-2xl font-semibold text-gray-900">
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">With Stock</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white">
                 {dashboardData.summary.materials_with_stock.toLocaleString()}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -180,8 +180,8 @@ const MaterialsDashboard: React.FC = () => {
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Inventory Value</p>
-              <p className="text-2xl font-semibold text-gray-900">
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Inventory Value</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white">
                 Rp {dashboardData.summary.total_inventory_value.toLocaleString('id-ID')}
               </p>
             </div>
@@ -192,8 +192,8 @@ const MaterialsDashboard: React.FC = () => {
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Materials by Type - Pie Chart */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Materials by Type</h3>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Materials by Type</h3>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -218,8 +218,8 @@ const MaterialsDashboard: React.FC = () => {
         </div>
 
         {/* Materials by Type - Bar Chart */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Material Count by Type</h3>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Material Count by Type</h3>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={dashboardData.by_type}>
@@ -240,10 +240,10 @@ const MaterialsDashboard: React.FC = () => {
       </div>
 
       {/* Recent Movements */}
-      <div className="bg-white rounded-lg shadow-sm border">
-        <div className="px-6 py-4 border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold text-gray-900">Recent Material Movements</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Material Movements</h3>
             <button className="text-blue-600 hover:text-blue-800 flex items-center space-x-1">
               <span>View All</span>
               <ArrowRightIcon className="h-4 w-4" />
@@ -254,22 +254,22 @@ const MaterialsDashboard: React.FC = () => {
           {dashboardData.recent_movements.length > 0 ? (
             <div className="space-y-4">
               {dashboardData.recent_movements.map((movement) => (
-                <div key={movement.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div key={movement.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
                   <div className="flex items-center space-x-4">
                     <div className={`px-3 py-1 rounded-full text-sm font-medium ${getMovementTypeColor(movement.movement_type)}`}>
                       {getMovementTypeLabel(movement.movement_type)}
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900">
+                      <p className="font-medium text-gray-900 dark:text-white">
                         {movement.reference_number}
                       </p>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
                         Quantity: {movement.quantity.toLocaleString()}
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       {new Date(movement.created_at).toLocaleDateString('id-ID')}
                     </p>
                     <p className="text-xs text-gray-400">
@@ -282,8 +282,8 @@ const MaterialsDashboard: React.FC = () => {
           ) : (
             <div className="text-center py-8">
               <CubeIcon className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No recent movements</h3>
-              <p className="mt-1 text-sm text-gray-500">
+              <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No recent movements</h3>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 Material movements will appear here when they occur.
               </p>
             </div>
@@ -292,23 +292,23 @@ const MaterialsDashboard: React.FC = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left">
+          <button className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 text-left">
             <CubeIcon className="h-8 w-8 text-blue-600 mb-2" />
-            <h4 className="font-medium text-gray-900">Add New Material</h4>
-            <p className="text-sm text-gray-500">Create a new material record</p>
+            <h4 className="font-medium text-gray-900 dark:text-white">Add New Material</h4>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Create a new material record</p>
           </button>
-          <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left">
+          <button className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 text-left">
             <ArrowTrendingUpIcon className="h-8 w-8 text-green-600 mb-2" />
-            <h4 className="font-medium text-gray-900">Stock Input</h4>
-            <p className="text-sm text-gray-500">Record material stock receipt</p>
+            <h4 className="font-medium text-gray-900 dark:text-white">Stock Input</h4>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Record material stock receipt</p>
           </button>
-          <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left">
+          <button className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 text-left">
             <AlertTriangle className="h-8 w-8 text-yellow-600 mb-2" />
-            <h4 className="font-medium text-gray-900">Low Stock Report</h4>
-            <p className="text-sm text-gray-500">View materials with low stock</p>
+            <h4 className="font-medium text-gray-900 dark:text-white">Low Stock Report</h4>
+            <p className="text-sm text-gray-500 dark:text-gray-400">View materials with low stock</p>
           </button>
         </div>
       </div>

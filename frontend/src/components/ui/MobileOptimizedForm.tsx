@@ -24,7 +24,7 @@ export const FormField: React.FC<FormFieldProps> = ({
 
   return (
     <div className={`${fullWidth ? 'w-full' : ''} ${className}`}>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
@@ -57,10 +57,10 @@ export const FormSection: React.FC<FormSectionProps> = ({
   const [isExpanded, setIsExpanded] = React.useState(defaultExpanded);
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
       <div className="mb-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-medium text-gray-900">{title}</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">{title}</h3>
           {collapsible && (
             <button
               type="button"
@@ -72,7 +72,7 @@ export const FormSection: React.FC<FormSectionProps> = ({
           )}
         </div>
         {description && (
-          <p className="mt-1 text-sm text-gray-600">{description}</p>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">{description}</p>
         )}
       </div>
       {isExpanded && children}

@@ -75,14 +75,14 @@ const TVDisplaySelector: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-12">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-800 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <ComputerDesktopIcon className="h-16 w-16 text-primary-600 mx-auto mb-4" />
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
             TV Display System
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
             Pilih tampilan yang ingin ditampilkan di layar TV untuk monitoring real-time operasional pabrik
           </p>
         </div>
@@ -102,14 +102,14 @@ const TVDisplaySelector: React.FC = () => {
                   <div className={`p-3 ${colors.bg} rounded-lg`}>
                     <Icon className="h-8 w-8 text-white" />
                   </div>
-                  <ArrowRightIcon className="h-6 w-6 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                  <ArrowRightIcon className="h-6 w-6 text-gray-400 group-hover:text-gray-600 dark:text-gray-300 transition-colors" />
                 </div>
                 
-                <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
                   {option.title}
                 </h3>
                 
-                <p className="text-gray-600 mb-6">
+                <p className="text-gray-600 dark:text-gray-300 mb-6">
                   {option.description}
                 </p>
 
@@ -119,7 +119,7 @@ const TVDisplaySelector: React.FC = () => {
                   </h4>
                   <ul className="space-y-2">
                     {option.features.map((feature, index) => (
-                      <li key={index} className="flex items-center text-sm text-gray-600">
+                      <li key={index} className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                         <div className={`w-2 h-2 ${colors.bg} rounded-full mr-3`}></div>
                         {feature}
                       </li>
@@ -127,7 +127,7 @@ const TVDisplaySelector: React.FC = () => {
                   </ul>
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-gray-200">
+                <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
                   <div className={`inline-flex items-center text-sm font-medium ${colors.text} group-hover:${colors.text}`}>
                     Buka Display
                     <ArrowRightIcon className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
@@ -139,11 +139,11 @@ const TVDisplaySelector: React.FC = () => {
         </div>
 
         <div className="mt-12 text-center">
-          <div className="bg-white rounded-lg p-6 shadow-md max-w-2xl mx-auto">
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md max-w-2xl mx-auto">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
               💡 Tips Penggunaan TV Display
             </h3>
-            <ul className="text-sm text-gray-600 space-y-2 text-left">
+            <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-2 text-left">
               <li>• Gunakan mode fullscreen browser untuk pengalaman terbaik</li>
               <li>• Data akan ter-refresh otomatis setiap 10-30 detik</li>
               <li>• Optimal untuk layar TV 32" ke atas dengan resolusi 1080p+</li>

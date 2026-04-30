@@ -119,7 +119,7 @@ const ProductionOutputModal: React.FC<ProductionOutputModalProps> = ({
       <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
         <div className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onClick={onClose} />
 
-        <div className="inline-block w-full max-w-5xl my-8 overflow-hidden text-left align-middle transition-all transform bg-white rounded-xl shadow-xl">
+        <div className="inline-block w-full max-w-5xl my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-gray-800 rounded-xl shadow-xl">
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-purple-600 to-indigo-600">
             <div className="flex items-center gap-3">
@@ -135,7 +135,7 @@ const ProductionOutputModal: React.FC<ProductionOutputModalProps> = ({
             </div>
             <button
               onClick={onClose}
-              className="p-2 text-white hover:bg-white/20 rounded-lg transition-colors"
+              className="p-2 text-white hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/20 rounded-lg transition-colors"
             >
               <XMarkIcon className="w-5 h-5" />
             </button>
@@ -143,21 +143,21 @@ const ProductionOutputModal: React.FC<ProductionOutputModalProps> = ({
 
           {/* Summary Cards */}
           {data && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50">
-              <div className="bg-white p-4 rounded-lg shadow-sm">
-                <p className="text-sm text-gray-500">Total Pack</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 dark:bg-gray-900">
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+                <p className="text-sm text-gray-500 dark:text-gray-400">Total Pack</p>
                 <p className="text-2xl font-bold text-purple-600">{formatNumber(data.summary.total_pack)}</p>
               </div>
-              <div className="bg-white p-4 rounded-lg shadow-sm">
-                <p className="text-sm text-gray-500">Total Karton</p>
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+                <p className="text-sm text-gray-500 dark:text-gray-400">Total Karton</p>
                 <p className="text-2xl font-bold text-indigo-600">{formatNumber(Math.round(data.summary.total_carton))}</p>
               </div>
-              <div className="bg-white p-4 rounded-lg shadow-sm">
-                <p className="text-sm text-gray-500">Total Mesin</p>
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+                <p className="text-sm text-gray-500 dark:text-gray-400">Total Mesin</p>
                 <p className="text-2xl font-bold text-blue-600">{data.by_machine.length}</p>
               </div>
-              <div className="bg-white p-4 rounded-lg shadow-sm">
-                <p className="text-sm text-gray-500">Total Produk</p>
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+                <p className="text-sm text-gray-500 dark:text-gray-400">Total Produk</p>
                 <p className="text-2xl font-bold text-green-600">{data.by_product.length}</p>
               </div>
             </div>
@@ -229,24 +229,24 @@ const ProductionOutputModal: React.FC<ProductionOutputModalProps> = ({
               <>
                 {/* Machine Tab */}
                 {activeTab === 'machine' && (
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-900">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mesin</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Pack</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Karton</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">% Total</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Mesin</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Pack</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Karton</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">% Total</th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                       {data.by_machine.map((machine, idx) => (
-                        <tr key={idx} className="hover:bg-gray-50">
+                        <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                           <td className="px-4 py-3">
-                            <div className="font-medium text-gray-900">{machine.name}</div>
-                            <div className="text-sm text-gray-500">{machine.code}</div>
+                            <div className="font-medium text-gray-900 dark:text-white">{machine.name}</div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">{machine.code}</div>
                           </td>
                           <td className="px-4 py-3 text-right font-medium">{formatNumber(machine.pack)}</td>
-                          <td className="px-4 py-3 text-right text-gray-600">{formatNumber(Math.round(machine.carton))}</td>
+                          <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-300">{formatNumber(Math.round(machine.carton))}</td>
                           <td className="px-4 py-3 text-right">
                             <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded">
                               {((machine.pack / data.summary.total_pack) * 100).toFixed(1)}%
@@ -260,26 +260,26 @@ const ProductionOutputModal: React.FC<ProductionOutputModalProps> = ({
 
                 {/* Product Tab */}
                 {activeTab === 'product' && (
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-900">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Produk</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Pack</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Karton</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Pack/Ktn</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">% Total</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Produk</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Pack</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Karton</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Pack/Ktn</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">% Total</th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                       {data.by_product.map((product, idx) => (
-                        <tr key={idx} className="hover:bg-gray-50">
+                        <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                           <td className="px-4 py-3">
-                            <div className="font-medium text-gray-900">{product.name}</div>
-                            <div className="text-sm text-gray-500">{product.code}</div>
+                            <div className="font-medium text-gray-900 dark:text-white">{product.name}</div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">{product.code}</div>
                           </td>
                           <td className="px-4 py-3 text-right font-medium">{formatNumber(product.pack)}</td>
-                          <td className="px-4 py-3 text-right text-gray-600">{formatNumber(Math.round(product.carton))}</td>
-                          <td className="px-4 py-3 text-right text-gray-500">{product.packs_per_karton}</td>
+                          <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-300">{formatNumber(Math.round(product.carton))}</td>
+                          <td className="px-4 py-3 text-right text-gray-500 dark:text-gray-400">{product.packs_per_karton}</td>
                           <td className="px-4 py-3 text-right">
                             <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded">
                               {((product.pack / data.summary.total_pack) * 100).toFixed(1)}%
@@ -293,21 +293,21 @@ const ProductionOutputModal: React.FC<ProductionOutputModalProps> = ({
 
                 {/* Detail Tab */}
                 {activeTab === 'detail' && (
-                  <table className="min-w-full divide-y divide-gray-200 text-sm">
-                    <thead className="bg-gray-50">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+                    <thead className="bg-gray-50 dark:bg-gray-900">
                       <tr>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Shift</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Mesin</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Produk</th>
-                        <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">Pack</th>
-                        <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">Karton</th>
-                        <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">OEE</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tanggal</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Shift</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Mesin</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Produk</th>
+                        <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Pack</th>
+                        <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Karton</th>
+                        <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">OEE</th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                       {data.details.slice(0, 100).map((detail, idx) => (
-                        <tr key={idx} className="hover:bg-gray-50">
+                        <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                           <td className="px-3 py-2 whitespace-nowrap">{detail.date}</td>
                           <td className="px-3 py-2">
                             <span className={`px-2 py-0.5 text-xs rounded ${
@@ -325,7 +325,7 @@ const ProductionOutputModal: React.FC<ProductionOutputModalProps> = ({
                             </div>
                           </td>
                           <td className="px-3 py-2 text-right font-medium">{formatNumber(detail.pack_count)}</td>
-                          <td className="px-3 py-2 text-right text-gray-600">{formatNumber(Math.round(detail.carton_count))}</td>
+                          <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">{formatNumber(Math.round(detail.carton_count))}</td>
                           <td className="px-3 py-2 text-right">
                             <span className={`px-2 py-0.5 text-xs rounded ${
                               detail.oee >= 85 ? 'bg-green-100 text-green-800' :
@@ -345,10 +345,10 @@ const ProductionOutputModal: React.FC<ProductionOutputModalProps> = ({
           </div>
 
           {/* Footer */}
-          <div className="flex justify-end gap-3 px-6 py-4 bg-gray-50 border-t">
+          <div className="flex justify-end gap-3 px-6 py-4 bg-gray-50 dark:bg-gray-900 border-t">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
             >
               Tutup
             </button>

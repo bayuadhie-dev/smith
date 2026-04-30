@@ -267,63 +267,63 @@ const StockInput: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-4">
             <Link
               to="/app/warehouse/inventory"
-              className="flex items-center text-gray-600 hover:text-gray-900"
+              className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white"
             >
               <ArrowLeftIcon className="h-5 w-5 mr-2" />
               {t('warehouse.back_to_inventory')}
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">{t('warehouse.stock_input')}</h1>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('warehouse.stock_input')}</h1>
               <p className="text-gray-600 mt-1">{t('warehouse.stock_input_desc')}</p>
             </div>
           </div>
           <div className="flex items-center space-x-3">
             <QrCodeIcon className="h-6 w-6 text-blue-600" />
-            <span className="text-sm text-gray-500">Manual Entry Mode</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">Manual Entry Mode</span>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Stock Input Header */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">{t('warehouse.stock_input_info')}</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">{t('warehouse.stock_input_info')}</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   {t('warehouse.reference_number')}
                 </label>
                 <input
                   type="text"
                   value={formData.reference_number}
                   onChange={(e) => setFormData({...formData, reference_number: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   required
                 />
               </div>
 
                <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   {t('warehouse.movement_date')}
                 </label>
                 <input
                   type="date"
                   value={formData.movement_date}
                   onChange={(e) => setFormData({...formData, movement_date: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   required
                 />
               </div>
 
                <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   {t('warehouse.received_by')}
                 </label>
                 <input
@@ -331,37 +331,37 @@ const StockInput: React.FC = () => {
                    value={formData.received_by}
                   onChange={(e) => setFormData({...formData, received_by: e.target.value})}
                   placeholder={t('warehouse.received_by_placeholder')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   required
                 />
               </div>
             </div>
 
             <div className="mt-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               </label>
               <textarea
                 value={formData.notes}
                 onChange={(e) => setFormData({...formData, notes: e.target.value})}
                 rows={3}
                 placeholder="Catatan tambahan..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
           </div>
 
            {/* Stock Items */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">{t('warehouse.stock_items')}</h2>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('warehouse.stock_items')}</h2>
               <div className="flex items-center space-x-4">
                 {/* Item Type Selector */}
                 <div className="flex items-center space-x-2">
-                  <label className="text-sm font-medium text-gray-700">Add:</label>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Add:</label>
                   <select
                     value={selectedItemType}
                     onChange={(e) => setSelectedItemType(e.target.value as 'product' | 'material')}
-                    className="px-3 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500"
+                    className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="material">{t('products.materials')}</option>
                     <option value="product">{t('production.product')}</option>
@@ -379,32 +379,32 @@ const StockInput: React.FC = () => {
             </div>
 
             {stockItems.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
+              <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                 <CubeIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                 <p>No stock items added yet</p>
                 <p className="text-sm">Click "Add Item" to start adding stock</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-900">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.quantity')}</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.quantity')}</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Batch/Expiry
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.actions')}</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     {stockItems.map((item) => (
-                      <tr key={item.id} className="hover:bg-gray-50">
+                      <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                         <td className="px-4 py-3">
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                             item.item_type === 'material' 
@@ -433,7 +433,7 @@ const StockInput: React.FC = () => {
                             />
                           )}
                           {item.item_name && (
-                            <div className="text-xs text-gray-500 mt-1">
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                               {item.item_code} | UOM: {item.uom}
                             </div>
                           )}
@@ -445,10 +445,10 @@ const StockInput: React.FC = () => {
                             onChange={(e) => updateStockItem(item.id, 'quantity', Number(e.target.value))}
                             min="0"
                             step="0.01"
-                            className="w-20 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
+                            className="w-20 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500"
                             required
                           />
-                          <div className="text-xs text-gray-500 mt-1">{item.uom}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{item.uom}</div>
                         </td>
                         <td className="px-4 py-3">
                           <SearchableSelect
@@ -469,13 +469,13 @@ const StockInput: React.FC = () => {
                             value={item.batch_number}
                             onChange={(e) => updateStockItem(item.id, 'batch_number', e.target.value)}
                             placeholder="Batch number"
-                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 mb-1"
+                            className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 mb-1"
                           />
                           <input
                             type="date"
                             value={item.expiry_date}
                             onChange={(e) => updateStockItem(item.id, 'expiry_date', e.target.value)}
-                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
+                            className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500"
                           />
                         </td>
                         <td className="px-4 py-3">
@@ -525,7 +525,7 @@ const StockInput: React.FC = () => {
           <div className="flex items-center justify-end space-x-4">
             <Link
               to="/app/warehouse/inventory"
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+              className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
             >{t('common.cancel')}</Link>
             <button
               type="submit"

@@ -468,14 +468,14 @@ const WeeklyProductionPlan: React.FC = () => {
   }, {} as { [key: string]: ScheduleItem[] });
 
   return (
-    <div className="p-6 bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen print:p-2 print:bg-white">
+    <div className="p-6 bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen print:p-2 print:bg-white dark:bg-gray-800">
       {/* Header Card */}
-      <div className="bg-white rounded-2xl shadow-lg mb-6 overflow-hidden print:shadow-none print:rounded-none">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg mb-6 overflow-hidden print:shadow-none print:rounded-none">
         {/* Top Banner */}
         <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 px-6 py-4 print:py-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="bg-white/20 p-2 rounded-xl">
+              <div className="bg-white dark:bg-gray-800/20 p-2 rounded-xl">
                 <CalendarDaysIcon className="h-8 w-8 text-white" />
               </div>
               <div>
@@ -497,7 +497,7 @@ const WeeklyProductionPlan: React.FC = () => {
             <div className="flex items-center gap-3 print:hidden">
               <button
                 onClick={() => navigateWeek(-1)}
-                className="p-2 rounded-xl bg-white border-2 border-slate-200 hover:border-blue-400 hover:bg-blue-50 transition-all shadow-sm"
+                className="p-2 rounded-xl bg-white dark:bg-gray-800 border-2 border-slate-200 hover:border-blue-400 hover:bg-blue-50 transition-all shadow-sm"
               >
                 <ChevronLeftIcon className="h-5 w-5 text-slate-600" />
               </button>
@@ -506,7 +506,7 @@ const WeeklyProductionPlan: React.FC = () => {
               </div>
               <button
                 onClick={() => navigateWeek(1)}
-                className="p-2 rounded-xl bg-white border-2 border-slate-200 hover:border-blue-400 hover:bg-blue-50 transition-all shadow-sm"
+                className="p-2 rounded-xl bg-white dark:bg-gray-800 border-2 border-slate-200 hover:border-blue-400 hover:bg-blue-50 transition-all shadow-sm"
               >
                 <ChevronRightIcon className="h-5 w-5 text-slate-600" />
               </button>
@@ -555,7 +555,7 @@ const WeeklyProductionPlan: React.FC = () => {
               )}
               <button
                 onClick={handlePrint}
-                className="px-4 py-2.5 bg-white border-2 border-slate-200 rounded-xl hover:border-blue-400 hover:bg-blue-50 flex items-center gap-2 font-medium transition-all"
+                className="px-4 py-2.5 bg-white dark:bg-gray-800 border-2 border-slate-200 rounded-xl hover:border-blue-400 hover:bg-blue-50 flex items-center gap-2 font-medium transition-all"
               >
                 <PrinterIcon className="h-5 w-5 text-slate-600" />
                 Print
@@ -567,7 +567,7 @@ const WeeklyProductionPlan: React.FC = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-4 gap-4 mb-6 print:hidden">
-        <div className="bg-white rounded-xl p-4 shadow-md border-l-4 border-blue-500">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md border-l-4 border-blue-500">
           <div className="flex items-center gap-3">
             <div className="bg-blue-100 p-2 rounded-lg">
               <Cog6ToothIcon className="h-6 w-6 text-blue-600" />
@@ -578,7 +578,7 @@ const WeeklyProductionPlan: React.FC = () => {
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 shadow-md border-l-4 border-emerald-500">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md border-l-4 border-emerald-500">
           <div className="flex items-center gap-3">
             <div className="bg-emerald-100 p-2 rounded-lg">
               <ClipboardDocumentListIcon className="h-6 w-6 text-emerald-600" />
@@ -589,7 +589,7 @@ const WeeklyProductionPlan: React.FC = () => {
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 shadow-md border-l-4 border-amber-500">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md border-l-4 border-amber-500">
           <div className="flex items-center gap-3">
             <div className="bg-amber-100 p-2 rounded-lg">
               <DocumentTextIcon className="h-6 w-6 text-amber-600" />
@@ -600,7 +600,7 @@ const WeeklyProductionPlan: React.FC = () => {
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 shadow-md border-l-4 border-purple-500">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md border-l-4 border-purple-500">
           <div className="flex items-center gap-3">
             <div className="bg-purple-100 p-2 rounded-lg">
               <CalendarDaysIcon className="h-6 w-6 text-purple-600" />
@@ -614,7 +614,7 @@ const WeeklyProductionPlan: React.FC = () => {
       </div>
 
       {/* Schedule Table */}
-      <div className="bg-white rounded-2xl shadow-lg overflow-hidden print:shadow-none print:rounded-none">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden print:shadow-none print:rounded-none">
         {/* Table Header Bar */}
         <div className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -672,13 +672,13 @@ const WeeklyProductionPlan: React.FC = () => {
                 {DAYS.map((day) => (
                   <React.Fragment key={`shift-${day}`}>
                     <th className="px-1 py-1.5 text-center text-[10px] font-bold text-white border-l border-indigo-400/50">
-                      <span className="bg-white/20 px-1.5 py-0.5 rounded">S1</span>
+                      <span className="bg-white dark:bg-gray-800/20 px-1.5 py-0.5 rounded">S1</span>
                     </th>
                     <th className="px-1 py-1.5 text-center text-[10px] font-bold text-white">
-                      <span className="bg-white/20 px-1.5 py-0.5 rounded">S2</span>
+                      <span className="bg-white dark:bg-gray-800/20 px-1.5 py-0.5 rounded">S2</span>
                     </th>
                     <th className="px-1 py-1.5 text-center text-[10px] font-bold text-white">
-                      <span className="bg-white/20 px-1.5 py-0.5 rounded">S3</span>
+                      <span className="bg-white dark:bg-gray-800/20 px-1.5 py-0.5 rounded">S3</span>
                     </th>
                   </React.Fragment>
                 ))}
@@ -853,7 +853,7 @@ const WeeklyProductionPlan: React.FC = () => {
       </div>
 
       {/* Notes Section */}
-      <div className="mt-6 bg-white rounded-2xl shadow-lg p-6 print:shadow-none print:p-4 print:rounded-none">
+      <div className="mt-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 print:shadow-none print:p-4 print:rounded-none">
         <div className="flex items-center gap-2 mb-4">
           <div className="bg-red-100 p-2 rounded-lg">
             <DocumentTextIcon className="h-5 w-5 text-red-600" />
@@ -902,12 +902,12 @@ const WeeklyProductionPlan: React.FC = () => {
       {/* Add/Edit Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 print:hidden">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-hidden">
             {/* Modal Header */}
             <div className={`bg-gradient-to-r ${editingItem ? 'from-amber-500 to-orange-500' : 'from-blue-600 to-indigo-600'} px-6 py-4`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="bg-white/20 p-2 rounded-lg">
+                  <div className="bg-white dark:bg-gray-800/20 p-2 rounded-lg">
                     {editingItem ? <PencilIcon className="h-6 w-6 text-white" /> : <PlusIcon className="h-6 w-6 text-white" />}
                   </div>
                   <div>
@@ -917,7 +917,7 @@ const WeeklyProductionPlan: React.FC = () => {
                 </div>
                 <button
                   onClick={() => { setShowAddModal(false); setEditingItem(null); }}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                  className="p-2 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/20 rounded-lg transition-colors"
                 >
                   <XMarkIcon className="h-6 w-6 text-white" />
                 </button>
@@ -981,7 +981,7 @@ const WeeklyProductionPlan: React.FC = () => {
                     type="number"
                     value={formData.qty_per_ctn}
                     onChange={(e) => setFormData({ ...formData, qty_per_ctn: e.target.value })}
-                    className="w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl text-sm focus:border-blue-400 focus:outline-none transition-colors bg-gray-50"
+                    className="w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl text-sm focus:border-blue-400 focus:outline-none transition-colors bg-gray-50 dark:bg-gray-900"
                     placeholder="Auto dari produk"
                     readOnly
                   />
@@ -1099,12 +1099,12 @@ const WeeklyProductionPlan: React.FC = () => {
       {/* Monthly Schedule Modal */}
       {showMonthlyModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 print:hidden">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl mx-4 max-h-[90vh] overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-3xl mx-4 max-h-[90vh] overflow-hidden">
             {/* Modal Header */}
             <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="bg-white/20 p-2 rounded-lg">
+                  <div className="bg-white dark:bg-gray-800/20 p-2 rounded-lg">
                     <ArrowDownTrayIcon className="h-6 w-6 text-white" />
                   </div>
                   <div>
@@ -1114,7 +1114,7 @@ const WeeklyProductionPlan: React.FC = () => {
                 </div>
                 <button
                   onClick={() => setShowMonthlyModal(false)}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                  className="p-2 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/20 rounded-lg transition-colors"
                 >
                   <XMarkIcon className="h-6 w-6 text-white" />
                 </button>
@@ -1126,7 +1126,7 @@ const WeeklyProductionPlan: React.FC = () => {
               {availableMonthly.length === 0 ? (
                 <div className="text-center py-8">
                   <CalendarDaysIcon className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500">Tidak ada target bulanan yang tersedia untuk bulan ini</p>
+                  <p className="text-gray-500 dark:text-gray-400">Tidak ada target bulanan yang tersedia untuk bulan ini</p>
                   <button
                     onClick={() => navigate('/app/production/monthly-schedule')}
                     className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
@@ -1136,7 +1136,7 @@ const WeeklyProductionPlan: React.FC = () => {
                 </div>
               ) : (
                 <>
-                  <p className="text-sm text-gray-500 mb-4">Pilih target bulanan yang ingin dijadwalkan ke minggu ini:</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Pilih target bulanan yang ingin dijadwalkan ke minggu ini:</p>
                   
                   <div className="space-y-3 mb-6">
                     {availableMonthly.map((item) => (
@@ -1153,12 +1153,12 @@ const WeeklyProductionPlan: React.FC = () => {
                           <div className="flex items-center gap-3">
                             <div className={`w-4 h-4 rounded-full ${item.color}`}></div>
                             <div>
-                              <p className="font-semibold text-gray-900">{item.product_name}</p>
-                              <p className="text-xs text-gray-500">{item.product_code} • {item.machine_code || 'Semua Mesin'}</p>
+                              <p className="font-semibold text-gray-900 dark:text-white">{item.product_name}</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">{item.product_code} • {item.machine_code || 'Semua Mesin'}</p>
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="text-sm font-medium text-gray-700">
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-200">
                               Sisa: <span className="text-orange-600 font-bold">{item.remaining_ctn.toLocaleString()}</span> CTN
                             </p>
                             <p className="text-xs text-gray-400">
@@ -1167,7 +1167,7 @@ const WeeklyProductionPlan: React.FC = () => {
                           </div>
                         </div>
                         {item.spek_kain && (
-                          <p className="text-xs text-gray-500 mt-2">Spek Kain: {item.spek_kain}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">Spek Kain: {item.spek_kain}</p>
                         )}
                       </div>
                     ))}
@@ -1180,7 +1180,7 @@ const WeeklyProductionPlan: React.FC = () => {
                       </h4>
                       
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                           Jumlah CTN untuk minggu ini <span className="text-red-500">*</span>
                         </label>
                         <div className="flex items-center gap-2">
@@ -1188,11 +1188,11 @@ const WeeklyProductionPlan: React.FC = () => {
                             type="number"
                             value={monthlyOrderCtn}
                             onChange={(e) => setMonthlyOrderCtn(e.target.value)}
-                            className="flex-1 px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-400 focus:outline-none"
+                            className="flex-1 px-4 py-2 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-purple-400 focus:outline-none"
                             placeholder="0"
                             max={selectedMonthly.remaining_ctn}
                           />
-                          <span className="text-sm text-gray-500">
+                          <span className="text-sm text-gray-500 dark:text-gray-400">
                             / {selectedMonthly.remaining_ctn.toLocaleString()} CTN tersedia
                           </span>
                         </div>
@@ -1200,16 +1200,16 @@ const WeeklyProductionPlan: React.FC = () => {
 
                       {/* Schedule Grid */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Jadwal Shift</label>
-                        <div className="bg-white rounded-lg p-3">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Jadwal Shift</label>
+                        <div className="bg-white dark:bg-gray-800 rounded-lg p-3">
                           <div className="grid grid-cols-5 gap-2">
                             {weekDates.map((date, idx) => {
                               const dateStr = date.toISOString().split('T')[0];
                               const shifts = formData.schedule_days[dateStr] || [];
                               return (
                                 <div key={dateStr} className="text-center">
-                                  <div className="text-xs font-bold text-gray-500">{DAYS[idx]}</div>
-                                  <div className="text-sm font-bold text-gray-800 mb-1">{date.getDate()}</div>
+                                  <div className="text-xs font-bold text-gray-500 dark:text-gray-400">{DAYS[idx]}</div>
+                                  <div className="text-sm font-bold text-gray-800 dark:text-gray-100 mb-1">{date.getDate()}</div>
                                   <div className="flex gap-1 justify-center flex-wrap">
                                     <button
                                       onClick={() => toggleScheduleDay(dateStr, 1)}
@@ -1255,7 +1255,7 @@ const WeeklyProductionPlan: React.FC = () => {
             </div>
             
             {/* Modal Footer */}
-            <div className="px-6 py-4 bg-gray-50 border-t flex justify-between">
+            <div className="px-6 py-4 bg-gray-50 dark:bg-gray-900 border-t flex justify-between">
               <button
                 onClick={() => navigate('/app/production/monthly-schedule')}
                 className="px-4 py-2 text-purple-600 hover:bg-purple-50 rounded-lg font-medium"
@@ -1265,7 +1265,7 @@ const WeeklyProductionPlan: React.FC = () => {
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowMonthlyModal(false)}
-                  className="px-5 py-2.5 border-2 border-gray-200 rounded-xl hover:bg-gray-100 font-medium"
+                  className="px-5 py-2.5 border-2 border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 font-medium"
                 >
                   Batal
                 </button>

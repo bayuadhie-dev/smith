@@ -64,14 +64,14 @@ const navigate = useNavigate()
           <ArrowLeftIcon className="h-4 w-4" />
           Back to Payroll
         </button>
-        <h1 className="text-2xl font-bold text-gray-900">Create Payroll Period</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Create Payroll Period</h1>
       </div>
 
       <div className="card">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Period Name *
               </label>
               <div className="flex gap-2">
@@ -95,7 +95,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Period Start Date *
               </label>
               <input
@@ -109,7 +109,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Period End Date *
               </label>
               <input
@@ -123,7 +123,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Pay Date *
               </label>
               <input
@@ -137,7 +137,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('common.status')}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('common.status')}</label>
               <select
                 name="status"
                 value={formData.status}
@@ -153,7 +153,7 @@ const navigate = useNavigate()
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('common.description')}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('common.description')}</label>
             <textarea
               name="description"
               value={formData.description}

@@ -173,8 +173,8 @@ export const withPermission = <P extends object>(
     
     if (!hasPermission(requiredPermission)) {
       return <div className="text-center py-12">
-        <h2 className="text-xl font-semibold text-gray-900">Access Denied</h2>
-        <p className="text-gray-600 mt-2">You don't have permission to access this page.</p>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Access Denied</h2>
+        <p className="text-gray-600 dark:text-gray-300 mt-2">You don't have permission to access this page.</p>
       </div>;
     }
     

@@ -216,8 +216,8 @@ export default function PackingListNew() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">📦 Packing List</h1>
-          <p className="text-sm text-gray-500">Kelola packing produk Finished Good</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">📦 Packing List</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Kelola packing produk Finished Good</p>
         </div>
         <div className="flex gap-3">
           <Link
@@ -238,7 +238,7 @@ export default function PackingListNew() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
         <div className="flex flex-wrap gap-4">
           <div className="flex-1 min-w-[200px]">
             <div className="relative">
@@ -248,7 +248,7 @@ export default function PackingListNew() {
                 placeholder="Cari nomor packing, produk, customer..."
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
@@ -257,7 +257,7 @@ export default function PackingListNew() {
             <select
               value={statusFilter}
               onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Semua Status</option>
               <option value="draft">Draft</option>
@@ -273,13 +273,13 @@ export default function PackingListNew() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
         ) : packingLists.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-64 text-gray-500">
+          <div className="flex flex-col items-center justify-center h-64 text-gray-500 dark:text-gray-400">
             <ArchiveBoxIcon className="h-16 w-16 mb-4 text-gray-300" />
             <p>Belum ada packing list</p>
             <button
@@ -290,41 +290,41 @@ export default function PackingListNew() {
             </button>
           </div>
         ) : (
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Packing</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Produk</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Total Karton</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">No. Karton</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Progress</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Packing</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Produk</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Customer</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total Karton</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Karton</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Progress</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {packingLists.map((pl) => (
-                <tr key={pl.id} className="hover:bg-gray-50">
+                <tr key={pl.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                   <td className="px-4 py-3 whitespace-nowrap">
                     <span className="font-medium text-blue-600">{pl.packing_number}</span>
                     {pl.packing_date && (
-                      <p className="text-xs text-gray-500">{new Date(pl.packing_date).toLocaleDateString('id-ID')}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(pl.packing_date).toLocaleDateString('id-ID')}</p>
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    <p className="font-medium text-gray-900">{pl.product_name}</p>
-                    <p className="text-xs text-gray-500">{pl.product_code}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{pl.product_name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{pl.product_code}</p>
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                     {pl.customer_name || '-'}
                     {pl.so_number && <span className="text-xs text-blue-500 ml-2">({pl.so_number})</span>}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-center">
-                    <span className="font-bold text-gray-900">{pl.total_carton}</span>
-                    <p className="text-xs text-gray-500">{pl.total_pcs.toLocaleString()} pcs</p>
+                    <span className="font-bold text-gray-900 dark:text-white">{pl.total_carton}</span>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{pl.total_pcs.toLocaleString()} pcs</p>
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-600">
+                  <td className="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-600 dark:text-gray-300">
                     {pl.start_carton_number} - {pl.end_carton_number}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-center">
@@ -334,7 +334,7 @@ export default function PackingListNew() {
                         {pl.weighed_count}/{pl.total_carton}
                       </span>
                     </div>
-                    <div className="w-20 h-1.5 bg-gray-200 rounded-full mt-1 mx-auto">
+                    <div className="w-20 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mt-1 mx-auto">
                       <div 
                         className="h-full bg-green-500 rounded-full"
                         style={{ width: `${(pl.weighed_count / pl.total_carton) * 100}%` }}
@@ -361,7 +361,7 @@ export default function PackingListNew() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="bg-gray-50 px-4 py-3 flex items-center justify-between border-t">
+          <div className="bg-gray-50 dark:bg-gray-900 px-4 py-3 flex items-center justify-between border-t">
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}
@@ -369,7 +369,7 @@ export default function PackingListNew() {
             >
               Sebelumnya
             </button>
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-gray-600 dark:text-gray-300">
               Halaman {page} dari {totalPages}
             </span>
             <button
@@ -386,10 +386,10 @@ export default function PackingListNew() {
       {/* Create Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-lg">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Buat Packing List Baru</h3>
-              <button onClick={() => setShowCreateModal(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowCreateModal(false)} className="text-gray-400 hover:text-gray-600 dark:text-gray-300">
                 <XMarkIcon className="h-6 w-6" />
               </button>
             </div>
@@ -397,7 +397,7 @@ export default function PackingListNew() {
             <div className="space-y-4">
               {/* Product Selection */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Pilih Produk Finished Good *
                 </label>
                 <select
@@ -411,7 +411,7 @@ export default function PackingListNew() {
                       pack_per_carton: prod ? prod.pack_per_carton.toString() : ''
                     });
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">-- Pilih Produk --</option>
                   {wipProducts.map(p => (
@@ -430,7 +430,7 @@ export default function PackingListNew() {
               {/* Pack per Carton - di atas info ketersediaan agar maks karton terupdate */}
               {selectedProduct && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Pack per Karton *
                   </label>
                   <input
@@ -438,10 +438,10 @@ export default function PackingListNew() {
                     min="1"
                     value={formData.pack_per_carton}
                     onChange={(e) => setFormData({ ...formData, pack_per_carton: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                     placeholder="Contoh: 24"
                   />
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     Jumlah pack/pcs dalam 1 karton. Default dari BOM, bisa diubah sesuai kebutuhan.
                   </p>
                 </div>
@@ -480,7 +480,7 @@ export default function PackingListNew() {
 
               {/* Total Carton */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Jumlah Karton *
                 </label>
                 <input
@@ -489,7 +489,7 @@ export default function PackingListNew() {
                   max={recalcMaxKartons || 999999}
                   value={formData.total_carton}
                   onChange={(e) => setFormData({ ...formData, total_carton: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                   placeholder="Masukkan jumlah karton"
                 />
                 {formData.total_carton && formData.pack_per_carton && (
@@ -553,42 +553,42 @@ export default function PackingListNew() {
 
               {/* Customer Name */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Nama Customer (opsional)
                 </label>
                 <input
                   type="text"
                   value={formData.customer_name}
                   onChange={(e) => setFormData({ ...formData, customer_name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                   placeholder="Nama customer"
                 />
               </div>
 
               {/* Batch Mixing */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Batch Mixing (opsional)
                 </label>
                 <input
                   type="text"
                   value={formData.batch_mixing}
                   onChange={(e) => setFormData({ ...formData, batch_mixing: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: BATCH-001"
                 />
               </div>
 
               {/* Notes */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Catatan (opsional)
                 </label>
                 <textarea
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                   placeholder="Catatan tambahan"
                 />
               </div>
@@ -597,7 +597,7 @@ export default function PackingListNew() {
             <div className="mt-6 flex justify-end gap-3">
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300"
               >
                 Batal
               </button>

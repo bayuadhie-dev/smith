@@ -374,8 +374,8 @@ const navigate = useNavigate()
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Create Sales Order</h1>
-          <p className="text-gray-600">Create a new sales order for customer</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Create Sales Order</h1>
+          <p className="text-gray-600 dark:text-gray-300">Create a new sales order for customer</p>
         </div>
         <button
           onClick={() => navigate('/app/sales/orders')}
@@ -388,11 +388,11 @@ const navigate = useNavigate()
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Header Information */}
         <div className="card p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Order Information</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Order Information</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Customer *
               </label>
               <select
@@ -412,7 +412,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Order Date *
               </label>
               <input
@@ -426,7 +426,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Required Date
               </label>
               <input
@@ -438,7 +438,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               </label>
               <select {...register('priority')} className="input-field">
                 <option value="low">Low</option>
@@ -449,7 +449,7 @@ const navigate = useNavigate()
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               </label>
               <textarea
                 {...register('notes')}
@@ -489,7 +489,7 @@ const navigate = useNavigate()
         {/* Items */}
         <div className="card p-6">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium text-gray-900">Order Items</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Order Items</h3>
             <div className="flex gap-2">
               <button
                 type="button"
@@ -523,10 +523,10 @@ const navigate = useNavigate()
               const selectedProduct = getProductById(watchedItems[index]?.product_id)
               
               return (
-                <div key={field.id} className="border border-gray-200 rounded-lg p-4">
+                <div key={field.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                   <div className="grid grid-cols-1 md:grid-cols-7 gap-4 items-end">
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                         Product *
                       </label>
                       <select
@@ -545,7 +545,7 @@ const navigate = useNavigate()
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                         Quantity *
                       </label>
                       <input
@@ -559,12 +559,12 @@ const navigate = useNavigate()
                         className="input-field"
                       />
                       {selectedProduct && (
-                        <p className="text-xs text-gray-500 mt-1">{selectedProduct.primary_uom}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{selectedProduct.primary_uom}</p>
                       )}
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                         Unit Price *
                       </label>
                       <input
@@ -581,7 +581,7 @@ const navigate = useNavigate()
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                         Discount %
                       </label>
                       <input
@@ -596,8 +596,8 @@ const navigate = useNavigate()
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">{t('common.total')}</label>
-                      <div className="input-field bg-gray-50">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('common.total')}</label>
+                      <div className="input-field bg-gray-50 dark:bg-gray-900">
                         Rp {calculateItemTotal(index).toLocaleString()}
                       </div>
                     </div>
@@ -680,7 +680,7 @@ const navigate = useNavigate()
           {(materialRequirements.length > 0 || loadingMRP || showMRPPanel) && (
             <div className="mt-6 pt-4 border-t border-orange-200 bg-orange-50 -mx-6 px-6 pb-4">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white flex items-center gap-2">
                 <svg className="h-5 w-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
@@ -696,7 +696,7 @@ const navigate = useNavigate()
             </div>
 
             {loadingMRP ? (
-              <div className="flex items-center gap-2 text-gray-600">
+              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
                 Checking material availability...
               </div>
@@ -709,7 +709,7 @@ const navigate = useNavigate()
                       ? 'bg-green-50 border border-green-200' 
                       : 'bg-red-50 border border-red-200'
                   }`}>
-                    <p className="text-sm text-gray-600">Material Status</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">Material Status</p>
                     <p className={`text-lg font-bold ${
                       materialRequirements.every(r => r.has_sufficient_stock) 
                         ? 'text-green-700' 
@@ -721,13 +721,13 @@ const navigate = useNavigate()
                     </p>
                   </div>
                   <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                    <p className="text-sm text-gray-600">Total Shortage Items</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">Total Shortage Items</p>
                     <p className="text-lg font-bold text-orange-700">
                       {materialRequirements.reduce((sum, r) => sum + r.total_shortage_items, 0)} items
                     </p>
                   </div>
                   <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm text-gray-600">Est. Shortage Cost</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">Est. Shortage Cost</p>
                     <p className="text-lg font-bold text-blue-700">
                       {formatRupiah(materialRequirements.reduce((sum, r) => sum + r.total_shortage_cost, 0))}
                     </p>
@@ -747,7 +747,7 @@ const navigate = useNavigate()
                           <ExclamationTriangleIcon className="h-5 w-5 text-red-600" />
                         )}
                         <span className="font-medium">{req.product_name}</span>
-                        <span className="text-sm text-gray-600">({req.quantity.toLocaleString()} pcs)</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-300">({req.quantity.toLocaleString()} pcs)</span>
                       </div>
                       <span className={`text-sm font-medium ${
                         req.has_sufficient_stock ? 'text-green-700' : 'text-red-700'
@@ -757,10 +757,10 @@ const navigate = useNavigate()
                     </div>
                     
                     {!req.has_sufficient_stock && req.shortage_items.length > 0 && (
-                      <div className="p-4 bg-white">
+                      <div className="p-4 bg-white dark:bg-gray-800">
                         <table className="w-full text-sm">
                           <thead>
-                            <tr className="text-left text-gray-500 border-b">
+                            <tr className="text-left text-gray-500 dark:text-gray-400 border-b">
                               <th className="pb-2">Material</th>
                               <th className="pb-2 text-right">Required</th>
                               <th className="pb-2 text-right">Available</th>
@@ -776,7 +776,7 @@ const navigate = useNavigate()
                                   {item.is_critical && (
                                     <span className="ml-2 px-1.5 py-0.5 bg-red-600 text-white text-xs rounded">CRITICAL</span>
                                   )}
-                                  <p className="text-xs text-gray-500">{item.item_code}</p>
+                                  <p className="text-xs text-gray-500 dark:text-gray-400">{item.item_code}</p>
                                 </td>
                                 <td className="py-2 text-right">{item.required_quantity.toLocaleString()}</td>
                                 <td className="py-2 text-right">{item.available_quantity.toLocaleString()}</td>
@@ -786,7 +786,7 @@ const navigate = useNavigate()
                                 <td className="py-2">
                                   {item.supplier_name || '-'}
                                   {item.lead_time_days > 0 && (
-                                    <p className="text-xs text-gray-500">{item.lead_time_days} days</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">{item.lead_time_days} days</p>
                                   )}
                                 </td>
                               </tr>

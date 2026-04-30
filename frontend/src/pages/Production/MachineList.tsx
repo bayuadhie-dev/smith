@@ -105,8 +105,8 @@ const [machines, setMachines] = useState<Machine[]>([])
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">🔧 Machine Data Controller</h1>
-          <p className="text-gray-600 mt-1">Monitor and manage production machines</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">🔧 Machine Data Controller</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Monitor and manage production machines</p>
         </div>
         <div className="flex gap-3">
           <button
@@ -127,7 +127,7 @@ const [machines, setMachines] = useState<Machine[]>([])
       <div className="card p-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">{t('common.search')}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">{t('common.search')}</label>
             <input
               type="text"
               placeholder="Search machines..."
@@ -137,7 +137,7 @@ const [machines, setMachines] = useState<Machine[]>([])
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">{t('common.status')}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">{t('common.status')}</label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -150,7 +150,7 @@ const [machines, setMachines] = useState<Machine[]>([])
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Type</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Type</label>
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
@@ -186,8 +186,8 @@ const [machines, setMachines] = useState<Machine[]>([])
               {/* Machine Header */}
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">{machine.name}</h3>
-                  <p className="text-sm text-gray-600">{machine.code}</p>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{machine.name}</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{machine.code}</p>
                 </div>
                 <div className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(machine.status)} flex items-center gap-1`}>
                   <StatusIcon className="h-3 w-3" />
@@ -198,19 +198,19 @@ const [machines, setMachines] = useState<Machine[]>([])
               {/* Machine Info */}
               <div className="space-y-2 mb-4">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Type:</span>
-                  <span className="text-gray-900 capitalize">{machine.machine_type.replace('_', ' ')}</span>
+                  <span className="text-gray-600 dark:text-gray-300">Type:</span>
+                  <span className="text-gray-900 dark:text-white capitalize">{machine.machine_type.replace('_', ' ')}</span>
                 </div>
                 {machine.location && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Location:</span>
-                    <span className="text-gray-900">{machine.location}</span>
+                    <span className="text-gray-600 dark:text-gray-300">Location:</span>
+                    <span className="text-gray-900 dark:text-white">{machine.location}</span>
                   </div>
                 )}
                 {machine.capacity_per_hour && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Capacity:</span>
-                    <span className="text-gray-900">{machine.capacity_per_hour} {machine.capacity_uom}/hr</span>
+                    <span className="text-gray-600 dark:text-gray-300">Capacity:</span>
+                    <span className="text-gray-900 dark:text-white">{machine.capacity_per_hour} {machine.capacity_uom}/hr</span>
                   </div>
                 )}
               </div>
@@ -219,11 +219,11 @@ const [machines, setMachines] = useState<Machine[]>([])
               <div className="grid grid-cols-2 gap-3 mb-4">
                 <div className="text-center">
                   <div className="text-lg font-bold text-green-600">{machine.efficiency}%</div>
-                  <div className="text-xs text-gray-600">Efficiency</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-300">Efficiency</div>
                 </div>
                 <div className="text-center">
                   <div className="text-lg font-bold text-blue-600">{machine.availability}%</div>
-                  <div className="text-xs text-gray-600">Availability</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-300">Availability</div>
                 </div>
               </div>
 
@@ -270,8 +270,8 @@ const [machines, setMachines] = useState<Machine[]>([])
       {filteredMachines.length === 0 && (
         <div className="text-center py-12">
           <CogIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No machines found</h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No machines found</h3>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             {searchTerm || statusFilter || typeFilter
               ? 'Try adjusting your filters'
               : 'Get started by adding your first machine'

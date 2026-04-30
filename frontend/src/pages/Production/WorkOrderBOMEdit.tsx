@@ -226,13 +226,13 @@ export default function WorkOrderBOMEdit() {
         <div className="flex items-center space-x-4">
           <Link
             to={`/app/production/work-orders/${workOrderId}`}
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
           >
             <ArrowLeftIcon className="h-5 w-5" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Edit BOM Work Order</h1>
-            <p className="text-gray-600">{workOrder?.wo_number} - {workOrder?.product_name}</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Edit BOM Work Order</h1>
+            <p className="text-gray-600 dark:text-gray-300">{workOrder?.wo_number} - {workOrder?.product_name}</p>
           </div>
         </div>
         
@@ -302,9 +302,9 @@ export default function WorkOrderBOMEdit() {
       </div>
 
       {/* BOM Items Table */}
-      <div className="bg-white shadow rounded-lg overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
         <div className="px-6 py-4 border-b flex justify-between items-center">
-          <h2 className="text-lg font-medium text-gray-900">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white">
             Daftar Bahan Baku ({bomItems.length} items)
           </h2>
           {(bomSource === 'work_order' || bomSource === 'none') && (
@@ -319,36 +319,36 @@ export default function WorkOrderBOMEdit() {
         </div>
         
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kode</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Item</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipe</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Qty/Unit</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">UOM</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Qty Planned</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Kode</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nama Item</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tipe</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Qty/Unit</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">UOM</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Qty Planned</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
                 {bomSource === 'work_order' && (
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                 )}
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {bomItems.length === 0 ? (
                 <tr>
-                  <td colSpan={bomSource === 'work_order' ? 9 : 8} className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan={bomSource === 'work_order' ? 9 : 8} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                     Tidak ada item BOM
                   </td>
                 </tr>
               ) : (
                 bomItems.map((item, index) => (
                   <tr key={item.id} className={item.is_modified ? 'bg-yellow-50' : item.is_added ? 'bg-green-50' : ''}>
-                    <td className="px-4 py-3 text-sm text-gray-900">{index + 1}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{item.item_code || '-'}</td>
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{item.item_name}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{item.item_type || '-'}</td>
+                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{index + 1}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{item.item_code || '-'}</td>
+                    <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">{item.item_name}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{item.item_type || '-'}</td>
                     <td className="px-4 py-3 text-sm text-right">
                       {editingItem === item.id ? (
                         <input
@@ -365,7 +365,7 @@ export default function WorkOrderBOMEdit() {
                         <span>{(item.quantity_per_unit || item.quantity || 0).toFixed(4)}</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-sm text-center text-gray-600">{item.uom}</td>
+                    <td className="px-4 py-3 text-sm text-center text-gray-600 dark:text-gray-300">{item.uom}</td>
                     <td className="px-4 py-3 text-sm text-right font-medium">
                       {item.quantity_planned ? item.quantity_planned.toFixed(2) : 
                        ((item.quantity_per_unit || item.quantity || 0) * (workOrder?.quantity || 0)).toFixed(2)}
@@ -378,7 +378,7 @@ export default function WorkOrderBOMEdit() {
                         <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">Diubah</span>
                       )}
                       {!item.is_modified && !item.is_added && bomSource === 'work_order' && (
-                        <span className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">Original</span>
+                        <span className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-full">Original</span>
                       )}
                     </td>
                     {bomSource === 'work_order' && (
@@ -412,13 +412,13 @@ export default function WorkOrderBOMEdit() {
       {/* Add Item Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full mx-4">
             <div className="px-6 py-4 border-b">
               <h3 className="text-lg font-medium">Tambah Item BOM</h3>
             </div>
             <div className="px-6 py-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Pilih Material (opsional)
                 </label>
                 <select
@@ -435,7 +435,7 @@ export default function WorkOrderBOMEdit() {
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Nama Item *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Nama Item *</label>
                   <input
                     type="text"
                     value={newItem.item_name}
@@ -444,7 +444,7 @@ export default function WorkOrderBOMEdit() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Kode</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Kode</label>
                   <input
                     type="text"
                     value={newItem.item_code}
@@ -456,7 +456,7 @@ export default function WorkOrderBOMEdit() {
               
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Qty per Unit *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Qty per Unit *</label>
                   <input
                     type="number"
                     value={newItem.quantity_per_unit}
@@ -466,7 +466,7 @@ export default function WorkOrderBOMEdit() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">UOM</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">UOM</label>
                   <select
                     value={newItem.uom}
                     onChange={(e) => setNewItem(prev => ({ ...prev, uom: e.target.value }))}
@@ -481,7 +481,7 @@ export default function WorkOrderBOMEdit() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Tipe</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Tipe</label>
                   <select
                     value={newItem.item_type}
                     onChange={(e) => setNewItem(prev => ({ ...prev, item_type: e.target.value }))}
@@ -498,7 +498,7 @@ export default function WorkOrderBOMEdit() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Alasan Penambahan</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Alasan Penambahan</label>
                 <input
                   type="text"
                   value={newItem.modification_reason}
@@ -511,7 +511,7 @@ export default function WorkOrderBOMEdit() {
             <div className="px-6 py-4 border-t flex justify-end gap-3">
               <button
                 onClick={() => setShowAddModal(false)}
-                className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                className="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
               >
                 Batal
               </button>

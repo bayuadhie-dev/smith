@@ -287,7 +287,7 @@ const UserManual: React.FC = () => {
                       }
                       setSearchQuery('');
                     }}
-                    className="w-full text-left p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    className="w-full text-left p-2 rounded-lg hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors"
                   >
                     <div className="flex items-center gap-2">
                       {result.type === 'article' ? (
@@ -327,14 +327,14 @@ const UserManual: React.FC = () => {
               <div key={category.id} className="border-b border-gray-100 dark:border-gray-700 pb-2">
                 <button
                   onClick={() => toggleCategory(category.id)}
-                  className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors"
                 >
                   <div className="flex items-center gap-2">
                     <IconComponent className="h-5 w-5 text-blue-600" />
                     <span className="text-sm font-medium text-gray-900 dark:text-white">
                       {category.name}
                     </span>
-                    <span className="text-xs text-gray-500 bg-gray-100 dark:bg-gray-600 px-2 py-0.5 rounded-full">
+                    <span className="text-xs text-gray-500 bg-gray-100 dark:bg-gray-800 dark:bg-gray-600 px-2 py-0.5 rounded-full">
                       {category.article_count}
                     </span>
                   </div>
@@ -376,7 +376,7 @@ const UserManual: React.FC = () => {
             </h4>
             <button
               onClick={() => navigate('/app/manual/faq')}
-              className="w-full text-left p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-sm text-gray-600 dark:text-gray-400"
+              className="w-full text-left p-2 rounded-lg hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors text-sm text-gray-600 dark:text-gray-400"
             >
               Lihat semua FAQ ({faqs.length})
             </button>

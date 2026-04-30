@@ -343,13 +343,13 @@ export default function WorkRosterComplete() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Work Roster</h1>
-          <p className="text-gray-600">Pengaturan jadwal kerja produksi</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Work Roster</h1>
+          <p className="text-gray-600 dark:text-gray-300">Pengaturan jadwal kerja produksi</p>
         </div>
         <div className="flex gap-2">
           <button
             onClick={() => fetchRoster()}
-            className="px-3 py-2 text-gray-700 bg-white border rounded-lg hover:bg-gray-50"
+            className="px-3 py-2 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
           >
             <ArrowPathIcon className="h-5 w-5" />
           </button>
@@ -373,13 +373,13 @@ export default function WorkRosterComplete() {
       </div>
 
       {/* Date & Shift Selector */}
-      <div className="bg-white shadow rounded-lg p-4">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
         <div className="flex flex-wrap items-center gap-4">
           {/* Date Navigation */}
           <div className="flex items-center gap-2">
             <button
               onClick={() => navigateDate(-1)}
-              className="p-2 hover:bg-gray-100 rounded"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded"
             >
               <ChevronLeftIcon className="h-5 w-5" />
             </button>
@@ -394,13 +394,13 @@ export default function WorkRosterComplete() {
             </div>
             <button
               onClick={() => navigateDate(1)}
-              className="p-2 hover:bg-gray-100 rounded"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded"
             >
               <ChevronRightIcon className="h-5 w-5" />
             </button>
           </div>
           
-          <div className="text-lg font-medium text-gray-700">
+          <div className="text-lg font-medium text-gray-700 dark:text-gray-200">
             {formatDate(selectedDate)}
           </div>
 
@@ -437,15 +437,15 @@ export default function WorkRosterComplete() {
       </div>
 
       {loading ? (
-        <div className="bg-white shadow rounded-lg p-12 text-center">
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-12 text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Memuat data roster...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-300">Memuat data roster...</p>
         </div>
       ) : (
         <>
           {/* Leader Section */}
-          <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
               <UserGroupIcon className="h-5 w-5 text-purple-600" />
               Leader Shift
             </h2>
@@ -471,8 +471,8 @@ export default function WorkRosterComplete() {
           </div>
 
           {/* Machine-based Assignments */}
-          <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
               <CogIcon className="h-5 w-5 text-blue-600" />
               Assignment per Mesin
             </h2>
@@ -480,21 +480,21 @@ export default function WorkRosterComplete() {
             <div className="overflow-x-auto">
               <table className="min-w-full">
                 <thead>
-                  <tr className="bg-gray-50">
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 w-40">Mesin</th>
+                  <tr className="bg-gray-50 dark:bg-gray-900">
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200 w-40">Mesin</th>
                     {Object.entries(roleDefinitions)
                       .filter(([_, def]) => def.requires_machine)
                       .map(([role, def]) => (
-                        <th key={role} className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                        <th key={role} className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">
                           <span style={{ color: def.color }}>{def.name}</span>
                         </th>
                       ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                   {machines.map(machine => (
-                    <tr key={machine.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 font-medium text-gray-900">
+                    <tr key={machine.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                      <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">
                         {machine.name}
                         <div className="text-xs text-gray-500">{machine.code}</div>
                       </td>
@@ -510,7 +510,7 @@ export default function WorkRosterComplete() {
                                 {roleAssignments.map((assignment, idx) => (
                                   <div 
                                     key={idx}
-                                    className="flex items-center gap-2 bg-gray-100 px-2 py-1 rounded text-sm"
+                                    className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm"
                                   >
                                     <RoleIcon className="h-4 w-4" style={{ color: def.color }} />
                                     <span className="flex-1 truncate">{assignment.employee_name}</span>
@@ -555,7 +555,7 @@ export default function WorkRosterComplete() {
                 const RoleIcon = ROLE_ICONS[role] || UserIcon;
                 
                 return (
-                  <div key={role} className="bg-white shadow rounded-lg p-6">
+                  <div key={role} className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
                     <h3 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: def.color }}>
                       <RoleIcon className="h-5 w-5" />
                       {def.name}
@@ -565,7 +565,7 @@ export default function WorkRosterComplete() {
                       {roleAssignments.map((assignment, idx) => (
                         <div 
                           key={idx}
-                          className="flex items-center gap-2 bg-gray-100 px-3 py-2 rounded"
+                          className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 px-3 py-2 rounded"
                         >
                           <span className="flex-1">
                             {assignment.employee_name}
@@ -590,7 +590,7 @@ export default function WorkRosterComplete() {
                       
                       <button
                         onClick={() => openEmployeeModal(role, null)}
-                        className="w-full flex items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-lg px-3 py-2 text-gray-600 hover:border-blue-400 hover:text-blue-600"
+                        className="w-full flex items-center justify-center gap-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-600 dark:text-gray-300 hover:border-blue-400 hover:text-blue-600"
                       >
                         <PlusIcon className="h-5 w-5" />
                         Tambah {def.name}
@@ -602,8 +602,8 @@ export default function WorkRosterComplete() {
           </div>
 
           {/* Notes */}
-          <div className="bg-white shadow rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Catatan</h3>
+          <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Catatan</h3>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -617,7 +617,7 @@ export default function WorkRosterComplete() {
       {/* Employee Selection Modal */}
       {showEmployeeModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg w-full max-w-2xl max-h-[80vh] overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-2xl max-h-[80vh] overflow-hidden">
             <div className="p-4 border-b flex items-center justify-between">
               <h3 className="text-lg font-semibold">
                 Pilih Karyawan - {roleDefinitions[currentRole]?.name || currentRole}
@@ -625,7 +625,7 @@ export default function WorkRosterComplete() {
               </h3>
               <button
                 onClick={() => setShowEmployeeModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-200"
               >
                 ✕
               </button>
@@ -651,16 +651,16 @@ export default function WorkRosterComplete() {
                 </div>
               ) : (
                 <table className="w-full">
-                  <thead className="bg-gray-50 sticky top-0">
+                  <thead className="bg-gray-50 dark:bg-gray-900 sticky top-0">
                     <tr>
-                      <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">NIK</th>
-                      <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Nama</th>
-                      <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Departemen</th>
-                      <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Status</th>
+                      <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">NIK</th>
+                      <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Nama</th>
+                      <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Departemen</th>
+                      <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Status</th>
                       <th className="px-4 py-2"></th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200">
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                     {employees.map(emp => (
                       <tr 
                         key={emp.id} 

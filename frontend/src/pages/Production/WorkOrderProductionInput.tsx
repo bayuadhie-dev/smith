@@ -1217,13 +1217,13 @@ export default function WorkOrderProductionInput() {
         <div className="flex items-center space-x-4">
           <Link
             to={`/app/production/work-orders/${id}`}
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
           >
             <ArrowLeftIcon className="h-5 w-5" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Input Produksi</h1>
-            <p className="text-gray-600">{workOrder.wo_number} - {workOrder.product_name}</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Input Produksi</h1>
+            <p className="text-gray-600 dark:text-gray-300">{workOrder.wo_number} - {workOrder.product_name}</p>
           </div>
         </div>
         <Link
@@ -1277,7 +1277,7 @@ export default function WorkOrderProductionInput() {
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="bg-white shadow rounded-lg p-6 space-y-6">
+      <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 space-y-6">
         {/* Schedule Info - Show if WO is from schedule */}
         {workOrder?.source_type === 'from_schedule' && workOrder?.schedule_days && Object.keys(workOrder.schedule_days).length > 0 && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -1363,9 +1363,9 @@ export default function WorkOrderProductionInput() {
 
         {/* Product Selection */}
         <div className="product-dropdown-container relative">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
             Produk
-            <span className="text-xs text-gray-500 font-normal ml-2">(Default: produk WO, bisa diganti jika ganti order)</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400 font-normal ml-2">(Default: produk WO, bisa diganti jika ganti order)</span>
           </label>
           <div className="flex gap-2">
             <div className="flex-1 relative">
@@ -1378,16 +1378,16 @@ export default function WorkOrderProductionInput() {
                 }}
                 onFocus={() => setShowProductDropdown(true)}
                 placeholder="Cari produk..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
               {showProductDropdown && (
-                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                   {/* Default WO Product */}
                   {workOrder && (
                     <button
                       type="button"
                       onClick={() => handleProductSelect({ id: workOrder.product_id, code: workOrder.product_code || '', name: workOrder.product_name })}
-                      className="w-full px-3 py-2 text-left hover:bg-blue-50 border-b border-gray-200 bg-blue-50"
+                      className="w-full px-3 py-2 text-left hover:bg-blue-50 border-b border-gray-200 dark:border-gray-700 bg-blue-50"
                     >
                       <span className="text-xs text-blue-600 font-medium">Default WO:</span>
                       <span className="block text-sm font-medium">{workOrder.product_code ? `${workOrder.product_code} - ` : ''}{workOrder.product_name}</span>
@@ -1400,14 +1400,14 @@ export default function WorkOrderProductionInput() {
                         key={product.id}
                         type="button"
                         onClick={() => handleProductSelect(product)}
-                        className="w-full px-3 py-2 text-left hover:bg-gray-100 border-b border-gray-100 last:border-0"
+                        className="w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 border-b border-gray-100 last:border-0"
                       >
-                        <span className="text-xs text-gray-500">{product.code}</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">{product.code}</span>
                         <span className="block text-sm">{product.name}</span>
                       </button>
                     ))
                   ) : productSearch && (
-                    <div className="px-3 py-2 text-sm text-gray-500">Tidak ada produk ditemukan</div>
+                    <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">Tidak ada produk ditemukan</div>
                   )}
                 </div>
               )}
@@ -1439,19 +1439,19 @@ export default function WorkOrderProductionInput() {
         {/* Date & Shift */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Tanggal Produksi *
             </label>
             <input
               type="date"
               value={formData.production_date}
               onChange={(e) => handleChange('production_date', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Shift *
               {workOrder?.source_type === 'from_schedule' && workOrder?.schedule_days && (
                 <span className="ml-2 text-xs text-blue-600 font-normal">
@@ -1462,7 +1462,7 @@ export default function WorkOrderProductionInput() {
             <select
               value={formData.shift}
               onChange={(e) => handleChange('shift', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               required
             >
               {(() => {
@@ -1531,7 +1531,7 @@ export default function WorkOrderProductionInput() {
             )}
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Average Time (menit)
             </label>
             <input
@@ -1539,13 +1539,13 @@ export default function WorkOrderProductionInput() {
               value={formData.average_time}
               onChange={(e) => handleChange('average_time', e.target.value)}
               onWheel={disableScrollOnNumberInput}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="510"
               min="0"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Speed Mesin (pcs/menit)
             </label>
             <input
@@ -1559,7 +1559,7 @@ export default function WorkOrderProductionInput() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Pack/Karton *
             </label>
             <input
@@ -1577,10 +1577,10 @@ export default function WorkOrderProductionInput() {
 
         {/* Quantity Section */}
         <div className="border-t pt-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Hasil Produksi</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Hasil Produksi</h3>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Grade A <span className="text-green-600">(Good)</span> *
                 <button
                   type="button"
@@ -1604,8 +1604,8 @@ export default function WorkOrderProductionInput() {
 
               {/* Mini Calculator */}
               {showCalculator && (
-                <div className="absolute z-50 top-full left-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-xl p-3 w-56">
-                  <div className="text-right bg-gray-100 p-2 rounded mb-2 font-mono text-lg overflow-hidden">
+                <div className="absolute z-50 top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-xl p-3 w-56">
+                  <div className="text-right bg-gray-100 dark:bg-gray-800 p-2 rounded mb-2 font-mono text-lg overflow-hidden">
                     {calcDisplay}
                   </div>
                   <div className="grid grid-cols-4 gap-1">
@@ -1613,23 +1613,23 @@ export default function WorkOrderProductionInput() {
                     <button type="button" onClick={() => calcPerformOperation('÷')} className="p-2 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 font-medium">÷</button>
                     <button type="button" onClick={() => calcPerformOperation('×')} className="p-2 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 font-medium">×</button>
 
-                    <button type="button" onClick={() => calcInputDigit('7')} className="p-2 bg-gray-100 rounded hover:bg-gray-200">7</button>
-                    <button type="button" onClick={() => calcInputDigit('8')} className="p-2 bg-gray-100 rounded hover:bg-gray-200">8</button>
-                    <button type="button" onClick={() => calcInputDigit('9')} className="p-2 bg-gray-100 rounded hover:bg-gray-200">9</button>
+                    <button type="button" onClick={() => calcInputDigit('7')} className="p-2 bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:bg-gray-700">7</button>
+                    <button type="button" onClick={() => calcInputDigit('8')} className="p-2 bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:bg-gray-700">8</button>
+                    <button type="button" onClick={() => calcInputDigit('9')} className="p-2 bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:bg-gray-700">9</button>
                     <button type="button" onClick={() => calcPerformOperation('-')} className="p-2 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 font-medium">−</button>
 
-                    <button type="button" onClick={() => calcInputDigit('4')} className="p-2 bg-gray-100 rounded hover:bg-gray-200">4</button>
-                    <button type="button" onClick={() => calcInputDigit('5')} className="p-2 bg-gray-100 rounded hover:bg-gray-200">5</button>
-                    <button type="button" onClick={() => calcInputDigit('6')} className="p-2 bg-gray-100 rounded hover:bg-gray-200">6</button>
+                    <button type="button" onClick={() => calcInputDigit('4')} className="p-2 bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:bg-gray-700">4</button>
+                    <button type="button" onClick={() => calcInputDigit('5')} className="p-2 bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:bg-gray-700">5</button>
+                    <button type="button" onClick={() => calcInputDigit('6')} className="p-2 bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:bg-gray-700">6</button>
                     <button type="button" onClick={() => calcPerformOperation('+')} className="p-2 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 font-medium">+</button>
 
-                    <button type="button" onClick={() => calcInputDigit('1')} className="p-2 bg-gray-100 rounded hover:bg-gray-200">1</button>
-                    <button type="button" onClick={() => calcInputDigit('2')} className="p-2 bg-gray-100 rounded hover:bg-gray-200">2</button>
-                    <button type="button" onClick={() => calcInputDigit('3')} className="p-2 bg-gray-100 rounded hover:bg-gray-200">3</button>
+                    <button type="button" onClick={() => calcInputDigit('1')} className="p-2 bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:bg-gray-700">1</button>
+                    <button type="button" onClick={() => calcInputDigit('2')} className="p-2 bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:bg-gray-700">2</button>
+                    <button type="button" onClick={() => calcInputDigit('3')} className="p-2 bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:bg-gray-700">3</button>
                     <button type="button" onClick={calcEquals} className="row-span-2 p-2 bg-green-500 text-white rounded hover:bg-green-600 font-medium">=</button>
 
-                    <button type="button" onClick={() => calcInputDigit('0')} className="col-span-2 p-2 bg-gray-100 rounded hover:bg-gray-200">0</button>
-                    <button type="button" onClick={calcInputDot} className="p-2 bg-gray-100 rounded hover:bg-gray-200">.</button>
+                    <button type="button" onClick={() => calcInputDigit('0')} className="col-span-2 p-2 bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:bg-gray-700">0</button>
+                    <button type="button" onClick={calcInputDot} className="p-2 bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:bg-gray-700">.</button>
                   </div>
                   <button
                     type="button"
@@ -1642,7 +1642,7 @@ export default function WorkOrderProductionInput() {
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Grade B <span className="text-yellow-600">(Rework)</span>
               </label>
               <input
@@ -1656,7 +1656,7 @@ export default function WorkOrderProductionInput() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Grade C <span className="text-red-500">(Reject)</span>
               </label>
               <input
@@ -1670,7 +1670,7 @@ export default function WorkOrderProductionInput() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Setting Sticker <span className="text-purple-500">(pack)</span>
               </label>
               <input
@@ -1684,7 +1684,7 @@ export default function WorkOrderProductionInput() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Setting Packaging <span className="text-indigo-500">(pack)</span>
               </label>
               <input
@@ -1707,7 +1707,7 @@ export default function WorkOrderProductionInput() {
               </p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Waste Kain <span className="text-blue-500">(kg)</span>
               </label>
               <input
@@ -1719,7 +1719,7 @@ export default function WorkOrderProductionInput() {
               <p className="text-xs text-gray-400 mt-1">= berat_kering × waste_pack</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Waste Ingredient <span className="text-green-500">(kg)</span>
               </label>
               <input
@@ -1731,7 +1731,7 @@ export default function WorkOrderProductionInput() {
               <p className="text-xs text-gray-400 mt-1">= ingredient × waste_pack</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Waste Packaging <span className="text-purple-500">(pcs)</span>
               </label>
               <input
@@ -1743,7 +1743,7 @@ export default function WorkOrderProductionInput() {
               <p className="text-xs text-gray-400 mt-1">= waste_pack</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Waste Stiker <span className="text-orange-500">(pcs)</span>
               </label>
               <input
@@ -1757,7 +1757,7 @@ export default function WorkOrderProductionInput() {
           </div>
 
           {/* Auto-calculated: Qty Produksi & Waste */}
-          <div className="grid grid-cols-2 gap-4 mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="grid grid-cols-2 gap-4 mt-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
             <div>
               <label className="block text-sm font-medium text-blue-700 mb-1">
                 Qty Produksi (Auto)
@@ -1769,7 +1769,7 @@ export default function WorkOrderProductionInput() {
                   readOnly
                   className="w-full px-3 py-2 bg-blue-50 border border-blue-300 rounded-lg text-blue-800 font-medium cursor-not-allowed"
                 />
-                <span className="text-xs text-gray-500 whitespace-nowrap">= A + B + C</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">= A + B + C</span>
               </div>
             </div>
             <div>
@@ -1783,14 +1783,14 @@ export default function WorkOrderProductionInput() {
                   readOnly
                   className="w-full px-3 py-2 bg-orange-50 border border-orange-300 rounded-lg text-orange-700 font-medium cursor-not-allowed"
                 />
-                <span className="text-xs text-gray-500 whitespace-nowrap">= C + Sticker + Packaging</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">= C + Sticker + Packaging</span>
               </div>
             </div>
           </div>
 
           {/* Quality Rate Indicator */}
           <div className="mt-4 flex items-center gap-2">
-            <span className="text-sm text-gray-600">Quality Rate:</span>
+            <span className="text-sm text-gray-600 dark:text-gray-300">Quality Rate:</span>
             <span className={`px-2 py-1 rounded text-sm font-medium ${parseFloat(qualityRate) >= 95 ? 'bg-green-100 text-green-800' :
               parseFloat(qualityRate) >= 85 ? 'bg-yellow-100 text-yellow-800' :
                 'bg-red-100 text-red-800'
@@ -1808,18 +1808,18 @@ export default function WorkOrderProductionInput() {
 
               {/* Consumption per Grade Table */}
               <div className="overflow-x-auto mb-4">
-                <table className="min-w-full bg-white rounded-lg overflow-hidden text-sm">
-                  <thead className="bg-gray-100">
+                <table className="min-w-full bg-white dark:bg-gray-800 rounded-lg overflow-hidden text-sm">
+                  <thead className="bg-gray-100 dark:bg-gray-800">
                     <tr>
-                      <th className="px-3 py-2 text-left font-medium text-gray-700">Grade</th>
-                      <th className="px-3 py-2 text-right font-medium text-gray-700">Qty (pack)</th>
+                      <th className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-200">Grade</th>
+                      <th className="px-3 py-2 text-right font-medium text-gray-700 dark:text-gray-200">Qty (pack)</th>
                       <th className="px-3 py-2 text-right font-medium text-blue-700">Kain (kg)</th>
                       <th className="px-3 py-2 text-right font-medium text-green-700">Ingredient (kg)</th>
                       <th className="px-3 py-2 text-right font-medium text-purple-700">Packaging (pcs)</th>
                       <th className="px-3 py-2 text-right font-medium text-orange-700">Stiker (pcs)</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200">
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                     {/* Grade A */}
                     <tr className="bg-green-50">
                       <td className="px-3 py-2 font-medium text-green-700">Grade A (Good)</td>
@@ -1910,29 +1910,29 @@ export default function WorkOrderProductionInput() {
 
               {/* Summary Cards */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-white p-3 rounded-lg border border-blue-100">
-                  <p className="text-xs text-gray-500 mb-1">Total Kain</p>
+                <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-blue-100">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Total Kain</p>
                   <p className="text-lg font-bold text-blue-700">
                     {((parseFloat(formData.quantity_produced || '0') + parseFloat(formData.setting_sticker || '0') + parseFloat(formData.setting_packaging || '0')) * (workOrder.consumption_data.berat_kering_per_pack || 0)).toFixed(4)}
                   </p>
                   <p className="text-xs text-gray-400">kg</p>
                 </div>
-                <div className="bg-white p-3 rounded-lg border border-green-100">
-                  <p className="text-xs text-gray-500 mb-1">Total Ingredient</p>
+                <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-green-100">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Total Ingredient</p>
                   <p className="text-lg font-bold text-green-700">
                     {((parseFloat(formData.quantity_produced || '0') + parseFloat(formData.setting_sticker || '0') + parseFloat(formData.setting_packaging || '0')) * (workOrder.consumption_data.volume_per_pack || 0)).toFixed(4)}
                   </p>
                   <p className="text-xs text-gray-400">kg</p>
                 </div>
-                <div className="bg-white p-3 rounded-lg border border-purple-100">
-                  <p className="text-xs text-gray-500 mb-1">Total Packaging</p>
+                <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-purple-100">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Total Packaging</p>
                   <p className="text-lg font-bold text-purple-700">
                     {parseFloat(formData.quantity_produced || '0') + parseFloat(formData.setting_packaging || '0')}
                   </p>
                   <p className="text-xs text-gray-400">pcs</p>
                 </div>
-                <div className="bg-white p-3 rounded-lg border border-orange-100">
-                  <p className="text-xs text-gray-500 mb-1">Total Stiker</p>
+                <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-orange-100">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Total Stiker</p>
                   <p className="text-lg font-bold text-orange-700">
                     {parseFloat(formData.quantity_produced || '0') + parseFloat(formData.setting_sticker || '0')}
                   </p>
@@ -1953,7 +1953,7 @@ export default function WorkOrderProductionInput() {
         {/* Downtime Section */}
         <div className="border-t pt-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-medium text-gray-900 flex items-center">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white flex items-center">
               <ClockIcon className="h-5 w-5 mr-2 text-orange-600" />
               Input Downtime
               {hasOverLimit() && (
@@ -1975,9 +1975,9 @@ export default function WorkOrderProductionInput() {
 
           {/* Downtime Entries */}
           {downtimeEntries.length === 0 ? (
-            <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 mb-6">
+            <div className="text-center py-8 bg-gray-50 dark:bg-gray-900 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700 mb-6">
               <ClockIcon className="h-10 w-10 mx-auto text-gray-400 mb-2" />
-              <p className="text-gray-500">Tidak ada downtime</p>
+              <p className="text-gray-500 dark:text-gray-400">Tidak ada downtime</p>
               <button
                 type="button"
                 onClick={addDowntimeEntry}
@@ -2002,21 +2002,21 @@ export default function WorkOrderProductionInput() {
                       <div className="flex-1 grid grid-cols-1 md:grid-cols-6 gap-3">
                         {/* Reason Text Input - Auto detect category */}
                         <div className="md:col-span-2">
-                          <label className="block text-xs font-medium text-gray-600 mb-1">
+                          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                             Alasan Downtime <span className="text-gray-400">(ketik bebas)</span>
                           </label>
                           <input
                             type="text"
                             value={entry.reason}
                             onChange={(e) => updateDowntimeEntry(entry.id, 'reason', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm"
                             placeholder="Contoh: temperature suhu rendah..."
                           />
                         </div>
 
                         {/* Duration per occurrence */}
                         <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">
+                          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                             Durasi (menit)
                           </label>
                           <input
@@ -2024,7 +2024,7 @@ export default function WorkOrderProductionInput() {
                             value={entry.duration_minutes}
                             onChange={(e) => updateDowntimeEntry(entry.id, 'duration_minutes', e.target.value)}
                             onWheel={disableScrollOnNumberInput}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm text-center"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm text-center"
                             placeholder="0"
                             min="1"
                           />
@@ -2032,7 +2032,7 @@ export default function WorkOrderProductionInput() {
 
                         {/* Frequency */}
                         <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">
+                          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                             Frekuensi
                           </label>
                           <input
@@ -2040,7 +2040,7 @@ export default function WorkOrderProductionInput() {
                             value={entry.frequency}
                             onChange={(e) => updateDowntimeEntry(entry.id, 'frequency', e.target.value)}
                             onWheel={disableScrollOnNumberInput}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm text-center"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm text-center"
                             placeholder="1"
                             min="1"
                           />
@@ -2048,7 +2048,7 @@ export default function WorkOrderProductionInput() {
 
                         {/* Total (duration × frequency) */}
                         <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">
+                          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                             Total (menit)
                           </label>
                           <div className="px-3 py-2 bg-orange-100 border border-orange-300 rounded-lg text-sm text-center font-bold text-orange-700">
@@ -2058,7 +2058,7 @@ export default function WorkOrderProductionInput() {
 
                         {/* Auto Category & PIC */}
                         <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">
+                          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                             Kategori & PIC
                           </label>
                           {entry.category ? (
@@ -2070,7 +2070,7 @@ export default function WorkOrderProductionInput() {
                               <div className="text-xs opacity-75">PIC: {entry.pic}</div>
                             </div>
                           ) : (
-                            <div className="px-3 py-2 rounded-lg text-sm bg-gray-100 text-gray-500 border border-gray-200">
+                            <div className="px-3 py-2 rounded-lg text-sm bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700">
                               <div className="italic">Pilih alasan</div>
                             </div>
                           )}
@@ -2100,14 +2100,14 @@ export default function WorkOrderProductionInput() {
               <div><span className="font-medium text-orange-600">Operator:</span> setting, adjust, parameter, trial, training...</div>
               <div><span className="font-medium text-yellow-600">Material:</span> kain, bahan, benang, habis, cacat, tunggu...</div>
               <div><span className="font-medium text-blue-600">Design:</span> sanitasi, ganti stiker/produk/packaging, repack, cleaning...</div>
-              <div><span className="font-medium text-gray-600">Others:</span> istirahat, sholat, makan, meeting, listrik...</div>
+              <div><span className="font-medium text-gray-600 dark:text-gray-300">Others:</span> istirahat, sholat, makan, meeting, listrik...</div>
             </div>
           </div>
 
           {/* Category Summary */}
           {getTotalDowntime() > 0 && (
-            <div className="bg-white border rounded-lg p-4 mb-6">
-              <h4 className="text-sm font-semibold text-gray-700 mb-3">Ringkasan per Kategori</h4>
+            <div className="bg-white dark:bg-gray-800 border rounded-lg p-4 mb-6">
+              <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">Ringkasan per Kategori</h4>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 {Object.entries(DOWNTIME_CATEGORIES).map(([key, config]) => {
                   const status = getCategoryStatus()[key];
@@ -2135,7 +2135,7 @@ export default function WorkOrderProductionInput() {
                           </span>
                         )}
                       </div>
-                      <div className="text-xs text-gray-500 mt-1">
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         PIC: {config.pic}
                       </div>
                     </div>
@@ -2156,28 +2156,28 @@ export default function WorkOrderProductionInput() {
             <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
               {/* Average Time */}
               <div className="text-center">
-                <p className="text-sm text-gray-600">Average Time</p>
-                <p className="text-xl font-bold text-gray-700">{getAverageTime()} menit</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Average Time</p>
+                <p className="text-xl font-bold text-gray-700 dark:text-gray-200">{getAverageTime()} menit</p>
                 <p className="text-xs text-gray-400">(manual input)</p>
               </div>
 
               {/* Runtime = Grade A / Speed */}
               <div className="text-center">
-                <p className="text-sm text-gray-600">Runtime</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Runtime</p>
                 <p className="text-xl font-bold text-blue-600">{getRuntime()} menit</p>
                 <p className="text-xs text-gray-400">= Grade A ÷ Speed</p>
               </div>
 
               {/* Total Downtime */}
               <div className="text-center">
-                <p className="text-sm text-gray-600">Total Downtime</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Total Downtime</p>
                 <p className="text-xl font-bold text-orange-600">{getTotalDowntime()} menit</p>
                 <p className="text-xs text-gray-400">(dari entries)</p>
               </div>
 
               {/* Waktu Tercatat = Runtime + Downtime */}
               <div className="text-center">
-                <p className="text-sm text-gray-600">Waktu Tercatat</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Waktu Tercatat</p>
                 <p className={`text-xl font-bold ${getWaktuTercatat() > getAverageTime() ? 'text-red-600' : 'text-green-600'}`}>
                   {getWaktuTercatat()} menit
                 </p>
@@ -2191,7 +2191,7 @@ export default function WorkOrderProductionInput() {
 
               {/* Waktu Tidak Tercatat = Average - Tercatat */}
               <div className="text-center">
-                <p className="text-sm text-gray-600">Waktu Tidak Tercatat</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Waktu Tidak Tercatat</p>
                 <p className={`text-xl font-bold ${getWaktuTidakTercatat() === 0 && getWaktuTercatat() > getAverageTime() ? 'text-red-600' : 'text-red-600'}`}>
                   {getWaktuTidakTercatat()} menit
                 </p>
@@ -2200,7 +2200,7 @@ export default function WorkOrderProductionInput() {
 
               {/* Efficiency = Runtime / Average Time */}
               <div className="text-center">
-                <p className="text-sm text-gray-600">Efisiensi</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Efisiensi</p>
                 <p className={`text-2xl font-bold ${getEfficiency() >= 60 ? 'text-green-600' : 'text-red-600'}`}>
                   {getEfficiency().toFixed(1)}%
                 </p>
@@ -2214,7 +2214,7 @@ export default function WorkOrderProductionInput() {
         <div className="border-t pt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Operator
                 {rosteredOperators.length > 0 && (
                   <span className="ml-2 text-xs text-green-600 font-normal">
@@ -2225,7 +2225,7 @@ export default function WorkOrderProductionInput() {
               <select
                 value={formData.operator_id}
                 onChange={(e) => handleChange('operator_id', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">-- Pilih Operator --</option>
                 {rosteredOperators.length > 0 && (
@@ -2247,13 +2247,13 @@ export default function WorkOrderProductionInput() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Catatan
               </label>
               <textarea
                 value={formData.notes}
                 onChange={(e) => handleChange('notes', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 rows={2}
                 placeholder="Catatan tambahan..."
               />
@@ -2381,7 +2381,7 @@ export default function WorkOrderProductionInput() {
         <div className="border-t pt-6 flex justify-end gap-3">
           <Link
             to={`/app/production/work-orders/${id}`}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300"
           >
             Batal
           </Link>
@@ -2408,11 +2408,11 @@ export default function WorkOrderProductionInput() {
       {/* Sub-Shift Selection Dialog */}
       {showSubShiftDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
-            <h3 className="text-lg font-bold text-gray-900 mb-2">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
               Pilih Sub-Shift
             </h3>
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
               Anda mengganti produk di tengah shift. Pilih sub-shift untuk membedakan entry ini dari entry sebelumnya.
             </p>
             
@@ -2461,7 +2461,7 @@ export default function WorkOrderProductionInput() {
               <button
                 type="button"
                 onClick={() => setShowSubShiftDialog(false)}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300"
               >
                 Batal
               </button>

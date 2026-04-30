@@ -226,7 +226,7 @@ const ProductionScheduling = () => {
                       return (
                         <div
                           key={schedule.id}
-                          className="p-3 bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow cursor-pointer"
+                          className="p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition-shadow cursor-pointer"
                         >
                           <div className="flex justify-between items-start mb-2">
                             <div className="text-sm font-medium text-gray-900 truncate">
@@ -269,32 +269,32 @@ const ProductionScheduling = () => {
 
       {/* Schedule List */}
       <div className="card">
-        <div className="px-6 py-4 border-b border-gray-200">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-semibold text-gray-900">All Schedules</h3>
         </div>
         
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Work Order
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('production.machine')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('production.machine')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Scheduled Time
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.status')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.actions')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {schedules.map((schedule) => {
                 const StatusIcon = getStatusIcon(schedule.status)
                 return (
-                  <tr key={schedule.id} className="hover:bg-gray-50">
+                  <tr key={schedule.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">{schedule.schedule_number}</div>
                     </td>
@@ -308,7 +308,7 @@ const ProductionScheduling = () => {
                       <div className="text-sm text-gray-900">
                         {new Date(schedule.scheduled_start).toLocaleDateString()} - {new Date(schedule.scheduled_end).toLocaleDateString()}
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
                         {new Date(schedule.scheduled_start).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} - 
                         {new Date(schedule.scheduled_end).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                       </div>
@@ -347,7 +347,7 @@ const ProductionScheduling = () => {
           <div className="text-center py-12">
             <CalendarDaysIcon className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900">No schedules found</h3>
-            <p className="mt-1 text-sm text-gray-500">Get started by creating your first schedule</p>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by creating your first schedule</p>
             <div className="mt-6">
               <button 
                 onClick={() => setShowNewScheduleModal(true)}
@@ -421,7 +421,7 @@ const ProductionScheduling = () => {
       {/* New Schedule Modal */}
       {showNewScheduleModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">📅 New Schedule</h3>
               <button 
@@ -434,7 +434,7 @@ const ProductionScheduling = () => {
             
             <form className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Work Order
                 </label>
                 <select className="input w-full">
@@ -448,7 +448,7 @@ const ProductionScheduling = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">{t('production.machine')}</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('production.machine')}</label>
                 <select className="input w-full">
                   <option value="">Select machine</option>
                   {machines.map((machine) => (
@@ -461,13 +461,13 @@ const ProductionScheduling = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Start Date
                   </label>
                   <input type="datetime-local" className="input w-full" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     End Date
                   </label>
                   <input type="datetime-local" className="input w-full" />

@@ -48,8 +48,8 @@ const { data, isLoading } = useGetWasteRecordsQuery({})
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Waste Management</h1>
-          <p className="text-gray-600">Track and manage production waste disposal</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Waste Management</h1>
+          <p className="text-gray-600 dark:text-gray-300">Track and manage production waste disposal</p>
         </div>
         <Link
           to="/app/waste/new"
@@ -65,8 +65,8 @@ const { data, isLoading } = useGetWasteRecordsQuery({})
         <div className="card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-2xl font-bold text-gray-900">{records.length}</div>
-              <div className="text-sm text-gray-500">Total Records</div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">{records.length}</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Total Records</div>
             </div>
             <DocumentTextIcon className="h-8 w-8 text-gray-400" />
           </div>
@@ -76,7 +76,7 @@ const { data, isLoading } = useGetWasteRecordsQuery({})
           <div className="flex items-center justify-between">
             <div>
               <div className="text-2xl font-bold text-blue-600">{totalQuantity.toLocaleString()}</div>
-              <div className="text-sm text-gray-500">Total Quantity</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Total Quantity</div>
             </div>
             <TrashIcon className="h-8 w-8 text-blue-400" />
           </div>
@@ -86,7 +86,7 @@ const { data, isLoading } = useGetWasteRecordsQuery({})
           <div className="flex items-center justify-between">
             <div>
               <div className="text-2xl font-bold text-orange-600">{productionRejectCount}</div>
-              <div className="text-sm text-gray-500">Production Rejects</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Production Rejects</div>
             </div>
             <div className="text-orange-400">🏭</div>
           </div>
@@ -96,7 +96,7 @@ const { data, isLoading } = useGetWasteRecordsQuery({})
           <div className="flex items-center justify-between">
             <div>
               <div className="text-2xl font-bold text-red-600">{highHazardCount}</div>
-              <div className="text-sm text-gray-500">High Hazard</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">High Hazard</div>
             </div>
             <ExclamationTriangleIcon className="h-8 w-8 text-red-400" />
           </div>
@@ -105,7 +105,7 @@ const { data, isLoading } = useGetWasteRecordsQuery({})
 
       {/* Category Overview */}
       <div className="card p-6">
-        <h3 className="font-semibold text-gray-900 mb-4">Waste Categories</h3>
+        <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Waste Categories</h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="p-4 bg-green-50 rounded-lg">
             <h4 className="font-medium text-green-900">Production Waste</h4>
@@ -128,9 +128,9 @@ const { data, isLoading } = useGetWasteRecordsQuery({})
               <span className="badge badge-danger">High Risk</span>
             </div>
           </div>
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <h4 className="font-medium text-gray-900">General Waste</h4>
-            <p className="text-sm text-gray-600">Regular disposal</p>
+          <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+            <h4 className="font-medium text-gray-900 dark:text-white">General Waste</h4>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Regular disposal</p>
             <div className="mt-2">
               <span className="badge badge-gray">No Risk</span>
             </div>
@@ -158,7 +158,7 @@ const { data, isLoading } = useGetWasteRecordsQuery({})
                   <th>{t('common.actions')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {records.map((record: any) => (
                   <tr key={record.id} className={record.source === 'production' ? 'bg-orange-50' : ''}>
                     <td className="font-medium">
@@ -172,14 +172,14 @@ const { data, isLoading } = useGetWasteRecordsQuery({})
                     <td>
                       {record.category_name}
                       {record.product_name && (
-                        <div className="text-xs text-gray-500">{record.product_name}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{record.product_name}</div>
                       )}
                     </td>
                     <td>{format(new Date(record.waste_date), 'dd MMM yyyy')}</td>
                     <td>
                       {record.source_department || '-'}
                       {record.machine_name && (
-                        <div className="text-xs text-gray-500">{record.machine_name}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{record.machine_name}</div>
                       )}
                     </td>
                     <td>
@@ -226,8 +226,8 @@ const { data, isLoading } = useGetWasteRecordsQuery({})
           <div className="mx-auto h-12 w-12 text-gray-400">
             🗑️
           </div>
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No waste records</h3>
-          <p className="mt-1 text-sm text-gray-500">Get started by recording your first waste disposal.</p>
+          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No waste records</h3>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by recording your first waste disposal.</p>
           <div className="mt-6">
             <Link to="/app/waste/new" className="btn-primary inline-flex items-center gap-2">
               <PlusIcon className="h-5 w-5" />

@@ -272,7 +272,7 @@ export default function OEEDashboardEnhanced() {
 
   if (isLoading) return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6 flex items-center justify-center">
-      <div className="text-center"><div className="w-16 h-16 border-4 border-blue-200 rounded-full animate-spin border-t-blue-600 mx-auto"></div><p className="mt-4 text-gray-500">Memuat data OEE...</p></div>
+      <div className="text-center"><div className="w-16 h-16 border-4 border-blue-200 rounded-full animate-spin border-t-blue-600 mx-auto"></div><p className="mt-4 text-gray-500 dark:text-gray-400">Memuat data OEE...</p></div>
     </div>
   );
 
@@ -283,29 +283,29 @@ export default function OEEDashboardEnhanced() {
       {/* Header */}
       <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
             <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg"><ChartBarIcon className="h-8 w-8 text-white" /></div>
             OEE Dashboard & RCA
           </h1>
-          <p className="text-gray-500 mt-2 ml-14">Overall Equipment Effectiveness dengan Root Cause Analysis Otomatis</p>
+          <p className="text-gray-500 dark:text-gray-400 mt-2 ml-14">Overall Equipment Effectiveness dengan Root Cause Analysis Otomatis</p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
-          <select className="px-4 py-2.5 border border-gray-200 rounded-xl bg-white" value={selectedMachine || ''} onChange={(e) => setSelectedMachine(e.target.value ? Number(e.target.value) : null)}>
+          <select className="px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800" value={selectedMachine || ''} onChange={(e) => setSelectedMachine(e.target.value ? Number(e.target.value) : null)}>
             <option value="">All Machines</option>
             {machinePerformance.map((m: any) => <option key={m.machine_id} value={m.machine_id}>{m.machine_name}</option>)}
           </select>
-          <select className="px-4 py-2.5 border border-gray-200 rounded-xl bg-white" value={dateRange} onChange={(e) => setDateRange(Number(e.target.value))}>
+          <select className="px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800" value={dateRange} onChange={(e) => setDateRange(Number(e.target.value))}>
             <option value={7}>Last 7 days</option><option value={30}>Last 30 days</option><option value={90}>Last 90 days</option>
           </select>
-          <button onClick={() => refetch()} className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50"><ArrowPathIcon className="h-5 w-5" />Refresh</button>
+          <button onClick={() => refetch()} className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"><ArrowPathIcon className="h-5 w-5" />Refresh</button>
         </div>
       </div>
 
       {!hasData ? (
-        <div className="bg-white rounded-2xl shadow-sm border p-12 text-center">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border p-12 text-center">
           <DocumentChartBarIcon className="h-16 w-16 text-blue-400 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-800 mb-2">Belum Ada Data Produksi</h3>
-          <p className="text-gray-500 mb-6">Data OEE dan RCA akan muncul setelah ada input produksi dari Work Order.</p>
+          <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">Belum Ada Data Produksi</h3>
+          <p className="text-gray-500 dark:text-gray-400 mb-6">Data OEE dan RCA akan muncul setelah ada input produksi dari Work Order.</p>
           <Link to="/app/production/work-orders" className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700"><WrenchScrewdriverIcon className="h-5 w-5" />Lihat Work Orders</Link>
         </div>
       ) : (
@@ -330,30 +330,30 @@ export default function OEEDashboardEnhanced() {
             <>
               {/* Stats Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
-                <div className="bg-white rounded-2xl shadow-sm border p-5 relative overflow-hidden">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border p-5 relative overflow-hidden">
                   <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${getOEEBgGradient(summary.avg_oee || 0)} opacity-10 rounded-bl-full`}></div>
                   <div className="flex items-center justify-between">
-                    <div><p className="text-sm text-gray-500">Average OEE</p><p className={`text-4xl font-bold ${getOEEColor(summary.avg_oee || 0)} mt-1`}>{(summary.avg_oee || 0).toFixed(1)}%</p><p className="text-xs text-gray-400">Target: ≥ 85%</p></div>
+                    <div><p className="text-sm text-gray-500 dark:text-gray-400">Average OEE</p><p className={`text-4xl font-bold ${getOEEColor(summary.avg_oee || 0)} mt-1`}>{(summary.avg_oee || 0).toFixed(1)}%</p><p className="text-xs text-gray-400">Target: ≥ 85%</p></div>
                     <div className="relative"><CircularProgress value={summary.avg_oee || 0} color={getProgressColor(summary.avg_oee || 0, 85)} /><ChartBarIcon className={`h-5 w-5 ${getOEEColor(summary.avg_oee || 0)} absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2`} /></div>
                   </div>
                 </div>
-                <div className="bg-white rounded-2xl shadow-sm border p-5 relative overflow-hidden">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border p-5 relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500 to-indigo-600 opacity-10 rounded-bl-full"></div>
                   <div className="flex items-center justify-between">
-                    <div><p className="text-sm text-gray-500">Efisiensi</p><p className={`text-4xl font-bold ${(summary.avg_availability || 0) >= 60 ? 'text-green-600' : 'text-red-600'} mt-1`}>{(summary.avg_availability || 0).toFixed(1)}%</p><p className="text-xs text-gray-400">Target: ≥ 60%</p></div>
+                    <div><p className="text-sm text-gray-500 dark:text-gray-400">Efisiensi</p><p className={`text-4xl font-bold ${(summary.avg_availability || 0) >= 60 ? 'text-green-600' : 'text-red-600'} mt-1`}>{(summary.avg_availability || 0).toFixed(1)}%</p><p className="text-xs text-gray-400">Target: ≥ 60%</p></div>
                     <div className="relative"><CircularProgress value={summary.avg_availability || 0} color="blue" /><BoltIcon className="h-5 w-5 text-blue-600 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" /></div>
                   </div>
                 </div>
-                <div className="bg-white rounded-2xl shadow-sm border p-5 relative overflow-hidden">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border p-5 relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-500 to-emerald-600 opacity-10 rounded-bl-full"></div>
                   <div className="flex items-center justify-between">
-                    <div><p className="text-sm text-gray-500">Quality</p><p className={`text-4xl font-bold ${(summary.avg_quality || 0) >= 95 ? 'text-green-600' : 'text-yellow-600'} mt-1`}>{(summary.avg_quality || 0).toFixed(1)}%</p><p className="text-xs text-gray-400">Target: ≥ 95%</p></div>
+                    <div><p className="text-sm text-gray-500 dark:text-gray-400">Quality</p><p className={`text-4xl font-bold ${(summary.avg_quality || 0) >= 95 ? 'text-green-600' : 'text-yellow-600'} mt-1`}>{(summary.avg_quality || 0).toFixed(1)}%</p><p className="text-xs text-gray-400">Target: ≥ 95%</p></div>
                     <div className="relative"><CircularProgress value={summary.avg_quality || 0} color="green" /><CheckCircleIcon className="h-5 w-5 text-green-600 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" /></div>
                   </div>
                 </div>
-                <div className="bg-white rounded-2xl shadow-sm border p-5 cursor-pointer hover:shadow-md" onClick={() => setActiveTab('rca')}>
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border p-5 cursor-pointer hover:shadow-md" onClick={() => setActiveTab('rca')}>
                   <div className="flex items-center justify-between">
-                    <div><p className="text-sm text-gray-500">RCA Status</p><p className={`text-2xl font-bold mt-1 ${rcaSummary.overallHealth === 'critical' ? 'text-red-600' : rcaSummary.overallHealth === 'warning' ? 'text-orange-600' : 'text-green-600'}`}>{rcaSummary.criticalCount > 0 ? `${rcaSummary.criticalCount} Critical` : rcaSummary.highCount > 0 ? `${rcaSummary.highCount} High` : 'Good'}</p><p className="text-xs text-gray-400">{rcaSummary.totalRecommendations} rekomendasi</p></div>
+                    <div><p className="text-sm text-gray-500 dark:text-gray-400">RCA Status</p><p className={`text-2xl font-bold mt-1 ${rcaSummary.overallHealth === 'critical' ? 'text-red-600' : rcaSummary.overallHealth === 'warning' ? 'text-orange-600' : 'text-green-600'}`}>{rcaSummary.criticalCount > 0 ? `${rcaSummary.criticalCount} Critical` : rcaSummary.highCount > 0 ? `${rcaSummary.highCount} High` : 'Good'}</p><p className="text-xs text-gray-400">{rcaSummary.totalRecommendations} rekomendasi</p></div>
                     <div className={`p-3 rounded-xl ${rcaSummary.overallHealth === 'critical' ? 'bg-red-100' : rcaSummary.overallHealth === 'warning' ? 'bg-orange-100' : 'bg-green-100'}`}><MagnifyingGlassIcon className={`h-8 w-8 ${rcaSummary.overallHealth === 'critical' ? 'text-red-600' : rcaSummary.overallHealth === 'warning' ? 'text-orange-600' : 'text-green-600'}`} /></div>
                   </div>
                 </div>
@@ -361,8 +361,8 @@ export default function OEEDashboardEnhanced() {
 
               {/* Charts */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                <div className="bg-white rounded-2xl shadow-sm border p-5">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2"><ArrowTrendingUpIcon className="h-5 w-5 text-blue-500" />OEE Trend</h3>
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border p-5">
+                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2"><ArrowTrendingUpIcon className="h-5 w-5 text-blue-500" />OEE Trend</h3>
                   {trendData.length > 0 ? (
                     <ResponsiveContainer width="100%" height={280}>
                       <AreaChart data={trendData}>
@@ -376,15 +376,15 @@ export default function OEEDashboardEnhanced() {
                     </ResponsiveContainer>
                   ) : <div className="h-64 flex items-center justify-center text-gray-400">No trend data</div>}
                 </div>
-                <div className="bg-white rounded-2xl shadow-sm border p-5">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2"><ClockIcon className="h-5 w-5 text-orange-500" />Downtime per Kategori {totalDowntime > 0 && <span className="text-sm font-normal text-gray-500">(Total: {formatMinutes(totalDowntime)})</span>}</h3>
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border p-5">
+                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2"><ClockIcon className="h-5 w-5 text-orange-500" />Downtime per Kategori {totalDowntime > 0 && <span className="text-sm font-normal text-gray-500 dark:text-gray-400">(Total: {formatMinutes(totalDowntime)})</span>}</h3>
                   {downtimeAnalysis.length > 0 ? (
                     <div className="flex items-center gap-6">
                       <ResponsiveContainer width="50%" height={220}>
                         <PieChart><Pie data={downtimeAnalysis} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="minutes" paddingAngle={2}>{downtimeAnalysis.map((_: any, i: number) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie><Tooltip formatter={(v: number) => [formatMinutes(v), 'Downtime']} /></PieChart>
                       </ResponsiveContainer>
                       <div className="flex-1 space-y-2">
-                        {downtimeAnalysis.map((item: any, i: number) => <div key={i} className="flex items-center justify-between"><div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} /><span className="text-sm text-gray-600">{item.category}</span></div><span className="text-sm font-medium">{formatMinutes(item.minutes)} ({(item.minutes / totalDowntime * 100).toFixed(0)}%)</span></div>)}
+                        {downtimeAnalysis.map((item: any, i: number) => <div key={i} className="flex items-center justify-between"><div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} /><span className="text-sm text-gray-600 dark:text-gray-300">{item.category}</span></div><span className="text-sm font-medium">{formatMinutes(item.minutes)} ({(item.minutes / totalDowntime * 100).toFixed(0)}%)</span></div>)}
                       </div>
                     </div>
                   ) : <div className="h-64 flex items-center justify-center text-gray-400">No downtime data</div>}
@@ -393,9 +393,9 @@ export default function OEEDashboardEnhanced() {
 
               {/* Quick RCA Preview */}
               {rcaAnalysis.length > 0 && (
-                <div className="bg-white rounded-2xl shadow-sm border p-5">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border p-5">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2"><LightBulbIcon className="h-5 w-5 text-yellow-500" />Quick RCA Insights</h3>
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2"><LightBulbIcon className="h-5 w-5 text-yellow-500" />Quick RCA Insights</h3>
                     <button onClick={() => setActiveTab('rca')} className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1">Lihat Detail RCA <ArrowRightIcon className="h-4 w-4" /></button>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -408,8 +408,8 @@ export default function OEEDashboardEnhanced() {
                             <div className="flex items-center gap-2"><Icon className={`h-5 w-5 ${config?.textColor}`} /><span className="font-medium">{config?.label}</span></div>
                             <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${getSeverityBadge(rca.severity)}`}>{rca.severity}</span>
                           </div>
-                          <p className="text-sm text-gray-600">{formatMinutes(rca.totalDowntime)} ({rca.percentOfTotal.toFixed(1)}%)</p>
-                          <p className="text-xs text-gray-500 mt-1">Top: {rca.topReasons[0]}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">{formatMinutes(rca.totalDowntime)} ({rca.percentOfTotal.toFixed(1)}%)</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Top: {rca.topReasons[0]}</p>
                         </div>
                       );
                     })}
@@ -435,7 +435,7 @@ export default function OEEDashboardEnhanced() {
                           <Icon className="h-5 w-5 text-white" />
                         </div>
                         <div>
-                          <p className="text-xs text-gray-500">{config.label}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{config.label}</p>
                           <p className={`text-lg font-bold ${config.textColor}`}>{formatMinutes(minutes)}</p>
                           <p className="text-xs text-gray-400">Limit: {config.max}% /hari</p>
                         </div>
@@ -446,9 +446,9 @@ export default function OEEDashboardEnhanced() {
               </div>
 
               {/* Downtime Records Table */}
-              <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border overflow-hidden">
                 <div className="p-5 border-b flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
                     <ClockIcon className="h-5 w-5 text-orange-500" />
                     Detail Downtime Records
                   </h3>
@@ -460,23 +460,23 @@ export default function OEEDashboardEnhanced() {
                 {loadingDowntime ? (
                   <div className="p-12 text-center">
                     <ArrowPathIcon className="h-8 w-8 text-gray-400 animate-spin mx-auto mb-2" />
-                    <p className="text-gray-500">Loading downtime data...</p>
+                    <p className="text-gray-500 dark:text-gray-400">Loading downtime data...</p>
                   </div>
                 ) : downtimeDetails.length === 0 ? (
                   <div className="p-12 text-center">
                     <ClockIcon className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                    <p className="text-gray-500">Belum ada data downtime</p>
+                    <p className="text-gray-500 dark:text-gray-400">Belum ada data downtime</p>
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full">
-                      <thead className="bg-gray-50">
+                      <thead className="bg-gray-50 dark:bg-gray-900">
                         <tr>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Waktu</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kategori</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Alasan</th>
-                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Durasi</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Source</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Waktu</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Kategori</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Alasan</th>
+                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Durasi</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Source</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
@@ -485,8 +485,8 @@ export default function OEEDashboardEnhanced() {
                           const config = DOWNTIME_CATEGORIES[categoryKey] || DOWNTIME_CATEGORIES.others;
                           const Icon = config?.icon || CogIcon;
                           return (
-                            <tr key={idx} className="hover:bg-gray-50">
-                              <td className="px-4 py-3 text-sm text-gray-600">
+                            <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                              <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
                                 {record.start_time ? format(parseISO(record.start_time), 'dd MMM yyyy HH:mm', { locale: idLocale }) : '-'}
                               </td>
                               <td className="px-4 py-3">
@@ -499,10 +499,10 @@ export default function OEEDashboardEnhanced() {
                                   </span>
                                 </div>
                               </td>
-                              <td className="px-4 py-3 text-sm text-gray-800 max-w-xs truncate" title={record.reason}>
+                              <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-100 max-w-xs truncate" title={record.reason}>
                                 {record.reason || '-'}
                               </td>
-                              <td className="px-4 py-3 text-sm font-medium text-right text-gray-800">
+                              <td className="px-4 py-3 text-sm font-medium text-right text-gray-800 dark:text-gray-100">
                                 {formatMinutes(record.duration_minutes || 0)}
                               </td>
                               <td className="px-4 py-3">
@@ -520,38 +520,38 @@ export default function OEEDashboardEnhanced() {
               </div>
 
               {/* Edit Production Records */}
-              <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border overflow-hidden">
                 <div className="p-5 border-b">
-                  <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
                     <WrenchScrewdriverIcon className="h-5 w-5 text-blue-500" />
                     Edit Kategori Downtime per Shift
                   </h3>
-                  <p className="text-sm text-gray-500 mt-1">Klik tombol Edit untuk mengubah breakdown downtime per kategori</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Klik tombol Edit untuk mengubah breakdown downtime per kategori</p>
                 </div>
                 
                 {shiftProductions.length === 0 ? (
-                  <div className="p-8 text-center text-gray-500">Belum ada data shift production</div>
+                  <div className="p-8 text-center text-gray-500 dark:text-gray-400">Belum ada data shift production</div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full">
-                      <thead className="bg-gray-50">
+                      <thead className="bg-gray-50 dark:bg-gray-900">
                         <tr>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mesin</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Produk</th>
-                          <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Total DT</th>
-                          <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Mesin</th>
-                          <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Operator</th>
-                          <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Material</th>
-                          <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Design</th>
-                          <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Others</th>
-                          <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">OEE</th>
-                          <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tanggal</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Mesin</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Produk</th>
+                          <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total DT</th>
+                          <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Mesin</th>
+                          <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Operator</th>
+                          <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Material</th>
+                          <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Design</th>
+                          <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Others</th>
+                          <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">OEE</th>
+                          <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
                         {shiftProductions.map((sp: any) => (
-                          <tr key={sp.id} className="hover:bg-gray-50">
+                          <tr key={sp.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                             <td className="px-4 py-3 text-sm">{sp.production_date ? format(parseISO(sp.production_date), 'dd MMM yyyy', { locale: idLocale }) : '-'}</td>
                             <td className="px-4 py-3 text-sm font-medium">{sp.machine_name}</td>
                             <td className="px-4 py-3 text-sm">{sp.product_name}</td>
@@ -560,7 +560,7 @@ export default function OEEDashboardEnhanced() {
                             <td className="px-4 py-3 text-sm text-center text-orange-600">{sp.downtime_operator || 0}</td>
                             <td className="px-4 py-3 text-sm text-center text-yellow-600">{sp.downtime_material || 0}</td>
                             <td className="px-4 py-3 text-sm text-center text-blue-600">{sp.downtime_design || 0}</td>
-                            <td className="px-4 py-3 text-sm text-center text-gray-600">{sp.downtime_others || 0}</td>
+                            <td className="px-4 py-3 text-sm text-center text-gray-600 dark:text-gray-300">{sp.downtime_others || 0}</td>
                             <td className="px-4 py-3 text-sm text-center font-medium">{sp.oee_score?.toFixed(1)}%</td>
                             <td className="px-4 py-3 text-center">
                               <button onClick={() => openEditModal(sp)} className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200">
@@ -577,8 +577,8 @@ export default function OEEDashboardEnhanced() {
 
               {/* Downtime by Category Chart */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-white rounded-2xl shadow-sm border p-5">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border p-5">
+                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
                     <ChartPieIcon className="h-5 w-5 text-purple-500" />
                     Distribusi Downtime
                   </h3>
@@ -597,7 +597,7 @@ export default function OEEDashboardEnhanced() {
                           <div key={i} className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                              <span className="text-sm text-gray-600">{item.category}</span>
+                              <span className="text-sm text-gray-600 dark:text-gray-300">{item.category}</span>
                             </div>
                             <span className="text-sm font-medium">{formatMinutes(item.minutes)} ({(item.minutes / totalDowntime * 100).toFixed(0)}%)</span>
                           </div>
@@ -609,8 +609,8 @@ export default function OEEDashboardEnhanced() {
                   )}
                 </div>
 
-                <div className="bg-white rounded-2xl shadow-sm border p-5">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border p-5">
+                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
                     <ExclamationTriangleIcon className="h-5 w-5 text-red-500" />
                     Limit vs Actual
                   </h3>
@@ -624,12 +624,12 @@ export default function OEEDashboardEnhanced() {
                       return (
                         <div key={key}>
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-sm text-gray-600">{config.label}</span>
+                            <span className="text-sm text-gray-600 dark:text-gray-300">{config.label}</span>
                             <span className={`text-sm font-medium ${isOverLimit ? 'text-red-600' : 'text-green-600'}`}>
                               {percentOfShift.toFixed(1)}% / {config.max}%
                             </span>
                           </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                             <div 
                               className={`h-2 rounded-full ${isOverLimit ? 'bg-red-500' : 'bg-green-500'}`}
                               style={{ width: `${Math.min((percentOfShift / (config.max || 100)) * 100, 100)}%` }}
@@ -649,11 +649,11 @@ export default function OEEDashboardEnhanced() {
               {/* RCA Summary */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <div className={`bg-white rounded-xl p-4 border-2 ${rcaSummary.overallHealth === 'critical' ? 'border-red-300' : rcaSummary.overallHealth === 'warning' ? 'border-orange-300' : 'border-green-300'}`}>
-                  <div className="flex items-center gap-3"><ShieldCheckIcon className={`h-8 w-8 ${rcaSummary.overallHealth === 'critical' ? 'text-red-600' : rcaSummary.overallHealth === 'warning' ? 'text-orange-600' : 'text-green-600'}`} /><div><p className="text-sm text-gray-500">Overall Status</p><p className={`font-bold ${rcaSummary.overallHealth === 'critical' ? 'text-red-600' : rcaSummary.overallHealth === 'warning' ? 'text-orange-600' : 'text-green-600'}`}>{rcaSummary.overallHealth === 'critical' ? 'Perlu Tindakan Segera' : rcaSummary.overallHealth === 'warning' ? 'Perlu Perhatian' : 'Baik'}</p></div></div>
+                  <div className="flex items-center gap-3"><ShieldCheckIcon className={`h-8 w-8 ${rcaSummary.overallHealth === 'critical' ? 'text-red-600' : rcaSummary.overallHealth === 'warning' ? 'text-orange-600' : 'text-green-600'}`} /><div><p className="text-sm text-gray-500 dark:text-gray-400">Overall Status</p><p className={`font-bold ${rcaSummary.overallHealth === 'critical' ? 'text-red-600' : rcaSummary.overallHealth === 'warning' ? 'text-orange-600' : 'text-green-600'}`}>{rcaSummary.overallHealth === 'critical' ? 'Perlu Tindakan Segera' : rcaSummary.overallHealth === 'warning' ? 'Perlu Perhatian' : 'Baik'}</p></div></div>
                 </div>
-                <div className="bg-white rounded-xl p-4 border"><div className="flex items-center gap-3"><FireIcon className="h-8 w-8 text-red-600" /><div><p className="text-sm text-gray-500">Critical Issues</p><p className="text-lg font-bold text-red-600">{rcaSummary.criticalCount}</p></div></div></div>
-                <div className="bg-white rounded-xl p-4 border"><div className="flex items-center gap-3"><ExclamationCircleIcon className="h-8 w-8 text-orange-600" /><div><p className="text-sm text-gray-500">High Priority</p><p className="text-lg font-bold text-orange-600">{rcaSummary.highCount}</p></div></div></div>
-                <div className="bg-white rounded-xl p-4 border"><div className="flex items-center gap-3"><ClipboardDocumentCheckIcon className="h-8 w-8 text-blue-600" /><div><p className="text-sm text-gray-500">Total Rekomendasi</p><p className="text-lg font-bold text-blue-600">{rcaSummary.totalRecommendations}</p></div></div></div>
+                <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border"><div className="flex items-center gap-3"><FireIcon className="h-8 w-8 text-red-600" /><div><p className="text-sm text-gray-500 dark:text-gray-400">Critical Issues</p><p className="text-lg font-bold text-red-600">{rcaSummary.criticalCount}</p></div></div></div>
+                <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border"><div className="flex items-center gap-3"><ExclamationCircleIcon className="h-8 w-8 text-orange-600" /><div><p className="text-sm text-gray-500 dark:text-gray-400">High Priority</p><p className="text-lg font-bold text-orange-600">{rcaSummary.highCount}</p></div></div></div>
+                <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border"><div className="flex items-center gap-3"><ClipboardDocumentCheckIcon className="h-8 w-8 text-blue-600" /><div><p className="text-sm text-gray-500 dark:text-gray-400">Total Rekomendasi</p><p className="text-lg font-bold text-blue-600">{rcaSummary.totalRecommendations}</p></div></div></div>
               </div>
 
               {/* RCA Detail Cards */}
@@ -670,7 +670,7 @@ export default function OEEDashboardEnhanced() {
                             <div className={`p-3 rounded-xl bg-gradient-to-br ${config?.color}`}><Icon className="h-6 w-6 text-white" /></div>
                             <div>
                               <div className="flex items-center gap-2"><h3 className="text-lg font-bold">{config?.label}</h3><span className={`px-2 py-0.5 text-xs font-medium rounded-full ${getSeverityBadge(rca.severity)}`}>{rca.severity.toUpperCase()}</span>{getTrendIcon(rca.trend)}</div>
-                              <p className="text-sm text-gray-500">PIC: {config?.pic} | Downtime: {formatMinutes(rca.totalDowntime)} ({rca.percentOfTotal.toFixed(1)}%)</p>
+                              <p className="text-sm text-gray-500 dark:text-gray-400">PIC: {config?.pic} | Downtime: {formatMinutes(rca.totalDowntime)} ({rca.percentOfTotal.toFixed(1)}%)</p>
                             </div>
                           </div>
                           <ArrowRightIcon className={`h-5 w-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
@@ -683,7 +683,7 @@ export default function OEEDashboardEnhanced() {
                               <h4 className="font-semibold mb-4 flex items-center gap-2"><BeakerIcon className="h-5 w-5 text-purple-500" />5 Why Analysis</h4>
                               <div className="space-y-2">
                                 {[{ l: 'Why 1', v: rca.whyAnalysis.why1, c: 'border-red-300 bg-red-50' }, { l: 'Why 2', v: rca.whyAnalysis.why2, c: 'border-orange-300 bg-orange-50' }, { l: 'Why 3', v: rca.whyAnalysis.why3, c: 'border-yellow-300 bg-yellow-50' }, { l: 'Why 4', v: rca.whyAnalysis.why4, c: 'border-blue-300 bg-blue-50' }, { l: 'Why 5 (Root)', v: rca.whyAnalysis.why5, c: 'border-purple-300 bg-purple-50' }].map((w, j) => (
-                                  <div key={j} className={`p-3 rounded-lg border-l-4 ${w.c}`}><p className="text-xs font-medium text-gray-500">{w.l}</p><p className="text-sm">{w.v}</p></div>
+                                  <div key={j} className={`p-3 rounded-lg border-l-4 ${w.c}`}><p className="text-xs font-medium text-gray-500 dark:text-gray-400">{w.l}</p><p className="text-sm">{w.v}</p></div>
                                 ))}
                               </div>
                             </div>
@@ -710,19 +710,19 @@ export default function OEEDashboardEnhanced() {
           )}
 
           {activeTab === 'machines' && (
-            <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
-              <div className="px-6 py-4 border-b bg-gray-50"><h3 className="font-semibold">Machine Performance</h3></div>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border overflow-hidden">
+              <div className="px-6 py-4 border-b bg-gray-50 dark:bg-gray-900"><h3 className="font-semibold">Machine Performance</h3></div>
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50"><tr>{['Machine', 'Status', 'OEE', 'Downtime', 'Production', 'Actions'].map(h => <th key={h} className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{h}</th>)}</tr></thead>
+                  <thead className="bg-gray-50 dark:bg-gray-900"><tr>{['Machine', 'Status', 'OEE', 'Downtime', 'Production', 'Actions'].map(h => <th key={h} className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">{h}</th>)}</tr></thead>
                   <tbody className="divide-y">
                     {machinePerformance.map((m: any) => (
-                      <tr key={m.machine_id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4"><div className="font-medium">{m.machine_name}</div><div className="text-xs text-gray-500">{m.machine_code}</div></td>
+                      <tr key={m.machine_id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                        <td className="px-6 py-4"><div className="font-medium">{m.machine_name}</div><div className="text-xs text-gray-500 dark:text-gray-400">{m.machine_code}</div></td>
                         <td className="px-6 py-4"><span className={`px-2 py-1 text-xs font-medium rounded-full ${m.status === 'running' ? 'bg-green-100 text-green-800' : m.status === 'maintenance' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>{m.status}</span></td>
                         <td className="px-6 py-4"><span className={`font-bold ${getOEEColor(m.avg_oee)}`}>{m.avg_oee?.toFixed(1)}%</span></td>
-                        <td className="px-6 py-4 text-gray-600">{m.total_downtime} min</td>
-                        <td className="px-6 py-4 text-gray-600">{m.total_production?.toLocaleString()} units</td>
+                        <td className="px-6 py-4 text-gray-600 dark:text-gray-300">{m.total_downtime} min</td>
+                        <td className="px-6 py-4 text-gray-600 dark:text-gray-300">{m.total_production?.toLocaleString()} units</td>
                         <td className="px-6 py-4"><button onClick={() => setSelectedMachine(m.machine_id)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg"><EyeIcon className="h-4 w-4" /></button></td>
                       </tr>
                     ))}
@@ -733,20 +733,20 @@ export default function OEEDashboardEnhanced() {
           )}
 
           {activeTab === 'alerts' && (
-            <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
-              <div className="px-6 py-4 border-b bg-gray-50 flex justify-between items-center">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border overflow-hidden">
+              <div className="px-6 py-4 border-b bg-gray-50 dark:bg-gray-900 flex justify-between items-center">
                 <h3 className="font-semibold">Alerts</h3>
                 <select className="px-3 py-1.5 border rounded-lg text-sm" value={alertFilter} onChange={(e) => setAlertFilter(e.target.value)}><option value="active">Active</option><option value="acknowledged">Acknowledged</option><option value="resolved">Resolved</option></select>
               </div>
               <div className="divide-y">
                 {alerts.length > 0 ? alerts.map((alert: any) => (
-                  <div key={alert.id} className="p-5 hover:bg-gray-50">
+                  <div key={alert.id} className="p-5 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3">
                         <ExclamationTriangleIcon className={`h-6 w-6 ${alert.severity === 'critical' ? 'text-red-500' : alert.severity === 'high' ? 'text-orange-500' : 'text-yellow-500'}`} />
                         <div>
                           <div className="flex items-center gap-2 mb-1"><h4 className="font-semibold">{alert.title}</h4><span className={`px-2 py-0.5 text-xs font-medium rounded-full ${getSeverityBadge(alert.severity)}`}>{alert.severity}</span></div>
-                          <p className="text-sm text-gray-600">{alert.message}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">{alert.message}</p>
                           <p className="text-xs text-gray-400 mt-1">{alert.machine_name} | {format(parseISO(alert.alert_date), 'dd MMM yyyy HH:mm', { locale: idLocale })}</p>
                         </div>
                       </div>
@@ -758,7 +758,7 @@ export default function OEEDashboardEnhanced() {
                       )}
                     </div>
                   </div>
-                )) : <div className="p-12 text-center text-gray-500"><CheckCircleIcon className="h-12 w-12 mx-auto text-green-400 mb-2" /><p>No {alertFilter} alerts</p></div>}
+                )) : <div className="p-12 text-center text-gray-500 dark:text-gray-400"><CheckCircleIcon className="h-12 w-12 mx-auto text-green-400 mb-2" /><p>No {alertFilter} alerts</p></div>}
               </div>
             </div>
           )}
@@ -768,22 +768,22 @@ export default function OEEDashboardEnhanced() {
       {/* Edit Downtime Modal */}
       {editingRecord && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b">
-              <h3 className="text-lg font-semibold text-gray-800">Edit Kategori Downtime</h3>
-              <p className="text-sm text-gray-500 mt-1">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Edit Kategori Downtime</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 {editingRecord.production_date ? format(parseISO(editingRecord.production_date), 'dd MMM yyyy', { locale: idLocale }) : ''} - {editingRecord.machine_name}
               </p>
             </div>
             
             <div className="p-6 space-y-4">
-              <div className="bg-gray-50 rounded-lg p-4 mb-4">
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 mb-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Total Downtime Asli:</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">Total Downtime Asli:</span>
                   <span className="font-bold">{formatMinutes(editingRecord.downtime_minutes)}</span>
                 </div>
                 <div className="flex justify-between items-center mt-2">
-                  <span className="text-sm text-gray-600">Total dari Form:</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">Total dari Form:</span>
                   <span className={`font-bold ${totalEditDowntime !== editingRecord.downtime_minutes ? 'text-orange-600' : 'text-green-600'}`}>
                     {formatMinutes(totalEditDowntime)}
                   </span>
@@ -792,7 +792,7 @@ export default function OEEDashboardEnhanced() {
 
               {/* Mesin */}
               <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   <CogIcon className="h-4 w-4 text-red-500" /> Downtime Mesin (menit)
                 </label>
                 <input
@@ -807,7 +807,7 @@ export default function OEEDashboardEnhanced() {
 
               {/* Operator */}
               <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   <UserIcon className="h-4 w-4 text-orange-500" /> Downtime Operator (menit)
                 </label>
                 <input
@@ -822,7 +822,7 @@ export default function OEEDashboardEnhanced() {
 
               {/* Material */}
               <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   <CubeIcon className="h-4 w-4 text-yellow-500" /> Downtime Material (menit)
                 </label>
                 <input
@@ -837,7 +837,7 @@ export default function OEEDashboardEnhanced() {
 
               {/* Design */}
               <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   <PaintBrushIcon className="h-4 w-4 text-blue-500" /> Downtime Design Change (menit)
                 </label>
                 <input
@@ -852,8 +852,8 @@ export default function OEEDashboardEnhanced() {
 
               {/* Others */}
               <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
-                  <EllipsisHorizontalIcon className="h-4 w-4 text-gray-500" /> Downtime Lainnya (menit)
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  <EllipsisHorizontalIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" /> Downtime Lainnya (menit)
                 </label>
                 <input
                   type="number"
@@ -866,10 +866,10 @@ export default function OEEDashboardEnhanced() {
               </div>
             </div>
 
-            <div className="p-6 border-t bg-gray-50 flex justify-end gap-3">
+            <div className="p-6 border-t bg-gray-50 dark:bg-gray-900 flex justify-end gap-3">
               <button
                 onClick={() => setEditingRecord(null)}
-                className="px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-lg"
+                className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:bg-gray-700 rounded-lg"
               >
                 Batal
               </button>

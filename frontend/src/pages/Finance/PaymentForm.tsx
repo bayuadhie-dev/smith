@@ -39,8 +39,8 @@ const navigate = useNavigate()
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">💳 Record Payment</h1>
-          <p className="text-gray-600 mt-1">Record supplier payment or cash transaction</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">💳 Record Payment</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Record supplier payment or cash transaction</p>
         </div>
         <button 
           onClick={handleCancel}
@@ -54,7 +54,7 @@ const navigate = useNavigate()
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Payment Type
               </label>
               <select 
@@ -72,7 +72,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Supplier/Payee
               </label>
               <select 
@@ -89,7 +89,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Invoice/Reference
               </label>
               <input
@@ -102,7 +102,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Amount (IDR)
               </label>
               <input
@@ -116,7 +116,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Payment Date
               </label>
               <input
@@ -129,7 +129,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Bank Account
               </label>
               <select 
@@ -147,7 +147,7 @@ const navigate = useNavigate()
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">{t('common.description')}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('common.description')}</label>
             <textarea
               className="input w-full"
               rows={3}

@@ -68,7 +68,7 @@ const ProductDashboardNew: React.FC = () => {
   if (!stats) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-600">Gagal memuat data dashboard</p>
+        <p className="text-gray-600 dark:text-gray-300">Gagal memuat data dashboard</p>
       </div>
     );
   }
@@ -78,14 +78,14 @@ const ProductDashboardNew: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard Produk</h1>
-          <p className="text-gray-600">Ringkasan data master produk</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard Produk</h1>
+          <p className="text-gray-600 dark:text-gray-300">Ringkasan data master produk</p>
         </div>
         <div className="flex items-center space-x-3">
           <select
             value={timeRange}
             onChange={(e) => setTimeRange(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">Semua Waktu</option>
             <option value="7d">7 Hari Terakhir</option>
@@ -97,11 +97,11 @@ const ProductDashboardNew: React.FC = () => {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Produk</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.total_products.toLocaleString('id-ID')}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Produk</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total_products.toLocaleString('id-ID')}</p>
             </div>
             <div className="p-3 bg-blue-100 rounded-full">
               <CubeIcon className="w-6 h-6 text-blue-600" />
@@ -109,12 +109,12 @@ const ProductDashboardNew: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Produk Aktif</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Produk Aktif</p>
               <p className="text-2xl font-bold text-green-600">{stats.active_products.toLocaleString('id-ID')}</p>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 {((stats.active_products / stats.total_products) * 100).toFixed(1)}% dari total
               </p>
             </div>
@@ -124,12 +124,12 @@ const ProductDashboardNew: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Produk Tidak Aktif</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Produk Tidak Aktif</p>
               <p className="text-2xl font-bold text-red-600">{stats.inactive_products.toLocaleString('id-ID')}</p>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 {((stats.inactive_products / stats.total_products) * 100).toFixed(1)}% dari total
               </p>
             </div>
@@ -139,12 +139,12 @@ const ProductDashboardNew: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Jenis Spunlace</p>
-              <p className="text-2xl font-bold text-gray-900">{stats?.spunlace_distribution?.length || 0}</p>
-              <p className="text-xs text-gray-500">Tipe berbeda</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Jenis Spunlace</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.spunlace_distribution?.length || 0}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Tipe berbeda</p>
             </div>
             <div className="p-3 bg-purple-100 rounded-full">
               <ChartBarIcon className="w-6 h-6 text-purple-600" />
@@ -155,13 +155,13 @@ const ProductDashboardNew: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Spunlace Distribution */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
             <ChartPieIcon className="w-5 h-5 mr-2" />
             Distribusi Jenis Spunlace
           </h3>
           {stats?.spunlace_distribution?.length === 0 ? (
-            <p className="text-gray-600 text-center py-4">Tidak ada data spunlace</p>
+            <p className="text-gray-600 dark:text-gray-300 text-center py-4">Tidak ada data spunlace</p>
           ) : (
             <div className="space-y-3">
               {stats?.spunlace_distribution?.map((item, index) => (
@@ -175,11 +175,11 @@ const ProductDashboardNew: React.FC = () => {
                         ][index % 6]
                       }}
                     ></div>
-                    <span className="text-sm font-medium text-gray-900">{item.type}</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">{item.type}</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm text-gray-600">{item.count} produk</span>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-sm text-gray-600 dark:text-gray-300">{item.count} produk</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
                       ({((item.count / stats.total_products) * 100).toFixed(1)}%)
                     </span>
                   </div>
@@ -190,13 +190,13 @@ const ProductDashboardNew: React.FC = () => {
         </div>
 
         {/* Process Distribution */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
             <ArrowTrendingUpIcon className="w-5 h-5 mr-2" />
             Distribusi Process Produksi
           </h3>
           {stats?.process_distribution?.length === 0 ? (
-            <p className="text-gray-600 text-center py-4">Tidak ada data process</p>
+            <p className="text-gray-600 dark:text-gray-300 text-center py-4">Tidak ada data process</p>
           ) : (
             <div className="space-y-3">
               {stats?.process_distribution?.map((item, index) => (
@@ -210,13 +210,13 @@ const ProductDashboardNew: React.FC = () => {
                         ][index % 6]
                       }}
                     ></div>
-                    <span className="text-sm font-medium text-gray-900 truncate max-w-xs" title={item.process}>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white truncate max-w-xs" title={item.process}>
                       {item.process}
                     </span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm text-gray-600">{item.count} produk</span>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-sm text-gray-600 dark:text-gray-300">{item.count} produk</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
                       ({((item.count / stats.total_products) * 100).toFixed(1)}%)
                     </span>
                   </div>
@@ -228,40 +228,40 @@ const ProductDashboardNew: React.FC = () => {
       </div>
 
       {/* Recent Products */}
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
         <div className="p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Produk Terbaru</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Produk Terbaru</h3>
           {stats?.recent_products?.length === 0 ? (
-            <p className="text-gray-600 text-center py-4">Tidak ada produk baru</p>
+            <p className="text-gray-600 dark:text-gray-300 text-center py-4">Tidak ada produk baru</p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-900">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Kode Produk
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Nama Produk
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Tanggal Dibuat
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.status')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {stats?.recent_products?.map((product) => (
-                    <tr key={product.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <tr key={product.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                         {product.kode_produk}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
+                      <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
                         <div className="max-w-xs truncate" title={product.nama_produk}>
                           {product.nama_produk}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {formatDate(product.created_at)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -283,23 +283,23 @@ const ProductDashboardNew: React.FC = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Aksi Cepat</h3>
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Aksi Cepat</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button className="p-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-left">
+          <button className="p-4 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 transition-colors text-left">
             <CubeIcon className="w-6 h-6 text-blue-600 mb-2" />
-            <p className="font-medium text-gray-900">Tambah Produk Baru</p>
-            <p className="text-sm text-gray-600">Tambah produk master baru</p>
+            <p className="font-medium text-gray-900 dark:text-white">Tambah Produk Baru</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Tambah produk master baru</p>
           </button>
-          <button className="p-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-left">
+          <button className="p-4 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 transition-colors text-left">
             <FunnelIcon className="w-6 h-6 text-green-600 mb-2" />
-            <p className="font-medium text-gray-900">FunnelIcon Produk</p>
-            <p className="text-sm text-gray-600">Cari dan filter produk</p>
+            <p className="font-medium text-gray-900 dark:text-white">FunnelIcon Produk</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Cari dan filter produk</p>
           </button>
-          <button className="p-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-left">
+          <button className="p-4 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 transition-colors text-left">
             <ChartBarIcon className="w-6 h-6 text-purple-600 mb-2" />
-            <p className="font-medium text-gray-900">Lihat Analitik</p>
-            <p className="text-sm text-gray-600">Analisis data produk</p>
+            <p className="font-medium text-gray-900 dark:text-white">Lihat Analitik</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Analisis data produk</p>
           </button>
         </div>
       </div>

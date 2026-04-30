@@ -145,7 +145,7 @@ export default function ShippingOrderForm() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Buat Pengiriman Baru</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Buat Pengiriman Baru</h1>
         <button
           onClick={() => navigate('/app/shipping')}
           className="btn-outline"
@@ -156,10 +156,10 @@ export default function ShippingOrderForm() {
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Customer & Provider Selection */}
         <div className="card">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Informasi Dasar</h2>
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Informasi Dasar</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               </label>
               <select
                 name="customer_id"
@@ -178,7 +178,7 @@ export default function ShippingOrderForm() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Provider Logistik
               </label>
               <select
@@ -198,7 +198,7 @@ export default function ShippingOrderForm() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Tanggal Kirim
               </label>
               <input
@@ -212,7 +212,7 @@ export default function ShippingOrderForm() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Jenis Layanan
               </label>
               <select
@@ -232,10 +232,10 @@ export default function ShippingOrderForm() {
 
         {/* Sender Information */}
         <div className="card">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Informasi Pengirim</h2>
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Informasi Pengirim</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Nama Pengirim
               </label>
               <input
@@ -249,7 +249,7 @@ export default function ShippingOrderForm() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Telepon Pengirim
               </label>
               <input
@@ -263,7 +263,7 @@ export default function ShippingOrderForm() {
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Alamat Pengirim
               </label>
               <textarea
@@ -280,10 +280,10 @@ export default function ShippingOrderForm() {
 
         {/* Recipient Information */}
         <div className="card">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Informasi Penerima</h2>
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Informasi Penerima</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Nama Penerima
               </label>
               <input
@@ -297,7 +297,7 @@ export default function ShippingOrderForm() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Telepon Penerima
               </label>
               <input
@@ -311,7 +311,7 @@ export default function ShippingOrderForm() {
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Alamat Penerima
               </label>
               <textarea
@@ -329,7 +329,7 @@ export default function ShippingOrderForm() {
         {/* Items */}
         <div className="card">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-medium text-gray-900">Item Pengiriman</h2>
+            <h2 className="text-lg font-medium text-gray-900 dark:text-white">Item Pengiriman</h2>
             <button
               type="button"
               onClick={addItem}
@@ -342,9 +342,9 @@ export default function ShippingOrderForm() {
 
           <div className="space-y-4">
             {items.map((item, index) => (
-              <div key={index} className="border border-gray-200 rounded-lg p-4">
+              <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                 <div className="flex justify-between items-center mb-3">
-                  <h3 className="text-sm font-medium text-gray-900">Item {index + 1}</h3>
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-white">Item {index + 1}</h3>
                   {items.length > 1 && (
                     <button
                       type="button"
@@ -358,7 +358,7 @@ export default function ShippingOrderForm() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Nama Produk
                     </label>
                     <input
@@ -371,7 +371,7 @@ export default function ShippingOrderForm() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     </label>
                     <input
                       type="number"
@@ -384,7 +384,7 @@ export default function ShippingOrderForm() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Berat (kg)
                     </label>
                     <input
@@ -399,7 +399,7 @@ export default function ShippingOrderForm() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Panjang (cm)
                     </label>
                     <input
@@ -413,7 +413,7 @@ export default function ShippingOrderForm() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Lebar (cm)
                     </label>
                     <input
@@ -427,7 +427,7 @@ export default function ShippingOrderForm() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Tinggi (cm)
                     </label>
                     <input
@@ -441,7 +441,7 @@ export default function ShippingOrderForm() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Nilai (Rp)
                     </label>
                     <input
@@ -461,10 +461,10 @@ export default function ShippingOrderForm() {
 
         {/* Additional Options */}
         <div className="card">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Opsi Tambahan</h2>
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Opsi Tambahan</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Nilai Asuransi (Rp)
               </label>
               <input
@@ -478,7 +478,7 @@ export default function ShippingOrderForm() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 COD Amount (Rp)
               </label>
               <input
@@ -492,7 +492,7 @@ export default function ShippingOrderForm() {
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               </label>
               <textarea
                 name="notes"

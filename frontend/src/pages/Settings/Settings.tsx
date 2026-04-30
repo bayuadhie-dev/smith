@@ -966,12 +966,12 @@ const Settings: React.FC = () => {
               </div>
               
               {/* Notification Preferences */}
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 rounded-lg p-4">
                 <h4 className="font-medium text-gray-900 mb-3">Notification Preferences</h4>
                 
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium text-gray-700">Sound Notifications</label>
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Sound Notifications</label>
                     <input
                       type="checkbox"
                       checked={systemSettingsState.soundNotifications !== false}
@@ -981,7 +981,7 @@ const Settings: React.FC = () => {
                   </div>
                   
                   <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium text-gray-700">Desktop Notifications</label>
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Desktop Notifications</label>
                     <input
                       type="checkbox"
                       checked={systemSettingsState.desktopNotifications !== false}
@@ -991,7 +991,7 @@ const Settings: React.FC = () => {
                   </div>
                   
                   <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium text-gray-700">Auto-dismiss after</label>
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Auto-dismiss after</label>
                     <select
                       value={systemSettingsState.notificationTimeout || '5000'}
                       onChange={(e) => handleSystemChange('notificationTimeout', e.target.value)}
@@ -1219,7 +1219,7 @@ const Settings: React.FC = () => {
             </div>
             <div className="bg-white border rounded-lg overflow-hidden">
               <table className="w-full">
-                <thead className="bg-gray-50">
+                <thead className="bg-gray-50 dark:bg-gray-900">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.name')}</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
@@ -1228,10 +1228,10 @@ const Settings: React.FC = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.actions')}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                   {usersData?.users?.length > 0 ? (
                     usersData.users.map((user: any) => (
-                      <tr key={user.id} className="hover:bg-gray-50">
+                      <tr key={user.id} className="hover:bg-gray-50 dark:bg-gray-900">
                         <td className="px-6 py-4">
                           <div>
                             <div className="font-medium">{user.full_name}</div>
@@ -1388,7 +1388,7 @@ const Settings: React.FC = () => {
                   </div>
 
                   {importFiles.products && (
-                    <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                    <div className="bg-gray-50 dark:bg-gray-900 dark:bg-gray-700 p-3 rounded">
                       <p className="text-sm text-gray-600 dark:text-gray-300">
                         📎 {importFiles.products.name}
                       </p>
@@ -1466,7 +1466,7 @@ const Settings: React.FC = () => {
                   </div>
 
                   {importFiles.materials && (
-                    <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                    <div className="bg-gray-50 dark:bg-gray-900 dark:bg-gray-700 p-3 rounded">
                       <p className="text-sm text-gray-600 dark:text-gray-300">
                         📎 {importFiles.materials.name}
                       </p>
@@ -1545,7 +1545,7 @@ const Settings: React.FC = () => {
                   </div>
 
                   {importFiles.inventory && (
-                    <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                    <div className="bg-gray-50 dark:bg-gray-900 dark:bg-gray-700 p-3 rounded">
                       <p className="text-sm text-gray-600 dark:text-gray-300">
                         📎 {importFiles.inventory.name}
                       </p>
@@ -1806,7 +1806,7 @@ const Settings: React.FC = () => {
             
             <div className="mt-8 pt-6 border-t flex justify-end space-x-4">
               <button 
-                className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
                 disabled={isLoading}
               >
                 {t('common.cancel')}

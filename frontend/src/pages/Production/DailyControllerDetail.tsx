@@ -234,7 +234,7 @@ const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedD
 
   if (machines.length === 0) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 p-12 text-center">
         <DocumentTextIcon className="h-16 w-16 text-slate-300 mx-auto mb-4" />
         <h3 className="text-lg font-semibold text-slate-600">Tidak ada data detail</h3>
         <p className="text-slate-400 mt-1">Belum ada data produksi untuk tanggal ini</p>
@@ -277,7 +277,7 @@ const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedD
       </div>
 
       {/* Sub-tabs */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 p-4">
         <div className="flex items-center gap-4 mb-4">
           <button
             onClick={() => setActiveSubTab('downtime')}
@@ -390,7 +390,7 @@ const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedD
                               </h5>
                               <div className="grid grid-cols-3 gap-3">
                                 {mesinDowntime.map((dt, idx) => (
-                                  <div key={idx} className="bg-white rounded-lg p-3 border border-red-200 shadow-sm relative">
+                                  <div key={idx} className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-red-200 shadow-sm relative">
                                     <div className="absolute -top-2 -left-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold shadow">
                                       {idx + 1}
                                     </div>

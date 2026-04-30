@@ -227,32 +227,32 @@ export default function PackingListTab({
 
       {/* Packing List Table */}
       {items.length > 0 ? (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                   No. Karton
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                   Batch Mixing
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                   Berat (kg)
                 </th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                   Aksi
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {items.map((item) => (
                 <tr 
                   key={item.id} 
                   className={item.is_batch_start ? 'bg-yellow-50' : ''}
                 >
                   <td className="px-4 py-3 whitespace-nowrap">
-                    <span className="font-medium text-gray-900">
+                    <span className="font-medium text-gray-900 dark:text-white">
                       {item.carton_number}
                     </span>
                     {item.is_batch_start && (
@@ -261,7 +261,7 @@ export default function PackingListTab({
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                     {item.batch_mixing || '-'}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
@@ -271,7 +271,7 @@ export default function PackingListTab({
                       min="0"
                       value={editedItems[item.id]?.weight_kg ?? item.weight_kg ?? ''}
                       onChange={(e) => handleWeightChange(item.id, e.target.value)}
-                      className="w-24 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500"
+                      className="w-24 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm focus:ring-2 focus:ring-blue-500"
                       placeholder="0.000"
                     />
                   </td>
@@ -289,15 +289,15 @@ export default function PackingListTab({
           </table>
 
           {/* Pagination */}
-          <div className="bg-gray-50 px-4 py-3 flex items-center justify-between border-t">
-            <div className="text-sm text-gray-600">
+          <div className="bg-gray-50 dark:bg-gray-900 px-4 py-3 flex items-center justify-between border-t">
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               Menampilkan {(page - 1) * perPage + 1} - {Math.min(page * perPage, totalItems)} dari {totalItems} karton
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="p-2 rounded hover:bg-gray-200 disabled:opacity-50"
+                className="p-2 rounded hover:bg-gray-200 dark:bg-gray-700 disabled:opacity-50"
               >
                 <ChevronLeftIcon className="h-5 w-5" />
               </button>
@@ -307,7 +307,7 @@ export default function PackingListTab({
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="p-2 rounded hover:bg-gray-200 disabled:opacity-50"
+                className="p-2 rounded hover:bg-gray-200 dark:bg-gray-700 disabled:opacity-50"
               >
                 <ChevronRightIcon className="h-5 w-5" />
               </button>
@@ -315,8 +315,8 @@ export default function PackingListTab({
           </div>
         </div>
       ) : (
-        <div className="bg-gray-50 rounded-lg p-8 text-center">
-          <p className="text-gray-500">Belum ada data karton. Klik "Sinkronkan" untuk membuat daftar karton.</p>
+        <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-8 text-center">
+          <p className="text-gray-500 dark:text-gray-400">Belum ada data karton. Klik "Sinkronkan" untuk membuat daftar karton.</p>
         </div>
       )}
 
@@ -336,7 +336,7 @@ export default function PackingListTab({
       {/* Batch Mixing Modal */}
       {showBatchModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
             <h3 className="text-lg font-semibold mb-4">
               {batchStartCarton 
                 ? `Set Batch Mixing dari Karton #${batchStartCarton}` 
@@ -344,19 +344,19 @@ export default function PackingListTab({
             </h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Batch Mixing
                 </label>
                 <input
                   type="text"
                   value={newBatchMixing}
                   onChange={(e) => setNewBatchMixing(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: BATCH-001"
                 />
               </div>
               {!batchStartCarton && (
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   Batch mixing baru akan diterapkan untuk karton selanjutnya yang ditambahkan.
                 </p>
               )}
@@ -364,7 +364,7 @@ export default function PackingListTab({
             <div className="mt-6 flex justify-end gap-3">
               <button
                 onClick={() => setShowBatchModal(false)}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300"
               >
                 Batal
               </button>
@@ -383,11 +383,11 @@ export default function PackingListTab({
       {/* Start Carton Number Modal */}
       {showStartNumberModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
             <h3 className="text-lg font-semibold mb-4">Sinkronkan Packing List</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Nomor Karton Awal
                 </label>
                 <input
@@ -396,7 +396,7 @@ export default function PackingListTab({
                   max="10000"
                   value={startCartonNumber}
                   onChange={(e) => setStartCartonNumber(parseInt(e.target.value) || 1)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                   placeholder="1"
                 />
               </div>
@@ -417,7 +417,7 @@ export default function PackingListTab({
             <div className="mt-6 flex justify-end gap-3">
               <button
                 onClick={() => setShowStartNumberModal(false)}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300"
               >
                 Batal
               </button>

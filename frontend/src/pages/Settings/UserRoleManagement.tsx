@@ -193,7 +193,7 @@ const UserRoleManagementNew: React.FC = () => {
       />
 
       {/* Content based on active tab */}
-      <div className="bg-white shadow rounded-lg p-6">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
         {activeTab === 'users' && (
           <UserTable
             users={filteredUsers}
@@ -253,20 +253,20 @@ const UserRoleManagementNew: React.FC = () => {
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+            <div className="fixed inset-0 bg-gray-50 dark:bg-gray-9000 bg-opacity-75 transition-opacity"></div>
 
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <div className="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div className="sm:flex sm:items-start">
                   <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
                     <ExclamationTriangleIcon className="h-6 w-6 text-red-600" />
                   </div>
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900">
+                    <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">
                       Delete {showDeleteConfirm.type}
                     </h3>
                     <div className="mt-2">
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
                         Are you sure you want to delete "{showDeleteConfirm.name}"? 
                         This action cannot be undone.
                       </p>
@@ -274,7 +274,7 @@ const UserRoleManagementNew: React.FC = () => {
                   </div>
                 </div>
               </div>
-              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+              <div className="bg-gray-50 dark:bg-gray-900 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                 <button
                   type="button"
                   onClick={confirmDelete}
@@ -283,7 +283,7 @@ const UserRoleManagementNew: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowDeleteConfirm(null)}
-                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                 >{t('common.cancel')}</button>
               </div>
             </div>
@@ -295,15 +295,15 @@ const UserRoleManagementNew: React.FC = () => {
       {viewingUser && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={() => setViewingUser(null)}></div>
+            <div className="fixed inset-0 bg-gray-50 dark:bg-gray-9000 bg-opacity-75 transition-opacity" onClick={() => setViewingUser(null)}></div>
 
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
-              <div className="bg-white px-4 pt-5 pb-4 sm:p-6">
+            <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+              <div className="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900">User Details</h3>
+                  <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">User Details</h3>
                   <button
                     onClick={() => setViewingUser(null)}
-                    className="text-gray-400 hover:text-gray-600"
+                    className="text-gray-400 hover:text-gray-600 dark:text-gray-300"
                   >
                     <span className="sr-only">Close</span>
                     ×
@@ -313,19 +313,19 @@ const UserRoleManagementNew: React.FC = () => {
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Full Name</label>
-                      <p className="mt-1 text-sm text-gray-900">{viewingUser.full_name}</p>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Full Name</label>
+                      <p className="mt-1 text-sm text-gray-900 dark:text-white">{viewingUser.full_name}</p>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Username</label>
-                      <p className="mt-1 text-sm text-gray-900">{viewingUser.username}</p>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Username</label>
+                      <p className="mt-1 text-sm text-gray-900 dark:text-white">{viewingUser.username}</p>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Email</label>
-                      <p className="mt-1 text-sm text-gray-900">{viewingUser.email}</p>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Email</label>
+                      <p className="mt-1 text-sm text-gray-900 dark:text-white">{viewingUser.email}</p>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">{t('common.status')}</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">{t('common.status')}</label>
                       <span className={`mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                         viewingUser.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                       }`}>
@@ -335,7 +335,7 @@ const UserRoleManagementNew: React.FC = () => {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Roles</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Roles</label>
                     <div className="flex flex-wrap gap-2">
                       {viewingUser.roles && viewingUser.roles.length > 0 ? (
                         viewingUser.roles.map((role) => (
@@ -344,15 +344,15 @@ const UserRoleManagementNew: React.FC = () => {
                           </span>
                         ))
                       ) : (
-                        <span className="text-sm text-gray-500">No roles assigned</span>
+                        <span className="text-sm text-gray-500 dark:text-gray-400">No roles assigned</span>
                       )}
                     </div>
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Last Login</label>
-                      <p className="mt-1 text-sm text-gray-900">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Last Login</label>
+                      <p className="mt-1 text-sm text-gray-900 dark:text-white">
                         {viewingUser.last_login 
                           ? new Date(viewingUser.last_login).toLocaleString()
                           : 'Never'
@@ -360,8 +360,8 @@ const UserRoleManagementNew: React.FC = () => {
                       </p>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Created</label>
-                      <p className="mt-1 text-sm text-gray-900">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Created</label>
+                      <p className="mt-1 text-sm text-gray-900 dark:text-white">
                         {new Date(viewingUser.created_at).toLocaleString()}
                       </p>
                     </div>

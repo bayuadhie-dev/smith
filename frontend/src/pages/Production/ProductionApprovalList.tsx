@@ -223,14 +223,14 @@ const ProductionApprovalList: React.FC = () => {
       case 'rejected':
         return <span className="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">Ditolak</span>;
       default:
-        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">{status}</span>;
+        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100">{status}</span>;
     }
   };
 
   const getScheduleStatusBadge = (status: string) => {
     switch (status) {
       case 'draft':
-        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">Draft</span>;
+        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100">Draft</span>;
       case 'submitted':
         return <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">Menunggu Approval</span>;
       case 'approved':
@@ -242,7 +242,7 @@ const ProductionApprovalList: React.FC = () => {
       case 'completed':
         return <span className="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">Selesai</span>;
       default:
-        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">{status}</span>;
+        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100">{status}</span>;
     }
   };
 
@@ -265,12 +265,12 @@ const ProductionApprovalList: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Approval Produksi</h1>
-          <p className="text-gray-600">Approval Manager Produksi sebelum forward ke Finance</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Approval Produksi</h1>
+          <p className="text-gray-600 dark:text-gray-300">Approval Manager Produksi sebelum forward ke Finance</p>
         </div>
         <button
           onClick={fetchApprovals}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg"
+          className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:bg-gray-700 rounded-lg"
         >
           <ArrowPathIcon className="h-5 w-5" />
           Refresh
@@ -278,7 +278,7 @@ const ProductionApprovalList: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-gray-200 dark:border-gray-700">
         <nav className="-mb-px flex space-x-8">
           <button
             onClick={() => setActiveTab('production')}
@@ -336,7 +336,7 @@ const ProductionApprovalList: React.FC = () => {
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">Menunggu Approval</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Menunggu Approval</p>
               <p className="text-2xl font-bold text-yellow-600">{summary.pending}</p>
             </div>
             <ClockIcon className="h-10 w-10 text-yellow-500" />
@@ -349,7 +349,7 @@ const ProductionApprovalList: React.FC = () => {
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">Disetujui</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Disetujui</p>
               <p className="text-2xl font-bold text-green-600">{summary.approved}</p>
             </div>
             <CheckCircleIcon className="h-10 w-10 text-green-500" />
@@ -362,17 +362,17 @@ const ProductionApprovalList: React.FC = () => {
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">Ditolak</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Ditolak</p>
               <p className="text-2xl font-bold text-red-600">{summary.rejected}</p>
             </div>
             <XCircleIcon className="h-10 w-10 text-red-500" />
           </div>
         </div>
         
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">Diteruskan ke Finance</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Diteruskan ke Finance</p>
               <p className="text-2xl font-bold text-purple-600">{summary.forwarded}</p>
             </div>
             <BanknotesIcon className="h-10 w-10 text-purple-500" />
@@ -384,8 +384,8 @@ const ProductionApprovalList: React.FC = () => {
       {/* Filter */}
       {statusFilter && (
         <div className="flex items-center gap-2">
-          <FunnelIcon className="h-5 w-5 text-gray-500" />
-          <span className="text-sm text-gray-600">Filter: {statusFilter}</span>
+          <FunnelIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+          <span className="text-sm text-gray-600 dark:text-gray-300">Filter: {statusFilter}</span>
           <button 
             onClick={() => setStatusFilter('')}
             className="text-sm text-blue-600 hover:underline"
@@ -397,7 +397,7 @@ const ProductionApprovalList: React.FC = () => {
 
       {/* Production Approval Table */}
       {activeTab === 'production' && (
-      <div className="bg-white shadow rounded-lg overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
         <div className="overflow-x-auto max-h-[calc(100vh-400px)] overflow-y-auto">
         {loading ? (
           <div className="flex items-center justify-center h-64">
@@ -406,26 +406,26 @@ const ProductionApprovalList: React.FC = () => {
         ) : approvals.length === 0 ? (
           <div className="text-center py-12">
             <DocumentCheckIcon className="h-12 w-12 mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500">Tidak ada approval</p>
+            <p className="text-gray-500 dark:text-gray-400">Tidak ada approval</p>
           </div>
         ) : (
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Approval</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Work Order</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Produk</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Qty Good</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total Cost</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Cost/Unit</th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Submitted</th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Approval</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Work Order</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Produk</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Qty Good</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total Cost</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Cost/Unit</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Submitted</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {approvals.map((approval) => (
-                <tr key={approval.id} className="hover:bg-gray-50">
+                <tr key={approval.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <Link 
                       to={`/app/production/approvals/${approval.id}`}
@@ -434,25 +434,25 @@ const ProductionApprovalList: React.FC = () => {
                       {approval.approval_number}
                     </Link>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {approval.wo_number}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {approval.product_name}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-white">
                     {approval.quantity_good.toLocaleString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900 dark:text-white">
                     {formatCurrency(approval.total_cost)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-600">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-600 dark:text-gray-300">
                     {formatCurrency(approval.cost_per_unit)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     {getStatusBadge(approval.status, approval.forwarded_to_finance)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     <div>{approval.submitter_name}</div>
                     <div className="text-xs">{formatDate(approval.submitted_at)}</div>
                   </td>
@@ -479,37 +479,37 @@ const ProductionApprovalList: React.FC = () => {
       <>
         {/* Schedule Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Menunggu Approval</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Menunggu Approval</p>
                 <p className="text-2xl font-bold text-yellow-600">{scheduleSummary.pending}</p>
               </div>
               <ClockIcon className="h-10 w-10 text-yellow-500" />
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Disetujui</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Disetujui</p>
                 <p className="text-2xl font-bold text-green-600">{scheduleSummary.approved}</p>
               </div>
               <CheckCircleIcon className="h-10 w-10 text-green-500" />
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Ditolak</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Ditolak</p>
                 <p className="text-2xl font-bold text-red-600">{scheduleSummary.rejected}</p>
               </div>
               <XCircleIcon className="h-10 w-10 text-red-500" />
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Sedang Berjalan</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Sedang Berjalan</p>
                 <p className="text-2xl font-bold text-blue-600">{scheduleSummary.in_progress}</p>
               </div>
               <CubeIcon className="h-10 w-10 text-blue-500" />
@@ -517,7 +517,7 @@ const ProductionApprovalList: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white shadow rounded-lg overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
           <div className="overflow-x-auto max-h-[calc(100vh-500px)] overflow-y-auto">
           {loading ? (
             <div className="flex items-center justify-center h-64">
@@ -526,24 +526,24 @@ const ProductionApprovalList: React.FC = () => {
           ) : scheduleApprovals.length === 0 ? (
             <div className="text-center py-12">
               <CalendarDaysIcon className="h-12 w-12 mx-auto text-gray-300 mb-4" />
-              <p className="text-gray-500">Tidak ada jadwal produksi yang perlu diapprove</p>
+              <p className="text-gray-500 dark:text-gray-400">Tidak ada jadwal produksi yang perlu diapprove</p>
             </div>
           ) : (
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50 sticky top-0">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900 sticky top-0">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Plan</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Periode</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Jumlah Item</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total Qty</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dibuat Oleh</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Plan</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Periode</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Jumlah Item</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total Qty</th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Dibuat Oleh</th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {scheduleApprovals.map((plan) => (
-                  <tr key={plan.id} className="hover:bg-gray-50">
+                  <tr key={plan.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <Link 
                         to={`/app/production/weekly-plans/${plan.id}`}
@@ -552,22 +552,22 @@ const ProductionApprovalList: React.FC = () => {
                         {plan.plan_number}
                       </Link>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       <div>Minggu {plan.week_number}, {plan.year}</div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
                         {plan.week_start && new Date(plan.week_start).toLocaleDateString('id-ID')} - {plan.week_end && new Date(plan.week_end).toLocaleDateString('id-ID')}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-white">
                       {plan.total_items} produk
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900 dark:text-white">
                       {plan.total_quantity?.toLocaleString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
                       {getScheduleStatusBadge(plan.status)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       <div>{plan.creator_name}</div>
                       <div className="text-xs">{plan.created_at && formatDate(plan.created_at)}</div>
                     </td>
@@ -594,17 +594,17 @@ const ProductionApprovalList: React.FC = () => {
       {activeTab === 'monthly' && (
       <>
         {/* Monthly Plan Summary Card */}
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">Menunggu Approval</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Menunggu Approval</p>
               <p className="text-2xl font-bold text-yellow-600">{monthlyPlanSummary.pending}</p>
             </div>
             <ClockIcon className="h-10 w-10 text-yellow-500" />
           </div>
         </div>
 
-        <div className="bg-white shadow rounded-lg overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center h-64">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -612,18 +612,18 @@ const ProductionApprovalList: React.FC = () => {
           ) : monthlyPlanApprovals.length === 0 ? (
             <div className="text-center py-12">
               <CalendarDaysIcon className="h-12 w-12 mx-auto text-gray-300 mb-4" />
-              <p className="text-gray-500">Tidak ada rencana produksi bulanan yang perlu diapprove</p>
+              <p className="text-gray-500 dark:text-gray-400">Tidak ada rencana produksi bulanan yang perlu diapprove</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-200">
+            <div className="divide-y divide-gray-200 dark:divide-gray-700">
               {monthlyPlanApprovals.map((plan) => {
                 const planKey = `${plan.year}-${plan.month}`;
                 const isExpanded = expandedMonthlyPlan === planKey;
                 return (
-                  <div key={planKey} className="bg-white">
+                  <div key={planKey} className="bg-white dark:bg-gray-800">
                     {/* Header Row */}
                     <div 
-                      className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                      className="p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 transition-colors"
                       onClick={() => setExpandedMonthlyPlan(isExpanded ? null : planKey)}
                     >
                       <div className="flex items-center justify-between">
@@ -634,8 +634,8 @@ const ProductionApprovalList: React.FC = () => {
                             </svg>
                           </div>
                           <div>
-                            <h3 className="text-lg font-semibold text-gray-900">{plan.month_name} {plan.year}</h3>
-                            <p className="text-sm text-gray-500">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{plan.month_name} {plan.year}</h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
                               {plan.total_items} produk • {plan.total_quantity?.toLocaleString()} Karton • {plan.total_pack?.toLocaleString()} Pack
                             </p>
                           </div>
@@ -667,8 +667,8 @@ const ProductionApprovalList: React.FC = () => {
                     {/* Expanded Detail */}
                     {isExpanded && plan.items && (
                       <div className="px-4 pb-4">
-                        <div className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
-                          <table className="min-w-full divide-y divide-gray-200">
+                        <div className="bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead className="bg-blue-600">
                               <tr>
                                 <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase">No</th>
@@ -681,15 +681,15 @@ const ProductionApprovalList: React.FC = () => {
                                 <th className="px-4 py-3 text-center text-xs font-medium text-white uppercase">Priority</th>
                               </tr>
                             </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
+                            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                               {plan.items.map((item, idx) => (
-                                <tr key={item.id} className="hover:bg-gray-50">
-                                  <td className="px-4 py-3 text-sm text-gray-900">{idx + 1}</td>
-                                  <td className="px-4 py-3 text-sm font-mono text-gray-600">{item.product_code}</td>
-                                  <td className="px-4 py-3 text-sm font-medium text-gray-900">{item.product_name}</td>
-                                  <td className="px-4 py-3 text-sm text-center text-gray-600">{item.machine_name}</td>
-                                  <td className="px-4 py-3 text-sm text-right font-semibold text-gray-900">{item.target_ctn?.toLocaleString()}</td>
-                                  <td className="px-4 py-3 text-sm text-center text-gray-600">{item.qty_per_ctn}</td>
+                                <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{idx + 1}</td>
+                                  <td className="px-4 py-3 text-sm font-mono text-gray-600 dark:text-gray-300">{item.product_code}</td>
+                                  <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">{item.product_name}</td>
+                                  <td className="px-4 py-3 text-sm text-center text-gray-600 dark:text-gray-300">{item.machine_name}</td>
+                                  <td className="px-4 py-3 text-sm text-right font-semibold text-gray-900 dark:text-white">{item.target_ctn?.toLocaleString()}</td>
+                                  <td className="px-4 py-3 text-sm text-center text-gray-600 dark:text-gray-300">{item.qty_per_ctn}</td>
                                   <td className="px-4 py-3 text-sm text-right font-semibold text-blue-600">{item.target_pack?.toLocaleString()}</td>
                                   <td className="px-4 py-3 text-center">
                                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${
@@ -705,8 +705,8 @@ const ProductionApprovalList: React.FC = () => {
                             </tbody>
                             <tfoot className="bg-blue-50">
                               <tr>
-                                <td colSpan={4} className="px-4 py-3 text-sm font-bold text-right text-gray-900">TOTAL</td>
-                                <td className="px-4 py-3 text-sm text-right font-bold text-gray-900">{plan.total_quantity?.toLocaleString()}</td>
+                                <td colSpan={4} className="px-4 py-3 text-sm font-bold text-right text-gray-900 dark:text-white">TOTAL</td>
+                                <td className="px-4 py-3 text-sm text-right font-bold text-gray-900 dark:text-white">{plan.total_quantity?.toLocaleString()}</td>
                                 <td className="px-4 py-3"></td>
                                 <td className="px-4 py-3 text-sm text-right font-bold text-blue-600">{plan.total_pack?.toLocaleString()}</td>
                                 <td className="px-4 py-3"></td>
@@ -729,17 +729,17 @@ const ProductionApprovalList: React.FC = () => {
       {activeTab === 'scheduleGrid' && (
       <>
         {/* Schedule Grid Summary Card */}
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">Menunggu Approval</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Menunggu Approval</p>
               <p className="text-2xl font-bold text-yellow-600">{scheduleGridSummary.pending}</p>
             </div>
             <ClockIcon className="h-10 w-10 text-yellow-500" />
           </div>
         </div>
 
-        <div className="bg-white shadow rounded-lg overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
           <div className="overflow-x-auto max-h-[calc(100vh-400px)] overflow-y-auto">
           {loading ? (
             <div className="flex items-center justify-center h-64">
@@ -748,30 +748,30 @@ const ProductionApprovalList: React.FC = () => {
           ) : scheduleGridApprovals.length === 0 ? (
             <div className="text-center py-12">
               <CalendarDaysIcon className="h-12 w-12 mx-auto text-gray-300 mb-4" />
-              <p className="text-gray-500">Tidak ada jadwal mingguan yang perlu diapprove</p>
+              <p className="text-gray-500 dark:text-gray-400">Tidak ada jadwal mingguan yang perlu diapprove</p>
             </div>
           ) : (
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50 sticky top-0">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900 sticky top-0">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Periode</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Jumlah Item</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total Karton</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Periode</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Jumlah Item</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total Karton</th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {scheduleGridApprovals.map((plan) => (
-                  <tr key={plan.week_start} className="hover:bg-gray-50">
+                  <tr key={plan.week_start} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="font-medium text-gray-900">Minggu {plan.week_number}, {plan.year}</div>
-                      <div className="text-xs text-gray-500">Mulai: {plan.week_start}</div>
+                      <div className="font-medium text-gray-900 dark:text-white">Minggu {plan.week_number}, {plan.year}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Mulai: {plan.week_start}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-white">
                       {plan.total_items} produk
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900 dark:text-white">
                       {plan.total_ctn?.toLocaleString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">

@@ -163,7 +163,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user, roles }) =
       <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={onClose}></div>
 
-        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+        <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
           <form onSubmit={handleSubmit}>
             {/* Header */}
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
@@ -187,10 +187,10 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user, roles }) =
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Left Column - Basic Info */}
                 <div className="space-y-4">
-                  <h4 className="text-md font-semibold text-gray-900 border-b pb-2">Basic Information</h4>
+                  <h4 className="text-md font-semibold text-gray-900 dark:text-white border-b pb-2">Basic Information</h4>
                 {/* Username */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Username</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Username</label>
                   <input
                     type="text"
                     value={formData.username}
@@ -205,7 +205,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user, roles }) =
 
                 {/* Email */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Email</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Email</label>
                   <input
                     type="email"
                     value={formData.email}
@@ -220,7 +220,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user, roles }) =
 
                   {/* Full Name */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Full Name <span className="text-red-500">*</span></label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Full Name <span className="text-red-500">*</span></label>
                     <input
                       type="text"
                       value={formData.full_name}
@@ -235,36 +235,36 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user, roles }) =
 
                   {/* Phone */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Phone Number</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Phone Number</label>
                     <input
                       type="tel"
                       value={formData.phone}
                       onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                       placeholder="+62 xxx xxxx xxxx"
                     />
                   </div>
 
                   {/* Department */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Department</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Department</label>
                     <input
                       type="text"
                       value={formData.department}
                       onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                       placeholder="e.g., IT, Sales, Finance"
                     />
                   </div>
 
                   {/* Position */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Position</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Position</label>
                     <input
                       type="text"
                       value={formData.position}
                       onChange={(e) => setFormData(prev => ({ ...prev, position: e.target.value }))}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                       placeholder="e.g., Manager, Staff, Supervisor"
                     />
                   </div>
@@ -272,12 +272,12 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user, roles }) =
 
                 {/* Right Column - Account & Security */}
                 <div className="space-y-4">
-                  <h4 className="text-md font-semibold text-gray-900 border-b pb-2">Account & Security</h4>
+                  <h4 className="text-md font-semibold text-gray-900 dark:text-white border-b pb-2">Account & Security</h4>
 
                 {/* Password */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Password {user && <span className="text-gray-500">(leave blank to keep current)</span>}
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                    Password {user && <span className="text-gray-500 dark:text-gray-400">(leave blank to keep current)</span>}
                   </label>
                   <input
                     type="password"
@@ -294,7 +294,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user, roles }) =
                   {/* Confirm Password */}
                   {formData.password && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Confirm Password <span className="text-red-500">*</span></label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Confirm Password <span className="text-red-500">*</span></label>
                       <input
                         type="password"
                         value={formData.confirmPassword}
@@ -309,54 +309,54 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user, roles }) =
                   )}
 
                   {/* Status & Permissions */}
-                  <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-                    <h5 className="text-sm font-semibold text-gray-900">Status & Permissions</h5>
+                  <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 space-y-3">
+                    <h5 className="text-sm font-semibold text-gray-900 dark:text-white">Status & Permissions</h5>
                     <label className="flex items-center">
                       <input
                         type="checkbox"
                         checked={formData.is_active}
                         onChange={(e) => setFormData(prev => ({ ...prev, is_active: e.target.checked }))}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
+                        className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 h-4 w-4"
                       />
-                      <span className="ml-2 text-sm text-gray-700">Active User</span>
+                      <span className="ml-2 text-sm text-gray-700 dark:text-gray-200">Active User</span>
                     </label>
                     <label className="flex items-center">
                       <input
                         type="checkbox"
                         checked={formData.is_admin}
                         onChange={(e) => setFormData(prev => ({ ...prev, is_admin: e.target.checked }))}
-                        className="rounded border-gray-300 text-red-600 focus:ring-red-500 h-4 w-4"
+                        className="rounded border-gray-300 dark:border-gray-600 text-red-600 focus:ring-red-500 h-4 w-4"
                       />
-                      <span className="ml-2 text-sm text-gray-700">System Administrator</span>
+                      <span className="ml-2 text-sm text-gray-700 dark:text-gray-200">System Administrator</span>
                     </label>
                   </div>
 
                   {/* Roles */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Assign Roles</label>
-                    <div className="max-h-48 overflow-y-auto border border-gray-300 rounded-md p-3 bg-white">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Assign Roles</label>
+                    <div className="max-h-48 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-md p-3 bg-white dark:bg-gray-800">
                       {roles.length > 0 ? (
                         roles.map((role) => (
-                          <label key={role.id} className="flex items-start py-2 hover:bg-gray-50 rounded px-2 cursor-pointer">
+                          <label key={role.id} className="flex items-start py-2 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 rounded px-2 cursor-pointer">
                             <input
                               type="checkbox"
                               checked={formData.selectedRoles.includes(role.id)}
                               onChange={() => handleRoleToggle(role.id)}
-                              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-0.5 h-4 w-4"
+                              className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 mt-0.5 h-4 w-4"
                             />
                             <div className="ml-3">
-                              <span className="text-sm font-medium text-gray-900">{role.name}</span>
+                              <span className="text-sm font-medium text-gray-900 dark:text-white">{role.name}</span>
                               {role.description && (
-                                <p className="text-xs text-gray-500">{role.description}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{role.description}</p>
                               )}
                             </div>
                           </label>
                         ))
                       ) : (
-                        <p className="text-sm text-gray-500 text-center py-4">No roles available</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No roles available</p>
                       )}
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                       Selected: {formData.selectedRoles.length} role(s)
                     </p>
                   </div>
@@ -371,7 +371,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user, roles }) =
             </div>
 
             {/* Footer */}
-            <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+            <div className="bg-gray-50 dark:bg-gray-900 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
               <button
                 type="submit"
                 disabled={isSubmitting}
@@ -382,7 +382,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user, roles }) =
               <button
                 type="button"
                 onClick={onClose}
-                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
               >{t('common.cancel')}</button>
             </div>
           </form>

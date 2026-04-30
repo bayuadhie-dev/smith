@@ -67,14 +67,14 @@ const FaceAdmin: React.FC = () => {
             <Camera className="w-6 h-6 text-blue-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Kelola Data Wajah</h1>
-            <p className="text-sm text-gray-500">Kelola data wajah terdaftar untuk absensi</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Kelola Data Wajah</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Kelola data wajah terdaftar untuk absensi</p>
           </div>
         </div>
         <button
           onClick={fetchRegisteredFaces}
           disabled={loading}
-          className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center gap-2"
+          className="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:bg-gray-700 flex items-center gap-2"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           Refresh
@@ -82,14 +82,14 @@ const FaceAdmin: React.FC = () => {
       </div>
 
       {/* Stats */}
-      <div className="bg-white rounded-xl shadow p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-blue-100 rounded-full">
             <Users className="w-6 h-6 text-blue-600" />
           </div>
           <div>
-            <p className="text-2xl font-bold text-gray-900">{registeredFaces.length}</p>
-            <p className="text-sm text-gray-500">Total Wajah Terdaftar</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">{registeredFaces.length}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Total Wajah Terdaftar</p>
           </div>
         </div>
       </div>
@@ -112,7 +112,7 @@ const FaceAdmin: React.FC = () => {
       )}
 
       {/* Search & List */}
-      <div className="bg-white rounded-xl shadow overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden">
         <div className="p-4 border-b">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -121,7 +121,7 @@ const FaceAdmin: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari nama, jabatan, atau departemen..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
         </div>
@@ -129,19 +129,19 @@ const FaceAdmin: React.FC = () => {
         {loading ? (
           <div className="p-8 text-center">
             <RefreshCw className="w-8 h-8 text-gray-400 animate-spin mx-auto mb-2" />
-            <p className="text-gray-500">Memuat data...</p>
+            <p className="text-gray-500 dark:text-gray-400">Memuat data...</p>
           </div>
         ) : filteredFaces.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
+          <div className="p-8 text-center text-gray-500 dark:text-gray-400">
             {searchQuery ? `Tidak ada hasil untuk "${searchQuery}"` : 'Belum ada wajah terdaftar'}
           </div>
         ) : (
           <div className="divide-y max-h-[500px] overflow-y-auto">
             {filteredFaces.map(face => (
-              <div key={face.id} className="p-4 hover:bg-gray-50 flex items-center justify-between">
+              <div key={face.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 flex items-center justify-between">
                 <div className="flex-1">
-                  <p className="font-medium text-gray-900">{face.name}</p>
-                  <p className="text-sm text-gray-500">
+                  <p className="font-medium text-gray-900 dark:text-white">{face.name}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
                     {face.jabatan || '-'} • {face.departemen || '-'}
                   </p>
                   {face.created_at && (

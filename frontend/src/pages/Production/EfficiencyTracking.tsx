@@ -141,8 +141,8 @@ const [machines, setMachines] = useState<Machine[]>([])
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">📈 Efficiency Tracking</h1>
-          <p className="text-gray-600 mt-1">Monitor OEE, downtime and performance metrics</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">📈 Efficiency Tracking</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Monitor OEE, downtime and performance metrics</p>
         </div>
       </div>
 
@@ -150,7 +150,7 @@ const [machines, setMachines] = useState<Machine[]>([])
       <div className="card p-4">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">{t('production.machine')}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('production.machine')}</label>
             <select
               value={selectedMachine || ''}
               onChange={(e) => setSelectedMachine(Number(e.target.value))}
@@ -166,7 +166,7 @@ const [machines, setMachines] = useState<Machine[]>([])
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Start Date</label>
             <input
               type="date"
               value={dateRange.start_date}
@@ -176,7 +176,7 @@ const [machines, setMachines] = useState<Machine[]>([])
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">End Date</label>
             <input
               type="date"
               value={dateRange.end_date}
@@ -195,17 +195,17 @@ const [machines, setMachines] = useState<Machine[]>([])
               <div className="flex items-center gap-3">
                 <CogIcon className="h-8 w-8 text-blue-600" />
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-900">{selectedMachineData.name}</h2>
-                  <p className="text-gray-600">{selectedMachineData.code}</p>
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{selectedMachineData.name}</h2>
+                  <p className="text-gray-600 dark:text-gray-300">{selectedMachineData.code}</p>
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-sm text-gray-500">Period</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Period</div>
                 <div className="font-medium">
                   {new Date(efficiencyData.period.start).toLocaleDateString()} - 
                   {new Date(efficiencyData.period.end).toLocaleDateString()}
                 </div>
-                <div className="text-xs text-gray-500">{efficiencyData.period.days} days</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">{efficiencyData.period.days} days</div>
               </div>
             </div>
           </div>
@@ -232,11 +232,11 @@ const [machines, setMachines] = useState<Machine[]>([])
             <div className="card p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Availability</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Availability</p>
                   <p className={`text-2xl font-bold ${getEfficiencyColor(efficiencyData.availability.availability_rate, 'availability')}`}>
                     {efficiencyData.availability.availability_rate}%
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     Runtime vs Planned
                   </p>
                 </div>
@@ -247,11 +247,11 @@ const [machines, setMachines] = useState<Machine[]>([])
             {/* Performance */}            <div className="card p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Performance</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Performance</p>
                   <p className={`text-2xl font-bold ${getEfficiencyColor(efficiencyData.efficiency.performance_rate, 'oee')}`}>
                     {efficiencyData.efficiency.performance_rate}%
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     Speed Efficiency
                   </p>
                 </div>
@@ -263,11 +263,11 @@ const [machines, setMachines] = useState<Machine[]>([])
             <div className="card p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">{t('navigation.quality')}</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300">{t('navigation.quality')}</p>
                   <p className={`text-2xl font-bold ${getEfficiencyColor(efficiencyData.production.quality_rate, 'quality')}`}>
                     {efficiencyData.production.quality_rate}%
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     Good Parts Rate
                   </p>
                 </div>
@@ -280,24 +280,24 @@ const [machines, setMachines] = useState<Machine[]>([])
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Production Metrics */}
             <div className="card p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Production Metrics</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Production Metrics</h3>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Total Produced</span>
-                  <span className="font-semibold text-gray-900">
+                  <span className="text-gray-600 dark:text-gray-300">Total Produced</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">
                     {efficiencyData.production.total_produced.toLocaleString()} units
                   </span>
                 </div>
                 
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Good Parts</span>
+                  <span className="text-gray-600 dark:text-gray-300">Good Parts</span>
                   <span className="font-semibold text-green-600">
                     {efficiencyData.production.total_good.toLocaleString()} units
                   </span>
                 </div>
                 
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Scrap Parts</span>
+                  <span className="text-gray-600 dark:text-gray-300">Scrap Parts</span>
                   <span className="font-semibold text-red-600">
                     {efficiencyData.production.total_scrap.toLocaleString()} units
                   </span>
@@ -305,14 +305,14 @@ const [machines, setMachines] = useState<Machine[]>([])
                 
                 <div className="border-t pt-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Quality Rate</span>
+                    <span className="text-gray-600 dark:text-gray-300">Quality Rate</span>
                     <span className={`font-bold ${getEfficiencyColor(efficiencyData.production.quality_rate, 'quality')}`}>
                       {efficiencyData.production.quality_rate}%
                     </span>
                   </div>
                   
                   <div className="flex justify-between items-center mt-2">
-                    <span className="text-gray-600">Scrap Rate</span>
+                    <span className="text-gray-600 dark:text-gray-300">Scrap Rate</span>
                     <span className="font-semibold text-red-600">
                       {efficiencyData.production.scrap_rate}%
                     </span>
@@ -323,24 +323,24 @@ const [machines, setMachines] = useState<Machine[]>([])
 
             {/* Time Metrics */}
             <div className="card p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Time & Availability</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Time & Availability</h3>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Theoretical Hours</span>
-                  <span className="font-semibold text-gray-900">
+                  <span className="text-gray-600 dark:text-gray-300">Theoretical Hours</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">
                     {efficiencyData.availability.theoretical_hours.toFixed(1)}h
                   </span>
                 </div>
                 
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Actual Runtime</span>
+                  <span className="text-gray-600 dark:text-gray-300">Actual Runtime</span>
                   <span className="font-semibold text-green-600">
                     {efficiencyData.availability.actual_runtime_hours.toFixed(1)}h
                   </span>
                 </div>
                 
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Total Downtime</span>
+                  <span className="text-gray-600 dark:text-gray-300">Total Downtime</span>
                   <span className="font-semibold text-red-600">
                     {efficiencyData.availability.total_downtime_hours.toFixed(1)}h
                   </span>
@@ -348,7 +348,7 @@ const [machines, setMachines] = useState<Machine[]>([])
                 
                 <div className="border-t pt-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Availability Rate</span>
+                    <span className="text-gray-600 dark:text-gray-300">Availability Rate</span>
                     <span className={`font-bold ${getEfficiencyColor(efficiencyData.availability.availability_rate, 'availability')}`}>
                       {efficiencyData.availability.availability_rate}%
                     </span>
@@ -360,14 +360,14 @@ const [machines, setMachines] = useState<Machine[]>([])
 
           {/* OEE Breakdown Chart Placeholder */}
           <div className="card p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">OEE Components Breakdown</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">OEE Components Breakdown</h3>
             <div className="grid grid-cols-3 gap-4 mb-6">
               <div className="text-center">
                 <div className="text-2xl font-bold text-blue-600 mb-1">
                   {efficiencyData.availability.availability_rate}%
                 </div>
-                <div className="text-sm text-gray-600">Availability</div>
-                <div className="text-xs text-gray-500">
+                <div className="text-sm text-gray-600 dark:text-gray-300">Availability</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
                   = Runtime / Planned Time
                 </div>
               </div>
@@ -376,8 +376,8 @@ const [machines, setMachines] = useState<Machine[]>([])
                 <div className="text-2xl font-bold text-green-600 mb-1">
                   {efficiencyData.efficiency.performance_rate}%
                 </div>
-                <div className="text-sm text-gray-600">Performance</div>
-                <div className="text-xs text-gray-500">
+                <div className="text-sm text-gray-600 dark:text-gray-300">Performance</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
                   = Actual Rate / Ideal Rate
                 </div>
               </div>
@@ -386,16 +386,16 @@ const [machines, setMachines] = useState<Machine[]>([])
                 <div className="text-2xl font-bold text-purple-600 mb-1">
                   {efficiencyData.production.quality_rate}%
                 </div>
-                <div className="text-sm text-gray-600">{t('navigation.quality')}</div>
-                <div className="text-xs text-gray-500">
+                <div className="text-sm text-gray-600 dark:text-gray-300">{t('navigation.quality')}</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
                   = Good Parts / Total Parts
                 </div>
               </div>
             </div>
             
-            <div className="bg-gray-100 rounded-lg p-4 text-center">
-              <p className="text-gray-600 mb-2">OEE = Availability × Performance × Quality</p>
-              <p className="text-2xl font-bold text-gray-900">
+            <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 text-center">
+              <p className="text-gray-600 dark:text-gray-300 mb-2">OEE = Availability × Performance × Quality</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {efficiencyData.availability.availability_rate}% × {efficiencyData.efficiency.performance_rate}% × {efficiencyData.production.quality_rate}% = 
                 <span className={`ml-2 ${getEfficiencyColor(efficiencyData.efficiency.oee, 'oee')}`}>
                   {efficiencyData.efficiency.oee}%
@@ -406,7 +406,7 @@ const [machines, setMachines] = useState<Machine[]>([])
 
           {/* Action Items */}
           <div className="card p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Improvement Opportunities</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Improvement Opportunities</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {efficiencyData.availability.availability_rate < 85 && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -443,7 +443,7 @@ const [machines, setMachines] = useState<Machine[]>([])
       {loadingEfficiency && (
         <div className="card p-12 text-center">
           <LoadingSpinner />
-          <p className="text-gray-600 mt-4">Loading efficiency data...</p>
+          <p className="text-gray-600 dark:text-gray-300 mt-4">Loading efficiency data...</p>
         </div>
       )}
 
@@ -451,8 +451,8 @@ const [machines, setMachines] = useState<Machine[]>([])
       {!selectedMachine && !loading && (
         <div className="card p-12 text-center">
           <ChartBarIcon className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Select a machine to view efficiency metrics</h3>
-          <p className="text-gray-500">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Select a machine to view efficiency metrics</h3>
+          <p className="text-gray-500 dark:text-gray-400">
             Choose a machine from the dropdown above to see detailed OEE, availability, performance, and quality data.
           </p>
         </div>

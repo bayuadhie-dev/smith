@@ -130,7 +130,7 @@ const MaintenanceDashboard: React.FC = () => {
         <div className="flex gap-3">
           <Link
             to="/app/maintenance/schedule"
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:bg-gray-900 transition-colors"
           >
             <CalendarDaysIcon className="w-5 h-5" />
             <span>Schedules</span>
@@ -286,7 +286,7 @@ const MaintenanceDashboard: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {records.slice(0, 5).map((record) => (
-                  <tr key={record.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                  <tr key={record.id} className="hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-700/50">
                     <td className="px-4 py-3 whitespace-nowrap">
                       <Link to={`/app/maintenance/${record.id}`} className="text-blue-600 hover:text-blue-700 font-medium">
                         {record.record_number}

@@ -138,7 +138,7 @@ const [isOpen, setIsOpen] = useState(false);
       {/* Notification BellIcon Button */}
       <button
         type="button"
-        className="relative -m-2.5 p-2.5 text-gray-400 hover:text-gray-500 transition-colors"
+        className="relative -m-2.5 p-2.5 text-gray-400 hover:text-gray-500 dark:text-gray-400 transition-colors"
         onClick={() => setIsOpen(!isOpen)}
       >
         <span className="sr-only">{t('dashboard.notifications')}</span>
@@ -154,10 +154,10 @@ const [isOpen, setIsOpen] = useState(false);
 
       {/* Notification Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-96 max-w-sm bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 z-50">
+        <div className="absolute right-0 top-full mt-2 w-96 max-w-sm bg-white dark:bg-gray-800 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 z-50">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
+          <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Notifications</h3>
             <div className="flex items-center space-x-2">
               {unreadCount > 0 && (
                 <button
@@ -181,12 +181,12 @@ const [isOpen, setIsOpen] = useState(false);
           {/* Notifications List */}
           <div className="max-h-96 overflow-y-auto">
             {notifications.length === 0 ? (
-              <div className="p-6 text-center text-gray-500">
+              <div className="p-6 text-center text-gray-500 dark:text-gray-400">
                 <BellIcon className="h-12 w-12 mx-auto mb-2 text-gray-300" />
                 <p>No notifications yet</p>
               </div>
             ) : (
-              <div className="divide-y divide-gray-200">
+              <div className="divide-y divide-gray-200 dark:divide-gray-700">
                 {notifications.map((notification) => (
                   <div
                     key={notification.id}
@@ -244,10 +244,10 @@ const [isOpen, setIsOpen] = useState(false);
 
           {/* Footer */}
           {notifications.length > 0 && (
-            <div className="p-3 border-t border-gray-200 bg-gray-50 rounded-b-lg">
+            <div className="p-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-b-lg">
               <button
                 onClick={() => setIsOpen(false)}
-                className="w-full text-center text-sm text-gray-600 hover:text-gray-800"
+                className="w-full text-center text-sm text-gray-600 hover:text-gray-800 dark:text-gray-100"
               >
                 Close notifications
               </button>

@@ -340,7 +340,7 @@ const RosterDragDropRobust: React.FC = () => {
   if (!data) {
     return (
       <div className="p-6">
-        <div className="text-center text-gray-500">No data available</div>
+        <div className="text-center text-gray-500 dark:text-gray-400">No data available</div>
       </div>
     );
   }
@@ -348,8 +348,8 @@ const RosterDragDropRobust: React.FC = () => {
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Roster Management (Robust)</h1>
-        <p className="text-gray-600">Drag employees to assign them to machines and shifts</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Roster Management (Robust)</h1>
+        <p className="text-gray-600 dark:text-gray-300">Drag employees to assign them to machines and shifts</p>
         
         {/* Debug Info */}
         <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded">
@@ -366,7 +366,7 @@ const RosterDragDropRobust: React.FC = () => {
           
           {/* Employee Pool */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
               <div className="flex items-center mb-4">
                 <UserIcon className="h-5 w-5 text-blue-600 mr-2" />
                 <h2 className="text-lg font-semibold">Available Employees</h2>
@@ -396,8 +396,8 @@ const RosterDragDropRobust: React.FC = () => {
                               snapshot.isDragging ? 'shadow-lg rotate-2' : 'hover:shadow-md'
                             }`}
                           >
-                            <div className="font-medium text-gray-900">{employee.name}</div>
-                            <div className="text-sm text-gray-500">{employee.employee_id}</div>
+                            <div className="font-medium text-gray-900 dark:text-white">{employee.name}</div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">{employee.employee_id}</div>
                             <div className="text-xs text-gray-400">{employee.position}</div>
                           </div>
                         )}
@@ -412,7 +412,7 @@ const RosterDragDropRobust: React.FC = () => {
 
           {/* Roster Grid */}
           <div className="lg:col-span-3">
-            <div className="bg-white rounded-lg shadow">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
               
               {/* Header with controls */}
               <div className="p-4 border-b">
@@ -424,7 +424,7 @@ const RosterDragDropRobust: React.FC = () => {
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => navigateWeek('prev')}
-                        className="p-2 hover:bg-gray-100 rounded"
+                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded"
                       >
                         <ArrowLeftIcon className="h-4 w-4" />
                       </button>
@@ -435,7 +435,7 @@ const RosterDragDropRobust: React.FC = () => {
                       
                       <button
                         onClick={() => navigateWeek('next')}
-                        className="p-2 hover:bg-gray-100 rounded"
+                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded"
                       >
                         <ArrowRightIcon className="h-4 w-4" />
                       </button>
@@ -445,7 +445,7 @@ const RosterDragDropRobust: React.FC = () => {
                     <select
                       value={selectedShift}
                       onChange={(e) => setSelectedShift(parseInt(e.target.value))}
-                      className="border border-gray-300 rounded px-3 py-1 text-sm"
+                      className="border border-gray-300 dark:border-gray-600 rounded px-3 py-1 text-sm"
                     >
                       {data.shifts.map(shift => (
                         <option key={shift.id} value={shift.id}>
@@ -460,26 +460,26 @@ const RosterDragDropRobust: React.FC = () => {
               {/* Roster Table */}
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-gray-50 dark:bg-gray-900">
                     <tr>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Machine</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Machine</th>
                       {data.week_dates.map(date => (
-                        <th key={date} className="px-3 py-3 text-center text-sm font-medium text-gray-700">
+                        <th key={date} className="px-3 py-3 text-center text-sm font-medium text-gray-700 dark:text-gray-200">
                           <div>{new Date(date).toLocaleDateString('en-US', { weekday: 'short' })}</div>
-                          <div className="text-xs text-gray-500">{new Date(date).getDate()}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">{new Date(date).getDate()}</div>
                         </th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200">
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                     {data.machines.map(machine => (
                       <tr key={machine.id}>
                         <td className="px-4 py-3">
                           <div className="flex items-center">
                             <CogIcon className="h-4 w-4 text-gray-400 mr-2" />
                             <div>
-                              <div className="font-medium text-gray-900">{machine.name}</div>
-                              <div className="text-sm text-gray-500">{machine.code}</div>
+                              <div className="font-medium text-gray-900 dark:text-white">{machine.name}</div>
+                              <div className="text-sm text-gray-500 dark:text-gray-400">{machine.code}</div>
                             </div>
                           </div>
                         </td>
@@ -534,7 +534,7 @@ const RosterDragDropRobust: React.FC = () => {
       {/* Loading Overlay */}
       {saving && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
             <div className="flex items-center">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mr-3"></div>
               <span>Saving assignment...</span>

@@ -1607,7 +1607,9 @@ def heartbeat():
     # Don't change manually set status (dnd, idle, offline)
     # Only update last_seen timestamp
     
-    status.last_seen = get_local_now()
+    # Store in UTC for consistency with model default
+    from datetime import datetime
+    status.last_seen = datetime.utcnow()
     db.session.commit()
     
     return jsonify({

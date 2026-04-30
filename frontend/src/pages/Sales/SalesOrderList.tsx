@@ -29,7 +29,7 @@ const { data, isLoading } = useGetSalesOrdersQuery({})
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Sales Orders</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Sales Orders</h1>
         <Link to="/app/sales/orders/new" className="btn-primary inline-flex items-center gap-2">
           <PlusIcon className="h-5 w-5" />
           Create Order
@@ -55,7 +55,7 @@ const { data, isLoading } = useGetSalesOrdersQuery({})
                   <th>{t('common.actions')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {data?.orders?.map((order: any) => (
                   <tr key={order.id}>
                     <td className="font-medium">{order.order_number}</td>
@@ -102,8 +102,8 @@ const { data, isLoading } = useGetSalesOrdersQuery({})
           <div className="mx-auto h-12 w-12 text-gray-400">
             📋
           </div>
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No sales orders</h3>
-          <p className="mt-1 text-sm text-gray-500">Get started by creating your first sales order.</p>
+          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No sales orders</h3>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by creating your first sales order.</p>
           <div className="mt-6">
             <Link to="/app/sales/orders/new" className="btn-primary">
               <PlusIcon className="h-5 w-5 mr-2" />

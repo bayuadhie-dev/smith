@@ -78,8 +78,8 @@ const [cashAccounts, setCashAccounts] = useState<CashAccount[]>([])
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">🏦 Cash & Bank Management</h1>
-          <p className="text-gray-600 mt-1">Monitor cash flow and bank account balances</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">🏦 Cash & Bank Management</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Monitor cash flow and bank account balances</p>
         </div>
         <div className="flex gap-3">
           <button 
@@ -106,8 +106,8 @@ const [cashAccounts, setCashAccounts] = useState<CashAccount[]>([])
               <BanknotesIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Cash & Bank</p>
-              <p className="text-2xl font-bold text-gray-900">{formatRupiah(totalCash)}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Cash & Bank</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatRupiah(totalCash)}</p>
             </div>
           </div>
         </div>
@@ -118,8 +118,8 @@ const [cashAccounts, setCashAccounts] = useState<CashAccount[]>([])
               <span className="text-2xl">🏦</span>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Bank Accounts</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Bank Accounts</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {cashAccounts.filter(acc => acc.account_name.toLowerCase().includes('bank')).length}
               </p>
             </div>
@@ -132,8 +132,8 @@ const [cashAccounts, setCashAccounts] = useState<CashAccount[]>([])
               <span className="text-2xl">💵</span>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Cash Accounts</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Cash Accounts</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {cashAccounts.filter(acc => acc.account_name.toLowerCase().includes('cash')).length}
               </p>
             </div>
@@ -146,8 +146,8 @@ const [cashAccounts, setCashAccounts] = useState<CashAccount[]>([])
               <span className="text-2xl">📊</span>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Avg Balance</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Avg Balance</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {formatRupiah(totalCash / Math.max(cashAccounts.length, 1))}
               </p>
             </div>
@@ -167,8 +167,8 @@ const [cashAccounts, setCashAccounts] = useState<CashAccount[]>([])
                     {getAccountTypeIcon(account.account_name)}
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">{account.account_name}</h3>
-                    <p className="text-sm text-gray-500">Account: {account.account_number}</p>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{account.account_name}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Account: {account.account_number}</p>
                     <div className="mt-2">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${health.bg} ${health.color}`}>
                         {health.status.charAt(0).toUpperCase() + health.status.slice(1)}
@@ -180,7 +180,7 @@ const [cashAccounts, setCashAccounts] = useState<CashAccount[]>([])
                   <p className={`text-2xl font-bold ${health.color}`}>
                     {formatRupiah(account.balance)}
                   </p>
-                  <p className="text-sm text-gray-500">{account.currency}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{account.currency}</p>
                 </div>
               </div>
 
@@ -205,33 +205,33 @@ const [cashAccounts, setCashAccounts] = useState<CashAccount[]>([])
 
       {/* Recent Transactions */}
       <div className="card">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Recent Transactions</h3>
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Recent Transactions</h3>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.date')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.date')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.description')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.description')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Running Balance
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               <tr>
                 <td colSpan={6} className="px-6 py-12 text-center">
                   <div className="text-center">
                     <BanknotesIcon className="mx-auto h-12 w-12 text-gray-400" />
-                    <h3 className="mt-2 text-sm font-medium text-gray-900">No transactions found</h3>
-                    <p className="mt-1 text-sm text-gray-500">
+                    <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No transactions found</h3>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                       Cash and bank transactions will appear here once recorded
                     </p>
                   </div>
@@ -245,12 +245,12 @@ const [cashAccounts, setCashAccounts] = useState<CashAccount[]>([])
       {/* Transfer Modal */}
       {showTransferModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">💸 Transfer Funds</h3>
               <button 
                 onClick={() => setShowTransferModal(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-300"
               >
                 ✕
               </button>
@@ -258,7 +258,7 @@ const [cashAccounts, setCashAccounts] = useState<CashAccount[]>([])
             
             <form className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   From Account
                 </label>
                 <select className="input w-full">
@@ -272,7 +272,7 @@ const [cashAccounts, setCashAccounts] = useState<CashAccount[]>([])
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   To Account
                 </label>
                 <select className="input w-full">
@@ -286,13 +286,13 @@ const [cashAccounts, setCashAccounts] = useState<CashAccount[]>([])
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 </label>
                 <input type="number" className="input w-full" placeholder="Enter amount" />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">{t('common.description')}</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('common.description')}</label>
                 <textarea 
                   className="input w-full" 
                   rows={3}
@@ -317,20 +317,20 @@ const [cashAccounts, setCashAccounts] = useState<CashAccount[]>([])
       {cashAccounts.length === 0 && !loading && (
         <div className="text-center py-12">
           <BanknotesIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No cash accounts found</h3>
-          <p className="mt-1 text-sm text-gray-500">Start by adding your first cash or bank account</p>
+          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No cash accounts found</h3>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Start by adding your first cash or bank account</p>
         </div>
       )}
 
       {/* Add Account Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">🏦 Add Bank Account</h3>
               <button 
                 onClick={() => setShowAddModal(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-300"
               >
                 ✕
               </button>
@@ -353,7 +353,7 @@ const [cashAccounts, setCashAccounts] = useState<CashAccount[]>([])
               className="space-y-4"
             >
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Account Name
                 </label>
                 <input 
@@ -366,7 +366,7 @@ const [cashAccounts, setCashAccounts] = useState<CashAccount[]>([])
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Account Number
                 </label>
                 <input 
@@ -379,7 +379,7 @@ const [cashAccounts, setCashAccounts] = useState<CashAccount[]>([])
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 </label>
                 <select name="currency" className="input w-full" required>
                   <option value="">Select currency</option>
@@ -390,7 +390,7 @@ const [cashAccounts, setCashAccounts] = useState<CashAccount[]>([])
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Initial Balance
                 </label>
                 <input 

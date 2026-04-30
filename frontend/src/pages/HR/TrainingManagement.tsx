@@ -63,7 +63,7 @@ const navigate = useNavigate()
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Training Management</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Training Management</h1>
         <div className="flex gap-2">
           <button 
             onClick={() => navigate('/app/reports?module=training')}
@@ -83,7 +83,7 @@ const navigate = useNavigate()
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-gray-200 dark:border-gray-700">
         <nav className="-mb-px flex space-x-8">
           <button
             onClick={() => setActiveTab('sessions')}
@@ -125,7 +125,7 @@ const navigate = useNavigate()
           <div className="card">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('common.status')}</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('common.status')}</label>
                 <select
                   value={selectedStatus}
                   onChange={(e) => setSelectedStatus(e.target.value)}
@@ -139,7 +139,7 @@ const navigate = useNavigate()
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Date Range
                 </label>
                 <input
@@ -181,7 +181,7 @@ const navigate = useNavigate()
                         <td>
                           <div>
                             <div className="font-medium">{session.program.program_name}</div>
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
                               <span className={`badge ${getTypeBadge(session.program.training_type)}`}>
                                 {session.program.training_type}
                               </span>
@@ -191,11 +191,11 @@ const navigate = useNavigate()
                         <td>
                           <div>
                             <div>{new Date(session.start_date).toLocaleDateString()}</div>
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
                               to {new Date(session.end_date).toLocaleDateString()}
                             </div>
                             {session.start_time && (
-                              <div className="text-sm text-gray-500">
+                              <div className="text-sm text-gray-500 dark:text-gray-400">
                                 {session.start_time} - {session.end_time}
                               </div>
                             )}
@@ -207,7 +207,7 @@ const navigate = useNavigate()
                             <div className="font-medium">
                               {session.current_participants}/{session.max_participants || '∞'}
                             </div>
-                            <div className="text-sm text-gray-500">participants</div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">participants</div>
                           </div>
                         </td>
                         <td>{session.trainer_name || '-'}</td>
@@ -249,7 +249,7 @@ const navigate = useNavigate()
           <div className="card">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Training Type
                 </label>
                 <select
@@ -265,7 +265,7 @@ const navigate = useNavigate()
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('products.bom.category')}</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('products.bom.category')}</label>
                 <select className="input">
                   <option value="">All Categories</option>
                   <option value="safety">Safety Training</option>
@@ -348,7 +348,7 @@ const navigate = useNavigate()
           <div className="card">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('common.status')}</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('common.status')}</label>
                 <select
                   value={selectedStatus}
                   onChange={(e) => setSelectedStatus(e.target.value)}
@@ -362,7 +362,7 @@ const navigate = useNavigate()
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 </label>
                 <select className="input">
                   <option value="">All Priorities</option>
@@ -405,15 +405,15 @@ const navigate = useNavigate()
                         <td>
                           <div>
                             <div className="font-medium">{request.employee.full_name}</div>
-                            <div className="text-sm text-gray-500">{request.employee.employee_number}</div>
-                            <div className="text-sm text-gray-500">{request.employee.department}</div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">{request.employee.employee_number}</div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">{request.employee.department}</div>
                           </div>
                         </td>
                         <td>
                           <div className="max-w-xs">
                             <div className="font-medium">{request.requested_training}</div>
                             {request.program && (
-                              <div className="text-sm text-gray-500">{request.program.program_name}</div>
+                              <div className="text-sm text-gray-500 dark:text-gray-400">{request.program.program_name}</div>
                             )}
                           </div>
                         </td>

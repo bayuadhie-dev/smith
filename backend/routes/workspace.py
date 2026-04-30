@@ -84,6 +84,161 @@ MODULE_CONFIG = {
         'icon': 'document-chart-bar',
         'color': 'red',
         'model': 'dcc'
+    },
+    'products': {
+        'name': 'Products',
+        'description': 'Product catalog and BOM management',
+        'icon': 'cube',
+        'color': 'purple',
+        'model': 'products'
+    },
+    'oee': {
+        'name': 'OEE Monitoring',
+        'description': 'Overall Equipment Effectiveness',
+        'icon': 'chart-bar',
+        'color': 'orange',
+        'model': 'oee'
+    },
+    'shipping': {
+        'name': 'Shipping',
+        'description': 'Delivery and logistics management',
+        'icon': 'truck',
+        'color': 'purple',
+        'model': 'shipping'
+    },
+    'rd': {
+        'name': 'R&D',
+        'description': 'Research and development projects',
+        'icon': 'light-bulb',
+        'color': 'teal',
+        'model': 'rd'
+    },
+    'waste': {
+        'name': 'Waste Management',
+        'description': 'Waste tracking and management',
+        'icon': 'trash',
+        'color': 'red',
+        'model': 'waste'
+    }
+}
+
+# Module relationships - defines which modules are related to each main module
+MODULE_RELATIONSHIPS = {
+    'production': {
+        'main': 'production',
+        'related': [
+            {'key': 'products', 'name': 'Products', 'permission': 'products.view', 'href': '/app/products'},
+            {'key': 'inventory', 'name': 'Warehouse', 'permission': 'warehouse.view', 'href': '/app/warehouse'},
+            {'key': 'oee', 'name': 'OEE Monitoring', 'permission': 'oee.view', 'href': '/app/oee'},
+            {'key': 'quality', 'name': 'Quality Control', 'permission': 'quality.view', 'href': '/app/quality'},
+            {'key': 'maintenance', 'name': 'Maintenance', 'permission': 'maintenance.view', 'href': '/app/maintenance'}
+        ]
+    },
+    'sales': {
+        'main': 'sales',
+        'related': [
+            {'key': 'products', 'name': 'Products', 'permission': 'products.view', 'href': '/app/products'},
+            {'key': 'shipping', 'name': 'Shipping', 'permission': 'shipping.view', 'href': '/app/shipping'},
+            {'key': 'finance', 'name': 'Finance', 'permission': 'finance.view', 'href': '/app/finance'},
+            {'key': 'inventory', 'name': 'Warehouse', 'permission': 'warehouse.view', 'href': '/app/warehouse'}
+        ]
+    },
+    'purchasing': {
+        'main': 'purchasing',
+        'related': [
+            {'key': 'inventory', 'name': 'Warehouse', 'permission': 'warehouse.view', 'href': '/app/warehouse'},
+            {'key': 'finance', 'name': 'Finance', 'permission': 'finance.view', 'href': '/app/finance'},
+            {'key': 'quality', 'name': 'Quality Control', 'permission': 'quality.view', 'href': '/app/quality'},
+            {'key': 'products', 'name': 'Products', 'permission': 'products.view', 'href': '/app/products'}
+        ]
+    },
+    'inventory': {
+        'main': 'inventory',
+        'related': [
+            {'key': 'products', 'name': 'Products', 'permission': 'products.view', 'href': '/app/products'},
+            {'key': 'production', 'name': 'Production', 'permission': 'production.view', 'href': '/app/production'},
+            {'key': 'purchasing', 'name': 'Purchasing', 'permission': 'purchasing.view', 'href': '/app/purchasing'},
+            {'key': 'sales', 'name': 'Sales', 'permission': 'sales.view', 'href': '/app/sales'}
+        ]
+    },
+    'quality': {
+        'main': 'quality',
+        'related': [
+            {'key': 'production', 'name': 'Production', 'permission': 'production.view', 'href': '/app/production'},
+            {'key': 'products', 'name': 'Products', 'permission': 'products.view', 'href': '/app/products'},
+            {'key': 'purchasing', 'name': 'Purchasing', 'permission': 'purchasing.view', 'href': '/app/purchasing'},
+            {'key': 'dcc', 'name': 'Document Control', 'permission': 'dcc.view', 'href': '/app/dcc'}
+        ]
+    },
+    'maintenance': {
+        'main': 'maintenance',
+        'related': [
+            {'key': 'production', 'name': 'Production', 'permission': 'production.view', 'href': '/app/production'},
+            {'key': 'oee', 'name': 'OEE Monitoring', 'permission': 'oee.view', 'href': '/app/oee'},
+            {'key': 'inventory', 'name': 'Warehouse', 'permission': 'warehouse.view', 'href': '/app/warehouse'}
+        ]
+    },
+    'hr': {
+        'main': 'hr',
+        'related': [
+            {'key': 'finance', 'name': 'Finance', 'permission': 'finance.view', 'href': '/app/finance'},
+            {'key': 'production', 'name': 'Production', 'permission': 'production.view', 'href': '/app/production'}
+        ]
+    },
+    'finance': {
+        'main': 'finance',
+        'related': [
+            {'key': 'sales', 'name': 'Sales', 'permission': 'sales.view', 'href': '/app/sales'},
+            {'key': 'purchasing', 'name': 'Purchasing', 'permission': 'purchasing.view', 'href': '/app/purchasing'},
+            {'key': 'hr', 'name': 'Human Resources', 'permission': 'hr.view', 'href': '/app/hr'},
+            {'key': 'inventory', 'name': 'Warehouse', 'permission': 'warehouse.view', 'href': '/app/warehouse'}
+        ]
+    },
+    'dcc': {
+        'main': 'dcc',
+        'related': [
+            {'key': 'quality', 'name': 'Quality Control', 'permission': 'quality.view', 'href': '/app/quality'},
+            {'key': 'production', 'name': 'Production', 'permission': 'production.view', 'href': '/app/production'}
+        ]
+    },
+    'products': {
+        'main': 'products',
+        'related': [
+            {'key': 'production', 'name': 'Production', 'permission': 'production.view', 'href': '/app/production'},
+            {'key': 'inventory', 'name': 'Warehouse', 'permission': 'warehouse.view', 'href': '/app/warehouse'},
+            {'key': 'sales', 'name': 'Sales', 'permission': 'sales.view', 'href': '/app/sales'},
+            {'key': 'purchasing', 'name': 'Purchasing', 'permission': 'purchasing.view', 'href': '/app/purchasing'}
+        ]
+    },
+    'oee': {
+        'main': 'oee',
+        'related': [
+            {'key': 'production', 'name': 'Production', 'permission': 'production.view', 'href': '/app/production'},
+            {'key': 'maintenance', 'name': 'Maintenance', 'permission': 'maintenance.view', 'href': '/app/maintenance'}
+        ]
+    },
+    'shipping': {
+        'main': 'shipping',
+        'related': [
+            {'key': 'sales', 'name': 'Sales', 'permission': 'sales.view', 'href': '/app/sales'},
+            {'key': 'inventory', 'name': 'Warehouse', 'permission': 'warehouse.view', 'href': '/app/warehouse'},
+            {'key': 'quality', 'name': 'Quality Control', 'permission': 'quality.view', 'href': '/app/quality'}
+        ]
+    },
+    'rd': {
+        'main': 'rd',
+        'related': [
+            {'key': 'products', 'name': 'Products', 'permission': 'products.view', 'href': '/app/products'},
+            {'key': 'production', 'name': 'Production', 'permission': 'production.view', 'href': '/app/production'},
+            {'key': 'quality', 'name': 'Quality Control', 'permission': 'quality.view', 'href': '/app/quality'}
+        ]
+    },
+    'waste': {
+        'main': 'waste',
+        'related': [
+            {'key': 'production', 'name': 'Production', 'permission': 'production.view', 'href': '/app/production'},
+            {'key': 'inventory', 'name': 'Warehouse', 'permission': 'warehouse.view', 'href': '/app/warehouse'}
+        ]
     }
 }
 
@@ -508,7 +663,7 @@ def get_module_reports(module_name):
 @jwt_required()
 def get_workspace_data(module_name):
     """
-    Get workspace data for a specific module
+    Get workspace data for a specific module with related modules
     """
     try:
         # Check if module exists
@@ -524,12 +679,32 @@ def get_workspace_data(module_name):
         # Get module data
         module_config = MODULE_CONFIG[module_name]
         
+        # Get related modules with their stats
+        related_modules = []
+        if module_name in MODULE_RELATIONSHIPS:
+            relationships = MODULE_RELATIONSHIPS[module_name]
+            for related in relationships.get('related', []):
+                related_key = related['key']
+                if related_key in MODULE_CONFIG:
+                    related_config = MODULE_CONFIG[related_key]
+                    related_modules.append({
+                        'key': related_key,
+                        'name': related['name'],
+                        'description': related_config['description'],
+                        'icon': related_config['icon'],
+                        'color': related_config['color'],
+                        'permission': related['permission'],
+                        'href': related['href'],
+                        'stats': get_module_stats(related_key)[:2]  # Get only 2 stats for related modules
+                    })
+        
         workspace_data = {
             'module': module_config,
             'stats': get_module_stats(module_name),
             'quick_actions': get_module_quick_actions(module_name),
             'recent_items': get_module_recent_items(module_name),
-            'reports': get_module_reports(module_name)
+            'reports': get_module_reports(module_name),
+            'related_modules': related_modules
         }
         
         return jsonify({

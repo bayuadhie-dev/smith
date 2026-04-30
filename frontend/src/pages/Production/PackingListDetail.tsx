@@ -247,13 +247,13 @@ export default function PackingListDetail() {
       <div className="flex items-center gap-4 mb-6">
         <Link
           to="/app/production/packing-list"
-          className="p-2 hover:bg-gray-100 rounded-lg"
+          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
         >
-          <ArrowLeftIcon className="h-5 w-5 text-gray-600" />
+          <ArrowLeftIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
         </Link>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900">{packingList.packing_number}</h1>
-          <p className="text-sm text-gray-500">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{packingList.packing_number}</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             {packingList.product_name} ({packingList.product_code})
           </p>
         </div>
@@ -289,34 +289,34 @@ export default function PackingListDetail() {
             {packingList.status === 'released' ? 'QC Released - Stok sudah masuk gudang FG' : 'QC Rejected - Stok WIP dikembalikan'}
           </p>
           <div className="text-sm mt-1 space-y-0.5">
-            {packingList.qc_by && <p className="text-gray-600">QC oleh: {packingList.qc_by}</p>}
-            {packingList.qc_date && <p className="text-gray-600">Tanggal: {new Date(packingList.qc_date).toLocaleString('id-ID')}</p>}
-            {packingList.qc_notes && <p className="text-gray-600">Catatan: {packingList.qc_notes}</p>}
+            {packingList.qc_by && <p className="text-gray-600 dark:text-gray-300">QC oleh: {packingList.qc_by}</p>}
+            {packingList.qc_date && <p className="text-gray-600 dark:text-gray-300">Tanggal: {new Date(packingList.qc_date).toLocaleString('id-ID')}</p>}
+            {packingList.qc_notes && <p className="text-gray-600 dark:text-gray-300">Catatan: {packingList.qc_notes}</p>}
           </div>
         </div>
       )}
 
       {/* Info Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-sm text-gray-500">Total Karton</p>
-          <p className="text-2xl font-bold text-gray-900">{packingList.total_carton}</p>
-          <p className="text-xs text-gray-500">{packingList.total_pcs.toLocaleString()} pcs</p>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400">Total Karton</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">{packingList.total_carton}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">{packingList.total_pcs.toLocaleString()} pcs</p>
         </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-sm text-gray-500">Nomor Karton</p>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400">Nomor Karton</p>
           <p className="text-2xl font-bold text-blue-600">
             {packingList.start_carton_number} - {packingList.end_carton_number}
           </p>
         </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-sm text-gray-500">Progress Timbang</p>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400">Progress Timbang</p>
           <p className="text-2xl font-bold text-green-600">{progress}%</p>
-          <p className="text-xs text-gray-500">{packingList.weighed_count} / {packingList.total_carton} karton</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">{packingList.weighed_count} / {packingList.total_carton} karton</p>
         </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-sm text-gray-500">Customer</p>
-          <p className="text-lg font-medium text-gray-900">{packingList.customer_name || '-'}</p>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400">Customer</p>
+          <p className="text-lg font-medium text-gray-900 dark:text-white">{packingList.customer_name || '-'}</p>
           {packingList.so_number && (
             <p className="text-xs text-blue-500">SO: {packingList.so_number}</p>
           )}
@@ -325,16 +325,16 @@ export default function PackingListDetail() {
 
       {/* Action Bar */}
       {!['completed', 'quarantine', 'released', 'rejected', 'cancelled'].includes(packingList.status) && (
-        <div className="bg-white rounded-lg shadow p-4 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
               <CalendarDaysIcon className="h-5 w-5 text-gray-400" />
-              <label className="text-sm text-gray-600">Tanggal Timbang Default:</label>
+              <label className="text-sm text-gray-600 dark:text-gray-300">Tanggal Timbang Default:</label>
               <input
                 type="date"
                 value={bulkWeighDate}
                 onChange={(e) => setBulkWeighDate(e.target.value)}
-                className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm"
+                className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm"
               />
             </div>
             <div className="flex-1" />
@@ -365,7 +365,7 @@ export default function PackingListDetail() {
       )}
 
       {/* Items Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         <div className="bg-green-50 border-b border-green-200 px-4 py-3 flex items-center justify-between">
           <div>
             <h3 className="font-semibold text-green-800">📦 Daftar Karton</h3>
@@ -385,32 +385,32 @@ export default function PackingListDetail() {
           )}
         </div>
 
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead className="bg-gray-50 dark:bg-gray-900">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Karton</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Batch Mixing</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Berat (kg)</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tgl Timbang</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ditimbang Oleh</th>
-              <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Karton</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Batch Mixing</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Berat (kg)</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tgl Timbang</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Ditimbang Oleh</th>
+              <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             {items.map((item) => (
               <tr 
                 key={item.id} 
                 className={`${item.is_batch_start ? 'bg-yellow-50' : ''} ${item.weight_kg ? 'bg-green-50' : ''}`}
               >
                 <td className="px-4 py-3 whitespace-nowrap">
-                  <span className="font-medium text-gray-900">{item.carton_number}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{item.carton_number}</span>
                   {item.is_batch_start && (
                     <span className="ml-2 px-2 py-0.5 text-xs bg-yellow-200 text-yellow-800 rounded">
                       Batch Baru
                     </span>
                   )}
                 </td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                   {item.batch_mixing || '-'}
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
@@ -423,14 +423,14 @@ export default function PackingListDetail() {
                       min="0"
                       value={editedItems[item.id]?.weight_kg ?? item.weight_kg ?? ''}
                       onChange={(e) => handleWeightChange(item.id, e.target.value)}
-                      className="w-24 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500"
+                      className="w-24 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm focus:ring-2 focus:ring-blue-500"
                       placeholder="0.000"
                     />
                   )}
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
                   {['completed', 'quarantine', 'released', 'rejected', 'cancelled'].includes(packingList.status) ? (
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-gray-600 dark:text-gray-300">
                       {item.weigh_date ? new Date(item.weigh_date).toLocaleDateString('id-ID') : '-'}
                     </span>
                   ) : (
@@ -438,11 +438,11 @@ export default function PackingListDetail() {
                       type="date"
                       value={editedItems[item.id]?.weigh_date || item.weigh_date || bulkWeighDate}
                       onChange={(e) => handleWeighDateChange(item.id, e.target.value)}
-                      className="px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500"
+                      className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm focus:ring-2 focus:ring-blue-500"
                     />
                   )}
                 </td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                   {item.weighed_by || '-'}
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap text-center">
@@ -462,7 +462,7 @@ export default function PackingListDetail() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="bg-gray-50 px-4 py-3 flex items-center justify-between border-t">
+          <div className="bg-gray-50 dark:bg-gray-900 px-4 py-3 flex items-center justify-between border-t">
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}
@@ -470,7 +470,7 @@ export default function PackingListDetail() {
             >
               Sebelumnya
             </button>
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-gray-600 dark:text-gray-300">
               Halaman {page} dari {totalPages}
             </span>
             <button
@@ -487,7 +487,7 @@ export default function PackingListDetail() {
       {/* Batch Mixing Modal */}
       {showBatchModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
             <h3 className="text-lg font-semibold mb-4">
               {batchStartCarton 
                 ? `Set Batch Mixing dari Karton #${batchStartCarton}` 
@@ -495,14 +495,14 @@ export default function PackingListDetail() {
             </h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Batch Mixing
                 </label>
                 <input
                   type="text"
                   value={newBatchMixing}
                   onChange={(e) => setNewBatchMixing(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                   placeholder="Contoh: BATCH-001"
                 />
               </div>
@@ -510,7 +510,7 @@ export default function PackingListDetail() {
             <div className="mt-6 flex justify-end gap-3">
               <button
                 onClick={() => setShowBatchModal(false)}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300"
               >
                 Batal
               </button>

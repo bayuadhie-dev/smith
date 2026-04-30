@@ -89,7 +89,7 @@ const LiveMonitoringView: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
+      <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-900">
         <LoadingSpinner />
       </div>
     );
@@ -97,8 +97,8 @@ const LiveMonitoringView: React.FC = () => {
 
   if (!data) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
-        <p className="text-gray-500">Data tidak ditemukan</p>
+      <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-900">
+        <p className="text-gray-500 dark:text-gray-400">Data tidak ditemukan</p>
       </div>
     );
   }
@@ -113,25 +113,25 @@ const LiveMonitoringView: React.FC = () => {
   const ngItems = data.checklist_answers?.filter(a => a.status === 'NG') || [];
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 print:p-2 print:bg-white">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 print:p-2 print:bg-white dark:bg-gray-800">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="bg-white rounded-xl shadow-sm border mb-4 print:shadow-none print:mb-2">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border mb-4 print:shadow-none print:mb-2">
           <div className="flex items-center justify-between p-4 border-b print:p-2">
             <div className="flex items-center space-x-3">
               <button 
                 onClick={() => navigate(-1)}
-                className="p-2 hover:bg-gray-100 rounded-lg print:hidden"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg print:hidden"
               >
-                <ArrowLeftIcon className="w-5 h-5 text-gray-600" />
+                <ArrowLeftIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
               </button>
               <SignalIcon className="w-6 h-6 text-emerald-600 print:w-5 print:h-5" />
-              <h1 className="text-lg font-bold text-gray-900 print:text-base">Live Monitoring Check</h1>
+              <h1 className="text-lg font-bold text-gray-900 dark:text-white print:text-base">Live Monitoring Check</h1>
             </div>
             <div className="flex items-center space-x-2 print:hidden">
               <button 
                 onClick={handlePrint}
-                className="flex items-center space-x-1 px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded-lg text-sm"
+                className="flex items-center space-x-1 px-3 py-1.5 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg text-sm"
               >
                 <PrinterIcon className="w-4 h-4" />
                 <span>Print</span>
@@ -147,21 +147,21 @@ const LiveMonitoringView: React.FC = () => {
           </div>
           
           {/* Info Bar */}
-          <div className="flex flex-wrap items-center gap-4 px-4 py-3 bg-gray-50 text-sm print:text-xs print:py-2 print:gap-2">
+          <div className="flex flex-wrap items-center gap-4 px-4 py-3 bg-gray-50 dark:bg-gray-900 text-sm print:text-xs print:py-2 print:gap-2">
             <div className="flex items-center space-x-2">
-              <CogIcon className="w-4 h-4 text-gray-500" />
-              <span className="font-semibold text-gray-900">{data.machine_name}</span>
+              <CogIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+              <span className="font-semibold text-gray-900 dark:text-white">{data.machine_name}</span>
             </div>
             <div className="flex items-center space-x-2">
-              <span className="text-gray-500">📅</span>
+              <span className="text-gray-500 dark:text-gray-400">📅</span>
               <span>{formatDate(data.check_date)}</span>
             </div>
             <div className="flex items-center space-x-2">
-              <ClockIcon className="w-4 h-4 text-gray-500" />
+              <ClockIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
               <span>{getShiftLabel(data.shift)}</span>
             </div>
             <div className="flex items-center space-x-2">
-              <span className="text-gray-500">⏰</span>
+              <span className="text-gray-500 dark:text-gray-400">⏰</span>
               <span>Slot {data.slot_label}</span>
             </div>
             <div className="flex items-center space-x-2">
@@ -173,7 +173,7 @@ const LiveMonitoringView: React.FC = () => {
                 {data.machine_status === 'running' ? '🟢 Running' : '🔴 Stopped'}
               </span>
             </div>
-            <div className="flex items-center space-x-2 text-gray-500">
+            <div className="flex items-center space-x-2 text-gray-500 dark:text-gray-400">
               <span>✅</span>
               <span>{formatTime(data.checked_at)}</span>
             </div>
@@ -181,25 +181,25 @@ const LiveMonitoringView: React.FC = () => {
         </div>
 
         {/* Status Summary */}
-        <div className="flex items-center justify-center gap-6 py-3 bg-white rounded-xl shadow-sm border mb-4 print:shadow-none print:mb-2 print:py-2">
+        <div className="flex items-center justify-center gap-6 py-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm border mb-4 print:shadow-none print:mb-2 print:py-2">
           <div className="flex items-center space-x-2">
             <CheckCircleIcon className="w-5 h-5 text-green-600" />
             <span className="text-xl font-bold text-green-600 print:text-lg">{okCount}</span>
-            <span className="text-sm text-gray-500">OK</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">OK</span>
           </div>
           <div className="flex items-center space-x-2">
             <XCircleIcon className="w-5 h-5 text-red-600" />
             <span className="text-xl font-bold text-red-600 print:text-lg">{ngCount}</span>
-            <span className="text-sm text-gray-500">NG</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">NG</span>
           </div>
           <div className="flex items-center space-x-2">
             <MinusCircleIcon className="w-5 h-5 text-gray-400" />
             <span className="text-xl font-bold text-gray-400 print:text-lg">{naCount}</span>
-            <span className="text-sm text-gray-500">N/A</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">N/A</span>
           </div>
           <div className="flex items-center space-x-2">
-            <span className="text-xl font-bold text-gray-700 print:text-lg">{totalCount}</span>
-            <span className="text-sm text-gray-500">Total</span>
+            <span className="text-xl font-bold text-gray-700 dark:text-gray-200 print:text-lg">{totalCount}</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">Total</span>
           </div>
         </div>
 
@@ -255,14 +255,14 @@ const LiveMonitoringView: React.FC = () => {
         )}
 
         {/* Checklist Grid */}
-        <div className="bg-white rounded-xl shadow-sm border print:shadow-none">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border print:shadow-none">
           {/* Kondisi Mesin */}
           {kondisiMesinItems.length > 0 && (
             <div className="p-4 print:p-2">
               <div className="flex items-center space-x-2 mb-3 print:mb-2">
                 <CogIcon className="w-5 h-5 text-blue-600 print:w-4 print:h-4" />
-                <h3 className="font-semibold text-gray-800">Kondisi Mesin</h3>
-                <span className="text-xs text-gray-500">({kondisiMesinItems.length} item)</span>
+                <h3 className="font-semibold text-gray-800 dark:text-gray-100">Kondisi Mesin</h3>
+                <span className="text-xs text-gray-500 dark:text-gray-400">({kondisiMesinItems.length} item)</span>
               </div>
               <div className="grid grid-cols-2 gap-2 print:gap-1">
                 {kondisiMesinItems.map((item, idx) => (
@@ -270,8 +270,8 @@ const LiveMonitoringView: React.FC = () => {
                     item.status === 'NG' ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'
                   }`}>
                     <div className="flex items-center space-x-2">
-                      <span className="text-xs text-gray-500 font-medium print:text-[10px]">{idx + 1}</span>
-                      <span className="text-xs text-gray-700 print:text-[10px]">{item.item_name}</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 font-medium print:text-[10px]">{idx + 1}</span>
+                      <span className="text-xs text-gray-700 dark:text-gray-200 print:text-[10px]">{item.item_name}</span>
                     </div>
                     <span className={`px-2 py-0.5 rounded text-xs font-bold print:text-[10px] print:px-1 ${
                       item.status === 'OK' ? 'bg-green-500 text-white' :
@@ -291,8 +291,8 @@ const LiveMonitoringView: React.FC = () => {
             <div className="p-4 border-t print:p-2">
               <div className="flex items-center space-x-2 mb-3 print:mb-2">
                 <UserGroupIcon className="w-5 h-5 text-purple-600 print:w-4 print:h-4" />
-                <h3 className="font-semibold text-gray-800">Man Power</h3>
-                <span className="text-xs text-gray-500">({manpowerItems.length} item)</span>
+                <h3 className="font-semibold text-gray-800 dark:text-gray-100">Man Power</h3>
+                <span className="text-xs text-gray-500 dark:text-gray-400">({manpowerItems.length} item)</span>
               </div>
               <div className="grid grid-cols-2 gap-2 print:gap-1">
                 {manpowerItems.map((item, idx) => (
@@ -300,8 +300,8 @@ const LiveMonitoringView: React.FC = () => {
                     item.status === 'NG' ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'
                   }`}>
                     <div className="flex items-center space-x-2">
-                      <span className="text-xs text-gray-500 font-medium print:text-[10px]">{idx + 1}</span>
-                      <span className="text-xs text-gray-700 print:text-[10px]">{item.item_name}</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 font-medium print:text-[10px]">{idx + 1}</span>
+                      <span className="text-xs text-gray-700 dark:text-gray-200 print:text-[10px]">{item.item_name}</span>
                     </div>
                     <span className={`px-2 py-0.5 rounded text-xs font-bold print:text-[10px] print:px-1 ${
                       item.status === 'OK' ? 'bg-green-500 text-white' :

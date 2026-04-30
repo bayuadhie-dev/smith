@@ -156,15 +156,15 @@ export default function HRDashboard() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">👥 HR Dashboard</h1>
-          <p className="text-gray-600 mt-1">Kelola sumber daya manusia perusahaan</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">👥 HR Dashboard</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Kelola sumber daya manusia perusahaan</p>
         </div>
         <div className="flex items-center gap-3">
           <input
             type="date"
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
           <button
             onClick={() => window.location.reload()}
@@ -185,9 +185,9 @@ export default function HRDashboard() {
                 <stat.icon className="h-6 w-6 text-white" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">{stat.name}</p>
-                <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                <p className="text-xs text-gray-500">{stat.subtext}</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">{stat.name}</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{stat.subtext}</p>
               </div>
             </div>
           </div>
@@ -196,7 +196,7 @@ export default function HRDashboard() {
 
       {/* HR Modules */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Modul HR</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Modul HR</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {moduleCards.map((module, index) => (
             <Link
@@ -209,11 +209,11 @@ export default function HRDashboard() {
                   <module.icon className="h-6 w-6 text-white" />
                 </div>
                 <div className="flex-1">
-                  <h4 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors">
                     {module.title}
                   </h4>
-                  <p className="text-gray-600 text-sm mt-1">{module.description}</p>
-                  <p className="text-xs text-gray-500 mt-2">{module.stats}</p>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm mt-1">{module.description}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">{module.stats}</p>
                 </div>
               </div>
             </Link>
@@ -223,7 +223,7 @@ export default function HRDashboard() {
 
       {/* Quick Actions */}
       <div className="card p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Aksi Cepat</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Aksi Cepat</h3>
         <div className="flex flex-wrap gap-3">
           <Link to="/app/hr/employees/new" className="btn-primary flex items-center gap-2">
             <UserPlusIcon className="h-4 w-4" />
@@ -248,17 +248,17 @@ export default function HRDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Attendance */}
         <div className="card">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Today's Attendance</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Today's Attendance</h2>
           <div className="space-y-3">
             {attendanceData?.attendances?.slice(0, 5).map((attendance: any) => (
               <div key={attendance.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
                 <div className="flex items-center">
-                  <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                    <UserGroupIcon className="w-4 h-4 text-gray-600" />
+                  <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                    <UserGroupIcon className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                   </div>
                   <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-900">{attendance.employee.full_name}</p>
-                    <p className="text-xs text-gray-500">{attendance.employee.department}</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">{attendance.employee.full_name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{attendance.employee.department}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -269,7 +269,7 @@ export default function HRDashboard() {
                     {attendance.status}
                   </span>
                   {attendance.clock_in && (
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
                       {new Date(attendance.clock_in).toLocaleTimeString()}
                     </span>
                   )}
@@ -277,14 +277,14 @@ export default function HRDashboard() {
               </div>
             ))}
             {(!attendanceData?.attendances || attendanceData.attendances.length === 0) && (
-              <p className="text-sm text-gray-500 text-center py-4">No attendance records for today</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No attendance records for today</p>
             )}
           </div>
         </div>
 
         {/* Alerts & Notifications */}
         <div className="card">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Alerts & Notifications</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Alerts & Notifications</h2>
           <div className="space-y-3">
             {/* Pending Leave Approvals */}
             {pendingLeaves > 0 && (
@@ -342,7 +342,7 @@ export default function HRDashboard() {
 
             {/* No alerts */}
             {pendingLeaves === 0 && ongoingTrainings === 0 && parseFloat(attendanceRate) < 95 && (
-              <p className="text-sm text-gray-500 text-center py-4">No alerts at this time</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No alerts at this time</p>
             )}
           </div>
         </div>
@@ -353,14 +353,14 @@ export default function HRDashboard() {
         {/* Attendance Trend */}
         <div className="card">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Attendance Overview</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Attendance Overview</h2>
             <ChartBarIcon className="w-5 h-5 text-gray-400" />
           </div>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Present</span>
+              <span className="text-sm text-gray-600 dark:text-gray-300">Present</span>
               <div className="flex items-center gap-2">
-                <div className="w-32 bg-gray-200 rounded-full h-2">
+                <div className="w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                   <div 
                     className="bg-green-500 h-2 rounded-full" 
                     style={{ width: `${(presentToday / activeEmployees) * 100}%` }}
@@ -370,9 +370,9 @@ export default function HRDashboard() {
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Absent</span>
+              <span className="text-sm text-gray-600 dark:text-gray-300">Absent</span>
               <div className="flex items-center gap-2">
-                <div className="w-32 bg-gray-200 rounded-full h-2">
+                <div className="w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                   <div 
                     className="bg-red-500 h-2 rounded-full" 
                     style={{ width: `${(absentToday / activeEmployees) * 100}%` }}
@@ -387,24 +387,24 @@ export default function HRDashboard() {
         {/* Department Distribution */}
         <div className="card">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Employee Distribution</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Employee Distribution</h2>
             <ChartBarIcon className="w-5 h-5 text-gray-400" />
           </div>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Production</span>
+              <span className="text-sm text-gray-600 dark:text-gray-300">Production</span>
               <span className="text-sm font-medium">45%</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Quality Control</span>
+              <span className="text-sm text-gray-600 dark:text-gray-300">Quality Control</span>
               <span className="text-sm font-medium">20%</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Maintenance</span>
+              <span className="text-sm text-gray-600 dark:text-gray-300">Maintenance</span>
               <span className="text-sm font-medium">15%</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Others</span>
+              <span className="text-sm text-gray-600 dark:text-gray-300">Others</span>
               <span className="text-sm font-medium">20%</span>
             </div>
           </div>

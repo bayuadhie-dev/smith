@@ -254,10 +254,10 @@ const ProductionPlanningForm: React.FC = () => {
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
           {isEditMode ? 'Edit Production Plan' : 'Create Production Plan'}
         </h1>
-        <p className="text-gray-600">Master Production Schedule (MPS)</p>
+        <p className="text-gray-600 dark:text-gray-300">Master Production Schedule (MPS)</p>
       </div>
 
       {error && (
@@ -266,13 +266,13 @@ const ProductionPlanningForm: React.FC = () => {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6">
+      <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         {/* Basic Information */}
         <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Basic Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Plan Number
               </label>
               <input
@@ -281,12 +281,12 @@ const ProductionPlanningForm: React.FC = () => {
                 value={formData.plan_number}
                 onChange={handleInputChange}
                 placeholder="Auto-generated if empty"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Plan Name <span className="text-red-500">*</span>
               </label>
               <input
@@ -295,19 +295,19 @@ const ProductionPlanningForm: React.FC = () => {
                 value={formData.plan_name}
                 onChange={handleInputChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Plan Type
               </label>
               <select
                 name="plan_type"
                 value={formData.plan_type}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
               >
                 <option value="daily">Daily</option>
                 <option value="weekly">Weekly</option>
@@ -316,14 +316,14 @@ const ProductionPlanningForm: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Based On
               </label>
               <select
                 name="based_on"
                 value={formData.based_on}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
               >
                 <option value="manual">Manual</option>
                 <option value="forecast">Sales Forecast</option>
@@ -337,15 +337,15 @@ const ProductionPlanningForm: React.FC = () => {
         {/* Forecast Selection */}
         {formData.based_on.includes('forecast') && (
           <div className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Sales Forecast</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Sales Forecast</h2>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Select Forecast
               </label>
               <select
                 value={formData.sales_forecast_id || ''}
                 onChange={handleForecastChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">-- Select Forecast --</option>
                 {forecasts.map(forecast => (
@@ -360,10 +360,10 @@ const ProductionPlanningForm: React.FC = () => {
 
         {/* Planning Period */}
         <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Planning Period</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Planning Period</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Period Start <span className="text-red-500">*</span>
               </label>
               <input
@@ -372,12 +372,12 @@ const ProductionPlanningForm: React.FC = () => {
                 value={formData.period_start}
                 onChange={handleInputChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Period End <span className="text-red-500">*</span>
               </label>
               <input
@@ -386,7 +386,7 @@ const ProductionPlanningForm: React.FC = () => {
                 value={formData.period_end}
                 onChange={handleInputChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
@@ -394,17 +394,17 @@ const ProductionPlanningForm: React.FC = () => {
 
         {/* Product & Quantity */}
         <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Product & Quantity</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Product & Quantity</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Product <span className="text-red-500">*</span>
               </label>
               <select
                 value={formData.product_id || ''}
                 onChange={handleProductChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">-- Select Product --</option>
                 {products.map(product => (
@@ -416,7 +416,7 @@ const ProductionPlanningForm: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Planned Quantity <span className="text-red-500">*</span>
               </label>
               <div className="flex gap-2">
@@ -428,7 +428,7 @@ const ProductionPlanningForm: React.FC = () => {
                   required
                   min="0"
                   step="0.01"
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                 />
                 <input
                   type="text"
@@ -436,7 +436,7 @@ const ProductionPlanningForm: React.FC = () => {
                   value={formData.uom}
                   onChange={handleInputChange}
                   placeholder="UOM"
-                  className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-24 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -446,15 +446,15 @@ const ProductionPlanningForm: React.FC = () => {
         {/* BOM Material Requirements */}
         {formData.product_id && (
           <div className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
               <CubeIcon className="h-5 w-5" />
               Material Requirements (BOM)
             </h2>
             
             {loadingBOM ? (
-              <div className="p-6 bg-gray-50 border border-gray-200 rounded-lg text-center">
+              <div className="p-6 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                <p className="text-sm text-gray-600 mt-2">Loading BOM data...</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">Loading BOM data...</p>
               </div>
             ) : bomData ? (
               <div className="border border-green-200 bg-green-50 rounded-lg p-4">
@@ -484,25 +484,25 @@ const ProductionPlanningForm: React.FC = () => {
 
                 {/* Material Details Table */}
                 {showMaterialDetails && bomData.items && bomData.items.length > 0 && (
-                  <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
+                  <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                      <thead className="bg-gray-50 dark:bg-gray-900">
                         <tr>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Material</th>
-                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Per Batch</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Material</th>
+                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Per Batch</th>
                           {formData.planned_quantity > 0 && (
-                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Required</th>
+                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Required</th>
                           )}
-                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Scrap %</th>
-                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Cost</th>
+                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Scrap %</th>
+                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Cost</th>
                         </tr>
                       </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
+                      <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         {bomData.items.map((item: any) => (
-                          <tr key={item.id} className="hover:bg-gray-50">
+                          <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                             <td className="px-4 py-3 text-sm">
-                              <div className="font-medium text-gray-900">{item.material_name}</div>
-                              <div className="text-gray-500 text-xs">{item.material_code}</div>
+                              <div className="font-medium text-gray-900 dark:text-white">{item.material_name}</div>
+                              <div className="text-gray-500 dark:text-gray-400 text-xs">{item.material_code}</div>
                             </td>
                             <td className="px-4 py-3 text-sm text-right">
                               {formatNumber(item.quantity)} {item.uom}
@@ -525,7 +525,7 @@ const ProductionPlanningForm: React.FC = () => {
 
                     {/* Cost Summary */}
                     {formData.planned_quantity > 0 && (
-                      <div className="bg-blue-50 px-4 py-3 border-t border-gray-200">
+                      <div className="bg-blue-50 px-4 py-3 border-t border-gray-200 dark:border-gray-700">
                         <div className="flex justify-between items-center">
                           <span className="text-sm font-medium text-blue-900">
                             Estimated Total Material Cost:
@@ -566,17 +566,17 @@ const ProductionPlanningForm: React.FC = () => {
 
         {/* Resources */}
         <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Resources</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Resources</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Machine
               </label>
               <select
                 name="machine_id"
                 value={formData.machine_id || ''}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">-- Select Machine --</option>
                 {machines.map(machine => (
@@ -588,7 +588,7 @@ const ProductionPlanningForm: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Estimated Duration (hours)
               </label>
               <input
@@ -598,12 +598,12 @@ const ProductionPlanningForm: React.FC = () => {
                 onChange={handleInputChange}
                 min="0"
                 step="0.5"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Required Operators
               </label>
               <input
@@ -612,7 +612,7 @@ const ProductionPlanningForm: React.FC = () => {
                 value={formData.required_operators}
                 onChange={handleInputChange}
                 min="1"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
@@ -620,17 +620,17 @@ const ProductionPlanningForm: React.FC = () => {
 
         {/* Status & Priority */}
         <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Status & Priority</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Status & Priority</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Status
               </label>
               <select
                 name="status"
                 value={formData.status}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
               >
                 <option value="draft">Draft</option>
                 <option value="approved">Approved</option>
@@ -641,14 +641,14 @@ const ProductionPlanningForm: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Priority
               </label>
               <select
                 name="priority"
                 value={formData.priority}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
               >
                 <option value="low">Low</option>
                 <option value="normal">Normal</option>
@@ -661,7 +661,7 @@ const ProductionPlanningForm: React.FC = () => {
 
         {/* Notes */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
             Notes
           </label>
           <textarea
@@ -669,7 +669,7 @@ const ProductionPlanningForm: React.FC = () => {
             value={formData.notes}
             onChange={handleInputChange}
             rows={4}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
@@ -678,7 +678,7 @@ const ProductionPlanningForm: React.FC = () => {
           <button
             type="button"
             onClick={() => navigate('/app/production/planning')}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
           >
             Cancel
           </button>

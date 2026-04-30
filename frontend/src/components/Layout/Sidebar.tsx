@@ -3,6 +3,7 @@ import { Dialog, Transition } from '@headlessui/react'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../../hooks/redux'
 import { logout } from '../../store/slices/authSlice'
+import ThemeToggle from '../Common/ThemeToggle'
 import {
   ArrowPathIcon,
   ArrowDownTrayIcon,
@@ -110,6 +111,21 @@ function SidebarContent() {
     '/app/dcc': { workspace: 'dcc', menus: ['Document Control'] },
     '/app/rnd': { workspace: 'rd', menus: ['R&D', 'R&D Legacy'] },
     '/app/rd': { workspace: 'rd', menus: ['R&D', 'R&D Legacy'] },
+    // Workspace routes - include main module + related modules
+    '/workspace/production': { workspace: 'production', menus: ['Production', 'Products', 'Warehouse', 'Quality Control', 'Maintenance'] },
+    '/workspace/sales': { workspace: 'sales', menus: ['Sales', 'Products', 'Shipping', 'Finance', 'Warehouse'] },
+    '/workspace/purchasing': { workspace: 'purchasing', menus: ['Purchasing', 'Warehouse', 'Finance', 'Quality Control', 'Products'] },
+    '/workspace/inventory': { workspace: 'inventory', menus: ['Warehouse', 'Products', 'Production', 'Purchasing', 'Sales'] },
+    '/workspace/quality': { workspace: 'quality', menus: ['Quality Control', 'Production', 'Products', 'Purchasing', 'Document Control'] },
+    '/workspace/maintenance': { workspace: 'maintenance', menus: ['Maintenance', 'Production', 'OEE Monitoring', 'Warehouse'] },
+    '/workspace/hr': { workspace: 'hr', menus: ['Human Resources', 'Finance', 'Production'] },
+    '/workspace/finance': { workspace: 'finance', menus: ['Finance', 'Sales', 'Purchasing', 'Human Resources', 'Warehouse'] },
+    '/workspace/dcc': { workspace: 'dcc', menus: ['Document Control', 'Quality Control', 'Production'] },
+    '/workspace/products': { workspace: 'products', menus: ['Products', 'Production', 'Warehouse', 'Sales', 'Purchasing'] },
+    '/workspace/oee': { workspace: 'oee', menus: ['OEE Monitoring', 'Production', 'Maintenance'] },
+    '/workspace/shipping': { workspace: 'shipping', menus: ['Shipping', 'Sales', 'Warehouse', 'Quality Control'] },
+    '/workspace/rd': { workspace: 'rd', menus: ['R&D', 'Products', 'Production', 'Quality Control'] },
+    '/workspace/waste': { workspace: 'waste', menus: ['Waste Management', 'Production', 'Warehouse'] },
   }
 
   // Detect active workspace from URL path
@@ -123,7 +139,11 @@ function SidebarContent() {
   }
 
   const activeWorkspaceConfig = getActiveWorkspace()
-  const isInWorkspace = activeWorkspaceConfig !== null && location.pathname !== '/app' && !location.pathname.startsWith('/app/executive') && !location.pathname.startsWith('/desk')
+  const isInWorkspace = activeWorkspaceConfig !== null && 
+    location.pathname !== '/app' && 
+    !location.pathname.startsWith('/app/executive') && 
+    !location.pathname.startsWith('/desk') &&
+    (location.pathname.startsWith('/workspace/') || location.pathname.startsWith('/app/'))
   const activeWorkspace = activeWorkspaceConfig?.workspace || null
 
   // Mapping workspace to menu item names (for filtering)
@@ -137,7 +157,6 @@ function SidebarContent() {
       groupName: 'MAIN',
       items: [
         { name: 'Dashboard', href: '/app', icon: HomeIcon, permission: 'dashboard' },
-        { name: 'Executive Dashboard', href: '/app/executive/dashboard', icon: ChartBarIcon, permission: 'dashboard' },
         { name: 'Production Monitoring', href: '/app/executive/production-monitoring', icon: ChartBarIcon, permission: 'dashboard' },
         { name: 'Live Monitoring', href: '/app/production/live-monitoring', icon: SignalIcon, permission: 'dashboard' },
         { name: 'Pre-Shift Checklist', href: '/app/production/pre-shift-checklist', icon: ClipboardDocumentCheckIcon, permission: 'production' },
@@ -464,15 +483,21 @@ function SidebarContent() {
     }
   ]
 
-  // Filter menu groups based on active workspace
-  const menuGroups = isInWorkspace && activeWorkspaceConfig
-    ? allMenuGroups.map(group => ({
-        ...group,
-        items: group.items.filter((item: any) => 
-          activeWorkspaceConfig.menus.includes(item.name)
-        )
-      })).filter(group => group.items.length > 0)
-    : allMenuGroups
+  // Filter menu groups based on active workspace or current page
+  const isDeskPage = location.pathname === '/desk'
+  const isDashboardPage = location.pathname === '/app'
+  const isProductionMonitoringPage = location.pathname === '/app/executive/production-monitoring'
+  
+  const menuGroups = (isDeskPage || isDashboardPage || isProductionMonitoringPage)
+    ? allMenuGroups.filter(group => group.groupName === 'MAIN') // Only show MAIN group on Desk, Dashboard, and Production Monitoring
+    : isInWorkspace && activeWorkspaceConfig
+      ? allMenuGroups.map(group => ({
+          ...group,
+          items: group.items.filter((item: any) => 
+            activeWorkspaceConfig.menus.includes(item.name)
+          )
+        })).filter(group => group.items.length > 0)
+      : allMenuGroups
 
   const toggleExpanded = (itemName: string) => {
     setExpandedItems(prev =>
@@ -483,31 +508,36 @@ function SidebarContent() {
   }
 
   return (
-    <div className="flex grow flex-col gap-y-3 overflow-y-auto bg-gradient-to-b from-slate-900 to-slate-800 px-4 pb-4">
-      {/* User Header */}
-      <div className="flex h-16 shrink-0 items-center border-b border-slate-700/50 mb-2">
-        <div className="flex items-center gap-3 w-full">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
-            <UserCircleIcon className="w-6 h-6 text-white" />
+    <div className="flex grow flex-col gap-y-3 overflow-y-auto bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 px-4 pb-4">
+      {/* User Header with Enhanced Design */}
+      <div className="flex h-20 shrink-0 items-center border-b border-slate-700/50 mb-3">
+        <div className="flex items-center gap-3 w-full group">
+          <div className="relative">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 flex items-center justify-center shadow-lg group-hover:shadow-blue-500/50 transition-all duration-300 group-hover:scale-105">
+              <UserCircleIcon className="w-7 h-7 text-white" />
+            </div>
+            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-slate-900 animate-pulse"></div>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-white text-sm font-bold tracking-tight truncate">{user?.full_name || 'User'}</p>
+            <p className="text-white text-sm font-bold tracking-tight truncate group-hover:text-blue-300 transition-colors">{user?.full_name || 'User'}</p>
             <p className="text-[10px] text-slate-400 truncate">{user?.email || ''}</p>
           </div>
         </div>
       </div>
 
       <nav className="flex flex-1 flex-col" role="navigation" aria-label="Menu utama">
-        {/* Back to Desk button when in workspace */}
+        {/* Back to Desk button with enhanced styling */}
         {isInWorkspace && (
           <button
             onClick={() => navigate('/desk')}
-            className="flex items-center gap-2 px-3 py-2 mb-4 text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+            className="flex items-center gap-3 px-4 py-3 mb-4 text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:-translate-y-0.5 group"
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            <span className="font-medium">Kembali ke Desk</span>
+            <div className="p-1 bg-white dark:bg-gray-800/20 rounded-lg backdrop-blur-sm group-hover:scale-110 transition-transform">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+            </div>
+            <span className="font-semibold">Kembali ke Desk</span>
           </button>
         )}
         
@@ -527,12 +557,14 @@ function SidebarContent() {
 
               return (
                 <div key={group.groupName}>
-                  {/* Group Label */}
+                  {/* Group Label with Enhanced Styling */}
                   {group.groupName !== 'MAIN' && (
-                    <div className="px-2 mb-2">
-                      <span className="text-[10px] font-semibold tracking-wider text-slate-500 uppercase">
+                    <div className="px-2 mb-3 flex items-center gap-2">
+                      <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-600 to-transparent"></div>
+                      <span className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
                         {group.groupName}
                       </span>
+                      <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-600 to-transparent"></div>
                     </div>
                   )}
 
@@ -546,28 +578,39 @@ function SidebarContent() {
                               onClick={() => toggleExpanded(item.name.toLowerCase())}
                               className={clsx(
                                 expandedItems.includes(item.name.toLowerCase())
-                                  ? 'bg-slate-700/50 text-white'
-                                  : 'text-slate-300 hover:text-white hover:bg-slate-700/30',
-                                'group flex w-full items-center gap-x-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150'
+                                  ? 'bg-gradient-to-r from-slate-700/80 to-slate-700/50 text-white shadow-lg'
+                                  : 'text-slate-300 hover:text-white hover:bg-slate-700/40',
+                                'group flex w-full items-center gap-x-3 rounded-xl px-3 py-3 text-sm font-semibold transition-all duration-200 hover:shadow-md'
                               )}
                             >
-                              <item.icon className={clsx(
-                                'h-5 w-5 shrink-0 transition-colors',
-                                expandedItems.includes(item.name.toLowerCase()) ? 'text-blue-400' : 'text-slate-400 group-hover:text-slate-300'
-                              )} aria-hidden="true" />
+                              <div className={clsx(
+                                'p-1.5 rounded-lg transition-all duration-200',
+                                expandedItems.includes(item.name.toLowerCase()) 
+                                  ? 'bg-blue-500/20 shadow-lg shadow-blue-500/20' 
+                                  : 'bg-slate-600/30 group-hover:bg-slate-600/50'
+                              )}>
+                                <item.icon className={clsx(
+                                  'h-5 w-5 shrink-0 transition-all duration-200',
+                                  expandedItems.includes(item.name.toLowerCase()) 
+                                    ? 'text-blue-400 scale-110' 
+                                    : 'text-slate-400 group-hover:text-slate-200 group-hover:scale-105'
+                                )} aria-hidden="true" />
+                              </div>
                               <span className="flex-1 text-left">{item.name}</span>
                               <ChevronDownIcon className={clsx(
-                                'h-4 w-4 transition-transform duration-200',
-                                expandedItems.includes(item.name.toLowerCase()) ? 'rotate-180 text-blue-400' : 'text-slate-500'
+                                'h-4 w-4 transition-all duration-300',
+                                expandedItems.includes(item.name.toLowerCase()) 
+                                  ? 'rotate-180 text-blue-400' 
+                                  : 'text-slate-500 group-hover:text-slate-300'
                               )} />
                             </button>
 
-                            {/* Submenu with animation */}
+                            {/* Submenu with enhanced animation */}
                             <div className={clsx(
-                              'overflow-hidden transition-all duration-200',
-                              expandedItems.includes(item.name.toLowerCase()) ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'
+                              'overflow-hidden transition-all duration-300',
+                              expandedItems.includes(item.name.toLowerCase()) ? 'max-h-[800px] opacity-100 mt-1' : 'max-h-0 opacity-0'
                             )}>
-                              <ul className="mt-1 ml-4 border-l border-slate-700/50 pl-3 space-y-0.5">
+                              <ul className="ml-4 border-l-2 border-slate-700/50 pl-3 space-y-0.5">
                                 {item.children
                                   .filter((child: any) => !child.permission || canView(child.permission))
                                   .map((child: any) => (
@@ -682,8 +725,15 @@ function SidebarContent() {
         </div>
       </nav>
 
-      {/* Footer with Profil & Logout */}
-      <div className="mt-auto pt-4 border-t border-slate-700/50">
+      {/* Footer with Theme Toggle, Profile & Logout */}
+      <div className="mt-auto pt-4 border-t border-slate-700/50 space-y-3">
+        {/* Theme Toggle */}
+        <div className="px-2 flex items-center justify-between">
+          <span className="text-xs font-medium text-slate-400">Theme</span>
+          <ThemeToggle />
+        </div>
+        
+        {/* Profile & Logout Buttons */}
         <div className="flex gap-2 px-2">
           <button
             onClick={() => navigate('/app/profile')}

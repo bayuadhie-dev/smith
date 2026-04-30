@@ -221,15 +221,15 @@ const navigate = useNavigate()
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/app/production/records')}
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
           >
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
               {isEdit ? '📝 Edit Production Record' : '📊 New Production Record'}
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-gray-600 dark:text-gray-300 mt-1">
               {isEdit ? 'Update production record' : 'Record production data'}
             </p>
           </div>
@@ -241,12 +241,12 @@ const navigate = useNavigate()
         <div className="card p-6">
           <div className="flex items-center gap-2 mb-6">
             <ClipboardDocumentListIcon className="h-5 w-5 text-blue-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Basic Information</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Basic Information</h3>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Work Order *
               </label>
               <select
@@ -268,9 +268,9 @@ const navigate = useNavigate()
             {/* Product Selection - shows after WO is selected */}
             {selectedWorkOrderId && (
               <div className="product-dropdown-container">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Produk
-                  <span className="text-xs text-gray-500 font-normal ml-2">(Default: produk WO)</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 font-normal ml-2">(Default: produk WO)</span>
                 </label>
                 <div className="relative">
                   <input
@@ -285,13 +285,13 @@ const navigate = useNavigate()
                     className="input"
                   />
                   {showProductDropdown && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                       {/* Default WO Product */}
                       {selectedWO && (
                         <button
                           type="button"
                           onClick={() => handleProductSelect({ id: selectedWO.product_id, code: '', name: selectedWO.product_name })}
-                          className="w-full px-3 py-2 text-left hover:bg-blue-50 border-b border-gray-200 bg-blue-50"
+                          className="w-full px-3 py-2 text-left hover:bg-blue-50 border-b border-gray-200 dark:border-gray-700 bg-blue-50"
                         >
                           <span className="text-xs text-blue-600 font-medium">Default WO:</span>
                           <span className="block text-sm font-medium">{selectedWO.product_name}</span>
@@ -304,14 +304,14 @@ const navigate = useNavigate()
                             key={product.id}
                             type="button"
                             onClick={() => handleProductSelect(product)}
-                            className="w-full px-3 py-2 text-left hover:bg-gray-100 border-b border-gray-100 last:border-0"
+                            className="w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 border-b border-gray-100 last:border-0"
                           >
-                            <span className="text-xs text-gray-500">{product.code}</span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">{product.code}</span>
                             <span className="block text-sm">{product.name}</span>
                           </button>
                         ))
                       ) : productSearch && (
-                        <div className="px-3 py-2 text-sm text-gray-500">Tidak ada produk ditemukan</div>
+                        <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">Tidak ada produk ditemukan</div>
                       )}
                     </div>
                   )}
@@ -325,7 +325,7 @@ const navigate = useNavigate()
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">{t('production.machine')}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('production.machine')}</label>
               <select
                 {...register('machine_id')}
                 className="input"
@@ -340,7 +340,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">{t('production.operator')}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('production.operator')}</label>
               <select
                 {...register('operator_id')}
                 className="input"
@@ -355,7 +355,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Production Date *
               </label>
               <input
@@ -369,7 +369,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Shift *
               </label>
               <select
@@ -393,12 +393,12 @@ const navigate = useNavigate()
         <div className="card p-6">
           <div className="flex items-center gap-2 mb-6">
             <ChartBarIcon className="h-5 w-5 text-green-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Production Data</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Production Data</h3>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Quantity Produced *
               </label>
               <input
@@ -416,7 +416,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Good Quantity *
               </label>
               <input
@@ -434,7 +434,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Scrap Quantity
               </label>
               <input
@@ -449,7 +449,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Unit of Measure *
               </label>
               <select
@@ -468,7 +468,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Downtime (minutes)
               </label>
               <input
@@ -479,8 +479,8 @@ const navigate = useNavigate()
               />
             </div>
 
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               </label>
               <div className="text-2xl font-bold text-green-600">
                 {efficiency.toFixed(1)}%
@@ -488,7 +488,7 @@ const navigate = useNavigate()
             </div>
 
             <div className="lg:col-span-3">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               </label>
               <textarea
                 {...register('notes')}

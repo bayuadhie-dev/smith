@@ -254,8 +254,8 @@ const [selectedCategory, setSelectedCategory] = useState('all')
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Reports & Analytics</h1>
-          <p className="text-gray-600">Generate insights and track performance across all operations</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Reports & Analytics</h1>
+          <p className="text-gray-600 dark:text-gray-300">Generate insights and track performance across all operations</p>
         </div>
         <Link
           to="/app/reports/scheduler"
@@ -287,7 +287,7 @@ const [selectedCategory, setSelectedCategory] = useState('all')
 
       {/* New Features Section */}
       <div className="mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">🆕 New Report Features</h2>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">🆕 New Report Features</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {newFeatures.map((feature) => {
             const IconComponent = feature.icon
@@ -306,14 +306,14 @@ const [selectedCategory, setSelectedCategory] = useState('all')
                   </span>
                 </div>
                 
-                <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-green-700 transition-colors">
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-green-700 transition-colors">
                   {feature.title}
                 </h3>
-                <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
                   {feature.description}
                 </p>
                 
-                <div className="flex items-center justify-between text-xs text-gray-500">
+                <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
                   <span className="capitalize">{feature.category}</span>
                   <span className="text-green-600 font-medium">Available Now!</span>
                 </div>
@@ -325,7 +325,7 @@ const [selectedCategory, setSelectedCategory] = useState('all')
 
       {/* Standard Reports Grid */}
       <div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Standard Reports</h2>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Standard Reports</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredReports.map((report) => {
           const IconComponent = report.icon
@@ -344,15 +344,15 @@ const [selectedCategory, setSelectedCategory] = useState('all')
                 </span>
               </div>
               
-              <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-primary-700 transition-colors">
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-primary-700 transition-colors">
                 {report.title}
               </h3>
-              <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
                 {report.description}
               </p>
 
               {report.lastGenerated && (
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-gray-500 dark:text-gray-400">
                   Last generated: {new Date(report.lastGenerated).toLocaleDateString('id-ID', {
                     day: 'numeric',
                     month: 'short',
@@ -363,7 +363,7 @@ const [selectedCategory, setSelectedCategory] = useState('all')
 
               <div className="mt-4 pt-4 border-t border-gray-100">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-500 uppercase tracking-wide">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                     {report.category}
                   </span>
                   <button className="text-primary-600 hover:text-primary-700 text-sm font-medium">
@@ -379,7 +379,7 @@ const [selectedCategory, setSelectedCategory] = useState('all')
 
       {/* Quick Actions */}
       <div className="card p-6">
-        <h3 className="font-semibold text-gray-900 mb-4">Quick Actions</h3>
+        <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Link 
             to="/app/reports/custom"

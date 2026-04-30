@@ -63,14 +63,14 @@ const navigate = useNavigate()
           <ArrowLeftIcon className="h-4 w-4" />
           Back to Appraisal
         </button>
-        <h1 className="text-2xl font-bold text-gray-900">New Appraisal Cycle</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">New Appraisal Cycle</h1>
       </div>
 
       <div className="card">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Cycle Name *
               </label>
               <div className="flex gap-2">
@@ -94,7 +94,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Cycle Type *
               </label>
               <select
@@ -113,7 +113,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Appraisal Template
               </label>
               <select
@@ -132,7 +132,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Cycle Start Date *
               </label>
               <input
@@ -146,7 +146,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Cycle End Date *
               </label>
               <input
@@ -160,7 +160,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Self Review Deadline
               </label>
               <input
@@ -173,7 +173,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Manager Review Deadline
               </label>
               <input
@@ -186,7 +186,7 @@ const navigate = useNavigate()
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('common.status')}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('common.status')}</label>
               <select
                 name="status"
                 value={formData.status}
@@ -202,7 +202,7 @@ const navigate = useNavigate()
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('common.description')}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('common.description')}</label>
             <textarea
               name="description"
               value={formData.description}

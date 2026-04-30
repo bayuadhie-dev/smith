@@ -147,10 +147,10 @@ const ProductCompare: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading comparison...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-300">Loading comparison...</p>
         </div>
       </div>
     );
@@ -158,7 +158,7 @@ const ProductCompare: React.FC = () => {
 
   if (error || !compareData) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <ExclamationCircleIcon className="h-12 w-12 text-red-500 mx-auto mb-4" />
           <p className="text-red-600">{error || 'Comparison data not found'}</p>
@@ -177,28 +177,28 @@ const ProductCompare: React.FC = () => {
   const version2Grouped = groupFieldsByCategory(compareData.version2.values);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-white dark:bg-gray-800 shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
               <button
                 onClick={() => navigate(`/app/products/${kode_produk}/versions`)}
-                className="mr-4 p-2 rounded hover:bg-gray-100"
+                className="mr-4 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800"
               >
                 <ArrowLeftIcon className="h-5 w-5" />
               </button>
               <div>
-                <h1 className="text-xl font-semibold text-gray-900">
+                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
                   Compare Versions - {compareData.product.kode_produk}
                 </h1>
-                <p className="text-sm text-gray-500">{compareData.product.nama_produk}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{compareData.product.nama_produk}</p>
               </div>
             </div>
             
             <div className="flex items-center space-x-4">
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-gray-500 dark:text-gray-400">
                 {compareData.total_differences} differences found
               </div>
             </div>
@@ -209,18 +209,18 @@ const ProductCompare: React.FC = () => {
       {/* Version Info */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Version {compareData.version1.version}</h3>
-            <p className="text-sm text-gray-600 mb-2">{formatDate(compareData.version1.created_at)}</p>
-            <div className="text-sm text-gray-500">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Version {compareData.version1.version}</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">{formatDate(compareData.version1.created_at)}</p>
+            <div className="text-sm text-gray-500 dark:text-gray-400">
               Status: {compareData.version1.values.is_active ? 'Active' : 'Inactive'}
             </div>
           </div>
           
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Version {compareData.version2.version}</h3>
-            <p className="text-sm text-gray-600 mb-2">{formatDate(compareData.version2.created_at)}</p>
-            <div className="text-sm text-gray-500">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Version {compareData.version2.version}</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">{formatDate(compareData.version2.created_at)}</p>
+            <div className="text-sm text-gray-500 dark:text-gray-400">
               Status: {compareData.version2.values.is_active ? 'Active' : 'Inactive'}
             </div>
           </div>
@@ -229,9 +229,9 @@ const ProductCompare: React.FC = () => {
 
       {/* Comparison Table */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
-        <div className="bg-white rounded-lg shadow-sm border">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border">
           <div className="px-6 py-4 border-b">
-            <h3 className="text-lg font-medium text-gray-900 flex items-center">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white flex items-center">
               <CodeBracketIcon className="h-5 w-5 mr-2" />
               Field Comparison
             </h3>
@@ -246,9 +246,9 @@ const ProductCompare: React.FC = () => {
                 <div key={category} className="border-b last:border-b-0">
                   <button
                     onClick={() => toggleSection(category)}
-                    className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 text-left"
+                    className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 text-left"
                   >
-                    <h4 className="font-medium text-gray-900">{category}</h4>
+                    <h4 className="font-medium text-gray-900 dark:text-white">{category}</h4>
                     {isExpanded ? (
                       <ChevronUpIcon className="h-5 w-5 text-gray-400" />
                     ) : (
@@ -259,34 +259,34 @@ const ProductCompare: React.FC = () => {
                   {isExpanded && (
                     <div className="px-6 pb-4">
                       <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                          <thead className="bg-gray-50">
+                        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                          <thead className="bg-gray-50 dark:bg-gray-900">
                             <tr>
-                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                               </th>
-                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                 Version {compareData.version1.version}
                               </th>
-                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                 Version {compareData.version2.version}
                               </th>
-                              <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.status')}</th>
+                              <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
                             </tr>
                           </thead>
-                          <tbody className="bg-white divide-y divide-gray-200">
+                          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             {Object.entries(fields1).map(([fieldName, value1]) => {
                               const value2 = fields2[fieldName];
                               const isDifferent = String(value1) !== String(value2);
                               
                               return (
                                 <tr key={fieldName} className={isDifferent ? 'bg-red-50' : ''}>
-                                  <td className="px-4 py-2 text-sm font-medium text-gray-900">
+                                  <td className="px-4 py-2 text-sm font-medium text-gray-900 dark:text-white">
                                     {fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                                   </td>
-                                  <td className="px-4 py-2 text-sm text-gray-900">
+                                  <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
                                     {formatValue(value1)}
                                   </td>
-                                  <td className="px-4 py-2 text-sm text-gray-900">
+                                  <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
                                     {formatValue(value2)}
                                   </td>
                                   <td className="px-4 py-2 text-sm text-center">

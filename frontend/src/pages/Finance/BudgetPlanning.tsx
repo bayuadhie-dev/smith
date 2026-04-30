@@ -188,8 +188,8 @@ const BudgetPlanning: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Budget Planning</h1>
-          <p className="text-gray-600 mt-1">Budget planning and variance analysis</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Budget Planning</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Budget planning and variance analysis</p>
         </div>
         <div className="flex space-x-3">
           <button 
@@ -212,23 +212,23 @@ const BudgetPlanning: React.FC = () => {
       {/* Budget Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {budgets.map((budget) => (
-          <div key={budget.id} className="bg-white rounded-lg shadow p-6">
+          <div key={budget.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">{budget.budget_name}</h3>
-              <span className="text-sm text-gray-500">{budget.budget_period}</span>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{budget.budget_name}</h3>
+              <span className="text-sm text-gray-500 dark:text-gray-400">{budget.budget_period}</span>
             </div>
             
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Budget:</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">Budget:</span>
                 <span className="text-sm font-medium">{formatRupiah(budget.total_budget)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Actual:</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">Actual:</span>
                 <span className="text-sm font-medium">{formatRupiah(budget.total_actual)}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Variance:</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">Variance:</span>
                 <div className="flex items-center">
                   {budget.variance_percent > 0 ? (
                     <ArrowTrendingUpIcon className="h-4 w-4 text-green-500 mr-1" />
@@ -243,13 +243,13 @@ const BudgetPlanning: React.FC = () => {
             </div>
 
             <div className="mt-4">
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                 <div 
                   className="bg-blue-600 h-2 rounded-full" 
                   style={{ width: `${Math.min((budget.total_actual / budget.total_budget) * 100, 100)}%` }}
                 ></div>
               </div>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 {((budget.total_actual / budget.total_budget) * 100).toFixed(1)}% of budget used
               </p>
             </div>
@@ -259,8 +259,8 @@ const BudgetPlanning: React.FC = () => {
 
       {/* Variance Analysis Chart */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Budget vs Actual</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Budget vs Actual</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={varianceAnalysis}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -276,8 +276,8 @@ const BudgetPlanning: React.FC = () => {
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Variance Distribution</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Variance Distribution</h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
@@ -301,37 +301,37 @@ const BudgetPlanning: React.FC = () => {
       </div>
 
       {/* Detailed Variance Analysis */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Detailed Variance Analysis</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Detailed Variance Analysis</h3>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('products.bom.category')}</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('products.bom.category')}</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Variance %
                 </th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.status')}</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {varianceAnalysis.map((item, index) => (
-                <tr key={index} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                     {item.category}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white text-right">
                     {formatRupiah(item.budget)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white text-right">
                     {formatRupiah(item.actual)}
                   </td>
                   <td className={`px-6 py-4 whitespace-nowrap text-sm text-right font-medium ${getVarianceColor(item.variance_percent)}`}>
@@ -360,41 +360,41 @@ const BudgetPlanning: React.FC = () => {
 
       {/* Budget Performance Summary */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="bg-blue-100 p-3 rounded-lg">
               <ChartBarIcon className="h-6 w-6 text-blue-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Budget</p>
-              <p className="text-xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Budget</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-white">
                 {formatRupiah(budgets.reduce((sum, b) => sum + b.total_budget, 0))}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="bg-green-100 p-3 rounded-lg">
               <ChartBarIcon className="h-6 w-6 text-green-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Actual</p>
-              <p className="text-xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Actual</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-white">
                 {formatRupiah(budgets.reduce((sum, b) => sum + b.total_actual, 0))}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="bg-red-100 p-3 rounded-lg">
               <ArrowTrendingDownIcon className="h-6 w-6 text-red-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Variance</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Variance</p>
               <p className="text-xl font-bold text-red-900">
                 {formatRupiah(budgets.reduce((sum, b) => sum + b.variance, 0))}
               </p>
@@ -402,14 +402,14 @@ const BudgetPlanning: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="bg-purple-100 p-3 rounded-lg">
               <CheckCircleIcon className="h-6 w-6 text-purple-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Budget Utilization</p>
-              <p className="text-xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Budget Utilization</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-white">
                 {((budgets.reduce((sum, b) => sum + b.total_actual, 0) / budgets.reduce((sum, b) => sum + b.total_budget, 0)) * 100).toFixed(1)}%
               </p>
             </div>
@@ -420,12 +420,12 @@ const BudgetPlanning: React.FC = () => {
       {/* Add Budget Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 my-8">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4 my-8">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-semibold text-gray-900">Create New Budget</h3>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Create New Budget</h3>
               <button 
                 onClick={handleCloseModal}
-                className="text-gray-400 hover:text-gray-600 text-2xl"
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-300 text-2xl"
               >
                 ✕
               </button>
@@ -434,7 +434,7 @@ const BudgetPlanning: React.FC = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Budget Name *
                   </label>
                   <input 
@@ -447,7 +447,7 @@ const BudgetPlanning: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Fiscal Year *
                   </label>
                   <input 
@@ -464,7 +464,7 @@ const BudgetPlanning: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Budget Period *
                   </label>
                   <select 
@@ -482,7 +482,7 @@ const BudgetPlanning: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Department *
                   </label>
                   <select 
@@ -505,7 +505,7 @@ const BudgetPlanning: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Start Date *
                   </label>
                   <input 
@@ -518,7 +518,7 @@ const BudgetPlanning: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     End Date *
                   </label>
                   <input 
@@ -533,7 +533,7 @@ const BudgetPlanning: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Budget Category *
                   </label>
                   <select 
@@ -553,7 +553,7 @@ const BudgetPlanning: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Status *
                   </label>
                   <select 
@@ -571,7 +571,7 @@ const BudgetPlanning: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Total Budget Amount (IDR) *
                 </label>
                 <input 
@@ -583,13 +583,13 @@ const BudgetPlanning: React.FC = () => {
                   min="0"
                   required 
                 />
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                   {formData.total_budget > 0 && formatRupiah(formData.total_budget)}
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Description
                 </label>
                 <textarea 
@@ -605,7 +605,7 @@ const BudgetPlanning: React.FC = () => {
                 <button 
                   type="button"
                   onClick={handleCloseModal}
-                  className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                  className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
                 >
                   {t('common.cancel')}
                 </button>

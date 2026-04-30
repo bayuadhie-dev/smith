@@ -150,13 +150,13 @@ export default function ShippingCalculator() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Kalkulator Biaya Pengiriman</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Kalkulator Biaya Pengiriman</h1>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Calculator Form */}
         <div className="card">
-          <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <CalculatorIcon className="h-5 w-5" />
             Detail Pengiriman
           </h2>
@@ -165,7 +165,7 @@ export default function ShippingCalculator() {
             {/* Origin & Destination */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <MapPinIcon className="h-4 w-4 inline mr-1" />
                   Kota Asal
                 </label>
@@ -180,7 +180,7 @@ export default function ShippingCalculator() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <MapPinIcon className="h-4 w-4 inline mr-1" />
                   Kota Tujuan
                 </label>
@@ -208,7 +208,7 @@ export default function ShippingCalculator() {
 
             {/* Weight & Dimensions */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 <CubeIcon className="h-4 w-4 inline mr-1" />
                 Berat (kg)
               </label>
@@ -226,7 +226,7 @@ export default function ShippingCalculator() {
 
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Panjang (cm)
                 </label>
                 <input
@@ -240,7 +240,7 @@ export default function ShippingCalculator() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Lebar (cm)
                 </label>
                 <input
@@ -254,7 +254,7 @@ export default function ShippingCalculator() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Tinggi (cm)
                 </label>
                 <input
@@ -270,7 +270,7 @@ export default function ShippingCalculator() {
 
             {/* Value */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 <BanknotesIcon className="h-4 w-4 inline mr-1" />
                 Nilai Barang (Rp)
               </label>
@@ -298,7 +298,7 @@ export default function ShippingCalculator() {
 
         {/* Results */}
         <div className="card">
-          <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <TruckIcon className="h-5 w-5" />
             Hasil Perhitungan
           </h2>
@@ -310,25 +310,25 @@ export default function ShippingCalculator() {
           ) : results.length > 0 ? (
             <div className="space-y-3">
               {results.map((result, index) => (
-                <div key={index} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                   <div className="flex justify-between items-start mb-2">
                     <div>
-                      <h3 className="font-medium text-gray-900">{result.provider}</h3>
+                      <h3 className="font-medium text-gray-900 dark:text-white">{result.provider}</h3>
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getServiceTypeColor(result.service_type)}`}>
                         {getServiceTypeLabel(result.service_type)}
                       </span>
                     </div>
                     <div className="text-right">
-                      <div className="text-lg font-bold text-gray-900">
+                      <div className="text-lg font-bold text-gray-900 dark:text-white">
                         Rp {result.total_cost.toLocaleString('id-ID')}
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
                         {result.estimated_days} hari
                       </div>
                     </div>
                   </div>
                   
-                  <div className="text-xs text-gray-500 space-y-1">
+                  <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
                     <div className="flex justify-between">
                       <span>Biaya Dasar:</span>
                       <span>Rp {result.base_cost.toLocaleString('id-ID')}</span>
@@ -346,7 +346,7 @@ export default function ShippingCalculator() {
               ))}
             </div>
           ) : (
-            <div className="text-center text-gray-500 py-8">
+            <div className="text-center text-gray-500 dark:text-gray-400 py-8">
               <CalculatorIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
               <p>Masukkan detail pengiriman dan klik "Hitung Biaya Pengiriman" untuk melihat hasil</p>
             </div>

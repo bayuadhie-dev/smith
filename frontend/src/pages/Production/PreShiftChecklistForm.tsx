@@ -155,10 +155,10 @@ const PreShiftChecklistForm = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
+      <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-600 font-medium">Memuat data checklist...</p>
+          <p className="text-gray-600 dark:text-gray-300 font-medium">Memuat data checklist...</p>
         </div>
       </div>
     )
@@ -169,17 +169,17 @@ const PreShiftChecklistForm = () => {
       <div className="max-w-5xl mx-auto space-y-6">
         
         {/* Header Card */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <button 
                   onClick={() => navigate('/app/production/pre-shift-checklist')}
-                  className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors"
+                  className="p-2 bg-white/20 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/30 rounded-lg transition-colors"
                 >
                   <ArrowLeftIcon className="w-5 h-5 text-white" />
                 </button>
-                <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                <div className="p-3 bg-white dark:bg-gray-800/20 rounded-xl backdrop-blur-sm">
                   <ClipboardDocumentCheckIcon className="w-8 h-8 text-white" />
                 </div>
                 <div>
@@ -197,34 +197,34 @@ const PreShiftChecklistForm = () => {
           </div>
           
           {/* Info Grid */}
-          <div className="p-6 bg-gray-50 border-b border-gray-100">
+          <div className="p-6 bg-gray-50 dark:bg-gray-900 border-b border-gray-100">
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               {/* Machine */}
-              <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+              <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
                 <div className="flex items-center space-x-3">
                   <div className="p-2 bg-blue-100 rounded-lg">
                     <CogIcon className="w-5 h-5 text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500 font-medium">Mesin</p>
-                    <p className="text-sm font-bold text-gray-900">{data?.machine?.name}</p>
-                    <p className="text-xs text-gray-500">{data?.machine?.code}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Mesin</p>
+                    <p className="text-sm font-bold text-gray-900 dark:text-white">{data?.machine?.name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{data?.machine?.code}</p>
                   </div>
                 </div>
               </div>
               
               {/* Date */}
-              <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+              <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
                 <div className="flex items-center space-x-3">
                   <div className="p-2 bg-green-100 rounded-lg">
                     <CalendarIcon className="w-5 h-5 text-green-600" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500 font-medium">Tanggal</p>
-                    <p className="text-sm font-bold text-gray-900">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Tanggal</p>
+                    <p className="text-sm font-bold text-gray-900 dark:text-white">
                       {new Date(dateParam).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
                       {new Date(dateParam).toLocaleDateString('id-ID', { weekday: 'long' })}
                     </p>
                   </div>
@@ -240,38 +240,38 @@ const PreShiftChecklistForm = () => {
                   <div>
                     <p className={`text-xs font-medium ${shiftConfig.color}`}>Shift</p>
                     <p className={`text-sm font-bold ${shiftConfig.color}`}>{shiftConfig.name}</p>
-                    <p className="text-xs text-gray-600">{shiftConfig.time}</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-300">{shiftConfig.time}</p>
                   </div>
                 </div>
               </div>
               
               {/* Operator Input */}
-              <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+              <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
                 <div className="flex items-start space-x-3">
                   <div className="p-2 bg-amber-100 rounded-lg">
                     <UserIcon className="w-5 h-5 text-amber-600" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs text-gray-500 font-medium mb-1">Nama Operator *</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1">Nama Operator *</p>
                     <input
                       type="text"
                       value={operatorName}
                       onChange={(e) => setOperatorName(e.target.value)}
                       placeholder="Masukkan nama"
-                      className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                 </div>
               </div>
               
               {/* Product Select */}
-              <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm md:col-span-2">
+              <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm md:col-span-2">
                 <div className="flex items-start space-x-3">
                   <div className="p-2 bg-emerald-100 rounded-lg">
                     <CubeIcon className="w-5 h-5 text-emerald-600" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs text-gray-500 font-medium mb-1">Nama Produk</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1">Nama Produk</p>
                     <SearchableSelect
                       options={productOptions}
                       value={productId}
@@ -287,8 +287,8 @@ const PreShiftChecklistForm = () => {
         </div>
 
         {/* Tabs */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-          <div className="flex border-b border-gray-200">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+          <div className="flex border-b border-gray-200 dark:border-gray-700">
             <button
               onClick={() => setActiveTab('KONDISI_MESIN')}
               className={`flex-1 flex items-center justify-center space-x-2 py-4 px-6 font-medium transition-colors ${
@@ -348,8 +348,8 @@ const PreShiftChecklistForm = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-4">
                         <div>
-                          <h4 className="text-sm font-semibold text-gray-900">{item.item_name}</h4>
-                          <p className="text-xs text-gray-500 mt-0.5">{item.item_code}</p>
+                          <h4 className="text-sm font-semibold text-gray-900 dark:text-white">{item.item_name}</h4>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{item.item_code}</p>
                         </div>
                         
                         {/* Status Buttons */}
@@ -416,10 +416,10 @@ const PreShiftChecklistForm = () => {
         </div>
 
         {/* Notes & Submit */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
           <div className="p-6">
-            <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 mb-3">
-              <DocumentCheckIcon className="w-5 h-5 text-gray-500" />
+            <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
+              <DocumentCheckIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
               <span>Catatan Umum</span>
             </label>
             <textarea
@@ -427,7 +427,7 @@ const PreShiftChecklistForm = () => {
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Catatan tambahan untuk checklist ini... (opsional)"
               rows={3}
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+              className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
             />
           </div>
           
@@ -445,16 +445,16 @@ const PreShiftChecklistForm = () => {
           )}
           
           {/* Submit Actions */}
-          <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
+          <div className="px-6 py-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-100">
             <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-500">
-                <span className="font-medium text-gray-700">{kondisiMesinItems.length + manpowerItems.length}</span> item checklist
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                <span className="font-medium text-gray-700 dark:text-gray-200">{kondisiMesinItems.length + manpowerItems.length}</span> item checklist
               </div>
               
               <div className="flex items-center space-x-3">
                 <button
                   onClick={() => navigate('/app/production/pre-shift-checklist')}
-                  className="px-5 py-2.5 border border-gray-300 rounded-xl text-gray-700 font-medium hover:bg-gray-100 transition-colors"
+                  className="px-5 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-700 dark:text-gray-200 font-medium hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 transition-colors"
                 >
                   Batal
                 </button>

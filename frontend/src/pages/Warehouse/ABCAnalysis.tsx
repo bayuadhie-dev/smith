@@ -100,11 +100,11 @@ const [warehouseId, setWarehouseId] = useState<number | undefined>()
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">ABC Analysis</h1>
-          <p className="text-gray-600">Product classification based on value and consumption patterns</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">ABC Analysis</h1>
+          <p className="text-gray-600 dark:text-gray-300">Product classification based on value and consumption patterns</p>
         </div>
         <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2 text-sm text-gray-600">
+          <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300">
             <InformationCircleIcon className="h-5 w-5" />
             <span>A: High Value | B: Medium Value | C: Low Value</span>
           </div>
@@ -114,7 +114,7 @@ const [warehouseId, setWarehouseId] = useState<number | undefined>()
       {/* ABC Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {categorySummary.map((category) => (
-          <div key={category.category} className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div key={category.category} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between mb-4">
               <div className={`px-3 py-1 rounded-full text-sm font-medium ${getCategoryColor(category.category)}`}>
                 Category {category.category}
@@ -123,15 +123,15 @@ const [warehouseId, setWarehouseId] = useState<number | undefined>()
             </div>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Products:</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">Products:</span>
                 <span className="font-medium">{category.count}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Total Value:</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">Total Value:</span>
                 <span className="font-medium">${category.totalValue.toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Avg Consumption:</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">Avg Consumption:</span>
                 <span className="font-medium">{category.avgConsumption.toFixed(1)}/month</span>
               </div>
             </div>
@@ -142,8 +142,8 @@ const [warehouseId, setWarehouseId] = useState<number | undefined>()
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Category Distribution by Count */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Product Distribution by Category</h3>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Product Distribution by Category</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -167,8 +167,8 @@ const [warehouseId, setWarehouseId] = useState<number | undefined>()
         </div>
 
         {/* Category Distribution by Value */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Value Distribution by Category</h3>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Value Distribution by Category</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={categorySummary}>
@@ -184,8 +184,8 @@ const [warehouseId, setWarehouseId] = useState<number | undefined>()
       </div>
 
       {/* Consumption vs Value Scatter Plot */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Consumption vs Value Analysis</h3>
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Consumption vs Value Analysis</h3>
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart data={classifications}>
@@ -222,21 +222,21 @@ const [warehouseId, setWarehouseId] = useState<number | undefined>()
       </div>
 
       {/* Detailed Classification Table */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Product Classifications</h3>
-          <div className="text-sm text-gray-500">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Product Classifications</h3>
+          <div className="text-sm text-gray-500 dark:text-gray-400">
             {classifications.length} products classified
           </div>
         </div>
         
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('production.product')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('production.product')}</th>
                 <th 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800"
                   onClick={() => handleSort('abc_category')}
                 >
                   <div className="flex items-center">
@@ -246,11 +246,11 @@ const [warehouseId, setWarehouseId] = useState<number | undefined>()
                     )}
                   </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   XYZ Category
                 </th>
                 <th 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800"
                   onClick={() => handleSort('total_value')}
                 >
                   <div className="flex items-center">
@@ -261,7 +261,7 @@ const [warehouseId, setWarehouseId] = useState<number | undefined>()
                   </div>
                 </th>
                 <th 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800"
                   onClick={() => handleSort('average_monthly_consumption')}
                 >
                   <div className="flex items-center">
@@ -271,21 +271,21 @@ const [warehouseId, setWarehouseId] = useState<number | undefined>()
                     )}
                   </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Reorder Point
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Max Stock
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Safety Stock
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {classifications.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={8} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
                     <ChartBarIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
                     <p>No ABC analysis data available</p>
                     <p className="text-sm">Run ABC analysis to classify products by value and consumption</p>
@@ -293,16 +293,16 @@ const [warehouseId, setWarehouseId] = useState<number | undefined>()
                 </tr>
               ) : (
                 sortedClassifications.map((item, index) => (
-                  <tr key={index} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                       {item.product_name}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getCategoryColor(item.abc_category)}`}>
                         {item.abc_category}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {item.xyz_category ? (
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getXYZColor(item.xyz_category)}`}>
                           {item.xyz_category}
@@ -311,19 +311,19 @@ const [warehouseId, setWarehouseId] = useState<number | undefined>()
                         <span className="text-gray-400">-</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       ${item.total_value.toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {item.average_monthly_consumption.toFixed(1)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {item.recommended_reorder_point.toFixed(0)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {item.recommended_max_stock.toFixed(0)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {item.recommended_safety_stock.toFixed(0)}
                     </td>
                   </tr>

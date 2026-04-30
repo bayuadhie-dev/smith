@@ -502,13 +502,13 @@ export default function WorkRosterWeekly() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Work Roster Mingguan</h1>
-          <p className="text-gray-600">Pengaturan jadwal kerja produksi per minggu</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Work Roster Mingguan</h1>
+          <p className="text-gray-600 dark:text-gray-300">Pengaturan jadwal kerja produksi per minggu</p>
         </div>
         <div className="flex gap-2">
           <button
             onClick={() => fetchRoster()}
-            className="px-3 py-2 text-gray-700 bg-white border rounded-lg hover:bg-gray-50"
+            className="px-3 py-2 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
           >
             <ArrowPathIcon className="h-5 w-5" />
           </button>
@@ -532,13 +532,13 @@ export default function WorkRosterWeekly() {
       </div>
 
       {/* Week Selector */}
-      <div className="bg-white shadow rounded-lg p-4">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
         <div className="flex flex-wrap items-center gap-4">
           {/* Week Navigation */}
           <div className="flex items-center gap-2">
             <button
               onClick={() => navigateWeek(-1)}
-              className="p-2 hover:bg-gray-100 rounded"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded"
             >
               <ChevronLeftIcon className="h-5 w-5" />
             </button>
@@ -550,13 +550,13 @@ export default function WorkRosterWeekly() {
             </div>
             <button
               onClick={() => navigateWeek(1)}
-              className="p-2 hover:bg-gray-100 rounded"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded"
             >
               <ChevronRightIcon className="h-5 w-5" />
             </button>
           </div>
           
-          <div className="text-lg font-medium text-gray-700">
+          <div className="text-lg font-medium text-gray-700 dark:text-gray-200">
             {formatDateRange()}
           </div>
 
@@ -577,7 +577,7 @@ export default function WorkRosterWeekly() {
       </div>
 
       {/* Shift Tabs */}
-      <div className="bg-white shadow rounded-lg">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
         <div className="border-b">
           <div className="flex">
             {SHIFTS.map(shift => (
@@ -609,7 +609,7 @@ export default function WorkRosterWeekly() {
         {loading ? (
           <div className="p-12 text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Memuat data roster...</p>
+            <p className="mt-4 text-gray-600 dark:text-gray-300">Memuat data roster...</p>
           </div>
         ) : (
           <div className="p-6 space-y-6">
@@ -638,7 +638,7 @@ export default function WorkRosterWeekly() {
 
             {/* Machine-based Assignments: Operator - Helper - Checker */}
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <CogIcon className="h-5 w-5 text-blue-600" />
                 Assignment per Mesin Produksi - {SHIFTS.find(s => s.value === selectedShift)?.shortLabel}
               </h3>
@@ -646,11 +646,11 @@ export default function WorkRosterWeekly() {
               <div className="overflow-x-auto">
                 <table className="min-w-full border rounded-lg">
                   <thead>
-                    <tr className="bg-gray-50">
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 w-48 border-r">
+                    <tr className="bg-gray-50 dark:bg-gray-900">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200 w-48 border-r">
                         Mesin
                       </th>
-                      <th className="px-3 py-3 text-left text-sm font-semibold text-gray-700 w-40 border-r">
+                      <th className="px-3 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200 w-40 border-r">
                         Produk
                       </th>
                       {MACHINE_ROLES.map(role => {
@@ -663,7 +663,7 @@ export default function WorkRosterWeekly() {
                       })}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200">
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                     {[...allMachines].sort((a, b) => {
                       // Special machines go last (negative IDs)
                       if (a.id < 0 && b.id >= 0) return 1;
@@ -676,7 +676,7 @@ export default function WorkRosterWeekly() {
                       const productValue = machineProducts[machine.id] || '';
                       return (
                         <tr key={machine.id} className={`hover:bg-gray-50 ${machine.id < 0 ? 'bg-blue-50' : ''}`}>
-                          <td className="px-4 py-3 font-medium text-gray-900 border-r bg-gray-50">
+                          <td className="px-4 py-3 font-medium text-gray-900 dark:text-white border-r bg-gray-50 dark:bg-gray-900">
                             <div className="font-semibold">{machine.name}</div>
                             <div className="text-xs text-gray-500">{machine.code}</div>
                           </td>
@@ -755,7 +755,7 @@ export default function WorkRosterWeekly() {
 
             {/* Packing Lines Section */}
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                 Packing Manual - {SHIFTS.find(s => s.value === selectedShift)?.shortLabel}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -765,7 +765,7 @@ export default function WorkRosterWeekly() {
                   const RoleIcon = ROLE_ICONS[line] || CubeIcon;
                   
                   return (
-                    <div key={line} className="border rounded-lg p-4 bg-white shadow-sm">
+                    <div key={line} className="border rounded-lg p-4 bg-white dark:bg-gray-800 shadow-sm">
                       <h4 className="font-semibold mb-2 flex items-center gap-2" style={{ color: def?.color || '#EC4899' }}>
                         <RoleIcon className="h-5 w-5" />
                         Line {lineIndex + 1}
@@ -899,7 +899,7 @@ export default function WorkRosterWeekly() {
 
             {/* General Assignments: QC IPC, QC FG, Distribusi */}
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                 Assignment Lainnya - {SHIFTS.find(s => s.value === selectedShift)?.shortLabel}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -909,7 +909,7 @@ export default function WorkRosterWeekly() {
                   const RoleIcon = ROLE_ICONS[role] || UserIcon;
                     
                   return (
-                    <div key={role} className="border rounded-lg p-4 bg-white shadow-sm">
+                    <div key={role} className="border rounded-lg p-4 bg-white dark:bg-gray-800 shadow-sm">
                       <h4 className="font-semibold mb-3 flex items-center gap-2" style={{ color: def.color }}>
                         <RoleIcon className="h-5 w-5" />
                         {def.name}
@@ -1054,7 +1054,7 @@ export default function WorkRosterWeekly() {
 
             {/* Notes */}
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Catatan</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Catatan</h3>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
@@ -1069,7 +1069,7 @@ export default function WorkRosterWeekly() {
       {/* Employee Selection Modal */}
       {showEmployeeModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg w-full max-w-2xl max-h-[80vh] overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-2xl max-h-[80vh] overflow-hidden">
             <div className="p-4 border-b flex items-center justify-between">
               <h3 className="text-lg font-semibold">
                 Pilih Karyawan - {roleDefinitions[currentRole]?.name || currentRole}
@@ -1077,7 +1077,7 @@ export default function WorkRosterWeekly() {
               </h3>
               <button
                 onClick={() => setShowEmployeeModal(false)}
-                className="text-gray-500 hover:text-gray-700 text-xl"
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-200 text-xl"
               >
                 ×
               </button>
@@ -1103,17 +1103,17 @@ export default function WorkRosterWeekly() {
                 </div>
               ) : (
                 <table className="w-full">
-                  <thead className="bg-gray-50 sticky top-0">
+                  <thead className="bg-gray-50 dark:bg-gray-900 sticky top-0">
                     <tr>
-                      <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">NIK</th>
-                      <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Nama</th>
-                      <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Departemen</th>
+                      <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">NIK</th>
+                      <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Nama</th>
+                      <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Departemen</th>
                       <th className="px-4 py-2"></th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200">
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                     {employees.map(emp => (
-                      <tr key={emp.id} className="hover:bg-gray-50">
+                      <tr key={emp.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                         <td className="px-4 py-2 text-sm">{emp.employee_number}</td>
                         <td className="px-4 py-2 text-sm font-medium">{emp.full_name}</td>
                         <td className="px-4 py-2 text-sm text-gray-500">{emp.department || '-'}</td>

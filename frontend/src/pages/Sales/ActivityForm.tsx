@@ -200,7 +200,7 @@ const ActivityForm = () => {
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/app/sales/activities')}
-            className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
+            className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800"
           >
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
@@ -219,7 +219,7 @@ const ActivityForm = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Activity Type */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Activity Type *
               </label>
               <select
@@ -239,7 +239,7 @@ const ActivityForm = () => {
 
             {/* Subject */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Subject *
               </label>
               <input
@@ -254,7 +254,7 @@ const ActivityForm = () => {
 
             {/* Description */}
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">{t('common.description')}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('common.description')}</label>
               <textarea
                 className="input w-full"
                 rows={3}
@@ -266,7 +266,7 @@ const ActivityForm = () => {
 
             {/* Start Date & Time */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 <CalendarDaysIcon className="h-4 w-4 inline mr-1" />
                 Start Date & Time
               </label>
@@ -289,7 +289,7 @@ const ActivityForm = () => {
 
             {/* End Date & Time */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 <ClockIcon className="h-4 w-4 inline mr-1" />
                 End Date & Time
               </label>
@@ -312,7 +312,7 @@ const ActivityForm = () => {
 
             {/* Priority */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 <ExclamationTriangleIcon className="h-4 w-4 inline mr-1" />
               </label>
               <select
@@ -328,7 +328,7 @@ const ActivityForm = () => {
 
             {/* Status */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">{t('common.status')}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('common.status')}</label>
               <select
                 className="input w-full"
                 value={formData.status}
@@ -343,7 +343,7 @@ const ActivityForm = () => {
 
             {/* Assigned To */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 <UserIcon className="h-4 w-4 inline mr-1" />
                 Assigned To
               </label>
@@ -363,7 +363,7 @@ const ActivityForm = () => {
 
             {/* Location (for meetings) */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               </label>
               <input
                 type="text"
@@ -383,7 +383,7 @@ const ActivityForm = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Related To Type */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Related To Type
               </label>
               <select
@@ -402,7 +402,7 @@ const ActivityForm = () => {
             <div>
               {formData.related_to_type === 'customer' && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     <BuildingOfficeIcon className="h-4 w-4 inline mr-1" />
                   </label>
                   <select
@@ -422,7 +422,7 @@ const ActivityForm = () => {
 
               {formData.related_to_type === 'lead' && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     <UserIcon className="h-4 w-4 inline mr-1" />
                   </label>
                   <select
@@ -442,7 +442,7 @@ const ActivityForm = () => {
 
               {formData.related_to_type === 'opportunity' && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     🎯 Opportunity
                   </label>
                   <select
@@ -461,7 +461,7 @@ const ActivityForm = () => {
               )}
 
               {!formData.related_to_type && (
-                <div className="text-sm text-gray-500 italic">
+                <div className="text-sm text-gray-500 dark:text-gray-400 italic">
                   Select a relation type first
                 </div>
               )}

@@ -106,68 +106,68 @@ const navigate = useNavigate()
       <div className="flex items-center space-x-4">
         <Link
           to="/app/returns"
-          className="p-2 hover:bg-gray-100 rounded-lg"
+          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
         >
-          <ArrowLeftIcon className="h-5 w-5 text-gray-600" />
+          <ArrowLeftIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Create New Return</h1>
-          <p className="text-gray-600">Process customer product returns</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Create New Return</h1>
+          <p className="text-gray-600 dark:text-gray-300">Process customer product returns</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Return Information */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Return Information</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Return Information</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Customer ID *
               </label>
               <input
                 type="number"
                 value={formData.customer_id}
                 onChange={(e) => setFormData({ ...formData, customer_id: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Sales Order ID (Optional)
               </label>
               <input
                 type="number"
                 value={formData.sales_order_id}
                 onChange={(e) => setFormData({ ...formData, sales_order_id: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Return Date *
               </label>
               <input
                 type="date"
                 value={formData.return_date}
                 onChange={(e) => setFormData({ ...formData, return_date: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Return Reason *
               </label>
               <select
                 value={formData.reason}
                 onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               >
                 <option value="">Select reason</option>
@@ -182,11 +182,11 @@ const navigate = useNavigate()
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">{t('common.description')}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('common.description')}</label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 rows={3}
                 placeholder="Additional details about the return..."
               />
@@ -198,18 +198,18 @@ const navigate = useNavigate()
                   type="checkbox"
                   checked={formData.qc_required}
                   onChange={(e) => setFormData({ ...formData, qc_required: e.target.checked })}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
                 />
-                <span className="ml-2 text-sm text-gray-700">QC Inspection Required</span>
+                <span className="ml-2 text-sm text-gray-700 dark:text-gray-200">QC Inspection Required</span>
               </label>
             </div>
           </div>
         </div>
 
         {/* Return Items */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Return Items</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Return Items</h2>
             <button
               type="button"
               onClick={addItem}
@@ -222,9 +222,9 @@ const navigate = useNavigate()
 
           <div className="space-y-4">
             {items.map((item, index) => (
-              <div key={item.id} className="border border-gray-200 rounded-lg p-4">
+              <div key={item.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                 <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-md font-medium text-gray-900">Item {index + 1}</h3>
+                  <h3 className="text-md font-medium text-gray-900 dark:text-white">Item {index + 1}</h3>
                   {items.length > 1 && (
                     <button
                       type="button"
@@ -238,34 +238,34 @@ const navigate = useNavigate()
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Product ID *
                     </label>
                     <input
                       type="number"
                       value={item.product_id || ''}
                       onChange={(e) => updateItem(item.id, 'product_id', parseInt(e.target.value) || 0)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Quantity Returned *
                     </label>
                     <input
                       type="number"
                       value={item.quantity_returned}
                       onChange={(e) => updateItem(item.id, 'quantity_returned', parseInt(e.target.value) || 1)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       min="1"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Unit Price *
                     </label>
                     <input
@@ -273,19 +273,19 @@ const navigate = useNavigate()
                       step="0.01"
                       value={item.unit_price}
                       onChange={(e) => updateItem(item.id, 'unit_price', parseFloat(e.target.value) || 0)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Condition Received *
                     </label>
                     <select
                       value={item.condition_received}
                       onChange={(e) => updateItem(item.id, 'condition_received', e.target.value)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       required
                     >
                       <option value="good">Good</option>
@@ -296,38 +296,38 @@ const navigate = useNavigate()
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Batch Number
                     </label>
                     <input
                       type="text"
                       value={item.batch_number || ''}
                       onChange={(e) => updateItem(item.id, 'batch_number', e.target.value)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Optional"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Total Value
                     </label>
                     <input
                       type="text"
                       value={`Rp ${(item.quantity_returned * item.unit_price).toLocaleString()}`}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-50"
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-gray-50 dark:bg-gray-900"
                       disabled
                     />
                   </div>
 
                   <div className="md:col-span-3">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Defect Description
                     </label>
                     <textarea
                       value={item.defect_description || ''}
                       onChange={(e) => updateItem(item.id, 'defect_description', e.target.value)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       rows={2}
                       placeholder="Describe any defects or issues..."
                     />
@@ -338,16 +338,16 @@ const navigate = useNavigate()
           </div>
 
           {/* Total Summary */}
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+          <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
             <div className="flex justify-between items-center">
-              <span className="text-lg font-medium text-gray-900">Total Items:</span>
-              <span className="text-lg font-bold text-gray-900">
+              <span className="text-lg font-medium text-gray-900 dark:text-white">Total Items:</span>
+              <span className="text-lg font-bold text-gray-900 dark:text-white">
                 {items.reduce((sum, item) => sum + item.quantity_returned, 0)}
               </span>
             </div>
             <div className="flex justify-between items-center mt-2">
-              <span className="text-lg font-medium text-gray-900">Total Value:</span>
-              <span className="text-lg font-bold text-gray-900">
+              <span className="text-lg font-medium text-gray-900 dark:text-white">Total Value:</span>
+              <span className="text-lg font-bold text-gray-900 dark:text-white">
                 Rp {items.reduce((sum, item) => sum + (item.quantity_returned * item.unit_price), 0).toLocaleString()}
               </span>
             </div>
@@ -358,7 +358,7 @@ const navigate = useNavigate()
         <div className="flex justify-end gap-4">
           <Link
             to="/app/returns"
-            className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+            className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
           >{t('common.cancel')}</Link>
           <button
             type="submit"

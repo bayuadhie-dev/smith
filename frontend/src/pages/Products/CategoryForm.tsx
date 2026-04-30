@@ -208,15 +208,15 @@ const navigate = useNavigate();
           <div className="flex items-center space-x-4">
             <button
               onClick={() => navigate('/app/products/categories')}
-              className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+              className="p-2 text-gray-400 hover:text-gray-600 dark:text-gray-300 transition-colors"
             >
               <ArrowLeftIcon className="h-6 w-6" />
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                 {isEdit ? 'Edit Category' : 'Create New Category'}
               </h1>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-300">
                 {isEdit ? 'Update category information' : 'Add a new product category'}
               </p>
             </div>
@@ -226,12 +226,12 @@ const navigate = useNavigate();
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-8">
-        <div className="bg-white shadow-sm ring-1 ring-gray-900/5 rounded-xl">
+        <div className="bg-white dark:bg-gray-800 shadow-sm ring-1 ring-gray-900/5 rounded-xl">
           <div className="px-6 py-8">
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               {/* Category Name */}
               <div className="sm:col-span-2">
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <TagIcon className="h-4 w-4 inline mr-1" />
                   Category Name *
                 </label>
@@ -252,14 +252,14 @@ const navigate = useNavigate();
 
               {/* Parent Category */}
               <div>
-                <label htmlFor="parent_id" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="parent_id" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Parent Category
                 </label>
                 <select
                   id="parent_id"
                   value={formData.parent_id || ''}
                   onChange={(e) => handleInputChange('parent_id', e.target.value ? parseInt(e.target.value) : null)}
-                  className="block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 >
                   <option value="">No Parent (Top Level)</option>
                   {categories.map((category) => (
@@ -272,7 +272,7 @@ const navigate = useNavigate();
 
               {/* Sort Order */}
               <div>
-                <label htmlFor="sort_order" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="sort_order" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Sort Order
                 </label>
                 <input
@@ -293,7 +293,7 @@ const navigate = useNavigate();
 
               {/* Description */}
               <div className="sm:col-span-2">
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <InformationCircleIcon className="h-4 w-4 inline mr-1" />{t('common.description')}</label>
                 <textarea
                   id="description"
@@ -312,7 +312,7 @@ const navigate = useNavigate();
 
               {/* Image URL */}
               <div className="sm:col-span-2">
-                <label htmlFor="image_url" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="image_url" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <PhotoIcon className="h-4 w-4 inline mr-1" />
                   Category Image URL
                 </label>
@@ -321,14 +321,14 @@ const navigate = useNavigate();
                   id="image_url"
                   value={formData.image_url}
                   onChange={(e) => handleInputChange('image_url', e.target.value)}
-                  className="block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   placeholder="https://example.com/image.jpg"
                 />
               </div>
 
               {/* Attributes */}
               <div className="sm:col-span-2">
-                <label htmlFor="attributes" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="attributes" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Additional Attributes (JSON)
                 </label>
                 <textarea
@@ -336,10 +336,10 @@ const navigate = useNavigate();
                   rows={3}
                   value={formData.attributes}
                   onChange={(e) => handleInputChange('attributes', e.target.value)}
-                  className="block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 font-mono text-sm"
+                  className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 font-mono text-sm"
                   placeholder='{"color": "blue", "material": "cotton"}'
                 />
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                   Optional JSON object for additional category attributes
                 </p>
               </div>
@@ -352,13 +352,13 @@ const navigate = useNavigate();
                     type="checkbox"
                     checked={formData.is_active}
                     onChange={(e) => handleInputChange('is_active', e.target.checked)}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded"
                   />
-                  <label htmlFor="is_active" className="ml-2 block text-sm text-gray-700">
+                  <label htmlFor="is_active" className="ml-2 block text-sm text-gray-700 dark:text-gray-200">
                     Active Category
                   </label>
                 </div>
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                   Inactive categories will not be available for product assignment
                 </p>
               </div>
@@ -371,7 +371,7 @@ const navigate = useNavigate();
           <button
             type="button"
             onClick={() => navigate('/app/products/categories')}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             <XMarkIcon className="h-4 w-4 inline mr-1" />{t('common.cancel')}</button>
           <button

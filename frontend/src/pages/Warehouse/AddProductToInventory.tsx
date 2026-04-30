@@ -145,11 +145,11 @@ export default function AddProductToInventory() {
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Link to="/app/warehouse/inventory" className="text-gray-600 hover:text-gray-900">
+        <Link to="/app/warehouse/inventory" className="text-gray-600 hover:text-gray-900 dark:text-white">
           <ArrowLeftIcon className="h-6 w-6" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Tambah Produk ke Inventori</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Tambah Produk ke Inventori</h1>
           <p className="text-gray-600">Input stok produk jadi ke gudang</p>
         </div>
       </div>
@@ -157,13 +157,13 @@ export default function AddProductToInventory() {
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Product Selection */}
         <div className="card p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <CubeIcon className="h-5 w-5 text-blue-600" />
             Pilih Produk
           </h2>
 
           <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Cari Produk <span className="text-red-500">*</span>
             </label>
             <input
@@ -176,7 +176,7 @@ export default function AddProductToInventory() {
             />
             
             {showProductDropdown && filteredProducts.length > 0 && (
-              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
+              <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-auto">
                 {filteredProducts.map((product) => (
                   <button
                     key={product.id}
@@ -188,7 +188,7 @@ export default function AddProductToInventory() {
                       <span className="font-medium">{product.code}</span>
                       <span className="text-gray-600 ml-2">{product.name}</span>
                     </div>
-                    <span className="text-xs text-gray-500">{product.primary_uom}</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">{product.primary_uom}</span>
                   </button>
                 ))}
               </div>
@@ -205,14 +205,14 @@ export default function AddProductToInventory() {
 
         {/* Location & Quantity */}
         <div className="card p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <MapPinIcon className="h-5 w-5 text-green-600" />
             Lokasi & Kuantitas
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Lokasi Gudang <span className="text-red-500">*</span>
               </label>
               <select
@@ -231,7 +231,7 @@ export default function AddProductToInventory() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Kuantitas <span className="text-red-500">*</span>
               </label>
               <input
@@ -247,7 +247,7 @@ export default function AddProductToInventory() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Nomor Batch
               </label>
               <div className="flex gap-2">
@@ -270,7 +270,7 @@ export default function AddProductToInventory() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Nomor Lot
               </label>
               <input
@@ -283,7 +283,7 @@ export default function AddProductToInventory() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Tanggal Produksi
               </label>
               <input
@@ -295,7 +295,7 @@ export default function AddProductToInventory() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Tanggal Kadaluarsa
               </label>
               <input
@@ -307,7 +307,7 @@ export default function AddProductToInventory() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Status QC
               </label>
               <select
@@ -323,7 +323,7 @@ export default function AddProductToInventory() {
           </div>
 
           <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Catatan
             </label>
             <textarea

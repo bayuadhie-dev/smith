@@ -144,7 +144,7 @@ const WorkOrderMonitoring: React.FC = () => {
           </button>
           <button
             onClick={fetchData}
-            className="px-4 py-2 bg-white text-slate-700 rounded-lg hover:bg-slate-100 flex items-center gap-2"
+            className="px-4 py-2 bg-white dark:bg-gray-800 text-slate-700 rounded-lg hover:bg-slate-100 flex items-center gap-2"
           >
             <ArrowPathIcon className="h-5 w-5" />
             Refresh
@@ -160,7 +160,7 @@ const WorkOrderMonitoring: React.FC = () => {
 
       {/* Filters */}
       {showFilters && (
-        <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 mb-6">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Status</label>
@@ -193,30 +193,30 @@ const WorkOrderMonitoring: React.FC = () => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-5 gap-4 mb-6">
-        <div className="bg-white rounded-xl shadow-sm p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
           <p className="text-sm text-slate-500">Total WO</p>
           <p className="text-2xl font-bold text-slate-800">{totalWOs}</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
           <p className="text-sm text-slate-500">In Progress</p>
           <p className="text-2xl font-bold text-blue-600">{inProgress}</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
           <p className="text-sm text-slate-500">Delayed</p>
           <p className="text-2xl font-bold text-red-600">{delayed}</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
           <p className="text-sm text-slate-500">Completed</p>
           <p className="text-2xl font-bold text-green-600">{completed}</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
           <p className="text-sm text-slate-500">Avg Progress</p>
           <p className="text-2xl font-bold text-slate-800">{avgProgress}%</p>
         </div>
       </div>
 
       {/* Work Orders Table */}
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-slate-50">

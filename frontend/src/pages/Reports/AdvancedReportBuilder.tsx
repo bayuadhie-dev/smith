@@ -196,10 +196,10 @@ const AdvancedReportBuilder: React.FC = () => {
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
           Advanced Report Builder
         </h1>
-        <p className="text-gray-600">
+        <p className="text-gray-600 dark:text-gray-300">
           Create custom reports with advanced filtering and visualization options
         </p>
       </div>
@@ -210,31 +210,31 @@ const AdvancedReportBuilder: React.FC = () => {
         <div className="lg:col-span-2 space-y-6">
           
           {/* Basic Info */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold mb-4">Report Information</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Report Name
                 </label>
                 <input
                   type="text"
                   value={report.name}
                   onChange={(e) => setReport(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                   placeholder="Enter report name"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Chart Type
                 </label>
                 <select
                   value={report.chartType}
                   onChange={(e) => setReport(prev => ({ ...prev, chartType: e.target.value }))}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                 >
                   <option value="table">Table</option>
                   <option value="bar">Bar Chart</option>
@@ -246,11 +246,11 @@ const AdvancedReportBuilder: React.FC = () => {
             </div>
             
             <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">{t('common.description')}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('common.description')}</label>
               <textarea
                 value={report.description}
                 onChange={(e) => setReport(prev => ({ ...prev, description: e.target.value }))}
-                className="w-full border border-gray-300 rounded-md px-3 py-2"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                 rows={3}
                 placeholder="Enter report description"
               />
@@ -258,7 +258,7 @@ const AdvancedReportBuilder: React.FC = () => {
           </div>
 
           {/* Data Sources */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold mb-4">Data Sources</h2>
             
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -289,7 +289,7 @@ const AdvancedReportBuilder: React.FC = () => {
           </div>
 
           {/* Fields */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">Report Fields</h2>
               <button
@@ -308,7 +308,7 @@ const AdvancedReportBuilder: React.FC = () => {
                     <select
                       value={field.source}
                       onChange={(e) => updateField(field.id, { source: e.target.value })}
-                      className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm"
                     >
                       <option value="">Select Source</option>
                       {dataSources
@@ -324,7 +324,7 @@ const AdvancedReportBuilder: React.FC = () => {
                     <select
                       value={field.field}
                       onChange={(e) => updateField(field.id, { field: e.target.value })}
-                      className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm"
                     >
                       <option value="">Select Field</option>
                       {field.source && dataSources
@@ -340,7 +340,7 @@ const AdvancedReportBuilder: React.FC = () => {
                     <select
                       value={field.aggregation}
                       onChange={(e) => updateField(field.id, { aggregation: e.target.value })}
-                      className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm"
                     >
                       <option value="none">None</option>
                       <option value="sum">Sum</option>
@@ -357,7 +357,7 @@ const AdvancedReportBuilder: React.FC = () => {
                       value={field.alias}
                       onChange={(e) => updateField(field.id, { alias: e.target.value })}
                       placeholder="Column alias"
-                      className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm"
                     />
                   </div>
                   
@@ -375,7 +375,7 @@ const AdvancedReportBuilder: React.FC = () => {
           </div>
 
           {/* Filters */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">Filters</h2>
               <button
@@ -394,7 +394,7 @@ const AdvancedReportBuilder: React.FC = () => {
                     <select
                       value={filter.field}
                       onChange={(e) => updateFilter(filter.id, { field: e.target.value })}
-                      className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm"
                     >
                       <option value="">Select Field</option>
                       {report.fields.map(field => (
@@ -409,7 +409,7 @@ const AdvancedReportBuilder: React.FC = () => {
                     <select
                       value={filter.operator}
                       onChange={(e) => updateFilter(filter.id, { operator: e.target.value })}
-                      className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm"
                     >
                       <option value="equals">Equals</option>
                       <option value="not_equals">Not Equals</option>
@@ -426,7 +426,7 @@ const AdvancedReportBuilder: React.FC = () => {
                       value={filter.value}
                       onChange={(e) => updateFilter(filter.id, { value: e.target.value })}
                       placeholder="FunnelIcon value"
-                      className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm"
                     />
                   </div>
                   
@@ -448,7 +448,7 @@ const AdvancedReportBuilder: React.FC = () => {
         <div className="space-y-6">
           
           {/* Actions */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold mb-4">{t('common.actions')}</h2>
             
             <div className="space-y-3">
@@ -473,27 +473,27 @@ const AdvancedReportBuilder: React.FC = () => {
           </div>
 
           {/* Report Stats */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold mb-4">Report Summary</h2>
             
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-gray-600">Data Sources:</span>
+                <span className="text-gray-600 dark:text-gray-300">Data Sources:</span>
                 <span className="font-medium">{report.dataSources.length}</span>
               </div>
               
               <div className="flex justify-between">
-                <span className="text-gray-600">Fields:</span>
+                <span className="text-gray-600 dark:text-gray-300">Fields:</span>
                 <span className="font-medium">{report.fields.length}</span>
               </div>
               
               <div className="flex justify-between">
-                <span className="text-gray-600">Filters:</span>
+                <span className="text-gray-600 dark:text-gray-300">Filters:</span>
                 <span className="font-medium">{report.filters.length}</span>
               </div>
               
               <div className="flex justify-between">
-                <span className="text-gray-600">Chart Type:</span>
+                <span className="text-gray-600 dark:text-gray-300">Chart Type:</span>
                 <span className="font-medium capitalize">{report.chartType}</span>
               </div>
             </div>
@@ -503,16 +503,16 @@ const AdvancedReportBuilder: React.FC = () => {
 
       {/* Report Results */}
       {reportResult && (
-        <div className="mt-6 bg-white rounded-lg shadow p-6">
+        <div className="mt-6 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <h2 className="text-lg font-semibold mb-4">Report Results</h2>
           
           {report.chartType === 'table' ? (
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-gray-300">
+              <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
                 <thead>
-                  <tr className="bg-gray-50">
+                  <tr className="bg-gray-50 dark:bg-gray-900">
                     {reportResult.columns?.map((col: string, index: number) => (
-                      <th key={index} className="border border-gray-300 px-4 py-2 text-left">
+                      <th key={index} className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">
                         {col}
                       </th>
                     ))}
@@ -522,7 +522,7 @@ const AdvancedReportBuilder: React.FC = () => {
                   {reportResult.data?.map((row: any[], index: number) => (
                     <tr key={index}>
                       {row.map((cell, cellIndex) => (
-                        <td key={cellIndex} className="border border-gray-300 px-4 py-2">
+                        <td key={cellIndex} className="border border-gray-300 dark:border-gray-600 px-4 py-2">
                           {cell}
                         </td>
                       ))}
@@ -532,9 +532,9 @@ const AdvancedReportBuilder: React.FC = () => {
               </table>
             </div>
           ) : (
-            <div className="h-64 flex items-center justify-center bg-gray-50 rounded">
+            <div className="h-64 flex items-center justify-center bg-gray-50 dark:bg-gray-900 rounded">
               <ChartBarIcon className="h-12 w-12 text-gray-400" />
-              <span className="ml-2 text-gray-500">Chart visualization will be displayed here</span>
+              <span className="ml-2 text-gray-500 dark:text-gray-400">Chart visualization will be displayed here</span>
             </div>
           )}
         </div>

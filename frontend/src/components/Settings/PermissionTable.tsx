@@ -52,27 +52,27 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
         <div className="flex items-center space-x-3">
           <ShieldCheckIcon className="h-8 w-8 text-blue-600" />
           <div>
-            <h2 className="text-xl font-bold text-gray-900">System Permissions</h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">System Permissions</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
               Permissions are automatically managed by the system based on modules and actions
             </p>
           </div>
         </div>
         
         <div className="mt-4 grid grid-cols-3 gap-4">
-          <div className="bg-white rounded-lg p-4 shadow-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Total Permissions</span>
+              <span className="text-sm text-gray-600 dark:text-gray-300">Total Permissions</span>
               <KeyIcon className="h-5 w-5 text-blue-500" />
             </div>
-            <div className="text-2xl font-bold text-gray-900 mt-2">
+            <div className="text-2xl font-bold text-gray-900 dark:text-white mt-2">
               {permissions.length}
             </div>
           </div>
           
-          <div className="bg-white rounded-lg p-4 shadow-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Active</span>
+              <span className="text-sm text-gray-600 dark:text-gray-300">Active</span>
               <CheckCircleIcon className="h-5 w-5 text-green-500" />
             </div>
             <div className="text-2xl font-bold text-green-600 mt-2">
@@ -80,9 +80,9 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
             </div>
           </div>
           
-          <div className="bg-white rounded-lg p-4 shadow-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Modules</span>
+              <span className="text-sm text-gray-600 dark:text-gray-300">Modules</span>
               <LockClosedIcon className="h-5 w-5 text-indigo-500" />
             </div>
             <div className="text-2xl font-bold text-indigo-600 mt-2">
@@ -94,14 +94,14 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
 
       {/* Permissions by Module */}
       {Object.entries(groupedPermissions).map(([module, modulePermissions]) => (
-        <div key={module} className="bg-white rounded-lg shadow overflow-hidden">
+        <div key={module} className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
           {/* Module Header */}
-          <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+          <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center space-x-3">
               <span className="text-2xl">{getModuleIcon(module)}</span>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">{module}</h3>
-                <p className="text-sm text-gray-600">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{module}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
                   {modulePermissions.length} permissions
                 </p>
               </div>
@@ -126,17 +126,17 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
                         <KeyIcon className={`h-4 w-4 ${
                           permission.is_active ? 'text-green-600' : 'text-gray-400'
                         }`} />
-                        <h4 className="text-sm font-semibold text-gray-900">
+                        <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
                           {permission.name}
                         </h4>
                       </div>
                       
-                      <p className="text-xs text-gray-600 mt-1 font-mono bg-white px-2 py-1 rounded">
+                      <p className="text-xs text-gray-600 dark:text-gray-300 mt-1 font-mono bg-white dark:bg-gray-800 px-2 py-1 rounded">
                         {permission.code}
                       </p>
                       
                       {permission.description && (
-                        <p className="text-xs text-gray-500 mt-2">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                           {permission.description}
                         </p>
                       )}
@@ -149,7 +149,7 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
                           Active
                         </span>
                       ) : (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
                           Inactive
                         </span>
                       )}

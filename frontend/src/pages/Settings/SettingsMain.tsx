@@ -119,10 +119,10 @@ const SettingsMain: React.FC = () => {
     <div className="p-6">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
           Settings & Configuration
         </h1>
-        <p className="text-gray-600">
+        <p className="text-gray-600 dark:text-gray-300">
           Manage system settings, user access, and external integrations
         </p>
       </div>
@@ -131,7 +131,7 @@ const SettingsMain: React.FC = () => {
       <div className="mb-8">
         <div className="flex items-center mb-6">
           <ShieldCheckIcon className="h-6 w-6 text-blue-600 mr-3" />
-          <h2 className="text-xl font-semibold text-gray-900">System Settings</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">System Settings</h2>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -141,7 +141,7 @@ const SettingsMain: React.FC = () => {
               <Link
                 key={setting.id}
                 to={setting.path}
-                className="block bg-white rounded-lg shadow hover:shadow-lg transition-all duration-200 p-6 border border-gray-200 hover:border-blue-300 group"
+                className="block bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-all duration-200 p-6 border border-gray-200 dark:border-gray-700 hover:border-blue-300 group"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="p-3 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
@@ -153,10 +153,10 @@ const SettingsMain: React.FC = () => {
                   )}
                 </div>
                 
-                <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-blue-700 transition-colors">
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-blue-700 transition-colors">
                   {setting.title}
                 </h3>
-                <p className="text-sm text-gray-600 line-clamp-2">
+                <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
                   {setting.description}
                 </p>
               </Link>
@@ -169,7 +169,7 @@ const SettingsMain: React.FC = () => {
       <div className="mb-8">
         <div className="flex items-center mb-6">
           <KeyIcon className="h-6 w-6 text-purple-600 mr-3" />
-          <h2 className="text-xl font-semibold text-gray-900">Integration Settings</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Integration Settings</h2>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -179,7 +179,7 @@ const SettingsMain: React.FC = () => {
               <Link
                 key={setting.id}
                 to={setting.path}
-                className="block bg-white rounded-lg shadow hover:shadow-lg transition-all duration-200 p-6 border border-gray-200 hover:border-purple-300 group"
+                className="block bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-all duration-200 p-6 border border-gray-200 dark:border-gray-700 hover:border-purple-300 group"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="p-3 bg-purple-50 rounded-lg group-hover:bg-purple-100 transition-colors">
@@ -191,10 +191,10 @@ const SettingsMain: React.FC = () => {
                   )}
                 </div>
                 
-                <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-purple-700 transition-colors">
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-purple-700 transition-colors">
                   {setting.title}
                 </h3>
-                <p className="text-sm text-gray-600 line-clamp-2">
+                <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
                   {setting.description}
                 </p>
               </Link>
@@ -204,40 +204,40 @@ const SettingsMain: React.FC = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-gray-50 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+      <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Link
             to="/app/settings/system-config"
-            className="flex items-center p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
+            className="flex items-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow"
           >
             <CogIcon className="h-8 w-8 text-blue-600 mr-3" />
             <div>
-              <div className="font-medium text-gray-900">System Configuration</div>
-              <div className="text-sm text-gray-500">Configure system parameters</div>
+              <div className="font-medium text-gray-900 dark:text-white">System Configuration</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Configure system parameters</div>
             </div>
           </Link>
           
           <Link
             to="/app/settings/backup-restore"
-            className="flex items-center p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
+            className="flex items-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow"
           >
             <CloudArrowDownIcon className="h-8 w-8 text-green-600 mr-3" />
             <div>
-              <div className="font-medium text-gray-900">Create Backup</div>
-              <div className="text-sm text-gray-500">Backup system data</div>
+              <div className="font-medium text-gray-900 dark:text-white">Create Backup</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Backup system data</div>
             </div>
           </Link>
           
           <Link
             to="/app/settings/audit-trail"
-            className="flex items-center p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
+            className="flex items-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow"
           >
             <DocumentTextIcon className="h-8 w-8 text-purple-600 mr-3" />
             <div>
-              <div className="font-medium text-gray-900">View Audit Trail</div>
-              <div className="text-sm text-gray-500">Track system changes</div>
+              <div className="font-medium text-gray-900 dark:text-white">View Audit Trail</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Track system changes</div>
             </div>
           </Link>
         </div>

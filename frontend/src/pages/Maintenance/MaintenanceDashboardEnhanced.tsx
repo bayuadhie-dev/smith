@@ -189,14 +189,14 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Maintenance Dashboard</h1>
-          <p className="text-gray-600">Monitor equipment performance and maintenance activities</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Maintenance Dashboard</h1>
+          <p className="text-gray-600 dark:text-gray-300">Monitor equipment performance and maintenance activities</p>
         </div>
         <div className="flex items-center gap-4">
           <select
             value={selectedPeriod}
             onChange={(e) => setSelectedPeriod(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
           >
             <option value="7">Last 7 days</option>
             <option value="30">Last 30 days</option>
@@ -214,28 +214,28 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Work Orders</p>
-              <p className="text-2xl font-bold text-gray-900">{kpis.total_work_orders || 0}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Work Orders</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{kpis.total_work_orders || 0}</p>
             </div>
             <div className="p-3 bg-blue-100 rounded-lg">
               <Wrench className="h-6 w-6 text-blue-600" />
             </div>
           </div>
           <div className="mt-4 flex items-center">
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-gray-600 dark:text-gray-300">
               {kpis.pending_work_orders || 0} pending, {kpis.completed_work_orders || 0} completed
             </span>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Equipment Uptime</p>
-              <p className="text-2xl font-bold text-gray-900">{(kpis.equipment_uptime || 0).toFixed(1)}%</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Equipment Uptime</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{(kpis.equipment_uptime || 0).toFixed(1)}%</p>
             </div>
             <div className="p-3 bg-green-100 rounded-lg">
               <Activity className="h-6 w-6 text-green-600" />
@@ -247,11 +247,11 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">MTTR</p>
-              <p className="text-2xl font-bold text-gray-900">{formatDuration(kpis.mttr || 0)}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">MTTR</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatDuration(kpis.mttr || 0)}</p>
             </div>
             <div className="p-3 bg-orange-100 rounded-lg">
               <ClockIcon className="h-6 w-6 text-orange-600" />
@@ -263,18 +263,18 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Monthly Cost</p>
-              <p className="text-2xl font-bold text-gray-900">{formatCurrency(kpis.total_cost_this_month || 0)}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Monthly Cost</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(kpis.total_cost_this_month || 0)}</p>
             </div>
             <div className="p-3 bg-purple-100 rounded-lg">
               <CurrencyDollarIcon className="h-6 w-6 text-purple-600" />
             </div>
           </div>
           <div className="mt-4 flex items-center">
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-gray-600 dark:text-gray-300">
               {(kpis.preventive_percentage || 0).toFixed(1)}% preventive
             </span>
           </div>
@@ -284,9 +284,9 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Maintenance Trends */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-medium text-gray-900">Maintenance Trends</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Maintenance Trends</h3>
             <ChartBarIcon className="h-5 w-5 text-gray-400" />
           </div>
           <ResponsiveContainer width="100%" height={300}>
@@ -304,9 +304,9 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
         </div>
 
         {/* Cost Analysis */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-medium text-gray-900">Cost Analysis</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Cost Analysis</h3>
             <ArrowTrendingUpIcon className="h-5 w-5 text-gray-400" />
           </div>
           <ResponsiveContainer width="100%" height={300}>
@@ -325,14 +325,14 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
       {/* Alerts and Work Orders */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Active Alerts */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-medium text-gray-900">Active Alerts</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Active Alerts</h3>
             <AlertTriangle className="h-5 w-5 text-gray-400" />
           </div>
           <div className="space-y-4">
             {alerts.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <CheckCircle className="mx-auto h-12 w-12 text-green-400 mb-4" />
                 <p>No active alerts</p>
                 <p className="text-sm">All systems running normally</p>
@@ -344,8 +344,8 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
                     {alert.severity.toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900">{alert.machine_name}</p>
-                    <p className="text-sm text-gray-600">{alert.message}</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">{alert.machine_name}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">{alert.message}</p>
                     <p className="text-xs text-gray-400 mt-1">
                       {new Date(alert.created_at).toLocaleDateString()}
                     </p>
@@ -357,14 +357,14 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
         </div>
 
         {/* Recent Work Orders */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-medium text-gray-900">Recent Work Orders</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Recent Work Orders</h3>
             <Settings className="h-5 w-5 text-gray-400" />
           </div>
           <div className="space-y-4">
             {workOrders.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <Calendar className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                 <p>No work orders</p>
                 <p className="text-sm">Create your first work order</p>
@@ -374,18 +374,18 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
                 <div key={order.id} className="flex items-center justify-between p-3 rounded-lg border">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-2">
-                      <p className="text-sm font-medium text-gray-900">{order.record_number}</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">{order.record_number}</p>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
                         {order.status}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600">{order.machine_name}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">{order.machine_name}</p>
                     <p className="text-xs text-gray-400">
                       {order.maintenance_type} • {order.assigned_to}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm text-gray-900">{formatDuration(order.estimated_duration)}</p>
+                    <p className="text-sm text-gray-900 dark:text-white">{formatDuration(order.estimated_duration)}</p>
                     <p className="text-xs text-gray-400">
                       {new Date(order.scheduled_date).toLocaleDateString()}
                     </p>
@@ -398,9 +398,9 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
       </div>
 
       {/* Equipment Performance */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-medium text-gray-900">Equipment Performance</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Equipment Performance</h3>
           <div className="flex items-center gap-2">
             <button className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200">
               Export Report
@@ -409,42 +409,42 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
           </div>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Last Maintenance
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {equipmentPerformance.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                     <Activity className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                     <p>No equipment performance data available</p>
                   </td>
                 </tr>
               ) : (
                 equipmentPerformance.map((equipment, index) => (
-                  <tr key={index} className="hover:bg-gray-50">
+                  <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{equipment.machine_name}</div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">{equipment.machine_name}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="text-sm text-gray-900">{equipment.uptime_percentage.toFixed(1)}%</div>
-                        <div className="ml-2 w-16 bg-gray-200 rounded-full h-2">
+                        <div className="text-sm text-gray-900 dark:text-white">{equipment.uptime_percentage.toFixed(1)}%</div>
+                        <div className="ml-2 w-16 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                           <div 
                             className="bg-green-500 h-2 rounded-full" 
                             style={{ width: `${equipment.uptime_percentage}%` }}
@@ -452,16 +452,16 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {formatDuration(equipment.mttr)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {formatDuration(equipment.mtbf)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {formatCurrency(equipment.maintenance_cost)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {new Date(equipment.last_maintenance).toLocaleDateString()}
                     </td>
                   </tr>
@@ -473,24 +473,24 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Quick Actions</h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <button className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">
+          <button className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">
             <Plus className="h-5 w-5 text-gray-400 mr-2" />
-            <span className="text-sm font-medium text-gray-600">Schedule Maintenance</span>
+            <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Schedule Maintenance</span>
           </button>
-          <button className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors">
+          <button className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors">
             <CheckCircle className="h-5 w-5 text-gray-400 mr-2" />
-            <span className="text-sm font-medium text-gray-600">Complete Work Order</span>
+            <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Complete Work Order</span>
           </button>
-          <button className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-colors">
+          <button className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-colors">
             <AlertTriangle className="h-5 w-5 text-gray-400 mr-2" />
-            <span className="text-sm font-medium text-gray-600">Report Issue</span>
+            <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Report Issue</span>
           </button>
-          <button className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors">
+          <button className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors">
             <ChartBarIcon className="h-5 w-5 text-gray-400 mr-2" />
-            <span className="text-sm font-medium text-gray-600">View Analytics</span>
+            <span className="text-sm font-medium text-gray-600 dark:text-gray-300">View Analytics</span>
           </button>
         </div>
       </div>

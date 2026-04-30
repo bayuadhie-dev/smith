@@ -284,8 +284,8 @@ const AccountingManagement: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Accounting Management</h1>
-          <p className="text-gray-600 mt-1">Manage chart of accounts and journal entries</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Accounting Management</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Manage chart of accounts and journal entries</p>
         </div>
         <div className="flex space-x-3">
           <button className="btn-secondary">
@@ -308,7 +308,7 @@ const AccountingManagement: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-gray-200 dark:border-gray-700">
         <nav className="-mb-px flex space-x-8">
           <button
             onClick={() => setActiveTab('accounts')}
@@ -343,7 +343,7 @@ const AccountingManagement: React.FC = () => {
             <input
               type="text"
               placeholder={`Search ${activeTab === 'accounts' ? 'accounts' : 'journal entries'}...`}
-              className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="pl-10 pr-4 py-2 w-full border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -352,7 +352,7 @@ const AccountingManagement: React.FC = () => {
         <div className="flex items-center space-x-2">
           <FunnelIcon className="h-5 w-5 text-gray-400" />
           <select
-            className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
           >
@@ -378,30 +378,30 @@ const AccountingManagement: React.FC = () => {
 
       {/* Content */}
       {activeTab === 'accounts' ? (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Account Code
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Account Name
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.actions')}</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {filteredAccounts.map((account) => (
-                <tr key={account.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <tr key={account.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                     {account.account_code}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {account.account_name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -409,7 +409,7 @@ const AccountingManagement: React.FC = () => {
                       {account.account_type}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white text-right font-medium">
                     {formatRupiah(account.balance)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
@@ -433,42 +433,42 @@ const AccountingManagement: React.FC = () => {
           {filteredAccounts.length === 0 && (
             <div className="text-center py-8">
               <BanknotesIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">No accounts found</p>
+              <p className="text-gray-500 dark:text-gray-400">No accounts found</p>
             </div>
           )}
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Entry Number
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.date')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.description')}</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.date')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.description')}</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.status')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Created By
                 </th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.actions')}</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {filteredJournalEntries.map((entry) => (
-                <tr key={entry.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <tr key={entry.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                     {entry.entry_number}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {new Date(entry.entry_date).toLocaleDateString('id-ID')}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-900">
+                  <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
                     {entry.description}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white text-right font-medium">
                     {formatRupiah(entry.total_debit)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
@@ -476,7 +476,7 @@ const AccountingManagement: React.FC = () => {
                       {entry.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {entry.created_by}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
@@ -500,7 +500,7 @@ const AccountingManagement: React.FC = () => {
           {filteredJournalEntries.length === 0 && (
             <div className="text-center py-8">
               <DocumentTextIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">No journal entries found</p>
+              <p className="text-gray-500 dark:text-gray-400">No journal entries found</p>
             </div>
           )}
         </div>
@@ -508,57 +508,57 @@ const AccountingManagement: React.FC = () => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="bg-blue-100 p-3 rounded-lg">
               <BanknotesIcon className="h-6 w-6 text-blue-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Assets</p>
-              <p className="text-xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Assets</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-white">
                 {formatRupiah(accounts.filter(a => a.account_type === 'Asset').reduce((sum, a) => sum + a.balance, 0))}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="bg-red-100 p-3 rounded-lg">
               <BanknotesIcon className="h-6 w-6 text-red-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Liabilities</p>
-              <p className="text-xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Liabilities</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-white">
                 {formatRupiah(accounts.filter(a => a.account_type === 'Liability').reduce((sum, a) => sum + a.balance, 0))}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="bg-green-100 p-3 rounded-lg">
               <BanknotesIcon className="h-6 w-6 text-green-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Equity</p>
-              <p className="text-xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Equity</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-white">
                 {formatRupiah(accounts.filter(a => a.account_type === 'Equity').reduce((sum, a) => sum + a.balance, 0))}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="bg-purple-100 p-3 rounded-lg">
               <DocumentTextIcon className="h-6 w-6 text-purple-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Journal Entries</p>
-              <p className="text-xl font-bold text-gray-900">{journalEntries.length}</p>
-              <p className="text-xs text-gray-500">{journalEntries.filter(e => e.status === 'posted').length} posted</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Journal Entries</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-white">{journalEntries.length}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{journalEntries.filter(e => e.status === 'posted').length} posted</p>
             </div>
           </div>
         </div>
@@ -567,12 +567,12 @@ const AccountingManagement: React.FC = () => {
       {/* Add Account Modal */}
       {showAddAccountModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-semibold text-gray-900">Add New Account</h3>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Add New Account</h3>
               <button 
                 onClick={handleCloseAccountModal}
-                className="text-gray-400 hover:text-gray-600 text-2xl"
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-300 text-2xl"
               >
                 ✕
               </button>
@@ -581,7 +581,7 @@ const AccountingManagement: React.FC = () => {
             <form onSubmit={handleSubmitAccount} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Account Code *
                   </label>
                   <input 
@@ -592,11 +592,11 @@ const AccountingManagement: React.FC = () => {
                     placeholder="e.g., 1010"
                     required 
                   />
-                  <p className="text-xs text-gray-500 mt-1">Unique account identifier</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Unique account identifier</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Account Type *
                   </label>
                   <select 
@@ -616,7 +616,7 @@ const AccountingManagement: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Account Name *
                 </label>
                 <input 
@@ -630,7 +630,7 @@ const AccountingManagement: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Parent Account
                 </label>
                 <select 
@@ -645,11 +645,11 @@ const AccountingManagement: React.FC = () => {
                     </option>
                   ))}
                 </select>
-                <p className="text-xs text-gray-500 mt-1">Optional: Select parent for sub-account</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Optional: Select parent for sub-account</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Description
                 </label>
                 <textarea 
@@ -667,9 +667,9 @@ const AccountingManagement: React.FC = () => {
                   id="is_active"
                   checked={accountFormData.is_active}
                   onChange={(e) => setAccountFormData({...accountFormData, is_active: e.target.checked})}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded"
                 />
-                <label htmlFor="is_active" className="ml-2 block text-sm text-gray-900">
+                <label htmlFor="is_active" className="ml-2 block text-sm text-gray-900 dark:text-white">
                   Active Account
                 </label>
               </div>
@@ -678,7 +678,7 @@ const AccountingManagement: React.FC = () => {
                 <button 
                   type="button"
                   onClick={handleCloseAccountModal}
-                  className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                  className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
                 >
                   {t('common.cancel')}
                 </button>
@@ -697,12 +697,12 @@ const AccountingManagement: React.FC = () => {
       {/* Add Journal Entry Modal */}
       {showAddJournalModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col">
+          <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col">
             <div className="flex justify-between items-center p-6 border-b">
-              <h3 className="text-xl font-semibold text-gray-900">New Journal Entry</h3>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">New Journal Entry</h3>
               <button 
                 onClick={handleCloseJournalModal}
-                className="text-gray-400 hover:text-gray-600 text-2xl"
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-300 text-2xl"
               >
                 ✕
               </button>
@@ -712,7 +712,7 @@ const AccountingManagement: React.FC = () => {
               <div className="flex-1 overflow-y-auto p-6 space-y-4">
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Entry Date *
                     </label>
                     <input 
@@ -725,7 +725,7 @@ const AccountingManagement: React.FC = () => {
                   </div>
 
                   <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Reference Number
                     </label>
                     <input 
@@ -739,7 +739,7 @@ const AccountingManagement: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Description *
                   </label>
                   <textarea 
@@ -754,7 +754,7 @@ const AccountingManagement: React.FC = () => {
 
                 <div className="border-t pt-4">
                   <div className="flex justify-between items-center mb-4">
-                    <h4 className="text-lg font-semibold text-gray-900">Journal Lines</h4>
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Journal Lines</h4>
                     <button 
                       type="button"
                       onClick={addJournalLine}
@@ -767,9 +767,9 @@ const AccountingManagement: React.FC = () => {
 
                   <div className="space-y-3">
                     {journalFormData.lines.map((line, index) => (
-                      <div key={index} className="grid grid-cols-12 gap-2 items-start p-3 bg-gray-50 rounded-lg">
+                      <div key={index} className="grid grid-cols-12 gap-2 items-start p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
                         <div className="col-span-4">
-                          <label className="block text-xs font-medium text-gray-700 mb-1">
+                          <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Account *
                           </label>
                           <select 
@@ -788,7 +788,7 @@ const AccountingManagement: React.FC = () => {
                         </div>
 
                         <div className="col-span-3">
-                          <label className="block text-xs font-medium text-gray-700 mb-1">
+                          <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Debit (IDR)
                           </label>
                           <input 
@@ -802,7 +802,7 @@ const AccountingManagement: React.FC = () => {
                         </div>
 
                         <div className="col-span-3">
-                          <label className="block text-xs font-medium text-gray-700 mb-1">
+                          <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Credit (IDR)
                           </label>
                           <input 
@@ -843,19 +843,19 @@ const AccountingManagement: React.FC = () => {
                   <div className="mt-4 p-4 bg-blue-50 rounded-lg">
                     <div className="grid grid-cols-3 gap-4 text-sm">
                       <div>
-                        <p className="text-gray-600">Total Debit:</p>
-                        <p className="text-lg font-bold text-gray-900">
+                        <p className="text-gray-600 dark:text-gray-300">Total Debit:</p>
+                        <p className="text-lg font-bold text-gray-900 dark:text-white">
                           {formatRupiah(journalFormData.lines.reduce((sum, line) => sum + (line.debit || 0), 0))}
                         </p>
                       </div>
                       <div>
-                        <p className="text-gray-600">Total Credit:</p>
-                        <p className="text-lg font-bold text-gray-900">
+                        <p className="text-gray-600 dark:text-gray-300">Total Credit:</p>
+                        <p className="text-lg font-bold text-gray-900 dark:text-white">
                           {formatRupiah(journalFormData.lines.reduce((sum, line) => sum + (line.credit || 0), 0))}
                         </p>
                       </div>
                       <div>
-                        <p className="text-gray-600">Difference:</p>
+                        <p className="text-gray-600 dark:text-gray-300">Difference:</p>
                         <p className={`text-lg font-bold ${
                           Math.abs(journalFormData.lines.reduce((sum, line) => sum + (line.debit || 0), 0) - 
                           journalFormData.lines.reduce((sum, line) => sum + (line.credit || 0), 0)) < 0.01 
@@ -876,11 +876,11 @@ const AccountingManagement: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-4 p-6 border-t bg-gray-50">
+              <div className="flex justify-end gap-4 p-6 border-t bg-gray-50 dark:bg-gray-900">
                 <button 
                   type="button"
                   onClick={handleCloseJournalModal}
-                  className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                  className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
                 >
                   {t('common.cancel')}
                 </button>

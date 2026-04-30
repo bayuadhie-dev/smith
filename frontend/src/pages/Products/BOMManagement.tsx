@@ -361,13 +361,13 @@ const BOMManagement: React.FC = () => {
         <div className="flex items-center space-x-4">
           <Link
             to="/app/products/dashboard"
-            className="flex items-center text-gray-600 hover:text-gray-900"
+            className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white"
           >
             <ArrowLeftIcon className="h-5 w-5 mr-2" />
             Back to Dashboard
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">{t('products.bom.title')}</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('products.bom.title')}</h1>
             <p className="text-gray-600 mt-1">{t('products.bom.description')}</p>
             <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
               <p className="text-sm text-blue-800">
@@ -386,7 +386,7 @@ const BOMManagement: React.FC = () => {
       </div>
 
       {/* Search */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div className="relative">
           <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
@@ -394,7 +394,7 @@ const BOMManagement: React.FC = () => {
             placeholder={t('products.bom.search_placeholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
       </div>
@@ -402,14 +402,14 @@ const BOMManagement: React.FC = () => {
       {/* BOM List */}
       <div className="space-y-4">
         {filteredBOMs.map((bom) => (
-          <div key={bom.id} className="bg-white rounded-lg shadow p-6">
+          <div key={bom.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center">
                 <div className="p-2 bg-blue-100 rounded-lg">
                   <ClipboardDocumentListIcon className="h-6 w-6 text-blue-600" />
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-lg font-semibold text-gray-900">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                     {bom.product_name} ({bom.product_code})
                   </h3>
                   <p className="text-sm text-gray-600">{bom.bom_number} - Version {bom.version}</p>
@@ -443,13 +443,13 @@ const BOMManagement: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div className="bg-gray-50 rounded-lg p-3">
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
                 <div className="text-sm text-gray-600">{t('products.bom.total_materials')}</div>
-                <div className="text-lg font-semibold text-gray-900">{bom.total_materials}</div>
+                <div className="text-lg font-semibold text-gray-900 dark:text-white">{bom.total_materials}</div>
               </div>
-              <div className="bg-gray-50 rounded-lg p-3">
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
                 <div className="text-sm text-gray-600">{t('products.bom.total_cost')}</div>
-                <div className="text-lg font-semibold text-gray-900">{formatRupiah(bom.total_cost)}</div>
+                <div className="text-lg font-semibold text-gray-900 dark:text-white">{formatRupiah(bom.total_cost)}</div>
               </div>
             </div>
 
@@ -458,7 +458,7 @@ const BOMManagement: React.FC = () => {
               <div className="flex justify-between items-center mb-3">
                 <button
                   onClick={() => toggleBOMExpand(bom.id)}
-                  className="flex items-center text-gray-700 hover:text-gray-900 font-medium"
+                  className="flex items-center text-gray-700 hover:text-gray-900 dark:text-white font-medium"
                 >
                   {expandedBOMs.has(bom.id) ? (
                     <ChevronDownIcon className="h-5 w-5 mr-2" />
@@ -487,23 +487,23 @@ const BOMManagement: React.FC = () => {
                     </div>
                   ) : (
                     <table className="w-full text-sm">
-                      <thead className="bg-gray-50">
+                      <thead className="bg-gray-50 dark:bg-gray-900">
                         <tr>
-                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">{t('products.bom.material')}</th>
-                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">{t('common.quantity')}</th>
-                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">{t('products.bom.unit_cost')}</th>
-                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">{t('products.bom.waste_percent')}</th>
-                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">{t('products.bom.total_cost')}</th>
-                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">{t('common.actions')}</th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{t('products.bom.material')}</th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{t('common.quantity')}</th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{t('products.bom.unit_cost')}</th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{t('products.bom.waste_percent')}</th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{t('products.bom.total_cost')}</th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{t('common.actions')}</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-200">
+                      <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                         {(bom.items || []).map((item) => (
                           <tr key={item.id}>
                             <td className="px-3 py-2">
                               <div>
-                                <div className="font-medium text-gray-900">{item.material_name}</div>
-                                <div className="text-gray-500">{item.material_code}</div>
+                                <div className="font-medium text-gray-900 dark:text-white">{item.material_name}</div>
+                                <div className="text-gray-500 dark:text-gray-400">{item.material_code}</div>
                               </div>
                             </td>
                             <td className="px-3 py-2">
@@ -551,7 +551,7 @@ const BOMManagement: React.FC = () => {
       {filteredBOMs.length === 0 && (
         <div className="text-center py-12">
           <ClipboardDocumentListIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">{t('products.bom.not_found')}</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{t('products.bom.not_found')}</h3>
           <p className="text-gray-600 mb-4">
             {searchTerm 
               ? t('products.bom.adjust_search')
@@ -573,9 +573,9 @@ const BOMManagement: React.FC = () => {
       {/* BOM Modal */}
       {showBOMModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+          <div className="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white dark:bg-gray-800">
             <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                 {selectedBOM ? t('products.bom.edit_bom') : t('common.create') + ' New BOM'}
               </h3>
               
@@ -585,7 +585,7 @@ const BOMManagement: React.FC = () => {
                   <select
                     value={bomForm.product_id}
                     onChange={(e) => setBomForm({...bomForm, product_id: parseInt(e.target.value)})}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     disabled={!!selectedBOM}
                   >
                     <option value={0}>Select Product</option>
@@ -603,7 +603,7 @@ const BOMManagement: React.FC = () => {
                     type="text"
                     value={bomForm.version}
                     onChange={(e) => setBomForm({...bomForm, version: e.target.value})}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="e.g., 1.0, 2.1"
                   />
                 </div>
@@ -614,7 +614,7 @@ const BOMManagement: React.FC = () => {
                       type="checkbox"
                       checked={bomForm.is_active}
                       onChange={(e) => setBomForm({...bomForm, is_active: e.target.checked})}
-                      className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded"
                     />
                     <span className="text-sm text-gray-700">Active BOM</span>
                   </label>
@@ -642,9 +642,9 @@ const BOMManagement: React.FC = () => {
       {/* Item Modal */}
       {showItemModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+          <div className="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white dark:bg-gray-800">
             <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                 {editingItem ? t('products.bom.edit_material') : t('products.bom.add_material')}
               </h3>
               
@@ -654,7 +654,7 @@ const BOMManagement: React.FC = () => {
                   <select
                     value={itemForm.material_id}
                     onChange={(e) => setItemForm({...itemForm, material_id: parseInt(e.target.value)})}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value={0}>Select Material</option>
                     {materials.map((material) => (
@@ -672,7 +672,7 @@ const BOMManagement: React.FC = () => {
                     step="0.01"
                     value={itemForm.quantity}
                     onChange={(e) => setItemForm({...itemForm, quantity: parseFloat(e.target.value) || 0})}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Enter quantity"
                   />
                 </div>
@@ -684,7 +684,7 @@ const BOMManagement: React.FC = () => {
                     step="0.1"
                     value={itemForm.scrap_percent}
                     onChange={(e) => setItemForm({...itemForm, scrap_percent: parseFloat(e.target.value) || 0})}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Enter waste percentage"
                   />
                 </div>
@@ -694,7 +694,7 @@ const BOMManagement: React.FC = () => {
                   <textarea
                     value={itemForm.notes}
                     onChange={(e) => setItemForm({...itemForm, notes: e.target.value})}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     rows={2}
                     placeholder="Optional notes"
                   />

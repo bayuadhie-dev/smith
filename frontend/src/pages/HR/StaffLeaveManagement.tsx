@@ -210,7 +210,7 @@ const StaffLeaveManagement: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <FileText className="h-6 w-6" />
             Pengajuan Izin/Cuti Staff
           </h1>
@@ -222,7 +222,7 @@ const StaffLeaveManagement: React.FC = () => {
         </div>
         <button
           onClick={() => setShowLocationModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg"
+          className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:bg-gray-700 rounded-lg"
         >
           <Settings className="h-4 w-4" />
           Lokasi Kantor
@@ -230,14 +230,14 @@ const StaffLeaveManagement: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Status</label>
             <select
               value={filter.status}
               onChange={(e) => setFilter(prev => ({ ...prev, status: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Semua Status</option>
               <option value="pending">Menunggu</option>
@@ -247,21 +247,21 @@ const StaffLeaveManagement: React.FC = () => {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nama Staff</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Nama Staff</label>
             <input
               type="text"
               value={filter.staff_name}
               onChange={(e) => setFilter(prev => ({ ...prev, staff_name: e.target.value }))}
               placeholder="Cari nama..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tipe</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Tipe</label>
             <select
               value={filter.leave_type}
               onChange={(e) => setFilter(prev => ({ ...prev, leave_type: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Semua Tipe</option>
               <option value="sakit">Sakit</option>
@@ -274,7 +274,7 @@ const StaffLeaveManagement: React.FC = () => {
           <div className="flex items-end">
             <button
               onClick={() => setFilter({ status: '', staff_name: '', leave_type: '' })}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800"
+              className="px-4 py-2 text-gray-600 hover:text-gray-800 dark:text-gray-100"
             >
               Reset Filter
             </button>
@@ -283,47 +283,47 @@ const StaffLeaveManagement: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center h-64">
             <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
           </div>
         ) : requests.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
+          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
             Tidak ada data pengajuan
           </div>
         ) : (
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Request</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipe</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Durasi</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Request</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nama</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tipe</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tanggal</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Durasi</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {requests.map((req) => (
-                <tr key={req.id} className="hover:bg-gray-50">
+                <tr key={req.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <p className="text-sm font-medium text-gray-900">{req.request_number}</p>
-                    <p className="text-xs text-gray-500">{new Date(req.created_at).toLocaleDateString('id-ID')}</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">{req.request_number}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(req.created_at).toLocaleDateString('id-ID')}</p>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <p className="text-sm font-medium text-gray-900">{req.staff_name}</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">{req.staff_name}</p>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 text-xs rounded-full ${getLeaveTypeBadge(req.leave_type)}`}>
                       {req.leave_type_label}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {new Date(req.start_date).toLocaleDateString('id-ID')} - {new Date(req.end_date).toLocaleDateString('id-ID')}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {req.total_days} hari
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -367,7 +367,7 @@ const StaffLeaveManagement: React.FC = () => {
         {/* Pagination */}
         {pagination.pages > 1 && (
           <div className="px-6 py-4 border-t flex items-center justify-between">
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               Halaman {pagination.page} dari {pagination.pages} ({pagination.total} data)
             </p>
             <div className="flex gap-2">
@@ -393,16 +393,16 @@ const StaffLeaveManagement: React.FC = () => {
       {/* Reject Modal */}
       {showRejectModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6">
             <h3 className="text-lg font-semibold mb-4">Tolak Pengajuan</h3>
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Alasan Penolakan</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Alasan Penolakan</label>
               <textarea
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
                 rows={3}
                 placeholder="Masukkan alasan penolakan..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500"
               />
             </div>
             <div className="flex justify-end gap-2">
@@ -412,7 +412,7 @@ const StaffLeaveManagement: React.FC = () => {
                   setRejectingId(null);
                   setRejectReason('');
                 }}
-                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                className="px-4 py-2 text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
               >
                 Batal
               </button>
@@ -430,7 +430,7 @@ const StaffLeaveManagement: React.FC = () => {
       {/* Office Location Modal */}
       {showLocationModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
             <div className="p-6 border-b flex justify-between items-center">
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <MapPin className="h-5 w-5" />
@@ -438,7 +438,7 @@ const StaffLeaveManagement: React.FC = () => {
               </h3>
               <button
                 onClick={() => setShowLocationModal(false)}
-                className="p-1 hover:bg-gray-100 rounded"
+                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded"
               >
                 <XCircle className="h-5 w-5" />
               </button>
@@ -450,7 +450,7 @@ const StaffLeaveManagement: React.FC = () => {
                   <h4 className="font-medium mb-3">Lokasi Tersimpan</h4>
                   <div className="space-y-2">
                     {locations.map((loc) => (
-                      <div key={loc.id} className="p-3 bg-gray-50 rounded-lg flex justify-between items-start">
+                      <div key={loc.id} className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg flex justify-between items-start">
                         <div>
                           <p className="font-medium">
                             {loc.name}
@@ -458,14 +458,14 @@ const StaffLeaveManagement: React.FC = () => {
                               <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded">Default</span>
                             )}
                           </p>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
                             📍 {loc.latitude.toFixed(6)}, {loc.longitude.toFixed(6)}
                           </p>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
                             📐 Radius: {loc.radius_meters} meter
                           </p>
                           {loc.address && (
-                            <p className="text-sm text-gray-500">📮 {loc.address}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">📮 {loc.address}</p>
                           )}
                         </div>
                         <button
@@ -485,56 +485,56 @@ const StaffLeaveManagement: React.FC = () => {
                 <h4 className="font-medium mb-3">Tambah Lokasi Baru</h4>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Nama Lokasi</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Nama Lokasi</label>
                     <input
                       type="text"
                       value={newLocation.name}
                       onChange={(e) => setNewLocation(prev => ({ ...prev, name: e.target.value }))}
                       placeholder="Kantor Pusat"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Latitude</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Latitude</label>
                       <input
                         type="text"
                         value={newLocation.latitude}
                         onChange={(e) => setNewLocation(prev => ({ ...prev, latitude: e.target.value }))}
                         placeholder="-6.200000"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Longitude</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Longitude</label>
                       <input
                         type="text"
                         value={newLocation.longitude}
                         onChange={(e) => setNewLocation(prev => ({ ...prev, longitude: e.target.value }))}
                         placeholder="106.816666"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Radius (meter)</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Radius (meter)</label>
                     <input
                       type="number"
                       value={newLocation.radius_meters}
                       onChange={(e) => setNewLocation(prev => ({ ...prev, radius_meters: e.target.value }))}
                       placeholder="100"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"
                     />
-                    <p className="text-xs text-gray-500 mt-1">Jarak maksimal dari titik lokasi yang diizinkan untuk absensi</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Jarak maksimal dari titik lokasi yang diizinkan untuk absensi</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Alamat (opsional)</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Alamat (opsional)</label>
                     <input
                       type="text"
                       value={newLocation.address}
                       onChange={(e) => setNewLocation(prev => ({ ...prev, address: e.target.value }))}
                       placeholder="Jl. Contoh No. 123"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"
                     />
                   </div>
                   <div className="flex items-center gap-2">
@@ -545,7 +545,7 @@ const StaffLeaveManagement: React.FC = () => {
                       onChange={(e) => setNewLocation(prev => ({ ...prev, is_default: e.target.checked }))}
                       className="rounded"
                     />
-                    <label htmlFor="is_default" className="text-sm text-gray-700">Jadikan lokasi default</label>
+                    <label htmlFor="is_default" className="text-sm text-gray-700 dark:text-gray-200">Jadikan lokasi default</label>
                   </div>
                   <button
                     onClick={handleSaveLocation}

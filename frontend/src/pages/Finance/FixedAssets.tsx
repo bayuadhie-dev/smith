@@ -228,8 +228,8 @@ const [assets, setAssets] = useState<FixedAsset[]>([])
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">🏢 Fixed Assets</h1>
-          <p className="text-gray-600 mt-1">Manage asset depreciation and lifecycle tracking</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">🏢 Fixed Assets</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Manage asset depreciation and lifecycle tracking</p>
         </div>
         <div className="flex gap-3">
           <button 
@@ -270,8 +270,8 @@ const [assets, setAssets] = useState<FixedAsset[]>([])
                 <BuildingOfficeIcon className="h-6 w-6 text-white" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">{t('products.bom.total_cost')}</p>
-                <p className="text-2xl font-bold text-gray-900">{formatRupiah(summary.total_cost)}</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">{t('products.bom.total_cost')}</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatRupiah(summary.total_cost)}</p>
               </div>
             </div>
           </div>
@@ -282,7 +282,7 @@ const [assets, setAssets] = useState<FixedAsset[]>([])
                 <span className="text-2xl text-white">📉</span>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Accumulated Depreciation</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Accumulated Depreciation</p>
                 <p className="text-2xl font-bold text-red-600">{formatRupiah(summary.total_accumulated_depreciation)}</p>
               </div>
             </div>
@@ -294,7 +294,7 @@ const [assets, setAssets] = useState<FixedAsset[]>([])
                 <span className="text-2xl text-white">💰</span>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Net Book Value</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Net Book Value</p>
                 <p className="text-2xl font-bold text-green-600">{formatRupiah(summary.total_net_book_value)}</p>
               </div>
             </div>
@@ -337,65 +337,65 @@ const [assets, setAssets] = useState<FixedAsset[]>([])
       <div className="space-y-6">
         {Object.entries(groupedAssets).map(([category, categoryAssets]) => (
           <div key={category} className="card overflow-hidden">
-            <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+            <div className="bg-gray-50 dark:bg-gray-900 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <span className="text-2xl mr-3">{getCategoryIcon(category)}</span>
-                  <h3 className="text-lg font-medium text-gray-900">{category}</h3>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">{category}</h3>
                   <span className={`ml-3 px-2.5 py-0.5 rounded-full text-xs font-medium ${getCategoryColor(category)}`}>
                     {categoryAssets.length} assets
                   </span>
                 </div>
-                <div className="text-lg font-bold text-gray-900">
+                <div className="text-lg font-bold text-gray-900 dark:text-white">
                   {formatRupiah(categoryAssets.reduce((sum, asset) => sum + asset.net_book_value, 0))}
                 </div>
               </div>
             </div>
             
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-900">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Asset Details
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Purchase Info
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Net Book Value
                     </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.status')}</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.actions')}</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {categoryAssets.map((asset) => (
-                    <tr key={asset.id} className="hover:bg-gray-50">
+                    <tr key={asset.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
-                          <div className="text-sm font-medium text-gray-900">{asset.asset_name}</div>
-                          <div className="text-sm text-gray-500">Code: {asset.asset_code}</div>
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">{asset.asset_name}</div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">Code: {asset.asset_code}</div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
-                          <div className="text-sm text-gray-900">{formatDate(asset.purchase_date)}</div>
-                          <div className="text-sm text-gray-500">{asset.depreciation_method}</div>
+                          <div className="text-sm text-gray-900 dark:text-white">{formatDate(asset.purchase_date)}</div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">{asset.depreciation_method}</div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">
-                        <div className="text-sm font-medium text-gray-900">{formatRupiah(asset.cost)}</div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">{formatRupiah(asset.cost)}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">
                         <div className="text-sm font-medium text-red-600">
                           {formatRupiah(asset.accumulated_depreciation)}
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
                           {getDepreciationRate(asset)}% depreciated
                         </div>
                       </td>
@@ -446,12 +446,12 @@ const [assets, setAssets] = useState<FixedAsset[]>([])
       {/* Add Asset Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-lg mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg mx-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">{editingAsset ? 'Edit Fixed Asset' : 'Add New Fixed Asset'}</h3>
               <button 
                 onClick={() => setShowAddModal(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-300"
               >
                 ✕
               </button>
@@ -460,7 +460,7 @@ const [assets, setAssets] = useState<FixedAsset[]>([])
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Asset Code *
                   </label>
                   <input 
@@ -474,7 +474,7 @@ const [assets, setAssets] = useState<FixedAsset[]>([])
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">{t('products.bom.category')} *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('products.bom.category')} *</label>
                   <select 
                     className="input w-full"
                     value={formData.category}
@@ -492,7 +492,7 @@ const [assets, setAssets] = useState<FixedAsset[]>([])
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Asset Name *
                 </label>
                 <input 
@@ -507,7 +507,7 @@ const [assets, setAssets] = useState<FixedAsset[]>([])
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Acquisition Date *
                   </label>
                   <input 
@@ -519,7 +519,7 @@ const [assets, setAssets] = useState<FixedAsset[]>([])
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Acquisition Cost *
                   </label>
                   <input 
@@ -536,7 +536,7 @@ const [assets, setAssets] = useState<FixedAsset[]>([])
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Useful Life (Years) *
                   </label>
                   <input 
@@ -549,7 +549,7 @@ const [assets, setAssets] = useState<FixedAsset[]>([])
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Salvage Value
                   </label>
                   <input 
@@ -565,7 +565,7 @@ const [assets, setAssets] = useState<FixedAsset[]>([])
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Depreciation Method *
                   </label>
                   <select 
@@ -579,7 +579,7 @@ const [assets, setAssets] = useState<FixedAsset[]>([])
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Location
                   </label>
                   <input 
@@ -593,7 +593,7 @@ const [assets, setAssets] = useState<FixedAsset[]>([])
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">{t('common.description')}</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('common.description')}</label>
                 <textarea 
                   className="input w-full" 
                   rows={3}
@@ -621,8 +621,8 @@ const [assets, setAssets] = useState<FixedAsset[]>([])
       {filteredAssets.length === 0 && !loading && (
         <div className="text-center py-12">
           <BuildingOfficeIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No fixed assets found</h3>
-          <p className="mt-1 text-sm text-gray-500">Start by adding your first fixed asset</p>
+          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No fixed assets found</h3>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Start by adding your first fixed asset</p>
         </div>
       )}
     </div>

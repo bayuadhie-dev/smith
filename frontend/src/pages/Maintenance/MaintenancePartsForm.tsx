@@ -241,14 +241,14 @@ const MaintenancePartsForm: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             {isEdit ? 'Edit Parts Request' : 'Create Parts Request'}
           </h1>
-          <p className="text-gray-600">Request maintenance parts and supplies</p>
+          <p className="text-gray-600 dark:text-gray-300">Request maintenance parts and supplies</p>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
             <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
@@ -259,14 +259,14 @@ const MaintenancePartsForm: React.FC = () => {
 
           {/* Request Information */}
           <div className="space-y-4">
-            <h3 className="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
               <DocumentTextIcon className="inline h-4 w-4 mr-1" />
               Request Information
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Request Number
                 </label>
                 <input
@@ -274,12 +274,12 @@ const MaintenancePartsForm: React.FC = () => {
                   value={formData.request_number}
                   onChange={(e) => setFormData(prev => ({ ...prev, request_number: e.target.value }))}
                   placeholder="Auto-generated if empty"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Request Date *
                 </label>
                 <input
@@ -287,19 +287,19 @@ const MaintenancePartsForm: React.FC = () => {
                   value={formData.request_date}
                   onChange={(e) => setFormData(prev => ({ ...prev, request_date: e.target.value }))}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Machine *
                 </label>
                 <select
                   value={formData.machine_id}
                   onChange={(e) => setFormData(prev => ({ ...prev, machine_id: parseInt(e.target.value) }))}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Select Machine</option>
                   {machines.map(machine => (
@@ -311,14 +311,14 @@ const MaintenancePartsForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Requested By *
                 </label>
                 <select
                   value={formData.requested_by}
                   onChange={(e) => setFormData(prev => ({ ...prev, requested_by: parseInt(e.target.value) }))}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Select Employee</option>
                   {employees.map(emp => (
@@ -330,14 +330,14 @@ const MaintenancePartsForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Urgency *
                 </label>
                 <select
                   value={formData.urgency}
                   onChange={(e) => setFormData(prev => ({ ...prev, urgency: e.target.value }))}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   {urgencyLevels.map(level => (
                     <option key={level.value} value={level.value}>
@@ -348,13 +348,13 @@ const MaintenancePartsForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Related Work Order
                 </label>
                 <select
                   value={formData.work_order_id}
                   onChange={(e) => setFormData(prev => ({ ...prev, work_order_id: parseInt(e.target.value) || 0 }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Select Work Order (Optional)</option>
                   {workOrders.map(wo => (
@@ -367,7 +367,7 @@ const MaintenancePartsForm: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Justification *
               </label>
               <textarea
@@ -376,7 +376,7 @@ const MaintenancePartsForm: React.FC = () => {
                 required
                 rows={3}
                 placeholder="Explain why these parts are needed"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
           </div>
@@ -384,7 +384,7 @@ const MaintenancePartsForm: React.FC = () => {
           {/* Parts List */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-gray-900">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                 <CubeIcon className="inline h-4 w-4 mr-1" />
                 Parts Required
               </h3>
@@ -399,23 +399,23 @@ const MaintenancePartsForm: React.FC = () => {
             </div>
 
             {formData.parts.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <CubeIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                 <p>No parts added yet. Click "Add Part" to get started.</p>
               </div>
             ) : (
               <div className="space-y-4">
                 {formData.parts.map((part, index) => (
-                  <div key={index} className="border border-gray-200 rounded-lg p-4 space-y-4">
+                  <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-4">
                     <div className="flex items-center justify-between">
-                      <h4 className="font-medium text-gray-900">Part #{index + 1}</h4>
+                      <h4 className="font-medium text-gray-900 dark:text-white">Part #{index + 1}</h4>
                       <div className="flex items-center gap-2">
                         <label className="flex items-center">
                           <input
                             type="checkbox"
                             checked={part.is_critical}
                             onChange={(e) => updatePart(index, 'is_critical', e.target.checked)}
-                            className="rounded border-gray-300 text-red-600 focus:ring-red-500"
+                            className="rounded border-gray-300 dark:border-gray-600 text-red-600 focus:ring-red-500"
                           />
                           <span className="ml-2 text-sm text-red-600">Critical</span>
                         </label>
@@ -431,7 +431,7 @@ const MaintenancePartsForm: React.FC = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                           Part Name *
                         </label>
                         <div className="flex gap-2">
@@ -440,14 +440,14 @@ const MaintenancePartsForm: React.FC = () => {
                             value={part.part_name}
                             onChange={(e) => updatePart(index, 'part_name', e.target.value)}
                             required
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                           />
                           <select
                             onChange={(e) => {
                               const selectedPart = availableParts.find(p => p.id === parseInt(e.target.value));
                               if (selectedPart) selectFromInventory(index, selectedPart);
                             }}
-                            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                           >
                             <option value="">Select from inventory</option>
                             {availableParts.map(p => (
@@ -458,30 +458,30 @@ const MaintenancePartsForm: React.FC = () => {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                           Part Number
                         </label>
                         <input
                           type="text"
                           value={part.part_number}
                           onChange={(e) => updatePart(index, 'part_number', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                         </label>
                         <input
                           type="text"
                           value={part.supplier}
                           onChange={(e) => updatePart(index, 'supplier', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                           Quantity Requested *
                         </label>
                         <input
@@ -490,41 +490,41 @@ const MaintenancePartsForm: React.FC = () => {
                           onChange={(e) => updatePart(index, 'quantity_requested', parseInt(e.target.value) || 0)}
                           required
                           min="1"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('products.bom.unit_cost')}</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('products.bom.unit_cost')}</label>
                         <input
                           type="number"
                           value={part.unit_cost}
                           onChange={(e) => updatePart(index, 'unit_cost', parseFloat(e.target.value) || 0)}
                           min="0"
                           step="0.01"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('products.bom.total_cost')}</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('products.bom.total_cost')}</label>
                         <input
                           type="text"
                           value={`Rp ${(part.quantity_requested * part.unit_cost).toLocaleString()}`}
                           readOnly
-                          className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg"
+                          className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('common.description')}</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('common.description')}</label>
                       <textarea
                         value={part.description}
                         onChange={(e) => updatePart(index, 'description', e.target.value)}
                         rows={2}
                         placeholder="Additional details about this part"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
                   </div>
@@ -556,7 +556,7 @@ const MaintenancePartsForm: React.FC = () => {
 
           {/* Additional Notes */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               Additional Notes
             </label>
             <textarea
@@ -564,16 +564,16 @@ const MaintenancePartsForm: React.FC = () => {
               onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
               rows={3}
               placeholder="Any additional information or special requirements"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200">
+          <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
             <button
               type="button"
               onClick={() => navigate('/app/maintenance/parts-requests')}
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+              className="px-4 py-2 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
             >
               <X className="inline h-4 w-4 mr-2" />{t('common.cancel')}</button>
             <button

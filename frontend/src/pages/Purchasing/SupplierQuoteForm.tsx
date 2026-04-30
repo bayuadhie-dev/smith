@@ -309,16 +309,16 @@ const SupplierQuoteForm: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             {isEdit ? 'Edit Supplier Quote' : 'New Supplier Quote'}
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-300">
             {isEdit ? 'Update quote details and pricing' : 'Create supplier quotation with pricing details'}
           </p>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
             <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
@@ -328,13 +328,13 @@ const SupplierQuoteForm: React.FC = () => {
           )}
 
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
               Quote Information
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <Building className="inline h-4 w-4 mr-1" />
                   Supplier *
                 </label>
@@ -343,7 +343,7 @@ const SupplierQuoteForm: React.FC = () => {
                   value={formData.supplier_id}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Select Supplier</option>
                   {suppliers.map(supplier => (
@@ -355,7 +355,7 @@ const SupplierQuoteForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <DocumentTextIcon className="inline h-4 w-4 mr-1" />
                   Reference RFQ
                 </label>
@@ -363,7 +363,7 @@ const SupplierQuoteForm: React.FC = () => {
                   name="rfq_id"
                   value={formData.rfq_id || ''}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">No RFQ Reference</option>
                   {rfqs.map(rfq => (
@@ -377,7 +377,7 @@ const SupplierQuoteForm: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <Calendar className="inline h-4 w-4 mr-1" />
                   Quote Date *
                 </label>
@@ -387,12 +387,12 @@ const SupplierQuoteForm: React.FC = () => {
                   value={formData.quote_date}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Valid Until
                 </label>
                 <input
@@ -401,21 +401,21 @@ const SupplierQuoteForm: React.FC = () => {
                   value={formData.valid_until}
                   onChange={handleInputChange}
                   min={getMinValidDate()}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <CurrencyDollarIcon className="inline h-4 w-4 mr-1" />
                 </label>
                 <select
                   name="currency"
                   value={formData.currency}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   {currencies.map(currency => (
                     <option key={currency} value={currency}>{currency}</option>
@@ -424,14 +424,14 @@ const SupplierQuoteForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Payment Terms
                 </label>
                 <select
                   name="payment_terms"
                   value={formData.payment_terms}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   {paymentTerms.map(term => (
                     <option key={term} value={term}>{term}</option>
@@ -440,14 +440,14 @@ const SupplierQuoteForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Delivery Terms
                 </label>
                 <select
                   name="delivery_terms"
                   value={formData.delivery_terms}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   {deliveryTerms.map(term => (
                     <option key={term} value={term}>{term}</option>
@@ -456,7 +456,7 @@ const SupplierQuoteForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Lead Time (Days)
                 </label>
                 <input
@@ -465,7 +465,7 @@ const SupplierQuoteForm: React.FC = () => {
                   value={formData.lead_time_days}
                   onChange={handleInputChange}
                   min="1"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             </div>
@@ -473,7 +473,7 @@ const SupplierQuoteForm: React.FC = () => {
 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-gray-900">Quote Items</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">Quote Items</h3>
               <button
                 type="button"
                 onClick={addItem}
@@ -486,9 +486,9 @@ const SupplierQuoteForm: React.FC = () => {
 
             <div className="space-y-4">
               {formData.items.map((item, index) => (
-                <div key={index} className="p-4 border border-gray-200 rounded-lg space-y-4">
+                <div key={index} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg space-y-4">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-medium text-gray-900">
+                    <h4 className="font-medium text-gray-900 dark:text-white">
                       <Hash className="inline h-4 w-4 mr-1" />
                       Line {item.line_number}
                     </h4>
@@ -500,19 +500,19 @@ const SupplierQuoteForm: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Description *</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Description *</label>
                     <textarea
                       value={item.description}
                       onChange={(e) => handleItemChange(index, 'description', e.target.value)}
                       required
                       rows={2}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Quantity *</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Quantity *</label>
                       <input
                         type="number"
                         value={item.quantity}
@@ -520,22 +520,22 @@ const SupplierQuoteForm: React.FC = () => {
                         required
                         min="0"
                         step="0.01"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">UOM</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">UOM</label>
                       <input
                         type="text"
                         value={item.uom}
                         onChange={(e) => handleItemChange(index, 'uom', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Unit Price *</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Unit Price *</label>
                       <input
                         type="number"
                         value={item.unit_price}
@@ -543,14 +543,14 @@ const SupplierQuoteForm: React.FC = () => {
                         required
                         min="0"
                         step="0.01"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                         <Calculator className="inline h-4 w-4 mr-1" />{t('common.total')}</label>
-                      <div className="px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-700">
+                      <div className="px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-200">
                         {calculateItemTotal(item).toLocaleString('id-ID')}
                       </div>
                     </div>
@@ -558,7 +558,7 @@ const SupplierQuoteForm: React.FC = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Discount (%)</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Discount (%)</label>
                       <input
                         type="number"
                         value={item.discount_percent}
@@ -566,12 +566,12 @@ const SupplierQuoteForm: React.FC = () => {
                         min="0"
                         max="100"
                         step="0.01"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Tax (%)</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Tax (%)</label>
                       <input
                         type="number"
                         value={item.tax_percent}
@@ -579,18 +579,18 @@ const SupplierQuoteForm: React.FC = () => {
                         min="0"
                         max="100"
                         step="0.01"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Lead Time (Days)</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Lead Time (Days)</label>
                       <input
                         type="number"
                         value={item.lead_time_days}
                         onChange={(e) => handleItemChange(index, 'lead_time_days', e.target.value)}
                         min="1"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
                   </div>
@@ -598,9 +598,9 @@ const SupplierQuoteForm: React.FC = () => {
               ))}
             </div>
 
-            <div className="p-4 bg-gray-50 rounded-lg">
+            <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
               <div className="flex justify-between items-center">
-                <span className="text-lg font-medium text-gray-900">Grand Total:</span>
+                <span className="text-lg font-medium text-gray-900 dark:text-white">Grand Total:</span>
                 <span className="text-xl font-bold text-blue-600">
                   {formData.currency} {getGrandTotal().toLocaleString('id-ID')}
                 </span>
@@ -609,21 +609,21 @@ const SupplierQuoteForm: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Notes</label>
             <textarea
               name="notes"
               value={formData.notes}
               onChange={handleInputChange}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200">
+          <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
             <button
               type="button"
               onClick={() => navigate('/app/purchasing/quotes')}
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="px-4 py-2 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
             >
               <X className="inline h-4 w-4 mr-2" />{t('common.cancel')}</button>
             <button

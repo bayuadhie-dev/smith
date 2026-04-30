@@ -216,11 +216,11 @@ const ShippingOrderDetails: React.FC = () => {
 
   if (error || !order) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8">
         <div className="text-center">
           <ExclamationTriangleIcon className="mx-auto h-12 w-12 text-red-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Order</h3>
-          <p className="text-gray-600 mb-4">{error || 'Shipping order not found'}</p>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Error Loading Order</h3>
+          <p className="text-gray-600 dark:text-gray-300 mb-4">{error || 'Shipping order not found'}</p>
           <Link
             to="/app/shipping/orders"
             className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -240,15 +240,15 @@ const ShippingOrderDetails: React.FC = () => {
         <div className="flex items-center gap-4">
           <Link
             to="/app/shipping/orders"
-            className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+            className="p-2 text-gray-400 hover:text-gray-600 dark:text-gray-300 transition-colors"
           >
             <ArrowLeftIcon className="h-5 w-5" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               Shipping Order {order.shipping_number}
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-300">
               Created on {new Date(order.created_at).toLocaleDateString()}
             </p>
           </div>
@@ -263,13 +263,13 @@ const ShippingOrderDetails: React.FC = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={printShippingLabel}
-              className="px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+              className="px-3 py-2 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
             >
               <PrinterIcon className="h-4 w-4" />
             </button>
             <button
               onClick={downloadPOD}
-              className="px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+              className="px-3 py-2 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
             >
               <ArrowDownTrayIcon className="h-4 w-4" />
             </button>
@@ -293,26 +293,26 @@ const ShippingOrderDetails: React.FC = () => {
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
           {/* Order Information */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Order Information</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Order Information</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Shipping Date
                   </label>
-                  <div className="flex items-center gap-2 text-gray-900">
+                  <div className="flex items-center gap-2 text-gray-900 dark:text-white">
                     <Calendar className="h-4 w-4 text-gray-400" />
                     {new Date(order.shipping_date).toLocaleDateString()}
                   </div>
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Expected Delivery
                   </label>
-                  <div className="flex items-center gap-2 text-gray-900">
+                  <div className="flex items-center gap-2 text-gray-900 dark:text-white">
                     <ClockIcon className="h-4 w-4 text-gray-400" />
                     {order.expected_delivery_date 
                       ? new Date(order.expected_delivery_date).toLocaleDateString()
@@ -323,7 +323,7 @@ const ShippingOrderDetails: React.FC = () => {
                 
                 {order.actual_delivery_date && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Actual Delivery
                     </label>
                     <div className="flex items-center gap-2 text-green-600">
@@ -336,26 +336,26 @@ const ShippingOrderDetails: React.FC = () => {
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Shipping Method
                   </label>
-                  <div className="flex items-center gap-2 text-gray-900">
+                  <div className="flex items-center gap-2 text-gray-900 dark:text-white">
                     <Truck className="h-4 w-4 text-gray-400" />
                     {order.shipping_method}
                   </div>
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   </label>
-                  <div className="text-gray-900">{order.carrier || 'Not specified'}</div>
+                  <div className="text-gray-900 dark:text-white">{order.carrier || 'Not specified'}</div>
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Tracking Number
                   </label>
-                  <div className="text-gray-900 font-mono">
+                  <div className="text-gray-900 dark:text-white font-mono">
                     {order.tracking_number || 'Not assigned'}
                   </div>
                 </div>
@@ -364,49 +364,49 @@ const ShippingOrderDetails: React.FC = () => {
           </div>
 
           {/* Shipping Items */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Shipping Items</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Shipping Items</h3>
             
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-900">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('production.product')}</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.quantity')}</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('production.product')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.quantity')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {order.items?.map((item) => (
                     <tr key={item.id}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <CubeIcon className="h-4 w-4 text-gray-400 mr-2" />
                           <div>
-                            <div className="text-sm font-medium text-gray-900">
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">
                               {item.product_code}
                             </div>
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
                               {item.product_name}
                             </div>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                         {item.quantity}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                         {item.weight} kg
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {item.dimensions}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {item.packaging_type}
                       </td>
                     </tr>
@@ -418,8 +418,8 @@ const ShippingOrderDetails: React.FC = () => {
 
           {/* Tracking History */}
           {order.tracking_history && order.tracking_history.length > 0 && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Tracking History</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Tracking History</h3>
               
               <div className="space-y-4">
                 {order.tracking_history.map((event, index) => (
@@ -431,17 +431,17 @@ const ShippingOrderDetails: React.FC = () => {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <h4 className="text-sm font-medium text-gray-900">
+                        <h4 className="text-sm font-medium text-gray-900 dark:text-white">
                           {event.status.replace('_', ' ').toUpperCase()}
                         </h4>
-                        <span className="text-sm text-gray-500">
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
                           {new Date(event.event_date).toLocaleString()}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                         {event.description}
                       </p>
-                      <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                      <div className="flex items-center gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
                         <span className="flex items-center gap-1">
                           <MapPin className="h-3 w-3" />
                           {event.location}
@@ -459,37 +459,37 @@ const ShippingOrderDetails: React.FC = () => {
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Customer Information */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Customer Information</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Customer Information</h3>
             
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <UserIcon className="h-4 w-4 text-gray-400" />
-                <span className="text-gray-900">{order.customer_name}</span>
+                <span className="text-gray-900 dark:text-white">{order.customer_name}</span>
               </div>
               
             </div>
           </div>
 
           {/* Shipping Costs */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Shipping Costs</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Shipping Costs</h3>
             
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-gray-600">Shipping Cost</span>
-                <span className="text-gray-900">{formatCurrency(order.shipping_cost)}</span>
+                <span className="text-gray-600 dark:text-gray-300">Shipping Cost</span>
+                <span className="text-gray-900 dark:text-white">{formatCurrency(order.shipping_cost)}</span>
               </div>
               
               <div className="flex justify-between">
-                <span className="text-gray-600">Insurance</span>
-                <span className="text-gray-900">{formatCurrency(order.insurance_cost)}</span>
+                <span className="text-gray-600 dark:text-gray-300">Insurance</span>
+                <span className="text-gray-900 dark:text-white">{formatCurrency(order.insurance_cost)}</span>
               </div>
               
-              <div className="border-t border-gray-200 pt-3">
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
                 <div className="flex justify-between font-medium">
-                  <span className="text-gray-900">{t('products.bom.total_cost')}</span>
-                  <span className="text-gray-900">
+                  <span className="text-gray-900 dark:text-white">{t('products.bom.total_cost')}</span>
+                  <span className="text-gray-900 dark:text-white">
                     {formatCurrency(order.shipping_cost + order.insurance_cost)}
                   </span>
                 </div>
@@ -498,32 +498,32 @@ const ShippingOrderDetails: React.FC = () => {
           </div>
 
           {/* CubeIcon Information */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">CubeIcon Information</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">CubeIcon Information</h3>
             
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-gray-600">Total Weight</span>
-                <span className="text-gray-900">{order.total_weight} kg</span>
+                <span className="text-gray-600 dark:text-gray-300">Total Weight</span>
+                <span className="text-gray-900 dark:text-white">{order.total_weight} kg</span>
               </div>
               
               <div className="flex justify-between">
-                <span className="text-gray-600">Total Volume</span>
-                <span className="text-gray-900">{order.total_volume} m³</span>
+                <span className="text-gray-600 dark:text-gray-300">Total Volume</span>
+                <span className="text-gray-900 dark:text-white">{order.total_volume} m³</span>
               </div>
             </div>
             
             {order.special_instructions && (
-              <div className="mt-4 pt-4 border-t border-gray-200">
-                <h4 className="text-sm font-medium text-gray-900 mb-2">Special Instructions</h4>
-                <p className="text-sm text-gray-600">{order.special_instructions}</p>
+              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Special Instructions</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-300">{order.special_instructions}</p>
               </div>
             )}
           </div>
 
           {/* Quick Actions */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Quick Actions</h3>
             
             <div className="space-y-2">
               {order.status === 'pending' && (

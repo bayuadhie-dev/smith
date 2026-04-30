@@ -167,7 +167,7 @@ export default function TVDisplayShipping() {
                   <div className="flex-1">
                     <h3 className="text-xl font-semibold text-blue-400">{shipment.shipping_number}</h3>
                     <p className="text-gray-300 text-lg">{shipment.customer_name}</p>
-                    <p className="text-sm text-gray-500 mt-2">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                       📅 {new Date(shipment.shipping_date).toLocaleDateString('id-ID')}
                     </p>
                   </div>
@@ -202,14 +202,14 @@ export default function TVDisplayShipping() {
           
           {processedData.active_shipments?.length === 0 && (
             <div className="text-center py-12">
-              <TruckIcon className="h-16 w-16 text-gray-600 mx-auto mb-4" />
+              <TruckIcon className="h-16 w-16 text-gray-600 dark:text-gray-300 mx-auto mb-4" />
               <p className="text-xl text-gray-400">No active shipments at the moment</p>
             </div>
           )}
         </div>
         
         {/* Footer */}
-        <div className="mt-8 text-center text-gray-500">
+        <div className="mt-8 text-center text-gray-500 dark:text-gray-400">
           <p>🔄 Auto-refresh every 10 seconds | Last updated: {new Date().toLocaleTimeString('id-ID')}</p>
         </div>
       </div>

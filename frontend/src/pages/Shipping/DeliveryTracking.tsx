@@ -41,7 +41,7 @@ export default function DeliveryTracking() {
       case 'failed':
         return <ExclamationTriangleIcon className="h-5 w-5 text-red-600" />
       default:
-        return <MapPinIcon className="h-5 w-5 text-gray-600" />
+        return <MapPinIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
     }
   }
 
@@ -74,14 +74,14 @@ export default function DeliveryTracking() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Lacak Pengiriman</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Lacak Pengiriman</h1>
       </div>
 
       {/* Search Form */}
       <div className="card">
         <form onSubmit={handleSearch} className="space-y-4">
           <div>
-            <label htmlFor="tracking" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="tracking" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               Nomor Resi / Tracking Number
             </label>
             <div className="flex gap-4">
@@ -131,16 +131,16 @@ export default function DeliveryTracking() {
             <>
               {/* Shipment Info */}
               <div className="card">
-                <h2 className="text-lg font-medium text-gray-900 mb-4">Informasi Pengiriman</h2>
+                <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Informasi Pengiriman</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div>
-                    <dt className="text-sm font-medium text-gray-500">Nomor Resi</dt>
-                    <dd className="mt-1 text-sm text-gray-900 font-mono">
+                    <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Nomor Resi</dt>
+                    <dd className="mt-1 text-sm text-gray-900 dark:text-white font-mono">
                       {trackingData.tracking_number}
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-sm font-medium text-gray-500">{t('common.status')}</dt>
+                    <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('common.status')}</dt>
                     <dd className="mt-1">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(trackingData.status)}`}>
                         {getStatusText(trackingData.status)}
@@ -148,14 +148,14 @@ export default function DeliveryTracking() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-sm font-medium text-gray-500">Kurir</dt>
-                    <dd className="mt-1 text-sm text-gray-900">
+                    <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Kurir</dt>
+                    <dd className="mt-1 text-sm text-gray-900 dark:text-white">
                       {trackingData.logistics_provider?.name || '-'}
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-sm font-medium text-gray-500">Estimasi Tiba</dt>
-                    <dd className="mt-1 text-sm text-gray-900">
+                    <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Estimasi Tiba</dt>
+                    <dd className="mt-1 text-sm text-gray-900 dark:text-white">
                       {trackingData.estimated_delivery ? 
                         new Date(trackingData.estimated_delivery).toLocaleDateString('id-ID') : 
                         '-'
@@ -168,18 +168,18 @@ export default function DeliveryTracking() {
               {/* Shipping Details */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="card">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Alamat Pengirim</h3>
-                  <div className="text-sm text-gray-600">
-                    <p className="font-medium text-gray-900">{trackingData.shipping_order?.sender_name}</p>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Alamat Pengirim</h3>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">
+                    <p className="font-medium text-gray-900 dark:text-white">{trackingData.shipping_order?.sender_name}</p>
                     <p>{trackingData.shipping_order?.sender_address}</p>
                     <p>{trackingData.shipping_order?.sender_phone}</p>
                   </div>
                 </div>
 
                 <div className="card">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Alamat Penerima</h3>
-                  <div className="text-sm text-gray-600">
-                    <p className="font-medium text-gray-900">{trackingData.shipping_order?.recipient_name}</p>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Alamat Penerima</h3>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">
+                    <p className="font-medium text-gray-900 dark:text-white">{trackingData.shipping_order?.recipient_name}</p>
                     <p>{trackingData.shipping_order?.recipient_address}</p>
                     <p>{trackingData.shipping_order?.recipient_phone}</p>
                   </div>
@@ -188,7 +188,7 @@ export default function DeliveryTracking() {
 
               {/* Tracking Timeline */}
               <div className="card">
-                <h3 className="text-lg font-medium text-gray-900 mb-6">Riwayat Pengiriman</h3>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-6">Riwayat Pengiriman</h3>
                 <div className="flow-root">
                   <ul className="-mb-8">
                     {trackingData.tracking_history?.map((event: any, eventIdx: number) => (
@@ -196,32 +196,32 @@ export default function DeliveryTracking() {
                         <div className="relative pb-8">
                           {eventIdx !== trackingData.tracking_history.length - 1 ? (
                             <span
-                              className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200"
+                              className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200 dark:bg-gray-700"
                               aria-hidden="true"
                             />
                           ) : null}
                           <div className="relative flex space-x-3">
                             <div>
-                              <span className="h-8 w-8 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center">
+                              <span className="h-8 w-8 rounded-full bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center">
                                 {getStatusIcon(event.status)}
                               </span>
                             </div>
                             <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
                               <div>
-                                <p className="text-sm text-gray-900 font-medium">
+                                <p className="text-sm text-gray-900 dark:text-white font-medium">
                                   {getStatusText(event.status)}
                                 </p>
-                                <p className="text-sm text-gray-500">
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
                                   {event.description}
                                 </p>
                                 {event.location && (
-                                  <p className="text-sm text-gray-500 flex items-center mt-1">
+                                  <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center mt-1">
                                     <MapPinIcon className="h-4 w-4 mr-1" />
                                     {event.location}
                                   </p>
                                 )}
                               </div>
-                              <div className="text-right text-sm whitespace-nowrap text-gray-500">
+                              <div className="text-right text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
                                 <time dateTime={event.timestamp}>
                                   {new Date(event.timestamp).toLocaleDateString('id-ID', {
                                     year: 'numeric',
@@ -244,34 +244,34 @@ export default function DeliveryTracking() {
               {/* CubeIcon Details */}
               {trackingData.shipping_order?.items && (
                 <div className="card">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Detail Paket</h3>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Detail Paket</h3>
                   <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                      <thead className="bg-gray-50 dark:bg-gray-900">
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
+                      <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         {trackingData.shipping_order.items.map((item: any) => (
                           <tr key={item.id}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                               {item.product_name}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                               {item.quantity}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                               {item.weight} kg
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                               {item.length} × {item.width} × {item.height} cm
                             </td>
                           </tr>

@@ -254,16 +254,16 @@ export default function WorkOrderTimeline() {
         <div className="flex items-center space-x-4">
           <Link
             to={`/app/production/work-orders/${id}`}
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
           >
             <ArrowLeftIcon className="h-5 w-5" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
               <ClockIcon className="h-6 w-6 text-blue-600" />
               Timeline Produksi
             </h1>
-            <p className="text-gray-600">{workOrder.wo_number} - {workOrder.product_name}</p>
+            <p className="text-gray-600 dark:text-gray-300">{workOrder.wo_number} - {workOrder.product_name}</p>
           </div>
         </div>
         <Link
@@ -277,24 +277,24 @@ export default function WorkOrderTimeline() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="bg-white rounded-lg shadow p-4 text-center">
-          <p className="text-sm text-gray-500">Total Shift</p>
-          <p className="text-2xl font-bold text-gray-700">{totals.shifts}</p>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
+          <p className="text-sm text-gray-500 dark:text-gray-400">Total Shift</p>
+          <p className="text-2xl font-bold text-gray-700 dark:text-gray-200">{totals.shifts}</p>
         </div>
-        <div className="bg-white rounded-lg shadow p-4 text-center">
-          <p className="text-sm text-gray-500">Grade A</p>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
+          <p className="text-sm text-gray-500 dark:text-gray-400">Grade A</p>
           <p className="text-2xl font-bold text-green-600">{totals.gradeA.toLocaleString()}</p>
         </div>
-        <div className="bg-white rounded-lg shadow p-4 text-center">
-          <p className="text-sm text-gray-500">Total Runtime</p>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
+          <p className="text-sm text-gray-500 dark:text-gray-400">Total Runtime</p>
           <p className="text-2xl font-bold text-blue-600">{totals.totalRuntime} m</p>
         </div>
-        <div className="bg-white rounded-lg shadow p-4 text-center">
-          <p className="text-sm text-gray-500">Total Downtime</p>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
+          <p className="text-sm text-gray-500 dark:text-gray-400">Total Downtime</p>
           <p className="text-2xl font-bold text-orange-600">{totals.totalDowntime} m</p>
         </div>
-        <div className="bg-white rounded-lg shadow p-4 text-center">
-          <p className="text-sm text-gray-500">Avg Efficiency</p>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
+          <p className="text-sm text-gray-500 dark:text-gray-400">Avg Efficiency</p>
           <p className={`text-2xl font-bold ${overallEfficiency >= 60 ? 'text-green-600' : 'text-red-600'}`}>
             {overallEfficiency.toFixed(1)}%
           </p>
@@ -302,18 +302,18 @@ export default function WorkOrderTimeline() {
       </div>
 
       {/* Timeline */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-6">Riwayat Produksi</h2>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">Riwayat Produksi</h2>
         
         {timeline.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
             <ClockIcon className="h-12 w-12 mx-auto mb-2 text-gray-400" />
             <p>Belum ada data produksi</p>
           </div>
         ) : (
           <div className="relative">
             {/* Timeline line */}
-            <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+            <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-700"></div>
             
             <div className="space-y-6">
               {timeline.map((event, index) => {
@@ -329,10 +329,10 @@ export default function WorkOrderTimeline() {
                     <div className={`bg-gray-50 rounded-lg p-4 border-l-4 ${event.color.replace('bg-', 'border-')}`}>
                       <div className="flex items-start justify-between">
                         <div>
-                          <h3 className="font-semibold text-gray-900">{event.title}</h3>
-                          <p className="text-sm text-gray-600">{event.description}</p>
+                          <h3 className="font-semibold text-gray-900 dark:text-white">{event.title}</h3>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">{event.description}</p>
                         </div>
-                        <div className="text-right text-sm text-gray-500">
+                        <div className="text-right text-sm text-gray-500 dark:text-gray-400">
                           <div className="flex items-center gap-1">
                             <CalendarIcon className="h-4 w-4" />
                             {formatDate(event.date)}
@@ -347,12 +347,12 @@ export default function WorkOrderTimeline() {
                       
                       {/* Production details */}
                       {event.type === 'production' && event.data && (
-                        <div className="mt-3 pt-3 border-t border-gray-200 space-y-4">
+                        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 space-y-4">
                           {/* Time Stats Grid */}
                           <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
-                            <div className="bg-gray-100 rounded-lg p-2 text-center">
-                              <p className="text-xs text-gray-500">Average Time</p>
-                              <p className="text-lg font-bold text-gray-700">{event.data.average_time}m</p>
+                            <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-2 text-center">
+                              <p className="text-xs text-gray-500 dark:text-gray-400">Average Time</p>
+                              <p className="text-lg font-bold text-gray-700 dark:text-gray-200">{event.data.average_time}m</p>
                             </div>
                             <div className="bg-blue-50 rounded-lg p-2 text-center">
                               <p className="text-xs text-blue-600">Runtime</p>
@@ -405,7 +405,7 @@ export default function WorkOrderTimeline() {
                                     <div key={idx} className={`flex items-center justify-between p-2 rounded border ${colorClass}`}>
                                       <div className="flex-1">
                                         <span className="text-sm">{reason}</span>
-                                        <span className="ml-2 text-xs px-1.5 py-0.5 rounded bg-white/50">{category}</span>
+                                        <span className="ml-2 text-xs px-1.5 py-0.5 rounded bg-white dark:bg-gray-800/50">{category}</span>
                                       </div>
                                       <span className="font-bold text-sm ml-2">{minutes}m</span>
                                     </div>
@@ -417,7 +417,7 @@ export default function WorkOrderTimeline() {
                           
                           {/* Operator */}
                           {event.data.operator_name && (
-                            <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 rounded-lg px-3 py-2">
+                            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-900 rounded-lg px-3 py-2">
                               <UserIcon className="h-4 w-4" />
                               <span>Operator: <strong>{event.data.operator_name}</strong></span>
                             </div>
@@ -434,26 +434,26 @@ export default function WorkOrderTimeline() {
       </div>
 
       {/* Production Records Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Detail Per Shift</h2>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Detail Per Shift</h2>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Shift</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Grade A</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Avg Time</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Runtime</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Downtime</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Tercatat</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Tidak Tercatat</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Efisiensi</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tanggal</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Shift</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Grade A</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Avg Time</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Runtime</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Downtime</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tercatat</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tidak Tercatat</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Efisiensi</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {shiftProductions.map((sp) => {
                 const runtime = sp.runtime || sp.actual_runtime || 0;
                 const avgTime = sp.average_time || sp.planned_runtime || 510;
@@ -462,17 +462,17 @@ export default function WorkOrderTimeline() {
                 const efficiency = avgTime > 0 ? (runtime / avgTime * 100) : 0;
                 
                 return (
-                  <tr key={sp.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm text-gray-900">
+                  <tr key={sp.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
                       {new Date(sp.production_date).toLocaleDateString('id-ID')}
                     </td>
-                    <td className="px-4 py-3 text-sm text-center text-gray-700">
+                    <td className="px-4 py-3 text-sm text-center text-gray-700 dark:text-gray-200">
                       {sp.shift?.replace('shift_', '')}
                     </td>
                     <td className="px-4 py-3 text-sm text-right font-medium text-green-600">
                       {sp.good_quantity?.toLocaleString() || 0}
                     </td>
-                    <td className="px-4 py-3 text-sm text-right text-gray-700">
+                    <td className="px-4 py-3 text-sm text-right text-gray-700 dark:text-gray-200">
                       {avgTime}m
                     </td>
                     <td className="px-4 py-3 text-sm text-right font-medium text-blue-600">
@@ -498,21 +498,21 @@ export default function WorkOrderTimeline() {
               })}
               {shiftProductions.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan={9} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                     Belum ada data produksi
                   </td>
                 </tr>
               )}
             </tbody>
             {shiftProductions.length > 0 && (
-              <tfoot className="bg-gray-100">
+              <tfoot className="bg-gray-100 dark:bg-gray-800">
                 <tr className="font-semibold">
-                  <td className="px-4 py-3 text-sm text-gray-900" colSpan={2}>TOTAL</td>
+                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white" colSpan={2}>TOTAL</td>
                   <td className="px-4 py-3 text-sm text-right text-green-600">{totals.gradeA.toLocaleString()}</td>
-                  <td className="px-4 py-3 text-sm text-right text-gray-700">{totals.totalAvgTime}m</td>
+                  <td className="px-4 py-3 text-sm text-right text-gray-700 dark:text-gray-200">{totals.totalAvgTime}m</td>
                   <td className="px-4 py-3 text-sm text-right text-blue-600">{totals.totalRuntime}m</td>
                   <td className="px-4 py-3 text-sm text-right text-orange-600">{totals.totalDowntime}m</td>
-                  <td className="px-4 py-3 text-sm text-right text-gray-700">{totals.totalRuntime + totals.totalDowntime}m</td>
+                  <td className="px-4 py-3 text-sm text-right text-gray-700 dark:text-gray-200">{totals.totalRuntime + totals.totalDowntime}m</td>
                   <td className="px-4 py-3 text-sm text-right text-red-600">{Math.max(0, totals.totalAvgTime - totals.totalRuntime - totals.totalDowntime)}m</td>
                   <td className={`px-4 py-3 text-sm text-right font-bold ${overallEfficiency >= 60 ? 'text-green-600' : 'text-red-600'}`}>
                     {overallEfficiency.toFixed(1)}%

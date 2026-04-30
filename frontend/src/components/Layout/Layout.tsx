@@ -5,22 +5,64 @@ import Header from './Header'
 import Breadcrumb from '../ui/Breadcrumb'
 import AIAssistant from '../AIAssistant/AIAssistant'
 import SkipLink from '../ui/SkipLink'
+import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts'
+import KeyboardShortcutsModal from '../Common/KeyboardShortcutsModal'
 
 export default function Layout() {
   const location = useLocation()
-  const [sidebarOpen, setSidebarOpen] = useState(true) // Default open for better UX
+  const [showShortcutsModal, setShowShortcutsModal] = useState(false)
   
-  // Auto-collapse sidebar on /desk page
-  useEffect(() => {
-    if (location.pathname === '/desk') {
-      setSidebarOpen(false)
-    } else {
-      setSidebarOpen(true)
+  // Enable keyboard shortcuts
+  useKeyboardShortcuts()
+  
+  // Check if current page is desk or workspace
+  const isDeskOrWorkspace = location.pathname === '/desk' || location.pathname.startsWith('/workspace/')
+  
+  // Initialize sidebar state from localStorage
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    const saved = localStorage.getItem('sidebarOpen')
+    if (saved !== null) {
+      return saved === 'true'
     }
-  }, [location.pathname])
+    // Default: collapsed on desk/workspace, open on other pages
+    return !isDeskOrWorkspace
+  })
+  
+  // Only auto-collapse on first visit to desk/workspace (if no saved state)
+  useEffect(() => {
+    const saved = localStorage.getItem('sidebarOpen')
+    
+    // Only apply auto-collapse if user hasn't set any preference yet
+    if (saved === null && isDeskOrWorkspace) {
+      setSidebarOpen(false)
+      localStorage.setItem('sidebarOpen', 'false')
+    }
+  }, []) // Run only once on mount
+
+  // Listen for ? key to show shortcuts modal
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.key === '?' && !e.ctrlKey && !e.metaKey) {
+        const target = e.target as HTMLElement
+        const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable
+        if (!isInput) {
+          e.preventDefault()
+          setShowShortcutsModal(prev => !prev)
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyPress)
+    return () => window.removeEventListener('keydown', handleKeyPress)
+  }, [])
 
   const toggleSidebar = () => {
-    setSidebarOpen(prev => !prev);
+    setSidebarOpen(prev => {
+      const newState = !prev
+      // Save to localStorage - this persists across all pages
+      localStorage.setItem('sidebarOpen', String(newState))
+      return newState
+    })
   }
 
   return (
@@ -41,6 +83,12 @@ export default function Layout() {
       
       {/* AI Assistant Floating Widget */}
       <AIAssistant />
+      
+      {/* Keyboard Shortcuts Modal */}
+      <KeyboardShortcutsModal 
+        isOpen={showShortcutsModal} 
+        onClose={() => setShowShortcutsModal(false)} 
+      />
     </div>
   )
 }

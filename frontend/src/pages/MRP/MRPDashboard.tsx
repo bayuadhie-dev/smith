@@ -275,7 +275,7 @@ const MRPDashboard: React.FC = () => {
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Material Requirements Planning</h1>
           <p className="text-gray-600 dark:text-gray-300">Integrated production planning and material requirements analysis</p>
-          <div className="mt-2 flex items-center space-x-4 text-sm text-gray-500">
+          <div className="mt-2 flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
             <span className="flex items-center">
               <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
               Production Integration
@@ -324,7 +324,7 @@ const MRPDashboard: React.FC = () => {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="p-2 bg-blue-100 rounded-lg">
               <CubeIcon className="h-6 w-6 text-blue-600" />
@@ -341,7 +341,7 @@ const MRPDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="p-2 bg-orange-100 rounded-lg">
               <ExclamationTriangleIcon className="h-6 w-6 text-orange-600" />
@@ -358,7 +358,7 @@ const MRPDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="p-2 bg-green-100 rounded-lg">
               <BuildingOfficeIcon className="h-6 w-6 text-green-600" />
@@ -369,7 +369,7 @@ const MRPDashboard: React.FC = () => {
             </div>
           </div>
           <div className="mt-4">
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
               <div 
                 className="bg-green-600 h-2 rounded-full" 
                 style={{ width: `${metrics.capacity_utilization ?? 0}%` }}
@@ -378,7 +378,7 @@ const MRPDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="p-2 bg-purple-100 rounded-lg">
               <CheckCircleIcon className="h-6 w-6 text-purple-600" />
@@ -397,7 +397,7 @@ const MRPDashboard: React.FC = () => {
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* Capacity Utilization - Custom Bar Chart */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Resource Capacity Utilization</h3>
           {capacityData.length > 0 ? (
             <div className="space-y-4">
@@ -410,7 +410,7 @@ const MRPDashboard: React.FC = () => {
                 return (
                   <div key={index} className="space-y-2">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-gray-700">{resource}</span>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{resource}</span>
                       <div className="flex items-center space-x-2">
                         <span className="text-sm text-gray-600">{utilization.toFixed(1)}%</span>
                         {isBottleneck && (
@@ -419,7 +419,7 @@ const MRPDashboard: React.FC = () => {
                         )}
                       </div>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
                       <div 
                         className={`h-3 rounded-full transition-all duration-300 ${
                           utilization > 90 ? 'bg-red-500' :
@@ -429,7 +429,7 @@ const MRPDashboard: React.FC = () => {
                         style={{ width: `${utilization}%` }}
                       />
                     </div>
-                    <div className="flex justify-between text-xs text-gray-500">
+                    <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
                       <span>Available: {Number(item.available_capacity || 0).toFixed(0)}</span>
                       <span>Planned: {Number(item.planned_capacity || 0).toFixed(0)}</span>
                     </div>
@@ -438,7 +438,7 @@ const MRPDashboard: React.FC = () => {
               })}
             </div>
           ) : (
-            <div className="flex items-center justify-center h-64 text-gray-500">
+            <div className="flex items-center justify-center h-64 text-gray-500 dark:text-gray-400">
               <div className="text-center">
                 <CubeIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                 <p>No capacity data available</p>
@@ -451,7 +451,7 @@ const MRPDashboard: React.FC = () => {
       {/* Bottom Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Material Shortages */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold text-gray-900">Material Shortages</h3>
             <Link to="/app/mrp/material-requirements" className="text-sm text-blue-600 hover:text-blue-800">
@@ -460,13 +460,13 @@ const MRPDashboard: React.FC = () => {
           </div>
           <div className="space-y-3">
             {materialShortages.map((shortage) => (
-              <div key={shortage.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div key={shortage.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
                 <div className="flex-1">
                   <p className="font-medium text-gray-900">{shortage.material_name}</p>
                   <p className="text-sm text-gray-600">
                     Need: {formatNumber(shortage.required_qty ?? 0)} | Available: {formatNumber(shortage.available_qty ?? 0)}
                   </p>
-                  <p className="text-xs text-gray-500">Expected: {shortage.expected_delivery}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Expected: {shortage.expected_delivery}</p>
                 </div>
                 <div className="ml-3">
                   <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getImpactColor(shortage.impact_level)}`}>
@@ -479,20 +479,20 @@ const MRPDashboard: React.FC = () => {
         </div>
 
         {/* Demand Forecast */}
-        <div className="lg:col-span-2 bg-white rounded-lg shadow p-6">
+        <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Demand Forecast vs Current</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50">
+              <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">{t('production.product')}</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Current Demand</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Forecasted</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Variance</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Trend</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{t('production.product')}</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Current Demand</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Forecasted</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Variance</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Trend</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {demandForecast.map((item, index) => (
                   <tr key={index}>
                     <td className="px-4 py-2 font-medium text-gray-900">{item.product_name}</td>
@@ -520,12 +520,12 @@ const MRPDashboard: React.FC = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Link
             to="/app/mrp/demand-planning"
-            className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
+            className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
           >
             <div className="text-center">
               <ChartBarIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
@@ -535,7 +535,7 @@ const MRPDashboard: React.FC = () => {
           
           <Link
             to="/app/mrp/capacity-planning"
-            className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors"
+            className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors"
           >
             <div className="text-center">
               <CogIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
@@ -545,7 +545,7 @@ const MRPDashboard: React.FC = () => {
           
           <Link
             to="/app/mrp/material-requirements"
-            className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-colors"
+            className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-colors"
           >
             <div className="text-center">
               <CubeIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
@@ -555,7 +555,7 @@ const MRPDashboard: React.FC = () => {
           
           <Link
             to="/app/mrp/supplier-integration"
-            className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors"
+            className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors"
           >
             <div className="text-center">
               <TruckIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />

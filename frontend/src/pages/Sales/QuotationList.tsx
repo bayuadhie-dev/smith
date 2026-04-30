@@ -136,8 +136,8 @@ const [quotations, setQuotations] = useState<Quotation[]>([])
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">💼 Quotations</h1>
-          <p className="text-gray-600 mt-1">Manage sales quotations and proposals</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">💼 Quotations</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Manage sales quotations and proposals</p>
         </div>
         <div className="flex gap-3">
           <Link to="/app/sales/quotations/new" className="btn-primary inline-flex items-center gap-2">
@@ -155,8 +155,8 @@ const [quotations, setQuotations] = useState<Quotation[]>([])
               <DocumentTextIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Quotations</p>
-              <p className="text-2xl font-bold text-gray-900">{quotations.length}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Quotations</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{quotations.length}</p>
             </div>
           </div>
         </div>
@@ -167,8 +167,8 @@ const [quotations, setQuotations] = useState<Quotation[]>([])
               <ClockIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Pending</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Pending</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {quotations.filter(q => q.status === 'sent').length}
               </p>
             </div>
@@ -181,8 +181,8 @@ const [quotations, setQuotations] = useState<Quotation[]>([])
               <CheckCircleIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Accepted</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Accepted</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {quotations.filter(q => q.status === 'accepted').length}
               </p>
             </div>
@@ -195,8 +195,8 @@ const [quotations, setQuotations] = useState<Quotation[]>([])
               <BanknotesIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Value</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Value</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 Rp {quotations.reduce((sum, q) => sum + q.total_amount, 0).toLocaleString()}
               </p>
             </div>
@@ -208,12 +208,12 @@ const [quotations, setQuotations] = useState<Quotation[]>([])
       <div className="card p-4">
         <div className="flex items-center gap-4 mb-4">
           <FunnelIcon className="h-5 w-5 text-gray-400" />
-          <h3 className="text-lg font-medium text-gray-900">Filters</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Filters</h3>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">{t('common.search')}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">{t('common.search')}</label>
             <div className="relative mt-1">
               <input
                 type="text"
@@ -227,7 +227,7 @@ const [quotations, setQuotations] = useState<Quotation[]>([])
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700">{t('common.status')}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">{t('common.status')}</label>
             <select
               value={filters.status}
               onChange={(e) => handleFilterChange('status', e.target.value)}
@@ -244,7 +244,7 @@ const [quotations, setQuotations] = useState<Quotation[]>([])
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700">Date From</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Date From</label>
             <input
               type="date"
               value={filters.date_from}
@@ -254,7 +254,7 @@ const [quotations, setQuotations] = useState<Quotation[]>([])
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700">Date To</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Date To</label>
             <input
               type="date"
               value={filters.date_to}
@@ -276,43 +276,43 @@ const [quotations, setQuotations] = useState<Quotation[]>([])
 
       {/* Quotations Table */}
       <div className="card">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Quotation Database</h3>
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Quotation Database</h3>
         </div>
         
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Items & Value
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.status')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.actions')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {quotations.map((quotation) => {
                 const StatusIcon = getStatusIcon(quotation.status)
                 const expiringSoon = isExpiringSoon(quotation.expiry_date)
                 
                 return (
-                  <tr key={quotation.id} className="hover:bg-gray-50">
+                  <tr key={quotation.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="bg-blue-100 p-2 rounded-lg mr-3">
                           <DocumentTextIcon className="h-5 w-5 text-blue-600" />
                         </div>
                         <div>
-                          <div className="text-sm font-medium text-gray-900">{quotation.quotation_number}</div>
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">{quotation.quotation_number}</div>
                           {quotation.created_by_name && (
-                            <div className="text-xs text-gray-500">by {quotation.created_by_name}</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">by {quotation.created_by_name}</div>
                           )}
                         </div>
                       </div>
@@ -322,9 +322,9 @@ const [quotations, setQuotations] = useState<Quotation[]>([])
                       <div className="flex items-center">
                         <BuildingOfficeIcon className="h-4 w-4 text-gray-400 mr-2" />
                         <div>
-                          <div className="text-sm font-medium text-gray-900">{quotation.customer_company}</div>
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">{quotation.customer_company}</div>
                           {quotation.customer_name && (
-                            <div className="text-xs text-gray-500 flex items-center">
+                            <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center">
                               <UserIcon className="h-3 w-3 mr-1" />
                               {quotation.customer_name}
                             </div>
@@ -334,7 +334,7 @@ const [quotations, setQuotations] = useState<Quotation[]>([])
                     </td>
                     
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
+                      <div className="text-sm text-gray-900 dark:text-white">
                         <div className="flex items-center">
                           <CalendarIcon className="h-4 w-4 text-gray-400 mr-1" />
                           <span>Issued: {new Date(quotation.issue_date).toLocaleDateString()}</span>
@@ -348,9 +348,9 @@ const [quotations, setQuotations] = useState<Quotation[]>([])
                     </td>
                     
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
+                      <div className="text-sm text-gray-900 dark:text-white">
                         <div className="font-medium">Rp {quotation.total_amount.toLocaleString()}</div>
-                        <div className="text-xs text-gray-500">{quotation.items_count} items</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{quotation.items_count} items</div>
                       </div>
                     </td>
                     
@@ -391,8 +391,8 @@ const [quotations, setQuotations] = useState<Quotation[]>([])
         
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-gray-200 flex justify-between items-center">
-            <div className="text-sm text-gray-500">
+          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
+            <div className="text-sm text-gray-500 dark:text-gray-400">
               Page {currentPage} of {totalPages}
             </div>
             <div className="flex gap-2">
@@ -416,8 +416,8 @@ const [quotations, setQuotations] = useState<Quotation[]>([])
         {quotations.length === 0 && !loading && (
           <div className="text-center py-12">
             <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No quotations found</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No quotations found</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               Get started by creating your first quotation
             </p>
             <div className="mt-6">

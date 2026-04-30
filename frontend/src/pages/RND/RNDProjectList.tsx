@@ -110,8 +110,8 @@ const RNDProjectList: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Proyek R&D</h1>
-          <p className="text-gray-500">Kelola proyek penelitian dan pengembangan</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Proyek R&D</h1>
+          <p className="text-gray-500 dark:text-gray-400">Kelola proyek penelitian dan pengembangan</p>
         </div>
         <Link
           to="/app/rnd/projects/new"
@@ -123,7 +123,7 @@ const RNDProjectList: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-100">
         <div className="flex flex-wrap gap-4">
           <div className="flex-1 min-w-[200px]">
             <div className="relative">
@@ -133,7 +133,7 @@ const RNDProjectList: React.FC = () => {
                 placeholder="Cari proyek..."
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
           </div>
@@ -141,7 +141,7 @@ const RNDProjectList: React.FC = () => {
           <select
             value={stageFilter}
             onChange={(e) => { setStageFilter(e.target.value); setPage(1); }}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Semua Tahap</option>
             <option value="LAB_SCALE">Lab Scale</option>
@@ -153,7 +153,7 @@ const RNDProjectList: React.FC = () => {
           <select
             value={typeFilter}
             onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Semua Tipe</option>
             <option value="new_product">Produk Baru</option>
@@ -164,34 +164,34 @@ const RNDProjectList: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           </div>
         ) : projects.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-64 text-gray-500">
+          <div className="flex flex-col items-center justify-center h-64 text-gray-500 dark:text-gray-400">
             <AlertCircle className="w-12 h-12 mb-2" />
             <p>Tidak ada proyek ditemukan</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Proyek</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipe</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tahap</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Prioritas</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Target Produk</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Formula</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Proyek</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nama</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tipe</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tahap</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Prioritas</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Target Produk</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Formula</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {projects.map((project) => (
-                  <tr key={project.id} className="hover:bg-gray-50">
+                  <tr key={project.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                     <td className="px-4 py-3">
                       <Link 
                         to={`/app/rnd/projects/${project.id}`}
@@ -200,8 +200,8 @@ const RNDProjectList: React.FC = () => {
                         {project.project_number}
                       </Link>
                     </td>
-                    <td className="px-4 py-3 text-gray-900">{project.name}</td>
-                    <td className="px-4 py-3 text-gray-600">{typeLabels[project.project_type] || project.project_type}</td>
+                    <td className="px-4 py-3 text-gray-900 dark:text-white">{project.name}</td>
+                    <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{typeLabels[project.project_type] || project.project_type}</td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${stageColors[project.stage]}`}>
                         {stageLabels[project.stage] || project.stage}
@@ -212,13 +212,13 @@ const RNDProjectList: React.FC = () => {
                         {priorityLabels[project.priority] || project.priority}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-gray-600">{project.target_product_name || '-'}</td>
-                    <td className="px-4 py-3 text-gray-600">{project.formula_count}</td>
+                    <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{project.target_product_name || '-'}</td>
+                    <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{project.formula_count}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => navigate(`/app/rnd/projects/${project.id}`)}
-                          className="p-1 text-gray-500 hover:text-blue-600"
+                          className="p-1 text-gray-500 dark:text-gray-400 hover:text-blue-600"
                           title="Lihat Detail"
                         >
                           <Eye className="w-4 h-4" />
@@ -227,14 +227,14 @@ const RNDProjectList: React.FC = () => {
                           <>
                             <button
                               onClick={() => navigate(`/app/rnd/projects/${project.id}/edit`)}
-                              className="p-1 text-gray-500 hover:text-yellow-600"
+                              className="p-1 text-gray-500 dark:text-gray-400 hover:text-yellow-600"
                               title="Edit"
                             >
                               <Edit className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleDelete(project.id)}
-                              className="p-1 text-gray-500 hover:text-red-600"
+                              className="p-1 text-gray-500 dark:text-gray-400 hover:text-red-600"
                               title="Hapus"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -252,25 +252,25 @@ const RNDProjectList: React.FC = () => {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
-            <p className="text-sm text-gray-600">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               Menampilkan {projects.length} dari {total} proyek
             </p>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="p-2 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-gray-600 dark:text-gray-300">
                 Halaman {page} dari {totalPages}
               </span>
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="p-2 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>

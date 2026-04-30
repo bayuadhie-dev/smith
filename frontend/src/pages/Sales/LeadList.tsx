@@ -139,7 +139,7 @@ const LeadList: React.FC = () => {
             <StarIcon key={i} className="h-4 w-4 text-gray-300" />
           )
         ))}
-        <span className="ml-1 text-sm text-gray-600">({score})</span>
+        <span className="ml-1 text-sm text-gray-600 dark:text-gray-300">({score})</span>
       </div>
     );
   };
@@ -162,7 +162,7 @@ const LeadList: React.FC = () => {
       />
 
       {/* Filters */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Search */}
           <div className="relative">
@@ -172,7 +172,7 @@ const LeadList: React.FC = () => {
               placeholder="Search leads..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="pl-10 w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
@@ -182,7 +182,7 @@ const LeadList: React.FC = () => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
+              className="pl-10 w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
             >
               {statusOptions.map(option => (
                 <option key={option.value} value={option.value}>
@@ -197,7 +197,7 @@ const LeadList: React.FC = () => {
             <select
               value={sourceFilter}
               onChange={(e) => setSourceFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
             >
               {sourceOptions.map(option => (
                 <option key={option.value} value={option.value}>
@@ -208,7 +208,7 @@ const LeadList: React.FC = () => {
           </div>
 
           {/* Results Count */}
-          <div className="flex items-center text-sm text-gray-600">
+          <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
             <span className="font-medium">{pagination.total}</span>
             <span className="ml-1">leads found</span>
           </div>
@@ -218,16 +218,16 @@ const LeadList: React.FC = () => {
       {/* Leads Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {leads.map((lead) => (
-          <div key={lead.id} className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+          <div key={lead.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
             <div className="p-6">
               {/* Header */}
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
                     {lead.company_name}
                   </h3>
-                  <p className="text-sm text-gray-600">{lead.contact_person}</p>
-                  <p className="text-xs text-gray-500 mt-1">{lead.lead_number}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{lead.contact_person}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{lead.lead_number}</p>
                 </div>
                 <div className="flex items-center space-x-2">
                   <span className="text-lg">{getSourceIcon(lead.lead_source)}</span>
@@ -251,13 +251,13 @@ const LeadList: React.FC = () => {
               {/* Contact Info */}
               <div className="space-y-2 mb-4">
                 {lead.email && (
-                  <div className="flex items-center text-sm text-gray-600">
+                  <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                     <EnvelopeIcon className="h-4 w-4 mr-2 text-gray-400" />
                     <span className="truncate">{lead.email}</span>
                   </div>
                 )}
                 {lead.phone && (
-                  <div className="flex items-center text-sm text-gray-600">
+                  <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                     <PhoneIcon className="h-4 w-4 mr-2 text-gray-400" />
                     <span>{lead.phone}</span>
                   </div>
@@ -265,34 +265,34 @@ const LeadList: React.FC = () => {
               </div>
 
               {/* Details */}
-              <div className="space-y-1 mb-4 text-sm text-gray-600">
+              <div className="space-y-1 mb-4 text-sm text-gray-600 dark:text-gray-300">
                 {lead.industry && (
                   <div>
-                    <span className="text-gray-500">Industry:</span> {lead.industry}
+                    <span className="text-gray-500 dark:text-gray-400">Industry:</span> {lead.industry}
                   </div>
                 )}
                 {lead.company_size && (
                   <div>
-                    <span className="text-gray-500">Size:</span> {lead.company_size}
+                    <span className="text-gray-500 dark:text-gray-400">Size:</span> {lead.company_size}
                   </div>
                 )}
                 {lead.budget && (
                   <div>
-                    <span className="text-gray-500">Budget:</span> ${lead.budget.toLocaleString()}
+                    <span className="text-gray-500 dark:text-gray-400">Budget:</span> ${lead.budget.toLocaleString()}
                   </div>
                 )}
               </div>
 
               {/* Assignment */}
               {lead.assigned_user_name && (
-                <div className="text-sm text-gray-600 mb-4">
-                  <span className="text-gray-500">Assigned to:</span> {lead.assigned_user_name}
+                <div className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                  <span className="text-gray-500 dark:text-gray-400">Assigned to:</span> {lead.assigned_user_name}
                 </div>
               )}
 
               {/* Footer */}
               <div className="pt-4 border-t border-gray-100">
-                <div className="flex justify-between items-center text-xs text-gray-500">
+                <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
                   <span>Created: {new Date(lead.created_at).toLocaleDateString()}</span>
                   {lead.next_followup && (
                     <span className="text-orange-600 font-medium">
@@ -310,8 +310,8 @@ const LeadList: React.FC = () => {
       {leads.length === 0 && (
         <div className="text-center py-12">
           <UserGroupIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No leads found</h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No leads found</h3>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             Get started by creating your first lead.
           </p>
           <div className="mt-6">
@@ -328,24 +328,24 @@ const LeadList: React.FC = () => {
 
       {/* Pagination */}
       {pagination.pages > 1 && (
-        <div className="flex items-center justify-between bg-white px-4 py-3 sm:px-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="flex items-center justify-between bg-white dark:bg-gray-800 px-4 py-3 sm:px-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex flex-1 justify-between sm:hidden">
             <button
               onClick={() => loadLeads(pagination.current_page - 1)}
               disabled={pagination.current_page === 1}
-              className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+              className="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
             >
             </button>
             <button
               onClick={() => loadLeads(pagination.current_page + 1)}
               disabled={pagination.current_page === pagination.pages}
-              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
             >
             </button>
           </div>
           <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-gray-700 dark:text-gray-200">
                 Showing page <span className="font-medium">{pagination.current_page}</span> of{' '}
                 <span className="font-medium">{pagination.pages}</span>
               </p>

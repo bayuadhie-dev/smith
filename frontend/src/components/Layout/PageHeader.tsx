@@ -22,12 +22,12 @@ const PageHeader: React.FC<PageHeaderProps> = ({
 }) => {
 
   return (
-    <div className="flex items-center justify-between bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
       <div className="flex items-center">
-        {Icon && <Icon className="h-8 w-8 text-gray-600 mr-4" />}
+        {Icon && <Icon className="h-8 w-8 text-gray-600 dark:text-gray-400 mr-4" />}
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
-          {subtitle && <p className="text-gray-600 mt-1">{subtitle}</p>}
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{title}</h1>
+          {subtitle && <p className="text-gray-600 dark:text-gray-400 mt-1">{subtitle}</p>}
         </div>
       </div>
       

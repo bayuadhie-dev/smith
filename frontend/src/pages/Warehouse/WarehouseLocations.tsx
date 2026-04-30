@@ -8,14 +8,14 @@ const { data: zones } = useGetWarehouseZonesQuery({})
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Warehouse Locations</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Warehouse Locations</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {zones?.zones?.map((zone: any) => (
           <div key={zone.id} className="card p-4">
-            <h3 className="font-semibold text-gray-900">{zone.name}</h3>
-            <p className="text-sm text-gray-500">{zone.code}</p>
-            <p className="mt-2 text-xs text-gray-600">{zone.material_type}</p>
+            <h3 className="font-semibold text-gray-900 dark:text-white">{zone.name}</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{zone.code}</p>
+            <p className="mt-2 text-xs text-gray-600 dark:text-gray-300">{zone.material_type}</p>
             <p className="mt-1 text-sm font-medium text-primary-600">
               {zone.location_count} locations
             </p>
@@ -42,7 +42,7 @@ const { data: zones } = useGetWarehouseZonesQuery({})
                   <th>{t('common.status')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {locations?.locations?.map((location: any) => (
                   <tr key={location.id}>
                     <td className="font-medium">{location.location_code}</td>

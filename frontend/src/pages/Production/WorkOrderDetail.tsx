@@ -191,13 +191,13 @@ export default function WorkOrderDetail() {
         <div className="flex items-center space-x-4">
           <Link
             to="/app/production/work-orders"
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
           >
             <ArrowLeftIcon className="h-5 w-5" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Work Order Detail</h1>
-            <p className="text-gray-600">{workOrder.wo_number}</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Work Order Detail</h1>
+            <p className="text-gray-600 dark:text-gray-300">{workOrder.wo_number}</p>
           </div>
         </div>
         <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(workOrder.status)}`}>
@@ -206,11 +206,11 @@ export default function WorkOrderDetail() {
       </div>
 
       {/* Documents Section */}
-      <div className="bg-white shadow rounded-lg p-6">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">Documents</h2>
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Documents</h2>
         <div className="space-y-4">
           <div>
-            <label className="text-sm font-medium text-gray-500 block mb-2">
+            <label className="text-sm font-medium text-gray-500 dark:text-gray-400 block mb-2">
               SPK (Surat Perintah Kerja)
             </label>
             <DocumentGenerateButton
@@ -235,8 +235,8 @@ export default function WorkOrderDetail() {
       </div>
 
       {/* Progress Summary */}
-      <div className="bg-white shadow rounded-lg p-6">
-        <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
           <ChartBarIcon className="h-5 w-5 mr-2 text-blue-600" />
           Production Progress
         </h2>
@@ -271,10 +271,10 @@ export default function WorkOrderDetail() {
         {/* Progress Bar */}
         <div className="mt-4">
           <div className="flex justify-between text-sm mb-1">
-            <span className="text-gray-600">Progress</span>
+            <span className="text-gray-600 dark:text-gray-300">Progress</span>
             <span className="font-medium">{progress.toFixed(1)}%</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-3">
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
             <div
               className={`h-3 rounded-full ${progress >= 100 ? 'bg-green-600' : 'bg-blue-600'}`}
               style={{ width: `${Math.min(progress, 100)}%` }}
@@ -285,10 +285,10 @@ export default function WorkOrderDetail() {
 
       {/* Job Costing Card */}
       {wipBatch && (
-        <div className="bg-white shadow rounded-lg p-6">
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-medium text-gray-900">Job Costing</h2>
-            <span className="text-sm text-gray-500">{wipBatch.wip_batch_no}</span>
+            <h2 className="text-lg font-medium text-gray-900 dark:text-white">Job Costing</h2>
+            <span className="text-sm text-gray-500 dark:text-gray-400">{wipBatch.wip_batch_no}</span>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-blue-50 p-4 rounded-lg">
@@ -317,10 +317,10 @@ export default function WorkOrderDetail() {
             </div>
           </div>
           {wipBatch.qty_completed > 0 && (
-            <div className="mt-4 pt-4 border-t border-gray-200">
+            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Biaya per Unit</span>
-                <span className="font-medium text-gray-900">
+                <span className="text-gray-600 dark:text-gray-300">Biaya per Unit</span>
+                <span className="font-medium text-gray-900 dark:text-white">
                   Rp {((wipBatch.total_wip_value || 0) / wipBatch.qty_completed).toLocaleString('id-ID', { maximumFractionDigits: 0 })}
                 </span>
               </div>
@@ -330,36 +330,36 @@ export default function WorkOrderDetail() {
       )}
 
       {/* Work Order Info */}
-      <div className="bg-white shadow rounded-lg p-6">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">Work Order Information</h2>
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Work Order Information</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="text-sm font-medium text-gray-500">Product</label>
-            <p className="mt-1 text-gray-900">{workOrder.product_name || 'N/A'}</p>
+            <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Product</label>
+            <p className="mt-1 text-gray-900 dark:text-white">{workOrder.product_name || 'N/A'}</p>
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-500">Quantity</label>
-            <p className="mt-1 text-gray-900 flex items-center">
+            <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Quantity</label>
+            <p className="mt-1 text-gray-900 dark:text-white flex items-center">
               <CubeIcon className="h-5 w-5 mr-2 text-gray-400" />
               {workOrder.quantity || 0} {workOrder.uom || 'pcs'}
             </p>
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-500">Start Date</label>
-            <p className="mt-1 text-gray-900 flex items-center">
+            <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Start Date</label>
+            <p className="mt-1 text-gray-900 dark:text-white flex items-center">
               <CalendarIcon className="h-5 w-5 mr-2 text-gray-400" />
               {workOrder.scheduled_start_date ? new Date(workOrder.scheduled_start_date).toLocaleDateString() : 'Not set'}
             </p>
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-500">Due Date</label>
-            <p className="mt-1 text-gray-900 flex items-center">
+            <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Due Date</label>
+            <p className="mt-1 text-gray-900 dark:text-white flex items-center">
               <ClockIcon className="h-5 w-5 mr-2 text-gray-400" />
               {workOrder.scheduled_end_date ? new Date(workOrder.scheduled_end_date).toLocaleDateString() : 'Not set'}
             </p>
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-500">Priority</label>
+            <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Priority</label>
             <p className="mt-1">
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${workOrder.priority === 'high' ? 'bg-red-100 text-red-800' :
                 workOrder.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
@@ -370,13 +370,13 @@ export default function WorkOrderDetail() {
             </p>
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-500">Machine</label>
-            <p className="mt-1 text-gray-900">{workOrder.machine_name || 'Not assigned'}</p>
+            <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Machine</label>
+            <p className="mt-1 text-gray-900 dark:text-white">{workOrder.machine_name || 'Not assigned'}</p>
           </div>
           {workOrder.notes && (
             <div className="md:col-span-2">
-              <label className="text-sm font-medium text-gray-500">Notes</label>
-              <p className="mt-1 text-gray-900 whitespace-pre-wrap">{workOrder.notes}</p>
+              <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Notes</label>
+              <p className="mt-1 text-gray-900 dark:text-white whitespace-pre-wrap">{workOrder.notes}</p>
             </div>
           )}
         </div>
@@ -384,20 +384,20 @@ export default function WorkOrderDetail() {
 
       {/* BOM Materials Required */}
       {workOrder.bom_materials && workOrder.bom_materials.length > 0 && (
-        <div className="bg-white shadow rounded-lg p-6">
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-medium text-gray-900 flex items-center">
+            <h2 className="text-lg font-medium text-gray-900 dark:text-white flex items-center">
               <CubeIcon className="h-5 w-5 mr-2 text-purple-600" />
               Material yang Dibutuhkan
               {workOrder.bom_number && (
-                <span className="ml-2 text-sm text-gray-500">
+                <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
                   (BOM: {workOrder.bom_number})
                 </span>
               )}
             </h2>
             <div className="flex items-center gap-3">
               {workOrder.batch_size && (
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-gray-500 dark:text-gray-400">
                   Batch Size: {workOrder.batch_size} {workOrder.uom}
                 </span>
               )}
@@ -412,7 +412,7 @@ export default function WorkOrderDetail() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-purple-50">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium text-purple-700 uppercase">No</th>
@@ -428,12 +428,12 @@ export default function WorkOrderDetail() {
                   <th className="px-4 py-3 text-center text-xs font-medium text-purple-700 uppercase">Critical</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {workOrder.bom_materials.map((material: any) => (
                   <tr key={material.id} className={`hover:bg-gray-50 ${material.is_critical ? 'bg-red-50' : ''}`}>
-                    <td className="px-4 py-3 text-sm text-gray-500">{material.line_number}</td>
-                    <td className="px-4 py-3 text-sm font-mono text-gray-900">{material.item_code}</td>
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{material.item_name}</td>
+                    <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{material.line_number}</td>
+                    <td className="px-4 py-3 text-sm font-mono text-gray-900 dark:text-white">{material.item_code}</td>
+                    <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">{material.item_name}</td>
                     <td className="px-4 py-3 text-sm">
                       <span className={`px-2 py-1 rounded text-xs ${material.item_type === 'raw_materials' ? 'bg-blue-100 text-blue-700' :
                         material.item_type === 'packaging_materials' ? 'bg-green-100 text-green-700' :
@@ -443,12 +443,12 @@ export default function WorkOrderDetail() {
                         {material.item_type?.replace('_', ' ')}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-sm text-right text-gray-500">{material.quantity_per_karton}</td>
+                    <td className="px-4 py-3 text-sm text-right text-gray-500 dark:text-gray-400">{material.quantity_per_karton}</td>
                     <td className="px-4 py-3 text-sm text-right">{material.quantity_per_batch}</td>
                     <td className="px-4 py-3 text-sm text-right font-medium text-purple-600">{material.required_quantity}</td>
                     <td className="px-4 py-3 text-sm text-center">{material.uom}</td>
                     <td className="px-4 py-3 text-sm text-right text-orange-600">{material.scrap_percent}%</td>
-                    <td className="px-4 py-3 text-sm text-right font-bold text-gray-900">{material.effective_quantity}</td>
+                    <td className="px-4 py-3 text-sm text-right font-bold text-gray-900 dark:text-white">{material.effective_quantity}</td>
                     <td className="px-4 py-3 text-center">
                       {material.is_critical && (
                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
@@ -466,9 +466,9 @@ export default function WorkOrderDetail() {
       )}
 
       {/* Production Records */}
-      <div className="bg-white shadow rounded-lg p-6">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-medium text-gray-900 flex items-center">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white flex items-center">
             <PlayIcon className="h-5 w-5 mr-2 text-green-600" />
             Production Records (Shift Input)
           </h2>
@@ -489,24 +489,24 @@ export default function WorkOrderDetail() {
           </div>
         ) : productionRecords.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Shift</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Produk</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Produced</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Good</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Reject</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Set Sticker</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Set Packaging</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Downtime</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Operator</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Notes</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Date</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Shift</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Produk</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Produced</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Good</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Reject</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Set Sticker</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Set Packaging</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Downtime</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Operator</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Notes</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {productionRecords.map((record, index) => {
                   // Generate shift sub-label (1a, 1b, etc.) for multi-product shifts
                   const sameShiftRecords = productionRecords.filter(r =>
@@ -520,7 +520,7 @@ export default function WorkOrderDetail() {
                   const isOverrideProduct = record.product_id && record.product_id !== workOrder.product_id;
 
                   return (
-                    <tr key={record.id} className="hover:bg-gray-50">
+                    <tr key={record.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                       <td className="px-4 py-3 text-sm">{new Date(record.production_date).toLocaleDateString()}</td>
                       <td className="px-4 py-3 text-sm">
                         <span className={`font-medium ${isMultiProduct ? 'text-blue-700' : ''}`}>{shiftLabel}</span>
@@ -537,7 +537,7 @@ export default function WorkOrderDetail() {
                       <td className="px-4 py-3 text-sm text-right text-indigo-600">{record.setting_packaging || 0}</td>
                       <td className="px-4 py-3 text-sm text-right text-orange-600">{record.downtime_minutes} min</td>
                       <td className="px-4 py-3 text-sm">{record.operator_name || '-'}</td>
-                      <td className="px-4 py-3 text-sm text-gray-500 max-w-xs truncate">{record.notes || '-'}</td>
+                      <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 max-w-xs truncate">{record.notes || '-'}</td>
                       <td className="px-4 py-3 text-center">
                         <Link
                           to={`/app/production/work-orders/${id}/records/${record.id}/edit`}
@@ -554,7 +554,7 @@ export default function WorkOrderDetail() {
             </table>
           </div>
         ) : (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
             <PlayIcon className="h-12 w-12 mx-auto text-gray-300 mb-3" />
             <p>Belum ada data produksi</p>
             {(workOrder.status === 'in_progress' || workOrder.status === 'released') && (
@@ -665,16 +665,16 @@ export default function WorkOrderDetail() {
           });
 
           return (
-            <div className="bg-white shadow rounded-lg p-6">
+            <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-medium text-gray-900 flex items-center">
+                <h2 className="text-lg font-medium text-gray-900 dark:text-white flex items-center">
                   <ClipboardDocumentListIcon className="h-5 w-5 mr-2 text-green-600" />
                   Packing List ALFAMART @27X3
                   <span className="ml-2 text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded-full">
                     3 Variant
                   </span>
                 </h2>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-gray-500 dark:text-gray-400">
                   Total Karton: <span className="font-bold text-green-600">{grandTotalKarton}</span>
                 </div>
               </div>
@@ -682,9 +682,9 @@ export default function WorkOrderDetail() {
                 <strong>Info:</strong> 1 Karton ALFAMART = 27 pcs × 3 variant (Kuromi + Hello Kitty + Cinamoroll)
               </div>
               {shiftResults.map(({ shiftKey, group, karton, remaining, bottleneck }) => (
-                <div key={shiftKey} className="mb-4 p-4 border border-gray-200 rounded-lg">
+                <div key={shiftKey} className="mb-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-semibold text-gray-800">
+                    <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
                       📅 {formatDate(group.date)} - {formatShift(group.shift)}
                     </span>
                     <span className="text-sm font-bold text-green-600">
@@ -694,9 +694,9 @@ export default function WorkOrderDetail() {
                   <div className="grid grid-cols-3 gap-2 mb-2">
                     {remaining.map(v => (
                       <div key={v.variant} className={`p-2 rounded text-xs ${v.variant === bottleneck.variant ? 'bg-red-50 border border-red-200' : 'bg-gray-50'}`}>
-                        <div className="font-medium text-gray-700">{v.variant}</div>
-                        <div className="text-gray-600">{v.total.toLocaleString()} pcs</div>
-                        <div className="text-gray-500">Sisa: <span className={v.remaining > 0 ? 'text-orange-600 font-medium' : 'text-gray-400'}>{v.remaining} pcs</span></div>
+                        <div className="font-medium text-gray-700 dark:text-gray-200">{v.variant}</div>
+                        <div className="text-gray-600 dark:text-gray-300">{v.total.toLocaleString()} pcs</div>
+                        <div className="text-gray-500 dark:text-gray-400">Sisa: <span className={v.remaining > 0 ? 'text-orange-600 font-medium' : 'text-gray-400'}>{v.remaining} pcs</span></div>
                         {v.variant === bottleneck.variant && <div className="text-red-500 text-[10px] mt-1">⚠️ Bottleneck</div>}
                       </div>
                     ))}
@@ -748,26 +748,26 @@ export default function WorkOrderDetail() {
         if (workOrder.pack_per_carton <= 0) return null;
 
         return (
-          <div className="bg-white shadow rounded-lg p-6">
+          <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-medium text-gray-900 flex items-center">
+              <h2 className="text-lg font-medium text-gray-900 dark:text-white flex items-center">
                 <ClipboardDocumentListIcon className="h-5 w-5 mr-2 text-green-600" />
                 Packing List per Shift (Grade A)
                 <span className="ml-2 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
                   {shiftEntries.length} shift
                 </span>
               </h2>
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-gray-500 dark:text-gray-400">
                 Total Karton: <span className="font-bold text-green-600">{Math.floor(totalGood / workOrder.pack_per_carton)}</span>
               </div>
             </div>
             {shiftEntries.map(([shiftKey, group]) => (
-              <div key={shiftKey} className="mb-4 p-4 border border-gray-200 rounded-lg">
+              <div key={shiftKey} className="mb-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-semibold text-gray-800">
+                  <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
                     📅 {formatDate(group.date)} - {formatShift(group.shift)}
                   </span>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
                     {group.product_name} | Grade A: {group.total_good.toLocaleString()} pcs = {Math.floor(group.total_good / group.pack_per_carton)} karton
                   </span>
                 </div>
@@ -784,7 +784,7 @@ export default function WorkOrderDetail() {
       })()}
 
       {/* Action Buttons */}
-      <div className="bg-white shadow rounded-lg p-6">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
         <div className="flex flex-wrap gap-3">
           {/* Activity Log Button */}
           <button
@@ -870,7 +870,7 @@ export default function WorkOrderDetail() {
           </button>
           <Link
             to="/app/production/work-orders"
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300"
           >
             Back to List
           </Link>
@@ -880,16 +880,16 @@ export default function WorkOrderDetail() {
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full">
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-3 bg-red-100 rounded-full">
                   <ExclamationTriangleIcon className="h-6 w-6 text-red-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900">Hapus Work Order</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Hapus Work Order</h3>
               </div>
 
-              <p className="text-gray-600 mb-4">
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
                 Apakah Anda yakin ingin menghapus Work Order <strong>{workOrder.wo_number}</strong>?
               </p>
 
@@ -916,7 +916,7 @@ export default function WorkOrderDetail() {
                     setShowDeleteModal(false);
                     setForceDelete(false);
                   }}
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                  className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
                 >
                   Batal
                 </button>
@@ -949,16 +949,16 @@ export default function WorkOrderDetail() {
       {/* Complete Work Order Modal */}
       {showCompleteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full">
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-3 bg-emerald-100 rounded-full">
                   <DocumentCheckIcon className="h-6 w-6 text-emerald-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900">Selesaikan Work Order</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Selesaikan Work Order</h3>
               </div>
 
-              <p className="text-gray-600 mb-4">
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
                 Apakah Anda yakin ingin menyelesaikan Work Order <strong>{workOrder.wo_number}</strong>?
               </p>
 
@@ -969,17 +969,17 @@ export default function WorkOrderDetail() {
               </div>
 
               {/* Summary */}
-              <div className="bg-gray-50 rounded-lg p-3 mb-4 space-y-2">
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 mb-4 space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Target Quantity:</span>
+                  <span className="text-gray-600 dark:text-gray-300">Target Quantity:</span>
                   <span className="font-medium">{workOrder.quantity?.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Quantity Produced:</span>
+                  <span className="text-gray-600 dark:text-gray-300">Quantity Produced:</span>
                   <span className="font-medium text-green-600">{workOrder.quantity_produced?.toLocaleString() || 0}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Production Records:</span>
+                  <span className="text-gray-600 dark:text-gray-300">Production Records:</span>
                   <span className="font-medium">{productionRecords.length} records</span>
                 </div>
               </div>
@@ -987,7 +987,7 @@ export default function WorkOrderDetail() {
               <div className="flex justify-end gap-3">
                 <button
                   onClick={() => setShowCompleteModal(false)}
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                  className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
                 >
                   Batal
                 </button>

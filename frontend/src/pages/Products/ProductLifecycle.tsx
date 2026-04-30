@@ -185,13 +185,13 @@ const ProductLifecycle: React.FC = () => {
         <div className="flex items-center space-x-4">
           <Link
             to="/app/products/dashboard"
-            className="flex items-center text-gray-600 hover:text-gray-900"
+            className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white"
           >
             <ArrowLeftIcon className="h-5 w-5 mr-2" />
             Back to Dashboard
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Product Lifecycle</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Product Lifecycle</h1>
             <p className="text-gray-600 mt-1">Track product performance across lifecycle stages</p>
           </div>
         </div>
@@ -199,7 +199,7 @@ const ProductLifecycle: React.FC = () => {
           <select
             value={selectedPeriod}
             onChange={(e) => setSelectedPeriod(e.target.value)}
-            className="border border-gray-300 rounded-md px-3 py-2"
+            className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
           >
             <option value="3months">Last 3 Months</option>
             <option value="6months">Last 6 Months</option>
@@ -212,14 +212,14 @@ const ProductLifecycle: React.FC = () => {
       {/* Stage Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         {stageMetrics.map((metric, index) => (
-          <div key={metric.stage} className="bg-white rounded-lg shadow p-4">
+          <div key={metric.stage} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
             <div className="flex items-center justify-between mb-2">
               <div className={`p-2 rounded-lg ${getStageColor(metric.stage.toLowerCase())}`}>
                 {getStageIcon(metric.stage.toLowerCase())}
               </div>
-              <span className="text-2xl font-bold text-gray-900">{metric.product_count}</span>
+              <span className="text-2xl font-bold text-gray-900 dark:text-white">{metric.product_count}</span>
             </div>
-            <h3 className="font-medium text-gray-900">{metric.stage}</h3>
+            <h3 className="font-medium text-gray-900 dark:text-white">{metric.stage}</h3>
             <div className="mt-2 space-y-1 text-sm text-gray-600">
               <div>Revenue: {formatRupiah(metric.total_revenue)}</div>
               <div>Avg Duration: {formatDuration(metric.avg_duration)}</div>
@@ -232,8 +232,8 @@ const ProductLifecycle: React.FC = () => {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Lifecycle Timeline */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Lifecycle Timeline</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Lifecycle Timeline</h3>
           <ResponsiveContainer width="100%" height={300}>
             <AreaChart data={timeline}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -250,8 +250,8 @@ const ProductLifecycle: React.FC = () => {
         </div>
 
         {/* Stage Distribution */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Stage Distribution</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Stage Distribution</h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
@@ -275,7 +275,7 @@ const ProductLifecycle: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex-1 min-w-64">
             <div className="relative">
@@ -285,7 +285,7 @@ const ProductLifecycle: React.FC = () => {
                 placeholder="Search products..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
           </div>
@@ -295,7 +295,7 @@ const ProductLifecycle: React.FC = () => {
             <select
               value={stageFilter}
               onChange={(e) => setStageFilter(e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-2"
+              className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
             >
               <option value="all">All Stages</option>
               <option value="introduction">Introduction</option>
@@ -309,7 +309,7 @@ const ProductLifecycle: React.FC = () => {
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="border border-gray-300 rounded-md px-3 py-2"
+            className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
           >
             <option value="all">All Categories</option>
             <option value="Nonwoven Fabrics">Nonwoven Fabrics</option>
@@ -321,9 +321,9 @@ const ProductLifecycle: React.FC = () => {
       </div>
 
       {/* Products Table */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Product Lifecycle Status</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Product Lifecycle Status</h3>
           <div className="text-sm text-gray-600">
             Showing {filteredProducts.length} of {products.length} products
           </div>
@@ -331,33 +331,33 @@ const ProductLifecycle: React.FC = () => {
         
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('production.product')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('production.product')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Growth Rate
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Market Share
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.actions')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {filteredProducts.map((product) => (
-                <tr key={product.product_id} className="hover:bg-gray-50">
+                <tr key={product.product_id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
-                      <div className="font-medium text-gray-900">{product.product_name}</div>
-                      <div className="text-sm text-gray-500">{product.product_code}</div>
+                      <div className="font-medium text-gray-900 dark:text-white">{product.product_name}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">{product.product_code}</div>
                       <div className="text-xs text-gray-400">{product.category}</div>
                     </div>
                   </td>
@@ -367,10 +367,10 @@ const ProductLifecycle: React.FC = () => {
                       <span className="ml-1 capitalize">{product.current_stage}</span>
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {formatDuration(product.stage_duration)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {formatRupiah(product.total_revenue)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -387,7 +387,7 @@ const ProductLifecycle: React.FC = () => {
                       </span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {formatPercent(product.market_share)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -416,24 +416,24 @@ const ProductLifecycle: React.FC = () => {
 
       {/* Recent Transitions */}
       {transitions.length > 0 && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Stage Transitions</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Stage Transitions</h3>
           <div className="space-y-4">
             {transitions.map((transition, index) => (
-              <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div key={index} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
                 <div className="flex-1">
-                  <div className="font-medium text-gray-900">{transition.product_name}</div>
+                  <div className="font-medium text-gray-900 dark:text-white">{transition.product_name}</div>
                   <div className="text-sm text-gray-600 mt-1">
                     Moved from <span className="font-medium capitalize">{transition.from_stage}</span> to{' '}
                     <span className="font-medium capitalize">{transition.to_stage}</span>
                   </div>
-                  <div className="text-xs text-gray-500 mt-1">{transition.reason}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{transition.reason}</div>
                 </div>
                 <div className="text-right">
                   <div className="text-sm text-gray-600">
                     {new Date(transition.transition_date).toLocaleDateString()}
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
                     Impact: {transition.impact_score}/10
                   </div>
                 </div>
@@ -446,7 +446,7 @@ const ProductLifecycle: React.FC = () => {
       {filteredProducts.length === 0 && (
         <div className="text-center py-12">
           <ChartBarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No products found</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No products found</h3>
           <p className="text-gray-600">
             Try adjusting your search or filter criteria
           </p>

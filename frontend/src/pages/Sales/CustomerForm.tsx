@@ -138,15 +138,15 @@ const CustomerForm = () => {
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/app/sales/customers')}
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
           >
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
               {isEdit ? '✏️ Edit Customer' : '🏢 Create Customer'}
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-gray-600 dark:text-gray-300 mt-1">
               {isEdit ? 'Update customer information' : 'Add a new customer to your database'}
             </p>
           </div>
@@ -158,12 +158,12 @@ const CustomerForm = () => {
         <div className="card p-6">
           <div className="flex items-center gap-2 mb-6">
             <BuildingOfficeIcon className="h-5 w-5 text-blue-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Basic Information</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Basic Information</h3>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Customer Code *
               </label>
               <input
@@ -178,7 +178,7 @@ const CustomerForm = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Company Name *
               </label>
               <input
@@ -193,7 +193,7 @@ const CustomerForm = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Contact Person
               </label>
               <input
@@ -205,7 +205,7 @@ const CustomerForm = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Customer Type
               </label>
               <select
@@ -221,7 +221,7 @@ const CustomerForm = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               </label>
               <select
                 {...register('industry')}
@@ -237,7 +237,7 @@ const CustomerForm = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               </label>
               <input
                 type="url"
@@ -253,12 +253,12 @@ const CustomerForm = () => {
         <div className="card p-6">
           <div className="flex items-center gap-2 mb-6">
             <UserIcon className="h-5 w-5 text-green-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Contact Information</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Contact Information</h3>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Email Address
               </label>
               <input
@@ -278,7 +278,7 @@ const CustomerForm = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Phone Number
               </label>
               <input
@@ -290,7 +290,7 @@ const CustomerForm = () => {
             </div>
 
             <div className="lg:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               </label>
               <textarea
                 {...register('address')}
@@ -301,7 +301,7 @@ const CustomerForm = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               </label>
               <input
                 type="text"
@@ -312,7 +312,7 @@ const CustomerForm = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 State/Province
               </label>
               <input
@@ -324,7 +324,7 @@ const CustomerForm = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Postal Code
               </label>
               <input
@@ -336,7 +336,7 @@ const CustomerForm = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               </label>
               <input
                 type="text"
@@ -352,12 +352,12 @@ const CustomerForm = () => {
         <div className="card p-6">
           <div className="flex items-center gap-2 mb-6">
             <BanknotesIcon className="h-5 w-5 text-purple-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Business Information</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Business Information</h3>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Credit Limit (Rp)
               </label>
               <input
@@ -371,7 +371,7 @@ const CustomerForm = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Payment Terms
               </label>
               <select
@@ -387,7 +387,7 @@ const CustomerForm = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Tax Number
               </label>
               <input
@@ -403,12 +403,12 @@ const CustomerForm = () => {
                 <input
                   type="checkbox"
                   {...register('is_active')}
-                  className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
+                  className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 dark:border-gray-600 rounded"
                 />
               </div>
               <div className="ml-3 text-sm">
-                <label className="font-medium text-gray-700">Active Customer</label>
-                <p className="text-gray-500">Customer can place orders and receive services</p>
+                <label className="font-medium text-gray-700 dark:text-gray-200">Active Customer</label>
+                <p className="text-gray-500 dark:text-gray-400">Customer can place orders and receive services</p>
               </div>
             </div>
           </div>
@@ -417,12 +417,12 @@ const CustomerForm = () => {
         {/* Notes */}
         <div className="card p-6">
           <div className="flex items-center gap-2 mb-6">
-            <InformationCircleIcon className="h-5 w-5 text-gray-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Additional Notes</h3>
+            <InformationCircleIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Additional Notes</h3>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               Internal Notes
             </label>
             <textarea

@@ -215,15 +215,15 @@ const QuotationForm = () => {
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/app/sales/quotations')}
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
           >
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
               {isEdit ? '✏️ Edit Quotation' : '💼 Create Quotation'}
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-gray-600 dark:text-gray-300 mt-1">
               {isEdit ? 'Update quotation details' : 'Create a new sales quotation'}
             </p>
           </div>
@@ -236,7 +236,7 @@ const QuotationForm = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Customer Selection */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Customer *
               </label>
               <select
@@ -257,7 +257,7 @@ const QuotationForm = () => {
 
             {/* Issue Date */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Issue Date *
               </label>
               <input
@@ -272,7 +272,7 @@ const QuotationForm = () => {
 
             {/* Expiry Date */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Expiry Date *
               </label>
               <input
@@ -316,7 +316,7 @@ const QuotationForm = () => {
         {/* Items */}
         <div className="card p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Quotation Items</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Quotation Items</h3>
             <button
               type="button"
               onClick={addItem}
@@ -329,9 +329,9 @@ const QuotationForm = () => {
 
           <div className="space-y-4">
             {fields.map((field, index) => (
-              <div key={field.id} className="p-4 border border-gray-200 rounded-lg">
+              <div key={field.id} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
                 <div className="flex justify-between items-center mb-4">
-                  <h4 className="font-medium text-gray-900">Item {index + 1}</h4>
+                  <h4 className="font-medium text-gray-900 dark:text-white">Item {index + 1}</h4>
                   {fields.length > 1 && (
                     <button
                       type="button"
@@ -345,7 +345,7 @@ const QuotationForm = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('production.product')}</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('production.product')}</label>
                     <select
                       {...register(`items.${index}.product_id` as const)}
                       onChange={(e) => handleProductChange(index, parseInt(e.target.value))}
@@ -361,7 +361,7 @@ const QuotationForm = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('common.quantity')}</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('common.quantity')}</label>
                     <input
                       type="number"
                       step="0.01"
@@ -373,7 +373,7 @@ const QuotationForm = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Unit Price</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Unit Price</label>
                     <input
                       type="number"
                       step="0.01"
@@ -385,7 +385,7 @@ const QuotationForm = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Discount %</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Discount %</label>
                     <input
                       type="number"
                       step="0.01"
@@ -398,7 +398,7 @@ const QuotationForm = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Tax %</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Tax %</label>
                     <input
                       type="number"
                       step="0.01"
@@ -410,17 +410,17 @@ const QuotationForm = () => {
                   </div>
                 </div>
 
-                <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Item Total:</span>
-                    <span className="font-medium text-gray-900">
+                    <span className="text-sm text-gray-600 dark:text-gray-300">Item Total:</span>
+                    <span className="font-medium text-gray-900 dark:text-white">
                       Rp {(watchedItems[index]?.total_amount || 0).toLocaleString()}
                     </span>
                   </div>
                 </div>
 
                 <div className="mt-3">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('common.description')}</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('common.description')}</label>
                   <textarea
                     {...register(`items.${index}.description` as const)}
                     rows={2}
@@ -446,7 +446,7 @@ const QuotationForm = () => {
         {/* Terms & Notes */}
         <div className="card p-6 space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               Terms & Conditions
             </label>
             <textarea
@@ -458,7 +458,7 @@ const QuotationForm = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
             </label>
             <textarea
               {...register('notes')}

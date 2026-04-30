@@ -253,8 +253,8 @@ export default function InventoryListEnhanced() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Inventori Gudang</h1>
-          <p className="text-gray-600">Kelola stok produk dan bahan baku</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Inventori Gudang</h1>
+          <p className="text-gray-600 dark:text-gray-300">Kelola stok produk dan bahan baku</p>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -280,7 +280,7 @@ export default function InventoryListEnhanced() {
         <div className="card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Total Produk</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Total Produk</p>
               <p className="text-2xl font-bold text-blue-600">{summary.total_products}</p>
             </div>
             <CubeIcon className="h-10 w-10 text-blue-200" />
@@ -289,7 +289,7 @@ export default function InventoryListEnhanced() {
         <div className="card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Total Material</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Total Material</p>
               <p className="text-2xl font-bold text-purple-600">{summary.total_materials}</p>
             </div>
             <BeakerIcon className="h-10 w-10 text-purple-200" />
@@ -298,7 +298,7 @@ export default function InventoryListEnhanced() {
         <div className="card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Total Kuantitas</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Total Kuantitas</p>
               <p className="text-2xl font-bold text-green-600">{summary.total_quantity.toLocaleString()}</p>
             </div>
             <MapPinIcon className="h-10 w-10 text-green-200" />
@@ -307,7 +307,7 @@ export default function InventoryListEnhanced() {
         <div className="card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Stok Rendah</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Stok Rendah</p>
               <p className="text-2xl font-bold text-red-600">{summary.low_stock_count}</p>
             </div>
             <ExclamationTriangleIcon className="h-10 w-10 text-red-200" />
@@ -344,7 +344,7 @@ export default function InventoryListEnhanced() {
         {showFilters && (
           <div className="mt-4 pt-4 border-t grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Tipe Item</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Tipe Item</label>
               <select
                 value={itemType}
                 onChange={(e) => setItemType(e.target.value)}
@@ -356,7 +356,7 @@ export default function InventoryListEnhanced() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Kategori</label>
               <select
                 value={categoryGroup}
                 onChange={(e) => setCategoryGroup(e.target.value)}
@@ -371,7 +371,7 @@ export default function InventoryListEnhanced() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Zona Gudang</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Zona Gudang</label>
               <select
                 value={zoneId}
                 onChange={(e) => setZoneId(e.target.value)}
@@ -386,7 +386,7 @@ export default function InventoryListEnhanced() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Status Stok</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Status Stok</label>
               <select
                 value={stockStatus}
                 onChange={(e) => setStockStatus(e.target.value)}
@@ -407,12 +407,12 @@ export default function InventoryListEnhanced() {
         {loading ? (
           <div className="p-8 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-2 text-gray-600">Memuat data...</p>
+            <p className="mt-2 text-gray-600 dark:text-gray-300">Memuat data...</p>
           </div>
         ) : inventory.length === 0 ? (
           <div className="p-8 text-center">
             <CubeIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-600">Tidak ada data inventori</p>
+            <p className="text-gray-600 dark:text-gray-300">Tidak ada data inventori</p>
             <Link to="/app/warehouse/stock-input" className="btn-primary mt-4 inline-flex items-center gap-2">
               <PlusIcon className="h-5 w-5" />
               Input Stok Pertama
@@ -421,34 +421,34 @@ export default function InventoryListEnhanced() {
         ) : (
           <>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-900">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipe</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kode</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kategori</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lokasi</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Stok</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Tersedia</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Reserved</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Batch</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Expired</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tipe</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Kode</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nama</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Kategori</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Lokasi</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Stok</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tersedia</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Reserved</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Batch</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Expired</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {inventory.map((item) => (
-                    <tr key={item.id} className="hover:bg-gray-50">
+                    <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                       <td className="px-4 py-3 whitespace-nowrap">
                         {getItemTypeBadge(item.item_type)}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap font-medium text-gray-900">
+                      <td className="px-4 py-3 whitespace-nowrap font-medium text-gray-900 dark:text-white">
                         {item.item_code}
                       </td>
                       <td className="px-4 py-3">
-                        <div className="text-sm text-gray-900">{item.item_name}</div>
-                        <div className="text-xs text-gray-500">{item.uom}</div>
+                        <div className="text-sm text-gray-900 dark:text-white">{item.item_name}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{item.uom}</div>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         {item.category ? (
@@ -456,15 +456,15 @@ export default function InventoryListEnhanced() {
                             <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${getCategoryColor(item.category)}`}>
                               {getCategoryGroup(item.category)}
                             </span>
-                            <span className="text-xs text-gray-500">{getCategoryLabel(item.category)}</span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">{getCategoryLabel(item.category)}</span>
                           </div>
                         ) : (
                           <span className="text-gray-400 text-xs">-</span>
                         )}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{item.location_code}</div>
-                        <div className="text-xs text-gray-500">{item.zone_name}</div>
+                        <div className="text-sm text-gray-900 dark:text-white">{item.location_code}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{item.zone_name}</div>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-right font-medium">
                         {item.quantity_on_hand.toLocaleString()}
@@ -475,7 +475,7 @@ export default function InventoryListEnhanced() {
                       <td className="px-4 py-3 whitespace-nowrap text-right text-orange-600">
                         {item.quantity_reserved.toLocaleString()}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                         {item.batch_number || '-'}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
@@ -496,7 +496,7 @@ export default function InventoryListEnhanced() {
 
             {/* Pagination */}
             <div className="px-4 py-3 border-t flex items-center justify-between">
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 Menampilkan {inventory.length} dari {totalItems} item
               </div>
               <div className="flex items-center gap-2">
@@ -507,7 +507,7 @@ export default function InventoryListEnhanced() {
                 >
                   Sebelumnya
                 </button>
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-gray-600 dark:text-gray-300">
                   Halaman {currentPage} dari {totalPages}
                 </span>
                 <button

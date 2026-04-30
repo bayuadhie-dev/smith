@@ -32,15 +32,15 @@ const { machineId } = useParams<{ machineId: string }>()
     return (
       <div className="p-6">
         <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-32 bg-gray-200 rounded"></div>
+              <div key={i} className="h-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
             ))}
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="h-64 bg-gray-200 rounded"></div>
-            <div className="h-64 bg-gray-200 rounded"></div>
+            <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
           </div>
         </div>
       </div>
@@ -52,8 +52,8 @@ const { machineId } = useParams<{ machineId: string }>()
       <div className="p-6">
         <div className="text-center py-12">
           <ChartBarIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">Machine not found</h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Machine not found</h3>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             The machine analytics you're looking for doesn't exist or has been deleted.
           </p>
           <div className="mt-6">
@@ -91,13 +91,13 @@ const { machineId } = useParams<{ machineId: string }>()
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/app/oee')}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg transition-colors"
           >
-            <ArrowLeftIcon className="h-5 w-5 text-gray-600" />
+            <ArrowLeftIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{machine.name} Analytics</h1>
-            <p className="text-gray-600">{machine.code} - {machine.type}</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{machine.name} Analytics</h1>
+            <p className="text-gray-600 dark:text-gray-300">{machine.code} - {machine.type}</p>
           </div>
         </div>
         <div className="flex gap-3">
@@ -128,7 +128,7 @@ const { machineId } = useParams<{ machineId: string }>()
           <div className="flex items-center gap-3">
             <CogIcon className="h-8 w-8 text-blue-500" />
             <div>
-              <div className="text-sm text-gray-500">{t('common.status')}</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">{t('common.status')}</div>
               <div className={`text-lg font-semibold ${
                 machine.status === 'running' ? 'text-green-600' :
                 machine.status === 'maintenance' ? 'text-yellow-600' :
@@ -143,8 +143,8 @@ const { machineId } = useParams<{ machineId: string }>()
           <div className="flex items-center gap-3">
             <ChartBarIcon className="h-8 w-8 text-purple-500" />
             <div>
-              <div className="text-sm text-gray-500">Capacity/Hour</div>
-              <div className="text-lg font-semibold text-gray-900">
+              <div className="text-sm text-gray-500 dark:text-gray-400">Capacity/Hour</div>
+              <div className="text-lg font-semibold text-gray-900 dark:text-white">
                 {machine.capacity_per_hour ? `${machine.capacity_per_hour} units` : 'N/A'}
               </div>
             </div>
@@ -153,8 +153,8 @@ const { machineId } = useParams<{ machineId: string }>()
           <div className="flex items-center gap-3">
             <WrenchScrewdriverIcon className="h-8 w-8 text-orange-500" />
             <div>
-              <div className="text-sm text-gray-500">Last Maintenance</div>
-              <div className="text-lg font-semibold text-gray-900">
+              <div className="text-sm text-gray-500 dark:text-gray-400">Last Maintenance</div>
+              <div className="text-lg font-semibold text-gray-900 dark:text-white">
                 {machine.last_maintenance ? format(parseISO(machine.last_maintenance), 'MMM dd, yyyy') : 'Never'}
               </div>
             </div>
@@ -163,8 +163,8 @@ const { machineId } = useParams<{ machineId: string }>()
           <div className="flex items-center gap-3">
             <ClockIcon className="h-8 w-8 text-green-500" />
             <div>
-              <div className="text-sm text-gray-500">Next Maintenance</div>
-              <div className="text-lg font-semibold text-gray-900">
+              <div className="text-sm text-gray-500 dark:text-gray-400">Next Maintenance</div>
+              <div className="text-lg font-semibold text-gray-900 dark:text-white">
                 {machine.next_maintenance ? format(parseISO(machine.next_maintenance), 'MMM dd, yyyy') : 'Not scheduled'}
               </div>
             </div>
@@ -177,7 +177,7 @@ const { machineId } = useParams<{ machineId: string }>()
         <div className="card p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-medium text-gray-500">OEE Trend</h3>
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">OEE Trend</h3>
               <div className="flex items-center gap-2 mt-1">
                 {getTrendIcon(trends.oee_trend)}
                 <span className={`text-2xl font-bold ${getTrendColor(trends.oee_trend)}`}>
@@ -191,7 +191,7 @@ const { machineId } = useParams<{ machineId: string }>()
         <div className="card p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-medium text-gray-500">Availability Trend</h3>
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Availability Trend</h3>
               <div className="flex items-center gap-2 mt-1">
                 {getTrendIcon(trends.availability_trend)}
                 <span className={`text-2xl font-bold ${getTrendColor(trends.availability_trend)}`}>
@@ -205,7 +205,7 @@ const { machineId } = useParams<{ machineId: string }>()
         <div className="card p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-medium text-gray-500">Performance Trend</h3>
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Performance Trend</h3>
               <div className="flex items-center gap-2 mt-1">
                 {getTrendIcon(trends.performance_trend)}
                 <span className={`text-2xl font-bold ${getTrendColor(trends.performance_trend)}`}>
@@ -219,7 +219,7 @@ const { machineId } = useParams<{ machineId: string }>()
         <div className="card p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-medium text-gray-500">Quality Trend</h3>
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Quality Trend</h3>
               <div className="flex items-center gap-2 mt-1">
                 {getTrendIcon(trends.quality_trend)}
                 <span className={`text-2xl font-bold ${getTrendColor(trends.quality_trend)}`}>
@@ -235,7 +235,7 @@ const { machineId } = useParams<{ machineId: string }>()
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* OEE Metrics Over Time */}
         <div className="card p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">OEE Metrics Over Time</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">OEE Metrics Over Time</h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={analytics}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -258,7 +258,7 @@ const { machineId } = useParams<{ machineId: string }>()
 
         {/* Production vs Downtime */}
         <div className="card p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Production vs Downtime Hours</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Production vs Downtime Hours</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={analytics}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -281,50 +281,50 @@ const { machineId } = useParams<{ machineId: string }>()
       {/* Maintenance Impact Analysis */}
       {maintenanceImpacts.length > 0 && (
         <div className="card p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Maintenance Impact Analysis</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Maintenance Impact Analysis</h3>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.date')}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.date')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Planned Downtime
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Actual Downtime
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Production Loss
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     OEE Before
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     OEE After
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {maintenanceImpacts.map((impact: any, index: number) => (
-                  <tr key={index} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {format(parseISO(impact.date), 'MMM dd, yyyy')}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {impact.planned_downtime.toFixed(1)}h
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {impact.actual_downtime.toFixed(1)}h
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {impact.production_loss.toLocaleString()} units
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {impact.oee_before ? `${impact.oee_before.toFixed(1)}%` : 'N/A'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {impact.oee_after ? `${impact.oee_after.toFixed(1)}%` : 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -346,30 +346,30 @@ const { machineId } = useParams<{ machineId: string }>()
 
       {/* Recent OEE Records */}
       <div className="card p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent OEE Records</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent OEE Records</h3>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.date')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('production.shift')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.date')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('production.shift')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('navigation.quality')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('navigation.production')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('navigation.quality')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('navigation.production')}</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {recentRecords.map((record: any, index: number) => (
-                <tr key={index} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {format(parseISO(record.date), 'MMM dd, yyyy')}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {record.shift || 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -381,16 +381,16 @@ const { machineId } = useParams<{ machineId: string }>()
                       {record.oee.toFixed(1)}%
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {record.availability.toFixed(1)}%
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {record.performance.toFixed(1)}%
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {record.quality.toFixed(1)}%
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {record.total_pieces.toLocaleString()} / {record.good_pieces.toLocaleString()}
                   </td>
                 </tr>

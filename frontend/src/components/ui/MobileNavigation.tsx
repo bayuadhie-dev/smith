@@ -175,7 +175,7 @@ const MobileNavigation: React.FC = () => {
       <div className="lg:hidden fixed top-4 left-4 z-50">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="p-2 rounded-lg bg-white shadow-lg border border-gray-200 text-gray-600 hover:text-gray-900"
+          className="p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 text-gray-600 hover:text-gray-900 dark:text-white"
         >
           {isOpen ? <X className="h-6 w-6" /> : <MenuIcon className="h-6 w-6" />}
         </button>
@@ -197,12 +197,12 @@ const MobileNavigation: React.FC = () => {
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200">
+          <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center">
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">ERP</span>
               </div>
-              <span className="ml-2 text-lg font-semibold text-gray-900">ERP System</span>
+              <span className="ml-2 text-lg font-semibold text-gray-900 dark:text-white">ERP System</span>
             </div>
             <button
               onClick={() => setIsOpen(false)}
@@ -220,8 +220,8 @@ const MobileNavigation: React.FC = () => {
           </div>
 
           {/* Footer */}
-          <div className="border-t border-gray-200 p-4">
-            <div className="text-xs text-gray-500 text-center">
+          <div className="border-t border-gray-200 dark:border-gray-700 p-4">
+            <div className="text-xs text-gray-500 dark:text-gray-400 text-center">
               ERP System v2.0
             </div>
           </div>

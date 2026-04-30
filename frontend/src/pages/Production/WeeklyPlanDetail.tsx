@@ -245,7 +245,7 @@ const WeeklyPlanDetail: React.FC = () => {
   }
 
   if (!plan) {
-    return <div className="p-6 text-center text-gray-500">Plan tidak ditemukan</div>;
+    return <div className="p-6 text-center text-gray-500 dark:text-gray-400">Plan tidak ditemukan</div>;
   }
 
   const canEdit = plan.status === 'draft';
@@ -257,15 +257,15 @@ const WeeklyPlanDetail: React.FC = () => {
     <div className="p-6">
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
-        <button onClick={() => navigate('/app/production/scheduling')} className="p-2 hover:bg-gray-100 rounded-lg">
+        <button onClick={() => navigate('/app/production/scheduling')} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg">
           <ArrowLeftIcon className="h-5 w-5" />
         </button>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <CalendarDaysIcon className="h-7 w-7 text-blue-600" />
             {plan.plan_number}
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-300">
             Minggu {plan.week_number}, {plan.year} ({formatDate(plan.week_start)} - {formatDate(plan.week_end)})
           </p>
         </div>
@@ -347,14 +347,14 @@ const WeeklyPlanDetail: React.FC = () => {
       </div>
 
       {/* Items Table */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
           <h2 className="text-lg font-semibold">Daftar Produk ({plan.items.length})</h2>
-          <span className="text-gray-500">Total: {plan.items.reduce((sum, i) => sum + i.planned_quantity, 0).toLocaleString()} unit</span>
+          <span className="text-gray-500 dark:text-gray-400">Total: {plan.items.reduce((sum, i) => sum + i.planned_quantity, 0).toLocaleString()} unit</span>
         </div>
         
         {plan.items.length === 0 ? (
-          <div className="text-center p-12 text-gray-500">
+          <div className="text-center p-12 text-gray-500 dark:text-gray-400">
             <CubeIcon className="h-12 w-12 mx-auto mb-3 text-gray-300" />
             <p>Belum ada produk dalam rencana</p>
             {canEdit && (
@@ -368,22 +368,22 @@ const WeeklyPlanDetail: React.FC = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Prioritas</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Produk</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mesin</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status Material</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Work Order</th>
-                  {canEdit && <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>}
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Prioritas</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Produk</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Quantity</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tanggal</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Mesin</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status Material</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Work Order</th>
+                  {canEdit && <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>}
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {plan.items.sort((a, b) => a.priority - b.priority).map((item) => (
-                  <tr key={item.id} className="hover:bg-gray-50">
+                  <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                     <td className="px-4 py-3">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                         item.priority === 1 ? 'bg-red-100 text-red-800' :
@@ -396,7 +396,7 @@ const WeeklyPlanDetail: React.FC = () => {
                     <td className="px-4 py-3">
                       <div>
                         <p className="font-medium">{item.product_name}</p>
-                        <p className="text-sm text-gray-500">{item.product_code}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{item.product_code}</p>
                       </div>
                     </td>
                     <td className="px-4 py-3 font-medium">
@@ -451,12 +451,12 @@ const WeeklyPlanDetail: React.FC = () => {
       {/* Add Item Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-lg mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg mx-4">
             <h3 className="text-lg font-semibold mb-4">Tambah Produk ke Rencana</h3>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Produk *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Produk *</label>
                 <SearchableSelect
                   options={products.map((p) => ({
                     id: p.id,
@@ -471,21 +471,21 @@ const WeeklyPlanDetail: React.FC = () => {
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Quantity *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Quantity *</label>
                   <input
                     type="number"
                     value={formData.planned_quantity}
                     onChange={(e) => setFormData({ ...formData, planned_quantity: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"
                     placeholder="0"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Prioritas</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Prioritas</label>
                   <select
                     value={formData.priority}
                     onChange={(e) => setFormData({ ...formData, priority: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"
                   >
                     <option value={1}>1 - Tertinggi</option>
                     <option value={2}>2 - Tinggi</option>
@@ -497,16 +497,16 @@ const WeeklyPlanDetail: React.FC = () => {
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Tanggal Produksi</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Tanggal Produksi</label>
                   <input
                     type="date"
                     value={formData.planned_date}
                     onChange={(e) => setFormData({ ...formData, planned_date: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Mesin</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Mesin</label>
                   <SearchableSelect
                     options={machines.map((m) => ({
                       id: m.id,
@@ -521,12 +521,12 @@ const WeeklyPlanDetail: React.FC = () => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Catatan</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Catatan</label>
                 <textarea
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"
                 />
               </div>
             </div>
@@ -534,7 +534,7 @@ const WeeklyPlanDetail: React.FC = () => {
             <div className="flex justify-end gap-3 mt-6">
               <button
                 onClick={() => setShowAddModal(false)}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
               >
                 Batal
               </button>
@@ -552,7 +552,7 @@ const WeeklyPlanDetail: React.FC = () => {
       {/* Shortage Modal */}
       {showShortageModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-lg mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg mx-4">
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-red-600">
               <ExclamationTriangleIcon className="h-5 w-5" />
               Material Shortage - {showShortageModal.product_name}
@@ -563,18 +563,18 @@ const WeeklyPlanDetail: React.FC = () => {
                 {JSON.parse(showShortageModal.shortage_items).map((item: any, idx: number) => (
                   <div key={idx} className="p-3 bg-red-50 border border-red-200 rounded-lg">
                     <p className="font-medium">{item.material_name}</p>
-                    <p className="text-sm text-gray-600">{item.material_code}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">{item.material_code}</p>
                     <div className="grid grid-cols-3 gap-2 mt-2 text-sm">
                       <div>
-                        <span className="text-gray-500">Dibutuhkan:</span>
+                        <span className="text-gray-500 dark:text-gray-400">Dibutuhkan:</span>
                         <span className="font-medium ml-1">{item.required.toLocaleString()}</span>
                       </div>
                       <div>
-                        <span className="text-gray-500">Tersedia:</span>
+                        <span className="text-gray-500 dark:text-gray-400">Tersedia:</span>
                         <span className="font-medium ml-1">{item.available.toLocaleString()}</span>
                       </div>
                       <div>
-                        <span className="text-gray-500">Kurang:</span>
+                        <span className="text-gray-500 dark:text-gray-400">Kurang:</span>
                         <span className="font-medium ml-1 text-red-600">{item.shortage.toLocaleString()}</span>
                       </div>
                     </div>

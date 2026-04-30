@@ -354,8 +354,8 @@ const RosterDragDrop: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">🎯 Drag & Drop Roster Management</h1>
-          <p className="text-gray-600">Drag employees from the left panel to assign them to machines and shifts</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">🎯 Drag & Drop Roster Management</h1>
+          <p className="text-gray-600 dark:text-gray-300">Drag employees from the left panel to assign them to machines and shifts</p>
         </div>
         
         <div className="flex items-center space-x-4">
@@ -371,20 +371,20 @@ const RosterDragDrop: React.FC = () => {
       </div>
 
       {/* Week Navigation */}
-      <div className="bg-white rounded-xl shadow-lg p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
         <div className="flex justify-between items-center mb-6">
           <button
             onClick={() => navigateWeek('prev')}
-            className="bg-gray-200 hover:bg-gray-300 px-6 py-3 rounded-lg font-medium transition-colors"
+            className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 px-6 py-3 rounded-lg font-medium transition-colors"
           >
             ← Previous Week
           </button>
           
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
               Week of {getWeekStart(selectedWeek).toLocaleDateString('id-ID')}
             </h2>
-            <p className="text-gray-600 mt-1">
+            <p className="text-gray-600 dark:text-gray-300 mt-1">
               {getWeekStart(selectedWeek).toLocaleDateString('id-ID', { 
                 year: 'numeric', 
                 month: 'long', 
@@ -399,7 +399,7 @@ const RosterDragDrop: React.FC = () => {
           
           <button
             onClick={() => navigateWeek('next')}
-            className="bg-gray-200 hover:bg-gray-300 px-6 py-3 rounded-lg font-medium transition-colors"
+            className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 px-6 py-3 rounded-lg font-medium transition-colors"
           >
             Next Week →
           </button>
@@ -430,13 +430,13 @@ const RosterDragDrop: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* Employee Pool */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
                 <div className="p-6 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
-                  <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                     <UserIcon className="h-6 w-6 text-blue-600" />
                     Available Employees ({data.employees.length})
                   </h3>
-                  <p className="text-sm text-gray-600 mt-1">Drag to assign to machines</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Drag to assign to machines</p>
                 </div>
                 
                 <StrictModeDroppable droppableId="employee-pool">
@@ -477,7 +477,7 @@ const RosterDragDrop: React.FC = () => {
                                 </div>
                                 <div>
                                   <div 
-                                    className="font-semibold text-gray-900"
+                                    className="font-semibold text-gray-900 dark:text-white"
                                     style={{ 
                                       userSelect: 'none',
                                       WebkitUserSelect: 'none',
@@ -487,7 +487,7 @@ const RosterDragDrop: React.FC = () => {
                                     {employee.name}
                                   </div>
                                   <div 
-                                    className="text-sm text-gray-600"
+                                    className="text-sm text-gray-600 dark:text-gray-300"
                                     style={{ 
                                       userSelect: 'none',
                                       WebkitUserSelect: 'none',
@@ -497,7 +497,7 @@ const RosterDragDrop: React.FC = () => {
                                     {employee.employee_id}
                                   </div>
                                   <div 
-                                    className="text-xs text-gray-500"
+                                    className="text-xs text-gray-500 dark:text-gray-400"
                                     style={{ 
                                       userSelect: 'none',
                                       WebkitUserSelect: 'none',
@@ -521,24 +521,24 @@ const RosterDragDrop: React.FC = () => {
 
             {/* Roster Grid */}
             <div className="lg:col-span-3">
-              <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
                 <div className="p-6 border-b bg-gradient-to-r from-green-50 to-emerald-50">
-                  <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                     <CogIcon className="h-6 w-6 text-green-600" />
                     Machine Assignment Grid
                   </h3>
-                  <p className="text-sm text-gray-600 mt-1">Drop employees on machine slots to assign them</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Drop employees on machine slots to assign them</p>
                 </div>
                 
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className="bg-gray-100">
+                    <thead className="bg-gray-100 dark:bg-gray-800">
                       <tr>
-                        <th className="py-4 px-6 text-left font-bold text-gray-900 sticky left-0 bg-gray-100">{t('production.machine')}</th>
+                        <th className="py-4 px-6 text-left font-bold text-gray-900 dark:text-white sticky left-0 bg-gray-100 dark:bg-gray-800">{t('production.machine')}</th>
                         {data.week_dates.map(date => (
                           <th key={date} className="py-4 px-4 text-center font-bold min-w-48">
-                            <div className="text-gray-900">{new Date(date).toLocaleDateString('id-ID', { weekday: 'short' })}</div>
-                            <div className="text-sm text-gray-600 font-normal">
+                            <div className="text-gray-900 dark:text-white">{new Date(date).toLocaleDateString('id-ID', { weekday: 'short' })}</div>
+                            <div className="text-sm text-gray-600 dark:text-gray-300 font-normal">
                               {new Date(date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' })}
                             </div>
                           </th>
@@ -547,16 +547,16 @@ const RosterDragDrop: React.FC = () => {
                     </thead>
                     <tbody>
                       {data.machines.map(machine => (
-                        <tr key={machine.id} className="border-b hover:bg-gray-50 transition-colors">
-                          <td className="py-6 px-6 sticky left-0 bg-white">
+                        <tr key={machine.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 transition-colors">
+                          <td className="py-6 px-6 sticky left-0 bg-white dark:bg-gray-800">
                             <div className="flex items-center gap-3">
                               <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center text-white font-bold">
                                 {machine.code.slice(-2)}
                               </div>
                               <div>
-                                <div className="font-bold text-gray-900">{machine.code}</div>
-                                <div className="text-sm text-gray-600">{machine.name}</div>
-                                <div className="text-xs text-gray-500">{machine.department}</div>
+                                <div className="font-bold text-gray-900 dark:text-white">{machine.code}</div>
+                                <div className="text-sm text-gray-600 dark:text-gray-300">{machine.name}</div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400">{machine.department}</div>
                               </div>
                             </div>
                           </td>
@@ -667,10 +667,10 @@ const RosterDragDrop: React.FC = () => {
 
       {saving && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-8 text-center shadow-2xl">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-8 text-center shadow-2xl">
             <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-primary-600 mx-auto mb-4"></div>
-            <p className="text-xl font-semibold text-gray-900">Saving changes...</p>
-            <p className="text-gray-600 mt-2">Please wait while we update the roster</p>
+            <p className="text-xl font-semibold text-gray-900 dark:text-white">Saving changes...</p>
+            <p className="text-gray-600 dark:text-gray-300 mt-2">Please wait while we update the roster</p>
           </div>
         </div>
       )}

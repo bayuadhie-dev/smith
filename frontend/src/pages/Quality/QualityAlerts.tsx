@@ -104,18 +104,18 @@ export default function QualityAlerts() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Quality Alerts</h1>
-          <p className="text-gray-600">Monitor and manage quality issues and alerts</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Quality Alerts</h1>
+          <p className="text-gray-600 dark:text-gray-300">Monitor and manage quality issues and alerts</p>
         </div>
         <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-500">
+          <span className="text-sm text-gray-500 dark:text-gray-400">
             {filteredAlerts.length} alert{filteredAlerts.length !== 1 ? 's' : ''}
           </span>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="flex flex-wrap items-center gap-4">
           {/* Search */}
           <div className="relative flex-1 min-w-64">
@@ -125,7 +125,7 @@ export default function QualityAlerts() {
               placeholder="Search alerts..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="pl-10 pr-4 py-2 w-full border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
@@ -135,7 +135,7 @@ export default function QualityAlerts() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="active">Active</option>
               <option value="acknowledged">Acknowledged</option>
@@ -148,7 +148,7 @@ export default function QualityAlerts() {
           <select
             value={severityFilter}
             onChange={(e) => setSeverityFilter(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="">All Severity</option>
             <option value="critical">Critical</option>
@@ -162,14 +162,14 @@ export default function QualityAlerts() {
       {/* Alerts List */}
       <div className="space-y-4">
         {filteredAlerts.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
             <BellIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No alerts found</h3>
-            <p className="text-gray-500">No quality alerts match your current filters.</p>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No alerts found</h3>
+            <p className="text-gray-500 dark:text-gray-400">No quality alerts match your current filters.</p>
           </div>
         ) : (
           filteredAlerts.map((alert) => (
-            <div key={alert.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div key={alert.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-3">
@@ -177,32 +177,32 @@ export default function QualityAlerts() {
                     <span className={`px-3 py-1 text-sm rounded-full border ${getSeverityColor(alert.severity)}`}>
                       {alert.severity.toUpperCase()}
                     </span>
-                    <span className="text-sm text-gray-500">#{alert.alert_number}</span>
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-gray-500 dark:text-gray-400">#{alert.alert_number}</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
                       {new Date(alert.created_at).toLocaleDateString('id-ID')}
                     </span>
                   </div>
 
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{alert.title}</h3>
-                  <p className="text-gray-600 mb-4">{alert.message}</p>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{alert.title}</h3>
+                  <p className="text-gray-600 dark:text-gray-300 mb-4">{alert.message}</p>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     {alert.product_name && (
                       <div>
-                        <span className="text-sm font-medium text-gray-500">Product:</span>
-                        <p className="text-sm text-gray-900">{alert.product_name}</p>
+                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Product:</span>
+                        <p className="text-sm text-gray-900 dark:text-white">{alert.product_name}</p>
                       </div>
                     )}
                     {alert.machine_name && (
                       <div>
-                        <span className="text-sm font-medium text-gray-500">Machine:</span>
-                        <p className="text-sm text-gray-900">{alert.machine_name}</p>
+                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Machine:</span>
+                        <p className="text-sm text-gray-900 dark:text-white">{alert.machine_name}</p>
                       </div>
                     )}
                     {alert.threshold_value && alert.actual_value && (
                       <div>
-                        <span className="text-sm font-medium text-gray-500">Values:</span>
-                        <p className="text-sm text-gray-900">
+                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Values:</span>
+                        <p className="text-sm text-gray-900 dark:text-white">
                           Actual: {alert.actual_value} | Threshold: {alert.threshold_value}
                         </p>
                       </div>
@@ -232,7 +232,7 @@ export default function QualityAlerts() {
                           placeholder="Resolution notes..."
                           value={resolveNotes[alert.id] || ''}
                           onChange={(e) => setResolveNotes(prev => ({ ...prev, [alert.id]: e.target.value }))}
-                          className="w-48 p-2 text-sm border border-gray-300 rounded-lg resize-none"
+                          className="w-48 p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg resize-none"
                           rows={2}
                         />
                         <button
@@ -250,7 +250,7 @@ export default function QualityAlerts() {
                         placeholder="Resolution notes..."
                         value={resolveNotes[alert.id] || ''}
                         onChange={(e) => setResolveNotes(prev => ({ ...prev, [alert.id]: e.target.value }))}
-                        className="w-48 p-2 text-sm border border-gray-300 rounded-lg resize-none"
+                        className="w-48 p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg resize-none"
                         rows={2}
                       />
                       <button

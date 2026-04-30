@@ -501,17 +501,17 @@ const BOMForm: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             {isEdit ? 'Edit Bill of Materials' : 'New Bill of Materials'}
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-300">
             {isEdit ? 'Update BOM structure and components' : 'Create new BOM for product manufacturing'}
           </p>
         </div>
       </div>
 
       {/* Form */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
             <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
@@ -522,14 +522,14 @@ const BOMForm: React.FC = () => {
 
           {/* BOM Header Information */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
               <Layers className="inline h-4 w-4 mr-1" />
               BOM Information
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <Hash className="inline h-4 w-4 mr-1" />
                   BOM Number *
                 </label>
@@ -539,12 +539,12 @@ const BOMForm: React.FC = () => {
                   value={formData.bom_number}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <CubeIcon className="inline h-4 w-4 mr-1" />
                   Product *
                 </label>
@@ -564,7 +564,7 @@ const BOMForm: React.FC = () => {
                   className="w-full"
                 />
                 {selectedProduct && (
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     UOM: {selectedProduct.primary_uom}
                     {selectedProduct.pack_per_carton && ` | Pack/Carton: ${selectedProduct.pack_per_carton}`}
                   </p>
@@ -572,21 +572,21 @@ const BOMForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 </label>
                 <input
                   type="text"
                   name="version"
                   value={formData.version}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <Calendar className="inline h-4 w-4 mr-1" />
                   Effective Date
                 </label>
@@ -595,12 +595,12 @@ const BOMForm: React.FC = () => {
                   name="effective_date"
                   value={formData.effective_date}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Expiry Date
                 </label>
                 <input
@@ -608,12 +608,12 @@ const BOMForm: React.FC = () => {
                   name="expiry_date"
                   value={formData.expiry_date}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Pack per Carton *
                 </label>
                 <input
@@ -624,15 +624,15 @@ const BOMForm: React.FC = () => {
                   required
                   min="1"
                   step="1"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                   Number of packs in one carton
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Batch Size (Cartons) *
                 </label>
                 <input
@@ -643,15 +643,15 @@ const BOMForm: React.FC = () => {
                   required
                   min="0.01"
                   step="0.01"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                   Total packs: {(formData.batch_size * formData.pack_per_carton).toFixed(0)}
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Batch UOM *
                 </label>
                 <select
@@ -659,7 +659,7 @@ const BOMForm: React.FC = () => {
                   value={formData.batch_uom}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   {uomOptions.map(uom => (
                     <option key={uom} value={uom}>
@@ -676,9 +676,9 @@ const BOMForm: React.FC = () => {
                 name="is_active"
                 checked={formData.is_active}
                 onChange={handleInputChange}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded"
               />
-              <label className="ml-2 block text-sm text-gray-700">
+              <label className="ml-2 block text-sm text-gray-700 dark:text-gray-200">
                 <CheckCircle className="inline h-4 w-4 mr-1" />
                 Active BOM
               </label>
@@ -688,7 +688,7 @@ const BOMForm: React.FC = () => {
           {/* BOM Items */}
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
                 <Settings className="inline h-4 w-4 mr-1" />
                 BOM Components
               </h3>
@@ -703,57 +703,57 @@ const BOMForm: React.FC = () => {
             </div>
 
             {formData.items.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <CubeIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                 <p>No components added yet</p>
                 <p className="text-sm">Click "Add Component" to start building your BOM</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-900">
                     <tr>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       </th>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       </th>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       </th>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       </th>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       </th>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       </th>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         %
                       </th>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Unit Cost
                       </th>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Total Cost
                       </th>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Scrap %
                       </th>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       </th>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     {formData.items.map((item, index) => (
-                      <tr key={index} className="hover:bg-gray-50">
-                        <td className="px-2 py-3 text-sm text-gray-900">
+                      <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                        <td className="px-2 py-3 text-sm text-gray-900 dark:text-white">
                           {item.line_number}
                         </td>
                         <td className="px-2 py-3">
                           <select
                             value={item.item_type}
                             onChange={(e) => updateBOMItem(index, 'item_type', e.target.value)}
-                            className="w-20 px-1 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
+                            className="w-20 px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500"
                           >
                             <option value="material">Material</option>
                             <option value="product">Product</option>
@@ -778,7 +778,7 @@ const BOMForm: React.FC = () => {
                             />
                           )}
                         </td>
-                        <td className="px-2 py-3 text-xs text-gray-600">
+                        <td className="px-2 py-3 text-xs text-gray-600 dark:text-gray-300">
                           <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
                             {item.material_category || 'N/A'}
                           </span>
@@ -790,14 +790,14 @@ const BOMForm: React.FC = () => {
                             onChange={(e) => updateBOMItem(index, 'quantity', Number(e.target.value))}
                             min="0"
                             step="0.00000001"
-                            className="w-24 px-1 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
+                            className="w-24 px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500"
                           />
                         </td>
                         <td className="px-2 py-3">
                           <select
                             value={item.uom}
                             onChange={(e) => updateBOMItem(index, 'uom', e.target.value)}
-                            className="w-16 px-1 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
+                            className="w-16 px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500"
                           >
                             {uomOptions.map(uom => (
                               <option key={uom} value={uom}>
@@ -806,18 +806,18 @@ const BOMForm: React.FC = () => {
                             ))}
                           </select>
                         </td>
-                        <td className="px-2 py-3 text-xs text-gray-900 font-medium">
+                        <td className="px-2 py-3 text-xs text-gray-900 dark:text-white font-medium">
                           {item.percentage.toFixed(1)}%
                         </td>
-                        <td className="px-2 py-3 text-xs text-gray-900 font-medium">
+                        <td className="px-2 py-3 text-xs text-gray-900 dark:text-white font-medium">
                           <div 
-                            className="px-2 py-1 bg-gray-50 rounded border border-gray-200"
+                            className="px-2 py-1 bg-gray-50 dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700"
                             title="Unit cost from material master data (read-only)"
                           >
                             Rp {item.unit_cost.toLocaleString('id-ID')}
                           </div>
                         </td>
-                        <td className="px-2 py-3 text-xs text-gray-900 font-medium">
+                        <td className="px-2 py-3 text-xs text-gray-900 dark:text-white font-medium">
                           Rp {item.total_cost.toLocaleString('id-ID')}
                         </td>
                         <td className="px-2 py-3">
@@ -828,7 +828,7 @@ const BOMForm: React.FC = () => {
                             min="0"
                             max="100"
                             step="0.1"
-                            className="w-12 px-1 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
+                            className="w-12 px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500"
                           />
                         </td>
                         <td className="px-2 py-3">
@@ -836,7 +836,7 @@ const BOMForm: React.FC = () => {
                             type="checkbox"
                             checked={item.is_critical}
                             onChange={(e) => updateBOMItem(index, 'is_critical', e.target.checked)}
-                            className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                            className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 dark:border-gray-600 rounded"
                           />
                         </td>
                         <td className="px-2 py-3">
@@ -863,48 +863,48 @@ const BOMForm: React.FC = () => {
                   BOM Cost Analysis
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                  <div className="bg-white p-3 rounded-lg shadow-sm">
-                    <span className="text-gray-600 text-sm">Total Components</span>
-                    <div className="font-bold text-lg text-gray-900">{getTotalItems()}</div>
+                  <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm">
+                    <span className="text-gray-600 dark:text-gray-300 text-sm">Total Components</span>
+                    <div className="font-bold text-lg text-gray-900 dark:text-white">{getTotalItems()}</div>
                   </div>
-                  <div className="bg-white p-3 rounded-lg shadow-sm">
-                    <span className="text-gray-600 text-sm">Critical Items</span>
+                  <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm">
+                    <span className="text-gray-600 dark:text-gray-300 text-sm">Critical Items</span>
                     <div className="font-bold text-lg text-red-600">{getCriticalItems()}</div>
                   </div>
-                  <div className="bg-white p-3 rounded-lg shadow-sm">
-                    <span className="text-gray-600 text-sm">Batch Size</span>
-                    <div className="font-bold text-lg text-gray-900">{formData.batch_size} {formData.batch_uom}</div>
-                    <div className="text-xs text-gray-500 mt-1">= {(formData.batch_size * formData.pack_per_carton).toFixed(0)} packs</div>
+                  <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm">
+                    <span className="text-gray-600 dark:text-gray-300 text-sm">Batch Size</span>
+                    <div className="font-bold text-lg text-gray-900 dark:text-white">{formData.batch_size} {formData.batch_uom}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">= {(formData.batch_size * formData.pack_per_carton).toFixed(0)} packs</div>
                   </div>
-                  <div className="bg-white p-3 rounded-lg shadow-sm">
-                    <span className="text-gray-600 text-sm">Total Material Cost</span>
+                  <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm">
+                    <span className="text-gray-600 dark:text-gray-300 text-sm">Total Material Cost</span>
                     <div className="font-bold text-lg text-green-600">Rp {getTotalCost().toLocaleString('id-ID')}</div>
-                    <div className="text-xs text-gray-500 mt-1">For {formData.batch_size} carton(s)</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">For {formData.batch_size} carton(s)</div>
                   </div>
-                  <div className="bg-white p-3 rounded-lg shadow-sm border-2 border-yellow-300">
-                    <span className="text-gray-600 text-sm">HPP per Carton</span>
+                  <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border-2 border-yellow-300">
+                    <span className="text-gray-600 dark:text-gray-300 text-sm">HPP per Carton</span>
                     <div className="font-bold text-xl text-yellow-600">Rp {getHPP().toLocaleString('id-ID')}</div>
-                    <div className="text-xs text-gray-500 mt-1">Cost per carton ({formData.pack_per_carton} packs)</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Cost per carton ({formData.pack_per_carton} packs)</div>
                   </div>
                 </div>
                 
                 {/* Material Cost Breakdown */}
-                <div className="mt-4 bg-white p-4 rounded-lg shadow-sm">
-                  <h5 className="font-medium text-gray-900 mb-3">Material Cost Breakdown</h5>
+                <div className="mt-4 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+                  <h5 className="font-medium text-gray-900 dark:text-white mb-3">Material Cost Breakdown</h5>
                   <div className="space-y-2">
                     {formData.items.map((item, index) => (
                       <div key={index} className="flex justify-between items-center py-1 border-b border-gray-100 last:border-b-0">
                         <div className="flex items-center space-x-2">
-                          <span className="text-sm text-gray-600">{item.line_number}.</span>
-                          <span className="text-sm font-medium text-gray-900">
+                          <span className="text-sm text-gray-600 dark:text-gray-300">{item.line_number}.</span>
+                          <span className="text-sm font-medium text-gray-900 dark:text-white">
                             {item.item_name || 'Unnamed Item'}
                           </span>
-                          <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs">
+                          <span className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-full text-xs">
                             {item.material_category || 'N/A'}
                           </span>
                         </div>
                         <div className="flex items-center space-x-4 text-sm">
-                          <span className="text-gray-600">
+                          <span className="text-gray-600 dark:text-gray-300">
                             {item.quantity} {item.uom} × Rp {item.unit_cost.toLocaleString('id-ID')}
                           </span>
                           <span className="font-medium text-blue-600">
@@ -924,7 +924,7 @@ const BOMForm: React.FC = () => {
 
           {/* Notes */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               <DocumentTextIcon className="inline h-4 w-4 mr-1" />
             </label>
             <textarea
@@ -932,17 +932,17 @@ const BOMForm: React.FC = () => {
               value={formData.notes}
               onChange={handleInputChange}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Enter any additional notes about this BOM..."
             />
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-4 pt-6 border-t-2 border-gray-300 bg-gray-50 -mx-6 -mb-6 px-6 py-4 rounded-b-lg">
+          <div className="flex items-center justify-end gap-4 pt-6 border-t-2 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 -mx-6 -mb-6 px-6 py-4 rounded-b-lg">
             <button
               type="button"
               onClick={() => navigate('/app/products/boms')}
-              className="px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 font-medium"
+              className="px-6 py-3 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 font-medium"
             >
               <X className="inline h-5 w-5 mr-2" />
               Cancel

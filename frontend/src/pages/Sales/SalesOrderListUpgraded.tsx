@@ -148,14 +148,14 @@ const SalesOrderListUpgraded: React.FC = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={() => refetch()}
-              className="p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
+              className="p-2 bg-white/10 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/20 rounded-lg transition-colors"
               title="Refresh"
             >
               <ArrowPathIcon className="h-5 w-5" />
             </button>
             <Link
               to="/app/sales/orders/new"
-              className="inline-flex items-center px-4 py-2 bg-white text-emerald-600 rounded-lg font-medium hover:bg-emerald-50 transition-colors shadow-md"
+              className="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 text-emerald-600 rounded-lg font-medium hover:bg-emerald-50 transition-colors shadow-md"
             >
               <PlusIcon className="h-5 w-5 mr-2" />
               New Order
@@ -166,13 +166,13 @@ const SalesOrderListUpgraded: React.FC = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <div className="text-2xl font-bold text-gray-900">{stats.total_orders}</div>
-          <div className="text-sm text-gray-500">Total Orders</div>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+          <div className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total_orders}</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">Total Orders</div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 col-span-2">
-          <div className="text-2xl font-bold text-gray-900">{formatCurrency(stats.total_amount)}</div>
-          <div className="text-sm text-gray-500">Total Value</div>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 col-span-2">
+          <div className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(stats.total_amount)}</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">Total Value</div>
         </div>
         <div className="bg-blue-50 rounded-lg border border-blue-200 p-4">
           <div className="text-2xl font-bold text-blue-600">{stats.pending_count}</div>
@@ -193,7 +193,7 @@ const SalesOrderListUpgraded: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
         <div className="flex flex-col lg:flex-row lg:items-center gap-4">
           {/* Search */}
           <div className="relative flex-1">
@@ -203,7 +203,7 @@ const SalesOrderListUpgraded: React.FC = () => {
               placeholder="Search by order number, customer..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              className="pl-10 w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
             />
           </div>
 
@@ -211,7 +211,7 @@ const SalesOrderListUpgraded: React.FC = () => {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
           >
             {statusOptions.map(option => (
               <option key={option.value} value={option.value}>
@@ -224,7 +224,7 @@ const SalesOrderListUpgraded: React.FC = () => {
           <select
             value={priorityFilter}
             onChange={(e) => setPriorityFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
           >
             {priorityOptions.map(option => (
               <option key={option.value} value={option.value}>
@@ -236,30 +236,30 @@ const SalesOrderListUpgraded: React.FC = () => {
       </div>
 
       {/* Orders Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Required</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Order</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Customer</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Required</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Priority</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Items</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {orders.map((order: SalesOrder) => {
                 const statusConfig = getStatusConfig(order.status);
                 const priorityConfig = getPriorityConfig(order.priority || 'normal');
                 const StatusIcon = statusConfig.icon;
                 
                 return (
-                  <tr key={order.id} className="hover:bg-gray-50 transition-colors">
+                  <tr key={order.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 transition-colors">
                     <td className="px-4 py-4">
                       <div>
                         <Link 
@@ -271,9 +271,9 @@ const SalesOrderListUpgraded: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-4 py-4">
-                      <div className="text-sm text-gray-900">{order.customer_name}</div>
+                      <div className="text-sm text-gray-900 dark:text-white">{order.customer_name}</div>
                     </td>
-                    <td className="px-4 py-4 text-sm text-gray-500">
+                    <td className="px-4 py-4 text-sm text-gray-500 dark:text-gray-400">
                       {format(new Date(order.order_date), 'dd MMM yyyy')}
                     </td>
                     <td className="px-4 py-4 text-sm">
@@ -301,11 +301,11 @@ const SalesOrderListUpgraded: React.FC = () => {
                         {order.priority || 'normal'}
                       </span>
                     </td>
-                    <td className="px-4 py-4 text-sm text-gray-900">
+                    <td className="px-4 py-4 text-sm text-gray-900 dark:text-white">
                       {order.item_count || 0} items
                     </td>
                     <td className="px-4 py-4">
-                      <div className="text-sm font-semibold text-gray-900">
+                      <div className="text-sm font-semibold text-gray-900 dark:text-white">
                         {formatCurrency(order.total_amount || 0)}
                       </div>
                     </td>
@@ -313,22 +313,22 @@ const SalesOrderListUpgraded: React.FC = () => {
                       <div className="relative">
                         <button
                           onClick={() => setShowActions(showActions === order.id ? null : order.id)}
-                          className="p-1 hover:bg-gray-100 rounded-lg"
+                          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
                         >
                           <EllipsisVerticalIcon className="h-5 w-5 text-gray-400" />
                         </button>
                         {showActions === order.id && (
-                          <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
+                          <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-20">
                             <Link
                               to={`/app/sales/orders/${order.id}`}
-                              className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                              className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
                             >
                               <EyeIcon className="h-4 w-4 mr-2" />
                               View Details
                             </Link>
                             <Link
                               to={`/app/sales/orders/${order.id}/edit`}
-                              className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                              className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
                             >
                               <PencilIcon className="h-4 w-4 mr-2" />
                               Edit Order
@@ -342,7 +342,7 @@ const SalesOrderListUpgraded: React.FC = () => {
                             </Link>
                             <button
                               onClick={() => handlePrintOrder(order.id)}
-                              className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                              className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
                             >
                               <PrinterIcon className="h-4 w-4 mr-2" />
                               Print
@@ -370,10 +370,10 @@ const SalesOrderListUpgraded: React.FC = () => {
 
       {/* Empty State */}
       {orders.length === 0 && !isLoading && (
-        <div className="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <ShoppingCartIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-lg font-medium text-gray-900">No sales orders</h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <h3 className="mt-2 text-lg font-medium text-gray-900 dark:text-white">No sales orders</h3>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             Get started by creating your first sales order.
           </p>
           <div className="mt-6">

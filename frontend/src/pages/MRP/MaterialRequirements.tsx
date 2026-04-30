@@ -194,13 +194,13 @@ const MaterialRequirements: React.FC = () => {
         <div className="flex items-center space-x-4">
           <Link
             to="/app/mrp"
-            className="flex items-center text-gray-600 hover:text-gray-900"
+            className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white"
           >
             <ArrowLeftIcon className="h-5 w-5 mr-2" />
             Back to MRP Dashboard
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Material Requirements</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Material Requirements</h1>
             <p className="text-gray-600 mt-1">Track material needs and shortages</p>
           </div>
         </div>
@@ -208,66 +208,66 @@ const MaterialRequirements: React.FC = () => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
             <CubeIcon className="h-8 w-8 text-blue-600" />
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Materials</p>
-              <p className="text-2xl font-bold text-gray-900">{formatNumber(summary.total_materials)}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatNumber(summary.total_materials)}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
             <ExclamationTriangleIcon className="h-8 w-8 text-red-600" />
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Shortage Items</p>
-              <p className="text-2xl font-bold text-gray-900">{formatNumber(summary.total_shortage_items)}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatNumber(summary.total_shortage_items)}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
             <TruckIcon className="h-8 w-8 text-orange-600" />
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Critical Shortages</p>
-              <p className="text-2xl font-bold text-gray-900">{formatNumber(summary.critical_shortages)}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatNumber(summary.critical_shortages)}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
             <ClockIcon className="h-8 w-8 text-yellow-600" />
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Avg Lead Time</p>
-              <p className="text-2xl font-bold text-gray-900">{summary.avg_lead_time} days</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{summary.avg_lead_time} days</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
             <CalendarIcon className="h-8 w-8 text-green-600" />
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Shortage Value</p>
-              <p className="text-lg font-bold text-gray-900">{formatRupiah(summary.total_shortage_value)}</p>
+              <p className="text-lg font-bold text-gray-900 dark:text-white">{formatRupiah(summary.total_shortage_value)}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Priority</label>
             <select
               value={selectedPriority}
               onChange={(e) => setSelectedPriority(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
             >
               <option value="all">All Priorities</option>
               <option value="critical">Critical</option>
@@ -277,11 +277,11 @@ const MaterialRequirements: React.FC = () => {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">{t('common.status')}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('common.status')}</label>
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
             >
               <option value="all">All Status</option>
               <option value="planned">Planned</option>
@@ -294,8 +294,8 @@ const MaterialRequirements: React.FC = () => {
       </div>
 
       {/* Requirements Chart */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Material Requirements vs Availability</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Material Requirements vs Availability</h3>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -314,37 +314,37 @@ const MaterialRequirements: React.FC = () => {
       </div>
 
       {/* Requirements Table */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Material Requirements Details</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Material Requirements Details</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('products.bom.material')}</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Required</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Available</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Shortage</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Required Date</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lead Time</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Supplier</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('products.bom.total_cost')}</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Priority</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.status')}</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{t('products.bom.material')}</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Required</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Available</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Shortage</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Required Date</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Lead Time</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Supplier</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{t('products.bom.total_cost')}</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Priority</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{t('common.status')}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {requirements.map((req) => (
-                <tr key={req.id} className="hover:bg-gray-50">
+                <tr key={req.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                   <td className="px-4 py-3">
                     <div>
-                      <div className="font-medium text-gray-900">{req.material_name}</div>
-                      <div className="text-sm text-gray-500">{req.material_code}</div>
+                      <div className="font-medium text-gray-900 dark:text-white">{req.material_name}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">{req.material_code}</div>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-gray-900">
+                  <td className="px-4 py-3 text-gray-900 dark:text-white">
                     {formatNumber(req.required_qty)} {req.unit}
                   </td>
-                  <td className="px-4 py-3 text-gray-900">
+                  <td className="px-4 py-3 text-gray-900 dark:text-white">
                     {formatNumber(req.available_qty)} {req.unit}
                   </td>
                   <td className="px-4 py-3">
@@ -352,16 +352,16 @@ const MaterialRequirements: React.FC = () => {
                       {formatNumber(req.shortage_qty)} {req.unit}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-900">
+                  <td className="px-4 py-3 text-gray-900 dark:text-white">
                     {new Date(req.required_date).toLocaleDateString()}
                   </td>
-                  <td className="px-4 py-3 text-gray-900">
+                  <td className="px-4 py-3 text-gray-900 dark:text-white">
                     {req.lead_time_days} days
                   </td>
-                  <td className="px-4 py-3 text-gray-900">
+                  <td className="px-4 py-3 text-gray-900 dark:text-white">
                     {req.supplier_name}
                   </td>
-                  <td className="px-4 py-3 text-gray-900">
+                  <td className="px-4 py-3 text-gray-900 dark:text-white">
                     {formatRupiah(req.total_cost)}
                   </td>
                   <td className="px-4 py-3">

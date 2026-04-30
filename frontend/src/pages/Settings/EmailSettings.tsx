@@ -121,10 +121,10 @@ const EmailSettings: React.FC = () => {
     <div className="p-6">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
           Email Notification Settings
         </h1>
-        <p className="text-gray-600">
+        <p className="text-gray-600 dark:text-gray-300">
           Configure email notifications for your ERP system
         </p>
       </div>
@@ -133,8 +133,8 @@ const EmailSettings: React.FC = () => {
         
         {/* Status Card */}
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-lg shadow p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
               <EnvelopeIcon className="h-5 w-5 mr-2" />
               Email Service Status
             </h2>
@@ -185,7 +185,7 @@ const EmailSettings: React.FC = () => {
                     </>
                   )}
                 </button>
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                   A test email will be sent to your registered email address
                 </p>
               </div>
@@ -193,20 +193,20 @@ const EmailSettings: React.FC = () => {
           </div>
 
           {/* Configuration Info */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
               <Cog6ToothIcon className="h-5 w-5 mr-2" />
               Configuration Guide
             </h2>
             
             <div className="space-y-4">
               {/* Resend Setup */}
-              <div className="border border-gray-200 rounded-lg p-4">
-                <h3 className="font-medium text-gray-900 mb-2">Option 1: Resend (Recommended)</h3>
-                <ol className="list-decimal list-inside text-sm text-gray-600 space-y-1">
+              <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                <h3 className="font-medium text-gray-900 dark:text-white mb-2">Option 1: Resend (Recommended)</h3>
+                <ol className="list-decimal list-inside text-sm text-gray-600 dark:text-gray-300 space-y-1">
                   <li>Sign up at <a href="https://resend.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">resend.com</a></li>
                   <li>Create an API key in the dashboard</li>
-                  <li>Add to your <code className="bg-gray-100 px-1 rounded">backend/.env</code> file:</li>
+                  <li>Add to your <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">backend/.env</code> file:</li>
                 </ol>
                 <pre className="mt-2 bg-gray-900 text-green-400 p-3 rounded text-xs overflow-x-auto">
 {`EMAIL_PROVIDER=resend
@@ -218,12 +218,12 @@ APP_URL=http://localhost:3000`}
               </div>
 
               {/* Gmail Setup */}
-              <div className="border border-gray-200 rounded-lg p-4">
-                <h3 className="font-medium text-gray-900 mb-2">Option 2: Gmail SMTP</h3>
-                <ol className="list-decimal list-inside text-sm text-gray-600 space-y-1">
+              <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                <h3 className="font-medium text-gray-900 dark:text-white mb-2">Option 2: Gmail SMTP</h3>
+                <ol className="list-decimal list-inside text-sm text-gray-600 dark:text-gray-300 space-y-1">
                   <li>Enable 2-Factor Authentication on your Google account</li>
                   <li>Generate an App Password at <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Google App Passwords</a></li>
-                  <li>Add to your <code className="bg-gray-100 px-1 rounded">backend/.env</code> file:</li>
+                  <li>Add to your <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">backend/.env</code> file:</li>
                 </ol>
                 <pre className="mt-2 bg-gray-900 text-green-400 p-3 rounded text-xs overflow-x-auto">
 {`EMAIL_PROVIDER=gmail
@@ -241,29 +241,29 @@ APP_URL=http://localhost:3000`}
         {/* Sidebar */}
         <div className="lg:col-span-1">
           {/* Email Templates Info */}
-          <div className="bg-white rounded-lg shadow p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Email Templates</h2>
-            <p className="text-sm text-gray-600 mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Email Templates</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
               The system includes pre-built email templates for:
             </p>
             <ul className="space-y-2 text-sm">
-              <li className="flex items-center text-gray-700">
+              <li className="flex items-center text-gray-700 dark:text-gray-200">
                 <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2" />
                 Welcome emails
               </li>
-              <li className="flex items-center text-gray-700">
+              <li className="flex items-center text-gray-700 dark:text-gray-200">
                 <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2" />
                 Password reset
               </li>
-              <li className="flex items-center text-gray-700">
+              <li className="flex items-center text-gray-700 dark:text-gray-200">
                 <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2" />
                 Order confirmations
               </li>
-              <li className="flex items-center text-gray-700">
+              <li className="flex items-center text-gray-700 dark:text-gray-200">
                 <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2" />
                 Low stock alerts
               </li>
-              <li className="flex items-center text-gray-700">
+              <li className="flex items-center text-gray-700 dark:text-gray-200">
                 <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2" />
                 Custom notifications
               </li>

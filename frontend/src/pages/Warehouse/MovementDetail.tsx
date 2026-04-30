@@ -152,12 +152,12 @@ const MovementDetail: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <button onClick={() => navigate('/app/warehouse/movements')} className="p-2 hover:bg-gray-100 rounded-lg">
-            <ArrowLeftIcon className="h-5 w-5 text-gray-600" />
+          <button onClick={() => navigate('/app/warehouse/movements')} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg">
+            <ArrowLeftIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Detail Movement</h1>
-            <p className="text-gray-500 text-sm">{data.movement_number}</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Detail Movement</h1>
+            <p className="text-gray-500 dark:text-gray-400 text-sm">{data.movement_number}</p>
           </div>
         </div>
         <Link
@@ -173,7 +173,7 @@ const MovementDetail: React.FC = () => {
         {/* Main Info */}
         <div className="lg:col-span-2 space-y-6">
           {/* Movement Info Card */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
             <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-white">Informasi Movement</h3>
@@ -187,21 +187,21 @@ const MovementDetail: React.FC = () => {
               <div className="flex items-start gap-3">
                 <CubeIcon className="h-5 w-5 text-gray-400 mt-0.5" />
                 <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wide">Produk / Material</p>
-                  <p className="text-sm font-semibold text-gray-900">{data.product_code} — {data.product_name}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Produk / Material</p>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">{data.product_code} — {data.product_name}</p>
                 </div>
               </div>
 
               {/* Quantity & UoM */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-gray-50 rounded-lg p-4 text-center">
-                  <p className="text-xs text-gray-500 uppercase tracking-wide">Kuantitas</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{data.quantity.toLocaleString('id-ID')}</p>
-                  <p className="text-sm text-gray-500">{data.product_uom}</p>
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 text-center">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Kuantitas</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{data.quantity.toLocaleString('id-ID')}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{data.product_uom}</p>
                 </div>
-                <div className="bg-gray-50 rounded-lg p-4 text-center">
-                  <p className="text-xs text-gray-500 uppercase tracking-wide">Tanggal</p>
-                  <p className="text-lg font-bold text-gray-900 mt-1">{formatDate(data.movement_date)}</p>
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 text-center">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Tanggal</p>
+                  <p className="text-lg font-bold text-gray-900 dark:text-white mt-1">{formatDate(data.movement_date)}</p>
                 </div>
               </div>
 
@@ -237,8 +237,8 @@ const MovementDetail: React.FC = () => {
                 <div className="flex items-start gap-3">
                   <DocumentTextIcon className="h-5 w-5 text-gray-400 mt-0.5" />
                   <div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wide">Catatan</p>
-                    <p className="text-sm text-gray-700 mt-1 whitespace-pre-wrap">{data.notes}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Catatan</p>
+                    <p className="text-sm text-gray-700 dark:text-gray-200 mt-1 whitespace-pre-wrap">{data.notes}</p>
                   </div>
                 </div>
               )}
@@ -247,35 +247,35 @@ const MovementDetail: React.FC = () => {
 
           {/* Batch & Tracking */}
           {(data.batch_number || data.lot_number || data.serial_number || data.expiry_date) && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-100">
-                <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2">
                   <TagIcon className="h-4 w-4" /> Informasi Batch & Tracking
                 </h3>
               </div>
               <div className="p-6 grid grid-cols-2 gap-4">
                 {data.batch_number && (
                   <div>
-                    <p className="text-xs text-gray-500">Batch Number</p>
-                    <p className="text-sm font-medium text-gray-900">{data.batch_number}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Batch Number</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">{data.batch_number}</p>
                   </div>
                 )}
                 {data.lot_number && (
                   <div>
-                    <p className="text-xs text-gray-500">Lot Number</p>
-                    <p className="text-sm font-medium text-gray-900">{data.lot_number}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Lot Number</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">{data.lot_number}</p>
                   </div>
                 )}
                 {data.serial_number && (
                   <div>
-                    <p className="text-xs text-gray-500">Serial Number</p>
-                    <p className="text-sm font-medium text-gray-900">{data.serial_number}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Serial Number</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">{data.serial_number}</p>
                   </div>
                 )}
                 {data.expiry_date && (
                   <div>
-                    <p className="text-xs text-gray-500">Expiry Date</p>
-                    <p className="text-sm font-medium text-gray-900">{formatDate(data.expiry_date)}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Expiry Date</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">{formatDate(data.expiry_date)}</p>
                   </div>
                 )}
               </div>
@@ -286,23 +286,23 @@ const MovementDetail: React.FC = () => {
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Cost Info */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100">
-              <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2">
                 <CurrencyDollarIcon className="h-4 w-4" /> Informasi Biaya
               </h3>
             </div>
             <div className="p-6 space-y-4">
               <div className="flex justify-between">
-                <span className="text-sm text-gray-500">Harga Satuan</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">Harga Satuan</span>
                 <span className="text-sm font-medium">{data.unit_cost ? formatCurrency(data.unit_cost) : '-'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-500">Kuantitas</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">Kuantitas</span>
                 <span className="text-sm font-medium">{data.quantity.toLocaleString('id-ID')} {data.product_uom}</span>
               </div>
               <div className="border-t pt-3 flex justify-between">
-                <span className="text-sm font-semibold text-gray-700">Total</span>
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">Total</span>
                 <span className="text-sm font-bold text-blue-700">{data.total_cost ? formatCurrency(data.total_cost) : '-'}</span>
               </div>
             </div>
@@ -310,28 +310,28 @@ const MovementDetail: React.FC = () => {
 
           {/* Reference */}
           {(data.reference_type || data.reference_number) && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-100">
-                <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2">
                   <DocumentTextIcon className="h-4 w-4" /> Referensi
                 </h3>
               </div>
               <div className="p-6 space-y-3">
                 {data.reference_type && (
                   <div>
-                    <p className="text-xs text-gray-500">Tipe Referensi</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Tipe Referensi</p>
                     <p className="text-sm font-medium">{referenceTypeLabels[data.reference_type] || data.reference_type}</p>
                   </div>
                 )}
                 {data.reference_number && (
                   <div>
-                    <p className="text-xs text-gray-500">Nomor Referensi</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Nomor Referensi</p>
                     <p className="text-sm font-medium">{data.reference_number}</p>
                   </div>
                 )}
                 {data.reference_id && (
                   <div>
-                    <p className="text-xs text-gray-500">Reference ID</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Reference ID</p>
                     <p className="text-sm font-medium">#{data.reference_id}</p>
                   </div>
                 )}
@@ -340,9 +340,9 @@ const MovementDetail: React.FC = () => {
           )}
 
           {/* Audit Info */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100">
-              <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2">
                 <ClockIcon className="h-4 w-4" /> Audit
               </h3>
             </div>
@@ -351,7 +351,7 @@ const MovementDetail: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <UserIcon className="h-4 w-4 text-gray-400" />
                   <div>
-                    <p className="text-xs text-gray-500">Dibuat oleh</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Dibuat oleh</p>
                     <p className="text-sm font-medium">{data.created_by}</p>
                   </div>
                 </div>
@@ -359,7 +359,7 @@ const MovementDetail: React.FC = () => {
               <div className="flex items-center gap-2">
                 <CalendarDaysIcon className="h-4 w-4 text-gray-400" />
                 <div>
-                  <p className="text-xs text-gray-500">Dibuat pada</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Dibuat pada</p>
                   <p className="text-sm font-medium">{formatDateTime(data.created_at)}</p>
                 </div>
               </div>

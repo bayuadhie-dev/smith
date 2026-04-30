@@ -146,13 +146,13 @@ const ProductAnalytics: React.FC = () => {
         <div className="flex items-center space-x-4">
           <Link
             to="/app/products/dashboard"
-            className="flex items-center text-gray-600 hover:text-gray-900"
+            className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white"
           >
             <ArrowLeftIcon className="h-5 w-5 mr-2" />
             Back to Dashboard
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Product Analytics</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Product Analytics</h1>
             <p className="text-gray-600 mt-1">Deep insights into product performance and trends</p>
           </div>
         </div>
@@ -166,14 +166,14 @@ const ProductAnalytics: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center space-x-2">
             <CalendarIcon className="h-5 w-5 text-gray-400" />
             <select
               value={selectedPeriod}
               onChange={(e) => setSelectedPeriod(e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-2"
+              className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
             >
               <option value="1month">Last Month</option>
               <option value="3months">Last 3 Months</option>
@@ -187,7 +187,7 @@ const ProductAnalytics: React.FC = () => {
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-2"
+              className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
             >
               <option value="all">All Categories</option>
               <option value="nonwoven">Nonwoven Fabrics</option>
@@ -200,7 +200,7 @@ const ProductAnalytics: React.FC = () => {
 
           <div className="flex items-center space-x-2 ml-auto">
             <span className="text-sm text-gray-600">View:</span>
-            <div className="flex rounded-lg border border-gray-300">
+            <div className="flex rounded-lg border border-gray-300 dark:border-gray-600">
               <button
                 onClick={() => setActiveChart('sales')}
                 className={`px-3 py-1 text-sm rounded-l-lg ${
@@ -229,8 +229,8 @@ const ProductAnalytics: React.FC = () => {
       {/* Main Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Sales Timeline */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Sales Timeline</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Sales Timeline</h3>
           <ResponsiveContainer width="100%" height={300}>
             <AreaChart data={salesTimeline}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -247,8 +247,8 @@ const ProductAnalytics: React.FC = () => {
         </div>
 
         {/* Category Performance */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Category Performance</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Category Performance</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={categoryAnalysis}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -269,9 +269,9 @@ const ProductAnalytics: React.FC = () => {
       </div>
 
       {/* Product Performance Table */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Product Performance</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Product Performance</h3>
           <div className="text-sm text-gray-600">
             Showing {productPerformance.length} products
           </div>
@@ -279,43 +279,43 @@ const ProductAnalytics: React.FC = () => {
         
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('production.product')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('products.bom.category')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('production.product')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('products.bom.category')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Sales Qty
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Sales Value
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Profit Margin
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Growth Rate
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Stock Turnover
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.actions')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {productPerformance.map((product) => (
-                <tr key={product.product_id} className="hover:bg-gray-50">
+                <tr key={product.product_id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="font-medium text-gray-900">{product.product_name}</div>
+                    <div className="font-medium text-gray-900 dark:text-white">{product.product_name}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
                       {product.category}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {formatNumber(product.sales_qty)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {formatRupiah(product.sales_value)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -340,7 +340,7 @@ const ProductAnalytics: React.FC = () => {
                       </span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {product.stock_turnover.toFixed(1)}x
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -361,8 +361,8 @@ const ProductAnalytics: React.FC = () => {
       {/* Bottom Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Profitability Analysis */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Profitability Analysis</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Profitability Analysis</h3>
           <ResponsiveContainer width="100%" height={300}>
             <ScatterChart data={profitabilityData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -375,8 +375,8 @@ const ProductAnalytics: React.FC = () => {
         </div>
 
         {/* Seasonality Trends */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Seasonality Trends</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Seasonality Trends</h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={seasonalityData}>
               <CartesianGrid strokeDasharray="3 3" />

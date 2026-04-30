@@ -15,37 +15,37 @@ const DocumentVerifyPage = () => {
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
-      <p className="text-gray-500">Memverifikasi dokumen...</p>
+      <p className="text-gray-500 dark:text-gray-400">Memverifikasi dokumen...</p>
     </div>
   )
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white rounded-xl shadow p-8 max-w-md w-full text-center">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-8 max-w-md w-full text-center">
         {result?.valid ? (
           <>
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-green-600 text-3xl">✓</span>
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-1">Dokumen Valid</h2>
-            <p className="text-gray-500 text-sm mb-4">Dokumen ini adalah salinan terkendali yang sah</p>
-            <div className="bg-gray-50 rounded-lg p-4 text-left space-y-2 text-sm">
-              <div><span className="text-gray-500">No. Dokumen:</span> <span className="font-medium">{result.document_number}</span></div>
-              <div><span className="text-gray-500">Judul:</span> <span className="font-medium">{result.title}</span></div>
-              <div><span className="text-gray-500">Revisi:</span> <span className="font-medium">Rev {String(result.revision_number).padStart(2, '0')}</span></div>
-              <div><span className="text-gray-500">Berlaku:</span> <span className="font-medium">{result.effective_date || '-'}</span></div>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Dokumen Valid</h2>
+            <p className="text-gray-500 dark:text-gray-400 text-sm mb-4">Dokumen ini adalah salinan terkendali yang sah</p>
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 text-left space-y-2 text-sm">
+              <div><span className="text-gray-500 dark:text-gray-400">No. Dokumen:</span> <span className="font-medium">{result.document_number}</span></div>
+              <div><span className="text-gray-500 dark:text-gray-400">Judul:</span> <span className="font-medium">{result.title}</span></div>
+              <div><span className="text-gray-500 dark:text-gray-400">Revisi:</span> <span className="font-medium">Rev {String(result.revision_number).padStart(2, '0')}</span></div>
+              <div><span className="text-gray-500 dark:text-gray-400">Berlaku:</span> <span className="font-medium">{result.effective_date || '-'}</span></div>
             </div>
             {result?.valid && (
               <div className="mt-4 text-left">
-                <p className="text-sm font-medium text-gray-700 mb-2">Riwayat Tanda Tangan</p>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Riwayat Tanda Tangan</p>
                 <div className="space-y-2">
                   {result.signatures?.filter((s: any) => s.signed_at).map((s: any, i: number) => (
-                    <div key={i} className="bg-gray-50 rounded-lg p-3 text-sm">
+                    <div key={i} className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 text-sm">
                       <div className="flex justify-between items-start">
               <div>
-              <span className="text-xs text-gray-500 uppercase tracking-wide">{s.role}</span>
-              <p className="font-medium text-gray-900">{s.name || '-'}</p>
-              <p className="text-xs text-gray-500 mt-0.5">{s.method}</p>
+              <span className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{s.role}</span>
+              <p className="font-medium text-gray-900 dark:text-white">{s.name || '-'}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{s.method}</p>
             </div>
             <div className="text-right">
               <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
@@ -74,8 +74,8 @@ const DocumentVerifyPage = () => {
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-red-600 text-3xl">✗</span>
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-1">Dokumen Tidak Valid</h2>
-            <p className="text-gray-500 text-sm">Token tidak ditemukan atau dokumen sudah tidak berlaku</p>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Dokumen Tidak Valid</h2>
+            <p className="text-gray-500 dark:text-gray-400 text-sm">Token tidak ditemukan atau dokumen sudah tidak berlaku</p>
           </>
         )}
       </div>

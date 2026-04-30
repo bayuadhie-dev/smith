@@ -99,14 +99,14 @@ const [statusFilter, setStatusFilter] = useState('all')
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Reorder Points Management</h1>
-          <p className="text-gray-600">Smart inventory reorder points and stock level monitoring</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Reorder Points Management</h1>
+          <p className="text-gray-600 dark:text-gray-300">Smart inventory reorder points and stock level monitoring</p>
         </div>
         <div className="flex space-x-3">
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="all">All Products</option>
             <option value="below_reorder">Below Reorder Point</option>
@@ -117,54 +117,54 @@ const [statusFilter, setStatusFilter] = useState('all')
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Products</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Products</p>
               <p className="text-2xl font-bold text-blue-600">{stats.total}</p>
             </div>
             <CogIcon className="h-8 w-8 text-blue-500" />
           </div>
-          <p className="text-sm text-gray-500 mt-2">With reorder points</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">With reorder points</p>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Below Reorder Point</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Below Reorder Point</p>
               <p className="text-2xl font-bold text-red-600">{stats.belowReorder}</p>
             </div>
             <ExclamationTriangleIcon className="h-8 w-8 text-red-500" />
           </div>
-          <p className="text-sm text-gray-500 mt-2">Need immediate attention</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Need immediate attention</p>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Auto Reorder Enabled</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Auto Reorder Enabled</p>
               <p className="text-2xl font-bold text-green-600">{stats.autoEnabled}</p>
             </div>
             <CheckCircleIcon className="h-8 w-8 text-green-500" />
           </div>
-          <p className="text-sm text-gray-500 mt-2">Automated ordering</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Automated ordering</p>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Critical Stock</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Critical Stock</p>
               <p className="text-2xl font-bold text-orange-600">{stats.criticalStock}</p>
             </div>
             <ClockIcon className="h-8 w-8 text-orange-500" />
           </div>
-          <p className="text-sm text-gray-500 mt-2">≤ 7 days until stockout</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">≤ 7 days until stockout</p>
         </div>
       </div>
 
       {/* Stock Level Visualization */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Stock Levels vs Reorder Points</h3>
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Stock Levels vs Reorder Points</h3>
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={stockLevelData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
@@ -188,21 +188,21 @@ const [statusFilter, setStatusFilter] = useState('all')
       </div>
 
       {/* Detailed Reorder Points Table */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Reorder Points Details</h3>
-          <div className="text-sm text-gray-500">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Reorder Points Details</h3>
+          <div className="text-sm text-gray-500 dark:text-gray-400">
             {filteredReorderPoints.length} of {reorderPoints.length} products
           </div>
         </div>
         
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('production.product')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('production.product')}</th>
                 <th 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800"
                   onClick={() => handleSort('current_stock')}
                 >
                   <div className="flex items-center">
@@ -213,7 +213,7 @@ const [statusFilter, setStatusFilter] = useState('all')
                   </div>
                 </th>
                 <th 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800"
                   onClick={() => handleSort('reorder_point')}
                 >
                   <div className="flex items-center">
@@ -223,17 +223,17 @@ const [statusFilter, setStatusFilter] = useState('all')
                     )}
                   </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Reorder Qty
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Safety Stock
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Lead Time
                 </th>
                 <th 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800"
                   onClick={() => handleSort('average_daily_demand')}
                 >
                   <div className="flex items-center">
@@ -244,7 +244,7 @@ const [statusFilter, setStatusFilter] = useState('all')
                   </div>
                 </th>
                 <th 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800"
                   onClick={() => handleSort('days_until_stockout')}
                 >
                   <div className="flex items-center">
@@ -254,16 +254,16 @@ const [statusFilter, setStatusFilter] = useState('all')
                     )}
                   </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.status')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Auto Reorder
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {filteredReorderPoints.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={10} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
                     <CogIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
                     <p>No reorder points configured</p>
                     <p className="text-sm">Configure reorder points to enable smart inventory management</p>
@@ -271,31 +271,31 @@ const [statusFilter, setStatusFilter] = useState('all')
                 </tr>
               ) : (
                 filteredReorderPoints.map((item, index) => (
-                  <tr key={index} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                       {item.product_name}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       <span className={`font-medium ${getStockLevelColor(item.current_stock, item.reorder_point, item.safety_stock)}`}>
                         {item.current_stock.toLocaleString()}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {item.reorder_point.toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {item.reorder_quantity.toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {item.safety_stock.toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {item.lead_time_days} days
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {item.average_daily_demand.toFixed(1)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {item.days_until_stockout !== null ? (
                         <span className={`font-medium ${item.days_until_stockout <= 7 ? 'text-red-600' : item.days_until_stockout <= 14 ? 'text-orange-600' : 'text-green-600'}`}>
                           {item.days_until_stockout} days
@@ -304,12 +304,12 @@ const [statusFilter, setStatusFilter] = useState('all')
                         <span className="text-gray-400">∞</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(item.status)}`}>
                         {item.status === 'below_reorder' ? 'Below Reorder' : 'Normal'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {item.auto_reorder_enabled ? (
                         <CheckCircleIcon className="h-5 w-5 text-green-500" />
                       ) : (

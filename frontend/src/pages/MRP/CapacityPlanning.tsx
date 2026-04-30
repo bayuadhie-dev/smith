@@ -117,21 +117,21 @@ const CapacityPlanning: React.FC = () => {
         <div className="flex items-center space-x-4">
           <Link
             to="/app/mrp"
-            className="flex items-center text-gray-600 hover:text-gray-900"
+            className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white"
           >
             <ArrowLeftIcon className="h-5 w-5 mr-2" />
             Back to MRP Dashboard
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Capacity Planning</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Capacity Planning</h1>
             <p className="text-gray-600 mt-1">Manage production capacity and resource utilization</p>
           </div>
         </div>
       </div>
 
       {/* Capacity Timeline Chart */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Capacity Utilization Timeline</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Capacity Utilization Timeline</h3>
         <ResponsiveContainer width="100%" height={300}>
           <AreaChart data={timeline}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -150,25 +150,25 @@ const CapacityPlanning: React.FC = () => {
       </div>
 
       {/* Resource Capacity Table */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Resource Capacity Overview</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Resource Capacity Overview</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Resource</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Available</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Planned</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Utilization</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Efficiency</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.status')}</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bottleneck</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Resource</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Type</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Available</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Planned</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Utilization</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Efficiency</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{t('common.status')}</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Bottleneck</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {resources.map((resource) => (
-                <tr key={resource.id} className="hover:bg-gray-50">
+                <tr key={resource.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                   <td className="px-4 py-3">
                     <div className="flex items-center">
                       {resource.resource_type === 'machine' ? (
@@ -178,18 +178,18 @@ const CapacityPlanning: React.FC = () => {
                       ) : (
                         <BuildingOfficeIcon className="h-5 w-5 text-gray-400 mr-2" />
                       )}
-                      <span className="font-medium text-gray-900">{resource.resource_name}</span>
+                      <span className="font-medium text-gray-900 dark:text-white">{resource.resource_name}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-gray-900 capitalize">{resource.resource_type}</td>
-                  <td className="px-4 py-3 text-gray-900">{formatNumber(resource.available_capacity)}</td>
-                  <td className="px-4 py-3 text-gray-900">{formatNumber(resource.planned_capacity)}</td>
+                  <td className="px-4 py-3 text-gray-900 dark:text-white capitalize">{resource.resource_type}</td>
+                  <td className="px-4 py-3 text-gray-900 dark:text-white">{formatNumber(resource.available_capacity)}</td>
+                  <td className="px-4 py-3 text-gray-900 dark:text-white">{formatNumber(resource.planned_capacity)}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center">
                       <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getUtilizationColor(resource.utilization_percent)}`}>
                         {formatPercent(resource.utilization_percent)}
                       </span>
-                      <div className="ml-2 w-16 bg-gray-200 rounded-full h-2">
+                      <div className="ml-2 w-16 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                         <div 
                           className="bg-blue-600 h-2 rounded-full" 
                           style={{ width: `${Math.min(resource.utilization_percent, 100)}%` }}
@@ -197,7 +197,7 @@ const CapacityPlanning: React.FC = () => {
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-gray-900">{formatPercent(resource.efficiency)}</td>
+                  <td className="px-4 py-3 text-gray-900 dark:text-white">{formatPercent(resource.efficiency)}</td>
                   <td className="px-4 py-3">
                     <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(resource.status)}`}>
                       {resource.status.toUpperCase()}

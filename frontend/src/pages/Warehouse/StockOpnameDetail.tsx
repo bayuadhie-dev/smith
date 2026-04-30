@@ -207,7 +207,7 @@ export default function StockOpnameDetail() {
   if (!order) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">Data tidak ditemukan</p>
+        <p className="text-gray-500 dark:text-gray-400">Data tidak ditemukan</p>
       </div>
     );
   }
@@ -221,16 +221,16 @@ export default function StockOpnameDetail() {
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/app/warehouse/stock-opname')}
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
           >
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
               <ClipboardDocumentCheckIcon className="h-8 w-8 text-blue-600" />
               {order.opname_number}
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-300">
               {order.zone_name} • Jadwal: {formatDate(order.scheduled_date)}
             </p>
           </div>
@@ -242,22 +242,22 @@ export default function StockOpnameDetail() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-sm text-gray-500">Total Item</p>
-          <p className="text-2xl font-bold text-gray-900">{order.total_items}</p>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400">Total Item</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">{order.total_items}</p>
         </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-sm text-gray-500">Sudah Dihitung</p>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400">Sudah Dihitung</p>
           <p className="text-2xl font-bold text-blue-600">{order.counted_items}</p>
         </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-sm text-gray-500">Item Selisih</p>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400">Item Selisih</p>
           <p className={`text-2xl font-bold ${order.variance_items > 0 ? 'text-red-600' : 'text-green-600'}`}>
             {order.variance_items}
           </p>
         </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-sm text-gray-500">Nilai Selisih</p>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400">Nilai Selisih</p>
           <p className={`text-xl font-bold ${order.total_variance_value !== 0 ? 'text-red-600' : 'text-green-600'}`}>
             {formatCurrency(order.total_variance_value)}
           </p>
@@ -265,12 +265,12 @@ export default function StockOpnameDetail() {
       </div>
 
       {/* Progress Bar */}
-      <div className="bg-white rounded-lg shadow p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-gray-700">Progress Penghitungan</span>
-          <span className="text-sm text-gray-500">{progress.toFixed(0)}%</span>
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Progress Penghitungan</span>
+          <span className="text-sm text-gray-500 dark:text-gray-400">{progress.toFixed(0)}%</span>
         </div>
-        <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
           <div
             className="h-full bg-blue-600 rounded-full transition-all duration-300"
             style={{ width: `${progress}%` }}
@@ -279,7 +279,7 @@ export default function StockOpnameDetail() {
       </div>
 
       {/* Action Buttons */}
-      <div className="bg-white rounded-lg shadow p-4 flex flex-wrap gap-3">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 flex flex-wrap gap-3">
         {order.status === 'draft' && (
           <button
             onClick={handleStart}
@@ -315,7 +315,7 @@ export default function StockOpnameDetail() {
       </div>
 
       {/* Items Table */}
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
         <div className="p-4 border-b flex items-center gap-4">
           <div className="relative flex-1 max-w-md">
             <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -324,13 +324,13 @@ export default function StockOpnameDetail() {
               placeholder="Cari kode/nama item..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"
             />
           </div>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg"
+            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"
           >
             <option value="">Semua Status</option>
             <option value="pending">Belum Dihitung</option>
@@ -339,27 +339,27 @@ export default function StockOpnameDetail() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kode</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Item</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lokasi</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Batch</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Qty Sistem</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Qty Hitung</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Selisih</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Kode</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nama Item</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Lokasi</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Batch</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Qty Sistem</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Qty Hitung</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Selisih</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {items.map((item) => (
                 <tr key={item.id} className={`hover:bg-gray-50 ${item.variance_qty && item.variance_qty !== 0 ? 'bg-red-50' : ''}`}>
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">{item.item_code}</td>
-                  <td className="px-4 py-3 text-sm text-gray-700">{item.item_name}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{item.location_code}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{item.batch_number || '-'}</td>
+                  <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">{item.item_code}</td>
+                  <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-200">{item.item_name}</td>
+                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{item.location_code}</td>
+                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{item.batch_number || '-'}</td>
                   <td className="px-4 py-3 text-sm text-right">{item.system_qty} {item.uom}</td>
                   <td className="px-4 py-3 text-sm text-right font-medium">
                     {item.counted_qty !== null ? `${item.counted_qty} ${item.uom}` : '-'}
@@ -400,14 +400,14 @@ export default function StockOpnameDetail() {
       {/* Count Modal */}
       {countingItem && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
             <h3 className="text-lg font-semibold mb-4">Input Hasil Hitung</h3>
             
             <div className="space-y-4">
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <p className="text-sm text-gray-500">Item</p>
+              <div className="bg-gray-50 dark:bg-gray-900 p-3 rounded-lg">
+                <p className="text-sm text-gray-500 dark:text-gray-400">Item</p>
                 <p className="font-medium">{countingItem.item_code} - {countingItem.item_name}</p>
-                <p className="text-sm text-gray-600">Lokasi: {countingItem.location_code}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Lokasi: {countingItem.location_code}</p>
               </div>
 
               <div className="bg-blue-50 p-3 rounded-lg">
@@ -416,14 +416,14 @@ export default function StockOpnameDetail() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Qty Hasil Hitung *
                 </label>
                 <input
                   type="number"
                   value={countedQty}
                   onChange={(e) => setCountedQty(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                   placeholder="Masukkan jumlah"
                   autoFocus
                 />
@@ -443,14 +443,14 @@ export default function StockOpnameDetail() {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Catatan
                 </label>
                 <textarea
                   value={countNotes}
                   onChange={(e) => setCountNotes(e.target.value)}
                   rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"
                   placeholder="Catatan (opsional)"
                 />
               </div>
@@ -459,7 +459,7 @@ export default function StockOpnameDetail() {
             <div className="flex justify-end gap-3 mt-6">
               <button
                 onClick={() => setCountingItem(null)}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
               >
                 Batal
               </button>

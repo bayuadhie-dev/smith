@@ -199,8 +199,8 @@ const WorkflowStatus: React.FC = () => {
         <div className="text-red-600 mb-4">
           <ExclamationTriangleIcon className="h-12 w-12 mx-auto" />
         </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Workflow</h3>
-        <p className="text-gray-500">{error}</p>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Error Loading Workflow</h3>
+        <p className="text-gray-500 dark:text-gray-400">{error}</p>
       </div>
     );
   }
@@ -212,14 +212,14 @@ const WorkflowStatus: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white shadow rounded-lg p-6">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               Workflow Status: {workflowData.sales_order.order_number}
             </h1>
-            <p className="text-gray-600">Customer: {workflowData.sales_order.customer_name}</p>
-            <p className="text-sm text-gray-500">Status: 
+            <p className="text-gray-600 dark:text-gray-300">Customer: {workflowData.sales_order.customer_name}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Status: 
               <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${
                 workflowData.sales_order.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
                 workflowData.sales_order.status === 'in_production' ? 'bg-yellow-100 text-yellow-800' :
@@ -251,8 +251,8 @@ const WorkflowStatus: React.FC = () => {
       </div>
 
       {/* Workflow Steps */}
-      <div className="bg-white shadow rounded-lg p-6">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">Workflow Progress</h2>
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Workflow Progress</h2>
         <div className="flex items-center space-x-4 overflow-x-auto pb-4">
           {workflowData.workflow_steps.map((step, index) => (
             <div key={index} className="flex items-center">
@@ -269,7 +269,7 @@ const WorkflowStatus: React.FC = () => {
                   {getStepIcon(step.step_name)}
                 </div>
                 <h3 className="font-medium text-sm text-center mt-2">{step.step_name}</h3>
-                <p className="text-xs text-gray-500 text-center">
+                <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
                   {step.status === 'completed' && step.completed_at ? 
                     new Date(step.completed_at).toLocaleDateString() : 
                     step.status
@@ -287,8 +287,8 @@ const WorkflowStatus: React.FC = () => {
 
       {/* Work Orders */}
       {workflowData.work_orders.length > 0 && (
-        <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Production Orders</h2>
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Production Orders</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {workflowData.work_orders.map((wo) => (
               <div key={wo.id} className="border rounded-lg p-4">
@@ -303,8 +303,8 @@ const WorkflowStatus: React.FC = () => {
                     {wo.status}
                   </span>
                 </div>
-                <p className="text-sm text-gray-600 mb-2">{wo.product_name}</p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">{wo.product_name}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   Quantity: {wo.quantity_to_produce}
                   {wo.actual_quantity && ` / Actual: ${wo.actual_quantity}`}
                 </p>
@@ -324,8 +324,8 @@ const WorkflowStatus: React.FC = () => {
 
       {/* Quality Inspections */}
       {workflowData.quality_inspections.length > 0 && (
-        <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Quality Inspections</h2>
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Quality Inspections</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {workflowData.quality_inspections.map((qi) => (
               <div key={qi.id} className="border rounded-lg p-4">
@@ -339,7 +339,7 @@ const WorkflowStatus: React.FC = () => {
                     {qi.status}
                   </span>
                 </div>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   {qi.inspection_date ? 
                     `Inspected: ${new Date(qi.inspection_date).toLocaleDateString()}` :
                     'Pending inspection'
@@ -361,8 +361,8 @@ const WorkflowStatus: React.FC = () => {
 
       {/* Shipping Orders */}
       {workflowData.shipping_orders.length > 0 && (
-        <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Shipping Orders</h2>
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Shipping Orders</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {workflowData.shipping_orders.map((so) => (
               <div key={so.id} className="border rounded-lg p-4">
@@ -377,9 +377,9 @@ const WorkflowStatus: React.FC = () => {
                   </span>
                 </div>
                 {so.tracking_number && (
-                  <p className="text-sm text-gray-600 mb-1">Tracking: {so.tracking_number}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">Tracking: {so.tracking_number}</p>
                 )}
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   {so.shipping_date ? 
                     `Shipped: ${new Date(so.shipping_date).toLocaleDateString()}` :
                     'Not shipped yet'
@@ -401,8 +401,8 @@ const WorkflowStatus: React.FC = () => {
 
       {/* Invoices */}
       {workflowData.invoices.length > 0 && (
-        <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Invoices</h2>
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Invoices</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {workflowData.invoices.map((inv) => (
               <div key={inv.id} className="border rounded-lg p-4">
@@ -416,10 +416,10 @@ const WorkflowStatus: React.FC = () => {
                     {inv.status}
                   </span>
                 </div>
-                <p className="text-sm text-gray-600 mb-1">
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">
                   Amount: Rp {inv.total_amount.toLocaleString('id-ID')}
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   {inv.invoice_date ? 
                     `Date: ${new Date(inv.invoice_date).toLocaleDateString()}` :
                     'No date'

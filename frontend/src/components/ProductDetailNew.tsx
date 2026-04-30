@@ -150,12 +150,12 @@ const ProductDetailNew: React.FC<ProductDetailNewProps> = ({ productId, onEdit, 
         <div className="flex items-center space-x-4">
           <button
             onClick={onBack}
-            className="p-2 text-gray-600 hover:text-gray-900 transition-colors"
+            className="p-2 text-gray-600 hover:text-gray-900 dark:text-white transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{product.nama_produk}</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{product.nama_produk}</h1>
             <p className="text-gray-600">{product.kode_produk}</p>
           </div>
         </div>
@@ -181,7 +181,7 @@ const ProductDetailNew: React.FC<ProductDetailNewProps> = ({ productId, onEdit, 
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-gray-200 dark:border-gray-700">
         <nav className="-mb-px flex space-x-8">
           <button
             onClick={() => setActiveTab('detail')}
@@ -217,116 +217,116 @@ const ProductDetailNew: React.FC<ProductDetailNewProps> = ({ productId, onEdit, 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           
           {/* Basic Information */}
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
               <CubeIcon className="w-5 h-5 mr-2" />
               Informasi Dasar
             </h3>
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Kode Produk</p>
-                  <p className="text-sm text-gray-900">{product.kode_produk}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Kode Produk</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{product.kode_produk}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">{t('common.status')}</p>
-                  <p className="text-sm text-gray-900">
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('common.status')}</p>
+                  <p className="text-sm text-gray-900 dark:text-white">
                     {product.is_active ? 'Aktif' : 'Tidak Aktif'}
                   </p>
                 </div>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">Nama Produk</p>
-                <p className="text-sm text-gray-900">{product.nama_produk}</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Nama Produk</p>
+                <p className="text-sm text-gray-900 dark:text-white">{product.nama_produk}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">Catatan</p>
-                <p className="text-sm text-gray-900">{product.notes || '-'}</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Catatan</p>
+                <p className="text-sm text-gray-900 dark:text-white">{product.notes || '-'}</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Dibuat</p>
-                  <p className="text-sm text-gray-900">{formatDate(product.created_at)}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Dibuat</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{formatDate(product.created_at)}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Diperbarui</p>
-                  <p className="text-sm text-gray-900">{formatDate(product.updated_at)}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Diperbarui</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{formatDate(product.updated_at)}</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Specifications */}
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
               <Settings className="w-5 h-5 mr-2" />
               Spesifikasi Teknis
             </h3>
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Gramasi (GSM)</p>
-                  <p className="text-sm text-gray-900">{formatNumber(product.gramasi)}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Gramasi (GSM)</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{formatNumber(product.gramasi)}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Berat Kering (g)</p>
-                  <p className="text-sm text-gray-900">{formatFloat(product.berat_kering)}</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">CD (mm)</p>
-                  <p className="text-sm text-gray-900">{formatNumber(product.cd)}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-500">MD (mm)</p>
-                  <p className="text-sm text-gray-900">{formatNumber(product.md)}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Berat Kering (g)</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{formatFloat(product.berat_kering)}</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Slitting (cm)</p>
-                  <p className="text-sm text-gray-900">{formatFloat(product.slitting_cm)}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">CD (mm)</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{formatNumber(product.cd)}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Keterangan Slitting</p>
-                  <p className="text-sm text-gray-900">{product.keterangan_slitting || '-'}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">MD (mm)</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{formatNumber(product.md)}</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Lebar MR Nett (cm)</p>
-                  <p className="text-sm text-gray-900">{formatFloat(product.lebar_mr_net_cm)}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Slitting (cm)</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{formatFloat(product.slitting_cm)}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Lebar MR Gross (cm)</p>
-                  <p className="text-sm text-gray-900">{formatFloat(product.lebar_mr_gross_cm)}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Keterangan Slitting</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{product.keterangan_slitting || '-'}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Lebar MR Nett (cm)</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{formatFloat(product.lebar_mr_net_cm)}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Lebar MR Gross (cm)</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{formatFloat(product.lebar_mr_gross_cm)}</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Packaging */}
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
               <CubeIcon className="w-5 h-5 mr-2" />
               Kemasan & Batch
             </h3>
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Sheet per Pack</p>
-                  <p className="text-sm text-gray-900">{formatNumber(product.sheet_per_pack)}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Sheet per Pack</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{formatNumber(product.sheet_per_pack)}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Pack per Karton</p>
-                  <p className="text-sm text-gray-900">{formatNumber(product.pack_per_karton)}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Pack per Karton</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{formatNumber(product.pack_per_karton)}</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Total Sheets per Karton</p>
-                  <p className="text-sm text-gray-900">
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Sheets per Karton</p>
+                  <p className="text-sm text-gray-900 dark:text-white">
                     {product.sheet_per_pack && product.pack_per_karton 
                       ? formatNumber(product.sheet_per_pack * product.pack_per_karton)
                       : '-'
@@ -334,55 +334,55 @@ const ProductDetailNew: React.FC<ProductDetailNewProps> = ({ productId, onEdit, 
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Ratio (mm)</p>
-                  <p className="text-sm text-gray-900">{formatFloat(product.ratio)}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Ratio (mm)</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{formatFloat(product.ratio)}</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Ingredient (mm)</p>
-                  <p className="text-sm text-gray-900">{formatFloat(product.ingredient)}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Ingredient (mm)</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{formatFloat(product.ingredient)}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Volume per Batch (L)</p>
-                  <p className="text-sm text-gray-900">{formatFloat(product.ukuran_batch_vol)}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Volume per Batch (L)</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{formatFloat(product.ukuran_batch_vol)}</p>
                 </div>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">Karton per Batch</p>
-                <p className="text-sm text-gray-900">{formatFloat(product.ukuran_batch_ctn)}</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Karton per Batch</p>
+                <p className="text-sm text-gray-900 dark:text-white">{formatFloat(product.ukuran_batch_ctn)}</p>
               </div>
             </div>
           </div>
 
           {/* Material Composition */}
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
               <ChartBarIcon className="w-5 h-5 mr-2" />
               Komposisi Material
             </h3>
             <div className="space-y-3">
               <div>
-                <p className="text-sm font-medium text-gray-500">Jenis Spunlace</p>
-                <p className="text-sm text-gray-900">{product.spunlace || '-'}</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Jenis Spunlace</p>
+                <p className="text-sm text-gray-900 dark:text-white">{product.spunlace || '-'}</p>
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Rayon (%)</p>
-                  <p className="text-sm text-gray-900">{formatNumber(product.rayon)}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Rayon (%)</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{formatNumber(product.rayon)}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Polyester (%)</p>
-                  <p className="text-sm text-gray-900">{formatNumber(product.polyester)}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Polyester (%)</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{formatNumber(product.polyester)}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">ES (%)</p>
-                  <p className="text-sm text-gray-900">{formatNumber(product.es)}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">ES (%)</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{formatNumber(product.es)}</p>
                 </div>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">Total Komposisi</p>
-                <p className="text-sm text-gray-900">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Komposisi</p>
+                <p className="text-sm text-gray-900 dark:text-white">
                   {formatNumber((product.rayon || 0) + (product.polyester || 0) + (product.es || 0))}%
                 </p>
               </div>
@@ -390,112 +390,112 @@ const ProductDetailNew: React.FC<ProductDetailNewProps> = ({ productId, onEdit, 
           </div>
 
           {/* Production Process */}
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
               <Settings className="w-5 h-5 mr-2" />
               Proses Produksi
             </h3>
             <div className="space-y-3">
               <div>
-                <p className="text-sm font-medium text-gray-500">Process Produksi</p>
-                <p className="text-sm text-gray-900">{product.process_produksi || '-'}</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Process Produksi</p>
+                <p className="text-sm text-gray-900 dark:text-white">{product.process_produksi || '-'}</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-gray-500">No. Mesin EPD</p>
-                  <p className="text-sm text-gray-900">{product.no_mesin_epd || '-'}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">No. Mesin EPD</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{product.no_mesin_epd || '-'}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Speed EPD (pack/menit)</p>
-                  <p className="text-sm text-gray-900">{formatFloat(product.speed_epd_pack_menit)}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Speed EPD (pack/menit)</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{formatFloat(product.speed_epd_pack_menit)}</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Material Requirements */}
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
               <DocumentTextIcon className="w-5 h-5 mr-2" />
               Kebutuhan Material
             </h3>
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Meter Kain</p>
-                  <p className="text-sm text-gray-900">{formatFloat(product.meter_kain)}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Meter Kain</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{formatFloat(product.meter_kain)}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">KG Kain</p>
-                  <p className="text-sm text-gray-900">{formatFloat(product.kg_kain, 3)}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">KG Kain</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{formatFloat(product.kg_kain, 3)}</p>
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Kebutuhan Rayon (kg)</p>
-                  <p className="text-sm text-gray-900">{formatFloat(product.kebutuhan_rayon_kg, 3)}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Kebutuhan Rayon (kg)</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{formatFloat(product.kebutuhan_rayon_kg, 3)}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Kebutuhan Polyester (kg)</p>
-                  <p className="text-sm text-gray-900">{formatFloat(product.kebutuhan_polyester_kg, 3)}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Kebutuhan Polyester (kg)</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{formatFloat(product.kebutuhan_polyester_kg, 3)}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Kebutuhan ES (kg)</p>
-                  <p className="text-sm text-gray-900">{formatFloat(product.kebutuhan_es_kg, 3)}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Kebutuhan ES (kg)</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{formatFloat(product.kebutuhan_es_kg, 3)}</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Roll Information */}
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
               <CubeIcon className="w-5 h-5 mr-2" />
               Informasi Roll
             </h3>
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Kode Jumbo Roll</p>
-                  <p className="text-sm text-gray-900">{product.kode_jumbo_roll || '-'}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Kode Jumbo Roll</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{product.kode_jumbo_roll || '-'}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Nama Jumbo Roll</p>
-                  <p className="text-sm text-gray-900">{product.nama_jumbo_roll || '-'}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Nama Jumbo Roll</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{product.nama_jumbo_roll || '-'}</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Kode Main Roll</p>
-                  <p className="text-sm text-gray-900">{product.kode_main_roll || '-'}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Kode Main Roll</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{product.kode_main_roll || '-'}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Nama Main Roll</p>
-                  <p className="text-sm text-gray-900">{product.nama_main_roll || '-'}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Nama Main Roll</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{product.nama_main_roll || '-'}</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Mixing Process */}
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
               <Settings className="w-5 h-5 mr-2" />
               Proses Mixing
             </h3>
             <div className="space-y-3">
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Kapasitas Mixing (kg)</p>
-                  <p className="text-sm text-gray-900">{formatFloat(product.kapasitas_mixing_kg)}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Kapasitas Mixing (kg)</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{formatFloat(product.kapasitas_mixing_kg)}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Actual Mixing (kg)</p>
-                  <p className="text-sm text-gray-900">{formatFloat(product.actual_mixing_kg)}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Actual Mixing (kg)</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{formatFloat(product.actual_mixing_kg)}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Dosing (kg)</p>
-                  <p className="text-sm text-gray-900">{formatFloat(product.dosing_kg)}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Dosing (kg)</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{formatFloat(product.dosing_kg)}</p>
                 </div>
               </div>
             </div>
@@ -505,15 +505,15 @@ const ProductDetailNew: React.FC<ProductDetailNewProps> = ({ productId, onEdit, 
       )}
 
       {activeTab === 'versions' && (
-        <div className="bg-white rounded-lg shadow">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
           <div className="p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Riwayat Perubahan Versi</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Riwayat Perubahan Versi</h3>
             {versions.length === 0 ? (
               <p className="text-gray-600">Belum ada riwayat perubahan versi</p>
             ) : (
               <div className="space-y-4">
                 {versions.map((version) => (
-                  <div key={version.id} className="border border-gray-200 rounded-lg p-4">
+                  <div key={version.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center space-x-3">
                         <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm font-medium">
@@ -524,7 +524,7 @@ const ProductDetailNew: React.FC<ProductDetailNewProps> = ({ productId, onEdit, 
                         </span>
                       </div>
                     </div>
-                    <div className="text-sm text-gray-700 mb-2">
+                    <div className="text-sm text-gray-700 dark:text-gray-200 mb-2">
                       <p className="font-medium">Alasan Perubahan:</p>
                       <p>{version.change_reason}</p>
                     </div>
@@ -533,7 +533,7 @@ const ProductDetailNew: React.FC<ProductDetailNewProps> = ({ productId, onEdit, 
                         <summary className="cursor-pointer text-blue-600 hover:text-blue-800">
                           Lihat Data Sebelumnya
                         </summary>
-                        <div className="mt-2 p-3 bg-gray-50 rounded text-xs">
+                        <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-900 rounded text-xs">
                           <pre className="whitespace-pre-wrap">
                             {JSON.stringify(version.previous_data, null, 2)}
                           </pre>

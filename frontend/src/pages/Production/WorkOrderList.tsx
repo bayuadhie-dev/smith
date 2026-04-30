@@ -212,12 +212,12 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">📋 Work Orders</h1>
-          <p className="text-gray-600 mt-1">Manage production work orders and schedules</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">📋 Work Orders</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Manage production work orders and schedules</p>
         </div>
         <div className="flex gap-3 items-center">
           {/* View Mode Toggle */}
-          <div className="flex bg-gray-100 rounded-lg p-1">
+          <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
             <button
               onClick={() => { setViewMode('list'); localStorage.setItem('wo_view_mode', 'list') }}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
@@ -272,8 +272,8 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
               <ClockIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Orders</p>
-              <p className="text-2xl font-bold text-gray-900">{summary.total}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Orders</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{summary.total}</p>
             </div>
           </div>
         </div>
@@ -284,8 +284,8 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
               <PlayIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">In Progress</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">In Progress</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {summary.in_progress}
               </p>
             </div>
@@ -298,8 +298,8 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
               <CheckCircleIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Completed</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Completed</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {summary.completed}
               </p>
             </div>
@@ -316,8 +316,8 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
               <ChartBarIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Produced</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Produced</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {summary.total_produced.toLocaleString()}
               </p>
               <p className="text-xs text-purple-500 mt-1">Klik untuk detail →</p>
@@ -330,12 +330,12 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
       <div className="card p-4">
         <div className="flex items-center gap-4 mb-4">
           <FunnelIcon className="h-5 w-5 text-gray-400" />
-          <h3 className="text-lg font-medium text-gray-900">Filters</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Filters</h3>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">{t('common.search')}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">{t('common.search')}</label>
             <div className="relative mt-1">
               <input
                 type="text"
@@ -349,7 +349,7 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700">{t('common.status')}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">{t('common.status')}</label>
             <select
               value={filters.status}
               onChange={(e) => handleFilterChange('status', e.target.value)}
@@ -365,7 +365,7 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700">Priority</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Priority</label>
             <select
               value={filters.priority}
               onChange={(e) => handleFilterChange('priority', e.target.value)}
@@ -391,41 +391,41 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
 
       {/* Work Orders Table */}
       <div className="card">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Work Orders</h3>
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Work Orders</h3>
         </div>
         
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Tanggal
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Work Order
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('production.product')}</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('production.product')}</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Quantity & Progress
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('production.machine')}</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('production.machine')}</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Status & Priority
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.actions')}</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {workOrders.map((wo) => {
                 const StatusIcon = getStatusIcon(wo.status)
                 const progress = calculateProgress(wo.quantity_produced, wo.quantity)
                 
                 return (
-                  <tr key={wo.id} className="hover:bg-gray-50">
+                  <tr key={wo.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                     {/* Tanggal - First Column (WO start date) */}
                     <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
+                      <div className="text-sm text-gray-900 dark:text-white">
                         {wo.start_date ? (
                           <div className="font-medium">
                             {new Date(wo.start_date).toLocaleDateString('id-ID', {
@@ -450,7 +450,7 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
                           {wo.wo_number}
                         </Link>
                         {wo.batch_number && (
-                          <div className="text-xs text-gray-500 flex items-center mt-1">
+                          <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center mt-1">
                             <TagIcon className="h-3 w-3 mr-1" />
                             {wo.batch_number}
                           </div>
@@ -459,24 +459,24 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
                     </td>
                     
                     <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{wo.product_name}</div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">{wo.product_name}</div>
                       {wo.supervisor_name && (
-                        <div className="text-xs text-gray-500">{wo.supervisor_name}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{wo.supervisor_name}</div>
                       )}
                     </td>
                     
                     <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
+                      <div className="text-sm text-gray-900 dark:text-white">
                         <div className="font-medium">
                           {wo.quantity_produced.toLocaleString()} / {wo.quantity.toLocaleString()}
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-1">
                           <div 
                             className="bg-blue-600 h-2 rounded-full" 
                             style={{ width: `${progress}%` }}
                           />
                         </div>
-                        <div className="text-xs text-gray-500 mt-1">{progress}% complete</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{progress}% complete</div>
                       </div>
                     </td>
                     
@@ -484,7 +484,7 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
                       {wo.machine_name ? (
                         <div className="flex items-center">
                           <CogIcon className="h-4 w-4 text-gray-400 mr-2" />
-                          <span className="text-sm text-gray-900">{wo.machine_name}</span>
+                          <span className="text-sm text-gray-900 dark:text-white">{wo.machine_name}</span>
                         </div>
                       ) : (
                         <span className="text-gray-400">Not assigned</span>
@@ -508,7 +508,7 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
                         {/* View Detail */}
                         <Link
                           to={`/app/production/work-orders/${wo.id}`}
-                          className="p-1.5 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded"
+                          className="p-1.5 text-gray-600 dark:text-gray-300 hover:text-indigo-600 hover:bg-indigo-50 rounded"
                           title="View Detail"
                         >
                           <EyeIcon className="h-4 w-4" />
@@ -518,7 +518,7 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
                         {(wo.status === 'planned' || wo.status === 'released') && (
                           <Link
                             to={`/app/production/work-orders/${wo.id}/edit`}
-                            className="p-1.5 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded"
+                            className="p-1.5 text-gray-600 dark:text-gray-300 hover:text-blue-600 hover:bg-blue-50 rounded"
                             title="Edit"
                           >
                             <PencilIcon className="h-4 w-4" />
@@ -529,7 +529,7 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
                         {(wo.status === 'planned' || wo.status === 'released') && (
                           <button
                             onClick={() => handleStartNow(wo.id)}
-                            className="p-1.5 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded"
+                            className="p-1.5 text-gray-600 dark:text-gray-300 hover:text-green-600 hover:bg-green-50 rounded"
                             title="Start Now"
                           >
                             <BoltIcon className="h-4 w-4" />
@@ -540,7 +540,7 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
                         {wo.status === 'in_progress' && (
                           <button
                             onClick={() => handleStatusChange(wo.id, 'completed')}
-                            className="p-1.5 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded"
+                            className="p-1.5 text-gray-600 dark:text-gray-300 hover:text-green-600 hover:bg-green-50 rounded"
                             title="Mark Complete"
                           >
                             <CheckCircleIcon className="h-4 w-4" />
@@ -551,7 +551,7 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
                         {wo.status === 'planned' && (
                           <button
                             onClick={() => handleDelete(wo.id, wo.wo_number)}
-                            className="p-1.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded"
+                            className="p-1.5 text-gray-600 dark:text-gray-300 hover:text-red-600 hover:bg-red-50 rounded"
                             title="Delete"
                           >
                             <TrashIcon className="h-4 w-4" />
@@ -568,8 +568,8 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
         
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-gray-200 flex justify-between items-center">
-            <div className="text-sm text-gray-500">
+          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
+            <div className="text-sm text-gray-500 dark:text-gray-400">
               Page {currentPage} of {totalPages}
             </div>
             <div className="flex gap-2">
@@ -595,8 +595,8 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
         {workOrders.length === 0 && !loading && (
           <div className="text-center py-12">
             <ClockIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No work orders found</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No work orders found</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               Get started by creating your first work order
             </p>
             <div className="mt-6">

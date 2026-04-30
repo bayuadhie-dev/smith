@@ -163,7 +163,7 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose }) => {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Cari emoji..."
-            className="flex-1 bg-transparent text-sm text-gray-200 placeholder-gray-500 outline-none"
+            className="flex-1 bg-transparent text-sm text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 outline-none"
           />
         </div>
       </div>
@@ -188,13 +188,13 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose }) => {
       <div className="flex-1 overflow-y-auto p-2">
         {search ? (
           <div>
-            <p className="text-[11px] text-gray-500 font-semibold uppercase tracking-wider mb-1 px-1">Hasil Pencarian</p>
+            <p className="text-[11px] text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mb-1 px-1">Hasil Pencarian</p>
             <div className="grid grid-cols-8 gap-0.5">
               {EMOJI_CATEGORIES.flatMap(c => c.emojis)
                 .filter((_, i) => i < 80)
                 .map((emoji, i) => (
                   <button key={i} onClick={() => handleSelect(emoji)}
-                    className="text-2xl p-1 rounded hover:bg-white/10 transition-colors leading-none"
+                    className="text-2xl p-1 rounded hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/10 transition-colors leading-none"
                     title={emoji}>
                     {emoji}
                   </button>
@@ -207,11 +207,11 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose }) => {
             .filter(c => c.id === activeCategory || c.id === 'recent')
             .map(cat => (
               <div key={cat.id}>
-                <p className="text-[11px] text-gray-500 font-semibold uppercase tracking-wider mb-1 px-1">{cat.name}</p>
+                <p className="text-[11px] text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mb-1 px-1">{cat.name}</p>
                 <div className="grid grid-cols-8 gap-0.5 mb-3">
                   {cat.emojis.map((emoji, i) => (
                     <button key={i} onClick={() => handleSelect(emoji)}
-                      className="text-2xl p-1 rounded hover:bg-white/10 transition-colors leading-none"
+                      className="text-2xl p-1 rounded hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/10 transition-colors leading-none"
                       title={emoji}>
                       {emoji}
                     </button>

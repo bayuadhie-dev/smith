@@ -215,16 +215,16 @@ export default function WorkOrderBreakdown() {
         <div className="flex items-center space-x-4">
           <Link
             to={`/app/production/work-orders/${id}`}
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
           >
             <ArrowLeftIcon className="h-5 w-5" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
               <ChartBarIcon className="h-6 w-6 text-orange-600" />
               Breakdown Analysis
             </h1>
-            <p className="text-gray-600">{workOrder.wo_number} - {workOrder.product_name}</p>
+            <p className="text-gray-600 dark:text-gray-300">{workOrder.wo_number} - {workOrder.product_name}</p>
           </div>
         </div>
         <Link
@@ -266,11 +266,11 @@ export default function WorkOrderBreakdown() {
       </div>
 
       {/* Category Breakdown */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Breakdown by Category</h2>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Breakdown by Category</h2>
         
         {categories.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
             <ChartBarIcon className="h-12 w-12 mx-auto mb-2 text-gray-400" />
             <p>Tidak ada data downtime tercatat</p>
           </div>
@@ -293,17 +293,17 @@ export default function WorkOrderBreakdown() {
                       </div>
                       <div className="text-left">
                         <h3 className={`font-semibold ${cat.color}`}>{cat.label}</h3>
-                        <p className="text-sm text-gray-600">{cat.items.length} entries tercatat</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">{cat.items.length} entries tercatat</p>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className={`text-2xl font-bold ${cat.color}`}>{cat.totalMinutes} menit</p>
-                      <p className="text-sm text-gray-600">{cat.percentage.toFixed(1)}% dari total</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">{cat.percentage.toFixed(1)}% dari total</p>
                     </div>
                   </button>
                   
                   {/* Progress Bar */}
-                  <div className="h-2 bg-gray-200">
+                  <div className="h-2 bg-gray-200 dark:bg-gray-700">
                     <div 
                       className={`h-full ${cat.bgColor.replace('100', '500')}`}
                       style={{ width: `${cat.percentage}%` }}
@@ -312,10 +312,10 @@ export default function WorkOrderBreakdown() {
                   
                   {/* Expanded Details */}
                   {isExpanded && cat.items.length > 0 && (
-                    <div className="p-4 bg-white border-t">
+                    <div className="p-4 bg-white dark:bg-gray-800 border-t">
                       <table className="w-full text-sm">
                         <thead>
-                          <tr className="text-left text-gray-500">
+                          <tr className="text-left text-gray-500 dark:text-gray-400">
                             <th className="pb-2">Alasan</th>
                             <th className="pb-2 text-center">Tanggal</th>
                             <th className="pb-2 text-center">Shift</th>
@@ -325,11 +325,11 @@ export default function WorkOrderBreakdown() {
                         <tbody>
                           {cat.items.map((item, idx) => (
                             <tr key={idx} className="border-t border-gray-100">
-                              <td className="py-2 text-gray-700">{item.reason}</td>
-                              <td className="py-2 text-center text-gray-600">
+                              <td className="py-2 text-gray-700 dark:text-gray-200">{item.reason}</td>
+                              <td className="py-2 text-center text-gray-600 dark:text-gray-300">
                                 {new Date(item.date).toLocaleDateString('id-ID')}
                               </td>
-                              <td className="py-2 text-center text-gray-600">{item.shift}</td>
+                              <td className="py-2 text-center text-gray-600 dark:text-gray-300">{item.shift}</td>
                               <td className={`py-2 text-right font-medium ${cat.color}`}>
                                 {item.minutes} menit
                               </td>
@@ -337,7 +337,7 @@ export default function WorkOrderBreakdown() {
                           ))}
                         </tbody>
                         <tfoot>
-                          <tr className="border-t-2 border-gray-200 font-semibold">
+                          <tr className="border-t-2 border-gray-200 dark:border-gray-700 font-semibold">
                             <td className="pt-2" colSpan={3}>Total {cat.label}</td>
                             <td className={`pt-2 text-right ${cat.color}`}>{cat.totalMinutes} menit</td>
                           </tr>
@@ -353,8 +353,8 @@ export default function WorkOrderBreakdown() {
       </div>
 
       {/* Visual Chart */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Distribusi Downtime</h2>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Distribusi Downtime</h2>
         
         {totalCategoryDowntime > 0 ? (
           <div className="flex flex-col md:flex-row gap-6">
@@ -396,8 +396,8 @@ export default function WorkOrderBreakdown() {
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-gray-700">{totalCategoryDowntime}</p>
-                    <p className="text-xs text-gray-500">menit</p>
+                    <p className="text-2xl font-bold text-gray-700 dark:text-gray-200">{totalCategoryDowntime}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">menit</p>
                   </div>
                 </div>
               </div>
@@ -413,11 +413,11 @@ export default function WorkOrderBreakdown() {
                       <div className="flex items-center gap-2">
                         <div className={`w-4 h-4 rounded ${cat.bgColor.replace('100', '500')}`}></div>
                         <Icon className={`h-4 w-4 ${cat.color}`} />
-                        <span className="text-sm text-gray-700">{cat.label}</span>
+                        <span className="text-sm text-gray-700 dark:text-gray-200">{cat.label}</span>
                       </div>
                       <div className="text-right">
                         <span className={`font-medium ${cat.color}`}>{cat.totalMinutes}m</span>
-                        <span className="text-gray-500 text-sm ml-2">({cat.percentage.toFixed(1)}%)</span>
+                        <span className="text-gray-500 dark:text-gray-400 text-sm ml-2">({cat.percentage.toFixed(1)}%)</span>
                       </div>
                     </div>
                   );
@@ -426,7 +426,7 @@ export default function WorkOrderBreakdown() {
             </div>
           </div>
         ) : (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
             <p>Tidak ada data untuk ditampilkan</p>
           </div>
         )}

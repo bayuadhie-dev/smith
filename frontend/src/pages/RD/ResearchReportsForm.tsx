@@ -217,8 +217,8 @@ const ResearchReportsForm: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Research & Development Reports</h1>
-          <p className="text-gray-600">Comprehensive R&D project analysis and performance reporting</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Research & Development Reports</h1>
+          <p className="text-gray-600 dark:text-gray-300">Comprehensive R&D project analysis and performance reporting</p>
         </div>
         
         {reportData && (
@@ -242,20 +242,20 @@ const ResearchReportsForm: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
           <FunnelIcon className="inline h-4 w-4 mr-1" />
           Report Filters
         </h3>
         
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Report Type</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Report Type</label>
             <select
               name="report_type"
               value={filters.report_type}
               onChange={handleFilterChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               {reportTypes.map(type => (
                 <option key={type.value} value={type.value}>{type.label}</option>
@@ -264,34 +264,34 @@ const ResearchReportsForm: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">From Date</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">From Date</label>
             <input
               type="date"
               name="date_from"
               value={filters.date_from}
               onChange={handleFilterChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">To Date</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">To Date</label>
             <input
               type="date"
               name="date_to"
               value={filters.date_to}
               onChange={handleFilterChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Project</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Project</label>
             <select
               name="project_id"
               value={filters.project_id}
               onChange={handleFilterChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">All Projects</option>
               {projects.map(project => (
@@ -301,12 +301,12 @@ const ResearchReportsForm: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Project Type</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Project Type</label>
             <select
               name="project_type"
               value={filters.project_type}
               onChange={handleFilterChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">All Types</option>
               {projectTypes.map(type => (
@@ -316,12 +316,12 @@ const ResearchReportsForm: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Department</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Department</label>
             <select
               name="department"
               value={filters.department}
               onChange={handleFilterChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">All Departments</option>
               {departments.map(dept => (
@@ -331,12 +331,12 @@ const ResearchReportsForm: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">{t('common.status')}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('common.status')}</label>
             <select
               name="status"
               value={filters.status}
               onChange={handleFilterChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">All Status</option>
               {statusOptions.map(status => (
@@ -369,74 +369,74 @@ const ResearchReportsForm: React.FC = () => {
         <div className="space-y-6">
           {/* Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
               <div className="flex items-center">
                 <Beaker className="h-8 w-8 text-blue-600" />
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-500">Total Projects</p>
-                  <p className="text-2xl font-bold text-gray-900">{reportData.summary.total_projects}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Projects</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{reportData.summary.total_projects}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
               <div className="flex items-center">
                 <ArrowTrendingUpIcon className="h-8 w-8 text-green-600" />
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-500">Active Projects</p>
-                  <p className="text-2xl font-bold text-gray-900">{reportData.summary.active_projects}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Active Projects</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{reportData.summary.active_projects}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
               <div className="flex items-center">
                 <CurrencyDollarIcon className="h-8 w-8 text-purple-600" />
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-500">Total Budget</p>
-                  <p className="text-2xl font-bold text-gray-900">{formatCurrency(reportData.summary.total_budget)}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Budget</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(reportData.summary.total_budget)}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
               <div className="flex items-center">
                 <CheckCircle className="h-8 w-8 text-orange-600" />
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-500">Success Rate</p>
-                  <p className="text-2xl font-bold text-gray-900">{reportData.summary.success_rate.toFixed(1)}%</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Success Rate</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{reportData.summary.success_rate.toFixed(1)}%</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Performance Metrics */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Performance Metrics</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Performance Metrics</h3>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="text-center">
                 <div className="text-3xl font-bold text-blue-600">
                   {((reportData.summary.completed_projects / reportData.summary.total_projects) * 100).toFixed(1)}%
                 </div>
-                <div className="text-sm text-gray-500">Completion Rate</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Completion Rate</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-green-600">
                   {((reportData.summary.budget_utilized / reportData.summary.total_budget) * 100).toFixed(1)}%
                 </div>
-                <div className="text-sm text-gray-500">Budget Utilization</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Budget Utilization</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-purple-600">
                   {reportData.summary.average_duration.toFixed(0)}
                 </div>
-                <div className="text-sm text-gray-500">Avg Duration (days)</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Avg Duration (days)</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-orange-600">
                   {reportData.summary.roi.toFixed(1)}%
                 </div>
-                <div className="text-sm text-gray-500">ROI</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">ROI</div>
               </div>
             </div>
           </div>
@@ -444,8 +444,8 @@ const ResearchReportsForm: React.FC = () => {
           {/* Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Projects by Type */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Projects by Type</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Projects by Type</h3>
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
@@ -468,8 +468,8 @@ const ResearchReportsForm: React.FC = () => {
             </div>
 
             {/* Projects by Status */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Projects by Status</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Projects by Status</h3>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={reportData.charts.projects_by_status}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -482,8 +482,8 @@ const ResearchReportsForm: React.FC = () => {
             </div>
 
             {/* Budget Utilization */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Budget Utilization Trends</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Budget Utilization Trends</h3>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={reportData.charts.budget_utilization}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -498,8 +498,8 @@ const ResearchReportsForm: React.FC = () => {
             </div>
 
             {/* Completion Trends */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Project Completion Trends</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Project Completion Trends</h3>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={reportData.charts.completion_trends}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -516,36 +516,36 @@ const ResearchReportsForm: React.FC = () => {
 
           {/* Department Performance */}
           {filters.report_type === 'department_comparison' && reportData.charts.department_performance.length > 0 && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Department Performance</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Department Performance</h3>
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-900">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Success Rate
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     {reportData.charts.department_performance.map((dept, index) => (
                       <tr key={index}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                           {dept.department}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                           {dept.projects}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                           {formatCurrency(dept.budget)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                           {dept.success_rate.toFixed(1)}%
                         </td>
                       </tr>
@@ -558,37 +558,37 @@ const ResearchReportsForm: React.FC = () => {
 
           {/* Detailed Projects Table */}
           {filters.report_type === 'detailed' && reportData.projects.length > 0 && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Detailed Project Report</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Detailed Project Report</h3>
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-900">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.status')}</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     {reportData.projects.map((project, index) => (
                       <tr key={index}>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div>
-                            <div className="text-sm font-medium text-gray-900">{project.project_number}</div>
-                            <div className="text-sm text-gray-500">{project.project_name}</div>
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">{project.project_number}</div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">{project.project_name}</div>
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                           {project.type.toUpperCase()}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -596,16 +596,16 @@ const ResearchReportsForm: React.FC = () => {
                             {project.status.replace('_', ' ').toUpperCase()}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                           {new Date(project.start_date).toLocaleDateString()} - {project.end_date ? new Date(project.end_date).toLocaleDateString() : 'Ongoing'}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                           <div>{formatCurrency(project.budget_allocated)}</div>
                           <div className="text-xs text-gray-400">Spent: {formatCurrency(project.budget_spent)}</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                           <div className="flex items-center">
-                            <div className="w-16 bg-gray-200 rounded-full h-2">
+                            <div className="w-16 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                               <div 
                                 className="bg-blue-600 h-2 rounded-full" 
                                 style={{ width: `${project.progress}%` }}
@@ -614,7 +614,7 @@ const ResearchReportsForm: React.FC = () => {
                             <span className="ml-2">{project.progress}%</span>
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                           {project.manager}
                         </td>
                       </tr>
@@ -629,11 +629,11 @@ const ResearchReportsForm: React.FC = () => {
 
       {/* Empty State */}
       {!reportData && !loading && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8">
           <div className="text-center">
             <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No Report Generated</h3>
-            <p className="text-gray-600 mb-4">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Report Generated</h3>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">
               Configure your filters and click "Generate Report" to view R&D analytics.
             </p>
           </div>

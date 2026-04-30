@@ -156,7 +156,7 @@ const AdvancedSystemConfig: React.FC = () => {
               onChange={(e) => handleConfigChange(config.id, e.target.checked.toString())}
               className="mr-2"
             />
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-gray-600 dark:text-gray-300">
               {currentValue === 'true' ? 'Enabled' : 'Disabled'}
             </span>
           </div>
@@ -213,10 +213,10 @@ const AdvancedSystemConfig: React.FC = () => {
     <div className="p-6">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
           Advanced System Configuration
         </h1>
-        <p className="text-gray-600">
+        <p className="text-gray-600 dark:text-gray-300">
           Configure advanced system settings and parameters
         </p>
         
@@ -236,8 +236,8 @@ const AdvancedSystemConfig: React.FC = () => {
         
         {/* Category Sidebar */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-lg shadow p-4">
-            <h3 className="font-semibold text-gray-900 mb-4">Configuration Categories</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Configuration Categories</h3>
             
             <div className="space-y-2">
               {categories.map((category) => {
@@ -260,7 +260,7 @@ const AdvancedSystemConfig: React.FC = () => {
                     <IconComponent className="h-5 w-5 mr-3" />
                     <div className="flex-1">
                       <div className="font-medium capitalize">{category.name}</div>
-                      <div className="text-xs text-gray-500">{category.configs.length} settings</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{category.configs.length} settings</div>
                     </div>
                     {categoryHasChanges && (
                       <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
@@ -274,20 +274,20 @@ const AdvancedSystemConfig: React.FC = () => {
 
         {/* Configuration Panel */}
         <div className="lg:col-span-3">
-          <div className="bg-white rounded-lg shadow">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
             
             {/* Category Header */}
-            <div className="p-6 border-b border-gray-200">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   {selectedCategoryData && (
                     <>
-                      <selectedCategoryData.icon className="h-6 w-6 text-gray-600 mr-3" />
+                      <selectedCategoryData.icon className="h-6 w-6 text-gray-600 dark:text-gray-300 mr-3" />
                       <div>
-                        <h2 className="text-xl font-semibold text-gray-900 capitalize">
+                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white capitalize">
                           {selectedCategory} Configuration
                         </h2>
-                        <p className="text-gray-600">{selectedCategoryData.description}</p>
+                        <p className="text-gray-600 dark:text-gray-300">{selectedCategoryData.description}</p>
                       </div>
                     </>
                   )}
@@ -309,8 +309,8 @@ const AdvancedSystemConfig: React.FC = () => {
               {selectedCategoryData?.configs.length === 0 ? (
                 <div className="text-center py-8">
                   <Cog6ToothIcon className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No configurations</h3>
-                  <p className="text-gray-500">No settings available for this category.</p>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No configurations</h3>
+                  <p className="text-gray-500 dark:text-gray-400">No settings available for this category.</p>
                 </div>
               ) : (
                 <div className="space-y-6">
@@ -318,11 +318,11 @@ const AdvancedSystemConfig: React.FC = () => {
                     const hasChanges = pendingChanges[config.id] !== undefined;
                     
                     return (
-                      <div key={config.id} className="border border-gray-200 rounded-lg p-4">
+                      <div key={config.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex-1">
                             <div className="flex items-center">
-                              <h4 className="font-medium text-gray-900">{config.key}</h4>
+                              <h4 className="font-medium text-gray-900 dark:text-white">{config.key}</h4>
                               {hasChanges && (
                                 <span className="ml-2 px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">
                                 </span>
@@ -337,7 +337,7 @@ const AdvancedSystemConfig: React.FC = () => {
                                 </span>
                               )}
                             </div>
-                            <p className="text-sm text-gray-600 mt-1">{config.description}</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{config.description}</p>
                           </div>
                         </div>
                         
@@ -356,11 +356,11 @@ const AdvancedSystemConfig: React.FC = () => {
 
       {/* Save Changes Bar */}
       {hasAnyChanges && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg">
+        <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4 shadow-lg">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <div className="flex items-center">
               <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 mr-2" />
-              <span className="text-gray-900 font-medium">
+              <span className="text-gray-900 dark:text-white font-medium">
                 You have unsaved changes ({Object.keys(pendingChanges).length} settings)
               </span>
             </div>
@@ -368,7 +368,7 @@ const AdvancedSystemConfig: React.FC = () => {
             <div className="flex space-x-3">
               <button
                 onClick={() => setPendingChanges({})}
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                className="px-4 py-2 bg-gray-300 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400"
               >
                 Discard Changes
               </button>
