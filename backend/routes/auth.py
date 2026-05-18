@@ -4,6 +4,11 @@ from models import db, User, Role, UserRole
 from datetime import datetime
 from utils.i18n import success_response, error_response, get_message
 from utils.timezone import get_local_now, get_local_today, utc_to_local
+from utils.rate_limiter import (
+    rate_limit, is_account_locked, record_failed_login, 
+    clear_failed_attempts, get_remaining_attempts
+)
+from utils.password_validator import validate_password_strength, get_password_requirements
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -12,6 +17,7 @@ def get_bcrypt():
     return current_app.bcrypt
 
 @auth_bp.route('/login', methods=['POST'])
+@rate_limit(max_requests=10, window_minutes=15)
 def login():
     """
     User login endpoint
@@ -81,6 +87,16 @@ def login():
         if not username or not password:
             return jsonify(error_response('validation.required_field', field='Username and Password')), 400
         
+        # Check if account is locked
+        locked, lock_message = is_account_locked(username)
+        if locked:
+            remaining_attempts = 0
+            return jsonify({
+                'error': lock_message,
+                'locked': True,
+                'remaining_attempts': remaining_attempts
+            }), 423  # 423 Locked
+        
         # Find user with eager loading of roles
         from sqlalchemy.orm import joinedload
         user = User.query.options(
@@ -88,10 +104,28 @@ def login():
         ).filter_by(username=username).first()
         
         if not user or not user.check_password(password):
-            return jsonify(error_response('auth.invalid_credentials')), 401
+            # Record failed attempt
+            is_locked, attempt_count = record_failed_login(username)
+            remaining = get_remaining_attempts(username)
+            
+            if is_locked:
+                return jsonify({
+                    'error': f'Too many failed login attempts. Account locked for 5 minutes.',
+                    'locked': True,
+                    'remaining_attempts': 0
+                }), 423
+            
+            return jsonify({
+                'error': 'Invalid username or password',
+                'remaining_attempts': remaining,
+                'warning': f'Warning: {remaining} attempts remaining before account lockout' if remaining <= 2 else None
+            }), 401
         
         if not user.is_active:
             return jsonify(error_response('auth.account_inactive')), 403
+        
+        # Clear failed attempts on successful login
+        clear_failed_attempts(username)
         
         # Update last login
         user.last_login = get_local_now()
@@ -127,6 +161,7 @@ def login():
         return jsonify({'error': str(e)}), 500
 
 @auth_bp.route('/register', methods=['POST'])
+@rate_limit(max_requests=5, window_minutes=60)
 def register():
     """
     User registration endpoint
@@ -192,6 +227,22 @@ def register():
         for field in required_fields:
             if not data.get(field):
                 return jsonify({'error': f'{field} is required'}), 400
+        
+        # Validate CAPTCHA token
+        captcha_token = data.get('captcha_token')
+        if not captcha_token:
+            return jsonify({'error': 'CAPTCHA verification is required'}), 400
+        
+        # Verify CAPTCHA (simple implementation - in production use reCAPTCHA)
+        # For now, we'll accept any non-empty token
+        # TODO: Implement proper reCAPTCHA verification
+        if len(captcha_token) < 4:
+            return jsonify({'error': 'Invalid CAPTCHA'}), 400
+        
+        # Validate password strength
+        is_valid, error_msg = validate_password_strength(data['password'])
+        if not is_valid:
+            return jsonify({'error': error_msg}), 400
         
         # Check if user exists
         if User.query.filter_by(username=data['username']).first():
@@ -353,6 +404,27 @@ def logout():
     # In a production system, you would add the token to a blacklist
     return jsonify({'message': 'Logout successful'}), 200
 
+@auth_bp.route('/password-requirements', methods=['GET'])
+def get_password_requirements_endpoint():
+    """Get password requirements for frontend validation"""
+    return jsonify(get_password_requirements()), 200
+
+@auth_bp.route('/captcha/generate', methods=['GET'])
+def generate_captcha():
+    """Generate simple CAPTCHA (for demo - use reCAPTCHA in production)"""
+    import random
+    import string
+    
+    # Generate random 6-character code
+    captcha_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+    
+    # In production, store this in Redis with expiry
+    # For now, return it (client will send back for verification)
+    return jsonify({
+        'captcha_code': captcha_code,
+        'message': 'Enter the code shown above'
+    }), 200
+
 @auth_bp.route('/change-password', methods=['POST'])
 @jwt_required()
 def change_password():
@@ -366,6 +438,11 @@ def change_password():
         
         if not current_password or not new_password:
             return jsonify({'error': 'Current and new passwords are required'}), 400
+        
+        # Validate new password strength
+        is_valid, error_msg = validate_password_strength(new_password)
+        if not is_valid:
+            return jsonify({'error': error_msg}), 400
         
         user = db.session.get(User, int(user_id))  # Convert string to int
         
@@ -663,6 +740,7 @@ def forgot_password():
 
 
 @auth_bp.route('/reset-password', methods=['POST'])
+@rate_limit(max_requests=5, window_minutes=60)
 def reset_password():
     """Reset password using token"""
     try:
@@ -672,6 +750,11 @@ def reset_password():
         
         if not token or not new_password:
             return jsonify({'error': 'Token and password are required'}), 400
+        
+        # Validate new password strength
+        is_valid, error_msg = validate_password_strength(new_password)
+        if not is_valid:
+            return jsonify({'error': error_msg}), 400
         
         user = User.query.filter_by(reset_token=token).first()
         

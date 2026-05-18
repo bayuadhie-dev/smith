@@ -23,6 +23,8 @@ interface ModuleCardProps {
     label: string
     value: string | number
   }
+  superAdminOnly?: boolean
+  directLink?: boolean
 }
 
 const colorClasses = {
@@ -97,7 +99,9 @@ export default function ModuleCard({
   badge,
   permission,
   children,
-  stats
+  stats,
+  superAdminOnly = false,
+  directLink = false,
 }: ModuleCardProps) {
   const { hasPermission, isAdmin, isSuperAdmin, isLoading } = usePermissions()
   const navigate = useNavigate()
@@ -105,7 +109,11 @@ export default function ModuleCard({
   const [showDropdown, setShowDropdown] = useState(false)
 
   // Check permission
-  const canView = isLoading || isAdmin || isSuperAdmin || !permission || hasPermission(`${permission}.view`)
+  const canView = isLoading || (
+    superAdminOnly
+      ? isSuperAdmin
+      : (isAdmin || isSuperAdmin || !permission || hasPermission(`${permission}.view`))
+  )
   
   if (!canView) {
     return null
@@ -135,9 +143,12 @@ export default function ModuleCard({
   }
 
   const handleCardClick = () => {
-    // Navigate to workspace for this module
-    const workspaceKey = getWorkspaceKey(name)
-    navigate(`/workspace/${workspaceKey}`)
+    if (directLink) {
+      navigate(href)
+    } else {
+      const workspaceKey = getWorkspaceKey(name)
+      navigate(`/desk/${workspaceKey}`)
+    }
   }
 
   const handleMouseEnter = () => {

@@ -20,14 +20,15 @@ def generate_number(prefix, model=None, field_name='number'):
             return f"{timestamp}{number_part}"
     
     # New behavior for database models
+    from models import db
     year = datetime.now().strftime('%Y')
     month = datetime.now().strftime('%m')
     
-    # Get last number
-    last_record = model.query.order_by(getattr(model, field_name).desc()).first()
+    # Get last number using scalar query to avoid loading full ORM instance
+    field = getattr(model, field_name)
+    last_number = db.session.query(field).order_by(field.desc()).limit(1).scalar()
     
-    if last_record:
-        last_number = getattr(last_record, field_name)
+    if last_number:
         # Extract sequence number
         try:
             seq = int(last_number.split('-')[-1])
@@ -149,6 +150,7 @@ def detect_downtime_category(issue_text: str, is_first_entry: bool = False) -> s
         'tunggu temperatur stabil', 'tunggu temperatur',
         'tunggu temperature stabil', 'tunggu temperature',
         'tunggu keranjang', 'tunggu trolley', 'tunggu troli',
+        'tunggu sarung tangan', 'tunggu glove', 'tunggu gloves',  # Added: tunggu sarung tangan
         'menunggu kain', 'menunggu stiker', 'menunggu packaging', 'menunggu mixing',
         'menunggu obat', 'menunggu tinta',
         'nunggu kain', 'nunggu stiker', 'nunggu packaging', 'nunggu mixing',
@@ -161,11 +163,28 @@ def detect_downtime_category(issue_text: str, is_first_entry: bool = False) -> s
         'lem habis', 'tinta habis', 'kain habis',
         'waiting for', 'idle', 'standby', 'menganggur',
         'tidak ada order', 'no order', 'menghabiskan order', 'menhabiskan order',
-        'susun produk'
+        'susun produk',
+        'menyiapkan produk', 'siapkan produk', 'persiapan produk'  # Added: menyiapkan produk
     ]
     for kw in idle_keywords:
         if kw in text_lower:
             return 'idle'
+    
+    # DESIGN keywords - check BEFORE "setting mc" to catch changeover context
+    # "ganti order", "changeover", etc should be design even if contains "setting mc"
+    design_keywords = [
+        'design error', 'desain salah', 'pattern salah', 'pola salah',
+        'ukuran salah', 'spec salah', 'spesifikasi salah', 'revisi design',
+        'revisi desain', 'sample', 'prototype', 'trial', 'testing design',
+        'changeover', 'ganti produk', 'ganti order', 'ganti stiker', 'ganti packaging',
+        'ganti label', 'ganti karton', 'ganti', 'sanitasi',
+        'cleaning', 'warmup', 'persiapan produksi',
+        'repack', 'repacking', 're-pack', 're packing',
+        'pasang kain', 'pasang packaging'
+    ]
+    for kw in design_keywords:
+        if kw in text_lower:
+            return 'design'
     
     # SPECIAL CASE: "setting mc/mesin" - depends on position
     # If first entry → design (changeover/setup awal)
@@ -233,8 +252,8 @@ def detect_downtime_category(issue_text: str, is_first_entry: bool = False) -> s
         'mc press',
         # Product getting sealed (machine malfunction)
         'terseal', 'keseal', 'ke seal',
-        # Dosing mechanism
-        'dosing',
+        # Dosing mechanism (including typo variants)
+        'dosing', 'dossing',
         # Stacking mechanism
         'stacking',
         # Pound / punching
@@ -269,24 +288,12 @@ def detect_downtime_category(issue_text: str, is_first_entry: bool = False) -> s
         'tidak stabil', 'tidak maksimal', 'simetris',
         # Tidak rapi (machine alignment)
         'tidak rapi',
+        # Added: guset, relay, inkjet, dosing, simetris error
+        'guset', 'relay', 'simetris error'
     ]
     for kw in mesin_keywords:
         if kw in text_lower:
             return 'mesin'
-    
-    # DESIGN keywords
-    design_keywords = [
-        'design error', 'desain salah', 'pattern salah', 'pola salah',
-        'ukuran salah', 'spec salah', 'spesifikasi salah', 'revisi design',
-        'revisi desain', 'sample', 'prototype', 'trial', 'testing design',
-        'changeover', 'ganti produk', 'ganti order', 'ganti', 'sanitasi',
-        'cleaning', 'warmup', 'persiapan produksi',
-        'repack', 'repacking', 're-pack', 're packing',
-        'pasang kain', 'pasang packaging'
-    ]
-    for kw in design_keywords:
-        if kw in text_lower:
-            return 'design'
     
     # Generic "keluar jalur" without specific cause -> check context
     if 'keluar jalur' in text_lower:

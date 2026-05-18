@@ -60,7 +60,7 @@ export default function PackingListTab({
     try {
       setLoading(true);
       const response = await axiosInstance.get(
-        `/api/production/work-orders/${workOrderId}/packing-list?page=${page}&per_page=${perPage}`
+        `/api/production/work-orders/${workOrderId}/packing-list?page=${page}&per_page=${perPage}&product_name=${encodeURIComponent(productName)}`
       );
       setPackingList(response.data.packing_list);
       setItems(response.data.items);
@@ -84,7 +84,8 @@ export default function PackingListTab({
         `/api/production/work-orders/${workOrderId}/packing-list/sync`,
         { 
           total_karton: totalAktualKarton,
-          start_carton_number: startCartonNumber
+          start_carton_number: startCartonNumber,
+          product_name: productName
         }
       );
       toast.success('Packing list berhasil disinkronkan');
@@ -125,7 +126,10 @@ export default function PackingListTab({
 
       await axiosInstance.put(
         `/api/production/work-orders/${workOrderId}/packing-list/items`,
-        { items: itemsToUpdate }
+        { 
+          items: itemsToUpdate,
+          product_name: productName
+        }
       );
       toast.success('Berat karton berhasil disimpan');
       setEditedItems({});
@@ -150,7 +154,8 @@ export default function PackingListTab({
         `/api/production/work-orders/${workOrderId}/packing-list/batch-mixing`,
         { 
           batch_mixing: newBatchMixing,
-          start_from_carton: batchStartCarton
+          start_from_carton: batchStartCarton,
+          product_name: productName
         }
       );
       toast.success('Batch mixing berhasil diset');

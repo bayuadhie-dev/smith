@@ -10,8 +10,10 @@ import {
   MagnifyingGlassIcon,
   PencilIcon,
   PlusIcon,
-  TrashIcon
+  TrashIcon,
+  ArchiveBoxArrowDownIcon
 } from '@heroicons/react/24/outline';
+import QuickStockInputModal from '../../components/Warehouse/QuickStockInputModal';
 interface Material {
   id: number;
   code: string;
@@ -20,6 +22,7 @@ interface Material {
   category: string;
   description: string;
   unit_of_measure: string;
+  primary_uom: string;
   cost_per_unit: number;
   supplier: string;
   is_active: boolean;
@@ -49,6 +52,8 @@ const MaterialsList: React.FC = () => {
   const [selectedType, setSelectedType] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState<any>(null);
+  const [showQuickStockModal, setShowQuickStockModal] = useState(false);
+  const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);
 
   const materialTypes = [
     { value: '', label: 'All Types' },
@@ -68,7 +73,12 @@ const MaterialsList: React.FC = () => {
       });
 
       const response = await axiosInstance.get(`/api/materials?${params}`);
-      setMaterials(response.data.materials);
+      // Map materials to ensure primary_uom is set
+      const mappedMaterials = (response.data.materials || []).map((m: any) => ({
+        ...m,
+        primary_uom: m.primary_uom || m.unit_of_measure || 'PCS'
+      }));
+      setMaterials(mappedMaterials);
       setPagination(response.data.pagination);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -108,6 +118,16 @@ const MaterialsList: React.FC = () => {
       console.error('Error deleting material:', err);
       alert('Failed to delete material');
     }
+  };
+
+  const handleAddStock = (material: Material) => {
+    setSelectedMaterial(material);
+    setShowQuickStockModal(true);
+  };
+
+  const handleStockAdded = () => {
+    // Refresh materials list or show success message
+    fetchMaterials();
   };
 
   const getTypeColor = (type: string) => {
@@ -322,6 +342,13 @@ const MaterialsList: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
                       <button 
+                        onClick={() => handleAddStock(material)}
+                        className="text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300"
+                        title="Add Stock"
+                      >
+                        <ArchiveBoxArrowDownIcon className="h-4 w-4" />
+                      </button>
+                      <button 
                         onClick={() => navigate(`/app/warehouse/materials/${material.id}`)}
                         className="text-blue-600 hover:text-blue-900"
                         title="View Material"
@@ -405,6 +432,19 @@ const MaterialsList: React.FC = () => {
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <p className="text-red-800">{error}</p>
         </div>
+      )}
+
+      {/* Quick Stock Input Modal */}
+      {selectedMaterial && (
+        <QuickStockInputModal
+          isOpen={showQuickStockModal}
+          onClose={() => {
+            setShowQuickStockModal(false);
+            setSelectedMaterial(null);
+          }}
+          material={selectedMaterial}
+          onSuccess={handleStockAdded}
+        />
       )}
     </div>
   );

@@ -48,7 +48,8 @@
     "react-router-dom": "^6.20.0",
     "recharts": "^2.15.4",
     "remark-gfm": "^4.0.1",
-    "socket.io-client": "^4.8.3"
+    "socket.io-client": "^4.8.3",
+    "swiper": "^12.1.4"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",

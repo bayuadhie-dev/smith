@@ -111,7 +111,7 @@ def get_material_inventory_detail(material_id):
                 'inventory_id': inv.id,
                 'location_id': inv.location_id,
                 'location_code': inv.location.location_code if inv.location else None,
-                'location_name': inv.location.name if inv.location else None,
+                'location_name': inv.location.location_code if inv.location else None,
                 'quantity_on_hand': float(inv.quantity_on_hand or 0),
                 'quantity_available': float(inv.quantity_available or 0),
                 'quantity_reserved': float(inv.quantity_reserved or 0),

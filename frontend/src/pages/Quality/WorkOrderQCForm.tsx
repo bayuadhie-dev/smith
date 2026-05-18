@@ -134,9 +134,13 @@ export default function WorkOrderQCForm() {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
+      const hostname = window.location.hostname;
+      const baseURL = (hostname === 'erp.graterp.my.id' || hostname.endsWith('.graterp.my.id'))
+        ? 'https://api.graterp.my.id'
+        : `http://${hostname}:5000`;
       
       // Fetch pending QC data to get work order info
-      const response = await fetch(`http://${window.location.hostname}:5000/api/quality/pending-qc`, {
+      const response = await fetch(`${baseURL}/api/quality/pending-qc`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       
@@ -151,7 +155,7 @@ export default function WorkOrderQCForm() {
         
         // If there's an existing test, fetch its details
         if (wo.qc_test_id) {
-          const testResponse = await fetch(`http://${window.location.hostname}:5000/api/quality/work-order/${woId}/qc-test`, {
+          const testResponse = await fetch(`${baseURL}/api/quality/work-order/${woId}/qc-test`, {
             headers: { 'Authorization': `Bearer ${token}` },
           });
           
@@ -210,9 +214,14 @@ export default function WorkOrderQCForm() {
       
       const fullNotes = `${checkResults}${rejectSummary}\n\n${formData.notes || ''}`.trim();
       
+      const hostname = window.location.hostname;
+      const baseURL = (hostname === 'erp.graterp.my.id' || hostname.endsWith('.graterp.my.id'))
+        ? 'https://api.graterp.my.id'
+        : `http://${hostname}:5000`;
+      
       if (existingTest) {
         // Update existing test
-        const response = await fetch(`http://${window.location.hostname}:5000/api/quality/tests/${existingTest.id}/result`, {
+        const response = await fetch(`${baseURL}/api/quality/tests/${existingTest.id}/result`, {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -230,7 +239,7 @@ export default function WorkOrderQCForm() {
         toast.success('QC Test berhasil diupdate!');
       } else {
         // Create new test
-        const response = await fetch(`http://${window.location.hostname}:5000/api/quality/work-order/${workOrder.id}/qc-test`, {
+        const response = await fetch(`${baseURL}/api/quality/work-order/${workOrder.id}/qc-test`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,

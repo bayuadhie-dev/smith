@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Routes, Route, Navigate, useParams, useNavigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useAppSelector, useAppDispatch } from './hooks/redux'
 import { checkAuth } from './store/slices/authSlice'
 import { useDocumentTitle } from './hooks/useDocumentTitle'
@@ -20,6 +20,7 @@ import CompleteProfile from './pages/Auth/CompleteProfile'
 import Dashboard from './pages/Dashboard/Dashboard'
 import DashboardEnhanced from './pages/Dashboard/DashboardEnhanced'
 import DeskPage from './pages/Desk/DeskPage'
+import ModuleOverviewPage from './pages/Desk/ModuleOverviewPage'
 import WorkspacePage from './pages/Workspace/WorkspacePage'
 import GlobalSearchPage from './pages/Search/GlobalSearchPage'
 import ProductList from './pages/Products/ProductList'
@@ -116,6 +117,8 @@ import MaterialIssueDetail from './pages/Production/MaterialIssueDetail'
 import WIPBatchForm from './pages/Production/WIPBatchForm'
 import ProductionApprovalList from './pages/Production/ProductionApprovalList'
 import ProductionApprovalDetail from './pages/Production/ProductionApprovalDetail'
+import FGConversionList from './pages/Production/FGConversionList'
+import FGConversionDetail from './pages/Production/FGConversionDetail'
 import ProductChangeover from './pages/Production/ProductChangeover'
 import ChangeoverList from './pages/Production/ChangeoverList'
 import WeeklyProductionPlan from './pages/Production/WeeklyProductionPlan'
@@ -368,6 +371,16 @@ const ProductFormNewWrapper = () => {
 function App() {
   const dispatch = useAppDispatch()
   const { isAuthenticated, loading } = useAppSelector((state: { auth: { isAuthenticated: boolean; loading: boolean } }) => state.auth)
+  const location = useLocation()
+  
+  // Check if current route is public (no session timeout needed)
+  const isPublicRoute = location.pathname.startsWith('/public/') || 
+                        location.pathname === '/' || 
+                        location.pathname === '/login' ||
+                        location.pathname === '/register' ||
+                        location.pathname === '/forgot-password' ||
+                        location.pathname === '/reset-password' ||
+                        location.pathname === '/absensi'
 
   // Update document title dynamically based on company settings
   useDocumentTitle()
@@ -397,7 +410,7 @@ function App() {
         <ThemeProvider>
           <PermissionProvider>
             <ToastProvider />
-            <SessionTimeoutModal />
+            {!isPublicRoute && <SessionTimeoutModal />}
             <Routes>
               {/* System Overview for non-authenticated users */}
               <Route path="/" element={!isAuthenticated ? <SystemOverview /> : <RoleBasedRedirect />} />
@@ -405,6 +418,8 @@ function App() {
               <Route path="/public/attendance" element={<PublicAttendance />} />
               <Route path="/public/leave-request" element={<StaffLeaveRequest />} />
               <Route path="/public/face-registration" element={<FaceRegistration />} />
+              {/* Public Production Monitoring - No login required */}
+              <Route path="/public/production-monitoring" element={<ProductionMonitoringDashboard />} />
               <Route path="/login" element={!isAuthenticated ? <Login /> : <RoleBasedRedirect />} />
               <Route path="/forgot-password" element={!isAuthenticated ? <ForgotPassword /> : <RoleBasedRedirect />} />
               <Route path="/reset-password" element={!isAuthenticated ? <ResetPassword /> : <RoleBasedRedirect />} />
@@ -416,6 +431,7 @@ function App() {
               {/* Desk Route - Outside /app structure */}
               <Route path="/desk" element={isAuthenticated ? <Layout /> : <Navigate to="/login" />}>
                 <Route index element={<DeskPage />} />
+                <Route path=":module" element={<ModuleOverviewPage />} />
               </Route>
 
               {/* Global Search Route */}
@@ -719,6 +735,10 @@ function App() {
                 <Route path="production/planning/create" element={<ProductionPlanningForm />} />
                 <Route path="production/planning/edit/:id" element={<ProductionPlanningForm />} />
                 <Route path="production/planning/dashboard" element={<ProductionPlanningDashboard />} />
+
+                {/* FG Conversion - WIP to Finish Good */}
+                <Route path="production/fg-conversion" element={<FGConversionList />} />
+                <Route path="production/fg-conversion/:id" element={<FGConversionDetail />} />
 
                 {/* Production MRP Integration */}
                 <Route path="production/mrp" element={<MRPDashboard />} />

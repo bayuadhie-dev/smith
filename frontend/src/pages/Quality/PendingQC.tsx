@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getBaseURL } from '../../utils/apiConfig';
 import {
   ClipboardDocumentCheckIcon,
   CheckCircleIcon,
@@ -45,7 +46,9 @@ export default function PendingQC() {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://${window.location.hostname}:5000/api/quality/pending-qc`, {
+      const baseURL = getBaseURL();
+      
+      const response = await fetch(`${baseURL}/api/quality/pending-qc`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },

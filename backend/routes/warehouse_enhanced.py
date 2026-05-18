@@ -245,7 +245,7 @@ def get_reorder_points():
         if status == 'below_reorder':
             # Get items below reorder point
             query = query.join(Inventory, InventoryReorderPoint.product_id == Inventory.product_id).filter(
-                Inventory.available_quantity <= InventoryReorderPoint.reorder_point
+                Inventory.quantity_available <= InventoryReorderPoint.reorder_point
             )
         elif status == 'auto_enabled':
             query = query.filter_by(auto_reorder_enabled=True)
@@ -255,7 +255,7 @@ def get_reorder_points():
         reorder_data = []
         for rp in reorder_points:
             # Get current stock
-            current_stock = db.session.query(func.sum(Inventory.available_quantity)).filter_by(
+            current_stock = db.session.query(func.sum(Inventory.quantity_available)).filter_by(
                 product_id=rp.product_id
             ).scalar() or 0
             

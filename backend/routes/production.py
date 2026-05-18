@@ -1400,6 +1400,7 @@ def create_work_order_production_record(id):
                 machine_id=machine_id,
                 product_id=product_id,
                 work_order_id=id,
+                batch_number=wo.batch_number,  # Get batch number from Work Order
                 target_quantity=wo.quantity,
                 actual_quantity=actual_qty,
                 good_quantity=good_qty,
@@ -2741,25 +2742,48 @@ from models.production import PackingList, PackingListItem
 @production_bp.route('/work-orders/<int:wo_id>/packing-list', methods=['GET'])
 @jwt_required()
 def get_packing_list(wo_id):
-    """Get packing list for a work order"""
+    """Get packing list for a work order and specific product"""
     try:
         work_order = db.session.get(WorkOrder, wo_id)
         if not work_order:
             return jsonify({'error': 'Work order not found'}), 404
         
-        # Get or create packing list
-        packing_list = PackingList.query.filter_by(work_order_id=wo_id).first()
+        # Get product_name from query parameter (sent by frontend per shift)
+        product_name_param = request.args.get('product_name', '').strip()
         
-        if not packing_list:
-            # Create new packing list
-            packing_list = PackingList(
+        # Get or create packing list
+        # If product_name is provided, try to find packing list with matching product name
+        if product_name_param:
+            # Try to find existing packing list with this product name
+            packing_list = PackingList.query.filter_by(
                 work_order_id=wo_id,
-                product_name=get_product_name_from_new(work_order.product.code if work_order.product else None) or (work_order.product.name if work_order.product else 'Unknown'),
-                total_karton=0,
-                last_carton_number=0
-            )
-            db.session.add(packing_list)
-            db.session.commit()
+                product_name=product_name_param
+            ).first()
+            
+            if not packing_list:
+                # Create new packing list with the specific product name
+                packing_list = PackingList(
+                    work_order_id=wo_id,
+                    product_name=product_name_param,
+                    total_karton=0,
+                    last_carton_number=0
+                )
+                db.session.add(packing_list)
+                db.session.commit()
+        else:
+            # Fallback: get first packing list for this WO (old behavior)
+            packing_list = PackingList.query.filter_by(work_order_id=wo_id).first()
+            
+            if not packing_list:
+                # Create new packing list
+                packing_list = PackingList(
+                    work_order_id=wo_id,
+                    product_name=get_product_name_from_new(work_order.product.code if work_order.product else None) or (work_order.product.name if work_order.product else 'Unknown'),
+                    total_karton=0,
+                    last_carton_number=0
+                )
+                db.session.add(packing_list)
+                db.session.commit()
         
         # Get items with pagination
         page = request.args.get('page', 1, type=int)
@@ -2799,6 +2823,7 @@ def sync_packing_list(wo_id):
         data = request.get_json() or {}
         total_karton = data.get('total_karton', 0)
         start_carton_number = data.get('start_carton_number', 1)
+        product_name = data.get('product_name', '').strip()
         
         # Validate start_carton_number (1-10000)
         if start_carton_number < 1:
@@ -2806,13 +2831,25 @@ def sync_packing_list(wo_id):
         if start_carton_number > 10000:
             start_carton_number = ((start_carton_number - 1) % 10000) + 1
         
-        # Get or create packing list
-        packing_list = PackingList.query.filter_by(work_order_id=wo_id).first()
+        # Get or create packing list with specific product name
+        if product_name:
+            packing_list = PackingList.query.filter_by(
+                work_order_id=wo_id,
+                product_name=product_name
+            ).first()
+        else:
+            packing_list = PackingList.query.filter_by(work_order_id=wo_id).first()
         
         if not packing_list:
+            # Determine product name for new packing list
+            if product_name:
+                pl_product_name = product_name
+            else:
+                pl_product_name = get_product_name_from_new(work_order.product.code if work_order.product else None) or (work_order.product.name if work_order.product else 'Unknown')
+            
             packing_list = PackingList(
                 work_order_id=wo_id,
-                product_name=get_product_name_from_new(work_order.product.code if work_order.product else None) or (work_order.product.name if work_order.product else 'Unknown'),
+                product_name=pl_product_name,
                 total_karton=total_karton,
                 start_carton_number=start_carton_number,
                 last_carton_number=0
@@ -2864,12 +2901,22 @@ def sync_packing_list(wo_id):
 def update_packing_list_items(wo_id):
     """Update packing list items (weight, batch mixing)"""
     try:
-        packing_list = PackingList.query.filter_by(work_order_id=wo_id).first()
+        # Get product_name from request body
+        data = request.get_json()
+        product_name = data.get('product_name', '').strip()
+        items_data = data.get('items', [])
+        
+        # Find packing list with specific product name if provided
+        if product_name:
+            packing_list = PackingList.query.filter_by(
+                work_order_id=wo_id,
+                product_name=product_name
+            ).first()
+        else:
+            packing_list = PackingList.query.filter_by(work_order_id=wo_id).first()
+        
         if not packing_list:
             return jsonify({'error': 'Packing list not found'}), 404
-        
-        data = request.get_json()
-        items_data = data.get('items', [])
         
         for item_data in items_data:
             item_id = item_data.get('id')
@@ -2902,13 +2949,22 @@ def update_packing_list_items(wo_id):
 def set_batch_mixing(wo_id):
     """Set new batch mixing for subsequent cartons"""
     try:
-        packing_list = PackingList.query.filter_by(work_order_id=wo_id).first()
-        if not packing_list:
-            return jsonify({'error': 'Packing list not found'}), 404
-        
         data = request.get_json()
+        product_name = data.get('product_name', '').strip()
         batch_mixing = data.get('batch_mixing', '')
         start_from_carton = data.get('start_from_carton')  # Optional: which carton to start from
+        
+        # Find packing list with specific product name if provided
+        if product_name:
+            packing_list = PackingList.query.filter_by(
+                work_order_id=wo_id,
+                product_name=product_name
+            ).first()
+        else:
+            packing_list = PackingList.query.filter_by(work_order_id=wo_id).first()
+        
+        if not packing_list:
+            return jsonify({'error': 'Packing list not found'}), 404
         
         packing_list.current_batch_mixing = batch_mixing
         

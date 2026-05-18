@@ -103,6 +103,15 @@ export default function DeskPage() {
   const { hasPermission, isAdmin, isSuperAdmin, isLoading: permsLoading } = usePermissions()
   const { user } = useAppSelector((state) => state.auth)
   const [searchQuery, setSearchQuery] = useState('')
+  const [navMode, setNavMode] = useState<'desk' | 'classic'>(
+    () => (localStorage.getItem('erp_nav_mode') as 'desk' | 'classic') || 'desk'
+  )
+
+  const toggleNavMode = (mode: 'desk' | 'classic') => {
+    setNavMode(mode)
+    localStorage.setItem('erp_nav_mode', mode)
+    window.dispatchEvent(new Event('erp-nav-mode-changed'))
+  }
 
   // Fetch real data from API
   const { data: deskData, isLoading, error, refetch } = useGetDeskOverviewQuery({})
@@ -373,13 +382,22 @@ export default function DeskPage() {
       ]
     },
     {
+      groupName: 'MONITORING & OTHER',
+      items: [
+        { name: 'Waste Management', href: '/app/waste', icon: TrashIcon, permission: 'waste' },
+        { name: 'OEE Monitoring', href: '/app/oee', icon: ChartBarIcon, permission: 'oee' },
+        { name: 'Returns', href: '/app/returns', icon: ArrowPathIcon, permission: 'returns' },
+      ]
+    },
+    {
       groupName: 'UTILITIES',
       items: [
-        { name: 'Reports', href: '/app/reports', icon: DocumentChartBarIcon, permission: 'reports' },
-        { name: 'Documents', href: '/app/documents', icon: DocumentTextIcon, permission: 'documents' },
-        { name: 'TV Display', href: '/app/tv-display', icon: TvIcon, permission: 'tv_display' },
-        { name: 'Group Chat', href: '/app/chat', icon: ChatBubbleLeftRightIcon },
-        { name: 'User Manual', href: '/app/manual', icon: BookOpenIcon },
+        { name: 'Reports', href: '/app/reports', icon: DocumentChartBarIcon, permission: 'reports', directLink: true },
+        { name: 'Documents', href: '/app/documents', icon: DocumentTextIcon, permission: 'documents', directLink: true },
+        { name: 'TV Display', href: '/app/tv-display', icon: TvIcon, permission: 'tv_display', directLink: true },
+        { name: 'Group Chat', href: '/app/chat', icon: ChatBubbleLeftRightIcon, directLink: true },
+        { name: 'User Manual', href: '/app/manual', icon: BookOpenIcon, directLink: true },
+        { name: 'Settings', href: '/app/settings', icon: Cog6ToothIcon, superAdminOnly: true, directLink: true },
       ]
     }
   ]
@@ -522,6 +540,61 @@ export default function DeskPage() {
         </form>
       </div>
 
+      {/* Navigation Mode Toggle */}
+      <div className="mb-6 flex items-center justify-between bg-white dark:bg-gray-800 rounded-2xl px-5 py-4 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-3">
+          <div className={`p-2 rounded-xl ${navMode === 'desk' ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-gray-100 dark:bg-gray-700'}`}>
+            {navMode === 'desk' ? (
+              <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+              </svg>
+            )}
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-gray-900 dark:text-white">
+              {navMode === 'desk' ? 'Mode Desk' : 'Mode Klasik'}
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              {navMode === 'desk'
+                ? 'Sidebar menampilkan menu sesuai modul yang aktif'
+                : 'Sidebar menampilkan seluruh navigasi berdasarkan role'}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 rounded-xl p-1">
+          <button
+            onClick={() => toggleNavMode('desk')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+              navMode === 'desk'
+                ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+            }`}
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+            </svg>
+            Desk
+          </button>
+          <button
+            onClick={() => toggleNavMode('classic')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+              navMode === 'classic'
+                ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+            }`}
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+            </svg>
+            Klasik
+          </button>
+        </div>
+      </div>
+
       {/* Quick Stats with Modern Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {quickStats.map((stat: QuickStat, index: number) => {
@@ -593,8 +666,8 @@ export default function DeskPage() {
         <div className="flex flex-wrap gap-3">
           {menuGroups
             .filter((group) => group.groupName === 'MAIN')
-            .flatMap((group) => group.items)
-            .map((item, index) => {
+            .flatMap((group) => group.items as any[])
+            .map((item: any, index: number) => {
               const colors = [
                 'from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700',
                 'from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700',
@@ -631,7 +704,7 @@ export default function DeskPage() {
           {menuGroups
             .filter((group) => group.groupName !== 'MAIN')
             .map((group) =>
-            group.items.map((item) => {
+            group.items.map((item: any) => {
               const config = moduleConfigs[item.name] || { color: 'blue', description: '', icon: CubeIcon }
               return (
                 <ModuleCard
@@ -642,6 +715,8 @@ export default function DeskPage() {
                   href={item.href}
                   color={config.color}
                   permission={item.permission}
+                  superAdminOnly={item.superAdminOnly}
+                  directLink={item.directLink}
                   children={item.children}
                   stats={item.stats}
                   badge={item.badge}

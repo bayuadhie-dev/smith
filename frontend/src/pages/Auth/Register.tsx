@@ -4,7 +4,10 @@ import {
   EyeIcon,
   EyeSlashIcon,
   UserIcon,
-  ChevronDownIcon
+  ChevronDownIcon,
+  ShieldCheckIcon,
+  CheckCircleIcon,
+  XCircleIcon
 } from '@heroicons/react/24/outline';
 import { useState, useEffect } from 'react'
 import { publicApi } from '../../utils/axiosConfig'
@@ -23,6 +26,12 @@ interface RoleCategories {
   Operator: RoleOption[];
 }
 
+interface PasswordStrength {
+  score: number;
+  strength: 'weak' | 'fair' | 'good' | 'strong';
+  feedback: string[];
+}
+
 export default function Register() {
   const [formData, setFormData] = useState({
     username: '',
@@ -34,7 +43,8 @@ export default function Register() {
     department: '',
     position: '',
     phone: '',
-    role_id: ''
+    role_id: '',
+    captcha_input: ''
   })
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -47,11 +57,16 @@ export default function Register() {
     Operator: []
   })
   const [loadingRoles, setLoadingRoles] = useState(true)
+  const [passwordStrength, setPasswordStrength] = useState<PasswordStrength | null>(null)
+  const [captchaCode, setCaptchaCode] = useState('')
+  const [passwordRequirements, setPasswordRequirements] = useState<any>(null)
   const navigate = useNavigate()
 
   useEffect(() => {
     loadCompanySettings()
     loadRoles()
+    loadPasswordRequirements()
+    generateCaptcha()
   }, [])
 
   const loadCompanySettings = async () => {
@@ -80,11 +95,74 @@ export default function Register() {
     }
   }
 
+  const loadPasswordRequirements = async () => {
+    try {
+      const response = await publicApi.get('/api/auth/password-requirements')
+      setPasswordRequirements(response.data)
+    } catch (error) {
+      console.error('Error loading password requirements:', error)
+    }
+  }
+
+  const generateCaptcha = async () => {
+    try {
+      const response = await publicApi.get('/api/auth/captcha/generate')
+      setCaptchaCode(response.data.captcha_code)
+    } catch (error) {
+      console.error('Error generating CAPTCHA:', error)
+      // Fallback to simple random code
+      setCaptchaCode(Math.random().toString(36).substring(2, 8).toUpperCase())
+    }
+  }
+
+  const checkPasswordStrength = (password: string) => {
+    if (!password) {
+      setPasswordStrength(null)
+      return
+    }
+
+    let score = 0
+    const feedback: string[] = []
+
+    // Length
+    if (password.length >= 8) score += 25
+    else feedback.push(`At least 8 characters (current: ${password.length})`)
+
+    // Uppercase
+    if (/[A-Z]/.test(password)) score += 20
+    else feedback.push('Add uppercase letters')
+
+    // Lowercase
+    if (/[a-z]/.test(password)) score += 20
+    else feedback.push('Add lowercase letters')
+
+    // Numbers
+    if (/\d/.test(password)) score += 20
+    else feedback.push('Add numbers')
+
+    // Special characters
+    if (/[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\\/;'`~]/.test(password)) score += 15
+    else feedback.push('Add special characters')
+
+    let strength: 'weak' | 'fair' | 'good' | 'strong' = 'weak'
+    if (score >= 80) strength = 'strong'
+    else if (score >= 60) strength = 'good'
+    else if (score >= 40) strength = 'fair'
+
+    setPasswordStrength({ score, strength, feedback })
+  }
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [name]: value
     })
+
+    // Check password strength on password change
+    if (name === 'password') {
+      checkPasswordStrength(value)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -96,13 +174,27 @@ export default function Register() {
       return
     }
 
-    if (formData.password.length < 6) {
-      toast.error('Password must be at least 6 characters')
+    if (formData.password.length < 8) {
+      toast.error('Password must be at least 8 characters')
       return
     }
 
     if (!formData.role_id) {
       toast.error('Please select your role/position')
+      return
+    }
+
+    // Validate CAPTCHA
+    if (formData.captcha_input.toUpperCase() !== captchaCode) {
+      toast.error('Invalid CAPTCHA code. Please try again.')
+      generateCaptcha() // Generate new CAPTCHA
+      setFormData({ ...formData, captcha_input: '' })
+      return
+    }
+
+    // Check password strength
+    if (passwordStrength && passwordStrength.score < 60) {
+      toast.error('Password is too weak. Please use a stronger password.')
       return
     }
 
@@ -118,7 +210,8 @@ export default function Register() {
         department: formData.department,
         position: formData.position,
         phone: formData.phone,
-        role_id: parseInt(formData.role_id)
+        role_id: parseInt(formData.role_id),
+        captcha_token: captchaCode // Send CAPTCHA for server verification
       }
 
       await publicApi.post('/api/auth/register', registrationData)
@@ -127,6 +220,9 @@ export default function Register() {
     } catch (error: any) {
       const errorMessage = error.response?.data?.error || error.response?.data?.message || 'Registration failed'
       toast.error(errorMessage)
+      // Generate new CAPTCHA on error
+      generateCaptcha()
+      setFormData({ ...formData, captcha_input: '' })
     } finally {
       setLoading(false)
     }
@@ -369,6 +465,51 @@ export default function Register() {
                   )}
                 </button>
               </div>
+              
+              {/* Password Strength Indicator */}
+              {passwordStrength && (
+                <div className="mt-2">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-blue-200">Password Strength:</span>
+                    <span className={`text-xs font-semibold ${
+                      passwordStrength.strength === 'strong' ? 'text-green-400' :
+                      passwordStrength.strength === 'good' ? 'text-blue-400' :
+                      passwordStrength.strength === 'fair' ? 'text-yellow-400' :
+                      'text-red-400'
+                    }`}>
+                      {passwordStrength.strength.toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-700 rounded-full h-2">
+                    <div
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        passwordStrength.strength === 'strong' ? 'bg-green-500' :
+                        passwordStrength.strength === 'good' ? 'bg-blue-500' :
+                        passwordStrength.strength === 'fair' ? 'bg-yellow-500' :
+                        'bg-red-500'
+                      }`}
+                      style={{ width: `${passwordStrength.score}%` }}
+                    ></div>
+                  </div>
+                  {passwordStrength.feedback.length > 0 && (
+                    <ul className="mt-2 space-y-1">
+                      {passwordStrength.feedback.map((item, idx) => (
+                        <li key={idx} className="text-xs text-blue-300 flex items-start">
+                          <span className="mr-1">•</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+              
+              {/* Password Requirements */}
+              {passwordRequirements && !passwordStrength && (
+                <p className="mt-1 text-xs text-blue-300">
+                  {passwordRequirements.description}
+                </p>
+              )}
             </div>
 
             <div>
@@ -398,6 +539,62 @@ export default function Register() {
                   )}
                 </button>
               </div>
+              {formData.confirmPassword && (
+                <div className="mt-1 flex items-center">
+                  {formData.password === formData.confirmPassword ? (
+                    <>
+                      <CheckCircleIcon className="h-4 w-4 text-green-400 mr-1" />
+                      <span className="text-xs text-green-400">Passwords match</span>
+                    </>
+                  ) : (
+                    <>
+                      <XCircleIcon className="h-4 w-4 text-red-400 mr-1" />
+                      <span className="text-xs text-red-400">Passwords do not match</span>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* CAPTCHA */}
+            <div className="bg-gray-700 rounded-lg p-4 border border-gray-600">
+              <div className="flex items-center mb-3">
+                <ShieldCheckIcon className="h-5 w-5 text-blue-400 mr-2" />
+                <label className="text-sm font-medium text-blue-200">
+                  Security Verification *
+                </label>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                <div className="flex-1">
+                  <div className="bg-gray-900 border-2 border-dashed border-gray-600 rounded-lg p-4 text-center">
+                    <span className="text-2xl font-mono font-bold text-white tracking-widest select-none">
+                      {captchaCode}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={generateCaptcha}
+                  className="px-3 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-md text-sm transition-colors"
+                  title="Generate new code"
+                >
+                  ↻
+                </button>
+              </div>
+              
+              <input
+                type="text"
+                name="captcha_input"
+                value={formData.captcha_input}
+                onChange={handleChange}
+                placeholder="Enter the code above"
+                required
+                className="mt-3 appearance-none relative block w-full px-3 py-2 border border-gray-600 placeholder-gray-400 dark:placeholder-gray-500 dark:placeholder-gray-400 text-white bg-gray-800 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              />
+              <p className="mt-1 text-xs text-blue-300">
+                Enter the code shown above to verify you're human
+              </p>
             </div>
           </div>
 

@@ -495,7 +495,7 @@ def get_pending_approval_plans():
 @weekly_plan_bp.route('/weekly-plans/<int:id>/generate-work-orders', methods=['POST'])
 @jwt_required()
 def generate_work_orders(id):
-    """Generate work orders from approved plan"""
+    """Generate work orders from approved plan with auto-merge for same product/machine/date"""
     try:
         current_user_id = get_jwt_identity()
         plan = db.session.get(WeeklyProductionPlan, id) or abort(404)
@@ -505,8 +505,10 @@ def generate_work_orders(id):
         
         data = request.get_json() or {}
         item_ids = data.get('item_ids')  # Optional: specific items to generate WO for
+        auto_merge = data.get('auto_merge', True)  # Default: enable auto-merge
         
         created_wos = []
+        merged_wos = []
         
         items = plan.items.all()
         if item_ids:
@@ -516,60 +518,112 @@ def generate_work_orders(id):
             if item.work_order_id:
                 continue  # Already has WO
             
-            # Generate WO number
-            today = get_local_now()
-            wo_prefix = f"WO-{today.strftime('%Y%m%d')}"
-            last_wo = WorkOrder.query.filter(
-                WorkOrder.wo_number.like(f"{wo_prefix}%")
-            ).order_by(WorkOrder.id.desc()).first()
+            planned_date = item.planned_date or plan.week_start
+            scheduled_start = datetime.combine(planned_date, datetime.min.time())
             
-            if last_wo:
-                try:
-                    last_num = int(last_wo.wo_number.split('-')[-1])
-                    wo_num = last_num + 1
-                except:
-                    wo_num = 1
+            # Check if there's an existing WO that can be merged
+            existing_wo = None
+            if auto_merge and item.machine_id and item.product_id:
+                # Find existing WO with same product, machine, and date
+                existing_wo = WorkOrder.query.filter(
+                    WorkOrder.product_id == item.product_id,
+                    WorkOrder.machine_id == item.machine_id,
+                    WorkOrder.scheduled_start_date == scheduled_start,
+                    WorkOrder.status.in_(['released', 'planned']),  # Only merge with not-yet-started WOs
+                    WorkOrder.source_type.in_(['from_weekly_plan', 'from_schedule', 'manual'])
+                ).first()
+            
+            if existing_wo:
+                # MERGE: Add quantity to existing WO
+                old_quantity = float(existing_wo.quantity or 0)
+                new_quantity = old_quantity + float(item.planned_quantity or 0)
+                existing_wo.quantity = new_quantity
+                
+                # Update notes to indicate merge
+                merge_note = f"\n[MERGED] Added {item.planned_quantity} {item.uom} from Weekly Plan {plan.plan_number}"
+                existing_wo.notes = (existing_wo.notes or '') + merge_note
+                
+                # Link item to existing WO
+                item.work_order_id = existing_wo.id
+                
+                merged_wos.append({
+                    'item_id': item.id,
+                    'product_name': item.product.name if item.product else None,
+                    'wo_id': existing_wo.id,
+                    'wo_number': existing_wo.wo_number,
+                    'old_quantity': old_quantity,
+                    'added_quantity': float(item.planned_quantity or 0),
+                    'new_quantity': new_quantity,
+                    'merged': True
+                })
             else:
-                wo_num = 1
-            
-            wo_number = f"{wo_prefix}-{wo_num:04d}"
-            
-            # Create Work Order with in_progress status
-            wo = WorkOrder(
-                wo_number=wo_number,
-                product_id=item.product_id,
-                quantity=item.planned_quantity,
-                uom=item.uom,
-                status='in_progress',
-                priority='normal',
-                start_date=item.planned_date or plan.week_start,
-                end_date=plan.week_end,
-                machine_id=item.machine_id,
-                notes=f"Generated from Weekly Plan {plan.plan_number}"
-            )
-            
-            db.session.add(wo)
-            db.session.flush()  # Get WO id
-            
-            item.work_order_id = wo.id
-            
-            created_wos.append({
-                'item_id': item.id,
-                'product_name': item.product.name if item.product else None,
-                'wo_id': wo.id,
-                'wo_number': wo.wo_number
-            })
+                # CREATE NEW WO
+                # Generate WO number
+                today = get_local_now()
+                wo_prefix = f"WO-{today.strftime('%Y%m%d')}"
+                last_wo = WorkOrder.query.filter(
+                    WorkOrder.wo_number.like(f"{wo_prefix}%")
+                ).order_by(WorkOrder.id.desc()).first()
+                
+                if last_wo:
+                    try:
+                        last_num = int(last_wo.wo_number.split('-')[-1])
+                        wo_num = last_num + 1
+                    except:
+                        wo_num = 1
+                else:
+                    wo_num = 1
+                
+                wo_number = f"{wo_prefix}-{wo_num:04d}"
+                
+                # Create Work Order with released status
+                wo = WorkOrder(
+                    wo_number=wo_number,
+                    product_id=item.product_id,
+                    quantity=item.planned_quantity,
+                    uom=item.uom,
+                    status='released',
+                    priority='normal',
+                    scheduled_start_date=scheduled_start,
+                    scheduled_end_date=datetime.combine(plan.week_end, datetime.max.time()),
+                    machine_id=item.machine_id,
+                    source_type='from_weekly_plan',
+                    notes=f"Generated from Weekly Plan {plan.plan_number}"
+                )
+                
+                db.session.add(wo)
+                db.session.flush()  # Get WO id
+                
+                item.work_order_id = wo.id
+                
+                created_wos.append({
+                    'item_id': item.id,
+                    'product_name': item.product.name if item.product else None,
+                    'wo_id': wo.id,
+                    'wo_number': wo.wo_number,
+                    'quantity': float(item.planned_quantity or 0),
+                    'merged': False
+                })
         
         plan.status = 'in_progress'
         db.session.commit()
         
         return jsonify({
-            'message': f'{len(created_wos)} work orders created',
-            'work_orders': created_wos
+            'message': f'{len(created_wos)} new work orders created, {len(merged_wos)} merged with existing WOs',
+            'created_work_orders': created_wos,
+            'merged_work_orders': merged_wos,
+            'summary': {
+                'total_items': len(items),
+                'new_wos': len(created_wos),
+                'merged_wos': len(merged_wos),
+                'skipped': len(items) - len(created_wos) - len(merged_wos)
+            }
         }), 201
         
     except Exception as e:
         db.session.rollback()
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 

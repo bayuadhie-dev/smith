@@ -3426,3 +3426,213 @@ def delete_downtime_root_cause(id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+
+@oee_bp.route('/public/daily-controller', methods=['GET'])
+def get_public_daily_controller():
+    """
+    PUBLIC endpoint - Get daily controller data for a specific date
+    No authentication required - for public production monitoring dashboard
+    """
+    try:
+        from models.production import ShiftProduction
+        from sqlalchemy.orm import joinedload
+        
+        selected_date = request.args.get('date')
+        if selected_date:
+            target_date = datetime.strptime(selected_date, '%Y-%m-%d').date()
+        else:
+            target_date = get_local_today()
+        
+        # Get all shift productions for this date
+        shift_records = ShiftProduction.query.options(
+            joinedload(ShiftProduction.machine),
+            joinedload(ShiftProduction.product),
+            joinedload(ShiftProduction.work_order)
+        ).filter(
+            ShiftProduction.production_date == target_date
+        ).order_by(ShiftProduction.machine_id, ShiftProduction.shift).all()
+        
+        # Group by machine
+        machines_data = {}
+        
+        for sp in shift_records:
+            machine_id = sp.machine_id
+            
+            if machine_id not in machines_data:
+                machines_data[machine_id] = {
+                    'machine_id': machine_id,
+                    'machine_name': sp.machine.name if sp.machine else f'Machine {machine_id}',
+                    'total_production': 0,
+                    'total_runtime': 0,
+                    'total_downtime': 0,
+                    'total_idle': 0,
+                    'oee': 0,
+                    'product_name': None,
+                    'shifts_count': 0
+                }
+            
+            # Accumulate data
+            machines_data[machine_id]['total_production'] += int(sp.good_quantity or 0)
+            machines_data[machine_id]['total_runtime'] += int(sp.actual_runtime or 0)
+            machines_data[machine_id]['total_downtime'] += int(sp.downtime_minutes or 0)
+            machines_data[machine_id]['total_idle'] += int(sp.idle_time or 0)
+            machines_data[machine_id]['shifts_count'] += 1
+            
+            # Get product name (use last product)
+            if sp.product:
+                machines_data[machine_id]['product_name'] = sp.product.name
+            elif sp.work_order and sp.work_order.product:
+                machines_data[machine_id]['product_name'] = sp.work_order.product.name
+            
+            # Calculate OEE (average)
+            if sp.oee_score:
+                current_oee = machines_data[machine_id]['oee']
+                count = machines_data[machine_id]['shifts_count']
+                machines_data[machine_id]['oee'] = ((current_oee * (count - 1)) + float(sp.oee_score)) / count
+        
+        # Convert to list and round OEE
+        machines_list = []
+        total_production = 0
+        total_runtime = 0
+        total_downtime = 0
+        total_idle = 0
+        
+        for machine_id, data in machines_data.items():
+            data['oee'] = round(data['oee'], 1)
+            data['runtime'] = data['total_runtime']
+            data['downtime'] = data['total_downtime']
+            data['idle_time'] = data['total_idle']
+            
+            machines_list.append(data)
+            
+            total_production += data['total_production']
+            total_runtime += data['total_runtime']
+            total_downtime += data['total_downtime']
+            total_idle += data['total_idle']
+        
+        # Calculate summary
+        avg_oee = sum(m['oee'] for m in machines_list) / len(machines_list) if machines_list else 0
+        
+        return jsonify({
+            'success': True,
+            'date': target_date.isoformat(),
+            'machines': machines_list,
+            'summary': {
+                'total_production': total_production,
+                'total_runtime': total_runtime,
+                'total_downtime': total_downtime,
+                'total_idle': total_idle,
+                'avg_oee': round(avg_oee, 1),
+                'machines_count': len(machines_list)
+            }
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'Error fetching daily controller data: {str(e)}'
+        }), 500
+    """
+    PUBLIC endpoint - Get daily controller data for a specific date
+    No authentication required - for public production monitoring dashboard
+    """
+    try:
+        from models.production import ShiftProduction
+        from sqlalchemy.orm import joinedload
+        
+        selected_date = request.args.get('date')
+        if selected_date:
+            target_date = datetime.strptime(selected_date, '%Y-%m-%d').date()
+        else:
+            target_date = get_local_today()
+        
+        # Get all shift productions for this date
+        shift_records = ShiftProduction.query.options(
+            joinedload(ShiftProduction.machine),
+            joinedload(ShiftProduction.product),
+            joinedload(ShiftProduction.work_order)
+        ).filter(
+            ShiftProduction.production_date == target_date
+        ).order_by(ShiftProduction.machine_id, ShiftProduction.shift).all()
+        
+        # Group by machine
+        machines_data = {}
+        
+        for sp in shift_records:
+            machine_id = sp.machine_id
+            
+            if machine_id not in machines_data:
+                machines_data[machine_id] = {
+                    'machine_id': machine_id,
+                    'machine_name': sp.machine.name if sp.machine else f'Machine {machine_id}',
+                    'total_production': 0,
+                    'total_runtime': 0,
+                    'total_downtime': 0,
+                    'total_idle': 0,
+                    'oee': 0,
+                    'product_name': None,
+                    'shifts_count': 0
+                }
+            
+            # Accumulate data
+            machines_data[machine_id]['total_production'] += int(sp.good_quantity or 0)
+            machines_data[machine_id]['total_runtime'] += int(sp.actual_runtime or 0)
+            machines_data[machine_id]['total_downtime'] += int(sp.downtime_minutes or 0)
+            machines_data[machine_id]['total_idle'] += int(sp.idle_time or 0)
+            machines_data[machine_id]['shifts_count'] += 1
+            
+            # Get product name (use last product)
+            if sp.product:
+                machines_data[machine_id]['product_name'] = sp.product.name
+            elif sp.work_order and sp.work_order.product:
+                machines_data[machine_id]['product_name'] = sp.work_order.product.name
+            
+            # Calculate OEE (average)
+            if sp.oee_score:
+                current_oee = machines_data[machine_id]['oee']
+                count = machines_data[machine_id]['shifts_count']
+                machines_data[machine_id]['oee'] = ((current_oee * (count - 1)) + float(sp.oee_score)) / count
+        
+        # Convert to list and round OEE
+        machines_list = []
+        total_production = 0
+        total_runtime = 0
+        total_downtime = 0
+        total_idle = 0
+        
+        for machine_id, data in machines_data.items():
+            data['oee'] = round(data['oee'], 1)
+            data['runtime'] = data['total_runtime']
+            data['downtime'] = data['total_downtime']
+            data['idle_time'] = data['total_idle']
+            
+            machines_list.append(data)
+            
+            total_production += data['total_production']
+            total_runtime += data['total_runtime']
+            total_downtime += data['total_downtime']
+            total_idle += data['total_idle']
+        
+        # Calculate summary
+        avg_oee = sum(m['oee'] for m in machines_list) / len(machines_list) if machines_list else 0
+        
+        return jsonify({
+            'success': True,
+            'date': target_date.isoformat(),
+            'machines': machines_list,
+            'summary': {
+                'total_production': total_production,
+                'total_runtime': total_runtime,
+                'total_downtime': total_downtime,
+                'total_idle': total_idle,
+                'avg_oee': round(avg_oee, 1),
+                'machines_count': len(machines_list)
+            }
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'Error fetching daily controller data: {str(e)}'
+        }), 500

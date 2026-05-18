@@ -71,11 +71,20 @@ interface SidebarProps {
 
 function SidebarContent() {
   const [expandedItems, setExpandedItems] = useState<string[]>([])
+  const [navMode, setNavMode] = useState<'desk' | 'classic'>(
+    () => (localStorage.getItem('erp_nav_mode') as 'desk' | 'classic') || 'desk'
+  )
   const { hasPermission, hasAnyPermission, isAdmin, isSuperAdmin, isLoading } = usePermissions()
   const { user } = useAppSelector((state) => state.auth)
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const location = useLocation()
+
+  useEffect(() => {
+    const handler = () => setNavMode((localStorage.getItem('erp_nav_mode') as 'desk' | 'classic') || 'desk')
+    window.addEventListener('erp-nav-mode-changed', handler)
+    return () => window.removeEventListener('erp-nav-mode-changed', handler)
+  }, [])
 
   // Check if a href (with query params) matches current location
   const isActiveHref = (href: string) => {
@@ -126,6 +135,29 @@ function SidebarContent() {
     '/workspace/shipping': { workspace: 'shipping', menus: ['Shipping', 'Sales', 'Warehouse', 'Quality Control'] },
     '/workspace/rd': { workspace: 'rd', menus: ['R&D', 'Products', 'Production', 'Quality Control'] },
     '/workspace/waste': { workspace: 'waste', menus: ['Waste Management', 'Production', 'Warehouse'] },
+    // Direct module paths (non-workspace routes yang perlu filter sidebar)
+    '/app/oee': { workspace: 'oee', menus: ['OEE Monitoring', 'Production', 'Maintenance'] },
+    '/app/waste': { workspace: 'waste', menus: ['Waste Management', 'Production', 'Warehouse'] },
+    '/app/returns': { workspace: 'returns', menus: ['Returns', 'Sales', 'Warehouse', 'Quality Control'] },
+    // Module overview pages under /desk/:module
+    '/desk/production': { workspace: 'production', menus: ['Production', 'Products', 'Warehouse', 'Quality Control'] },
+    '/desk/warehouse': { workspace: 'inventory', menus: ['Warehouse', 'Products'] },
+    '/desk/inventory': { workspace: 'inventory', menus: ['Warehouse', 'Products'] },
+    '/desk/sales': { workspace: 'sales', menus: ['Sales', 'Shipping', 'Returns'] },
+    '/desk/purchasing': { workspace: 'purchasing', menus: ['Purchasing', 'Warehouse', 'Finance'] },
+    '/desk/quality': { workspace: 'quality', menus: ['Quality Control', 'Production', 'Document Control'] },
+    '/desk/hr': { workspace: 'hr', menus: ['Human Resources', 'Finance'] },
+    '/desk/finance': { workspace: 'finance', menus: ['Finance', 'Accounting'] },
+    '/desk/accounting': { workspace: 'finance', menus: ['Finance', 'Accounting'] },
+    '/desk/maintenance': { workspace: 'maintenance', menus: ['Maintenance', 'OEE Monitoring', 'Waste Management'] },
+    '/desk/rd': { workspace: 'rd', menus: ['R&D', 'R&D Legacy'] },
+    '/desk/rnd': { workspace: 'rd', menus: ['R&D', 'R&D Legacy'] },
+    '/desk/oee': { workspace: 'oee', menus: ['OEE Monitoring', 'Production', 'Maintenance'] },
+    '/desk/waste': { workspace: 'waste', menus: ['Waste Management', 'Production', 'Warehouse'] },
+    '/desk/returns': { workspace: 'returns', menus: ['Returns', 'Sales', 'Warehouse', 'Quality Control'] },
+    '/desk/shipping': { workspace: 'shipping', menus: ['Shipping', 'Sales', 'Warehouse'] },
+    '/desk/dcc': { workspace: 'dcc', menus: ['Document Control', 'Quality Control'] },
+    '/desk/products': { workspace: 'products', menus: ['Products', 'Production', 'Warehouse'] },
   }
 
   // Detect active workspace from URL path
@@ -142,8 +174,8 @@ function SidebarContent() {
   const isInWorkspace = activeWorkspaceConfig !== null && 
     location.pathname !== '/app' && 
     !location.pathname.startsWith('/app/executive') && 
-    !location.pathname.startsWith('/desk') &&
-    (location.pathname.startsWith('/workspace/') || location.pathname.startsWith('/app/'))
+    location.pathname !== '/desk' &&
+    (location.pathname.startsWith('/workspace/') || location.pathname.startsWith('/app/') || location.pathname.startsWith('/desk/'))
   const activeWorkspace = activeWorkspaceConfig?.workspace || null
 
   // Mapping workspace to menu item names (for filtering)
@@ -204,6 +236,7 @@ function SidebarContent() {
             {
               name: 'Master Data', icon: CubeIcon, isSubMenu: true, subChildren: [
                 { name: 'Barang & Material', href: '/app/warehouse/materials' },
+                { name: 'Daftar Material', href: '/app/warehouse/materials/list' },
                 { name: 'Gudang & Lokasi', href: '/app/warehouse/locations' },
                 { name: 'Satuan Barang', href: '/app/warehouse/uom' },
                 { name: 'Kategori Barang', href: '/app/products/categories' },
@@ -251,6 +284,7 @@ function SidebarContent() {
                 { name: 'WIP Stock', href: '/app/production/wip-stock' },
               ]
             },
+            { name: 'FG Conversion', href: '/app/production/fg-conversion', icon: ArrowsRightLeftIcon },
             { name: 'Changeover', href: '/app/production/changeovers', icon: ArrowsRightLeftIcon },
             { name: 'Approval', href: '/app/production/approvals', icon: ClipboardDocumentCheckIcon },
             { name: 'Quality Objective', href: '/app/quality/objective/production', icon: ChartBarIcon },
@@ -487,17 +521,29 @@ function SidebarContent() {
   const isDeskPage = location.pathname === '/desk'
   const isDashboardPage = location.pathname === '/app'
   const isProductionMonitoringPage = location.pathname === '/app/executive/production-monitoring'
-  
-  const menuGroups = (isDeskPage || isDashboardPage || isProductionMonitoringPage)
-    ? allMenuGroups.filter(group => group.groupName === 'MAIN') // Only show MAIN group on Desk, Dashboard, and Production Monitoring
-    : isInWorkspace && activeWorkspaceConfig
-      ? allMenuGroups.map(group => ({
-          ...group,
-          items: group.items.filter((item: any) => 
-            activeWorkspaceConfig.menus.includes(item.name)
-          )
-        })).filter(group => group.items.length > 0)
-      : allMenuGroups
+  const utilityPaths = [
+    '/app/profile',
+    '/app/settings',
+    '/app/chat',
+    '/app/manual',
+    '/app/tv-display',
+    '/app/search',
+    '/app/integration',
+  ]
+  const isUtilityPage = utilityPaths.some(p => location.pathname.startsWith(p))
+
+  const menuGroups = navMode === 'classic'
+    ? allMenuGroups
+    : (isDeskPage || isDashboardPage || isProductionMonitoringPage || isUtilityPage)
+      ? allMenuGroups.filter(group => group.groupName === 'MAIN')
+      : isInWorkspace && activeWorkspaceConfig
+        ? allMenuGroups.map(group => ({
+            ...group,
+            items: group.items.filter((item: any) => 
+              activeWorkspaceConfig.menus.includes(item.name)
+            )
+          })).filter(group => group.items.length > 0)
+        : allMenuGroups
 
   const toggleExpanded = (itemName: string) => {
     setExpandedItems(prev =>
@@ -526,13 +572,34 @@ function SidebarContent() {
       </div>
 
       <nav className="flex flex-1 flex-col" role="navigation" aria-label="Menu utama">
-        {/* Back to Desk button with enhanced styling */}
-        {isInWorkspace && (
+        {/* Back to Desk — varian untuk Dashboard & Production Monitoring */}
+        {navMode !== 'classic' && (isDashboardPage || isProductionMonitoringPage) && (
+          <button
+            onClick={() => navigate('/desk')}
+            className="flex items-center gap-3 px-4 py-3 mb-4 text-slate-300 dark:text-slate-300 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-xl transition-all duration-200 group"
+          >
+            <div className="p-1.5 bg-white/10 rounded-lg group-hover:bg-white/20 group-hover:scale-110 transition-all">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+            </div>
+            <div className="flex-1 text-left">
+              <p className="text-xs text-slate-500 leading-none mb-0.5">Navigasi</p>
+              <p className="font-semibold text-sm leading-none">Buka Desk</p>
+            </div>
+            <svg className="w-3.5 h-3.5 text-slate-500 group-hover:text-slate-300 group-hover:translate-x-0.5 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        )}
+
+        {/* Back to Desk — varian standar untuk modul & utility */}
+        {navMode !== 'classic' && (isInWorkspace || isUtilityPage) && (
           <button
             onClick={() => navigate('/desk')}
             className="flex items-center gap-3 px-4 py-3 mb-4 text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:-translate-y-0.5 group"
           >
-            <div className="p-1 bg-white dark:bg-gray-800/20 rounded-lg backdrop-blur-sm group-hover:scale-110 transition-transform">
+            <div className="p-1 bg-white/20 rounded-lg group-hover:scale-110 transition-transform">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>

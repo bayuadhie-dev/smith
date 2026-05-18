@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /public/production-monitoring
+Disallow: /public/
+Allow: /
+
+# Prevent indexing of sensitive public pages
+Sitemap: https://your-domain.com/sitemap.xml

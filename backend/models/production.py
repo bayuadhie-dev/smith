@@ -385,6 +385,7 @@ class ShiftProduction(db.Model):
     machine_id = db.Column(db.Integer, db.ForeignKey('machines.id'), nullable=True)
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
     work_order_id = db.Column(db.Integer, db.ForeignKey('work_orders.id'), nullable=True)
+    batch_number = db.Column(db.String(100), nullable=True, index=True)  # Batch tracking from ingredient mixing
     
     # Production Data
     target_quantity = db.Column(db.Numeric(15, 2), nullable=False)
@@ -705,6 +706,10 @@ class WeeklyProductionPlanItem(db.Model):
     
     # Work Order yang dibuat dari item ini
     work_order_id = db.Column(db.Integer, db.ForeignKey('work_orders.id'), nullable=True)
+    
+    # Planned schedule - NEW FIELDS (nullable for backward compatibility)
+    planned_days = db.Column(db.Integer, nullable=True)  # Number of working days planned
+    planned_shifts = db.Column(db.Integer, nullable=True)  # Number of shifts planned
     
     # Notes
     notes = db.Column(db.Text, nullable=True)
@@ -1309,3 +1314,342 @@ class LiveMonitoringChecklistAnswer(db.Model):
             'status': self.status,
             'catatan': self.catatan,
         }
+
+
+class DowntimeActionItem(db.Model):
+    """Action items for tracking root cause and follow up of unplanned downtime"""
+    __tablename__ = 'downtime_action_items'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    downtime_reason = db.Column(db.Text, nullable=False)
+    machine_id = db.Column(db.Integer, db.ForeignKey('machines.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=True)
+    week_number = db.Column(db.Integer, nullable=False)  # 1-5
+    year = db.Column(db.Integer, nullable=False)
+    month = db.Column(db.Integer, nullable=False)  # 1-12
+    total_duration = db.Column(db.Integer, nullable=False)  # Total minutes
+    root_cause = db.Column(db.Text, nullable=True)  # Akar masalah
+    follow_up = db.Column(db.Text, nullable=True)  # Tindak lanjut/solusi
+    status = db.Column(db.String(20), default='pending', nullable=False)  # pending, in_progress, resolved
+    pic = db.Column(db.String(200), nullable=True)  # Person in charge
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    updated_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    machine = db.relationship('Machine')
+    product = db.relationship('Product')
+    creator = db.relationship('User', foreign_keys=[created_by])
+    updater = db.relationship('User', foreign_keys=[updated_by])
+    
+    __table_args__ = (
+        db.Index('idx_action_items_machine', 'machine_id'),
+        db.Index('idx_action_items_product', 'product_id'),
+        db.Index('idx_action_items_week', 'year', 'month', 'week_number'),
+        db.Index('idx_action_items_status', 'status'),
+    )
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'downtime_reason': self.downtime_reason,
+            'machine_id': self.machine_id,
+            'machine_name': self.machine.name if self.machine else None,
+            'product_id': self.product_id,
+            'product_name': self.product.name if self.product else None,
+            'week_number': self.week_number,
+            'year': self.year,
+            'month': self.month,
+            'total_duration': self.total_duration,
+            'root_cause': self.root_cause,
+            'follow_up': self.follow_up,
+            'status': self.status,
+            'pic': self.pic,
+            'created_by': self.creator.username if self.creator else None,
+            'updated_by': self.updater.username if self.updater else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
+    
+    def __repr__(self):
+        return f'<DowntimeActionItem {self.machine.name if self.machine else "N/A"} - Week {self.week_number}/{self.year}>'
+
+
+# ===========================================
+# FG CONVERSION SYSTEM - WIP to Finish Good
+# ===========================================
+
+class FGConversion(db.Model):
+    """FG Conversion - Header for WIP to Finish Good conversion process"""
+    __tablename__ = 'fg_conversions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    conversion_number = db.Column(db.String(100), unique=True, nullable=False, index=True)
+    
+    # Reference to Work Order and Batch
+    work_order_id = db.Column(db.Integer, db.ForeignKey('work_orders.id'), nullable=False)
+    batch_number = db.Column(db.String(100), nullable=False, index=True)
+    
+    # QC Reference (trigger for auto conversion)
+    qc_inspection_id = db.Column(db.Integer, db.ForeignKey('quality_inspections.id'), nullable=True)
+    qc_status = db.Column(db.String(50), nullable=False)  # pass, fail, rework
+    qc_date = db.Column(db.DateTime, nullable=True)
+    
+    # Conversion Details
+    conversion_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    conversion_type = db.Column(db.String(50), default='auto')  # auto (after QC), manual
+    
+    # Status
+    status = db.Column(db.String(50), default='draft')  # draft, in_progress, completed, cancelled
+    
+    # Totals (calculated from items)
+    total_wip_qty = db.Column(db.Numeric(15, 2), default=0)  # Total WIP consumed
+    total_fg_qty = db.Column(db.Numeric(15, 2), default=0)  # Total FG produced
+    total_loss_qty = db.Column(db.Numeric(15, 2), default=0)  # Total loss/reject
+    
+    # Material consumption totals
+    total_material_cost = db.Column(db.Numeric(15, 2), default=0)
+    
+    # Batch validation
+    batch_validated = db.Column(db.Boolean, default=False)
+    validation_notes = db.Column(db.Text, nullable=True)
+    
+    # Audit
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    completed_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    completed_at = db.Column(db.DateTime, nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    work_order = db.relationship('WorkOrder', backref='fg_conversions')
+    qc_inspection = db.relationship('QualityInspection', backref='fg_conversions')
+    items = db.relationship('FGConversionItem', back_populates='conversion', cascade='all, delete-orphan')
+    materials = db.relationship('FGConversionMaterial', back_populates='conversion', cascade='all, delete-orphan')
+    loss_details = db.relationship('FGConversionLossDetail', back_populates='conversion', cascade='all, delete-orphan')
+    creator = db.relationship('User', foreign_keys=[created_by])
+    completer = db.relationship('User', foreign_keys=[completed_by])
+    
+    def to_dict(self, include_details=False):
+        result = {
+            'id': self.id,
+            'conversion_number': self.conversion_number,
+            'work_order_id': self.work_order_id,
+            'wo_number': self.work_order.wo_number if self.work_order else None,
+            'batch_number': self.batch_number,
+            'qc_inspection_id': self.qc_inspection_id,
+            'qc_status': self.qc_status,
+            'qc_date': self.qc_date.isoformat() if self.qc_date else None,
+            'conversion_date': self.conversion_date.isoformat() if self.conversion_date else None,
+            'conversion_type': self.conversion_type,
+            'status': self.status,
+            'total_wip_qty': float(self.total_wip_qty or 0),
+            'total_fg_qty': float(self.total_fg_qty or 0),
+            'total_loss_qty': float(self.total_loss_qty or 0),
+            'total_material_cost': float(self.total_material_cost or 0),
+            'batch_validated': self.batch_validated,
+            'validation_notes': self.validation_notes,
+            'created_by': self.creator.username if self.creator else None,
+            'completed_by': self.completer.username if self.completer else None,
+            'completed_at': self.completed_at.isoformat() if self.completed_at else None,
+            'notes': self.notes,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
+        
+        if include_details:
+            result['items'] = [item.to_dict() for item in self.items]
+            result['materials'] = [mat.to_dict() for mat in self.materials]
+            result['loss_details'] = [loss.to_dict() for loss in self.loss_details]
+        
+        return result
+    
+    def __repr__(self):
+        return f'<FGConversion {self.conversion_number} - Batch {self.batch_number}>'
+
+
+class FGConversionItem(db.Model):
+    """FG Conversion Item - Detail of products converted from WIP to FG"""
+    __tablename__ = 'fg_conversion_items'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    conversion_id = db.Column(db.Integer, db.ForeignKey('fg_conversions.id', ondelete='CASCADE'), nullable=False)
+    
+    # WIP Product (source)
+    wip_product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
+    wip_quantity = db.Column(db.Numeric(15, 2), nullable=False)  # WIP consumed
+    
+    # FG Product (destination)
+    fg_product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
+    fg_quantity = db.Column(db.Numeric(15, 2), nullable=False)  # FG produced
+    
+    # Loss/Reject
+    loss_quantity = db.Column(db.Numeric(15, 2), default=0)
+    loss_percentage = db.Column(db.Numeric(5, 2), default=0)  # Auto-calculated
+    
+    # Batch and Expiry
+    batch_number = db.Column(db.String(100), nullable=False)
+    expiry_date = db.Column(db.Date, nullable=True)
+    production_date = db.Column(db.Date, nullable=False, default=datetime.utcnow)
+    
+    # UOM
+    uom = db.Column(db.String(20), default='pcs')
+    
+    # Pack per carton
+    pack_per_carton = db.Column(db.Integer, default=1)
+    total_cartons = db.Column(db.Integer, default=0)  # Auto-calculated
+    
+    notes = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    
+    # Relationships
+    conversion = db.relationship('FGConversion', back_populates='items')
+    wip_product = db.relationship('Product', foreign_keys=[wip_product_id])
+    fg_product = db.relationship('Product', foreign_keys=[fg_product_id])
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'conversion_id': self.conversion_id,
+            'wip_product_id': self.wip_product_id,
+            'wip_product_name': self.wip_product.name if self.wip_product else None,
+            'wip_quantity': float(self.wip_quantity or 0),
+            'fg_product_id': self.fg_product_id,
+            'fg_product_name': self.fg_product.name if self.fg_product else None,
+            'fg_quantity': float(self.fg_quantity or 0),
+            'loss_quantity': float(self.loss_quantity or 0),
+            'loss_percentage': float(self.loss_percentage or 0),
+            'batch_number': self.batch_number,
+            'expiry_date': self.expiry_date.isoformat() if self.expiry_date else None,
+            'production_date': self.production_date.isoformat() if self.production_date else None,
+            'uom': self.uom,
+            'pack_per_carton': self.pack_per_carton,
+            'total_cartons': self.total_cartons,
+            'notes': self.notes,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+        }
+    
+    def __repr__(self):
+        return f'<FGConversionItem WIP:{self.wip_product_id} → FG:{self.fg_product_id}>'
+
+
+class FGConversionMaterial(db.Model):
+    """FG Conversion Material - Materials consumed during WIP to FG conversion"""
+    __tablename__ = 'fg_conversion_materials'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    conversion_id = db.Column(db.Integer, db.ForeignKey('fg_conversions.id', ondelete='CASCADE'), nullable=False)
+    
+    # Material consumed (packaging, labels, etc from BOM)
+    material_id = db.Column(db.Integer, db.ForeignKey('materials.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=True)  # If consuming product as material
+    
+    # Quantity
+    quantity_required = db.Column(db.Numeric(15, 2), nullable=False)  # From BOM calculation
+    quantity_consumed = db.Column(db.Numeric(15, 2), nullable=False)  # Actual consumed
+    uom = db.Column(db.String(20), nullable=False)
+    
+    # Cost
+    unit_cost = db.Column(db.Numeric(15, 4), nullable=True)
+    total_cost = db.Column(db.Numeric(15, 2), nullable=True)
+    
+    # FIFO deduction tracking
+    deducted_from_inventory = db.Column(db.Boolean, default=False)
+    inventory_movement_id = db.Column(db.Integer, db.ForeignKey('inventory_movements.id'), nullable=True)
+    
+    # Batch tracking
+    source_batch = db.Column(db.String(100), nullable=True)  # Batch of material consumed
+    
+    notes = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    
+    # Relationships
+    conversion = db.relationship('FGConversion', back_populates='materials')
+    material = db.relationship('Material')
+    product = db.relationship('Product')
+    inventory_movement = db.relationship('InventoryMovement')
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'conversion_id': self.conversion_id,
+            'material_id': self.material_id,
+            'material_name': self.material.name if self.material else None,
+            'material_code': self.material.code if self.material else None,
+            'product_id': self.product_id,
+            'product_name': self.product.name if self.product else None,
+            'quantity_required': float(self.quantity_required or 0),
+            'quantity_consumed': float(self.quantity_consumed or 0),
+            'uom': self.uom,
+            'unit_cost': float(self.unit_cost or 0),
+            'total_cost': float(self.total_cost or 0),
+            'deducted_from_inventory': self.deducted_from_inventory,
+            'source_batch': self.source_batch,
+            'notes': self.notes,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+        }
+    
+    def __repr__(self):
+        return f'<FGConversionMaterial {self.material_id} - {self.quantity_consumed} {self.uom}>'
+
+
+class FGConversionLossDetail(db.Model):
+    """FG Conversion Loss Detail - Track loss/reject with reasons and cost impact"""
+    __tablename__ = 'fg_conversion_loss_details'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    conversion_id = db.Column(db.Integer, db.ForeignKey('fg_conversions.id', ondelete='CASCADE'), nullable=False)
+    conversion_item_id = db.Column(db.Integer, db.ForeignKey('fg_conversion_items.id'), nullable=True)
+    
+    # Loss details
+    loss_type = db.Column(db.String(50), nullable=False)  # reject, waste, spillage, quality_issue, other
+    loss_quantity = db.Column(db.Numeric(15, 2), nullable=False)
+    uom = db.Column(db.String(20), nullable=False)
+    
+    # Reason and category
+    loss_reason = db.Column(db.String(200), nullable=False)
+    loss_category = db.Column(db.String(50), nullable=True)  # mesin, operator, material, design, other
+    
+    # Cost impact
+    unit_cost = db.Column(db.Numeric(15, 4), nullable=True)
+    total_cost_impact = db.Column(db.Numeric(15, 2), nullable=True)
+    
+    # Responsibility
+    responsible_dept = db.Column(db.String(100), nullable=True)  # production, quality, warehouse, etc
+    pic = db.Column(db.String(200), nullable=True)
+    
+    # Action taken
+    corrective_action = db.Column(db.Text, nullable=True)
+    preventive_action = db.Column(db.Text, nullable=True)
+    
+    notes = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    
+    # Relationships
+    conversion = db.relationship('FGConversion', back_populates='loss_details')
+    conversion_item = db.relationship('FGConversionItem')
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'conversion_id': self.conversion_id,
+            'conversion_item_id': self.conversion_item_id,
+            'loss_type': self.loss_type,
+            'loss_quantity': float(self.loss_quantity or 0),
+            'uom': self.uom,
+            'loss_reason': self.loss_reason,
+            'loss_category': self.loss_category,
+            'unit_cost': float(self.unit_cost or 0),
+            'total_cost_impact': float(self.total_cost_impact or 0),
+            'responsible_dept': self.responsible_dept,
+            'pic': self.pic,
+            'corrective_action': self.corrective_action,
+            'preventive_action': self.preventive_action,
+            'notes': self.notes,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+        }
+    
+    def __repr__(self):
+        return f'<FGConversionLossDetail {self.loss_type} - {self.loss_quantity} {self.uom}>'

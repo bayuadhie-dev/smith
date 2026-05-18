@@ -115,6 +115,8 @@ class InventoryMovement(db.Model):
     expiry_date = db.Column(db.Date, nullable=True)
     unit_cost = db.Column(db.Numeric(15, 4), nullable=True)
     total_cost = db.Column(db.Numeric(15, 2), nullable=True)
+    quantity_before = db.Column(db.Numeric(15, 2), nullable=True)
+    quantity_after = db.Column(db.Numeric(15, 2), nullable=True)
     notes = db.Column(db.Text, nullable=True)
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)

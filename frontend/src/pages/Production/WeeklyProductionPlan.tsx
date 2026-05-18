@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
+import SearchableSelect from '../../components/SearchableSelect';
 import {
   PlusIcon,
   ChevronLeftIcon,
@@ -943,10 +944,15 @@ const WeeklyProductionPlan: React.FC = () => {
                 
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-1.5">Produk <span className="text-red-500">*</span></label>
-                  <select
-                    value={formData.product_id}
-                    onChange={(e) => {
-                      const productId = e.target.value;
+                  <SearchableSelect
+                    options={products.map(p => ({
+                      id: p.id,
+                      code: p.code,
+                      name: `${p.name}${p.packs_per_karton ? ` (${p.packs_per_karton}/ctn)` : ''}`
+                    }))}
+                    value={formData.product_id ? parseInt(formData.product_id) : null}
+                    onChange={(value) => {
+                      const productId = value?.toString() || '';
                       const selectedProduct = products.find(p => p.id === parseInt(productId));
                       setFormData({ 
                         ...formData, 
@@ -955,13 +961,10 @@ const WeeklyProductionPlan: React.FC = () => {
                         qty_per_ctn: selectedProduct?.packs_per_karton?.toString() || formData.qty_per_ctn
                       });
                     }}
-                    className="w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl text-sm focus:border-blue-400 focus:outline-none transition-colors"
-                  >
-                    <option value="">Pilih Produk</option>
-                    {products.map((p) => (
-                      <option key={p.id} value={p.id}>{p.code} - {p.name} {p.packs_per_karton ? `(${p.packs_per_karton}/ctn)` : ''}</option>
-                    ))}
-                  </select>
+                    placeholder="Cari produk..."
+                    className="w-full"
+                    required
+                  />
                 </div>
                 
                 <div>

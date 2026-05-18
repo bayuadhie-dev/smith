@@ -121,7 +121,7 @@ def create_app(config_class=Config):
 
         key_func=get_remote_address,
 
-        default_limits=["300 per day", "100 per hour"],
+        default_limits=["5000 per hour"],
 
         storage_uri="memory://"  # In-memory storage (no Redis needed)
 
@@ -197,22 +197,6 @@ def create_app(config_class=Config):
 
     
 
-    
-    # Initialize rate limiting
-    limiter = Limiter(
-        key_func=get_remote_address,
-        default_limits=["300 per day", "100 per hour"],
-        storage_uri="memory://"  # In-memory storage (no Redis needed)
-    )
-    
-    # Exempt notifications from rate limiting to allow legitimate polling
-    @limiter.request_filter
-    def exempt_notifications():
-        from flask import request
-        return request.path.startswith('/api/notifications')
-    
-    limiter.init_app(app)
-    app.limiter = limiter  # Make limiter accessible from app instance
     
     # Initialize security headers with Talisman (only in production)
     if os.getenv('FLASK_ENV', 'development') != 'development':
@@ -254,24 +238,27 @@ def create_app(config_class=Config):
     
 
     # CORS configuration - allow production domain, local development, and LAN
-
+    import socket
+    
     allowed_origins = [
-
         'https://erp.graterp.my.id',
-
         'https://api.graterp.my.id',
-
         'http://erp.graterp.my.id',   # HTTP fallback for production
-
         'http://api.graterp.my.id',   # HTTP fallback for production
-
         'http://localhost:3000',
-
         'http://127.0.0.1:3000',
-
-        'http://192.168.0.62:3000',   # LAN access
-
     ]
+    
+    # Auto-detect LAN IP addresses for development
+    try:
+        hostname = socket.gethostname()
+        local_ips = socket.gethostbyname_ex(hostname)[2]
+        for ip in local_ips:
+            if ip.startswith('192.168.') or ip.startswith('10.') or ip.startswith('172.'):
+                allowed_origins.append(f'http://{ip}:3000')
+                print(f"✓ Added LAN origin: http://{ip}:3000")
+    except Exception as e:
+        print(f"Warning: Could not auto-detect LAN IP: {e}")
 
     
 
@@ -575,6 +562,10 @@ def create_app(config_class=Config):
     from routes.production_input import production_input_bp
 
     app.register_blueprint(production_input_bp, url_prefix='/api/production-input')
+
+    # Downtime Action Items
+    from routes.downtime_actions import downtime_actions_bp
+    app.register_blueprint(downtime_actions_bp, url_prefix='/api/downtime-actions')
 
     app.register_blueprint(finance_bp, url_prefix='/api/finance')
 
@@ -887,6 +878,12 @@ def create_app(config_class=Config):
     from routes.mbf_report import mbf_report_bp
     app.register_blueprint(mbf_report_bp, url_prefix='/api/mbf-report')
     
+    # ========================================
+    # FG Conversion - WIP to Finish Good
+    # ========================================
+    from routes.fg_conversion import fg_conversion_bp
+    app.register_blueprint(fg_conversion_bp)
+    
 
     # Serve uploaded files
 
@@ -1177,51 +1174,11 @@ def create_initial_data(app):
     
 
     if not admin_user:
-
-        # Create admin user
-
-        admin_user = User(
-
-            username='admin',
-
-            email='admin@gratiams.com',
-
-            password_hash='',  # Will be set below
-
-            full_name='System Administrator',
-
-            is_active=True,
-
-            is_admin=True
-
-        )
-
-        admin_user.set_password('admin123')
-
-        db.session.add(admin_user)
-
-        try:
-
-            db.session.commit()
-
-            print("✓ Admin user created (username: admin, password: admin123)")
-
-        except Exception as e:
-
-            db.session.rollback()
-
-            print(f"Admin user already exists or error occurred: {e}")
-
-            # Try to get existing admin user
-
-            admin_user = User.query.filter_by(username='admin').first()
-
-            if not admin_user:
-
-                admin_user = User.query.filter_by(email='admin@gratiams.com').first()
-
+        # Admin user doesn't exist - this should only happen on first setup
+        # Password should be set manually by the system administrator
+        print("⚠️  Admin user not found. Please create admin user manually or run setup script.")
+        print("    For security reasons, default passwords are not created automatically.")
     else:
-
         print("✓ Admin user already exists")
 
     

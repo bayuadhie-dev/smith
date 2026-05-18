@@ -325,14 +325,18 @@ const UserProfile: React.FC = () => {
               {/* Roles */}
               {profile.roles && profile.roles.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-3">
-                  {profile.roles.map((role) => (
-                    <span
-                      key={role.id}
-                      className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm rounded-full"
-                    >
-                      {role.name}
-                    </span>
-                  ))}
+                  {profile.roles.map((role: any, index: number) => {
+                    const roleName = typeof role === 'string' ? role : role.name
+                    const roleKey = role?.id ?? roleName ?? index
+                    return (
+                      <span
+                        key={roleKey}
+                        className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm rounded-full"
+                      >
+                        {roleName}
+                      </span>
+                    )
+                  })}
                 </div>
               )}
             </div>

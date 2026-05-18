@@ -45,10 +45,22 @@ class ScheduleGridItem(db.Model):
     monthly_schedule = db.relationship('MonthlySchedule', backref='weekly_schedules')
     
     def to_dict(self):
-        # Get pack per carton from Product Packaging (priority) or use stored value
+        # Get pack per carton from stored value or query products table
         pack_per_ctn = self.qty_per_ctn or 0
-        if self.product and self.product.packaging:
-            pack_per_ctn = self.product.packaging.packs_per_karton or pack_per_ctn
+        if pack_per_ctn == 0:
+            product_data = db.session.execute(
+                db.text("SELECT pack_per_karton FROM products WHERE id = :id"),
+                {'id': self.product_id}
+            ).fetchone()
+            pack_per_ctn = int(product_data[0]) if product_data and product_data[0] else 0
+        
+        # Get product code and name
+        product_data = db.session.execute(
+            db.text("SELECT code, name FROM products WHERE id = :id"),
+            {'id': self.product_id}
+        ).fetchone()
+        product_code = product_data[0] if product_data else None
+        product_name = product_data[1] if product_data else None
         
         return {
             'id': self.id,
@@ -56,11 +68,11 @@ class ScheduleGridItem(db.Model):
             'machine_code': self.machine.code if self.machine else None,
             'machine_name': self.machine.name if self.machine else None,
             'product_id': self.product_id,
-            'product_code': self.product.code if self.product else None,
-            'product_name': self.product.name if self.product else None,
+            'product_code': product_code,
+            'product_name': product_name,
             'week_start': self.week_start.isoformat() if self.week_start else None,
             'order_ctn': float(self.order_ctn or 0),
-            'qty_per_ctn': pack_per_ctn,  # From Product Packaging
+            'qty_per_ctn': pack_per_ctn,
             'order_pack': float(self.order_ctn or 0) * pack_per_ctn,
             'spek_kain': self.spek_kain,
             'no_spk': self.no_spk,
@@ -90,7 +102,7 @@ class MonthlySchedule(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     year = db.Column(db.Integer, nullable=False)
     month = db.Column(db.Integer, nullable=False)  # 1-12
-    product_id = db.Column(db.Integer, nullable=False)  # References products_new.id
+    product_id = db.Column(db.Integer, nullable=False)  # References products.id
     machine_id = db.Column(db.Integer, db.ForeignKey('machines.id'), nullable=True)
     
     # Target quantities
@@ -132,7 +144,11 @@ class MonthlySchedule(db.Model):
         if product_data:
             product_code = product_data[0]
             product_name = product_data[1]
-            pack_per_ctn = product_data[2] or 0
+            # Ensure pack_per_ctn is a number (int or float)
+            try:
+                pack_per_ctn = int(product_data[2]) if product_data[2] else 0
+            except (ValueError, TypeError):
+                pack_per_ctn = 0
         
         return {
             'id': self.id,
@@ -422,12 +438,19 @@ def generate_work_order_from_schedule(id):
         
         db.session.commit()
         
+        # Get product name for response
+        product_data = db.session.execute(
+            db.text("SELECT name FROM products WHERE id = :id"),
+            {'id': schedule.product_id}
+        ).fetchone()
+        product_name = product_data[0] if product_data else None
+        
         return jsonify({
             'message': f'Work Order {wo_number} berhasil dibuat',
             'work_order': {
                 'id': work_order.id,
                 'wo_number': work_order.wo_number,
-                'product_name': schedule.product.name if schedule.product else None,
+                'product_name': product_name,
                 'quantity': float(work_order.quantity),
                 'machine_name': schedule.machine.name if schedule.machine else None,
                 'scheduled_start_date': work_order.scheduled_start_date.isoformat() if work_order.scheduled_start_date else None
@@ -508,9 +531,16 @@ def generate_work_orders_batch():
                 schedule.no_spk = wo_number
                 schedule.status = 'wo_created'
                 
+                # Get product name
+                product_data = db.session.execute(
+                    db.text("SELECT name FROM products WHERE id = :id"),
+                    {'id': schedule.product_id}
+                ).fetchone()
+                product_name = product_data[0] if product_data else None
+                
                 created_wos.append({
                     'wo_number': wo_number,
-                    'product_name': schedule.product.name if schedule.product else None,
+                    'product_name': product_name,
                     'quantity': total_quantity,
                     'machine_name': schedule.machine.name if schedule.machine else None
                 })
@@ -543,13 +573,23 @@ def check_schedules_for_today():
         
         pending_schedules = []
         
+        # Pre-fetch product data for all schedules
+        schedule_ids = [s.id for s in all_schedules]
+        product_data_map = {}
+        for schedule in all_schedules:
+            product_data = db.session.execute(
+                db.text("SELECT name FROM products WHERE id = :id"),
+                {'id': schedule.product_id}
+            ).fetchone()
+            product_data_map[schedule.id] = product_data[0] if product_data else None
+        
         for schedule in all_schedules:
             schedule_days = json.loads(schedule.schedule_days) if schedule.schedule_days else {}
             
             if today_str in schedule_days:
                 pending_schedules.append({
                     'id': schedule.id,
-                    'product_name': schedule.product.name if schedule.product else None,
+                    'product_name': product_data_map.get(schedule.id),
                     'machine_name': schedule.machine.name if schedule.machine else None,
                     'order_ctn': float(schedule.order_ctn or 0),
                     'qty_per_ctn': schedule.qty_per_ctn or 0,
@@ -767,7 +807,7 @@ def generate_work_order_from_approved_schedule(id):
                 priority='normal',
                 source_type='from_schedule',
                 schedule_grid_id=schedule.id,
-                schedule_days=json.dumps({date_str: shifts}),  # Only this day's shifts
+                # schedule_days removed - it's stored in ScheduleGridItem, not WorkOrder
                 workflow_status='pending',
                 notes=f"Auto-generated from Production Schedule #{schedule.id}. Tanggal: {date_str}. Shift: {', '.join(map(str, sorted(shifts)))}. Spek Kain: {schedule.spek_kain or '-'}",
                 created_by=current_user_id
@@ -957,12 +997,19 @@ def add_monthly_to_weekly(id):
         week_start = get_week_start(week_start_str)
         
         # Create weekly schedule item
+        # Get pack_per_karton from products table
+        product_data = db.session.execute(
+            db.text("SELECT pack_per_karton FROM products WHERE id = :id"),
+            {'id': monthly.product_id}
+        ).fetchone()
+        qty_per_ctn_from_db = int(product_data[0]) if product_data and product_data[0] else 0
+        
         weekly_item = ScheduleGridItem(
             machine_id=monthly.machine_id,
             product_id=monthly.product_id,
             week_start=week_start,
             order_ctn=order_ctn,
-            qty_per_ctn=monthly.product.packaging.packs_per_karton if monthly.product and monthly.product.packaging else 0,
+            qty_per_ctn=qty_per_ctn_from_db,
             spek_kain=monthly.spek_kain,
             color=monthly.color,
             schedule_days=json.dumps(schedule_days),
@@ -1100,22 +1147,36 @@ def get_monthly_schedules_pending_approval():
             items_detail = []
             total_pack = 0
             for item in items:
-                qty_per_ctn = 0
-                if item.product and item.product.packaging:
-                    qty_per_ctn = item.product.packaging.packs_per_karton or 0
-                target_pack = float(item.target_ctn or 0) * qty_per_ctn
-                total_pack += target_pack
-                
-                items_detail.append({
-                    'id': item.id,
-                    'product_code': item.product.code if item.product else '-',
-                    'product_name': item.product.name if item.product else '-',
-                    'machine_name': item.machine.name if item.machine else '-',
-                    'target_ctn': float(item.target_ctn or 0),
-                    'qty_per_ctn': qty_per_ctn,
-                    'target_pack': target_pack,
-                    'priority': item.priority or 'normal'
-                })
+                try:
+                    # Get product data via raw SQL
+                    product_data = db.session.execute(
+                        db.text("SELECT code, name, pack_per_karton FROM products WHERE id = :id"),
+                        {'id': item.product_id}
+                    ).fetchone()
+                    
+                    qty_per_ctn = int(product_data[2]) if product_data and product_data[2] else 0
+                    product_code = product_data[0] if product_data else '-'
+                    product_name = product_data[1] if product_data else '-'
+                    
+                    target_pack = float(item.target_ctn or 0) * qty_per_ctn
+                    total_pack += target_pack
+                    
+                    items_detail.append({
+                        'id': item.id,
+                        'product_code': product_code,
+                        'product_name': product_name,
+                        'machine_name': item.machine.name if item.machine else '-',
+                        'target_ctn': float(item.target_ctn or 0),
+                        'qty_per_ctn': qty_per_ctn,
+                        'target_pack': target_pack,
+                        'priority': item.priority or 'normal'
+                    })
+                except Exception as item_error:
+                    print(f"Error processing item {item.id}: {str(item_error)}")
+                    import traceback
+                    traceback.print_exc()
+                    # Skip this item but continue processing others
+                    continue
             
             pending_plans.append({
                 'year': year,
@@ -1137,6 +1198,9 @@ def get_monthly_schedules_pending_approval():
         }), 200
         
     except Exception as e:
+        print(f"Error in get_monthly_schedules_pending_approval: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 
@@ -1215,25 +1279,31 @@ def generate_monthly_schedule_print():
         # Calculate totals
         total_ctn = sum(float(s.target_ctn or 0) for s in schedules)
         
-        # Helper function to get qty_per_ctn from product packaging
+        # Helper function to get qty_per_ctn from product table
         def get_qty_per_ctn(schedule):
-            if schedule.product and schedule.product.packaging:
-                return schedule.product.packaging.packs_per_karton or 0
-            return 0
+            product_data = db.session.execute(
+                db.text("SELECT pack_per_karton FROM products WHERE id = :id"),
+                {'id': schedule.product_id}
+            ).fetchone()
+            qty = int(product_data[0]) if product_data and product_data[0] else 0
+            return qty
         
         total_pack = sum(float(s.target_ctn or 0) * get_qty_per_ctn(s) for s in schedules)
         
         # Build table rows
         rows_html = ''
         for idx, s in enumerate(schedules, 1):
-            product_code = s.product.code if s.product else '-'
-            product_name = s.product.name if s.product else '-'
+            # Get product data via raw SQL
+            product_data = db.session.execute(
+                db.text("SELECT code, name FROM products WHERE id = :id"),
+                {'id': s.product_id}
+            ).fetchone()
+            product_code = product_data[0] if product_data else '-'
+            product_name = product_data[1] if product_data else '-'
             machine_name = s.machine.name if s.machine else '-'
             target_ctn = float(s.target_ctn or 0)
-            # Get qty_per_ctn from Product Packaging
-            qty_per_ctn = 0
-            if s.product and s.product.packaging:
-                qty_per_ctn = s.product.packaging.packs_per_karton or 0
+            qty_per_ctn = get_qty_per_ctn(s)
+            
             target_pack = target_ctn * qty_per_ctn
             priority = s.priority or 'normal'
             status = s.status or 'draft'

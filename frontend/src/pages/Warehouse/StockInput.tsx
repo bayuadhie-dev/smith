@@ -52,6 +52,11 @@ interface StockInputItem {
   batch_number: string;
   expiry_date: string;
   notes: string;
+  errors: {
+    item?: string;
+    quantity?: string;
+    location?: string;
+  };
 }
 
 const StockInput: React.FC = () => {
@@ -59,12 +64,14 @@ const StockInput: React.FC = () => {
 
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [fetchingData, setFetchingData] = useState(true);
   const [products, setProducts] = useState<Product[]>([]);
   const [materials, setMaterials] = useState<Material[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [stockItems, setStockItems] = useState<StockInputItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedItemType, setSelectedItemType] = useState<'product' | 'material'>('material');
+  const [submitErrors, setSubmitErrors] = useState<string[]>([]);
 
   // Form data
   const [formData, setFormData] = useState({
@@ -77,9 +84,10 @@ const StockInput: React.FC = () => {
   });
 
   useEffect(() => {
-    fetchProducts();
-    fetchMaterials();
-    fetchLocations();
+    Promise.all([fetchProducts(), fetchMaterials(), fetchLocations()])
+      .finally(() => {
+        setFetchingData(false);
+      });
     generateReferenceNumber();
   }, []);
 
@@ -161,7 +169,8 @@ const StockInput: React.FC = () => {
       location_name: '',
       batch_number: '',
       expiry_date: '',
-      notes: ''
+      notes: '',
+      errors: {}
     };
     setStockItems([...stockItems, newItem]);
   };
@@ -173,7 +182,18 @@ const StockInput: React.FC = () => {
   const updateStockItem = (id: string, field: string, value: any) => {
     setStockItems(stockItems.map(item => {
       if (item.id === id) {
-        const updatedItem = { ...item, [field]: value };
+        const updatedItem = { ...item, [field]: value, errors: { ...item.errors } };
+        
+        // Clear error when field is updated
+        if (field === 'product_id' || field === 'material_id') {
+          updatedItem.errors.item = undefined;
+        }
+        if (field === 'quantity') {
+          updatedItem.errors.quantity = undefined;
+        }
+        if (field === 'location_id') {
+          updatedItem.errors.location = undefined;
+        }
         
         // Handle item selection
         if (field === 'product_id' && value) {
@@ -209,10 +229,47 @@ const StockInput: React.FC = () => {
     }));
   };
 
+  const validateStockItems = () => {
+    const errors: string[] = [];
+    const updatedItems = stockItems.map(item => {
+      const itemErrors: any = {};
+      
+      if (item.item_type === 'product' && !item.product_id) {
+        itemErrors.item = 'Product must be selected';
+        errors.push(`Row: Product must be selected`);
+      }
+      if (item.item_type === 'material' && !item.material_id) {
+        itemErrors.item = 'Material must be selected';
+        errors.push(`Row: Material must be selected`);
+      }
+      if (!item.quantity || item.quantity <= 0) {
+        itemErrors.quantity = 'Quantity must be greater than 0';
+        errors.push(`Row: Quantity must be greater than 0`);
+      }
+      if (!item.location_id) {
+        itemErrors.location = 'Location must be selected';
+        errors.push(`Row: Location must be selected`);
+      }
+      
+      return { ...item, errors: itemErrors };
+    });
+    
+    setStockItems(updatedItems);
+    return errors;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitErrors([]);
+    
     if (stockItems.length === 0) {
-      alert('Please add at least one stock item');
+      setSubmitErrors(['Please add at least one stock item']);
+      return;
+    }
+
+    const validationErrors = validateStockItems();
+    if (validationErrors.length > 0) {
+      setSubmitErrors(validationErrors);
       return;
     }
 
@@ -246,11 +303,11 @@ const StockInput: React.FC = () => {
         navigate('/app/warehouse/inventory');
       } else {
         const error = await response.json();
-        alert(`Error: ${error.message}`);
+        setSubmitErrors([`Error: ${error.message}`]);
       }
     } catch (error) {
       console.error('Failed to save stock input:', error);
-      alert('Failed to save stock input');
+      setSubmitErrors(['Failed to save stock input. Please try again.']);
     } finally {
       setLoading(false);
     }
@@ -285,8 +342,17 @@ const StockInput: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center space-x-3">
-            <QrCodeIcon className="h-6 w-6 text-blue-600" />
-            <span className="text-sm text-gray-500 dark:text-gray-400">Manual Entry Mode</span>
+            {fetchingData ? (
+              <div className="flex items-center text-gray-500">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500 mr-2"></div>
+                <span className="text-sm">Loading data...</span>
+              </div>
+            ) : (
+              <>
+                <QrCodeIcon className="h-6 w-6 text-blue-600" />
+                <span className="text-sm text-gray-500 dark:text-gray-400">Manual Entry Mode</span>
+              </>
+            )}
           </div>
         </div>
 
@@ -339,6 +405,7 @@ const StockInput: React.FC = () => {
 
             <div className="mt-6">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                {t('common.notes')}
               </label>
               <textarea
                 value={formData.notes}
@@ -378,6 +445,20 @@ const StockInput: React.FC = () => {
               </div>
             </div>
 
+            {submitErrors.length > 0 && (
+              <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="flex items-center mb-2">
+                  <ExclamationCircleIcon className="h-5 w-5 text-red-600 mr-2" />
+                  <h3 className="text-sm font-medium text-red-800">Please fix the following errors:</h3>
+                </div>
+                <ul className="text-sm text-red-700 list-disc list-inside">
+                  {submitErrors.map((error, idx) => (
+                    <li key={idx}>{error}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             {stockItems.length === 0 ? (
               <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                 <CubeIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
@@ -385,7 +466,7 @@ const StockInput: React.FC = () => {
                 <p className="text-sm">Click "Add Item" to start adding stock</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-visible">
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                   <thead className="bg-gray-50 dark:bg-gray-900">
                     <tr>
@@ -416,52 +497,77 @@ const StockInput: React.FC = () => {
                         </td>
                         <td className="px-4 py-3">
                           {item.item_type === 'material' ? (
-                            <SearchableSelect
-                              options={materials}
-                              value={item.material_id}
-                              onChange={(val) => updateStockItem(item.id, 'material_id', val)}
-                              placeholder="Select Material"
-                              className="text-sm min-w-[200px]"
-                            />
+                            <div>
+                              <SearchableSelect
+                                options={materials}
+                                value={item.material_id}
+                                onChange={(val) => updateStockItem(item.id, 'material_id', val)}
+                                placeholder="Select Material"
+                                className={`text-sm min-w-[200px] ${item.errors.item ? 'border-red-500' : ''}`}
+                              />
+                              {item.errors.item && (
+                                <div className="text-xs text-red-600 mt-1">{item.errors.item}</div>
+                              )}
+                              {item.item_name && (
+                                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                  {item.item_code} | UOM: {item.uom}
+                                </div>
+                              )}
+                            </div>
                           ) : (
-                             <SearchableSelect
-                              options={products}
-                              value={item.product_id}
-                              onChange={(val) => updateStockItem(item.id, 'product_id', val)}
-                              placeholder={t('common.search') + " " + t('navigation.products')}
-                              className="text-sm min-w-[200px]"
-                            />
-                          )}
-                          {item.item_name && (
-                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                              {item.item_code} | UOM: {item.uom}
+                            <div>
+                              <SearchableSelect
+                                options={products}
+                                value={item.product_id}
+                                onChange={(val) => updateStockItem(item.id, 'product_id', val)}
+                                placeholder={t('common.search') + " " + t('navigation.products')}
+                                className={`text-sm min-w-[200px] ${item.errors.item ? 'border-red-500' : ''}`}
+                              />
+                              {item.errors.item && (
+                                <div className="text-xs text-red-600 mt-1">{item.errors.item}</div>
+                              )}
+                              {item.item_name && (
+                                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                  {item.item_code} | UOM: {item.uom}
+                                </div>
+                              )}
                             </div>
                           )}
                         </td>
                         <td className="px-4 py-3">
-                          <input
-                            type="number"
-                            value={item.quantity}
-                            onChange={(e) => updateStockItem(item.id, 'quantity', Number(e.target.value))}
-                            min="0"
-                            step="0.01"
-                            className="w-20 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500"
-                            required
-                          />
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{item.uom}</div>
+                          <div>
+                            <input
+                              type="number"
+                              value={item.quantity}
+                              onChange={(e) => updateStockItem(item.id, 'quantity', Number(e.target.value))}
+                              min="0.01"
+                              step="0.01"
+                              className={`w-20 px-2 py-1 text-sm border rounded focus:ring-1 focus:ring-blue-500 ${item.errors.quantity ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'}`}
+                              required
+                            />
+                            {item.errors.quantity && (
+                              <div className="text-xs text-red-600 mt-1">{item.errors.quantity}</div>
+                            )}
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{item.uom}</div>
+                          </div>
                         </td>
                         <td className="px-4 py-3">
-                          <SearchableSelect
-                            options={locations.map(loc => ({
-                              id: loc.id,
-                              name: loc.name,
-                              label: `${loc.zone_name} - ${loc.name}`
-                            }))}
-                            value={item.location_id}
-                            onChange={(val) => updateStockItem(item.id, 'location_id', val)}
-                            placeholder={t('common.search') + " " + t('warehouse.locations')}
-                            className="text-sm"
-                          />
+                          <div>
+                            <SearchableSelect
+                              options={locations.map(loc => ({
+                                id: loc.id,
+                                name: loc.name,
+                                label: `${loc.zone_name} - ${loc.name}`
+                              }))}
+                              value={item.location_id}
+                              onChange={(val) => updateStockItem(item.id, 'location_id', val)}
+                              placeholder={t('common.search') + " " + t('warehouse.locations')}
+                              className={`text-sm ${item.errors.location ? 'border-red-500' : ''}`}
+                            />
+                            {item.errors.location && (
+                              <div className="text-xs text-red-600 mt-1">{item.errors.location}</div>
+                            )}
+                          </div>
                         </td>
                         <td className="px-4 py-3">
                           <input
@@ -498,24 +604,30 @@ const StockInput: React.FC = () => {
 
           {/* Summary */}
           {stockItems.length > 0 && (
-            <div className="bg-blue-50 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-blue-900 mb-4">Summary</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-4">Summary</h3>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                  <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">{stockItems.length}</div>
-                  <div className="text-sm text-blue-800">{t('common.total')} Items</div>
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stockItems.length}</div>
+                  <div className="text-sm text-blue-800 dark:text-blue-200">{t('common.total')} Items</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">
+                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                     {stockItems.filter(item => item.item_type === 'material').length}
                   </div>
-                  <div className="text-sm text-green-800">Materials</div>
+                  <div className="text-sm text-green-800 dark:text-green-200">Materials</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-600">
+                  <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                     {stockItems.filter(item => item.item_type === 'product').length}
                   </div>
-                  <div className="text-sm text-purple-800">{t('navigation.products')}</div>
+                  <div className="text-sm text-purple-800 dark:text-purple-200">{t('navigation.products')}</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                    {stockItems.reduce((sum, item) => sum + (item.quantity || 0), 0).toFixed(2)}
+                  </div>
+                  <div className="text-sm text-orange-800 dark:text-orange-200">Total Quantity</div>
                 </div>
               </div>
             </div>

@@ -13,7 +13,8 @@ import {
   CubeIcon,
   ChartBarIcon,
   CogIcon,
-  ShieldCheckIcon
+  ShieldCheckIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 
 // Google Icon SVG
@@ -35,6 +36,8 @@ export default function Login() {
   const [companyName, setCompanyName] = useState('ERP System')
   const [googleEnabled, setGoogleEnabled] = useState(false)
   const [sessionMessage, setSessionMessage] = useState<string | null>(null)
+  const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null)
+  const [accountLocked, setAccountLocked] = useState(false)
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const location = useLocation()
@@ -107,6 +110,8 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+    setRemainingAttempts(null)
+    setAccountLocked(false)
 
     try {
       await dispatch(login({ username, password })).unwrap()
@@ -117,7 +122,25 @@ export default function Login() {
       // Use RoleBasedRedirect logic - navigate will be handled by App.tsx
       window.location.href = '/'
     } catch (error: any) {
-      toast.error(error || 'Login failed')
+      // Check if account is locked
+      if (error.includes('locked') || error.includes('Account locked')) {
+        setAccountLocked(true)
+        toast.error(error, { duration: 6000 })
+      } else {
+        // Extract remaining attempts from error message if available
+        const attemptsMatch = error.match(/(\d+) attempts? remaining/)
+        if (attemptsMatch) {
+          const attempts = parseInt(attemptsMatch[1])
+          setRemainingAttempts(attempts)
+          if (attempts <= 2) {
+            toast.error(`Warning: Only ${attempts} attempts remaining before account lockout!`, { duration: 5000 })
+          } else {
+            toast.error(error)
+          }
+        } else {
+          toast.error(error || 'Login failed')
+        }
+      }
     } finally {
       setLoading(false)
     }
@@ -227,6 +250,44 @@ export default function Login() {
                 <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
                   {sessionMessage}
                 </p>
+              </div>
+            </div>
+          )}
+
+          {/* Account Locked Warning */}
+          {accountLocked && (
+            <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-xl">
+              <div className="flex items-center gap-3">
+                <div className="flex-shrink-0">
+                  <ShieldCheckIcon className="h-5 w-5 text-red-500" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-red-800 dark:text-red-200">
+                    Account Locked
+                  </p>
+                  <p className="text-xs text-red-700 dark:text-red-300 mt-1">
+                    Too many failed login attempts. Please wait 5 minutes before trying again.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Remaining Attempts Warning */}
+          {remainingAttempts !== null && remainingAttempts <= 2 && !accountLocked && (
+            <div className="mb-6 p-4 bg-orange-50 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-700 rounded-xl">
+              <div className="flex items-center gap-3">
+                <div className="flex-shrink-0">
+                  <ExclamationTriangleIcon className="h-5 w-5 text-orange-500" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-orange-800 dark:text-orange-200">
+                    Warning: {remainingAttempts} {remainingAttempts === 1 ? 'attempt' : 'attempts'} remaining
+                  </p>
+                  <p className="text-xs text-orange-700 dark:text-orange-300 mt-1">
+                    Your account will be locked for 5 minutes after {remainingAttempts} more failed {remainingAttempts === 1 ? 'attempt' : 'attempts'}.
+                  </p>
+                </div>
               </div>
             </div>
           )}
