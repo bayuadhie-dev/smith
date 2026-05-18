@@ -1400,7 +1400,7 @@ def create_work_order_production_record(id):
                 machine_id=machine_id,
                 product_id=product_id,
                 work_order_id=id,
-                batch_number=wo.batch_number,  # Get batch number from Work Order
+                batch_number=data.get('batch_number') or wo.batch_number,  # From request or fallback to WO
                 target_quantity=wo.quantity,
                 actual_quantity=actual_qty,
                 good_quantity=good_qty,

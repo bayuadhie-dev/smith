@@ -30,6 +30,7 @@ interface WorkOrder {
   machine_default_speed?: number;  // Default speed from machine settings
   status: string;
   pack_per_carton: number;
+  batch_number?: string;
   consumption_data?: ConsumptionData;
   source_type?: string;  // manual, from_bom, from_schedule
   schedule_grid_id?: number;
@@ -391,6 +392,7 @@ export default function WorkOrderProductionInput() {
     operator_reassigned: false,
     reassignment_task: '',
     reassignment_notes: '',
+    batch_number: '',
   });
 
   // Downtime entries list
@@ -794,7 +796,7 @@ export default function WorkOrderProductionInput() {
       // Set machine shift records (ShiftProduction) for shift time usage calculation
       setMachineShiftRecords(machineRecords);
 
-      // Auto-fill machine_speed and pack_per_carton from WO
+      // Auto-fill machine_speed, pack_per_carton, and batch_number from WO
       setFormData(prev => {
         const updates: any = {};
         if (workOrderData?.machine_default_speed && workOrderData.machine_default_speed > 0 &&
@@ -804,6 +806,9 @@ export default function WorkOrderProductionInput() {
         if (workOrderData?.pack_per_carton && workOrderData.pack_per_carton > 0 &&
           (!prev.pack_per_carton || prev.pack_per_carton === '')) {
           updates.pack_per_carton = workOrderData.pack_per_carton.toString();
+        }
+        if (workOrderData?.batch_number && (!prev.batch_number || prev.batch_number === '')) {
+          updates.batch_number = workOrderData.batch_number;
         }
         return Object.keys(updates).length > 0 ? { ...prev, ...updates } : prev;
       });
@@ -1150,6 +1155,7 @@ export default function WorkOrderProductionInput() {
         })),
         pack_per_carton: parseInt(formData.pack_per_carton) || 0,
         operator_id: formData.operator_id ? parseInt(formData.operator_id) : null,
+        batch_number: formData.batch_number || null,
         notes: formData.notes,
         // Early Stop / Shift Interruption
         early_stop: formData.early_stop,
@@ -1572,6 +1578,26 @@ export default function WorkOrderProductionInput() {
               min="1"
               required
             />
+          </div>
+        </div>
+
+        {/* Batch Number */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+              No. Batch
+              {workOrder?.batch_number && (
+                <span className="ml-2 text-xs text-green-600 font-normal">✓ dari Work Order</span>
+              )}
+            </label>
+            <input
+              type="text"
+              value={formData.batch_number}
+              onChange={(e) => handleChange('batch_number', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono"
+              placeholder="BATCH-YYYYMMDD-XXX"
+            />
+            <p className="text-xs text-gray-400 mt-1">Format: BATCH-20260518-001 · Otomatis mengalir ke WIP, FG, QC, Shipping</p>
           </div>
         </div>
 
