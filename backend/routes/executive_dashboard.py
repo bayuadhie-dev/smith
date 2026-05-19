@@ -3643,3 +3643,132 @@ def get_production_output_details():
         traceback.print_exc()
 
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@executive_dashboard_bp.route('/fg-conversion-summary', methods=['GET'])
+@jwt_required(optional=True)
+def get_fg_conversion_summary():
+    """FG Conversion summary for production monitoring public dashboard"""
+    try:
+        from models.production import FGConversion, FGConversionItem
+
+        year = request.args.get('year', get_local_now().year, type=int)
+        month = request.args.get('month', get_local_now().month, type=int)
+
+        month_names = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
+
+        start_date = datetime(year, month, 1)
+        if month == 12:
+            end_date = datetime(year + 1, 1, 1) - timedelta(seconds=1)
+        else:
+            end_date = datetime(year, month + 1, 1) - timedelta(seconds=1)
+
+        conversions = FGConversion.query.filter(
+            FGConversion.conversion_date >= start_date,
+            FGConversion.conversion_date <= end_date
+        ).order_by(FGConversion.conversion_date.desc()).all()
+
+        # Summary totals
+        total_wip = sum(float(c.total_wip_qty or 0) for c in conversions)
+        total_fg = sum(float(c.total_fg_qty or 0) for c in conversions)
+        total_loss = sum(float(c.total_loss_qty or 0) for c in conversions)
+        loss_pct = round(total_loss / total_wip * 100, 2) if total_wip > 0 else 0
+        completed_count = sum(1 for c in conversions if c.status == 'completed')
+
+        # Status breakdown
+        status_counts = {}
+        for c in conversions:
+            status_counts[c.status] = status_counts.get(c.status, 0) + 1
+
+        # By product aggregation
+        by_product = {}
+        for conv in conversions:
+            for item in conv.items:
+                fg_name = item.fg_product.name if item.fg_product else 'Unknown'
+                fg_name = clean_product_name(fg_name)
+                if fg_name not in by_product:
+                    by_product[fg_name] = {
+                        'product_name': fg_name,
+                        'fg_qty': 0, 'wip_qty': 0, 'loss_qty': 0,
+                        'cartons': 0, 'batches': set()
+                    }
+                by_product[fg_name]['fg_qty'] += float(item.fg_quantity or 0)
+                by_product[fg_name]['wip_qty'] += float(item.wip_quantity or 0)
+                by_product[fg_name]['loss_qty'] += float(item.loss_quantity or 0)
+                by_product[fg_name]['cartons'] += int(item.total_cartons or 0)
+                by_product[fg_name]['batches'].add(conv.batch_number)
+
+        products_list = []
+        for pname, pd in by_product.items():
+            products_list.append({
+                'product_name': pname,
+                'fg_qty': round(pd['fg_qty'], 0),
+                'wip_qty': round(pd['wip_qty'], 0),
+                'loss_qty': round(pd['loss_qty'], 0),
+                'cartons': pd['cartons'],
+                'batch_count': len(pd['batches']),
+                'loss_pct': round(pd['loss_qty'] / pd['wip_qty'] * 100, 2) if pd['wip_qty'] > 0 else 0
+            })
+        products_list.sort(key=lambda x: x['cartons'], reverse=True)
+
+        # Recent conversions
+        recent = []
+        for c in conversions[:30]:
+            fg_products = ', '.join(
+                set(clean_product_name(item.fg_product.name) for item in c.items if item.fg_product)
+            ) if c.items else 'N/A'
+            wip_q = float(c.total_wip_qty or 0)
+            loss_q = float(c.total_loss_qty or 0)
+            recent.append({
+                'id': c.id,
+                'conversion_number': c.conversion_number,
+                'batch_number': c.batch_number,
+                'wo_number': c.work_order.wo_number if c.work_order else 'N/A',
+                'fg_products': fg_products,
+                'conversion_date': c.conversion_date.strftime('%Y-%m-%d') if c.conversion_date else None,
+                'status': c.status,
+                'qc_status': c.qc_status,
+                'total_wip_qty': wip_q,
+                'total_fg_qty': float(c.total_fg_qty or 0),
+                'total_loss_qty': loss_q,
+                'loss_pct': round(loss_q / wip_q * 100, 1) if wip_q > 0 else 0,
+                'batch_validated': c.batch_validated,
+                'conversion_type': c.conversion_type,
+            })
+
+        # Daily trend
+        daily_fg = {}
+        for c in conversions:
+            if c.conversion_date:
+                d = c.conversion_date.strftime('%Y-%m-%d')
+                if d not in daily_fg:
+                    daily_fg[d] = {'date': d, 'fg_qty': 0, 'loss_qty': 0, 'conversions': 0}
+                daily_fg[d]['fg_qty'] += float(c.total_fg_qty or 0)
+                daily_fg[d]['loss_qty'] += float(c.total_loss_qty or 0)
+                daily_fg[d]['conversions'] += 1
+        daily_trend = sorted(daily_fg.values(), key=lambda x: x['date'])
+
+        return jsonify({
+            'success': True,
+            'data': {
+                'period': {'year': year, 'month': month, 'month_name': month_names[month]},
+                'summary': {
+                    'total_conversions': len(conversions),
+                    'completed': completed_count,
+                    'total_wip_qty': round(total_wip, 0),
+                    'total_fg_qty': round(total_fg, 0),
+                    'total_loss_qty': round(total_loss, 0),
+                    'loss_pct': loss_pct,
+                },
+                'status_breakdown': status_counts,
+                'by_product': products_list,
+                'recent_conversions': recent,
+                'daily_trend': daily_trend,
+            }
+        }), 200
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
   ChartBarIcon, ExclamationTriangleIcon,
   ClockIcon, CubeIcon, CogIcon, ChevronDownIcon, ChevronUpIcon,
-  PresentationChartLineIcon, CalendarDaysIcon
+  PresentationChartLineIcon, CalendarDaysIcon, ArrowsRightLeftIcon
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
@@ -48,9 +48,12 @@ const ProductionMonitoringDashboard: React.FC = () => {
   const [viewMode, setViewMode] = useState<'monthly' | 'weekly'>('monthly');
   const [weekNumber, setWeekNumber] = useState(0);
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
-  const [activeTab, setActiveTab] = useState<'overview' | 'daily' | 'dailySwiper' | 'products' | 'machines' | 'downtime' | 'graph'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'daily' | 'dailySwiper' | 'products' | 'machines' | 'downtime' | 'graph' | 'fg'>('overview');
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [refreshInterval, setRefreshInterval] = useState(5); // minutes
+  const [fgData, setFgData] = useState<any>(null);
+  const [fgLoading, setFgLoading] = useState(false);
+  const [fgFetched, setFgFetched] = useState(false);
 
   // Prevent search engine indexing
   useEffect(() => {
@@ -188,6 +191,15 @@ const ProductionMonitoringDashboard: React.FC = () => {
     return () => clearInterval(intervalId);
   }, [autoRefresh, refreshInterval, year, month, viewMode, weekNumber]);
 
+  const fetchFgData = async () => {
+    try {
+      setFgLoading(true);
+      const params = new URLSearchParams({ year: String(year), month: String(month) });
+      const res = await axiosInstance.get(`/api/executive/fg-conversion-summary?${params}`);
+      if (res.data.success) setFgData(res.data.data);
+    } catch (e) { console.error(e); } finally { setFgLoading(false); setFgFetched(true); }
+  };
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -288,6 +300,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
     { id: 'machines', label: 'Per Mesin', icon: CogIcon },
     { id: 'downtime', label: 'Downtime', icon: ExclamationTriangleIcon },
     { id: 'graph', label: 'Graph', icon: PresentationChartLineIcon },
+    { id: 'fg', label: 'FG Conversion', icon: ArrowsRightLeftIcon },
   ];
 
   return (
@@ -471,6 +484,16 @@ const ProductionMonitoringDashboard: React.FC = () => {
       {activeTab === 'machines' && <MachinesTab data={data} />}
       {activeTab === 'downtime' && <DowntimeTab data={data} downtimePieData={downtimePieData} />}
       {activeTab === 'graph' && <GraphTab data={data} />}
+      {activeTab === 'fg' && (
+        <FGConversionTab
+          fgData={fgData}
+          fgLoading={fgLoading}
+          fgFetched={fgFetched}
+          onFetch={fetchFgData}
+          year={year}
+          month={month}
+        />
+      )}
     </div>
   );
 };
@@ -1970,6 +1993,266 @@ const GraphTab: React.FC<{ data: any }> = ({ data }) => {
             No work order data available for gantt chart
           </div>
         )}
+      </div>
+    </div>
+  );
+};
+
+// ==================== FG CONVERSION TAB ====================
+const FGConversionTab: React.FC<{
+  fgData: any; fgLoading: boolean; fgFetched: boolean;
+  onFetch: () => void; year: number; month: number;
+}> = ({ fgData, fgLoading, fgFetched, onFetch, year, month }) => {
+  useEffect(() => { if (!fgFetched) onFetch(); }, []);
+
+  const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
+    draft:       { label: 'Draft',      color: 'text-gray-600',  bg: 'bg-gray-100' },
+    in_progress: { label: 'Proses',     color: 'text-blue-600',  bg: 'bg-blue-100' },
+    completed:   { label: 'Selesai',    color: 'text-green-700', bg: 'bg-green-100' },
+    cancelled:   { label: 'Batal',      color: 'text-red-600',   bg: 'bg-red-100' },
+  };
+  const qcConfig: Record<string, { label: string; color: string }> = {
+    pass:   { label: 'Pass',   color: 'text-green-700' },
+    fail:   { label: 'Fail',   color: 'text-red-600' },
+    rework: { label: 'Rework', color: 'text-yellow-600' },
+    pending:{ label: 'Pending',color: 'text-gray-500' },
+  };
+
+  if (fgLoading) return (
+    <div className="flex items-center justify-center h-64">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm text-gray-500">Memuat data FG Conversion...</p>
+      </div>
+    </div>
+  );
+
+  if (!fgData) return (
+    <div className="flex flex-col items-center justify-center h-64 gap-4">
+      <ArrowsRightLeftIcon className="h-12 w-12 text-gray-300" />
+      <p className="text-gray-400">Belum ada data FG Conversion</p>
+      <button onClick={onFetch} className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700">Muat Data</button>
+    </div>
+  );
+
+  const { summary, by_product, recent_conversions, status_breakdown } = fgData;
+  const MONTH_NAMES = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+  const chartData = (by_product || []).slice(0, 10).map((p: any) => ({
+    name: stripPackagingSuffix(p.product_name),
+    cartons: p.cartons,
+    loss_pct: p.loss_pct,
+    fg_qty: p.fg_qty,
+    wip_qty: p.wip_qty,
+  }));
+
+  return (
+    <div className="space-y-5">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 rounded-2xl p-5 text-white shadow-xl">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-bold flex items-center gap-2">
+              <ArrowsRightLeftIcon className="h-6 w-6" /> FG Conversion — WIP ke Finished Good
+            </h2>
+            <p className="text-sm text-emerald-100 mt-1">{MONTH_NAMES[month]} {year} · Konversi WIP menjadi produk jadi siap kirim</p>
+          </div>
+          <button onClick={onFetch} className="self-start sm:self-auto px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition">
+            🔄 Refresh
+          </button>
+        </div>
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { label: 'Total Konversi', value: summary.total_conversions, sub: `${summary.completed} selesai`, color: 'from-indigo-500 to-blue-600', icon: '📦' },
+          { label: 'Total FG Output', value: fmtNum(summary.total_fg_qty), sub: 'pcs diproduksi', color: 'from-emerald-500 to-teal-600', icon: '✅' },
+          { label: 'Total WIP Input', value: fmtNum(summary.total_wip_qty), sub: 'pcs WIP dipakai', color: 'from-violet-500 to-purple-600', icon: '🏭' },
+          {
+            label: 'Loss Rate',
+            value: `${summary.loss_pct}%`,
+            sub: `${fmtNum(summary.total_loss_qty)} pcs loss`,
+            color: summary.loss_pct > 5 ? 'from-red-500 to-rose-600' : 'from-amber-400 to-orange-500',
+            icon: summary.loss_pct > 5 ? '⚠️' : '📉'
+          },
+        ].map((card, i) => (
+          <div key={i} className={`bg-gradient-to-br ${card.color} rounded-xl p-4 text-white shadow`}>
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-xs font-medium text-white/80">{card.label}</p>
+                <p className="text-2xl font-bold mt-1">{card.value}</p>
+                <p className="text-xs text-white/70 mt-1">{card.sub}</p>
+              </div>
+              <span className="text-2xl">{card.icon}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Status Breakdown + Chart */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Status Pills */}
+        <div className="bg-white rounded-xl p-5 shadow border">
+          <h3 className="text-sm font-semibold text-gray-900 mb-4">Status Konversi</h3>
+          <div className="space-y-3">
+            {Object.entries(status_breakdown || {}).map(([status, count]) => {
+              const cfg = statusConfig[status] || { label: status, color: 'text-gray-600', bg: 'bg-gray-100' };
+              const pct = summary.total_conversions > 0 ? Math.round((count as number) / summary.total_conversions * 100) : 0;
+              return (
+                <div key={status}>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${cfg.bg} ${cfg.color}`}>{cfg.label}</span>
+                    <span className="text-sm font-bold text-gray-800">{count as number} <span className="text-gray-400 font-normal text-xs">({pct}%)</span></span>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-1.5">
+                    <div className="h-1.5 rounded-full bg-gradient-to-r from-indigo-400 to-blue-500" style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              );
+            })}
+            {Object.keys(status_breakdown || {}).length === 0 && (
+              <p className="text-sm text-gray-400 text-center py-4">Tidak ada data</p>
+            )}
+          </div>
+        </div>
+
+        {/* Bar Chart Top 10 Products */}
+        <div className="lg:col-span-2 bg-white rounded-xl p-5 shadow border">
+          <h3 className="text-sm font-semibold text-gray-900 mb-3">Output FG per Produk (Top 10 · karton)</h3>
+          {chartData.length > 0 ? (
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} layout="vertical" margin={{ left: 10, right: 50 }}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                  <XAxis type="number" tick={{ fontSize: 11 }} />
+                  <YAxis dataKey="name" type="category" width={160} tick={{ fontSize: 10 }} />
+                  <Tooltip
+                    formatter={(val: number, name: string) => [
+                      name === 'cartons' ? `${fmtNum(val)} karton` : `${val}%`,
+                      name === 'cartons' ? 'FG Karton' : 'Loss %'
+                    ]}
+                  />
+                  <Bar dataKey="cartons" name="FG Karton" fill="#10B981" radius={[0, 4, 4, 0]}
+                    label={{ position: 'right', fontSize: 10, fill: '#374151', formatter: (v: number) => v > 0 ? fmtNum(v) : '' }}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <div className="h-64 flex items-center justify-center text-gray-400 text-sm">Tidak ada data produk</div>
+          )}
+        </div>
+      </div>
+
+      {/* Per Product Detail Table */}
+      <div className="bg-white rounded-xl shadow border overflow-hidden">
+        <div className="px-5 py-4 border-b bg-gradient-to-r from-emerald-50 to-teal-50">
+          <h3 className="text-sm font-semibold text-gray-900">Detail FG per Produk</h3>
+          <p className="text-xs text-gray-500 mt-0.5">WIP terpakai, FG dihasilkan, loss, dan jumlah batch</p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-gray-50 text-gray-600 text-xs font-semibold">
+                <th className="px-4 py-3 text-left">#</th>
+                <th className="px-4 py-3 text-left">Produk</th>
+                <th className="px-4 py-3 text-right">WIP Input (pcs)</th>
+                <th className="px-4 py-3 text-right">FG Output (pcs)</th>
+                <th className="px-4 py-3 text-right">Karton</th>
+                <th className="px-4 py-3 text-right">Loss (pcs)</th>
+                <th className="px-4 py-3 text-right">Loss %</th>
+                <th className="px-4 py-3 text-right">Batch</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {(by_product || []).map((p: any, i: number) => (
+                <tr key={i} className={`hover:bg-gray-50 transition ${p.loss_pct > 5 ? 'bg-red-50/40' : ''}`}>
+                  <td className="px-4 py-3 text-gray-400 text-xs">{i + 1}</td>
+                  <td className="px-4 py-3 font-medium text-gray-900">{stripPackagingSuffix(p.product_name)}</td>
+                  <td className="px-4 py-3 text-right text-gray-600">{fmtNum(p.wip_qty)}</td>
+                  <td className="px-4 py-3 text-right text-emerald-700 font-semibold">{fmtNum(p.fg_qty)}</td>
+                  <td className="px-4 py-3 text-right">
+                    <span className="bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full text-xs font-bold">{fmtNum(p.cartons)}</span>
+                  </td>
+                  <td className="px-4 py-3 text-right text-red-500">{fmtNum(p.loss_qty)}</td>
+                  <td className="px-4 py-3 text-right">
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                      p.loss_pct === 0 ? 'bg-green-100 text-green-700' :
+                      p.loss_pct <= 2 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'
+                    }`}>{p.loss_pct}%</span>
+                  </td>
+                  <td className="px-4 py-3 text-right text-gray-500">{p.batch_count}</td>
+                </tr>
+              ))}
+              {(by_product || []).length === 0 && (
+                <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-400">Tidak ada data produk</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Recent Conversions Table */}
+      <div className="bg-white rounded-xl shadow border overflow-hidden">
+        <div className="px-5 py-4 border-b bg-gradient-to-r from-slate-50 to-gray-50">
+          <h3 className="text-sm font-semibold text-gray-900">Riwayat Konversi Terbaru</h3>
+          <p className="text-xs text-gray-500 mt-0.5">30 konversi terakhir pada periode ini</p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="bg-gray-100 text-gray-600 font-semibold">
+                <th className="px-3 py-2.5 text-left">No. Konversi</th>
+                <th className="px-3 py-2.5 text-left">Batch</th>
+                <th className="px-3 py-2.5 text-left">WO</th>
+                <th className="px-3 py-2.5 text-left">Produk FG</th>
+                <th className="px-3 py-2.5 text-center">Tanggal</th>
+                <th className="px-3 py-2.5 text-center">Status</th>
+                <th className="px-3 py-2.5 text-center">QC</th>
+                <th className="px-3 py-2.5 text-right">WIP (pcs)</th>
+                <th className="px-3 py-2.5 text-right">FG (pcs)</th>
+                <th className="px-3 py-2.5 text-right">Loss %</th>
+                <th className="px-3 py-2.5 text-center">Validasi</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {(recent_conversions || []).map((c: any, i: number) => {
+                const sc = statusConfig[c.status] || { label: c.status, color: 'text-gray-600', bg: 'bg-gray-100' };
+                const qc = qcConfig[c.qc_status] || { label: c.qc_status, color: 'text-gray-500' };
+                return (
+                  <tr key={i} className="hover:bg-gray-50">
+                    <td className="px-3 py-2 font-mono text-indigo-700 font-medium">{c.conversion_number}</td>
+                    <td className="px-3 py-2 font-mono text-gray-600">{c.batch_number}</td>
+                    <td className="px-3 py-2 text-blue-600 font-medium">{c.wo_number}</td>
+                    <td className="px-3 py-2 text-gray-800 max-w-[180px] truncate" title={c.fg_products}>{stripPackagingSuffix(c.fg_products)}</td>
+                    <td className="px-3 py-2 text-center text-gray-500">{c.conversion_date}</td>
+                    <td className="px-3 py-2 text-center">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${sc.bg} ${sc.color}`}>{sc.label}</span>
+                    </td>
+                    <td className={`px-3 py-2 text-center font-semibold ${qc.color}`}>{qc.label}</td>
+                    <td className="px-3 py-2 text-right text-gray-600">{fmtNum(c.total_wip_qty)}</td>
+                    <td className="px-3 py-2 text-right text-emerald-700 font-semibold">{fmtNum(c.total_fg_qty)}</td>
+                    <td className="px-3 py-2 text-right">
+                      <span className={`font-semibold ${
+                        c.loss_pct === 0 ? 'text-green-600' : c.loss_pct <= 2 ? 'text-yellow-600' : 'text-red-600'
+                      }`}>{c.loss_pct}%</span>
+                    </td>
+                    <td className="px-3 py-2 text-center">
+                      {c.batch_validated
+                        ? <span className="text-green-600 font-bold">✓</span>
+                        : <span className="text-gray-300">—</span>}
+                    </td>
+                  </tr>
+                );
+              })}
+              {(recent_conversions || []).length === 0 && (
+                <tr><td colSpan={11} className="px-4 py-8 text-center text-gray-400">Tidak ada data konversi</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
