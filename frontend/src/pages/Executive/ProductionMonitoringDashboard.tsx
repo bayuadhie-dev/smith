@@ -520,73 +520,86 @@ const OverviewTab: React.FC<{ data: any; dailyChartData: any[]; timePieData: any
 
   const timePct = Math.round(elapsed / totalWd * 100);
   const achievePct = Math.min(100, s.achievement_pct || 0);
+  const accentBg   = { ahead: '#10B981', 'on-track': '#3B82F6', 'at-risk': '#F59E0B', behind: '#EF4444' }[paceStatus];
+  const accentText = { ahead: 'text-emerald-600', 'on-track': 'text-blue-600', 'at-risk': 'text-amber-600', behind: 'text-red-600' }[paceStatus];
+  const accentBadge = { ahead: 'bg-emerald-100 text-emerald-700', 'on-track': 'bg-blue-100 text-blue-700', 'at-risk': 'bg-amber-100 text-amber-700', behind: 'bg-red-100 text-red-700' }[paceStatus];
+  const accentBar  = { ahead: 'bg-emerald-500', 'on-track': 'bg-blue-500', 'at-risk': 'bg-amber-500', behind: 'bg-red-500' }[paceStatus];
 
   return (
   <div className="space-y-5">
     {/* Pace Indicator */}
-    <div className={`bg-gradient-to-r ${paceColor} rounded-2xl p-5 text-white shadow-xl`}>
-      {/* Header row */}
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-5">
-        {/* Left: projection summary */}
-        <div className="flex-1">
-          <p className="text-xs font-semibold uppercase tracking-widest text-white/60 mb-2">
-            📈 Proyeksi Akhir {viewMode === 'weekly' ? 'Minggu' : 'Bulan'}
-          </p>
-          <div className="flex items-baseline gap-3">
-            <span className="text-5xl font-extrabold leading-none">{projectedPct}%</span>
-            <span className="text-sm font-bold px-3 py-1 rounded-full bg-black/20 border border-white/30">{paceLabel}</span>
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+      {/* Colored accent bar at top */}
+      <div className="h-1.5 w-full" style={{ backgroundColor: accentBg }} />
+      <div className="p-5">
+        {/* Top section: big % + badge + projection text */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+          <div>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-1">
+              Proyeksi Akhir {viewMode === 'weekly' ? 'Minggu' : 'Bulan'}
+            </p>
+            <div className="flex items-baseline gap-3">
+              <span className={`text-5xl font-extrabold ${accentText}`}>{projectedPct}%</span>
+              <span className={`text-sm font-bold px-3 py-1 rounded-full ${accentBadge}`}>{paceLabel}</span>
+            </div>
+            <p className="text-sm text-gray-500 mt-1.5">
+              Proyeksi: <strong className="text-gray-800 dark:text-white">{fmtNum(projectedCtn)} ctn</strong>
+              <span className="mx-1.5 text-gray-400">dari target</span>
+              <strong className="text-gray-800 dark:text-white">{fmtNum(Math.round(target))} ctn</strong>
+            </p>
           </div>
-          <p className="text-sm text-white/80 mt-2">
-            Proyeksi: <strong className="text-white">{fmtNum(projectedCtn)} ctn</strong>
-            <span className="text-white/60 mx-1.5">dari target</span>
-            <strong className="text-white">{fmtNum(Math.round(target))} ctn</strong>
-          </p>
         </div>
-        {/* Right: 3 metric cards */}
-        <div className="grid grid-cols-3 gap-3 text-center min-w-[300px]">
+
+        {/* Metric cards row */}
+        <div className="grid grid-cols-3 gap-3 mb-5">
           {[
-            { label: '📅 Hari Berlalu', value: `${elapsed}/${totalWd}`, sub: 'hari kerja' },
-            { label: '📦 Produksi Aktual', value: fmtNum(Math.round(actual)), sub: 'carton' },
-            { label: '⚡ Target/Hari Sisa', value: fmtNum(neededPerDay), sub: 'ctn/hari' },
+            { icon: '📅', label: 'Hari Berlalu', value: `${elapsed} / ${totalWd}`, sub: 'hari kerja' },
+            { icon: '📦', label: 'Produksi Aktual', value: fmtNum(Math.round(actual)), sub: 'carton' },
+            { icon: '⚡', label: 'Target / Hari Sisa', value: fmtNum(neededPerDay), sub: 'ctn / hari' },
           ].map(c => (
-            <div key={c.label} className="bg-black/20 border border-white/20 rounded-xl px-3 py-3">
-              <p className="text-[10px] font-semibold text-white/70 mb-1 leading-tight">{c.label}</p>
-              <p className="text-xl font-extrabold text-white leading-none">{c.value}</p>
-              <p className="text-[10px] text-white/50 mt-0.5">{c.sub}</p>
+            <div key={c.label} className="bg-gray-50 dark:bg-gray-700 rounded-xl p-3 text-center border border-gray-100 dark:border-gray-600">
+              <div className="text-lg mb-0.5">{c.icon}</div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">{c.label}</p>
+              <p className="text-xl font-extrabold text-gray-900 dark:text-white leading-tight">{c.value}</p>
+              <p className="text-[11px] text-gray-400 mt-0.5">{c.sub}</p>
             </div>
           ))}
         </div>
-      </div>
-      {/* Progress bars — clearly separated */}
-      <div className="space-y-2">
-        {/* Achievement bar */}
-        <div>
-          <div className="flex justify-between text-xs font-semibold text-white/90 mb-1">
-            <span>📦 Achievement Produksi</span>
-            <span>{achievePct}%</span>
+
+        {/* Progress bars */}
+        <div className="space-y-3">
+          <div>
+            <div className="flex justify-between items-center mb-1">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: accentBg }} />
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Achievement Produksi</span>
+              </div>
+              <span className={`text-sm font-bold ${accentText}`}>{achievePct}%</span>
+            </div>
+            <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-3">
+              <div className={`h-3 rounded-full ${accentBar} transition-all duration-500`}
+                style={{ width: `${achievePct}%` }} />
+            </div>
           </div>
-          <div className="w-full bg-black/20 rounded-full h-3 border border-white/10">
-            <div className="h-3 rounded-full bg-white transition-all duration-500"
-              style={{ width: `${achievePct}%` }} />
+          <div>
+            <div className="flex justify-between items-center mb-1">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full inline-block bg-gray-400" />
+                <span className="text-sm font-semibold text-gray-500 dark:text-gray-400">Progress Waktu</span>
+              </div>
+              <span className="text-sm font-bold text-gray-500">{timePct}%</span>
+            </div>
+            <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+              <div className="h-2 rounded-full bg-gray-400 transition-all duration-500"
+                style={{ width: `${timePct}%` }} />
+            </div>
           </div>
+          <p className={`text-xs font-medium text-right pt-0.5 ${achievePct >= timePct ? 'text-emerald-600' : 'text-red-500'}`}>
+            {achievePct >= timePct
+              ? `✅ Produksi ${achievePct - timePct}% di atas progress waktu`
+              : `⚠️ Produksi ${timePct - achievePct}% tertinggal dari progress waktu`}
+          </p>
         </div>
-        {/* Time progress bar */}
-        <div>
-          <div className="flex justify-between text-xs font-semibold text-white/70 mb-1">
-            <span>🕐 Progress Waktu</span>
-            <span>{timePct}%</span>
-          </div>
-          <div className="w-full bg-black/10 rounded-full h-2 border border-white/10">
-            <div className="h-2 rounded-full bg-white/50 transition-all duration-500"
-              style={{ width: `${timePct}%` }} />
-          </div>
-        </div>
-        {/* Gap indicator */}
-        <p className="text-xs text-white/60 text-right pt-0.5">
-          {achievePct >= timePct
-            ? `✅ Produksi ${achievePct - timePct}% di atas progress waktu`
-            : `⚠️ Produksi ${timePct - achievePct}% tertinggal dari progress waktu`}
-        </p>
       </div>
     </div>
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
