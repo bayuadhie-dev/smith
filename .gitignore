@@ -300,3 +300,22 @@ reports/
 !docs/*.pdf
 backend/token.json
 backend/token.json
+# Internal docs
+docs/internal/
+
+# IDE & tools
+.vscode/
+.windsurf/
+
+# Syncthing
+.stfolder/
+
+# OS
+*.desktop
+Thumbs.db
+
+# Folders tidak perlu di repo
+backups/
+Downloads/
+Public/
+uploads/
