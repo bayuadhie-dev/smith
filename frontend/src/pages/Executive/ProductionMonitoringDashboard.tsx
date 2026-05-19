@@ -518,51 +518,75 @@ const OverviewTab: React.FC<{ data: any; dailyChartData: any[]; timePieData: any
   const remainingDays = Math.max(0, totalWd - elapsed);
   const neededPerDay = remainingDays > 0 ? Math.ceil((target - actual) / remainingDays) : 0;
 
+  const timePct = Math.round(elapsed / totalWd * 100);
+  const achievePct = Math.min(100, s.achievement_pct || 0);
+
   return (
   <div className="space-y-5">
     {/* Pace Indicator */}
     <div className={`bg-gradient-to-r ${paceColor} rounded-2xl p-5 text-white shadow-xl`}>
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <p className="text-sm font-medium text-white/80 mb-1">📈 Proyeksi Akhir {viewMode === 'weekly' ? 'Minggu' : 'Bulan'}</p>
+      {/* Header row */}
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-5">
+        {/* Left: projection summary */}
+        <div className="flex-1">
+          <p className="text-xs font-semibold uppercase tracking-widest text-white/60 mb-2">
+            📈 Proyeksi Akhir {viewMode === 'weekly' ? 'Minggu' : 'Bulan'}
+          </p>
           <div className="flex items-baseline gap-3">
-            <span className="text-3xl font-bold">{projectedPct}%</span>
-            <span className={`text-sm font-semibold px-2 py-0.5 rounded-full bg-white/20`}>{paceLabel}</span>
+            <span className="text-5xl font-extrabold leading-none">{projectedPct}%</span>
+            <span className="text-sm font-bold px-3 py-1 rounded-full bg-black/20 border border-white/30">{paceLabel}</span>
           </div>
-          <p className="text-sm text-white/80 mt-1">
-            Proyeksi: <strong>{fmtNum(projectedCtn)} ctn</strong> dari target <strong>{fmtNum(Math.round(target))} ctn</strong>
+          <p className="text-sm text-white/80 mt-2">
+            Proyeksi: <strong className="text-white">{fmtNum(projectedCtn)} ctn</strong>
+            <span className="text-white/60 mx-1.5">dari target</span>
+            <strong className="text-white">{fmtNum(Math.round(target))} ctn</strong>
           </p>
         </div>
-        <div className="grid grid-cols-3 gap-4 text-center">
-          <div className="bg-white/15 rounded-xl px-4 py-3">
-            <p className="text-xs text-white/70">Hari Berlalu</p>
-            <p className="text-xl font-bold">{elapsed}<span className="text-sm font-normal text-white/70">/{totalWd}</span></p>
-          </div>
-          <div className="bg-white/15 rounded-xl px-4 py-3">
-            <p className="text-xs text-white/70">Aktual</p>
-            <p className="text-xl font-bold">{fmtNum(Math.round(actual))}<span className="text-xs font-normal text-white/70"> ctn</span></p>
-          </div>
-          <div className="bg-white/15 rounded-xl px-4 py-3">
-            <p className="text-xs text-white/70">Perlu/Hari</p>
-            <p className="text-xl font-bold">{fmtNum(neededPerDay)}<span className="text-xs font-normal text-white/70"> ctn</span></p>
-          </div>
+        {/* Right: 3 metric cards */}
+        <div className="grid grid-cols-3 gap-3 text-center min-w-[300px]">
+          {[
+            { label: '📅 Hari Berlalu', value: `${elapsed}/${totalWd}`, sub: 'hari kerja' },
+            { label: '📦 Produksi Aktual', value: fmtNum(Math.round(actual)), sub: 'carton' },
+            { label: '⚡ Target/Hari Sisa', value: fmtNum(neededPerDay), sub: 'ctn/hari' },
+          ].map(c => (
+            <div key={c.label} className="bg-black/20 border border-white/20 rounded-xl px-3 py-3">
+              <p className="text-[10px] font-semibold text-white/70 mb-1 leading-tight">{c.label}</p>
+              <p className="text-xl font-extrabold text-white leading-none">{c.value}</p>
+              <p className="text-[10px] text-white/50 mt-0.5">{c.sub}</p>
+            </div>
+          ))}
         </div>
       </div>
-      <div className="mt-4">
-        <div className="flex justify-between text-xs text-white/70 mb-1">
-          <span>Progress waktu: {Math.round(elapsed / totalWd * 100)}%</span>
-          <span>Achievement saat ini: {s.achievement_pct}%</span>
+      {/* Progress bars — clearly separated */}
+      <div className="space-y-2">
+        {/* Achievement bar */}
+        <div>
+          <div className="flex justify-between text-xs font-semibold text-white/90 mb-1">
+            <span>📦 Achievement Produksi</span>
+            <span>{achievePct}%</span>
+          </div>
+          <div className="w-full bg-black/20 rounded-full h-3 border border-white/10">
+            <div className="h-3 rounded-full bg-white transition-all duration-500"
+              style={{ width: `${achievePct}%` }} />
+          </div>
         </div>
-        <div className="w-full bg-white/20 rounded-full h-2.5">
-          <div className="h-2.5 rounded-full bg-white transition-all" style={{ width: `${Math.min(100, s.achievement_pct || 0)}%` }} />
+        {/* Time progress bar */}
+        <div>
+          <div className="flex justify-between text-xs font-semibold text-white/70 mb-1">
+            <span>🕐 Progress Waktu</span>
+            <span>{timePct}%</span>
+          </div>
+          <div className="w-full bg-black/10 rounded-full h-2 border border-white/10">
+            <div className="h-2 rounded-full bg-white/50 transition-all duration-500"
+              style={{ width: `${timePct}%` }} />
+          </div>
         </div>
-        <div className="w-full bg-white/10 rounded-full h-1.5 mt-1">
-          <div className="h-1.5 rounded-full bg-white/50" style={{ width: `${Math.min(100, Math.round(elapsed / totalWd * 100))}%` }} />
-        </div>
-        <div className="flex justify-between text-[10px] text-white/60 mt-0.5">
-          <span>Produksi aktual</span>
-          <span>Waktu berjalan</span>
-        </div>
+        {/* Gap indicator */}
+        <p className="text-xs text-white/60 text-right pt-0.5">
+          {achievePct >= timePct
+            ? `✅ Produksi ${achievePct - timePct}% di atas progress waktu`
+            : `⚠️ Produksi ${timePct - achievePct}% tertinggal dari progress waktu`}
+        </p>
       </div>
     </div>
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
