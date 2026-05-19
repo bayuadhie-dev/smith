@@ -13,6 +13,7 @@
 ## 📋 Daftar Isi
 
 - [Tentang Sistem](#tentang-sistem)
+- [Screenshots](#screenshots)
 - [Fitur Utama](#fitur-utama)
 - [Arsitektur Sistem](#arsitektur-sistem)
 - [Teknologi yang Dipakai](#teknologi-yang-dipakai)
@@ -40,6 +41,25 @@
 - ✅ **Responsive Mobile** - Jalan di desktop, tablet, dan mobile
 - ✅ **15+ Business Workflows** - Semua proses bisnis terintegrasi
 - ✅ **Arsitektur Scalable** - Desain siap microservices
+
+---
+
+## 📸 Screenshots
+
+### Dashboard Eksekutif
+![Dashboard Eksekutif](docs/screenshots/03_dashboard_main.png)
+
+### Production Monitoring — Executive View
+![Production Monitoring Executive](docs/screenshots/01_production_monitoring_executive.png)
+
+### Production Monitoring — Dashboard
+![Production Monitoring Dashboard](docs/screenshots/02_production_monitoring_dashboard.png)
+
+### Work Orders
+![Work Orders](docs/screenshots/04_work_orders.png)
+
+### Work Order Monitoring
+![Work Order Monitoring](docs/screenshots/05_work_order_monitoring.png)
 
 ---
 
