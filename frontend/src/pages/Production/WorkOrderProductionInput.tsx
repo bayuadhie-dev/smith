@@ -1452,9 +1452,27 @@ export default function WorkOrderProductionInput() {
               type="date"
               value={formData.production_date}
               onChange={(e) => handleChange('production_date', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                (() => {
+                  if (!workOrder?.scheduled_start_date) return 'border-gray-300 dark:border-gray-600';
+                  const woDate = new Date(workOrder.scheduled_start_date).toISOString().split('T')[0];
+                  const diffDays = Math.abs((new Date(formData.production_date).getTime() - new Date(woDate).getTime()) / 86400000);
+                  return diffDays > 1 ? 'border-amber-400 bg-amber-50 dark:bg-amber-900/20' : 'border-gray-300 dark:border-gray-600';
+                })()
+              }`}
               required
             />
+            {(() => {
+              if (!workOrder?.scheduled_start_date) return null;
+              const woDate = new Date(workOrder.scheduled_start_date).toISOString().split('T')[0];
+              const diffDays = Math.round((new Date(formData.production_date).getTime() - new Date(woDate).getTime()) / 86400000);
+              if (Math.abs(diffDays) <= 1) return null;
+              return (
+                <p className="mt-1 text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                  ⚠️ Tanggal berbeda {Math.abs(diffDays)} hari dari jadwal WO ({woDate}). Pastikan sudah benar.
+                </p>
+              );
+            })()}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
