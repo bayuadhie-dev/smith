@@ -527,77 +527,58 @@ const OverviewTab: React.FC<{ data: any; dailyChartData: any[]; timePieData: any
 
   return (
   <div className="space-y-5">
-    {/* Pace Indicator */}
-    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-      {/* Colored accent bar at top */}
-      <div className="h-1.5 w-full" style={{ backgroundColor: accentBg }} />
-      <div className="p-5">
-        {/* Top section: big % + badge + projection text */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
-          <div>
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-1">
-              Proyeksi Akhir {viewMode === 'weekly' ? 'Minggu' : 'Bulan'}
-            </p>
-            <div className="flex items-baseline gap-3">
-              <span className={`text-5xl font-extrabold ${accentText}`}>{projectedPct}%</span>
-              <span className={`text-sm font-bold px-3 py-1 rounded-full ${accentBadge}`}>{paceLabel}</span>
-            </div>
-            <p className="text-sm text-gray-500 mt-1.5">
-              Proyeksi: <strong className="text-gray-800 dark:text-white">{fmtNum(projectedCtn)} ctn</strong>
-              <span className="mx-1.5 text-gray-400">dari target</span>
-              <strong className="text-gray-800 dark:text-white">{fmtNum(Math.round(target))} ctn</strong>
-            </p>
+    {/* Pace Indicator — compact */}
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div className="h-1 w-full" style={{ backgroundColor: accentBg }} />
+      <div className="px-4 py-3">
+        {/* Single row: % + badge + text | divider | 3 inline stats */}
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+          {/* Left: projection % */}
+          <div className="flex items-baseline gap-2 shrink-0">
+            <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">Proyeksi {viewMode === 'weekly' ? 'Minggu' : 'Bulan'}:</span>
+            <span className={`text-2xl font-extrabold ${accentText}`}>{projectedPct}%</span>
+            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${accentBadge}`}>{paceLabel}</span>
+          </div>
+          <span className="text-gray-200 dark:text-gray-600 hidden sm:block">|</span>
+          <p className="text-xs text-gray-500 shrink-0">
+            Proyeksi <strong className="text-gray-800 dark:text-white">{fmtNum(projectedCtn)}</strong>
+            <span className="text-gray-400 mx-1">dari</span>
+            <strong className="text-gray-800 dark:text-white">{fmtNum(Math.round(target))} ctn</strong>
+          </p>
+          {/* Right: inline stats */}
+          <div className="flex items-center gap-4 ml-auto text-center shrink-0">
+            {[
+              { label: 'Hari', value: `${elapsed}/${totalWd}` },
+              { label: 'Aktual (ctn)', value: fmtNum(Math.round(actual)) },
+              { label: 'Perlu/hari', value: fmtNum(neededPerDay) },
+            ].map(c => (
+              <div key={c.label}>
+                <p className="text-[10px] text-gray-400 leading-none mb-0.5">{c.label}</p>
+                <p className="text-sm font-bold text-gray-800 dark:text-white">{c.value}</p>
+              </div>
+            ))}
           </div>
         </div>
-
-        {/* Metric cards row */}
-        <div className="grid grid-cols-3 gap-3 mb-5">
-          {[
-            { icon: '📅', label: 'Hari Berlalu', value: `${elapsed} / ${totalWd}`, sub: 'hari kerja' },
-            { icon: '📦', label: 'Produksi Aktual', value: fmtNum(Math.round(actual)), sub: 'carton' },
-            { icon: '⚡', label: 'Target / Hari Sisa', value: fmtNum(neededPerDay), sub: 'ctn / hari' },
-          ].map(c => (
-            <div key={c.label} className="bg-gray-50 dark:bg-gray-700 rounded-xl p-3 text-center border border-gray-100 dark:border-gray-600">
-              <div className="text-lg mb-0.5">{c.icon}</div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">{c.label}</p>
-              <p className="text-xl font-extrabold text-gray-900 dark:text-white leading-tight">{c.value}</p>
-              <p className="text-[11px] text-gray-400 mt-0.5">{c.sub}</p>
+        {/* Progress bars — compact */}
+        <div className="mt-3 space-y-1.5">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: accentBg }} />
+            <span className="text-[11px] text-gray-600 dark:text-gray-400 w-36 shrink-0">Achievement Produksi</span>
+            <div className="flex-1 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+              <div className={`h-2 rounded-full ${accentBar}`} style={{ width: `${achievePct}%` }} />
             </div>
-          ))}
-        </div>
-
-        {/* Progress bars */}
-        <div className="space-y-3">
-          <div>
-            <div className="flex justify-between items-center mb-1">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: accentBg }} />
-                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Achievement Produksi</span>
-              </div>
-              <span className={`text-sm font-bold ${accentText}`}>{achievePct}%</span>
-            </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-3">
-              <div className={`h-3 rounded-full ${accentBar} transition-all duration-500`}
-                style={{ width: `${achievePct}%` }} />
-            </div>
+            <span className={`text-[11px] font-bold w-10 text-right shrink-0 ${accentText}`}>{achievePct}%</span>
           </div>
-          <div>
-            <div className="flex justify-between items-center mb-1">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full inline-block bg-gray-400" />
-                <span className="text-sm font-semibold text-gray-500 dark:text-gray-400">Progress Waktu</span>
-              </div>
-              <span className="text-sm font-bold text-gray-500">{timePct}%</span>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-gray-400 shrink-0" />
+            <span className="text-[11px] text-gray-400 w-36 shrink-0">Progress Waktu</span>
+            <div className="flex-1 bg-gray-200 dark:bg-gray-600 rounded-full h-1.5">
+              <div className="h-1.5 rounded-full bg-gray-400" style={{ width: `${timePct}%` }} />
             </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-              <div className="h-2 rounded-full bg-gray-400 transition-all duration-500"
-                style={{ width: `${timePct}%` }} />
-            </div>
+            <span className="text-[11px] font-bold text-gray-400 w-10 text-right shrink-0">{timePct}%</span>
           </div>
-          <p className={`text-xs font-medium text-right pt-0.5 ${achievePct >= timePct ? 'text-emerald-600' : 'text-red-500'}`}>
-            {achievePct >= timePct
-              ? `✅ Produksi ${achievePct - timePct}% di atas progress waktu`
-              : `⚠️ Produksi ${timePct - achievePct}% tertinggal dari progress waktu`}
+          <p className={`text-[10px] font-medium text-right ${achievePct >= timePct ? 'text-emerald-600' : 'text-amber-600'}`}>
+            {achievePct >= timePct ? `✅ +${achievePct - timePct}% di atas progress waktu` : `⚠️ ${timePct - achievePct}% tertinggal dari progress waktu`}
           </p>
         </div>
       </div>
