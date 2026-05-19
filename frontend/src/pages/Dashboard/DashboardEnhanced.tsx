@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useLanguage } from '../../contexts/LanguageContext'
 import { useGetExecutiveDashboardQuery } from '../../services/api'
@@ -84,6 +84,8 @@ export default function DashboardEnhanced() {
   const { data: executiveData, isLoading, refetch } = useGetExecutiveDashboardQuery({})
   const [currentTime, setCurrentTime] = useState(new Date())
   const [sessionInfo, setSessionInfo] = useState<SessionInfo | null>(null)
+  const lastInteractionRef = useRef<number>(Date.now())
+  const IDLE_THRESHOLD_SECS = 5 * 60 // 5 minutes
   const [activeUsers, setActiveUsers] = useState<ActiveUsersData | null>(null)
   const [showProductionOutput, setShowProductionOutput] = useState(false)
   const [dateRange, setDateRange] = useState('30')
@@ -109,17 +111,21 @@ export default function DashboardEnhanced() {
   })
 
   // Fetch session info (using current user data)
-  const fetchSessionInfo = async () => {
+  const fetchSessionInfo = useCallback(async () => {
     try {
       if (user?.last_login) {
         const now = new Date()
         const lastLogin = new Date(user.last_login)
         const sessionSeconds = Math.max(0, Math.floor((now.getTime() - lastLogin.getTime()) / 1000))
-        
-        const hours = Math.floor(sessionSeconds / 3600)
-        const minutes = Math.floor((sessionSeconds % 3600) / 60)
-        const sessionFormatted = sessionSeconds < 60 ? 'Just now' : hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`
-        
+
+        const fmtSecs = (s: number) => {
+          const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60)
+          return s < 60 ? 'Just now' : h > 0 ? `${h}h ${m}m` : `${m}m`
+        }
+
+        const idleSecs = Math.floor((Date.now() - lastInteractionRef.current) / 1000)
+        const isIdle = idleSecs >= IDLE_THRESHOLD_SECS
+
         setSessionInfo({
           user_id: user.id,
           username: user.username,
@@ -128,18 +134,18 @@ export default function DashboardEnhanced() {
           role: user.roles?.[0] || 'User',
           last_login: user.last_login,
           session_duration_seconds: sessionSeconds,
-          session_duration_formatted: sessionFormatted,
-          idle_time_seconds: 0,
-          idle_time_formatted: '0m',
-          is_idle: false,
-          last_activity: new Date().toISOString(),
+          session_duration_formatted: fmtSecs(sessionSeconds),
+          idle_time_seconds: idleSecs,
+          idle_time_formatted: idleSecs < 60 ? '0m' : fmtSecs(idleSecs),
+          is_idle: isIdle,
+          last_activity: new Date(lastInteractionRef.current).toISOString(),
           last_activity_action: 'Dashboard View'
         })
       }
     } catch (error) {
       console.error('Error calculating session info:', error)
     }
-  }
+  }, [user, IDLE_THRESHOLD_SECS])
 
   // Fetch active users from executive dashboard
   const fetchActiveUsers = async () => {
@@ -189,6 +195,14 @@ export default function DashboardEnhanced() {
       console.error('Error sending heartbeat:', error)
     }
   }
+
+  // Track user interactions to measure idle time
+  useEffect(() => {
+    const resetIdle = () => { lastInteractionRef.current = Date.now() }
+    const events = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click']
+    events.forEach(e => window.addEventListener(e, resetIdle, { passive: true }))
+    return () => events.forEach(e => window.removeEventListener(e, resetIdle))
+  }, [])
 
   // Update time every second
   useEffect(() => {
