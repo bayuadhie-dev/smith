@@ -1396,7 +1396,8 @@ def get_active_users():
             if chat_status and chat_status.last_seen:
                 last_activity = utc_to_local(chat_status.last_seen)
             elif user.last_login:
-                last_activity = utc_to_local(user.last_login)
+                # last_login is stored as get_local_now() (WIB naive) — do NOT call utc_to_local again
+                last_activity = user.last_login
             
             if last_activity:
                 if last_activity >= online_threshold:
@@ -1414,15 +1415,15 @@ def get_active_users():
             
             time_ago = None
             if last_activity:
-                delta = now - last_activity
-                if delta.days > 0:
-                    time_ago = f"{delta.days}d ago"
-                elif delta.seconds >= 3600:
-                    time_ago = f"{delta.seconds // 3600}h ago"
-                elif delta.seconds >= 60:
-                    time_ago = f"{delta.seconds // 60}m ago"
-                else:
+                total_secs = (now - last_activity).total_seconds()
+                if total_secs < 60:
                     time_ago = "Just now"
+                elif total_secs < 3600:
+                    time_ago = f"{int(total_secs // 60)}m ago"
+                elif total_secs < 86400:
+                    time_ago = f"{int(total_secs // 3600)}h ago"
+                else:
+                    time_ago = f"{int(total_secs // 86400)}d ago"
             
             active_users.append({
                 'id': user.id,

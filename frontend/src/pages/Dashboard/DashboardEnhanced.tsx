@@ -114,11 +114,11 @@ export default function DashboardEnhanced() {
       if (user?.last_login) {
         const now = new Date()
         const lastLogin = new Date(user.last_login)
-        const sessionSeconds = Math.floor((now.getTime() - lastLogin.getTime()) / 1000)
+        const sessionSeconds = Math.max(0, Math.floor((now.getTime() - lastLogin.getTime()) / 1000))
         
         const hours = Math.floor(sessionSeconds / 3600)
         const minutes = Math.floor((sessionSeconds % 3600) / 60)
-        const sessionFormatted = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`
+        const sessionFormatted = sessionSeconds < 60 ? 'Just now' : hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`
         
         setSessionInfo({
           user_id: user.id,
