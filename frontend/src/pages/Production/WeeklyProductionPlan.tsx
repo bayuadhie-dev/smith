@@ -145,12 +145,19 @@ const WeeklyProductionPlan: React.FC = () => {
     notes: '',
   });
 
+  const toLocalDateString = (date: Date): string => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  };
+
   useEffect(() => {
-    calculateWeekDates(currentDate);
-    fetchData();
+    const dates = calculateWeekDates(currentDate);
+    fetchData(dates);
   }, [currentDate]);
 
-  const calculateWeekDates = (date: Date) => {
+  const calculateWeekDates = (date: Date): Date[] => {
     const d = new Date(date);
     const day = d.getDay();
     const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust for Monday
@@ -168,15 +175,19 @@ const WeeklyProductionPlan: React.FC = () => {
     const startOfYear = new Date(monday.getFullYear(), 0, 1);
     const days = Math.floor((monday.getTime() - startOfYear.getTime()) / (24 * 60 * 60 * 1000));
     setWeekNumber(Math.ceil((days + startOfYear.getDay() + 1) / 7));
+
+    return dates;
   };
 
-  const fetchData = async () => {
+  const fetchData = async (dates?: Date[]) => {
+    const effectiveDates = dates || weekDates;
     try {
       setLoading(true);
+      const weekStartStr = effectiveDates[0] ? toLocalDateString(effectiveDates[0]) : '';
       const [machinesRes, productsRes, schedulesRes] = await Promise.all([
         axiosInstance.get('/api/production/machines'),
         axiosInstance.get('/api/products-new/?per_page=1000'),
-        axiosInstance.get(`/api/production/schedule-grid?week_start=${weekDates[0]?.toISOString().split('T')[0] || ''}`),
+        axiosInstance.get(`/api/production/schedule-grid?week_start=${weekStartStr}`),
       ]);
       
       setMachines(machinesRes.data.machines || []);
@@ -341,7 +352,7 @@ const WeeklyProductionPlan: React.FC = () => {
 
   const fetchAvailableMonthly = async () => {
     try {
-      const weekStart = weekDates[0]?.toISOString().split('T')[0] || '';
+      const weekStart = weekDates[0] ? toLocalDateString(weekDates[0]) : '';
       const res = await axiosInstance.get(`/api/production/monthly-schedule/available?week_start=${weekStart}`);
       setAvailableMonthly(res.data.available_schedules || []);
     } catch (error) {
@@ -373,7 +384,7 @@ const WeeklyProductionPlan: React.FC = () => {
     }
 
     try {
-      const weekStart = weekDates[0]?.toISOString().split('T')[0] || '';
+      const weekStart = weekDates[0] ? toLocalDateString(weekDates[0]) : '';
       await axiosInstance.post(`/api/production/monthly-schedule/${selectedMonthly.id}/add-to-weekly`, {
         order_ctn: orderCtn,
         week_start: weekStart,
@@ -407,7 +418,7 @@ const WeeklyProductionPlan: React.FC = () => {
     if (!confirm('Generate semua Work Order untuk hari ini?')) return;
     try {
       const response = await axiosInstance.post('/api/production/schedule-grid/generate-wo-batch', {
-        date: new Date().toISOString().split('T')[0]
+        date: toLocalDateString(new Date())
       });
       alert(response.data.message);
       fetchData();
@@ -417,7 +428,7 @@ const WeeklyProductionPlan: React.FC = () => {
   };
 
   const handleSubmitForApproval = async () => {
-    const weekStartStr = weekDates[0]?.toISOString().split('T')[0];
+    const weekStartStr = weekDates[0] ? toLocalDateString(weekDates[0]) : '';
     if (!confirm(`Submit jadwal minggu ${weekStartStr} untuk approval?`)) return;
     try {
       const response = await axiosInstance.post('/api/production/schedule-grid/submit-approval', {
@@ -772,7 +783,7 @@ const WeeklyProductionPlan: React.FC = () => {
                           )}
                         </td>
                         {weekDates.map((date) => {
-                          const dateStr = date.toISOString().split('T')[0];
+                          const dateStr = toLocalDateString(date);
                           const shifts = item.schedule_days?.[dateStr] || [];
                           return (
                             <React.Fragment key={dateStr}>
@@ -1034,7 +1045,7 @@ const WeeklyProductionPlan: React.FC = () => {
                 <div className="bg-slate-50 rounded-xl p-4">
                   <div className="grid grid-cols-5 gap-3">
                     {weekDates.map((date, idx) => {
-                      const dateStr = date.toISOString().split('T')[0];
+                      const dateStr = toLocalDateString(date);
                       const shifts = formData.schedule_days[dateStr] || [];
                       return (
                         <div key={dateStr} className="text-center">
@@ -1207,7 +1218,7 @@ const WeeklyProductionPlan: React.FC = () => {
                         <div className="bg-white dark:bg-gray-800 rounded-lg p-3">
                           <div className="grid grid-cols-5 gap-2">
                             {weekDates.map((date, idx) => {
-                              const dateStr = date.toISOString().split('T')[0];
+                              const dateStr = toLocalDateString(date);
                               const shifts = formData.schedule_days[dateStr] || [];
                               return (
                                 <div key={dateStr} className="text-center">

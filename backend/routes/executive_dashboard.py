@@ -2038,7 +2038,7 @@ def get_production_monitoring():
 
     try:
 
-        from routes.schedule_grid import MonthlySchedule
+        from routes.schedule_grid import MonthlySchedule, ScheduleGridItem
 
         from models.production import Machine
 
@@ -2316,6 +2316,44 @@ def get_production_monitoring():
                     else:
                         weekly_targets_by_product[product_name]['notes'] = item.notes
         
+        # Also get weekly targets from ScheduleGridItem (new schedule grid system)
+        schedule_grid_items_current = ScheduleGridItem.query.filter(
+            ScheduleGridItem.week_start >= current_week_start,
+            ScheduleGridItem.week_start <= current_week_end
+        ).all()
+
+        for sgi in schedule_grid_items_current:
+            product_data = db.session.execute(
+                db.text("SELECT code, name, pack_per_karton FROM products WHERE id = :id"),
+                {'id': sgi.product_id}
+            ).fetchone()
+
+            if not product_data or not product_data[1]:
+                continue
+
+            sgi_product_name = clean_product_name(product_data[1])
+            if not sgi_product_name:
+                continue
+
+            sgi_target_ctn = float(sgi.order_ctn or 0)
+
+            if sgi_product_name not in weekly_targets_by_product:
+                weekly_targets_by_product[sgi_product_name] = {
+                    'target_ctn_weekly': 0,
+                    'notes': sgi.notes or '',
+                    'working_days': 5,
+                    'total_shifts': 0,
+                    'planned_days': 5,
+                    'planned_shifts': 0
+                }
+
+            weekly_targets_by_product[sgi_product_name]['target_ctn_weekly'] += sgi_target_ctn
+            if sgi.notes and sgi.notes not in weekly_targets_by_product[sgi_product_name]['notes']:
+                if weekly_targets_by_product[sgi_product_name]['notes']:
+                    weekly_targets_by_product[sgi_product_name]['notes'] += '; ' + sgi.notes
+                else:
+                    weekly_targets_by_product[sgi_product_name]['notes'] = sgi.notes
+
         # ===== 2. GET SHIFT PRODUCTIONS =====
 
         shift_productions = ShiftProduction.query.filter(
@@ -3005,6 +3043,44 @@ def get_production_monitoring():
             })
 
         
+
+        # Add products from MonthlySchedule/WeeklyPlan that have a target but NO production yet
+        produced_products = {p['product_name'] for p in products_achievement}
+        for pname, plan_data in targets_by_product.items():
+            if pname not in produced_products:
+                target_monthly = plan_data.get('target_ctn_monthly', 0)
+                weekly_info = weekly_targets_by_product.get(pname, {})
+                target_weekly = weekly_info.get('target_ctn_weekly', 0)
+                machine_names = ', '.join(m['machine_name'] for m in plan_data.get('machines', []))
+                products_achievement.append({
+                    'product_name': pname,
+                    'product_code': plan_data.get('product_code', ''),
+                    'machines': machine_names or 'N/A',
+                    'target_ctn': round(target_monthly, 2),
+                    'target_ctn_weekly': round(target_weekly, 2),
+                    'weekly_working_days': weekly_info.get('working_days', 0),
+                    'weekly_total_shifts': weekly_info.get('total_shifts', 0),
+                    'planned_days': weekly_info.get('planned_days', 0),
+                    'planned_shifts': weekly_info.get('planned_shifts', 0),
+                    'actual_ctn': 0,
+                    'gap_ctn': round(target_monthly, 2),
+                    'gap_ctn_weekly': round(target_weekly, 2),
+                    'gap_message': 'Belum ada produksi' if target_monthly > 0 else 'Tidak ada target',
+                    'achievement_pct': 0,
+                    'achievement_pct_weekly': 0,
+                    'weekly_notes': weekly_info.get('notes', ''),
+                    'production_days': 0,
+                    'shift_count': 0,
+                    'grade_a': 0,
+                    'grade_b': 0,
+                    'grade_c': 0,
+                    'total_pcs': 0,
+                    'quality_rate': 0,
+                    'runtime': 0,
+                    'downtime': 0,
+                    'idle_time': 0,
+                    'pack_per_ctn': plan_data.get('pack_per_ctn', 50)
+                })
 
         products_achievement.sort(key=lambda x: x['achievement_pct'])
         
