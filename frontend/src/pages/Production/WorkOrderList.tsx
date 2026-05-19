@@ -18,6 +18,8 @@ import {
   DocumentTextIcon,
   ListBulletIcon,
   ViewColumnsIcon,
+  ChevronUpIcon,
+  ChevronDownIcon,
 } from '@heroicons/react/24/outline';
 import { useState, useEffect } from 'react'
 import axiosInstance from '../../utils/axiosConfig'
@@ -45,6 +47,9 @@ interface WorkOrder {
   last_input_date?: string
   last_input_by?: string
   created_at: string
+  shift_count?: number
+  pack_per_carton?: number
+  total_cartons?: number
 }
 
 const WorkOrderList = () => {
@@ -67,6 +72,7 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
     return (localStorage.getItem('wo_view_mode') as 'list' | 'kanban') || 'list'
   })
   const [summary, setSummary] = useState({ total: 0, in_progress: 0, completed: 0, total_produced: 0 })
+  const [dateSort, setDateSort] = useState<'asc' | 'desc' | null>(null)
 
   useEffect(() => {
     loadWorkOrders()
@@ -264,64 +270,43 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
         <WorkOrderKanban />
       ) : (
       <>
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="card p-6">
-          <div className="flex items-center">
-            <div className="bg-blue-500 p-3 rounded-lg">
-              <ClockIcon className="h-6 w-6 text-white" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Orders</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{summary.total}</p>
-            </div>
+      {/* Summary Cards - compact */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="card p-3 flex items-center gap-3">
+          <div className="bg-blue-500 p-2 rounded-lg shrink-0">
+            <ClockIcon className="h-4 w-4 text-white" />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Total Orders</p>
+            <p className="text-xl font-bold text-gray-900 dark:text-white">{summary.total}</p>
           </div>
         </div>
-        
-        <div className="card p-6">
-          <div className="flex items-center">
-            <div className="bg-yellow-500 p-3 rounded-lg">
-              <PlayIcon className="h-6 w-6 text-white" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">In Progress</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {summary.in_progress}
-              </p>
-            </div>
+        <div className="card p-3 flex items-center gap-3">
+          <div className="bg-yellow-500 p-2 rounded-lg shrink-0">
+            <PlayIcon className="h-4 w-4 text-white" />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 dark:text-gray-400">In Progress</p>
+            <p className="text-xl font-bold text-gray-900 dark:text-white">{summary.in_progress}</p>
           </div>
         </div>
-        
-        <div className="card p-6">
-          <div className="flex items-center">
-            <div className="bg-green-500 p-3 rounded-lg">
-              <CheckCircleIcon className="h-6 w-6 text-white" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Completed</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {summary.completed}
-              </p>
-            </div>
+        <div className="card p-3 flex items-center gap-3">
+          <div className="bg-green-500 p-2 rounded-lg shrink-0">
+            <CheckCircleIcon className="h-4 w-4 text-white" />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Completed</p>
+            <p className="text-xl font-bold text-gray-900 dark:text-white">{summary.completed}</p>
           </div>
         </div>
-        
-        <div 
-          className="card p-6 cursor-pointer hover:shadow-lg hover:border-purple-300 transition-all"
-          onClick={() => setShowProductionOutput(true)}
-          title="Klik untuk lihat detail per mesin & produk"
-        >
-          <div className="flex items-center">
-            <div className="bg-purple-500 p-3 rounded-lg">
-              <ChartBarIcon className="h-6 w-6 text-white" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Produced</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {summary.total_produced.toLocaleString()}
-              </p>
-              <p className="text-xs text-purple-500 mt-1">Klik untuk detail →</p>
-            </div>
+        <div className="card p-3 flex items-center gap-3 cursor-pointer hover:shadow-md hover:border-purple-300 transition-all" onClick={() => setShowProductionOutput(true)}>
+          <div className="bg-purple-500 p-2 rounded-lg shrink-0">
+            <ChartBarIcon className="h-4 w-4 text-white" />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Total Produced</p>
+            <p className="text-xl font-bold text-gray-900 dark:text-white">{summary.total_produced.toLocaleString()}</p>
+            <p className="text-xs text-purple-500">Klik detail →</p>
           </div>
         </div>
       </div>
@@ -391,173 +376,213 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
 
       {/* Work Orders Table */}
       <div className="card">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Work Orders</h3>
+        <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-white">Work Orders</h3>
+          <span className="text-xs text-gray-400">{workOrders.length} ditampilkan</span>
         </div>
         
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <table className="min-w-full divide-y divide-gray-100 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Tanggal
+                <th
+                  className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-28 cursor-pointer select-none hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  onClick={() => setDateSort(prev => prev === 'asc' ? 'desc' : 'asc')}
+                  title="Klik untuk urutkan tanggal"
+                >
+                  <div className="flex items-center gap-1">
+                    Tanggal
+                    {dateSort === 'asc' ? (
+                      <ChevronUpIcon className="h-3.5 w-3.5 text-blue-500" />
+                    ) : dateSort === 'desc' ? (
+                      <ChevronDownIcon className="h-3.5 w-3.5 text-blue-500" />
+                    ) : (
+                      <span className="flex flex-col">
+                        <ChevronUpIcon className="h-2.5 w-2.5 text-gray-300" />
+                        <ChevronDownIcon className="h-2.5 w-2.5 text-gray-300" />
+                      </span>
+                    )}
+                  </div>
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Work Order
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('production.product')}</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Quantity & Progress
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Produk & Mesin
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('production.machine')}</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Status & Priority
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-48">
+                  Progress
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-24">
+                  Status
+                </th>
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {workOrders.map((wo) => {
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
+              {[...workOrders].sort((a, b) => {
+                if (!dateSort) return 0;
+                const da = a.scheduled_start_date ? new Date(a.scheduled_start_date).getTime() : 0;
+                const db = b.scheduled_start_date ? new Date(b.scheduled_start_date).getTime() : 0;
+                return dateSort === 'asc' ? da - db : db - da;
+              }).map((wo) => {
                 const StatusIcon = getStatusIcon(wo.status)
-                const progress = calculateProgress(wo.quantity_produced, wo.quantity)
-                
+                const rawProgress = wo.quantity > 0 ? (wo.quantity_produced / wo.quantity * 100) : 0
+                const progress = rawProgress.toFixed(1)
+                const progressNum = rawProgress
+                const isComplete = wo.status === 'completed'
+                const progressColor = progressNum >= 100 ? 'bg-green-500' : progressNum >= 60 ? 'bg-yellow-400' : 'bg-red-500'
+                const progressBarWidth = Math.min(progressNum, 100)
+                const isInProgress = wo.status === 'in_progress'
+                const canStart = wo.status === 'planned' || wo.status === 'released'
+
                 return (
-                  <tr key={wo.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
-                    {/* Tanggal - First Column (WO start date) */}
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 dark:text-white">
-                        {wo.start_date ? (
-                          <div className="font-medium">
-                            {new Date(wo.start_date).toLocaleDateString('id-ID', {
-                              day: 'numeric',
-                              month: 'short',
-                              year: 'numeric'
-                            })}
+                  <tr key={wo.id} className="hover:bg-blue-50/40 dark:hover:bg-gray-700 transition-colors">
+                    {/* Tanggal */}
+                    <td className="px-3 py-2.5 whitespace-nowrap">
+                      {wo.scheduled_start_date ? (
+                        <div className="text-xs text-gray-600 dark:text-gray-300">
+                          <div className="font-semibold">
+                            {new Date(wo.scheduled_start_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
                           </div>
-                        ) : (
-                          <span className="text-gray-400 italic text-xs">-</span>
-                        )}
-                      </div>
-                    </td>
-                    
-                    {/* Work Order */}
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <div>
-                        <Link 
-                          to={`/app/production/work-orders/${wo.id}`}
-                          className="text-sm font-semibold text-blue-600 hover:text-blue-800 hover:underline transition-colors"
-                        >
-                          {wo.wo_number}
-                        </Link>
-                        {wo.batch_number && (
-                          <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center mt-1">
-                            <TagIcon className="h-3 w-3 mr-1" />
-                            {wo.batch_number}
+                          <div className="text-gray-400">
+                            {new Date(wo.scheduled_start_date).getFullYear()}
                           </div>
-                        )}
-                      </div>
-                    </td>
-                    
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900 dark:text-white">{wo.product_name}</div>
-                      {wo.supervisor_name && (
-                        <div className="text-xs text-gray-500 dark:text-gray-400">{wo.supervisor_name}</div>
-                      )}
-                    </td>
-                    
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 dark:text-white">
-                        <div className="font-medium">
-                          {wo.quantity_produced.toLocaleString()} / {wo.quantity.toLocaleString()}
-                        </div>
-                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-1">
-                          <div 
-                            className="bg-blue-600 h-2 rounded-full" 
-                            style={{ width: `${progress}%` }}
-                          />
-                        </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{progress}% complete</div>
-                      </div>
-                    </td>
-                    
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      {wo.machine_name ? (
-                        <div className="flex items-center">
-                          <CogIcon className="h-4 w-4 text-gray-400 mr-2" />
-                          <span className="text-sm text-gray-900 dark:text-white">{wo.machine_name}</span>
                         </div>
                       ) : (
-                        <span className="text-gray-400">Not assigned</span>
+                        <span className="text-gray-300 text-xs">—</span>
                       )}
                     </td>
-                    
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="space-y-1">
-                        <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(wo.status)}`}>
-                          <StatusIcon className="h-3 w-3" />
-                          {wo.status}
+
+                    {/* Work Order + Actions */}
+                    <td className="px-3 py-2.5 whitespace-nowrap">
+                      <Link
+                        to={`/app/production/work-orders/${wo.id}`}
+                        className="text-sm font-bold text-blue-600 hover:text-blue-800 hover:underline"
+                      >
+                        {wo.wo_number}
+                      </Link>
+                      {wo.batch_number && (
+                        <div className="text-xs text-gray-400 flex items-center gap-0.5 mt-0.5">
+                          <TagIcon className="h-3 w-3" />{wo.batch_number}
                         </div>
-                        <div className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(wo.priority)} ml-2`}>
-                          {wo.priority} priority
-                        </div>
-                      </div>
-                    </td>
-                    
-                    <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex gap-1">
-                        {/* View Detail */}
-                        <Link
-                          to={`/app/production/work-orders/${wo.id}`}
-                          className="p-1.5 text-gray-600 dark:text-gray-300 hover:text-indigo-600 hover:bg-indigo-50 rounded"
-                          title="View Detail"
-                        >
-                          <EyeIcon className="h-4 w-4" />
-                        </Link>
-                        
-                        {/* Edit - only for planned/released */}
-                        {(wo.status === 'planned' || wo.status === 'released') && (
-                          <Link
-                            to={`/app/production/work-orders/${wo.id}/edit`}
-                            className="p-1.5 text-gray-600 dark:text-gray-300 hover:text-blue-600 hover:bg-blue-50 rounded"
-                            title="Edit"
-                          >
-                            <PencilIcon className="h-4 w-4" />
-                          </Link>
-                        )}
-                        
-                        {/* Start Now - for planned/released */}
-                        {(wo.status === 'planned' || wo.status === 'released') && (
+                      )}
+                      {/* Action buttons below WO number */}
+                      <div className="flex items-center gap-1 mt-1.5">
+                        {/* Primary action */}
+                        {canStart && (
                           <button
                             onClick={() => handleStartNow(wo.id)}
-                            className="p-1.5 text-gray-600 dark:text-gray-300 hover:text-green-600 hover:bg-green-50 rounded"
-                            title="Start Now"
+                            className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
                           >
-                            <BoltIcon className="h-4 w-4" />
+                            <BoltIcon className="h-3 w-3" />Start WO
                           </button>
                         )}
-                        
-                        {/* Complete - for in_progress */}
-                        {wo.status === 'in_progress' && (
+                        {isInProgress && (
+                          <Link
+                            to={`/app/production/work-orders/${wo.id}/input`}
+                            className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                          >
+                            <PlayIcon className="h-3 w-3" />Input
+                          </Link>
+                        )}
+                        {isInProgress && (
                           <button
                             onClick={() => handleStatusChange(wo.id, 'completed')}
-                            className="p-1.5 text-gray-600 dark:text-gray-300 hover:text-green-600 hover:bg-green-50 rounded"
-                            title="Mark Complete"
+                            className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold bg-gray-100 text-gray-600 rounded hover:bg-green-100 hover:text-green-700 transition-colors"
                           >
-                            <CheckCircleIcon className="h-4 w-4" />
+                            <CheckCircleIcon className="h-3 w-3" />Selesai
                           </button>
                         )}
-                        
-                        {/* Delete - only for planned */}
+                        {/* Secondary actions - icon only */}
+                        <Link
+                          to={`/app/production/work-orders/${wo.id}`}
+                          className="p-1 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded"
+                          title="Detail"
+                        >
+                          <EyeIcon className="h-3.5 w-3.5" />
+                        </Link>
+                        {(canStart) && (
+                          <Link
+                            to={`/app/production/work-orders/${wo.id}/edit`}
+                            className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded"
+                            title="Edit"
+                          >
+                            <PencilIcon className="h-3.5 w-3.5" />
+                          </Link>
+                        )}
                         {wo.status === 'planned' && (
                           <button
                             onClick={() => handleDelete(wo.id, wo.wo_number)}
-                            className="p-1.5 text-gray-600 dark:text-gray-300 hover:text-red-600 hover:bg-red-50 rounded"
-                            title="Delete"
+                            className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"
+                            title="Hapus"
                           >
-                            <TrashIcon className="h-4 w-4" />
+                            <TrashIcon className="h-3.5 w-3.5" />
                           </button>
                         )}
                       </div>
+                    </td>
+
+                    {/* Produk & Mesin */}
+                    <td className="px-3 py-2.5">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm font-medium text-gray-900 dark:text-white leading-tight">{wo.product_name}</span>
+                        {wo.priority && wo.priority !== 'normal' && (
+                          <span className={`inline-flex px-1.5 py-0 rounded text-xs font-semibold ${
+                            wo.priority === 'high' || wo.priority === 'urgent'
+                              ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                              : wo.priority === 'medium'
+                              ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                              : 'bg-gray-100 text-gray-500'
+                          }`}>
+                            {wo.priority === 'urgent' ? '🔥' : wo.priority === 'high' ? '↑' : ''}{wo.priority}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                        {wo.machine_name && (
+                          <div className="flex items-center gap-0.5">
+                            <CogIcon className="h-3 w-3 text-gray-400" />
+                            <span className="text-xs text-gray-500 dark:text-gray-400">{wo.machine_name}</span>
+                          </div>
+                        )}
+                        {(wo.shift_count ?? 0) > 0 && (
+                          <span className="text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-1.5 py-0 rounded">
+                            {wo.shift_count} shift
+                          </span>
+                        )}
+                        {(wo.total_cartons ?? 0) > 0 && (
+                          <span className="text-xs text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/30 px-1.5 py-0 rounded">
+                            {wo.total_cartons?.toLocaleString()} ctn
+                          </span>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Progress */}
+                    <td className="px-3 py-2.5 whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 bg-gray-100 dark:bg-gray-700 rounded-full h-1.5 min-w-[80px]">
+                          <div
+                            className={`h-1.5 rounded-full transition-all ${progressColor}`}
+                            style={{ width: `${Math.max(progressBarWidth, progressNum > 0 ? 3 : 0)}%` }}
+                          />
+                        </div>
+                        <span className={`text-xs w-12 text-right font-medium ${
+                          progressNum >= 100 ? 'text-green-600' : progressNum >= 60 ? 'text-yellow-600' : 'text-red-500'
+                        }`}>{progress}%</span>
+                      </div>
+                      <div className="text-xs text-gray-400 mt-0.5">
+                        {wo.quantity_produced.toLocaleString()} / {wo.quantity.toLocaleString()}
+                        {progressNum > 100 && <span className="ml-1 text-green-500 font-semibold">↑{(progressNum - 100).toFixed(1)}%</span>}
+                      </div>
+                    </td>
+
+                    {/* Status */}
+                    <td className="px-3 py-2.5 whitespace-nowrap">
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(wo.status)}`}>
+                        <StatusIcon className="h-3 w-3" />
+                        {wo.status === 'in_progress' ? 'Running' : wo.status === 'planned' ? 'Planned' : wo.status === 'released' ? 'Released' : wo.status === 'completed' ? 'Done' : wo.status}
+                      </span>
                     </td>
                   </tr>
                 )

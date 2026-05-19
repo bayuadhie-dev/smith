@@ -500,27 +500,45 @@ def get_work_orders():
         
         wos = query.order_by(WorkOrder.created_at.desc()).paginate(page=page, per_page=per_page)
         
+        # Bulk query: shift counts per WO to avoid N+1
+        from sqlalchemy import func as sqla_func2
+        wo_ids = [wo.id for wo in wos.items]
+        shift_counts = {}
+        if wo_ids:
+            rows = db.session.query(
+                ShiftProduction.work_order_id,
+                sqla_func2.count(ShiftProduction.id).label('cnt')
+            ).filter(ShiftProduction.work_order_id.in_(wo_ids)).group_by(ShiftProduction.work_order_id).all()
+            shift_counts = {r.work_order_id: r.cnt for r in rows}
+
         result = []
         for wo in wos.items:
-            # Get last input date from ShiftProduction
-            last_shift = ShiftProduction.query.filter_by(work_order_id=wo.id).order_by(
-                ShiftProduction.created_at.desc()
-            ).first()
-            
+            quantity_good = float(wo.quantity_good) if wo.quantity_good else 0
+            # Resolve pack_per_carton: WO field → BOM → 0
+            ppc = 0
+            if wo.pack_per_carton and int(wo.pack_per_carton) > 0:
+                ppc = int(wo.pack_per_carton)
+            elif wo.bom and wo.bom.pack_per_carton and int(wo.bom.pack_per_carton) > 1:
+                ppc = int(wo.bom.pack_per_carton)
+
             result.append({
                 'id': wo.id,
                 'wo_number': wo.wo_number,
                 'product_name': get_product_name_from_new(wo.product.code if wo.product else None) or (wo.product.name if wo.product else 'Unknown Product'),
                 'quantity': float(wo.quantity) if wo.quantity else 0,
                 'quantity_produced': float(wo.quantity_produced) if wo.quantity_produced else 0,
-                'quantity_good': float(wo.quantity_good) if wo.quantity_good else 0,
+                'quantity_good': quantity_good,
                 'status': wo.status,
                 'priority': wo.priority or 'normal',
                 'machine': wo.machine.name if wo.machine else None,
                 'machine_name': wo.machine.name if wo.machine else None,
                 'scheduled_start_date': wo.scheduled_start_date.isoformat() if wo.scheduled_start_date else None,
                 'scheduled_end_date': wo.scheduled_end_date.isoformat() if wo.scheduled_end_date else None,
-                'start_date': wo.scheduled_start_date.isoformat() if wo.scheduled_start_date else wo.created_at.isoformat() if wo.created_at else None
+                'start_date': wo.scheduled_start_date.isoformat() if wo.scheduled_start_date else wo.created_at.isoformat() if wo.created_at else None,
+                'shift_count': shift_counts.get(wo.id, 0),
+                'pack_per_carton': ppc,
+                'total_cartons': int(quantity_good // ppc) if ppc > 0 else 0,
+                'batch_number': wo.batch_number,
             })
         
         # Summary counts across ALL work orders (not just current page)
