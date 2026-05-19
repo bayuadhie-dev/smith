@@ -2406,6 +2406,14 @@ def get_production_monitoring():
 
         machine_data = {}
 
+        # Shift breakdown tracking
+        shift_breakdown = {
+            1: {'total_pcs': 0, 'grade_a': 0, 'grade_b': 0, 'grade_c': 0, 'runtime': 0, 'downtime': 0, 'idle_time': 0, 'oee_sum': 0, 'shift_count': 0},
+            2: {'total_pcs': 0, 'grade_a': 0, 'grade_b': 0, 'grade_c': 0, 'runtime': 0, 'downtime': 0, 'idle_time': 0, 'oee_sum': 0, 'shift_count': 0},
+            3: {'total_pcs': 0, 'grade_a': 0, 'grade_b': 0, 'grade_c': 0, 'runtime': 0, 'downtime': 0, 'idle_time': 0, 'oee_sum': 0, 'shift_count': 0},
+        }
+        machine_daily_oee = {}  # {machine_name: {date: [oee_scores]}}
+
         
 
         for sp in shift_productions:
@@ -2608,6 +2616,27 @@ def get_production_monitoring():
             'wo_number': sp.work_order.wo_number if sp.work_order else 'N/A'
 
             })
+
+            # Accumulate shift breakdown
+            if shift_num in shift_breakdown:
+                shift_breakdown[shift_num]['total_pcs'] += int(total_qty)
+                shift_breakdown[shift_num]['grade_a'] += int(grade_a)
+                shift_breakdown[shift_num]['grade_b'] += int(grade_b)
+                shift_breakdown[shift_num]['grade_c'] += int(grade_c)
+                shift_breakdown[shift_num]['runtime'] += runtime_min
+                shift_breakdown[shift_num]['downtime'] += total_dt
+                shift_breakdown[shift_num]['idle_time'] += idle_min
+                shift_breakdown[shift_num]['oee_sum'] += float(sp.oee_score or 0)
+                shift_breakdown[shift_num]['shift_count'] += 1
+
+            # Accumulate machine daily OEE for heatmap
+            if sp.machine and sp.machine.name and date_str:
+                mname_oee = sp.machine.name
+                if mname_oee not in machine_daily_oee:
+                    machine_daily_oee[mname_oee] = {}
+                if date_str not in machine_daily_oee[mname_oee]:
+                    machine_daily_oee[mname_oee][date_str] = []
+                machine_daily_oee[mname_oee][date_str].append(float(sp.oee_score or 0))
 
             
 
@@ -3363,7 +3392,29 @@ def get_production_monitoring():
                 'planned_runtime_minutes': total_planned,
                 'is_behind': False,
                 'behind_pct': 0
-            } if view_mode == 'weekly' else None
+            } if view_mode == 'weekly' else None,
+            'shift_breakdown': [
+                {
+                    'shift': sn,
+                    'shift_label': f'Shift {sn}',
+                    'total_pcs': shift_breakdown[sn]['total_pcs'],
+                    'grade_a': shift_breakdown[sn]['grade_a'],
+                    'grade_b': shift_breakdown[sn]['grade_b'],
+                    'grade_c': shift_breakdown[sn]['grade_c'],
+                    'runtime': shift_breakdown[sn]['runtime'],
+                    'downtime': shift_breakdown[sn]['downtime'],
+                    'idle_time': shift_breakdown[sn]['idle_time'],
+                    'avg_oee': round(shift_breakdown[sn]['oee_sum'] / shift_breakdown[sn]['shift_count'], 2) if shift_breakdown[sn]['shift_count'] > 0 else 0,
+                    'quality_rate': round(shift_breakdown[sn]['grade_a'] / shift_breakdown[sn]['total_pcs'] * 100, 2) if shift_breakdown[sn]['total_pcs'] > 0 else 0,
+                    'shift_count': shift_breakdown[sn]['shift_count'],
+                }
+                for sn in [1, 2, 3]
+            ],
+            'machine_daily_oee': [
+                {'machine': mname, 'date': dstr, 'avg_oee': round(sum(scores) / len(scores), 1) if scores else 0}
+                for mname, dates in machine_daily_oee.items()
+                for dstr, scores in dates.items()
+            ],
             }
 
         }), 200

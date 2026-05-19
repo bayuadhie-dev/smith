@@ -2,7 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
   ChartBarIcon, ExclamationTriangleIcon,
   ClockIcon, CubeIcon, CogIcon, ChevronDownIcon, ChevronUpIcon,
-  PresentationChartLineIcon, CalendarDaysIcon, ArrowsRightLeftIcon
+  PresentationChartLineIcon, CalendarDaysIcon, ArrowsRightLeftIcon,
+  BoltIcon, BeakerIcon
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
@@ -48,7 +49,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
   const [viewMode, setViewMode] = useState<'monthly' | 'weekly'>('monthly');
   const [weekNumber, setWeekNumber] = useState(0);
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
-  const [activeTab, setActiveTab] = useState<'overview' | 'daily' | 'dailySwiper' | 'products' | 'machines' | 'downtime' | 'graph' | 'fg'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'daily' | 'dailySwiper' | 'products' | 'machines' | 'downtime' | 'graph' | 'fg' | 'shift' | 'analytics'>('overview');
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [refreshInterval, setRefreshInterval] = useState(5); // minutes
   const [fgData, setFgData] = useState<any>(null);
@@ -301,6 +302,8 @@ const ProductionMonitoringDashboard: React.FC = () => {
     { id: 'downtime', label: 'Downtime', icon: ExclamationTriangleIcon },
     { id: 'graph', label: 'Graph', icon: PresentationChartLineIcon },
     { id: 'fg', label: 'FG Conversion', icon: ArrowsRightLeftIcon },
+    { id: 'shift', label: 'Per Shift', icon: BoltIcon },
+    { id: 'analytics', label: 'Analytics', icon: BeakerIcon },
   ];
 
   return (
@@ -468,7 +471,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
       </div>
 
       {/* TAB CONTENT */}
-      {activeTab === 'overview' && <OverviewTab data={data} dailyChartData={dailyChartData} timePieData={timePieData} downtimePieData={downtimePieData} />}
+      {activeTab === 'overview' && <OverviewTab data={data} dailyChartData={dailyChartData} timePieData={timePieData} downtimePieData={downtimePieData} displaySummary={displaySummary} viewMode={viewMode} />}
       {activeTab === 'daily' && <DailyTab data={data} expandedDays={expandedDays} toggleDay={toggleDay} calculateDailyTarget={calculateDailyTarget} />}
       {activeTab === 'dailySwiper' && (
         <div className="mt-6">
@@ -484,6 +487,8 @@ const ProductionMonitoringDashboard: React.FC = () => {
       {activeTab === 'machines' && <MachinesTab data={data} />}
       {activeTab === 'downtime' && <DowntimeTab data={data} downtimePieData={downtimePieData} />}
       {activeTab === 'graph' && <GraphTab data={data} />}
+      {activeTab === 'shift' && <ShiftTab data={data} />}
+      {activeTab === 'analytics' && <AnalyticsTab data={data} dailyChartData={dailyChartData} />}
       {activeTab === 'fg' && (
         <FGConversionTab
           fgData={fgData}
@@ -499,8 +504,67 @@ const ProductionMonitoringDashboard: React.FC = () => {
 };
 
 // ==================== OVERVIEW TAB ====================
-const OverviewTab: React.FC<{ data: any; dailyChartData: any[]; timePieData: any[]; downtimePieData: any[] }> = ({ data, dailyChartData, timePieData, downtimePieData }) => (
+const OverviewTab: React.FC<{ data: any; dailyChartData: any[]; timePieData: any[]; downtimePieData: any[]; displaySummary: any; viewMode: string }> = ({ data, dailyChartData, timePieData, downtimePieData, displaySummary, viewMode }) => {
+  const s = displaySummary || {};
+  const totalWd = s.total_working_days || 22;
+  const elapsed = s.working_days || 0;
+  const actual = s.actual_ctn || 0;
+  const target = s.target_ctn || 0;
+  const projectedCtn = elapsed > 0 ? Math.round(actual / elapsed * totalWd) : 0;
+  const projectedPct = target > 0 ? Math.round(projectedCtn / target * 100) : 0;
+  const paceStatus = projectedPct >= 100 ? 'ahead' : projectedPct >= 85 ? 'on-track' : projectedPct >= 70 ? 'at-risk' : 'behind';
+  const paceColor = { ahead: 'from-green-500 to-emerald-600', 'on-track': 'from-blue-500 to-indigo-600', 'at-risk': 'from-yellow-500 to-orange-500', behind: 'from-red-500 to-rose-600' }[paceStatus];
+  const paceLabel = { ahead: 'Di Atas Target', 'on-track': 'Sesuai Target', 'at-risk': 'Perlu Perhatian', behind: 'Di Bawah Target' }[paceStatus];
+  const remainingDays = Math.max(0, totalWd - elapsed);
+  const neededPerDay = remainingDays > 0 ? Math.ceil((target - actual) / remainingDays) : 0;
+
+  return (
   <div className="space-y-5">
+    {/* Pace Indicator */}
+    <div className={`bg-gradient-to-r ${paceColor} rounded-2xl p-5 text-white shadow-xl`}>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <p className="text-sm font-medium text-white/80 mb-1">📈 Proyeksi Akhir {viewMode === 'weekly' ? 'Minggu' : 'Bulan'}</p>
+          <div className="flex items-baseline gap-3">
+            <span className="text-3xl font-bold">{projectedPct}%</span>
+            <span className={`text-sm font-semibold px-2 py-0.5 rounded-full bg-white/20`}>{paceLabel}</span>
+          </div>
+          <p className="text-sm text-white/80 mt-1">
+            Proyeksi: <strong>{fmtNum(projectedCtn)} ctn</strong> dari target <strong>{fmtNum(Math.round(target))} ctn</strong>
+          </p>
+        </div>
+        <div className="grid grid-cols-3 gap-4 text-center">
+          <div className="bg-white/15 rounded-xl px-4 py-3">
+            <p className="text-xs text-white/70">Hari Berlalu</p>
+            <p className="text-xl font-bold">{elapsed}<span className="text-sm font-normal text-white/70">/{totalWd}</span></p>
+          </div>
+          <div className="bg-white/15 rounded-xl px-4 py-3">
+            <p className="text-xs text-white/70">Aktual</p>
+            <p className="text-xl font-bold">{fmtNum(Math.round(actual))}<span className="text-xs font-normal text-white/70"> ctn</span></p>
+          </div>
+          <div className="bg-white/15 rounded-xl px-4 py-3">
+            <p className="text-xs text-white/70">Perlu/Hari</p>
+            <p className="text-xl font-bold">{fmtNum(neededPerDay)}<span className="text-xs font-normal text-white/70"> ctn</span></p>
+          </div>
+        </div>
+      </div>
+      <div className="mt-4">
+        <div className="flex justify-between text-xs text-white/70 mb-1">
+          <span>Progress waktu: {Math.round(elapsed / totalWd * 100)}%</span>
+          <span>Achievement saat ini: {s.achievement_pct}%</span>
+        </div>
+        <div className="w-full bg-white/20 rounded-full h-2.5">
+          <div className="h-2.5 rounded-full bg-white transition-all" style={{ width: `${Math.min(100, s.achievement_pct || 0)}%` }} />
+        </div>
+        <div className="w-full bg-white/10 rounded-full h-1.5 mt-1">
+          <div className="h-1.5 rounded-full bg-white/50" style={{ width: `${Math.min(100, Math.round(elapsed / totalWd * 100))}%` }} />
+        </div>
+        <div className="flex justify-between text-[10px] text-white/60 mt-0.5">
+          <span>Produksi aktual</span>
+          <span>Waktu berjalan</span>
+        </div>
+      </div>
+    </div>
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
       {/* Daily Production Trend */}
       <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
@@ -615,7 +679,8 @@ const OverviewTab: React.FC<{ data: any; dailyChartData: any[]; timePieData: any
       </div>
     </div>
   </div>
-);
+  );
+};
 
 // ==================== DAILY TAB ====================
 const DailyTab: React.FC<{ data: any; expandedDays: Set<string>; toggleDay: (d: string) => void; calculateDailyTarget: (weeklyTarget: number, workingDays: number) => number }> = ({ data, expandedDays, toggleDay, calculateDailyTarget }) => {
@@ -1991,6 +2056,243 @@ const GraphTab: React.FC<{ data: any }> = ({ data }) => {
         ) : (
           <div className="p-8 text-center text-gray-400">
             No work order data available for gantt chart
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ==================== SHIFT TAB ====================
+const SHIFT_COLORS = ['#6366F1', '#10B981', '#F59E0B'];
+const ShiftTab: React.FC<{ data: any }> = ({ data }) => {
+  const shifts: any[] = (data?.shift_breakdown || []).filter((s: any) => s.shift_count > 0);
+
+  if (shifts.length === 0) return (
+    <div className="flex flex-col items-center justify-center h-64 gap-3">
+      <BoltIcon className="h-12 w-12 text-gray-300" />
+      <p className="text-gray-400">Tidak ada data shift untuk periode ini</p>
+    </div>
+  );
+
+  const barData = shifts.map((s: any) => ({
+    name: s.shift_label,
+    'Output (pcs)': s.total_pcs,
+    'Grade A': s.grade_a,
+    'Grade B': s.grade_b,
+    'Grade C': s.grade_c,
+    'OEE (%)': s.avg_oee,
+    'Quality (%)': s.quality_rate,
+    'Downtime (mnt)': s.downtime,
+  }));
+
+  const best = shifts.reduce((a: any, b: any) => a.total_pcs > b.total_pcs ? a : b);
+
+  return (
+    <div className="space-y-5">
+      {/* Summary Cards */}
+      <div className="grid grid-cols-3 gap-4">
+        {shifts.map((s: any, i: number) => (
+          <div key={i} className={`rounded-xl p-4 shadow text-white ${s.shift_label === best.shift_label ? 'ring-4 ring-yellow-300' : ''}`}
+            style={{ background: `linear-gradient(135deg, ${SHIFT_COLORS[i]}, ${SHIFT_COLORS[i]}CC)` }}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-lg font-bold">{s.shift_label}</span>
+              {s.shift_label === best.shift_label && <span className="text-xs bg-yellow-300 text-yellow-900 px-2 py-0.5 rounded-full font-semibold">🏆 Terbaik</span>}
+            </div>
+            <p className="text-2xl font-bold">{fmtNum(s.total_pcs)}<span className="text-sm font-normal text-white/70"> pcs</span></p>
+            <div className="grid grid-cols-3 gap-2 mt-3 text-center text-xs">
+              <div className="bg-white/15 rounded-lg py-1.5">
+                <p className="text-white/70">OEE</p>
+                <p className="font-bold">{s.avg_oee}%</p>
+              </div>
+              <div className="bg-white/15 rounded-lg py-1.5">
+                <p className="text-white/70">Quality</p>
+                <p className="font-bold">{s.quality_rate}%</p>
+              </div>
+              <div className="bg-white/15 rounded-lg py-1.5">
+                <p className="text-white/70">Shift</p>
+                <p className="font-bold">{s.shift_count}x</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Comparison Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div className="bg-white rounded-xl p-5 shadow border">
+          <h3 className="text-sm font-semibold text-gray-900 mb-3">Output per Shift (pcs)</h3>
+          <div className="h-56">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={barData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 11 }} />
+                <Tooltip formatter={(v: number) => fmtNum(v)} />
+                <Bar dataKey="Grade A" fill={GRADE_COLORS.a} stackId="s" />
+                <Bar dataKey="Grade B" fill={GRADE_COLORS.b} stackId="s" />
+                <Bar dataKey="Grade C" fill={GRADE_COLORS.c} stackId="s" radius={[4, 4, 0, 0]} />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl p-5 shadow border">
+          <h3 className="text-sm font-semibold text-gray-900 mb-3">OEE & Quality Rate per Shift (%)</h3>
+          <div className="h-56">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={barData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
+                <Tooltip formatter={(v: number) => `${v}%`} />
+                <Bar dataKey="OEE (%)" fill="#6366F1" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Quality (%)" fill="#10B981" radius={[4, 4, 0, 0]} />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* Detail Table */}
+      <div className="bg-white rounded-xl shadow border overflow-hidden">
+        <div className="px-5 py-4 border-b bg-gray-50">
+          <h3 className="text-sm font-semibold text-gray-900">Detail Perbandingan Shift</h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-gray-100 text-gray-600 text-xs font-semibold">
+                <th className="px-4 py-3 text-left">Shift</th>
+                <th className="px-4 py-3 text-right">Total Pcs</th>
+                <th className="px-4 py-3 text-right">Grade A</th>
+                <th className="px-4 py-3 text-right">Grade B</th>
+                <th className="px-4 py-3 text-right">Grade C</th>
+                <th className="px-4 py-3 text-right">Quality %</th>
+                <th className="px-4 py-3 text-right">OEE %</th>
+                <th className="px-4 py-3 text-right">Runtime (j)</th>
+                <th className="px-4 py-3 text-right">Downtime (j)</th>
+                <th className="px-4 py-3 text-right">Jumlah Shift</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {shifts.map((s: any, i: number) => (
+                <tr key={i} className={`hover:bg-gray-50 ${s.shift_label === best.shift_label ? 'bg-yellow-50' : ''}`}>
+                  <td className="px-4 py-3 font-bold" style={{ color: SHIFT_COLORS[i] }}>{s.shift_label} {s.shift_label === best.shift_label ? '🏆' : ''}</td>
+                  <td className="px-4 py-3 text-right font-semibold">{fmtNum(s.total_pcs)}</td>
+                  <td className="px-4 py-3 text-right text-green-600">{fmtNum(s.grade_a)}</td>
+                  <td className="px-4 py-3 text-right text-yellow-500">{fmtNum(s.grade_b)}</td>
+                  <td className="px-4 py-3 text-right text-red-500">{fmtNum(s.grade_c)}</td>
+                  <td className="px-4 py-3 text-right">
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${s.quality_rate >= 95 ? 'bg-green-100 text-green-700' : s.quality_rate >= 85 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>{s.quality_rate}%</span>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${s.avg_oee >= 85 ? 'bg-green-100 text-green-700' : s.avg_oee >= 70 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>{s.avg_oee}%</span>
+                  </td>
+                  <td className="px-4 py-3 text-right text-gray-600">{(s.runtime / 60).toFixed(1)}</td>
+                  <td className="px-4 py-3 text-right text-red-500">{(s.downtime / 60).toFixed(1)}</td>
+                  <td className="px-4 py-3 text-right text-gray-500">{s.shift_count}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ==================== ANALYTICS TAB ====================
+const getOeeColor = (oee: number): string => {
+  if (oee === 0) return '#F3F4F6';
+  if (oee >= 85) return '#10B981';
+  if (oee >= 70) return '#F59E0B';
+  if (oee >= 50) return '#EF4444';
+  return '#FCA5A5';
+};
+
+const AnalyticsTab: React.FC<{ data: any; dailyChartData: any[] }> = ({ data, dailyChartData }) => {
+  const oeeRaw: any[] = data?.machine_daily_oee || [];
+
+  // Build heatmap: machines × dates
+  const machines = Array.from(new Set(oeeRaw.map((r: any) => r.machine))).sort();
+  const dates = Array.from(new Set(oeeRaw.map((r: any) => r.date))).sort();
+  const oeeMap: Record<string, number> = {};
+  oeeRaw.forEach((r: any) => { oeeMap[`${r.machine}__${r.date}`] = r.avg_oee; });
+
+  // Quality trend from dailyChartData
+  const qualityTrend = dailyChartData.map((d: any) => {
+    const total = d.grade_a + d.grade_b + d.grade_c;
+    return { ...d, quality_rate: total > 0 ? Math.round(d.grade_a / total * 100) : 0 };
+  });
+
+  return (
+    <div className="space-y-5">
+      {/* Quality Trend */}
+      <div className="bg-white rounded-xl p-5 shadow border">
+        <h3 className="text-sm font-semibold text-gray-900 mb-1">Tren Kualitas Harian</h3>
+        <p className="text-xs text-gray-400 mb-3">Grade A/B/C per hari dan quality rate (%)</p>
+        <div className="h-72">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={qualityTrend}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+              <YAxis yAxisId="left" tick={{ fontSize: 10 }} />
+              <YAxis yAxisId="right" orientation="right" domain={[0, 100]} tick={{ fontSize: 10 }} unit="%" />
+              <Tooltip formatter={(v: number, name: string) => [name.includes('%') ? `${v}%` : fmtNum(v), name]} />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
+              <Bar yAxisId="left" dataKey="grade_a" name="Grade A" fill={GRADE_COLORS.a} stackId="q" />
+              <Bar yAxisId="left" dataKey="grade_b" name="Grade B" fill={GRADE_COLORS.b} stackId="q" />
+              <Bar yAxisId="left" dataKey="grade_c" name="Grade C" fill={GRADE_COLORS.c} stackId="q" radius={[3, 3, 0, 0]} />
+              <Area yAxisId="right" type="monotone" dataKey="quality_rate" name="Quality Rate %" stroke="#6366F1" fill="transparent" strokeWidth={2} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* OEE Heatmap */}
+      <div className="bg-white rounded-xl p-5 shadow border overflow-hidden">
+        <h3 className="text-sm font-semibold text-gray-900 mb-1">OEE Heatmap — Per Mesin per Hari</h3>
+        <div className="flex items-center gap-4 mb-3 text-xs text-gray-500">
+          {[{ color: '#10B981', label: '≥85% Baik' }, { color: '#F59E0B', label: '70–84% Cukup' }, { color: '#EF4444', label: '50–69% Rendah' }, { color: '#FCA5A5', label: '<50% Kritis' }, { color: '#F3F4F6', label: 'No Data' }].map(x => (
+            <span key={x.label} className="flex items-center gap-1"><span className="w-3 h-3 rounded" style={{ backgroundColor: x.color, border: '1px solid #e5e7eb' }} />{x.label}</span>
+          ))}
+        </div>
+        {machines.length === 0 ? (
+          <p className="text-center text-gray-400 py-8">Tidak ada data OEE untuk periode ini</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="text-xs border-collapse">
+              <thead>
+                <tr>
+                  <th className="sticky left-0 bg-white px-3 py-2 text-left text-gray-700 font-semibold z-10 min-w-[120px]">Mesin</th>
+                  {dates.map((d: string) => (
+                    <th key={d} className="px-1 py-2 text-center text-gray-500 font-normal min-w-[36px]">{d.split('-')[2]}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {machines.map((m: string) => (
+                  <tr key={m}>
+                    <td className="sticky left-0 bg-white px-3 py-1 font-medium text-gray-800 z-10 border-r border-gray-100">{m}</td>
+                    {dates.map((d: string) => {
+                      const oee = oeeMap[`${m}__${d}`];
+                      const color = oee !== undefined ? getOeeColor(oee) : '#F3F4F6';
+                      const textColor = oee !== undefined && oee > 0 ? (oee >= 70 ? '#065F46' : '#7F1D1D') : '#9CA3AF';
+                      return (
+                        <td key={d} className="px-1 py-1 text-center" title={oee !== undefined ? `${m} · ${d}: ${oee}%` : 'No data'}>
+                          <div className="w-8 h-8 rounded flex items-center justify-center text-[10px] font-semibold mx-auto"
+                            style={{ backgroundColor: color, color: textColor }}>
+                            {oee !== undefined && oee > 0 ? oee : ''}
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
