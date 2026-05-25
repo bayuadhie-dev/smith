@@ -180,7 +180,8 @@ def detect_downtime_category(issue_text: str, is_first_entry: bool = False) -> s
         'ganti label', 'ganti karton', 'ganti', 'sanitasi',
         'cleaning', 'warmup', 'persiapan produksi',
         'repack', 'repacking', 're-pack', 're packing',
-        'pasang kain', 'pasang packaging'
+        'pasang kain', 'pasang packaging', 'pasang stiker'
+        
     ]
     for kw in design_keywords:
         if kw in text_lower:
@@ -289,7 +290,7 @@ def detect_downtime_category(issue_text: str, is_first_entry: bool = False) -> s
         # Tidak rapi (machine alignment)
         'tidak rapi',
         # Added: guset, relay, inkjet, dosing, simetris error
-        'guset', 'relay', 'simetris error'
+        'guset', 'relay', 'simetris error', 'dosing', 'dossing', 'stiker putus'
     ]
     for kw in mesin_keywords:
         if kw in text_lower:
@@ -297,7 +298,7 @@ def detect_downtime_category(issue_text: str, is_first_entry: bool = False) -> s
     
     # Generic "keluar jalur" without specific cause -> check context
     if 'keluar jalur' in text_lower:
-        # If no specific cause found, default to mesin (most common)
+        # If no specific cause found, default to mesin (most common)t
         return 'mesin'
     
     return 'others'

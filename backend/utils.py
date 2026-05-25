@@ -119,7 +119,8 @@ def detect_downtime_category(issue_text: str) -> str:
         'motor rusak', 'bearing', 'belt putus', 'overheating', 'overheat',
         'listrik mati', 'power failure', 'angin habis', 'compressor',
         'pneumatic', 'hidrolik', 'hydraulic', 'kalibrasi', 'calibration',
-        'jarum patah', 'jarum bengkok', 'tension', 'needle', 'inkjet'
+        'jarum patah', 'jarum bengkok', 'tension', 'needle', 'inkjet', 'dosing', 'dossing', 'stiker putus'
+
     ]
     for kw in mesin_keywords:
         if kw in text_lower:
@@ -128,8 +129,8 @@ def detect_downtime_category(issue_text: str) -> str:
     # DESIGN keywords
     design_keywords = [
         'design error', 'desain salah', 'pattern salah', 'pola salah',
-        'ukuran salah', 'spec salah', 'spesifikasi salah', 'revisi design',
-        'revisi desain', 'sample', 'prototype', 'trial', 'testing design'
+        'ukuran salah', 'spec salah', 'spesifikasi salah', 'revisi design'
+        'revisi desain', 'sample', 'prototype', 'trial', 'testing design', 'pasang stiker'
     ]
     for kw in design_keywords:
         if kw in text_lower:

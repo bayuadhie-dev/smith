@@ -229,7 +229,7 @@ def get_pending_qc_work_orders():
                 'batch_number': wo.batch_number,
                 'machine_name': wo.machine.name if wo.machine else None,
                 'completed_date': wo.actual_end_date.isoformat() if wo.actual_end_date else None,
-                'qc_status': 'completed' if existing_test else 'pending',
+                'qc_status': existing_test.result if existing_test else 'pending',
                 'qc_result': existing_test.result if existing_test else None,
                 'qc_test_id': existing_test.id if existing_test else None,
                 'qc_test_number': existing_test.test_number if existing_test else None
@@ -237,7 +237,7 @@ def get_pending_qc_work_orders():
         
         # Separate into pending and completed QC
         pending = [wo for wo in pending_qc if wo['qc_status'] == 'pending']
-        completed = [wo for wo in pending_qc if wo['qc_status'] == 'completed']
+        completed = [wo for wo in pending_qc if wo['qc_status'] != 'pending']
         
         return jsonify({
             'pending_qc': pending,
@@ -332,6 +332,105 @@ def get_qc_test_for_work_order(wo_id):
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@quality_bp.route('/work-order/<int:wo_id>/detail', methods=['GET'])
+@jwt_required()
+def get_finish_good_detail(wo_id):
+    """Get comprehensive finish good QC detail: WO info + QC test + shift productions"""
+    try:
+        from models.production import ShiftProduction, BillOfMaterials
+        from models.hr import Employee
+
+        wo = db.session.get(WorkOrder, wo_id)
+        if not wo:
+            return jsonify({'error': 'Work order not found'}), 404
+
+        # QC test
+        qc_test = QualityTest.query.filter(
+            QualityTest.reference_type == 'work_order',
+            QualityTest.reference_id == wo_id
+        ).first()
+
+        # Shift productions
+        shifts = ShiftProduction.query.filter_by(work_order_id=wo_id).order_by(
+            ShiftProduction.production_date, ShiftProduction.shift
+        ).all()
+
+        # pack_per_carton
+        ppc = 0
+        if wo.pack_per_carton and int(wo.pack_per_carton) > 0:
+            ppc = int(wo.pack_per_carton)
+        elif wo.bom and wo.bom.pack_per_carton and int(wo.bom.pack_per_carton) > 1:
+            ppc = int(wo.bom.pack_per_carton)
+
+        qty_good = float(wo.quantity_good or 0)
+        qty_produced = float(wo.quantity_produced or 0)
+        qty_scrap = float(wo.quantity_scrap or 0)
+        qty_target = float(wo.quantity or 0)
+
+        shift_data = []
+        for sp in shifts:
+            shift_data.append({
+                'id': sp.id,
+                'production_date': sp.production_date.isoformat() if sp.production_date else None,
+                'shift': sp.shift,
+                'actual_quantity': float(sp.actual_quantity or 0),
+                'good_quantity': float(sp.good_quantity or 0),
+                'scrap_quantity': float(sp.reject_quantity or 0),
+                'machine_name': sp.machine.name if sp.machine else None,
+                'operator_name': sp.operator.name if sp.operator else None,
+                'downtime_minutes': sp.downtime_minutes or 0,
+                'notes': sp.notes,
+            })
+
+        return jsonify({
+            'work_order': {
+                'id': wo.id,
+                'wo_number': wo.wo_number,
+                'product_name': wo.product.name if wo.product else None,
+                'product_code': wo.product.code if wo.product else None,
+                'batch_number': wo.batch_number,
+                'machine_name': wo.machine.name if wo.machine else None,
+                'uom': wo.uom,
+                'status': wo.status,
+                'priority': wo.priority,
+                'quantity': qty_target,
+                'quantity_produced': qty_produced,
+                'quantity_good': qty_good,
+                'quantity_scrap': qty_scrap,
+                'pack_per_carton': ppc,
+                'total_cartons': int(qty_good // ppc) if ppc > 0 else 0,
+                'scheduled_start_date': wo.scheduled_start_date.isoformat() if wo.scheduled_start_date else None,
+                'scheduled_end_date': wo.scheduled_end_date.isoformat() if wo.scheduled_end_date else None,
+                'actual_start_date': wo.actual_start_date.isoformat() if wo.actual_start_date else None,
+                'actual_end_date': wo.actual_end_date.isoformat() if wo.actual_end_date else None,
+                'notes': wo.notes,
+            },
+            'qc_test': {
+                'id': qc_test.id,
+                'test_number': qc_test.test_number,
+                'test_date': qc_test.test_date.isoformat() if qc_test.test_date else None,
+                'result': qc_test.result,
+                'notes': qc_test.notes,
+                'defects_found': qc_test.defects_found if hasattr(qc_test, 'defects_found') else None,
+                'tested_by': qc_test.tested_by_user.username if qc_test.tested_by_user else None,
+                'approved_by': qc_test.approved_by_user.username if qc_test.approved_by_user else None,
+                'approved_at': qc_test.approved_at.isoformat() if qc_test.approved_at else None,
+            } if qc_test else None,
+            'shift_productions': shift_data,
+            'summary': {
+                'shift_count': len(shifts),
+                'progress_pct': round(qty_produced / qty_target * 100, 1) if qty_target > 0 else 0,
+                'good_pct': round(qty_good / qty_produced * 100, 1) if qty_produced > 0 else 0,
+                'scrap_pct': round(qty_scrap / qty_produced * 100, 1) if qty_produced > 0 else 0,
+                'total_downtime_minutes': sum(s.downtime_minutes or 0 for s in shifts),
+            }
+        }), 200
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
 
 @quality_bp.route('/tests/<int:test_id>/result', methods=['PUT'])
 @jwt_required()
@@ -868,7 +967,7 @@ def get_in_process_qc():
             
             current_output = float(wo.quantity_produced or 0)
             if latest_sp:
-                current_output = float(latest_sp.good_quantity or 0) + float(latest_sp.scrap_quantity or 0)
+                current_output = float(latest_sp.good_quantity or 0) + float(latest_sp.reject_quantity or 0)
             
             processes.append({
                 'id': wo.id,
