@@ -439,6 +439,8 @@ def create_app(config_class=Config):
     from routes.shipping import shipping_bp
 
     from routes.maintenance import maintenance_bp
+    
+    from routes.asset_management import asset_bp
 
     from routes.maintenance_extended import maintenance_extended_bp
 
@@ -607,6 +609,8 @@ def create_app(config_class=Config):
     app.register_blueprint(shipping_bp, url_prefix='/api/shipping')
 
     app.register_blueprint(maintenance_bp, url_prefix='/api/maintenance')
+    
+    app.register_blueprint(asset_bp, url_prefix='/api/assets')
 
     app.register_blueprint(maintenance_extended_bp, url_prefix='/api/maintenance')
 
