@@ -53,7 +53,7 @@ sentry-sdk[flask]==1.40.6
 
 # Additional utilities
 numpy==1.26.2
-Pillow==10.1.0  # Image processing if needed
+Pillow==12.2.0  # Image processing if needed
 
 # PDF Generation
 reportlab==4.0.7
