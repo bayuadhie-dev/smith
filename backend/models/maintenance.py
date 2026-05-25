@@ -29,7 +29,8 @@ class MaintenanceRecord(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     record_number = db.Column(db.String(100), unique=True, nullable=False, index=True)
-    machine_id = db.Column(db.Integer, db.ForeignKey('machines.id'), nullable=False)
+    machine_id = db.Column(db.Integer, db.ForeignKey('machines.id'), nullable=True)  # Legacy, nullable for migration
+    asset_id = db.Column(db.Integer, db.ForeignKey('assets.id'), nullable=True)  # New unified asset reference
     schedule_id = db.Column(db.Integer, db.ForeignKey('maintenance_schedules.id'), nullable=True)
     maintenance_type = db.Column(db.String(50), nullable=False)  # preventive, corrective, breakdown, emergency
     maintenance_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
@@ -51,6 +52,7 @@ class MaintenanceRecord(db.Model):
     
     # Relationships
     machine = db.relationship('Machine', back_populates='maintenance_records')
+    asset = db.relationship('Asset', back_populates='maintenance_records', foreign_keys=[asset_id])
     schedule = db.relationship('MaintenanceSchedule')
     performed_by_user = db.relationship('User', foreign_keys=[performed_by])
     approved_by_user = db.relationship('User', foreign_keys=[approved_by])

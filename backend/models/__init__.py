@@ -30,6 +30,7 @@ from .hr_extended import (
     WorkRoster, WorkRosterAssignment, EmployeeSkill, RosterTemplate
 )
 from .maintenance import MaintenanceSchedule, MaintenanceRecord, MaintenanceTask, EquipmentHistory
+from .asset_management import Asset, DepreciationSchedule, AssetTransfer, AssetValuation, SparePart, SparePartMovement
 from .rd import ResearchProject, Experiment, ProductDevelopment, RDMaterial, ResearchReport, Prototype, ProductTestResult
 from .rnd import (
     RNDProject, RNDFormula, RNDFormulaItem, RNDExperiment, 
@@ -125,6 +126,8 @@ __all__ = [
     'WorkRoster', 'WorkRosterAssignment', 'EmployeeSkill', 'RosterTemplate',
     # Maintenance models
     'MaintenanceSchedule', 'MaintenanceRecord', 'MaintenanceTask', 'EquipmentHistory',
+    # Asset Management models
+    'Asset', 'DepreciationSchedule', 'AssetTransfer', 'AssetValuation', 'SparePart', 'SparePartMovement',
     # R&D models (legacy)
     'ResearchProject', 'Experiment', 'ProductDevelopment', 'RDMaterial', 'ResearchReport', 'Prototype', 'ProductTestResult',
     # RND models (new)
