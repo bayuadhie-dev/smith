@@ -218,7 +218,7 @@ const CATEGORY_KEYWORDS = {
     'mesin rusak', 'mesin error', 'mesin mati', 'mesin macet', 'mesin trouble',
     'breakdown', 'break down', 'kerusakan mesin', 'gangguan mesin',
     'sparepart', 'maintenance', 'perbaikan mesin', 'perbaikan',
-    'kalibrasi', 'service mesin'
+    'kalibrasi', 'service mesin', 'dosing', 'dossing', 'stiker putus'
   ],
   // MATERIAL (Raw Material): Masalah bahan baku
   material: [
@@ -244,7 +244,7 @@ const CATEGORY_KEYWORDS = {
     'ganti', 'ganti order', 'ganti produk', 'ganti artikel', 'ganti model',
     'ganti size', 'ganti warna', 'ganti stiker', 'ganti label',
     'ganti packaging', 'ganti kemasan', 'ganti design', 'ganti desain',
-    'ganti mixing', 'pergantian produk', 'pergantian artikel',
+    'ganti mixing', 'pergantian produk', 'pergantian artikel', 'pasang stiker',
     // Sanitasi
     'sanitasi', 'persiapan & sanitasi', 'sterilisasi',
     // Persiapan
@@ -348,6 +348,8 @@ export default function WorkOrderProductionInput() {
   const [submitting, setSubmitting] = useState(false);
   const [existingRecords, setExistingRecords] = useState<any[]>([]);
   const [machineShiftRecords, setMachineShiftRecords] = useState<any[]>([]);
+  const [bomItems, setBomItems] = useState<any[]>([]); // BOM items with planned + actual qty
+  const [bomSource, setBomSource] = useState<'work_order' | 'master_bom' | 'none'>('none');
 
   // Product selection for multi-product per shift
   const [products, setProducts] = useState<{ id: number; code: string; name: string }[]>([]);
@@ -393,6 +395,7 @@ export default function WorkOrderProductionInput() {
     reassignment_task: '',
     reassignment_notes: '',
     batch_number: '',
+    batch_number_2: '',
   });
 
   // Downtime entries list
@@ -613,17 +616,17 @@ export default function WorkOrderProductionInput() {
     if (workOrder?.source_type === 'from_schedule' && workOrder?.schedule_days) {
       const availableShifts = workOrder.schedule_days[formData.production_date] || [];
       if (availableShifts.length > 0) {
-        const nextShift = getNextAvailableShift(existingRecords, formData.production_date);
+        const nextShift = getNextAvailableShift(existingRecords, formData.production_date, machineShiftRecords);
         const autoShift = availableShifts.includes(parseInt(nextShift)) ? nextShift
           : availableShifts[0].toString();
         setFormData(prev => ({ ...prev, shift: autoShift }));
       }
     } else {
       // For manual WO, auto-detect next available shift
-      const nextShift = getNextAvailableShift(existingRecords, formData.production_date);
+      const nextShift = getNextAvailableShift(existingRecords, formData.production_date, machineShiftRecords);
       setFormData(prev => ({ ...prev, shift: nextShift }));
     }
-  }, [formData.production_date, existingRecords]);
+  }, [formData.production_date, existingRecords, machineShiftRecords]);
 
   // ShiftProduction records for current shift/date (for time usage calculation)
   // Uses machineShiftRecords which come from ShiftProduction table with accurate time data
@@ -713,15 +716,21 @@ export default function WorkOrderProductionInput() {
   }, [formData.production_date, formData.shift, machineShiftRecords]);
 
   // Auto-detect next available shift based on existing records
-  const getNextAvailableShift = (records: any[], targetDate: string): string => {
-    const shiftsWithData = records
+  // Also checks machineShiftRecords to avoid collision with other WOs on same machine
+  const getNextAvailableShift = (records: any[], targetDate: string, machineRecords?: any[]): string => {
+    const normalize = (s: string) => s?.replace('shift_', '') || '';
+    const woShifts = records
       .filter(r => new Date(r.production_date).toISOString().split('T')[0] === targetDate)
-      .map(r => r.shift);
-    // If shift 1 already has data but shift 2 doesn't, default to shift 2
-    if (shiftsWithData.includes('1') && !shiftsWithData.includes('2')) return '2';
-    if (shiftsWithData.includes('2') && !shiftsWithData.includes('1')) return '1';
-    // If both or neither have data, default to shift 1
-    return '1';
+      .map(r => normalize(r.shift));
+    const mShifts = (machineRecords || [])
+      .filter(r => new Date(r.production_date).toISOString().split('T')[0] === targetDate)
+      .map(r => normalize(r.shift));
+    const used = new Set([...woShifts, ...mShifts]);
+    // Return first unused shift (1 → 2 → 3)
+    if (!used.has('1')) return '1';
+    if (!used.has('2')) return '2';
+    if (!used.has('3')) return '3';
+    return '1'; // All shifts taken, default to 1
   };
 
 
@@ -743,11 +752,12 @@ export default function WorkOrderProductionInput() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [woRes, empRes, recordsRes, productsRes] = await Promise.all([
+      const [woRes, empRes, recordsRes, productsRes, bomRes] = await Promise.all([
         axiosInstance.get(`/api/production/work-orders/${id}`),
         axiosInstance.get('/api/hr/employees'),
         axiosInstance.get(`/api/production/work-orders/${id}/production-records`),
-        axiosInstance.get('/api/products-new/?per_page=1000')
+        axiosInstance.get('/api/products-new/?per_page=1000'),
+        axiosInstance.get(`/api/production/work-orders/${id}/bom`).catch(() => ({ data: { source: 'none', bom_items: [] } }))
       ]);
 
       const workOrderData = woRes.data.work_order;
@@ -796,6 +806,16 @@ export default function WorkOrderProductionInput() {
       // Set machine shift records (ShiftProduction) for shift time usage calculation
       setMachineShiftRecords(machineRecords);
 
+      // Load BOM items and initialize actual qty inputs
+      const bomData = bomRes.data;
+      setBomSource(bomData.source || 'none');
+      if (bomData.bom_items && bomData.bom_items.length > 0) {
+        setBomItems(bomData.bom_items.map((item: any) => ({
+          ...item,
+          actual_input: item.quantity_actual > 0 ? item.quantity_actual.toString() : '',
+        })));
+      }
+
       // Auto-fill machine_speed, pack_per_carton, and batch_number from WO
       setFormData(prev => {
         const updates: any = {};
@@ -823,7 +843,7 @@ export default function WorkOrderProductionInput() {
 
         if (targetDate) {
           const availableShifts = workOrderData.schedule_days[targetDate] || [];
-          const nextShift = getNextAvailableShift(recordsData, targetDate);
+          const nextShift = getNextAvailableShift(recordsData, targetDate, machineRecords);
           // Pick next available shift that is also in the schedule
           const autoShift = availableShifts.includes(parseInt(nextShift)) ? nextShift
             : availableShifts.length > 0 ? availableShifts[0].toString() : '1';
@@ -836,7 +856,7 @@ export default function WorkOrderProductionInput() {
       } else if (workOrderData?.scheduled_start_date) {
         // For non-schedule WO, use the WO scheduled_start_date as default
         const woStartDate = new Date(workOrderData.scheduled_start_date).toISOString().split('T')[0];
-        const nextShift = getNextAvailableShift(recordsData, woStartDate);
+        const nextShift = getNextAvailableShift(recordsData, woStartDate, machineRecords);
         setFormData(prev => ({
           ...prev,
           production_date: woStartDate,
@@ -845,7 +865,7 @@ export default function WorkOrderProductionInput() {
       } else {
         // For manual WO without scheduled_start_date, auto-detect shift for today
         const today = new Date().toISOString().split('T')[0];
-        const nextShift = getNextAvailableShift(recordsData, today);
+        const nextShift = getNextAvailableShift(recordsData, today, machineRecords);
         setFormData(prev => ({
           ...prev,
           shift: nextShift
@@ -1155,7 +1175,12 @@ export default function WorkOrderProductionInput() {
         })),
         pack_per_carton: parseInt(formData.pack_per_carton) || 0,
         operator_id: formData.operator_id ? parseInt(formData.operator_id) : null,
-        batch_number: formData.batch_number || null,
+        batch_number: formData.batch_number
+          ? (formData.batch_number_2 ? `${formData.batch_number} / ${formData.batch_number_2}` : formData.batch_number)
+          : null,
+        material_actuals: bomItems
+          .filter(item => item.actual_input !== '')
+          .map(item => ({ item_id: item.id, quantity_actual: parseFloat(item.actual_input) || 0 })),
         notes: formData.notes,
         // Early Stop / Shift Interruption
         early_stop: formData.early_stop,
@@ -1182,6 +1207,15 @@ export default function WorkOrderProductionInput() {
         const jc = data.job_costing;
         const totalCost = jc.labor_cost + jc.overhead_cost;
         successMessage += ` | Biaya: Rp ${totalCost.toLocaleString('id-ID')}`;
+      }
+
+      // Save material actual quantities (fire-and-forget, don't block navigation)
+      const materialActuals = bomItems
+        .filter(item => item.actual_input !== '')
+        .map(item => ({ item_id: item.id, quantity_actual: parseFloat(item.actual_input) || 0 }));
+      if (materialActuals.length > 0) {
+        axiosInstance.put(`/api/production/work-orders/${id}/bom/actual`, { items: materialActuals })
+          .catch(err => console.warn('Material actual save failed (non-blocking):', err));
       }
 
       toast.success(successMessage);
@@ -1600,22 +1634,40 @@ export default function WorkOrderProductionInput() {
         </div>
 
         {/* Batch Number */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-              No. Batch
-              {workOrder?.batch_number && (
-                <span className="ml-2 text-xs text-green-600 font-normal">✓ dari Work Order</span>
+        <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                No. Batch 1
+                {workOrder?.batch_number && (
+                  <span className="ml-2 text-xs text-green-600 font-normal">✓ dari Work Order</span>
+                )}
+              </label>
+              <input
+                type="text"
+                value={formData.batch_number}
+                onChange={(e) => handleChange('batch_number', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono"
+                placeholder="BATCH-YYYYMMDD-001"
+              />
+              <p className="text-xs text-gray-400 mt-1">Format: BATCH-20260518-001 · Otomatis mengalir ke WIP, FG, QC, Shipping</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                No. Batch 2
+                <span className="ml-2 text-xs text-gray-400 font-normal">(opsional — jika ganti batch di tengah shift)</span>
+              </label>
+              <input
+                type="text"
+                value={formData.batch_number_2}
+                onChange={(e) => handleChange('batch_number_2', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono"
+                placeholder="BATCH-YYYYMMDD-002"
+              />
+              {formData.batch_number && formData.batch_number_2 && (
+                <p className="text-xs text-blue-500 mt-1">Akan disimpan: {formData.batch_number} / {formData.batch_number_2}</p>
               )}
-            </label>
-            <input
-              type="text"
-              value={formData.batch_number}
-              onChange={(e) => handleChange('batch_number', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono"
-              placeholder="BATCH-YYYYMMDD-XXX"
-            />
-            <p className="text-xs text-gray-400 mt-1">Format: BATCH-20260518-001 · Otomatis mengalir ke WIP, FG, QC, Shipping</p>
+            </div>
           </div>
         </div>
 

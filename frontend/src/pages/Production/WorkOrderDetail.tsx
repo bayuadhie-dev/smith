@@ -34,6 +34,11 @@ export default function WorkOrderDetail() {
   const [deleting, setDeleting] = useState(false);
   const [forceDelete, setForceDelete] = useState(false);
   const [wipBatch, setWipBatch] = useState<any>(null);
+  const [bomItems, setBomItems] = useState<any[]>([]);
+  const [bomSource, setBomSource] = useState<string>('none');
+  const [bomPackPerCarton, setBomPackPerCarton] = useState<number>(1);
+  const [bomEditMode, setBomEditMode] = useState(false);
+  const [bomSaving, setBomSaving] = useState(false);
   const [approvalStatus, setApprovalStatus] = useState<any>(null);
   const [submittingApproval, setSubmittingApproval] = useState(false);
   const [showActivityLog, setShowActivityLog] = useState(false);
@@ -44,6 +49,7 @@ export default function WorkOrderDetail() {
     if (id) {
       fetchProductionRecords();
       fetchWIPBatch();
+      fetchBOMItems();
     }
   }, [id]);
 
@@ -103,6 +109,38 @@ export default function WorkOrderDetail() {
       toast.error(error.response?.data?.error || 'Gagal menyelesaikan Work Order');
     } finally {
       setCompleting(false);
+    }
+  };
+
+  const fetchBOMItems = async () => {
+    try {
+      const res = await axiosInstance.get(`/api/production/work-orders/${id}/bom`);
+      setBomSource(res.data.source || 'none');
+      // Prefer WO's pack_per_carton (always current), fall back to BOM's
+      setBomPackPerCarton(workOrder?.pack_per_carton || res.data.pack_per_carton || 1);
+      setBomItems((res.data.bom_items || []).map((item: any) => ({
+        ...item,
+        actual_input: item.quantity_actual > 0 ? item.quantity_actual.toString() : '',
+      })));
+    } catch {
+      setBomItems([]);
+    }
+  };
+
+  const saveBOMActuals = async () => {
+    try {
+      setBomSaving(true);
+      const items = bomItems
+        .filter(item => item.actual_input !== '')
+        .map(item => ({ item_id: item.id, quantity_actual: parseFloat(item.actual_input) || 0 }));
+      await axiosInstance.put(`/api/production/work-orders/${id}/bom/actual`, { items });
+      toast.success('Konsumsi material berhasil disimpan');
+      setBomEditMode(false);
+      fetchBOMItems();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Gagal menyimpan konsumsi material');
+    } finally {
+      setBomSaving(false);
     }
   };
 
@@ -569,6 +607,147 @@ export default function WorkOrderDetail() {
           </div>
         )}
       </div>
+
+      {/* Material Consumption Section */}
+      {bomItems.length > 0 && (
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-medium text-gray-900 dark:text-white flex items-center">
+              <svg className="h-5 w-5 mr-2 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+              Konsumsi Material
+              {bomSource === 'master_bom' && (() => {
+                const ppc = workOrder.pack_per_carton || bomPackPerCarton || 1;
+                const ctns = Math.ceil((workOrder.quantity || 0) / ppc);
+                return (
+                  <span className="ml-2 text-xs font-normal text-gray-400">
+                    (estimasi dari Master BOM · {ctns} CTN @ {ppc} pcs/ctn)
+                  </span>
+                );
+              })()}
+            </h2>
+            <div className="flex gap-2">
+              {bomEditMode ? (
+                <>
+                  <button
+                    onClick={() => { setBomEditMode(false); fetchBOMItems(); }}
+                    disabled={bomSaving}
+                    className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    onClick={saveBOMActuals}
+                    disabled={bomSaving}
+                    className="px-4 py-1.5 text-sm bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 flex items-center gap-1.5"
+                  >
+                    {bomSaving ? (
+                      <><span className="animate-spin h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full inline-block" />Menyimpan...</>
+                    ) : 'Simpan Aktual'}
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => setBomEditMode(true)}
+                  className="px-4 py-1.5 text-sm border border-orange-400 text-orange-600 dark:text-orange-400 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900/20 flex items-center gap-1.5"
+                >
+                  <PencilIcon className="h-3.5 w-3.5" />
+                  Input Aktual
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Material / Bahan</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipe</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Rencana</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Aktual Terpakai</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Selisih</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
+                {bomItems.map((item: any, idx: number) => {
+                  // Always use WO's pack_per_carton — it's up-to-date; BOM field may be stale
+                  const ppc = workOrder.pack_per_carton || bomPackPerCarton || 1;
+                  const totalCartons = ppc > 0
+                    ? Math.ceil((workOrder.quantity || 0) / ppc)
+                    : 0;
+                  const planned = bomSource === 'work_order'
+                    ? (item.quantity_planned || 0)
+                    : (item.quantity || 0) * totalCartons;
+                  const actual = bomEditMode
+                    ? (parseFloat(item.actual_input) || 0)
+                    : (item.quantity_actual || 0);
+                  const variance = actual > 0 ? actual - planned : null;
+                  const hasActual = actual > 0;
+                  return (
+                    <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                      <td className="px-4 py-3">
+                        <div className="font-medium text-gray-900 dark:text-white">{item.item_name}</div>
+                        {item.item_code && <div className="text-xs text-gray-400">{item.item_code}</div>}
+                      </td>
+                      <td className="px-4 py-3">
+                        {item.item_type && (
+                          <span className="text-xs bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 px-2 py-0.5 rounded">{item.item_type}</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-right text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                        {planned > 0 ? planned.toLocaleString('id-ID', { maximumFractionDigits: 2 }) : '—'} {item.uom}
+                      </td>
+                      <td className="px-4 py-3 text-right whitespace-nowrap">
+                        {bomEditMode ? (
+                          <div className="flex items-center justify-end gap-1">
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              value={item.actual_input}
+                              onChange={(e) => setBomItems(prev => prev.map((bi: any, i: number) =>
+                                i === idx ? { ...bi, actual_input: e.target.value } : bi
+                              ))}
+                              className="w-28 px-2 py-1 text-right border border-orange-300 dark:border-orange-600 rounded focus:ring-1 focus:ring-orange-500 bg-white dark:bg-gray-800 text-sm"
+                              placeholder="0"
+                            />
+                            <span className="text-xs text-gray-400 w-8 text-left">{item.uom}</span>
+                          </div>
+                        ) : (
+                          hasActual
+                            ? <span className="text-sm font-medium text-gray-900 dark:text-white">{actual.toLocaleString('id-ID', { maximumFractionDigits: 2 })} {item.uom}</span>
+                            : <span className="text-xs text-gray-400 italic">Belum diisi</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-right text-sm whitespace-nowrap">
+                        {variance !== null ? (
+                          <span className={variance > 0 ? 'text-red-500 font-medium' : variance < 0 ? 'text-green-600 font-medium' : 'text-gray-400'}>
+                            {variance > 0 ? '+' : ''}{variance.toLocaleString('id-ID', { maximumFractionDigits: 2 })} {item.uom}
+                          </span>
+                        ) : <span className="text-gray-300">—</span>}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        {!hasActual ? (
+                          <span className="text-xs bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400 px-2 py-0.5 rounded">Menunggu input</span>
+                        ) : variance !== null && variance > 0 ? (
+                          <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded">Over</span>
+                        ) : variance !== null && variance < 0 ? (
+                          <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">Efisien</span>
+                        ) : (
+                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">Sesuai</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          {bomEditMode && (
+            <p className="text-xs text-orange-400 mt-3">Selisih merah (+) = pemakaian melebihi rencana BOM. Selisih hijau (−) = lebih hemat dari rencana.</p>
+          )}
+        </div>
+      )}
 
       {/* Packing List Section - Per Shift */}
       {totalGood > 0 && (() => {

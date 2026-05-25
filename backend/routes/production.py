@@ -11,6 +11,7 @@ from utils.i18n import success_response, error_response, get_message
 from utils import generate_number
 from utils.timezone import get_local_now, get_local_today, utc_to_local
 from datetime import datetime, timedelta
+import math
 from sqlalchemy import func, and_, or_
 from io import BytesIO
 
@@ -3333,6 +3334,8 @@ def get_work_order_bom(wo_id):
                 'wo_number': wo.wo_number,
                 'bom_id': bom.id,
                 'bom_number': bom.bom_number,
+                'pack_per_carton': bom.pack_per_carton or 1,
+                'batch_size': float(bom.batch_size) if bom.batch_size else 1,
                 'bom_items': [{
                     'id': item.id,
                     'line_number': item.line_number,
@@ -3392,11 +3395,16 @@ def copy_bom_to_work_order(wo_id):
             return jsonify({'error': 'Work order already has BOM items. Delete them first to re-copy.'}), 400
         
         # Copy BOM items to WO
+        # BOM qty is per carton (1 batch = 1 carton)
+        # planned = BOM qty per ctn × total cartons needed
         wo_quantity = float(wo.quantity) if wo.quantity else 0
+        # Use BOM's pack_per_carton (not WO's) — BOM defines 1 CTN composition
+        bom_ppc = float(bom.pack_per_carton) if bom.pack_per_carton else float(wo.pack_per_carton or 1)
+        total_cartons = math.ceil(wo_quantity / bom_ppc) if bom_ppc > 0 else 0
         
         for bom_item in bom.items:
-            qty_per_unit = float(bom_item.quantity) if bom_item.quantity else 0
-            qty_planned = qty_per_unit * wo_quantity
+            qty_per_ctn = float(bom_item.quantity) if bom_item.quantity else 0
+            qty_planned = qty_per_ctn * total_cartons
             
             wo_bom_item = WorkOrderBOMItem(
                 work_order_id=wo_id,
@@ -3582,6 +3590,46 @@ def delete_work_order_bom_item(wo_id, item_id):
         
         return jsonify({'message': 'BOM item deleted from work order (master BOM unchanged)'}), 200
         
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@production_bp.route('/work-orders/<int:wo_id>/bom/actual', methods=['PUT'])
+@jwt_required()
+def update_work_order_bom_actual(wo_id):
+    """Bulk update actual quantities for all WO BOM items after production input"""
+    try:
+        user_id = int(get_jwt_identity())
+        data = request.get_json()
+        items_data = data.get('items', [])  # [{item_id, quantity_actual, notes}]
+
+        wo = db.session.get(WorkOrder, wo_id)
+        if not wo:
+            return jsonify({'error': 'Work order not found'}), 404
+
+        updated = 0
+        for entry in items_data:
+            item_id = entry.get('item_id')
+            qty_actual = entry.get('quantity_actual')
+            if item_id is None or qty_actual is None:
+                continue
+            item = WorkOrderBOMItem.query.filter_by(id=item_id, work_order_id=wo_id).first()
+            if not item:
+                continue
+            item.quantity_actual = float(qty_actual)
+            if item.quantity_planned:
+                item.quantity_variance = float(qty_actual) - float(item.quantity_planned)
+            if entry.get('notes') is not None:
+                item.notes = entry['notes']
+            item.is_modified = True
+            item.modified_by = user_id
+            item.modified_at = datetime.utcnow()
+            updated += 1
+
+        db.session.commit()
+        return jsonify({'message': f'{updated} BOM item(s) actual quantity updated', 'updated': updated}), 200
+
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
