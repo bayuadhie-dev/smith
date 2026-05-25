@@ -305,8 +305,26 @@ Update Metrik Quality
 - Goods Receipt Note (GRN)
 - Stock Adjustment dengan Approval
 
+**🆕 WMS Advanced (Terintegrasi):**
+- **Stok per Work Order** - Tracking inventori, WIP, dan konsumsi material per WO, dengan halaman detail per WO
+- **Konsumsi Material** - Planned vs actual material consumption dengan variance tracking; fallback otomatis dari `work_order_bom_items` → master `bom_items` via product BOM
+- **Transaksi Stok Terpadu** - Log semua pergerakan stok (produksi, PO, SO, transfer) dengan halaman detail transaksi
+- **Pick List Management** - Daftar pengambilan barang untuk produksi, pengiriman, transfer
+- **Transfer Stok** - Pemindahan antar zona/lokasi dengan approval workflow
+- **Cycle Count Schedule** - Jadwal stock opname berkala dengan tracking akurasi
+- **Batch Traceability** - Lacak nomor batch di seluruh sistem (inventori, transaksi, WIP)
+
+**Frontend Components:**
+- `WMSDashboard` — KPI dashboard WMS dengan ringkasan inventory, WIP, material consumption
+- `StockByWorkOrder` — List WO dengan ringkasan stok FG, WIP, material
+- `StockByWODetail` — Detail per WO: FG inventory, material consumption, produksi, transaksi
+- `MaterialConsumptionPage` — List material consumption dengan planned vs actual variance
+- `TransactionsPage` — Log transaksi stok dengan filter tipe & arah
+- `TransactionDetail` — Detail transaksi lengkap (item, lokasi, referensi, biaya, saldo)
+
 **Endpoint API:**
 ```bash
+# Warehouse Basic
 GET/POST   /api/warehouse
 GET/POST   /api/warehouse/stock
 GET/POST   /api/warehouse/transfers
@@ -314,6 +332,20 @@ GET/POST   /api/material-issue
 GET/POST   /api/stock-opname
 GET/POST   /api/stock-input
 GET        /api/material-stock
+
+# WMS Advanced
+GET        /api/wms/dashboard
+GET        /api/wms/stock-by-wo
+GET        /api/wms/stock-by-wo/:wo_id
+GET/POST   /api/wms/material-consumption
+POST       /api/wms/material-consumption/generate/:wo_id
+POST       /api/wms/material-consumption/:id/issue
+GET/POST   /api/wms/transactions
+GET        /api/wms/transactions/:txn_id
+GET/POST   /api/wms/pick-lists
+GET/POST   /api/wms/transfers
+GET/POST   /api/wms/cycle-counts
+GET        /api/wms/reports/batch-traceability/:batch_number
 ```
 
 ---
