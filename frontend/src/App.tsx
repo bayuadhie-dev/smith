@@ -147,6 +147,7 @@ import QCToWarehouse from './pages/Quality/QCToWarehouse'
 import IncomingQC from './pages/Quality/IncomingQC'
 import InProcessQC from './pages/Quality/InProcessQC'
 import FinishGoodQC from './pages/Quality/FinishGoodQC'
+import FinishGoodDetail from './pages/Quality/FinishGoodDetail'
 import QCPackingList from './pages/Quality/QCPackingList'
 import QualityObjectiveProduction from './pages/Quality/QualityObjectiveProduction'
 import DowntimeAnalysis from './pages/Quality/DowntimeAnalysis'
@@ -225,6 +226,12 @@ import MaintenanceSchedule from './pages/Maintenance/MaintenanceSchedule'
 import MaintenanceForm from './pages/Maintenance/MaintenanceForm'
 import MaintenanceRequestForm from './pages/Maintenance/MaintenanceRequestForm'
 import ChecklistNGItems from './pages/Maintenance/ChecklistNGItems'
+import AssetDashboard from './pages/AssetManagement/AssetDashboard'
+import AssetList from './pages/AssetManagement/AssetList'
+import AssetDetail from './pages/AssetManagement/AssetDetail'
+import AssetForm from './pages/AssetManagement/AssetForm'
+import SparePartsList from './pages/AssetManagement/SparePartsList'
+import DepreciationReport from './pages/AssetManagement/DepreciationReport'
 import ProjectList from './pages/RD/ProjectList'
 import ProjectForm from './pages/RD/ProjectForm'
 import ProjectDetails from './pages/RD/ProjectDetails'
@@ -766,6 +773,8 @@ function App() {
                 <Route path="quality/finish-good" element={<FinishGoodQC />} />
                 <Route path="quality/packing-list" element={<QCPackingList />} />
                 <Route path="quality/finish-good/:woId/input" element={<WorkOrderQCForm />} />
+                <Route path="quality/finish-good/:woId/detail" element={<FinishGoodDetail />} />
+                <Route path="quality/finish-good/:woId/to-warehouse" element={<QCToWarehouse />} />
                 <Route path="quality/objective/production" element={<QualityObjectiveProduction />} />
                 <Route path="quality/objective/downtime-analysis" element={<DowntimeAnalysis />} />
                 <Route path="quality/analytics" element={<QualityAnalytics />} />
@@ -896,6 +905,16 @@ function App() {
                 <Route path="hr/roster/calendar" element={<RosterCalendar />} />
                 <Route path="hr/roster/daily" element={<WorkRosterComplete />} />
                 <Route path="hr/roster" element={<WorkRosterWeekly />} />
+
+                {/* Asset Management */}
+                <Route path="assets" element={<AssetDashboard />} />
+                <Route path="assets/dashboard" element={<AssetDashboard />} />
+                <Route path="assets/list" element={<AssetList />} />
+                <Route path="assets/new" element={<AssetForm />} />
+                <Route path="assets/:id" element={<AssetDetail />} />
+                <Route path="assets/:id/edit" element={<AssetForm />} />
+                <Route path="assets/spare-parts" element={<SparePartsList />} />
+                <Route path="assets/depreciation" element={<DepreciationReport />} />
 
                 {/* Maintenance */}
                 <Route path="maintenance" element={<MaintenanceDashboardEnhanced />} />

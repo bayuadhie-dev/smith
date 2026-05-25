@@ -116,7 +116,8 @@ function SidebarContent() {
     '/app/finance': { workspace: 'finance', menus: ['Finance', 'Accounting'] },
     '/app/accounting': { workspace: 'finance', menus: ['Finance', 'Accounting'] },
     '/app/hr': { workspace: 'hr', menus: ['Human Resources'] },
-    '/app/maintenance': { workspace: 'maintenance', menus: ['Maintenance', 'OEE Monitoring', 'Waste Management'] },
+    '/app/assets': { workspace: 'maintenance', menus: ['Asset Management', 'Maintenance', 'OEE Monitoring'] },
+    '/app/maintenance': { workspace: 'maintenance', menus: ['Asset Management', 'Maintenance', 'OEE Monitoring', 'Waste Management'] },
     '/app/dcc': { workspace: 'dcc', menus: ['Document Control'] },
     '/app/rnd': { workspace: 'rd', menus: ['R&D', 'R&D Legacy'] },
     '/app/rd': { workspace: 'rd', menus: ['R&D', 'R&D Legacy'] },
@@ -149,7 +150,8 @@ function SidebarContent() {
     '/desk/hr': { workspace: 'hr', menus: ['Human Resources', 'Finance'] },
     '/desk/finance': { workspace: 'finance', menus: ['Finance', 'Accounting'] },
     '/desk/accounting': { workspace: 'finance', menus: ['Finance', 'Accounting'] },
-    '/desk/maintenance': { workspace: 'maintenance', menus: ['Maintenance', 'OEE Monitoring', 'Waste Management'] },
+    '/desk/assets': { workspace: 'maintenance', menus: ['Asset Management', 'Maintenance', 'OEE Monitoring'] },
+    '/desk/maintenance': { workspace: 'maintenance', menus: ['Asset Management', 'Maintenance', 'OEE Monitoring', 'Waste Management'] },
     '/desk/rd': { workspace: 'rd', menus: ['R&D', 'R&D Legacy'] },
     '/desk/rnd': { workspace: 'rd', menus: ['R&D', 'R&D Legacy'] },
     '/desk/oee': { workspace: 'oee', menus: ['OEE Monitoring', 'Production', 'Maintenance'] },
@@ -420,6 +422,19 @@ function SidebarContent() {
       groupName: 'MAINTENANCE & R&D',
       show: canViewAny(['maintenance', 'rd', 'waste', 'oee']),
       items: [
+        {
+          name: 'Asset Management',
+          href: '/app/assets',
+          icon: BuildingOfficeIcon,
+          permission: 'maintenance',
+          children: [
+            { name: 'Dashboard', href: '/app/assets', icon: PresentationChartLineIcon },
+            { name: 'Daftar Aset', href: '/app/assets/list', icon: ClipboardDocumentListIcon },
+            { name: 'Spare Parts', href: '/app/assets/spare-parts', icon: WrenchScrewdriverIcon },
+            { name: 'Penyusutan', href: '/app/assets/depreciation', icon: CurrencyDollarIcon },
+            { name: 'Tambah Aset', href: '/app/assets/new', icon: ClipboardDocumentCheckIcon },
+          ]
+        },
         {
           name: 'Maintenance',
           href: '/app/maintenance',

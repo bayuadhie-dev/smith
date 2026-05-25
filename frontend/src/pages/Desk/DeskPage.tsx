@@ -138,6 +138,7 @@ export default function DeskPage() {
     'Finance': { color: 'green', description: 'Budget & cash flow', icon: BanknotesIcon },
     'Accounting': { color: 'blue', description: 'GL & financial reports', icon: CalculatorIcon },
     'Human Resources': { color: 'purple', description: 'Employee management', icon: UsersIcon },
+    'Asset Management': { color: 'blue', description: 'Asset lifecycle & depreciation', icon: BuildingStorefrontIcon },
     'Maintenance': { color: 'orange', description: 'Equipment maintenance', icon: WrenchScrewdriverIcon },
     'R&D': { color: 'teal', description: 'Research projects', icon: LightBulbIcon },
     'R&D Legacy': { color: 'indigo', description: 'Legacy R&D module', icon: BeakerIcon },
