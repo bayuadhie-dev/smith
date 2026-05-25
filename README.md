@@ -404,15 +404,69 @@ GET/POST   /api/work-roster
 
 ---
 
-### 9️⃣ **Modul Maintenance**
+### 9️⃣ **Modul Asset Management** 🆕
+
+**Fitur:**
+- **Siklus Hidup Aset Lengkap** - Planning → Procurement → Installation → Active → Maintenance → Disposal
+- **Penyusutan Otomatis** - Straight line & declining balance method
+- **Depreciation Schedule** - Auto-generated jadwal penyusutan bulanan
+- **Asset Transfer** - Tracking perpindahan aset antar lokasi/departemen dengan approval
+- **Asset Valuation** - Revaluasi aset dan adjustment nilai
+- **Spare Parts Inventory (MRO)** - Inventaris suku cadang dengan reorder alerts
+- **Maintenance Integration** - Link dengan maintenance records
+- **Financial Integration** - Depreciation posting ke accounting entries
+- **Production Machine** - Tracking aset mesin produksi dengan kapasitas & speed
+- **Reports & Analytics** - Summary by type/status, maintenance due alerts
+
+**Models (6 tables):**
+- `Asset` — Unified asset model (FixedAsset + Machine + Equipment)
+- `DepreciationSchedule` — Auto-generated depreciation schedule
+- `AssetTransfer` — Asset transfer tracking dengan approval workflow
+- `AssetValuation` — Revaluation history
+- `SparePart` — MRO inventory dengan min/reorder stock
+- `SparePartMovement` — Spare parts movement tracking
+
+**Endpoint API:**
+```bash
+# Asset CRUD
+GET/POST   /api/assets
+GET/PUT    /api/assets/:id
+GET        /api/assets/:id/depreciation-schedule
+
+# Depreciation
+POST       /api/assets/batch-depreciation
+
+# Transfer
+POST       /api/assets/:id/transfer
+POST       /api/assets/transfers/:id/approve
+
+# Spare Parts
+GET        /api/assets/spare-parts
+
+# Reports
+GET        /api/assets/reports/summary
+GET        /api/assets/reports/maintenance-due
+```
+
+**Frontend Components:**
+- `AssetDashboard` — KPI cards, summary by type, maintenance alerts
+- `AssetList` — List dengan filter & search
+- `AssetDetail` — Detail lengkap (3 tabs: Overview, Depreciation, Maintenance)
+- `AssetForm` — Create/Edit form
+- `SparePartsList` — Inventaris suku cadang dengan low stock alerts
+- `DepreciationReport` — Batch calculation & reporting
+
+---
+
+### 🔟 **Modul Maintenance**
 
 **Fitur:**
 - Scheduling Preventive Maintenance
 - Tracking Corrective Maintenance
 - Manajemen Work Order
-- Inventory Spare Parts
 - History Equipment
 - Tracking Cost Maintenance
+- Integration dengan Asset Management
 
 **Endpoint API:**
 ```bash
@@ -423,7 +477,7 @@ GET/POST   /api/maintenance/work-orders
 
 ---
 
-### 🔟 **Modul MRP (Material Requirements Planning)**
+### 1️⃣1️⃣ **Modul MRP (Material Requirements Planning)**
 
 **Fitur:**
 - Forecasting Demand
@@ -949,6 +1003,19 @@ Asisten AI adalah fitur chatbot terintegrasi yang memungkinkan pengguna untuk me
 
 ## 📈 Pembaruan Terbaru
 
+### ✨ v3.2 — Mei 2026 (Asset Management Module)
+- **Modul Asset Management Terpadu** — Enterprise Asset Management (EAM) lengkap:
+  - **6 Models Baru**: Asset, DepreciationSchedule, AssetTransfer, AssetValuation, SparePart, SparePartMovement
+  - **15 API Endpoints**: CRUD, depreciation, transfer, spare parts, reports
+  - **6 Frontend Components**: Dashboard, List, Detail, Form, SpareParts, DepreciationReport
+  - **Siklus Hidup Lengkap**: Planning → Procurement → Installation → Active → Maintenance → Disposal
+  - **Penyusutan Otomatis**: Straight line & declining balance, batch calculation
+  - **Spare Parts (MRO)**: Inventaris suku cadang dengan reorder alerts
+  - **Integration**: Link dengan Maintenance records & Financial accounting
+  - **Migration Script**: Alembic migration untuk 6 tabel baru
+  - Database models: 49 → **55 files** ✅
+  - Total code: 816 → **823+ files**, 310K → **317K+ lines** ✅
+
 ### ✨ v3.1.1 — April 2026 (Pembaruan README)
 - **Pembaruan Dokumentasi README** — Verifikasi dan update dokumentasi lengkap:
   - Backend routes: 91 files verified ✅
@@ -1029,13 +1096,14 @@ Untuk dukungan teknis, permintaan fitur, atau laporan bug, silakan email kami di
 ## 🎯 Peta Jalan
 
 ### Selesai ✅
-- 18+ modul utama, 100+ sub-modul
-- **816+ file**, **310,000+ baris kode**, **269 tabel database**
+- 19+ modul utama, 100+ sub-modul
+- **823+ file**, **317,000+ baris kode**, **275+ tabel database**
 - Autentikasi & otorisasi (JWT + OAuth)
 - 15+ alur kerja otomatis end-to-end
 - Asisten AI terintegrasi dengan grafik
 - Dashboard Eksekutif dengan KPI real-time
 - Modul DCC & CAPA (ISO 9001:2015) — 13 tabel
+- Modul Asset Management (EAM) — 6 tabel
 - Modul Stok WIP & Daftar Packing
 - Tujuan Kualitas & Analisis Downtime
 - Modul R&D dengan alur kerja persetujuan
@@ -1056,14 +1124,15 @@ Untuk dukungan teknis, permintaan fitur, atau laporan bug, silakan email kami di
 
 ## 🏆 Pencapaian
 
-- ✅ **816+ File** | **310,000+ Baris Kode** | **269+ Tabel DB**
-- ✅ **18+ Modul Bisnis** dengan 100+ Sub-Modul
+- ✅ **823+ File** | **317,000+ Baris Kode** | **275+ Tabel DB**
+- ✅ **19+ Modul Bisnis** dengan 100+ Sub-Modul
 - ✅ **40+ Peran** | **200+ Izin** | RBAC Penuh
 - ✅ **DCC & CAPA** Sesuai ISO 9001:2015
+- ✅ **Asset Management (EAM)** Siklus Hidup Lengkap
 - ✅ **15+ Alur Kerja Otomatis** End-to-End
 - ✅ **Asisten AI** Query Bahasa Alami + Grafik
 - ✅ **Dashboard Real-time** 30+ KPI
-- ✅ **80+ Endpoint API** Desain RESTful
+- ✅ **95+ Endpoint API** Desain RESTful
 
 ⭐ Beri bintang repository ini jika bermanfaat!
 
