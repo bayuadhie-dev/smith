@@ -1,0 +1,10 @@
+export { default as WMSDashboard } from './WMSDashboard';
+export { default as StockByWorkOrder } from './StockByWorkOrder';
+export { default as StockByWODetail } from './StockByWODetail';
+export { default as MaterialConsumptionPage } from './MaterialConsumptionPage';
+export { default as TransactionsPage } from './TransactionsPage';
+export { default as TransactionDetail } from './TransactionDetail';
+export { default as PickListPage } from './PickListPage';
+export { default as TransferOrderPage } from './TransferOrderPage';
+export { default as CycleCountPage } from './CycleCountPage';
+export { default as BatchTraceability } from './BatchTraceability';

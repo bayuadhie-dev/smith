@@ -226,6 +226,7 @@ import MaintenanceSchedule from './pages/Maintenance/MaintenanceSchedule'
 import MaintenanceForm from './pages/Maintenance/MaintenanceForm'
 import MaintenanceRequestForm from './pages/Maintenance/MaintenanceRequestForm'
 import ChecklistNGItems from './pages/Maintenance/ChecklistNGItems'
+import { WMSDashboard, StockByWorkOrder, StockByWODetail, MaterialConsumptionPage, TransactionsPage, TransactionDetail, PickListPage, TransferOrderPage, CycleCountPage, BatchTraceability } from './pages/WMS'
 import AssetDashboard from './pages/AssetManagement/AssetDashboard'
 import AssetList from './pages/AssetManagement/AssetList'
 import AssetDetail from './pages/AssetManagement/AssetDetail'
@@ -915,6 +916,19 @@ function App() {
                 <Route path="assets/:id/edit" element={<AssetForm />} />
                 <Route path="assets/spare-parts" element={<SparePartsList />} />
                 <Route path="assets/depreciation" element={<DepreciationReport />} />
+
+                {/* WMS Advanced */}
+                <Route path="wms" element={<WMSDashboard />} />
+                <Route path="wms/dashboard" element={<WMSDashboard />} />
+                <Route path="wms/stock-by-wo" element={<StockByWorkOrder />} />
+                <Route path="wms/stock-by-wo/:woId" element={<StockByWODetail />} />
+                <Route path="wms/material-consumption" element={<MaterialConsumptionPage />} />
+                <Route path="wms/transactions" element={<TransactionsPage />} />
+                <Route path="wms/transactions/:txnId" element={<TransactionDetail />} />
+                <Route path="wms/pick-lists" element={<PickListPage />} />
+                <Route path="wms/transfers" element={<TransferOrderPage />} />
+                <Route path="wms/cycle-counts" element={<CycleCountPage />} />
+                <Route path="wms/batch-traceability" element={<BatchTraceability />} />
 
                 {/* Maintenance */}
                 <Route path="maintenance" element={<MaintenanceDashboardEnhanced />} />
