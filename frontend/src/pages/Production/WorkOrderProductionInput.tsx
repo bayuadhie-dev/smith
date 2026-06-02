@@ -218,7 +218,8 @@ const CATEGORY_KEYWORDS = {
     'mesin rusak', 'mesin error', 'mesin mati', 'mesin macet', 'mesin trouble',
     'breakdown', 'break down', 'kerusakan mesin', 'gangguan mesin',
     'sparepart', 'maintenance', 'perbaikan mesin', 'perbaikan',
-    'kalibrasi', 'service mesin', 'dosing', 'dossing', 'stiker putus'
+    'kalibrasi', 'service mesin', 'dosing', 'dossing', 'stiker putus',
+    'kain keluar jalur', 'kain menggulung', 'exhaust error'
   ],
   // MATERIAL (Raw Material): Masalah bahan baku
   material: [
