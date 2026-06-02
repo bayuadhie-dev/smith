@@ -15,6 +15,34 @@ from utils.timezone import get_local_now, get_local_today
 approval_bp = Blueprint('approval', __name__, url_prefix='/api/approval')
 
 
+def get_user_roles(user):
+    """Return a set of lowercase role names for the user from the RBAC relationship.
+
+    The User model has no scalar ``role`` column; roles are stored via the
+    ``user.roles`` (UserRole) relationship plus ``is_admin``/``is_super_admin`` flags.
+    """
+    names = set()
+    if not user:
+        return names
+    if getattr(user, 'is_super_admin', False) or getattr(user, 'is_admin', False):
+        names.add('admin')
+    try:
+        for user_role in user.roles:
+            if user_role.role and user_role.role.name:
+                names.add(user_role.role.name.strip().lower())
+    except Exception:
+        pass
+    return names
+
+
+def user_has_any_role(user, role_names):
+    """True if the user has at least one of the given role names (or is an admin)."""
+    user_roles = get_user_roles(user)
+    if 'admin' in user_roles:
+        return True
+    return bool(user_roles & {r.lower() for r in role_names})
+
+
 @approval_bp.route('/workflows', methods=['GET'])
 @jwt_required()
 def get_workflows():
@@ -41,14 +69,14 @@ def get_workflows():
         # Filter by user's tasks
         if my_tasks:
             # Show workflows where user is reviewer or approver based on current step
-            if user.role in ['production_manager', 'warehouse_manager']:
+            if user_has_any_role(user, ['production_manager', 'warehouse_manager']):
                 query = query.filter(
                     or_(
                         and_(ApprovalWorkflow.status == 'pending_review', ApprovalWorkflow.reviewer_id == None),
                         ApprovalWorkflow.reviewer_id == current_user_id
                     )
                 )
-            elif user.role in ['finance', 'accounting', 'finance_manager']:
+            elif user_has_any_role(user, ['finance', 'accounting', 'finance_manager']):
                 query = query.filter(
                     or_(
                         and_(ApprovalWorkflow.status == 'pending_approval', ApprovalWorkflow.approver_id == None),
@@ -247,7 +275,7 @@ def review_workflow(workflow_id):
         data = request.get_json()
         
         # Check if user has reviewer role
-        if user.role not in ['production_manager', 'warehouse_manager', 'admin']:
+        if not user_has_any_role(user, ['production_manager', 'warehouse_manager', 'admin']):
             return jsonify({'error': 'Unauthorized - Reviewer role required'}), 403
         
         workflow = db.session.get(ApprovalWorkflow, workflow_id) or abort(404)
@@ -308,7 +336,7 @@ def approve_workflow(workflow_id):
         data = request.get_json()
         
         # Check if user has approver role
-        if user.role not in ['finance', 'accounting', 'finance_manager', 'admin']:
+        if not user_has_any_role(user, ['finance', 'accounting', 'finance_manager', 'admin']):
             return jsonify({'error': 'Unauthorized - Finance/Accounting role required'}), 403
         
         workflow = db.session.get(ApprovalWorkflow, workflow_id) or abort(404)
@@ -382,9 +410,9 @@ def reject_workflow(workflow_id):
         workflow = db.session.get(ApprovalWorkflow, workflow_id) or abort(404)
         
         # Check authorization
-        if workflow.status == 'pending_review' and user.role not in ['production_manager', 'warehouse_manager', 'admin']:
+        if workflow.status == 'pending_review' and not user_has_any_role(user, ['production_manager', 'warehouse_manager', 'admin']):
             return jsonify({'error': 'Unauthorized'}), 403
-        elif workflow.status == 'pending_approval' and user.role not in ['finance', 'accounting', 'finance_manager', 'admin']:
+        elif workflow.status == 'pending_approval' and not user_has_any_role(user, ['finance', 'accounting', 'finance_manager', 'admin']):
             return jsonify({'error': 'Unauthorized'}), 403
         
         # Update workflow
@@ -456,9 +484,9 @@ def get_dashboard():
         
         # My pending tasks
         my_pending = 0
-        if user.role in ['production_manager', 'warehouse_manager']:
+        if user_has_any_role(user, ['production_manager', 'warehouse_manager']):
             my_pending = ApprovalWorkflow.query.filter_by(status='pending_review').count()
-        elif user.role in ['finance', 'accounting', 'finance_manager']:
+        elif user_has_any_role(user, ['finance', 'accounting', 'finance_manager']):
             my_pending = ApprovalWorkflow.query.filter_by(status='pending_approval').count()
         
         return jsonify({
