@@ -182,6 +182,10 @@ import PaymentForm from './pages/Finance/PaymentForm'
 import AccountForm from './pages/Finance/AccountForm'
 import BudgetForm from './pages/Finance/BudgetForm'
 import ExpenseForm from './pages/Finance/ExpenseForm'
+import ExpenseList from './pages/Finance/ExpenseList'
+import EmployeeExpenseForm from './pages/Finance/EmployeeExpenseForm'
+import ReimbursementList from './pages/Finance/ReimbursementList'
+import ReimbursementForm from './pages/Finance/ReimbursementForm'
 import EmployeeList from './pages/HR/EmployeeList'
 import EmployeeForm from './pages/HR/EmployeeForm'
 import RosterCalendar from './pages/HR/RosterCalendar'
@@ -837,8 +841,16 @@ function App() {
                 <Route path="finance/accounts/:id/edit" element={<AccountForm />} />
                 <Route path="finance/budgets/new" element={<BudgetForm />} />
                 <Route path="finance/budgets/:id/edit" element={<BudgetForm />} />
-                <Route path="finance/expenses/new" element={<ExpenseForm />} />
-                <Route path="finance/expenses/:id/edit" element={<ExpenseForm />} />
+                {/* Employee Expense Claims */}
+                <Route path="finance/expenses" element={<ExpenseList />} />
+                <Route path="finance/expenses/new" element={<EmployeeExpenseForm />} />
+                <Route path="finance/expenses/:id/edit" element={<EmployeeExpenseForm />} />
+                {/* Reimbursements */}
+                <Route path="finance/reimbursements" element={<ReimbursementList />} />
+                <Route path="finance/reimbursements/new" element={<ReimbursementForm />} />
+                {/* Company Expenses (Supplier-based) */}
+                <Route path="finance/company-expenses/new" element={<ExpenseForm />} />
+                <Route path="finance/company-expenses/:id/edit" element={<ExpenseForm />} />
 
                 {/* Accounting - Separated module for accountants */}
                 <Route path="accounting" element={<AccountingManagement />} />
