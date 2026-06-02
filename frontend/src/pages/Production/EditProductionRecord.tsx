@@ -120,7 +120,8 @@ const CATEGORY_KEYWORDS: Record<string, string[]> = {
     'mesin rusak', 'mesin error', 'mesin mati', 'mesin macet', 'mesin trouble',
     'breakdown', 'break down', 'kerusakan mesin', 'gangguan mesin',
     'press error', 'sparepart', 'maintenance', 'perbaikan mesin',
-    'kalibrasi', 'service mesin'
+    'kalibrasi', 'service mesin',
+    'kain keluar jalur', 'kain menggulung', 'exhaust error'
   ],
   // MATERIAL (Raw Material): Masalah bahan baku
   material: [
