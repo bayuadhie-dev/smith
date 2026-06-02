@@ -442,6 +442,8 @@ def create_app(config_class=Config):
     
     from routes.asset_management import asset_bp
 
+    from routes.wms_advanced import wms_advanced_bp
+
     from routes.maintenance_extended import maintenance_extended_bp
 
     from routes.rd import rd_bp
@@ -629,6 +631,8 @@ def create_app(config_class=Config):
     app.register_blueprint(returns_bp, url_prefix='/api/returns')
 
     app.register_blueprint(warehouse_enhanced_bp, url_prefix='/api/warehouse-enhanced')
+
+    app.register_blueprint(wms_advanced_bp)  # WMS Advanced with /api/wms prefix
 
     app.register_blueprint(stock_opname_bp, url_prefix='/api/stock-opname')
 
@@ -887,6 +891,12 @@ def create_app(config_class=Config):
     # ========================================
     from routes.fg_conversion import fg_conversion_bp
     app.register_blueprint(fg_conversion_bp)
+
+    # ========================================
+    # Expense & Reimbursement
+    # ========================================
+    from routes.expense import expense_bp
+    app.register_blueprint(expense_bp, url_prefix='/api/expenses')
     
 
     # Serve uploaded files
