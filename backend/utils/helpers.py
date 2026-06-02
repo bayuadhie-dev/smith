@@ -290,7 +290,8 @@ def detect_downtime_category(issue_text: str, is_first_entry: bool = False) -> s
         # Tidak rapi (machine alignment)
         'tidak rapi',
         # Added: guset, relay, inkjet, dosing, simetris error
-        'guset', 'relay', 'simetris error', 'dosing', 'dossing', 'stiker putus'
+        'guset', 'relay', 'simetris error', 'dosing', 'dossing', 'stiker putus',
+        'kain keluar jalur', 'kain menggulung', 'exhaust error'
     ]
     for kw in mesin_keywords:
         if kw in text_lower:
