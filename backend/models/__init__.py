@@ -9,7 +9,7 @@ from .product import Material, Product, ProductSpecification, ProductPackaging, 
 from .product_excel_schema import ProductNew, ProductVersion
 from .warehouse import WarehouseZone, WarehouseLocation, Inventory, InventoryMovement
 from .sales import Customer, SalesOrder, SalesOrderItem, SalesForecast
-from .purchasing import Supplier, PurchaseOrder, PurchaseOrderItem, GoodsReceivedNote, GRNItem, PurchaseInvoice, PurchaseInvoiceItem, PurchaseReturn, PurchaseReturnItem
+from .purchasing import Supplier, PurchaseOrder, PurchaseOrderItem, GoodsReceivedNote, GRNItem, PurchaseInvoice, PurchaseInvoiceItem, PurchaseReturn, PurchaseReturnItem, PurchaseRequisition, PRItem
 from .production import (
     Machine, WorkOrder, ProductionRecord, BillOfMaterials, BOMItem, 
     ProductionSchedule, ShiftProduction, DowntimeRecord, WeeklyProductionPlan, 
@@ -89,7 +89,12 @@ from .dcc import (
     CapaMonthlyReport, InternalMemo, InternalMemoDistribution,
     DccDestructionLog
 )
-
+from .wms_advanced import (
+    MaterialConsumption, InventoryTransaction, PickList, PickListItem,
+    StockTransferOrder, StockTransferItem, CycleCountSchedule
+)
+from .expense import Expense, Reimbursement
+from .spc import SPCParameter, SPCProductSpec, SPCSample, SPCMeasurement, SPCControlLimitHistory
 # Import to ensure models are registered
 from . import product_new_schema
 
@@ -184,4 +189,9 @@ __all__ = [
     'CapaRequest', 'CapaInvestigation', 'CapaVerification',
     'CapaMonthlyReport', 'InternalMemo', 'InternalMemoDistribution',
     'DccDestructionLog',
+    # WMS Advanced models
+    'MaterialConsumption', 'InventoryTransaction', 'PickList', 'PickListItem',
+    'StockTransferOrder', 'StockTransferItem', 'CycleCountSchedule',
+    # Expense models
+    'Expense', 'Reimbursement',
 ]
