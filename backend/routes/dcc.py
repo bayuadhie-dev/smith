@@ -22,6 +22,7 @@ from models.dcc import (
 from flask_jwt_extended import jwt_required, get_jwt_identity
 import os
 import json
+import redis
 
 dcc_bp = Blueprint('dcc', __name__)
 
@@ -130,6 +131,17 @@ def get_documents():
     department = request.args.get('department')
     search = request.args.get('search', '')
     is_active = request.args.get('is_active', 'true')
+    
+    # Try cache
+    cache_key = f'dcc_documents_level{level or "all"}_dept{department or "all"}_search{search}_active{is_active}'
+    try:
+        redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+        r = redis.from_url(redis_url)
+        cached_data = r.get(cache_key)
+        if cached_data:
+            return jsonify(json.loads(cached_data)), 200
+    except Exception as cache_error:
+        print(f"Redis cache error (using fallback): {cache_error}")
 
     query = DccDocument.query
 
@@ -172,7 +184,15 @@ def get_documents():
             'total_revisions': doc.revisions.count(),
         })
 
-    return jsonify({'documents': result})
+    response_data = {'documents': result}
+    try:
+        redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+        r = redis.from_url(redis_url)
+        r.setex(cache_key, 300, json.dumps(response_data))
+    except Exception as cache_error:
+        print(f"Redis cache set error (continuing without cache): {cache_error}")
+        
+    return jsonify(response_data), 200
 
 
 def _is_auto_approve_user(user_id):
@@ -253,6 +273,16 @@ def create_document():
 
     db.session.add(rev)
     db.session.commit()
+
+    # Invalidate cache
+    try:
+        redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+        r = redis.from_url(redis_url)
+        keys = r.keys('dcc_documents_*')
+        if keys:
+            r.delete(*keys)
+    except Exception as cache_error:
+        print(f"Redis cache invalidation error (continuing): {cache_error}")
 
     return jsonify({
         'message': 'Dokumen berhasil dibuat' + (' (Auto-Approved)' if auto_approve else ''),
@@ -335,6 +365,17 @@ def update_document(doc_id):
         doc.is_active = data['is_active']
 
     db.session.commit()
+
+    # Invalidate cache
+    try:
+        redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+        r = redis.from_url(redis_url)
+        keys = r.keys('dcc_documents_*')
+        if keys:
+            r.delete(*keys)
+    except Exception as cache_error:
+        print(f"Redis cache invalidation error (continuing): {cache_error}")
+
     return jsonify({'message': 'Dokumen berhasil diperbarui'})
 
 
@@ -352,6 +393,17 @@ def delete_document(doc_id):
         rev.obsoleted_at = datetime.utcnow()
         rev.obsoleted_by = get_jwt_identity()
     db.session.commit()
+
+    # Invalidate cache
+    try:
+        redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+        r = redis.from_url(redis_url)
+        keys = r.keys('dcc_documents_*')
+        if keys:
+            r.delete(*keys)
+    except Exception as cache_error:
+        print(f"Redis cache invalidation error (continuing): {cache_error}")
+
     return jsonify({'message': 'Dokumen berhasil dinonaktifkan (soft delete)'})
 
 
@@ -405,6 +457,16 @@ def create_revision(doc_id):
     # Link DCN ke revisi
     dcn.resulting_revision_id = rev.id
     db.session.commit()
+
+    # Invalidate cache
+    try:
+        redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+        r = redis.from_url(redis_url)
+        keys = r.keys('dcc_documents_*')
+        if keys:
+            r.delete(*keys)
+    except Exception as cache_error:
+        print(f"Redis cache invalidation error (continuing): {cache_error}")
 
     return jsonify({
         'message': f'Revisi {new_rev_num:02d} berhasil dibuat dari {dcn.request_number}',
@@ -632,6 +694,17 @@ def approve_revision(rev_id):
                 action_url=f'/app/dcc', reference_type='dcc_document', reference_id=doc.id)
 
     db.session.commit()
+
+    # Invalidate cache
+    try:
+        redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+        r = redis.from_url(redis_url)
+        keys = r.keys('dcc_documents_*')
+        if keys:
+            r.delete(*keys)
+    except Exception as cache_error:
+        print(f"Redis cache invalidation error (continuing): {cache_error}")
+
     return jsonify({'message': f'Revisi berhasil di-{action}', 'status': rev.status})
 
 
