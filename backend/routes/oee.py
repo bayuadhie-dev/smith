@@ -1,5 +1,7 @@
 from flask import Blueprint, request, jsonify, send_file, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+import redis
+import os
 from models import db, Machine, MaintenanceRecord, MaintenanceSchedule, User
 from utils.i18n import success_response, error_response, get_message
 from models.oee import OEERecord, OEEDowntimeRecord, OEETarget, OEEAlert, MaintenanceImpact, OEEAnalytics, QualityDefect, MachineMonthlyTarget, DowntimeRootCause
@@ -26,6 +28,17 @@ def get_records():
         machine_id = request.args.get('machine_id', type=int)
         limit = request.args.get('limit', 100, type=int)
         
+        # Try cache
+        cache_key = f'oee_records_machine{machine_id or "all"}_limit{limit or 100}'
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            cached_data = r.get(cache_key)
+            if cached_data:
+                return jsonify(json.loads(cached_data)), 200
+        except Exception as cache_error:
+            print(f"Redis cache error (using fallback): {cache_error}")
+            
         all_records = []
         
         # Get from OEERecord
@@ -247,9 +260,17 @@ def get_records():
         all_records.sort(key=lambda x: x['record_date'] or '', reverse=True)
         all_records = all_records[:limit]
         
-        return jsonify({
+        response_data = {
             'records': all_records
-        }), 200
+        }
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            r.setex(cache_key, 120, json.dumps(response_data))
+        except Exception as cache_error:
+            print(f"Redis cache set error (continuing without cache): {cache_error}")
+            
+        return jsonify(response_data), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -1339,9 +1360,23 @@ def get_daily_controller():
         
         selected_date = request.args.get('date')
         if selected_date:
-            target_date = datetime.strptime(selected_date, '%Y-%m-%d').date()
+            try:
+                target_date = datetime.strptime(selected_date, '%Y-%m-%d').date()
+            except ValueError:
+                target_date = get_local_today()
         else:
             target_date = get_local_today()
+            
+        target_date_str = target_date.isoformat()
+        cache_key = f'oee_daily_controller_{target_date_str}'
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            cached_data = r.get(cache_key)
+            if cached_data:
+                return jsonify(json.loads(cached_data)), 200
+        except Exception as cache_error:
+            print(f"Redis cache error (using fallback): {cache_error}")
         
         # Get all shift productions for this date with eager loading
         from sqlalchemy.orm import joinedload
@@ -1954,11 +1989,19 @@ def get_daily_controller():
         result = list(machines_data.values())
         result.sort(key=lambda x: x['machine_name'])
         
-        return jsonify({
+        response_data = {
             'date': target_date.isoformat(),
             'machines': result,
             'total_machines': len(result)
-        }), 200
+        }
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            r.setex(cache_key, 120, json.dumps(response_data))
+        except Exception as cache_error:
+            print(f"Redis cache set error (continuing without cache): {cache_error}")
+            
+        return jsonify(response_data), 200
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -3110,6 +3153,20 @@ def set_machine_monthly_target():
             db.session.add(new_target)
         
         db.session.commit()
+        
+        # Invalidate cache
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            keys = r.keys('oee_daily_controller_*')
+            if keys:
+                r.delete(*keys)
+            keys_records = r.keys('oee_records_*')
+            if keys_records:
+                r.delete(*keys_records)
+        except Exception as cache_error:
+            print(f"Redis cache invalidation error (continuing): {cache_error}")
+            
         return jsonify({'message': 'Target saved successfully'}), 200
     except Exception as e:
         db.session.rollback()
@@ -3151,6 +3208,20 @@ def set_bulk_machine_monthly_targets():
                 db.session.add(new_target)
         
         db.session.commit()
+        
+        # Invalidate cache
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            keys = r.keys('oee_daily_controller_*')
+            if keys:
+                r.delete(*keys)
+            keys_records = r.keys('oee_records_*')
+            if keys_records:
+                r.delete(*keys_records)
+        except Exception as cache_error:
+            print(f"Redis cache invalidation error (continuing): {cache_error}")
+            
         return jsonify({'message': f'{len(targets)} targets saved successfully'}), 200
     except Exception as e:
         db.session.rollback()
