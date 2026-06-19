@@ -7,6 +7,9 @@ from sqlalchemy import or_, func
 from sqlalchemy.orm import joinedload
 from datetime import datetime
 from utils.timezone import get_local_now, get_local_today
+import redis
+import os
+import json
 
 warehouse_bp = Blueprint('warehouse', __name__)
 
@@ -15,9 +18,18 @@ warehouse_bp = Blueprint('warehouse', __name__)
 def get_zones():
     """Get all warehouse zones"""
     try:
+        cache_key = 'warehouse_zones_all'
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            cached_data = r.get(cache_key)
+            if cached_data:
+                return jsonify(json.loads(cached_data)), 200
+        except Exception as cache_error:
+            print(f"Redis cache error (using fallback): {cache_error}")
+
         zones = WarehouseZone.query.filter_by(is_active=True).all()
-        
-        return jsonify({
+        response_data = {
             'zones': [{
                 'id': z.id,
                 'code': z.code,
@@ -27,7 +39,16 @@ def get_zones():
                 'capacity_uom': z.capacity_uom,
                 'location_count': len(z.locations)
             } for z in zones]
-        }), 200
+        }
+        
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            r.setex(cache_key, 300, json.dumps(response_data))
+        except Exception as cache_error:
+            print(f"Redis cache set error (continuing without cache): {cache_error}")
+
+        return jsonify(response_data), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -48,6 +69,14 @@ def create_zone():
         db.session.add(zone)
         db.session.commit()
         
+        # Invalidate cache
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            r.delete('warehouse_zones_all')
+        except Exception as cache_error:
+            print(f"Redis cache invalidation error (continuing): {cache_error}")
+            
         return jsonify({'message': 'Zone created', 'zone_id': zone.id}), 201
     except Exception as e:
         db.session.rollback()
@@ -65,6 +94,16 @@ def get_locations():
         search = request.args.get('search', '')
         available_only = request.args.get('available_only', 'false').lower() == 'true'
         
+        cache_key = f'warehouse_locations_page{page}_per{per_page}_zone{zone_id or "none"}_type{material_type or "none"}_search{search}_avail{available_only}'
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            cached_data = r.get(cache_key)
+            if cached_data:
+                return jsonify(json.loads(cached_data)), 200
+        except Exception as cache_error:
+            print(f"Redis cache error (using fallback): {cache_error}")
+            
         query = WarehouseLocation.query.join(WarehouseZone)
         
         if zone_id:
@@ -81,7 +120,7 @@ def get_locations():
         
         locations = query.paginate(page=page, per_page=per_page)
         
-        return jsonify({
+        response_data = {
             'locations': [{
                 'id': l.id,
                 'location_code': l.location_code,
@@ -99,7 +138,16 @@ def get_locations():
             'total': locations.total,
             'pages': locations.pages,
             'current_page': locations.page
-        }), 200
+        }
+        
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            r.setex(cache_key, 300, json.dumps(response_data))
+        except Exception as cache_error:
+            print(f"Redis cache set error (continuing without cache): {cache_error}")
+            
+        return jsonify(response_data), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -222,6 +270,16 @@ def create_location():
         db.session.add(location)
         db.session.commit()
         
+        # Invalidate cache
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            keys = r.keys('warehouse_locations_*')
+            if keys:
+                r.delete(*keys)
+        except Exception as cache_error:
+            print(f"Redis cache invalidation error (continuing): {cache_error}")
+            
         return jsonify({'message': 'Location created', 'location_id': location.id}), 201
     except Exception as e:
         db.session.rollback()

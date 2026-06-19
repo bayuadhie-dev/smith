@@ -1,5 +1,8 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+import redis
+import os
+import json
 from models import db, MaintenanceSchedule, MaintenanceRecord, MaintenanceTask, EquipmentHistory
 from models.production import Machine
 from models.hr import Employee
@@ -63,12 +66,23 @@ def get_records():
         machine_id = request.args.get('machine_id', type=int)
         limit = request.args.get('limit', 100, type=int)
         
+        # Try cache
+        cache_key = f'maintenance_records_machine{machine_id or "all"}_limit{limit or 100}'
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            cached_data = r.get(cache_key)
+            if cached_data:
+                return jsonify(json.loads(cached_data)), 200
+        except Exception as cache_error:
+            print(f"Redis cache error (using fallback): {cache_error}")
+            
         query = MaintenanceRecord.query
         if machine_id:
             query = query.filter(MaintenanceRecord.machine_id == machine_id)
         
         records = query.order_by(MaintenanceRecord.maintenance_date.desc()).limit(limit).all()
-        return jsonify({
+        response_data = {
             'records': [{
                 'id': r.id,
                 'record_number': r.record_number,
@@ -82,7 +96,15 @@ def get_records():
                 'status': r.status,
                 'cost': float(r.cost) if r.cost else 0
             } for r in records]
-        }), 200
+        }
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            r.setex(cache_key, 300, json.dumps(response_data))
+        except Exception as cache_error:
+            print(f"Redis cache set error (continuing without cache): {cache_error}")
+            
+        return jsonify(response_data), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -128,6 +150,17 @@ def create_maintenance():
             record.parts_used = json.dumps(data['required_parts'])
         
         db.session.commit()
+        
+        # Invalidate cache
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            keys = r.keys('maintenance_records_*')
+            if keys:
+                r.delete(*keys)
+        except Exception as cache_error:
+            print(f"Redis cache invalidation error (continuing): {cache_error}")
+            
         return jsonify({'message': 'Maintenance scheduled successfully', 'record_id': record.id}), 201
     except Exception as e:
         db.session.rollback()
@@ -157,6 +190,17 @@ def create_record():
         
         db.session.add(record)
         db.session.commit()
+        
+        # Invalidate cache
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            keys = r.keys('maintenance_records_*')
+            if keys:
+                r.delete(*keys)
+        except Exception as cache_error:
+            print(f"Redis cache invalidation error (continuing): {cache_error}")
+            
         return jsonify({'message': 'Maintenance record created', 'record_id': record.id}), 201
     except Exception as e:
         db.session.rollback()
@@ -307,6 +351,17 @@ def update_maintenance_record(record_id):
         record.updated_at = get_local_now()
         
         db.session.commit()
+        
+        # Invalidate cache
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            keys = r.keys('maintenance_records_*')
+            if keys:
+                r.delete(*keys)
+        except Exception as cache_error:
+            print(f"Redis cache invalidation error (continuing): {cache_error}")
+            
         return jsonify(success_response('api.success')), 200
     except Exception as e:
         db.session.rollback()

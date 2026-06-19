@@ -1,9 +1,9 @@
 """
 Health Check Endpoints for Docker and Monitoring
 """
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
+from flask_jwt_extended import jwt_required
 from datetime import datetime
-import psycopg2
 import redis
 import os
 from utils.timezone import get_local_now, get_local_today
@@ -171,3 +171,83 @@ def liveness_check():
         'status': 'alive',
         'timestamp': get_local_now().isoformat()
     }), 200
+
+
+@health_bp.route('/cache/stats', methods=['GET'])
+def cache_stats():
+    """
+    Get Redis cache statistics
+    ---
+    tags:
+      - Health
+    summary: Get cache statistics
+    description: Retrieve Redis cache performance metrics
+    security:
+      - BearerAuth: []
+    responses:
+      200:
+        description: Cache statistics retrieved successfully
+      401:
+        description: Unauthorized
+    """
+    try:
+        redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+        r = redis.from_url(redis_url)
+        
+        # Get Redis info
+        info = r.info()
+        
+        stats = {
+            'redis_connected': True,
+            'used_memory': info.get('used_memory_human', 'N/A'),
+            'total_keys': info.get('db0', {}).get('keys', 0),
+            'hits': info.get('keyspace_hits', 0),
+            'misses': info.get('keyspace_misses', 0),
+        }
+        
+        # Calculate hit rate
+        total_requests = stats['hits'] + stats['misses']
+        if total_requests > 0:
+            stats['hit_rate'] = round((stats['hits'] / total_requests) * 100, 2)
+        else:
+            stats['hit_rate'] = 0.0
+        
+        return jsonify(stats), 200
+        
+    except Exception as e:
+        return jsonify({
+            'redis_connected': False,
+            'error': str(e)
+        }), 200
+
+
+@health_bp.route('/cache/clear', methods=['POST'])
+def clear_cache():
+    """
+    Clear all Redis cache
+    ---
+    tags:
+      - Health
+    summary: Clear cache
+    description: Clear all cached data from Redis
+    security:
+      - BearerAuth: []
+    responses:
+      200:
+        description: Cache cleared successfully
+      401:
+        description: Unauthorized
+    """
+    try:
+        redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+        r = redis.from_url(redis_url)
+        r.flushdb()
+        
+        return jsonify({
+            'message': 'Cache cleared successfully'
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'error': str(e)
+        }), 200

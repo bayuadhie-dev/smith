@@ -14,6 +14,8 @@ from sqlalchemy import or_, func, and_
 from sqlalchemy.orm import joinedload, selectinload
 import json
 from utils.timezone import get_local_now, get_local_today
+import redis
+import os
 
 sales_bp = Blueprint('sales', __name__)
 
@@ -29,6 +31,17 @@ def get_customers():
         is_active = request.args.get('is_active')
         customer_type = request.args.get('customer_type')
         
+        # Try cache
+        cache_key = f'sales_customers_page{page}_per{per_page}_search{search}_active{is_active or "none"}_type{customer_type or "none"}'
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            cached_data = r.get(cache_key)
+            if cached_data:
+                return jsonify(json.loads(cached_data)), 200
+        except Exception as cache_error:
+            print(f"Redis cache error (using fallback): {cache_error}")
+            
         query = Customer.query
         
         if search:
@@ -53,7 +66,7 @@ def get_customers():
         
         customers = query.paginate(page=page, per_page=per_page, error_out=False)
         
-        return jsonify({
+        response_data = {
             'customers': [{
                 'id': c.id,
                 'code': c.code,
@@ -76,7 +89,16 @@ def get_customers():
             } for c in customers.items],
             'total': customers.total,
             'pages': customers.pages
-        }), 200
+        }
+        
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            r.setex(cache_key, 300, json.dumps(response_data))
+        except Exception as cache_error:
+            print(f"Redis cache set error (continuing without cache): {cache_error}")
+            
+        return jsonify(response_data), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -126,6 +148,16 @@ def create_customer():
         db.session.add(customer)
         db.session.commit()
         
+        # Invalidate cache
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            keys = r.keys('sales_customers_*')
+            if keys:
+                r.delete(*keys)
+        except Exception as cache_error:
+            print(f"Redis cache invalidation error (continuing): {cache_error}")
+            
         return jsonify({'message': 'Customer created', 'customer_id': customer.id}), 201
     except Exception as e:
         db.session.rollback()
@@ -276,6 +308,16 @@ def update_customer(id):
         
         db.session.commit()
         
+        # Invalidate cache
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            keys = r.keys('sales_customers_*')
+            if keys:
+                r.delete(*keys)
+        except Exception as cache_error:
+            print(f"Redis cache invalidation error (continuing): {cache_error}")
+            
         return jsonify({
             'message': 'Customer updated successfully',
             'customer_id': customer.id
@@ -305,6 +347,16 @@ def delete_customer(id):
         customer.is_active = False
         db.session.commit()
         
+        # Invalidate cache
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            keys = r.keys('sales_customers_*')
+            if keys:
+                r.delete(*keys)
+        except Exception as cache_error:
+            print(f"Redis cache invalidation error (continuing): {cache_error}")
+            
         return jsonify({
             'message': 'Customer deleted successfully'
         }), 200

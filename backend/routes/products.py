@@ -8,6 +8,9 @@ from utils.calculations import (
     calculate_packaging_structure, convert_uom, NONWOVEN_CATEGORIES
 )
 from utils.timezone import get_local_now, get_local_today
+import redis
+import os
+import json
 
 products_bp = Blueprint('products', __name__)
 
@@ -136,6 +139,17 @@ def get_products():
         material_type = request.args.get('material_type')
         is_active = request.args.get('is_active', type=bool)
         
+        # Try cache
+        cache_key = f'products_list_page{page}_per{per_page}_all{all_products}_search{search}_cat{category_id or "none"}_type{material_type or "none"}_active{is_active or "all"}'
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            cached_data = r.get(cache_key)
+            if cached_data:
+                return jsonify(json.loads(cached_data)), 200
+        except Exception as cache_error:
+            print(f"Redis cache error (using fallback): {cache_error}")
+        
         query = Product.query
         
         if search:
@@ -156,7 +170,7 @@ def get_products():
         # If all=true, return all products without pagination (for dropdowns)
         if all_products:
             products_list = query.order_by(Product.code).all()
-            return jsonify({
+            response_data = {
                 'products': [{
                     'id': p.id,
                     'code': p.code,
@@ -176,11 +190,18 @@ def get_products():
                     'created_at': p.created_at.isoformat() if p.created_at else None
                 } for p in products_list],
                 'total': len(products_list)
-            }), 200
+            }
+            try:
+                redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+                r = redis.from_url(redis_url)
+                r.setex(cache_key, 600, json.dumps(response_data))
+            except Exception as cache_error:
+                print(f"Redis cache set error (continuing without cache): {cache_error}")
+            return jsonify(response_data), 200
         
         products = query.paginate(page=page, per_page=per_page, error_out=False)
         
-        return jsonify({
+        response_data = {
             'products': [{
                 'id': p.id,
                 'code': p.code,
@@ -202,7 +223,15 @@ def get_products():
             'total': products.total,
             'pages': products.pages,
             'current_page': products.page
-        }), 200
+        }
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            r.setex(cache_key, 600, json.dumps(response_data))
+        except Exception as cache_error:
+            print(f"Redis cache set error (continuing without cache): {cache_error}")
+            
+        return jsonify(response_data), 200
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -388,6 +417,16 @@ def create_product():
         
         db.session.commit()
         
+        # Invalidate cache
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            keys = r.keys('products_list_*')
+            if keys:
+                r.delete(*keys)
+        except Exception as cache_error:
+            print(f"Redis cache invalidation error (continuing): {cache_error}")
+        
         return jsonify({
             'message': 'Product created successfully',
             'product_id': product.id
@@ -485,6 +524,16 @@ def update_product(id):
         
         db.session.commit()
         
+        # Invalidate cache
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            keys = r.keys('products_list_*')
+            if keys:
+                r.delete(*keys)
+        except Exception as cache_error:
+            print(f"Redis cache invalidation error (continuing): {cache_error}")
+        
         return jsonify(success_response('api.success')), 200
         
     except Exception as e:
@@ -503,6 +552,16 @@ def delete_product(id):
         
         db.session.delete(product)
         db.session.commit()
+        
+        # Invalidate cache
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            keys = r.keys('products_list_*')
+            if keys:
+                r.delete(*keys)
+        except Exception as cache_error:
+            print(f"Redis cache invalidation error (continuing): {cache_error}")
         
         return jsonify(success_response('api.success')), 200
         
@@ -528,6 +587,16 @@ def delete_all_products():
         deleted_count = Product.query.delete()
         db.session.commit()
         
+        # Invalidate cache
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            keys = r.keys('products_list_*')
+            if keys:
+                r.delete(*keys)
+        except Exception as cache_error:
+            print(f"Redis cache invalidation error (continuing): {cache_error}")
+        
         return jsonify({
             'message': f'Successfully deleted all products from database',
             'deleted_count': deleted_count,
@@ -543,16 +612,34 @@ def delete_all_products():
 def get_categories():
     """Get all product categories"""
     try:
+        cache_key = 'products_categories_all'
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            cached_data = r.get(cache_key)
+            if cached_data:
+                return jsonify(json.loads(cached_data)), 200
+        except Exception as cache_error:
+            print(f"Redis cache error (using fallback): {cache_error}")
+
         categories = ProductCategory.query.filter_by(is_active=True).all()
-        
-        return jsonify({
+        response_data = {
             'categories': [{
                 'id': c.id,
                 'code': c.code,
                 'name': c.name,
                 'description': c.description
             } for c in categories]
-        }), 200
+        }
+        
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            r.setex(cache_key, 600, json.dumps(response_data))
+        except Exception as cache_error:
+            print(f"Redis cache set error (continuing without cache): {cache_error}")
+
+        return jsonify(response_data), 200
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -579,6 +666,14 @@ def create_category():
         
         db.session.add(category)
         db.session.commit()
+        
+        # Invalidate cache
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            r.delete('products_categories_all')
+        except Exception as cache_error:
+            print(f"Redis cache invalidation error (continuing): {cache_error}")
         
         return jsonify({
             'message': 'Category created successfully',
@@ -611,6 +706,14 @@ def update_category(category_id):
         
         db.session.commit()
         
+        # Invalidate cache
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            r.delete('products_categories_all')
+        except Exception as cache_error:
+            print(f"Redis cache invalidation error (continuing): {cache_error}")
+        
         return jsonify({
             'message': 'Category updated successfully',
             'category': {
@@ -642,6 +745,14 @@ def delete_category(category_id):
         # Soft delete by setting is_active to False
         category.is_active = False
         db.session.commit()
+        
+        # Invalidate cache
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            r.delete('products_categories_all')
+        except Exception as cache_error:
+            print(f"Redis cache invalidation error (continuing): {cache_error}")
         
         return jsonify({
             'message': 'Category deleted successfully'

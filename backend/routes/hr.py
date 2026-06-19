@@ -1,5 +1,8 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+import redis
+import os
+import json
 from models import db, Employee, Department, ShiftSchedule, Attendance, Leave, EmployeeRoster, Role
 from utils.i18n import success_response, error_response, get_message
 from utils import generate_number
@@ -113,9 +116,20 @@ def get_employees():
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 50, type=int)
         
+        # Try cache
+        cache_key = f'hr_employees_page{page}_per{per_page}'
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            cached_data = r.get(cache_key)
+            if cached_data:
+                return jsonify(json.loads(cached_data)), 200
+        except Exception as cache_error:
+            print(f"Redis cache error (using fallback): {cache_error}")
+            
         employees = Employee.query.filter_by(is_active=True).paginate(page=page, per_page=per_page)
         
-        return jsonify({
+        response_data = {
             'employees': [{
                 'id': e.id,
                 'employee_number': e.employee_number,
@@ -126,7 +140,15 @@ def get_employees():
                 'status': e.status
             } for e in employees.items],
             'total': employees.total
-        }), 200
+        }
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            r.setex(cache_key, 300, json.dumps(response_data))
+        except Exception as cache_error:
+            print(f"Redis cache set error (continuing without cache): {cache_error}")
+            
+        return jsonify(response_data), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -244,6 +266,17 @@ def create_employee():
         
         db.session.add(employee)
         db.session.commit()
+        
+        # Invalidate cache
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            keys = r.keys('hr_employees_*')
+            if keys:
+                r.delete(*keys)
+        except Exception as cache_error:
+            print(f"Redis cache invalidation error (continuing): {cache_error}")
+            
         return jsonify({'message': 'Employee created', 'employee_id': employee.id}), 201
     except Exception as e:
         db.session.rollback()
