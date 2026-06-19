@@ -483,7 +483,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
           />
         </div>
       )}
-      {activeTab === 'products' && <ProductsTab data={data} />}
+      {activeTab === 'products' && <ProductsTab data={data} viewMode={viewMode} />}
       {activeTab === 'machines' && <MachinesTab data={data} />}
       {activeTab === 'downtime' && <DowntimeTab data={data} downtimePieData={downtimePieData} />}
       {activeTab === 'graph' && <GraphTab data={data} />}
@@ -948,7 +948,7 @@ const DailyTab: React.FC<{ data: any; expandedDays: Set<string>; toggleDay: (d: 
 };
 
 // ==================== PRODUCTS TAB ====================
-const ProductsTab: React.FC<{ data: any }> = ({ data }) => {
+const ProductsTab: React.FC<{ data: any; viewMode: 'monthly' | 'weekly' }> = ({ data, viewMode }) => {
   const chartData = data.products.map((p: any) => ({
     name: stripPackagingSuffix(p.product_name),
     fullName: stripPackagingSuffix(p.product_name),
@@ -1269,9 +1269,10 @@ const ProductsTab: React.FC<{ data: any }> = ({ data }) => {
       {/* Action Items Section */}
       <DowntimeActionItems 
         topUnplannedDowntime={data.top_unplanned_downtime || {}}
-        weekNumber={data.period?.week_number || 0}
+        weekNumber={viewMode === 'weekly' ? (data.period?.week_number || 0) : 0}
         month={data.period?.month}
         year={data.period?.year}
+        viewMode={viewMode}
       />
     </div>
   );

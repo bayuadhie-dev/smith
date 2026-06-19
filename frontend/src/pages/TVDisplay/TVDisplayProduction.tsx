@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
-import axios from 'axios'
+import axiosInstance from '../../utils/axiosConfig';
 
 export default function TVDisplayProduction() {
   const { t } = useLanguage();
@@ -11,7 +11,7 @@ export default function TVDisplayProduction() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('/api/tv-display/production')
+        const response = await axiosInstance.get('/api/tv-display/production')
         setData(response.data)
       } catch (error) {
         console.error('Failed to fetch data', error)
@@ -20,7 +20,7 @@ export default function TVDisplayProduction() {
 
     const loadCompanySettings = async () => {
       try {
-        const response = await axios.get('/api/settings/company')
+        const response = await axiosInstance.get('/api/settings/company')
         setCompanyName(response.data.name || 'Company')
       } catch (error) {
         console.error('Failed to load company settings:', error)

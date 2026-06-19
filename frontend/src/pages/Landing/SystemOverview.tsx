@@ -85,7 +85,7 @@ const SystemOverviewEnhanced: React.FC = () => {
     const realTimeInterval = setInterval(() => {
       loadSystemStats();
       loadSystemMetrics();
-    }, 5000);
+    }, 30000);
     
     const statusInterval = setInterval(() => {
       loadSystemStats();

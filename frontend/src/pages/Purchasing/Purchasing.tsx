@@ -320,6 +320,17 @@ export default function Purchasing() {
               </Link>
               
               <Link
+                to="/app/purchasing/requisitions/new"
+                className="flex items-center gap-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 transition-colors"
+              >
+                <ClipboardDocumentListIcon className="h-6 w-6 text-yellow-600" />
+                <div>
+                  <p className="font-medium text-gray-900 dark:text-white text-sm">Buat PR</p>
+                  <p className="text-xs text-gray-500">Purchase Requisition</p>
+                </div>
+              </Link>
+
+              <Link
                 to="/app/purchasing/price-comparison"
                 className="flex items-center gap-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 transition-colors"
               >

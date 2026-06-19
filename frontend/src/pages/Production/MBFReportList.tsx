@@ -9,7 +9,7 @@ import {
   ExclamationCircleIcon,
   XCircleIcon
 } from '@heroicons/react/24/outline';
-import axios from 'axios';
+import axiosInstance from '../../utils/axiosConfig';
 import { format } from 'date-fns';
 
 interface MBFReportItem {
@@ -45,7 +45,7 @@ const MBFReportList: React.FC = () => {
       const params = new URLSearchParams({ page: String(page), per_page: '20' });
       if (statusFilter) params.append('status', statusFilter);
 
-      const response = await axios.get(`/api/mbf-report/reports?${params}`, {
+      const response = await axiosInstance.get(`/api/mbf-report/reports?${params}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setReports(response.data.reports);

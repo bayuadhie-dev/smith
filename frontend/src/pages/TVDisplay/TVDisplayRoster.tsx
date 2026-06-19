@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
-import axios from 'axios';
+import axiosInstance from '../../utils/axiosConfig';
 interface RosterData {
   type: string;
   timestamp: string;
@@ -43,7 +43,7 @@ const TVDisplayRoster: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('/api/tv-display/roster');
+        const response = await axiosInstance.get('/api/tv-display/roster');
         setData(response.data);
       } catch (error) {
         console.error('Failed to fetch roster data', error);
