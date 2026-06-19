@@ -609,3 +609,236 @@ def delete_purchase_invoice(id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+
+# =============================================
+# 3-WAY MATCHING: PO vs GRN vs Invoice
+# =============================================
+
+@purchase_invoice_bp.route('/purchase-invoices/<int:id>/three-way-match', methods=['GET'])
+@jwt_required()
+def three_way_match(id):
+    """
+    Compare PO ordered quantities/prices vs GRN received quantities vs Invoice billed quantities/prices.
+    Returns line-level discrepancies and an overall match status.
+    """
+    try:
+        from models import GoodsReceivedNote, GRNItem
+
+        invoice = db.session.get(PurchaseInvoice, id)
+        if not invoice:
+            return jsonify({'error': 'Invoice not found'}), 404
+
+        po = invoice.purchase_order
+        if not po:
+            return jsonify({'error': 'No PO linked to this invoice'}), 400
+
+        # Gather all GRN items for this PO
+        grns = GoodsReceivedNote.query.filter_by(po_id=po.id).all()
+        # Sum received quantity per po_item_id across all GRNs
+        grn_received: dict = {}   # po_item_id -> total received
+        grn_accepted: dict = {}   # po_item_id -> total accepted
+        for grn in grns:
+            for gi in grn.items:
+                key = gi.po_item_id
+                grn_received[key] = grn_received.get(key, 0.0) + float(gi.quantity_received or 0)
+                grn_accepted[key] = grn_accepted.get(key, 0.0) + float(gi.quantity_accepted or 0)
+
+        # Build match lines
+        lines = []
+        has_price_variance = False
+        has_qty_variance = False
+        has_missing_grn = False
+
+        for inv_item in invoice.items:
+            po_item = inv_item.po_item
+            if not po_item:
+                continue
+
+            po_qty = float(po_item.quantity or 0)
+            po_price = float(po_item.unit_price or 0)
+            inv_qty = float(inv_item.quantity or 0)
+            inv_price = float(inv_item.unit_price or 0)
+            rcv_qty = grn_received.get(po_item.id, 0.0)
+            acc_qty = grn_accepted.get(po_item.id, 0.0)
+
+            price_variance = round(inv_price - po_price, 4)
+            qty_vs_grn = round(inv_qty - acc_qty, 4)   # invoice bills more than accepted?
+            qty_vs_po = round(inv_qty - po_qty, 4)
+
+            status = 'matched'
+            issues = []
+
+            if abs(price_variance) > 0.01:
+                has_price_variance = True
+                issues.append(f'Harga berbeda: PO Rp{po_price:,.2f} vs Invoice Rp{inv_price:,.2f}')
+                status = 'discrepancy'
+
+            if qty_vs_grn > 0.001:
+                has_qty_variance = True
+                issues.append(f'Tagihan {inv_qty} > diterima {acc_qty} {inv_item.uom}')
+                status = 'discrepancy'
+
+            if rcv_qty == 0 and inv_qty > 0:
+                has_missing_grn = True
+                issues.append('Belum ada GRN untuk item ini')
+                status = 'discrepancy'
+
+            lines.append({
+                'po_item_id': po_item.id,
+                'invoice_item_id': inv_item.id,
+                'item_name': po_item.item_name,
+                'uom': inv_item.uom,
+                # PO column
+                'po_qty': po_qty,
+                'po_price': po_price,
+                'po_total': round(po_qty * po_price, 2),
+                # GRN column
+                'grn_received': rcv_qty,
+                'grn_accepted': acc_qty,
+                # Invoice column
+                'inv_qty': inv_qty,
+                'inv_price': inv_price,
+                'inv_total': float(inv_item.total_price or 0),
+                # Variances
+                'price_variance': price_variance,
+                'qty_vs_grn': qty_vs_grn,
+                'qty_vs_po': qty_vs_po,
+                'status': status,
+                'issues': issues,
+            })
+
+        # Overall status
+        if has_missing_grn:
+            overall = 'missing_grn'
+        elif has_price_variance or has_qty_variance:
+            overall = 'discrepancy'
+        else:
+            overall = 'matched'
+
+        return jsonify({
+            'invoice_id': invoice.id,
+            'invoice_number': invoice.invoice_number,
+            'po_id': po.id,
+            'po_number': po.po_number,
+            'supplier_name': invoice.supplier.company_name if invoice.supplier else None,
+            'invoice_total': float(invoice.total_amount or 0),
+            'po_total': sum(float(i.total_price or 0) for i in po.items),
+            'grn_count': len(grns),
+            'overall_status': overall,
+            'has_price_variance': has_price_variance,
+            'has_qty_variance': has_qty_variance,
+            'has_missing_grn': has_missing_grn,
+            'lines': lines,
+        }), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@purchase_invoice_bp.route('/purchase-invoices/summary', methods=['GET'])
+@jwt_required()
+def invoice_match_summary():
+    """List invoices with their match status overview"""
+    try:
+        from models import GoodsReceivedNote, GRNItem
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 30, type=int)
+        status = request.args.get('status')
+        search = request.args.get('search', '').strip()
+
+        q = PurchaseInvoice.query
+        if status:
+            q = q.filter(PurchaseInvoice.status == status)
+        if search:
+            q = q.filter(PurchaseInvoice.invoice_number.ilike(f'%{search}%'))
+
+        paginated = q.order_by(PurchaseInvoice.created_at.desc()).paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+
+        result = []
+        for inv in paginated.items:
+            po = inv.purchase_order
+            grn_count = GoodsReceivedNote.query.filter_by(po_id=inv.po_id).count() if inv.po_id else 0
+            result.append({
+                'id': inv.id,
+                'invoice_number': inv.invoice_number,
+                'po_number': po.po_number if po else None,
+                'supplier_name': inv.supplier.company_name if inv.supplier else None,
+                'invoice_date': inv.invoice_date.isoformat() if inv.invoice_date else None,
+                'due_date': inv.due_date.isoformat() if inv.due_date else None,
+                'total_amount': float(inv.total_amount or 0),
+                'status': inv.status,
+                'payment_status': inv.payment_status,
+                'grn_count': grn_count,
+            })
+
+        return jsonify({
+            'invoices': result,
+            'total': paginated.total,
+            'pages': paginated.pages,
+            'current_page': page,
+        }), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# =============================================
+# PEMBAYARAN (PAYMENT RECORDING)
+# =============================================
+
+@purchase_invoice_bp.route('/purchase-invoices/<int:id>/record-payment', methods=['POST'])
+@jwt_required()
+def record_payment(id):
+    """Catat pembayaran untuk purchase invoice"""
+    try:
+        from utils.timezone import get_local_now, get_local_today
+
+        invoice = db.session.get(PurchaseInvoice, id)
+        if not invoice:
+            return jsonify({'error': 'Invoice not found'}), 404
+        if invoice.status == 'cancelled':
+            return jsonify({'error': 'Invoice sudah dibatalkan'}), 400
+        if invoice.payment_status == 'paid':
+            return jsonify({'error': 'Invoice sudah lunas'}), 400
+
+        data = request.get_json() or {}
+        amount = float(data.get('amount', 0))
+        if amount <= 0:
+            return jsonify({'error': 'Jumlah pembayaran harus lebih dari 0'}), 400
+
+        balance = float(invoice.balance_due or invoice.total_amount or 0)
+        if amount > balance + 0.01:
+            return jsonify({'error': f'Jumlah melebihi sisa tagihan Rp {balance:,.2f}'}), 400
+
+        invoice.amount_paid = float(invoice.amount_paid or 0) + amount
+        invoice.balance_due = max(0, float(invoice.total_amount or 0) - float(invoice.amount_paid))
+
+        if invoice.balance_due <= 0.01:
+            invoice.payment_status = 'paid'
+            invoice.status = 'paid'
+        else:
+            invoice.payment_status = 'partial'
+
+        payment_note = (
+            f"[BAYAR {get_local_today().strftime('%d/%m/%Y')}] "
+            f"Rp {amount:,.0f} via {data.get('payment_method', 'transfer')}. "
+            f"{data.get('notes', '')}"
+        ).strip()
+        invoice.internal_notes = ((invoice.internal_notes or '') + '\n' + payment_note).strip()
+
+        db.session.commit()
+
+        return jsonify({
+            'message': f'Pembayaran Rp {amount:,.0f} berhasil dicatat',
+            'invoice_id': invoice.id,
+            'amount_paid': float(invoice.amount_paid),
+            'balance_due': float(invoice.balance_due),
+            'payment_status': invoice.payment_status,
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
