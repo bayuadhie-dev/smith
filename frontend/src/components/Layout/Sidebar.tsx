@@ -251,6 +251,18 @@ function SidebarContent() {
                 { name: 'Analytics', href: '/app/warehouse/analytics' },
               ]
             },
+            {
+              name: 'WMS Advanced', icon: SparklesIcon, isSubMenu: true, subChildren: [
+                { name: 'Dashboard WMS', href: '/app/wms' },
+                { name: 'Stok per Work Order', href: '/app/wms/stock-by-wo' },
+                { name: 'Konsumsi Material', href: '/app/wms/material-consumption' },
+                { name: 'Transaksi Stok', href: '/app/wms/transactions' },
+                { name: 'Pick List', href: '/app/wms/pick-lists' },
+                { name: 'Transfer Stok', href: '/app/wms/transfers' },
+                { name: 'Cycle Count', href: '/app/wms/cycle-counts' },
+                { name: 'Batch Traceability', href: '/app/wms/batch-traceability' },
+              ]
+            },
           ]
         },
         {
@@ -310,6 +322,7 @@ function SidebarContent() {
             { name: 'QC Barang Jadi', href: '/app/quality/finish-good', icon: ClipboardDocumentCheckIcon },
             { name: 'QC Packing List', href: '/app/quality/packing-list', icon: ArchiveBoxIcon },
             { name: 'Analytics', href: '/app/quality/analytics', icon: ChartPieIcon },
+            { name: 'SPC', href: '/app/quality/spc', icon: ChartBarIcon },
           ]
         },
       ]
@@ -326,10 +339,13 @@ function SidebarContent() {
           children: [
             { name: 'Dashboard', href: '/app/purchasing', icon: PresentationChartLineIcon },
             { name: 'Suppliers', href: '/app/purchasing/suppliers', icon: UserGroupIcon, permission: 'suppliers' },
-            { name: 'Purchase Orders', href: '/app/purchasing/orders', icon: ClipboardDocumentListIcon, permission: 'purchase_orders' },
-            { name: 'RFQ', href: '/app/purchasing/rfq', icon: DocumentTextIcon },
-            { name: 'Contracts', href: '/app/purchasing/contracts', icon: DocumentCheckIcon },
-            { name: 'Price Comparison', href: '/app/purchasing/price-comparison', icon: ScaleIcon },
+            { name: 'Requisition (PR)', href: '/app/purchasing/requisitions', icon: ClipboardDocumentListIcon },
+            { name: 'RFQ', href: '/app/purchasing/rfq', icon: EnvelopeIcon },
+            { name: 'Purchase Orders', href: '/app/purchasing/orders', icon: ArchiveBoxIcon, permission: 'purchase_orders' },
+            { name: 'Goods Receipt (GRN)', href: '/app/purchasing/grn', icon: DocumentCheckIcon },
+            { name: 'Invoice & 3-Way Match', href: '/app/purchasing/invoices', icon: ScaleIcon },
+            { name: 'Contracts', href: '/app/purchasing/contracts', icon: BookOpenIcon },
+            { name: 'Price Comparison', href: '/app/purchasing/price-comparison', icon: ChartBarIcon },
           ]
         },
         {
@@ -376,6 +392,8 @@ function SidebarContent() {
             { name: 'Dashboard', href: '/app/finance', icon: PresentationChartLineIcon },
             { name: 'Budget', href: '/app/finance/budget', icon: CurrencyDollarIcon },
             { name: 'Cash Flow', href: '/app/finance/cash-flow', icon: ArrowsRightLeftIcon },
+            { name: 'Expenses', href: '/app/finance/expenses', icon: DocumentTextIcon, permission: 'expense' },
+            { name: 'Reimbursements', href: '/app/finance/reimbursements', icon: CurrencyDollarIcon, permission: 'expense' },
             { name: 'Approvals', href: '/app/approval', icon: DocumentCheckIcon, permission: 'approval' },
           ]
         },

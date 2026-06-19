@@ -96,6 +96,12 @@ import QuoteList from './pages/Purchasing/QuoteList'
 import RFQForm from './pages/Purchasing/RFQForm'
 import GRNForm from './pages/Purchasing/GRNForm'
 import SupplierQuoteForm from './pages/Purchasing/SupplierQuoteForm'
+import PRList from './pages/Purchasing/PRList'
+import PRForm from './pages/Purchasing/PRForm'
+import GRNList from './pages/Purchasing/GRNList'
+import GRNDetail from './pages/Purchasing/GRNDetail'
+import PurchaseInvoiceList from './pages/Purchasing/InvoiceList'
+import InvoiceMatching from './pages/Purchasing/InvoiceMatching'
 import MachineList from './pages/Production/MachineList'
 import MachineForm from './pages/Production/MachineForm'
 import MachineDetail from './pages/Production/MachineDetail'
@@ -145,6 +151,7 @@ import PendingQC from './pages/Quality/PendingQC'
 import WorkOrderQCForm from './pages/Quality/WorkOrderQCForm'
 import QCToWarehouse from './pages/Quality/QCToWarehouse'
 import IncomingQC from './pages/Quality/IncomingQC'
+import SPCDashboard from './pages/Quality/SPC/SPCDashboard'
 import InProcessQC from './pages/Quality/InProcessQC'
 import FinishGoodQC from './pages/Quality/FinishGoodQC'
 import FinishGoodDetail from './pages/Quality/FinishGoodDetail'
@@ -685,7 +692,9 @@ function App() {
                 <Route path="purchasing/rfqs/new" element={<RFQForm />} />
                 <Route path="purchasing/rfqs/:id" element={<RFQForm />} />
                 <Route path="purchasing/rfqs/:id/edit" element={<RFQForm />} />
+                <Route path="purchasing/grn" element={<GRNList />} />
                 <Route path="purchasing/grn/new" element={<GRNForm />} />
+                <Route path="purchasing/grn/:id" element={<GRNDetail />} />
                 <Route path="purchasing/grn/:id/edit" element={<GRNForm />} />
                 <Route path="purchasing/quotes" element={<QuoteList />} />
                 <Route path="purchasing/quotes/new" element={<SupplierQuoteForm />} />
@@ -696,6 +705,12 @@ function App() {
                 <Route path="purchasing/contracts/:id" element={<SupplierForm />} />
                 <Route path="purchasing/contracts/:id/edit" element={<SupplierForm />} />
                 <Route path="purchasing/price-comparison" element={<PriceComparison />} />
+                <Route path="purchasing/invoices" element={<PurchaseInvoiceList />} />
+                <Route path="purchasing/invoices/:id/match" element={<InvoiceMatching />} />
+                <Route path="purchasing/requisitions" element={<PRList />} />
+                <Route path="purchasing/requisitions/new" element={<PRForm />} />
+                <Route path="purchasing/requisitions/:id" element={<PRForm />} />
+                <Route path="purchasing/requisitions/:id/edit" element={<PRForm />} />
                 <Route path="purchasing/supplier-integration" element={<SupplierIntegration />} />
 
                 {/* Production */}
@@ -774,6 +789,7 @@ function App() {
                 <Route path="quality" element={<QualityDashboardEnhanced />} />
                 <Route path="quality/dashboard" element={<QualityDashboardEnhanced />} />
                 <Route path="quality/incoming" element={<IncomingQC />} />
+                <Route path="quality/spc" element={<SPCDashboard />} />
                 <Route path="quality/in-process" element={<InProcessQC />} />
                 <Route path="quality/finish-good" element={<FinishGoodQC />} />
                 <Route path="quality/packing-list" element={<QCPackingList />} />

@@ -38,6 +38,9 @@ def register_routes(app):
     from .live_monitoring import live_monitoring_bp
     from .desk_minimal import desk_bp
     from .executive_dashboard import executive_dashboard_bp
+    from .expense import expense_bp
+    from .purchase_requisition import pr_bp
+    # from .cache_stats import cache_stats_bp  # Temporarily disabled for debugging
     
     # Register all blueprints
     app.register_blueprint(health_bp, url_prefix='/api')
@@ -73,6 +76,9 @@ def register_routes(app):
     app.register_blueprint(live_monitoring_bp, url_prefix='/api/live-monitoring')
     app.register_blueprint(desk_bp, url_prefix='/api/desk')
     app.register_blueprint(executive_dashboard_bp, url_prefix='/api/executive')
+    app.register_blueprint(expense_bp, url_prefix='/api/expenses')
+    app.register_blueprint(pr_bp, url_prefix='/api/purchasing')
+    # app.register_blueprint(cache_stats_bp, url_prefix='/api')  # Temporarily disabled for debugging
     print("✓ Converting routes registered")
     print("✓ Live Monitoring routes registered")
     print("✓ Staff Leave routes registered")
