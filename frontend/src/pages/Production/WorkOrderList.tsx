@@ -1,3 +1,4 @@
+import { toast } from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import {
@@ -156,12 +157,12 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
         await axiosInstance.put(`/api/production/work-orders/${id}/status`, { status: 'released' })
       }
       // Then start
-      await axiosInstance.put(`/api/production/work-orders/${id}/status`, { status: 'in_progress' })
-      alert('Work Order started!')
+      await axiosInstance.put(`/api/production/work-orders/${id}/status`, { status: 'in_progress', auto_deduct: false })
+      toast.success('Work Order berhasil distart!')
       loadWorkOrders()
     } catch (error: any) {
       console.error('Error starting work order:', error)
-      alert(error.response?.data?.error || 'Failed to start work order')
+      toast.error(error.response?.data?.error || 'Failed to start work order')
     }
   }
 

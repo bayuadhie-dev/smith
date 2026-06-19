@@ -1170,7 +1170,7 @@ def update_work_order_status(id):
         
         data = request.get_json()
         new_status = data.get('status')
-        auto_deduct = data.get('auto_deduct', True)  # Default true for auto-deduction
+        auto_deduct = data.get('auto_deduct', False)  # Default true for auto-deduction
         
         valid_statuses = ['planned', 'released', 'in_progress', 'completed', 'cancelled']
         if new_status not in valid_statuses:
@@ -1242,6 +1242,15 @@ def update_work_order_status(id):
                 }
         
         db.session.commit()
+
+        # Invalidate WO list cache
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            for key in r.scan_iter('production_work_orders_*'):
+                r.delete(key)
+        except Exception as cache_error:
+            print(f"Redis cache invalidation error (continuing): {cache_error}")
         
         response = {
             'message': f'Work order status updated to {new_status}',

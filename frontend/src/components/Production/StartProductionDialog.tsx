@@ -26,7 +26,7 @@ const StartProductionDialog: React.FC<Props> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [materialAvailable, setMaterialAvailable] = useState(false);
-  const [autoDeduct, setAutoDeduct] = useState(true);
+  const [autoDeduct, setAutoDeduct] = useState(false);
 
   const handleStartProduction = async () => {
     if (!materialAvailable && autoDeduct) {
