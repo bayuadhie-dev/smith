@@ -78,7 +78,7 @@ marshmallow-sqlalchemy==0.29.0
 APScheduler==3.10.4
 
 # HTTP Client
-requests==2.31.0
+requests==2.33.0
 
 # Google OAuth
 google-auth==2.25.2
