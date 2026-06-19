@@ -1,5 +1,8 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+import redis
+import os
+import json
 from models import db, Supplier, PurchaseOrder, PurchaseOrderItem, GoodsReceivedNote, GRNItem, Notification
 from utils.i18n import success_response, error_response, get_message
 from models.purchasing import (
@@ -24,6 +27,17 @@ def get_suppliers():
         per_page = request.args.get('per_page', 50, type=int)
         search = request.args.get('search', '')
         
+        # Try cache
+        cache_key = f'purchasing_suppliers_page{page}_per{per_page}_search{search}'
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            cached_data = r.get(cache_key)
+            if cached_data:
+                return jsonify(json.loads(cached_data)), 200
+        except Exception as cache_error:
+            print(f"Redis cache error (using fallback): {cache_error}")
+            
         query = Supplier.query
         
         if search:
@@ -39,7 +53,7 @@ def get_suppliers():
             page=page, per_page=per_page, error_out=False
         )
         
-        return jsonify({
+        response_data = {
             'suppliers': [{
                 'id': s.id,
                 'code': s.code,
@@ -61,7 +75,15 @@ def get_suppliers():
             'total': suppliers.total,
             'pages': suppliers.pages,
             'current_page': suppliers.page
-        }), 200
+        }
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            r.setex(cache_key, 300, json.dumps(response_data))
+        except Exception as cache_error:
+            print(f"Redis cache set error (continuing without cache): {cache_error}")
+            
+        return jsonify(response_data), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -99,6 +121,17 @@ def create_supplier():
         )
         db.session.add(supplier)
         db.session.commit()
+        
+        # Invalidate cache
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            keys = r.keys('purchasing_suppliers_*')
+            if keys:
+                r.delete(*keys)
+        except Exception as cache_error:
+            print(f"Redis cache invalidation error (continuing): {cache_error}")
+            
         return jsonify({'message': 'Supplier created', 'supplier_id': supplier.id}), 201
     except Exception as e:
         db.session.rollback()
@@ -182,6 +215,16 @@ def update_supplier(id):
         
         db.session.commit()
         
+        # Invalidate cache
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            keys = r.keys('purchasing_suppliers_*')
+            if keys:
+                r.delete(*keys)
+        except Exception as cache_error:
+            print(f"Redis cache invalidation error (continuing): {cache_error}")
+            
         return jsonify(success_response('api.success')), 200
     except Exception as e:
         db.session.rollback()
@@ -205,6 +248,16 @@ def delete_supplier(id):
         
         db.session.commit()
         
+        # Invalidate cache
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            keys = r.keys('purchasing_suppliers_*')
+            if keys:
+                r.delete(*keys)
+        except Exception as cache_error:
+            print(f"Redis cache invalidation error (continuing): {cache_error}")
+            
         return jsonify(success_response('api.success')), 200
     except Exception as e:
         db.session.rollback()
@@ -467,6 +520,187 @@ def create_grn():
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+
+@purchasing_bp.route('/grn/<int:grn_id>', methods=['GET'])
+@jwt_required()
+def get_grn(grn_id):
+    try:
+        grn = db.session.get(GoodsReceivedNote, grn_id)
+        if not grn:
+            return jsonify({'error': 'GRN not found'}), 404
+        po = grn.purchase_order
+        return jsonify({
+            'id': grn.id,
+            'grn_number': grn.grn_number,
+            'po_id': grn.po_id,
+            'po_number': po.po_number if po else None,
+            'supplier_id': grn.supplier_id,
+            'supplier_name': grn.supplier.company_name if grn.supplier else None,
+            'receipt_date': grn.receipt_date.isoformat() if grn.receipt_date else None,
+            'delivery_note_number': grn.delivery_note_number,
+            'vehicle_number': grn.vehicle_number,
+            'driver_name': grn.driver_name,
+            'status': grn.status,
+            'quality_status': grn.quality_status,
+            'notes': grn.notes,
+            'received_by': grn.received_by,
+            'received_by_name': grn.received_by_user.full_name if grn.received_by_user else None,
+            'inspected_by': grn.inspected_by,
+            'inspected_by_name': grn.inspected_by_user.full_name if grn.inspected_by_user else None,
+            'approved_by': grn.approved_by,
+            'approved_by_name': grn.approved_by_user.full_name if grn.approved_by_user else None,
+            'approved_at': grn.approved_at.isoformat() if grn.approved_at else None,
+            'created_at': grn.created_at.isoformat() if grn.created_at else None,
+            'items': [{
+                'id': item.id,
+                'po_item_id': item.po_item_id,
+                'product_id': item.product_id,
+                'material_id': item.material_id,
+                'item_name': (
+                    item.product.name if item.product else
+                    (item.po_item.item_name if item.po_item else f'Item #{item.id}')
+                ),
+                'quantity_ordered': float(item.quantity_ordered),
+                'quantity_received': float(item.quantity_received),
+                'quantity_accepted': float(item.quantity_accepted or 0),
+                'quantity_rejected': float(item.quantity_rejected or 0),
+                'uom': item.uom,
+                'batch_number': item.batch_number,
+                'lot_number': item.lot_number,
+                'production_date': item.production_date.isoformat() if item.production_date else None,
+                'expiry_date': item.expiry_date.isoformat() if item.expiry_date else None,
+                'notes': item.notes,
+            } for item in grn.items],
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@purchasing_bp.route('/grn/<int:grn_id>/inspect', methods=['POST'])
+@jwt_required()
+def inspect_grn(grn_id):
+    """QC Inspection: record accepted/rejected qty per item and adjust inventory"""
+    try:
+        user_id = int(get_jwt_identity())
+        grn = db.session.get(GoodsReceivedNote, grn_id)
+        if not grn:
+            return jsonify({'error': 'GRN not found'}), 404
+        if grn.status == 'approved':
+            return jsonify({'error': 'GRN sudah final, tidak bisa diubah'}), 400
+
+        data = request.get_json()
+        items_data = data.get('items', [])
+        overall_notes = data.get('notes', '')
+
+        from models import Inventory, InventoryMovement
+
+        total_accepted = 0
+        total_rejected = 0
+
+        for item_data in items_data:
+            item = GRNItem.query.filter_by(id=item_data['id'], grn_id=grn_id).first()
+            if not item:
+                continue
+
+            new_accepted = float(item_data.get('quantity_accepted', float(item.quantity_received)))
+            new_rejected = float(item_data.get('quantity_rejected', 0))
+            rejection_reason = item_data.get('rejection_reason', '')
+
+            # Clamp: accepted + rejected <= received
+            qty_received = float(item.quantity_received)
+            if new_accepted + new_rejected > qty_received:
+                new_rejected = qty_received - new_accepted
+
+            old_accepted = float(item.quantity_accepted or 0)
+            delta = new_accepted - old_accepted  # positive = more accepted, negative = reversed
+
+            item.quantity_accepted = new_accepted
+            item.quantity_rejected = new_rejected
+            if rejection_reason:
+                item.notes = f"[QC] {rejection_reason}" + (f"\n{item.notes}" if item.notes else "")
+
+            # Adjust inventory if item has location and delta != 0
+            if delta != 0 and item.location_id and (item.product_id or item.material_id):
+                inv_query = Inventory.query.filter_by(location_id=item.location_id)
+                if item.product_id:
+                    inv_query = inv_query.filter_by(product_id=item.product_id)
+                else:
+                    inv_query = inv_query.filter_by(material_id=item.material_id)
+                if item.batch_number:
+                    inv_query = inv_query.filter_by(batch_number=item.batch_number)
+                inventory = inv_query.first()
+                if inventory:
+                    inventory.quantity_available = max(0, float(inventory.quantity_available) + delta)
+                    inventory.quantity_on_hand = max(0, float(inventory.quantity_on_hand) + delta)
+                    inventory.updated_at = get_local_now()
+                    mv_type = 'adjustment_in' if delta > 0 else 'adjustment_out'
+                    movement = InventoryMovement(
+                        inventory_id=inventory.id,
+                        product_id=item.product_id,
+                        material_id=item.material_id,
+                        location_id=item.location_id,
+                        movement_type=mv_type,
+                        movement_date=get_local_now().date(),
+                        quantity=abs(delta),
+                        reference_number=grn.grn_number,
+                        reference_type='grn_inspection',
+                        reference_id=grn.id,
+                        batch_number=item.batch_number,
+                        notes=f"QC Inspection adjustment for GRN {grn.grn_number}",
+                        created_by=user_id
+                    )
+                    db.session.add(movement)
+
+            total_accepted += new_accepted
+            total_rejected += new_rejected
+
+        # Update GRN header
+        grn.inspected_by = user_id
+        grn.status = 'inspected'
+        if overall_notes:
+            grn.notes = (grn.notes or '') + f'\n[QC] {overall_notes}'
+
+        if total_rejected == 0:
+            grn.quality_status = 'passed'
+        elif total_accepted == 0:
+            grn.quality_status = 'failed'
+        else:
+            grn.quality_status = 'partial'
+
+        db.session.commit()
+        return jsonify({
+            'message': f'Inspeksi selesai — diterima: {total_accepted}, ditolak: {total_rejected}',
+            'quality_status': grn.quality_status,
+            'grn_id': grn.id,
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@purchasing_bp.route('/grn/<int:grn_id>/approve', methods=['POST'])
+@jwt_required()
+def approve_grn(grn_id):
+    """Final approval of GRN after inspection"""
+    try:
+        user_id = int(get_jwt_identity())
+        grn = db.session.get(GoodsReceivedNote, grn_id)
+        if not grn:
+            return jsonify({'error': 'GRN not found'}), 404
+        if grn.status == 'approved':
+            return jsonify({'error': 'GRN sudah di-approve sebelumnya'}), 400
+
+        grn.status = 'approved'
+        grn.approved_by = user_id
+        grn.approved_at = get_local_now()
+        db.session.commit()
+        return jsonify({'message': 'GRN disetujui', 'grn_id': grn.id}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
 
 # ===============================
 # APPROVAL WORKFLOW ENDPOINTS

@@ -502,3 +502,69 @@ class PurchaseReturnItem(db.Model):
     __table_args__ = (
         db.UniqueConstraint('return_id', 'line_number', name='unique_return_line'),
     )
+
+
+class PurchaseRequisition(db.Model):
+    """Purchase Requisition - permintaan pembelian dari departemen sebelum PO dibuat"""
+    __tablename__ = 'purchase_requisitions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    pr_number = db.Column(db.String(100), unique=True, nullable=False, index=True)
+    requested_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    department = db.Column(db.String(100), nullable=True)
+    request_date = db.Column(db.Date, nullable=False)
+    required_date = db.Column(db.Date, nullable=True)
+    purpose = db.Column(db.Text, nullable=True)
+    # draft → submitted → approved/rejected → converted (to PO)
+    status = db.Column(db.String(50), nullable=False, default='draft')
+    priority = db.Column(db.String(20), nullable=False, default='normal')  # low, normal, high, urgent
+    approved_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    approved_at = db.Column(db.DateTime, nullable=True)
+    rejection_reason = db.Column(db.Text, nullable=True)
+    converted_to_po_id = db.Column(db.Integer, db.ForeignKey('purchase_orders.id'), nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    requester = db.relationship('User', foreign_keys=[requested_by])
+    approver = db.relationship('User', foreign_keys=[approved_by])
+    converted_po = db.relationship('PurchaseOrder', foreign_keys=[converted_to_po_id])
+    items = db.relationship('PRItem', back_populates='requisition', cascade='all, delete-orphan', order_by='PRItem.line_number')
+
+    def __repr__(self):
+        return f'<PurchaseRequisition {self.pr_number}>'
+
+
+class PRItem(db.Model):
+    """Item dalam Purchase Requisition"""
+    __tablename__ = 'pr_items'
+
+    id = db.Column(db.Integer, primary_key=True)
+    pr_id = db.Column(db.Integer, db.ForeignKey('purchase_requisitions.id', ondelete='CASCADE'), nullable=False)
+    line_number = db.Column(db.Integer, nullable=False)
+    material_id = db.Column(db.Integer, db.ForeignKey('materials.id'), nullable=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=True)
+    item_name = db.Column(db.String(200), nullable=False)
+    item_code = db.Column(db.String(100), nullable=True)
+    quantity = db.Column(db.Numeric(15, 2), nullable=False)
+    uom = db.Column(db.String(20), nullable=False)
+    estimated_unit_price = db.Column(db.Numeric(15, 2), nullable=True)
+    estimated_total = db.Column(db.Numeric(15, 2), nullable=True)
+    preferred_supplier_id = db.Column(db.Integer, db.ForeignKey('suppliers.id'), nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    requisition = db.relationship('PurchaseRequisition', back_populates='items')
+    material = db.relationship('Material')
+    product = db.relationship('Product')
+    preferred_supplier = db.relationship('Supplier')
+
+    __table_args__ = (
+        db.UniqueConstraint('pr_id', 'line_number', name='unique_pr_line'),
+    )
+
+    def __repr__(self):
+        return f'<PRItem {self.pr_id} Line:{self.line_number} - {self.item_name}>'
