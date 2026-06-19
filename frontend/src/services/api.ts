@@ -2187,3 +2187,55 @@ export const {
   useAddSupervisorNoteMutation,
   useGetNgItemsQuery,
 } = preShiftChecklistApi
+
+// ─── SPC API ───────────────────────────────────────────────
+export const spcApi = api.injectEndpoints({
+  endpoints: (builder) => ({
+    getSPCParameters: builder.query<any, void>({
+      query: () => '/spc/parameters',
+    }),
+    getSPCSpecs: builder.query<any, { product_id?: number }>({
+      query: (params) => ({ url: '/spc/specs', params }),
+    }),
+    createSPCSpec: builder.mutation<any, any>({
+      query: (body) => ({ url: '/spc/specs', method: 'POST', body }),
+    }),
+    updateSPCSpec: builder.mutation<any, { id: number; data: any }>({
+      query: ({ id, data }) => ({ url: `/spc/specs/${id}`, method: 'PUT', body: data }),
+    }),
+    getSPCSamples: builder.query<any, { product_id?: number; machine_id?: number; date_from?: string; date_to?: string; limit?: number }>({
+      query: (params) => ({ url: '/spc/samples', params }),
+    }),
+    getSPCSampleDetail: builder.query<any, number>({
+      query: (id) => `/spc/samples/${id}`,
+    }),
+    createSPCSample: builder.mutation<any, any>({
+      query: (body) => ({ url: '/spc/samples', method: 'POST', body }),
+    }),
+    getSPCChartData: builder.query<any, { product_id: number; parameter_id: number; limit?: number }>({
+      query: (params) => ({ url: '/spc/chart-data', params }),
+    }),
+    getSPCDashboard: builder.query<any, { product_id?: number }>({
+      query: (params) => ({ url: '/spc/dashboard', params }),
+    }),
+    recalculateSPCLimits: builder.mutation<any, { product_id: number; parameter_id: number }>({
+      query: ({ product_id, parameter_id }) => ({
+        url: `/spc/recalculate/${product_id}/${parameter_id}`,
+        method: 'POST',
+      }),
+    }),
+  }),
+});
+
+export const {
+  useGetSPCParametersQuery,
+  useGetSPCSpecsQuery,
+  useCreateSPCSpecMutation,
+  useUpdateSPCSpecMutation,
+  useGetSPCSamplesQuery,
+  useGetSPCSampleDetailQuery,
+  useCreateSPCSampleMutation,
+  useGetSPCChartDataQuery,
+  useGetSPCDashboardQuery,
+  useRecalculateSPCLimitsMutation,
+} = spcApi;
