@@ -351,6 +351,7 @@ export default function WorkOrderProductionInput() {
   const [machineShiftRecords, setMachineShiftRecords] = useState<any[]>([]);
   const [bomItems, setBomItems] = useState<any[]>([]); // BOM items with planned + actual qty
   const [bomSource, setBomSource] = useState<'work_order' | 'master_bom' | 'none'>('none');
+  const [bomPackPerCarton, setBomPackPerCarton] = useState<number>(1);
 
   // Product selection for multi-product per shift
   const [products, setProducts] = useState<{ id: number; code: string; name: string }[]>([]);
@@ -638,18 +639,30 @@ export default function WorkOrderProductionInput() {
     return recordDate === formData.production_date && normalizeShift(record.shift) === formData.shift;
   });
   
+  // Auto-show sub-shift dialog saat alasan early stop = ganti_order
+  useEffect(() => {
+    if (formData.early_stop && formData.early_stop_reason === 'ganti_order' && !subShift) {
+      setShowSubShiftDialog(true);
+    }
+    // Jika alasan bukan ganti_order, bersihkan sub_shift yang mungkin ter-set otomatis
+    if (formData.early_stop_reason && formData.early_stop_reason !== 'ganti_order' && subShift) {
+      setSubShift(null);
+    }
+  }, [formData.early_stop, formData.early_stop_reason]);
+
   // Update existing sub-shifts when shift/date changes
   useEffect(() => {
     const subShifts = existingRecordsForCurrentShift
       .map((rec: any) => rec.sub_shift)
       .filter((s: string | null) => s !== null && s !== undefined);
     setExistingSubShifts(subShifts);
-    
-    // Auto-suggest next sub-shift if there are existing records
-    if (existingRecordsForCurrentShift.length > 0 && !subShift) {
-      const usedLetters = subShifts.map((s: string) => s?.toLowerCase());
-      const nextLetter = ['a', 'b', 'c', 'd', 'e'].find(l => !usedLetters.includes(l)) || 'a';
-      // Don't auto-set, let user choose
+
+    // Jika SEMUA record di shift ini punya sub_shift → ini mode ganti order (sub-shift mode)
+    // Auto-tampilkan dialog agar admin konfirmasi sub_shift untuk entry berikutnya
+    const allHaveSubShift = existingRecordsForCurrentShift.length > 0 &&
+      existingRecordsForCurrentShift.every((r: any) => r.sub_shift !== null && r.sub_shift !== undefined && r.sub_shift !== '');
+    if (allHaveSubShift && !subShift) {
+      setShowSubShiftDialog(true);
     }
   }, [existingRecordsForCurrentShift.length, formData.shift, formData.production_date]);
   
@@ -716,22 +729,51 @@ export default function WorkOrderProductionInput() {
     setFormData(prev => ({ ...prev, average_time: newAvgTime.toString() }));
   }, [formData.production_date, formData.shift, machineShiftRecords]);
 
-  // Auto-detect next available shift based on existing records
-  // Also checks machineShiftRecords to avoid collision with other WOs on same machine
+  // Auto-detect next available shift based on existing records.
+  //
+  // Business rules:
+  // - Early stop dengan alasan "ganti order" → sub_shift di-set (misal 'a') → shift masih tersedia untuk 1b, 1c, dst.
+  // - Early stop dengan alasan lain (kerusakan, dsb) → sub_shift NULL → shift dianggap selesai → next = shift berikutnya.
+  // - Shift normal (satu produk, full shift) → sub_shift NULL → shift selesai → next = shift berikutnya.
+  //
+  // Logika: sebuah shift dianggap "selesai" jika:
+  //   1. Ada record dengan sub_shift == null (full-shift atau non-ganti-order early stop), ATAU
+  //   2. Semua record punya sub_shift && total average_time >= durasi penuh shift (semua slot sub-shift habis).
   const getNextAvailableShift = (records: any[], targetDate: string, machineRecords?: any[]): string => {
     const normalize = (s: string) => s?.replace('shift_', '') || '';
-    const woShifts = records
-      .filter(r => new Date(r.production_date).toISOString().split('T')[0] === targetDate)
-      .map(r => normalize(r.shift));
-    const mShifts = (machineRecords || [])
-      .filter(r => new Date(r.production_date).toISOString().split('T')[0] === targetDate)
-      .map(r => normalize(r.shift));
-    const used = new Set([...woShifts, ...mShifts]);
-    // Return first unused shift (1 → 2 → 3)
-    if (!used.has('1')) return '1';
-    if (!used.has('2')) return '2';
-    if (!used.has('3')) return '3';
-    return '1'; // All shifts taken, default to 1
+
+    const isShiftFull = (shiftNum: string): boolean => {
+      const shiftMachineRecs = (machineRecords || []).filter(r =>
+        new Date(r.production_date).toISOString().split('T')[0] === targetDate &&
+        normalize(r.shift) === shiftNum
+      );
+
+      if (shiftMachineRecs.length === 0) {
+        // Tidak ada ShiftProduction → pakai WO ProductionRecords sebagai fallback
+        const woRecs = records.filter(r =>
+          new Date(r.production_date).toISOString().split('T')[0] === targetDate &&
+          normalize(r.shift) === shiftNum
+        );
+        return woRecs.length > 0;
+      }
+
+      // Jika ada record tanpa sub_shift → shift ini bukan mode sub-shift (ganti order tidak terjadi)
+      // → shift dianggap selesai
+      const hasNonSubShiftRecord = shiftMachineRecs.some(
+        r => r.sub_shift === null || r.sub_shift === undefined || r.sub_shift === ''
+      );
+      if (hasNonSubShiftRecord) return true;
+
+      // Semua record punya sub_shift (mode ganti order) → cek sisa waktu
+      const fullDuration = getFullShiftDuration(parseInt(shiftNum), targetDate);
+      const usedTime = shiftMachineRecs.reduce((sum: number, r: any) => sum + (r.average_time || 0), 0);
+      return usedTime >= fullDuration;
+    };
+
+    if (!isShiftFull('1')) return '1';
+    if (!isShiftFull('2')) return '2';
+    if (!isShiftFull('3')) return '3';
+    return '1'; // Semua shift penuh, default ke 1
   };
 
 
@@ -810,6 +852,8 @@ export default function WorkOrderProductionInput() {
       // Load BOM items and initialize actual qty inputs
       const bomData = bomRes.data;
       setBomSource(bomData.source || 'none');
+      // pack_per_carton: from BOM response, fallback to WO, fallback to 1
+      setBomPackPerCarton(bomData.pack_per_carton || workOrderData.pack_per_carton || 1);
       if (bomData.bom_items && bomData.bom_items.length > 0) {
         setBomItems(bomData.bom_items.map((item: any) => ({
           ...item,
@@ -2307,6 +2351,114 @@ export default function WorkOrderProductionInput() {
           </div>
         </div>
 
+        {/* BOM Material Usage Section */}
+        {bomItems.length > 0 && (
+          <div className="border-t pt-6">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h3 className="text-base font-semibold text-gray-900 dark:text-white">📦 Pemakaian Material Shift Ini</h3>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Rencana dihitung dari <strong>{parseFloat(formData.quantity_good || '0').toLocaleString()} pack</strong> produksi baik
+                  ÷ {bomPackPerCarton} pack/karton. Input aktual setelah shift selesai.
+                </p>
+              </div>
+              {bomSource === 'master_bom' && (
+                <span className="text-xs bg-orange-50 text-orange-600 border border-orange-200 px-2 py-1 rounded-lg">
+                  ⚠️ Dari BOM Master (belum di-copy ke WO)
+                </span>
+              )}
+            </div>
+
+            {/* Header row */}
+            <div className="grid grid-cols-12 gap-2 px-2 mb-1 text-xs font-medium text-gray-500 uppercase tracking-wide">
+              <div className="col-span-4">Material</div>
+              <div className="col-span-2 text-center">Tipe</div>
+              <div className="col-span-2 text-right">Rencana</div>
+              <div className="col-span-3">Aktual</div>
+              <div className="col-span-1 text-right">Selisih</div>
+            </div>
+
+            <div className="space-y-1.5">
+              {bomItems.map((item, idx) => {
+                const qtyGood = parseFloat(formData.quantity_good || '0') || 0;
+                const qtyPerCtn = bomSource === 'work_order'
+                  ? (item.quantity_per_unit || 0)
+                  : (item.quantity || 0);
+                const plannedQty = bomPackPerCarton > 0
+                  ? qtyPerCtn * (qtyGood / bomPackPerCarton)
+                  : 0;
+                const actualQty = parseFloat(item.actual_input || '') || 0;
+                const variance = actualQty > 0 ? actualQty - plannedQty : null;
+                const variancePct = variance !== null && plannedQty > 0
+                  ? (variance / plannedQty * 100)
+                  : null;
+
+                return (
+                  <div key={item.id} className="grid grid-cols-12 gap-2 items-center px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-sm">
+                    {/* Material name */}
+                    <div className="col-span-4">
+                      <span className="font-medium text-gray-800 dark:text-gray-200">
+                        {item.item_name || item.material_name || `Material #${item.material_id}`}
+                      </span>
+                      {item.item_code && (
+                        <span className="block text-xs text-gray-400">{item.item_code}</span>
+                      )}
+                    </div>
+                    {/* Item type badge */}
+                    <div className="col-span-2 text-center">
+                      {item.item_type && (
+                        <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">
+                          {item.item_type}
+                        </span>
+                      )}
+                    </div>
+                    {/* Planned qty */}
+                    <div className="col-span-2 text-right text-gray-600 dark:text-gray-300">
+                      {qtyGood > 0
+                        ? <><span className="font-medium">{plannedQty.toLocaleString('id-ID', { maximumFractionDigits: 4 })}</span> <span className="text-xs text-gray-400">{item.uom}</span></>
+                        : <span className="text-gray-300">—</span>
+                      }
+                    </div>
+                    {/* Actual input */}
+                    <div className="col-span-3">
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="number"
+                          placeholder="Aktual..."
+                          value={item.actual_input || ''}
+                          onChange={(e) => {
+                            setBomItems(prev => prev.map((bi, i) =>
+                              i === idx ? { ...bi, actual_input: e.target.value } : bi
+                            ));
+                          }}
+                          className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
+                          step="any"
+                          min="0"
+                        />
+                        <span className="text-xs text-gray-400 whitespace-nowrap">{item.uom}</span>
+                      </div>
+                    </div>
+                    {/* Variance */}
+                    <div className="col-span-1 text-right text-xs">
+                      {variance !== null && (
+                        <span className={`font-semibold ${
+                          variance > 0 ? 'text-red-600' : variance < 0 ? 'text-green-600' : 'text-gray-500'
+                        }`}>
+                          {variance > 0 ? '+' : ''}{variancePct !== null ? `${variancePct.toFixed(1)}%` : '0%'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <p className="text-xs text-gray-400 mt-2">
+              💡 Merah = over-consume, Hijau = under-consume. Data disimpan saat submit.
+            </p>
+          </div>
+        )}
+
         {/* Operator & Notes */}
         <div className="border-t pt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -2397,6 +2549,7 @@ export default function WorkOrderProductionInput() {
                     className="w-full px-3 py-2 border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                   >
                     <option value="">Pilih alasan...</option>
+                    <option value="ganti_order">🔄 Ganti Order / Produk (Sub-Shift)</option>
                     <option value="material_habis">Material/Obat Habis</option>
                     <option value="mesin_rusak">Mesin Rusak</option>
                     <option value="listrik_mati">Listrik Mati</option>
@@ -2507,10 +2660,11 @@ export default function WorkOrderProductionInput() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-              Pilih Sub-Shift
+              🔄 Konfirmasi Sub-Shift (Ganti Order)
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-              Anda mengganti produk di tengah shift. Pilih sub-shift untuk membedakan entry ini dari entry sebelumnya.
+              Shift berhenti lebih awal karena <strong>Ganti Order / Produk</strong>. Pilih label sub-shift untuk entry ini.
+              Entry berikutnya di shift yang sama akan dilabeli sub-shift berikutnya secara otomatis.
             </p>
             
             <div className="space-y-2 mb-4">
