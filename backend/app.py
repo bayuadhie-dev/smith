@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 
 from flask_cors import CORS
+from flask_caching import Cache
 
 from flask_migrate import Migrate
 
@@ -26,6 +27,15 @@ from extensions import socketio
 
 import os
 
+import logging
+
+class NoSuccessFilter(logging.Filter):
+    def filter(self, record):
+        msg = record.getMessage()
+        return "200" not in msg and "304" not in msg and "OPTIONS" not in msg
+
+logging.getLogger("werkzeug").setLevel(logging.ERROR)
+
 
 
 def create_app(config_class=Config):
@@ -38,27 +48,6 @@ def create_app(config_class=Config):
 
     
 
-    # Initialize Sentry error monitoring
-
-    sentry_dsn = os.getenv('SENTRY_DSN')
-
-    if sentry_dsn:
-
-        sentry_sdk.init(
-
-            dsn=sentry_dsn,
-
-            integrations=[FlaskIntegration()],
-
-            traces_sample_rate=0.1,  # Sample 10% of transactions for performance monitoring
-
-            environment=os.getenv('SENTRY_ENVIRONMENT', 'production'),
-
-            send_default_pii=False  # Don't send personally identifiable information
-
-        )
-
-    
 
     # Initialize Sentry error monitoring
     sentry_dsn = os.getenv('SENTRY_DSN')
@@ -110,6 +99,20 @@ def create_app(config_class=Config):
     jwt = JWTManager(app)
 
     bcrypt = Bcrypt(app)
+    
+    # Initialize Redis caching
+    cache = Cache()
+    cache.init_app(app, config={
+        'CACHE_TYPE': app.config['CACHE_TYPE'],
+        'CACHE_REDIS_URL': app.config['CACHE_REDIS_URL'],
+        'CACHE_DEFAULT_TIMEOUT': app.config['CACHE_DEFAULT_TIMEOUT'],
+        'CACHE_KEY_PREFIX': app.config['CACHE_KEY_PREFIX']
+    })
+    
+    # Store cache in app.extensions for access in routes
+    if not hasattr(app, 'extensions'):
+        app.extensions = {}
+    app.extensions['cache'] = cache
 
     app.bcrypt = bcrypt  # Make bcrypt accessible from app instance
 
@@ -148,52 +151,6 @@ def create_app(config_class=Config):
     
 
     # Initialize security headers with Talisman (only in production)
-
-    if os.getenv('FLASK_ENV', 'development') != 'development':
-
-        talisman = Talisman(
-
-            app,
-
-            force_https=False,  # Cloudflared handles HTTPS
-
-            strict_transport_security=False,  # Cloudflared handles HSTS
-
-            session_cookie_httponly=True,
-
-            session_cookie_secure=True,
-
-            session_cookie_samesite='Lax',
-
-            content_security_policy={
-
-                'default-src': "'self'",
-
-                'script-src': "'self' 'unsafe-inline' 'unsafe-eval'",
-
-                'style-src': "'self' 'unsafe-inline'",
-
-                'img-src': "'self' data: https:",
-
-                'font-src': "'self' data:",
-
-                'connect-src': "'self' https://erp.graterp.my.id https://api.graterp.my.id wss://erp.graterp.my.id",
-
-                'frame-ancestors': "'none'",
-
-            },
-
-            feature_policy={
-
-                'geolocation': "'none'",
-
-                'microphone': "'none'",
-
-                'camera': "'none'",
-
-            }
-
-        )
 
     
 
@@ -431,6 +388,7 @@ def create_app(config_class=Config):
     from routes.quality import quality_bp
 
     from routes.quality_enhanced import quality_enhanced_bp
+    from routes.spc import spc_bp
 
     from routes.reports import reports_bp
 
@@ -557,6 +515,11 @@ def create_app(config_class=Config):
 
     app.register_blueprint(purchasing_bp, url_prefix='/api/purchasing')
 
+    from routes.purchase_requisition import pr_bp
+    app.register_blueprint(pr_bp, url_prefix='/api/purchasing')
+
+    app.register_blueprint(purchase_invoice_bp, url_prefix='/api/purchasing')
+
     app.register_blueprint(production_bp, url_prefix='/api/production')
 
     
@@ -603,6 +566,7 @@ def create_app(config_class=Config):
     app.register_blueprint(quality_bp, url_prefix='/api/quality')
 
     app.register_blueprint(quality_enhanced_bp, url_prefix='/api/quality-enhanced')
+    app.register_blueprint(spc_bp, url_prefix='/api/spc')
 
     app.register_blueprint(reports_bp, url_prefix='/api/reports')
 

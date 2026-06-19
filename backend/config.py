@@ -59,3 +59,9 @@ class Config:
     
     # Frontend URL (for password reset links)
     FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+    # Redis & Caching
+    REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+    CACHE_TYPE = 'redis'
+    CACHE_REDIS_URL = REDIS_URL
+    CACHE_DEFAULT_TIMEOUT = 300  # 5 minutes default
+    CACHE_KEY_PREFIX = 'erp_'
