@@ -1,0 +1,78 @@
+CREATE TABLE IF NOT EXISTS expenses (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    expense_number VARCHAR(50) UNIQUE NOT NULL,
+    employee_id INTEGER NOT NULL,
+    expense_date DATE NOT NULL,
+    expense_category VARCHAR(100) NOT NULL,
+    expense_type VARCHAR(50) DEFAULT 'Cash',
+    description TEXT NOT NULL,
+    amount DECIMAL(15,2) NOT NULL,
+    currency VARCHAR(10) DEFAULT 'IDR',
+    exchange_rate DECIMAL(15,6) DEFAULT 1.0,
+    reference_number VARCHAR(100),
+    vendor_name VARCHAR(200),
+    cost_center_id INTEGER,
+    account_id INTEGER,
+    notes TEXT,
+    status VARCHAR(20) DEFAULT 'draft',
+    receipt_file_name VARCHAR(255),
+    receipt_file_path VARCHAR(500),
+    receipt_file_type VARCHAR(50),
+    receipt_file_size INTEGER,
+    submitted_at TIMESTAMP,
+    submitted_by INTEGER,
+    approved_at TIMESTAMP,
+    approved_by INTEGER,
+    rejected_at TIMESTAMP,
+    rejected_by INTEGER,
+    rejection_reason TEXT,
+    reimbursement_id INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by INTEGER,
+    updated_at TIMESTAMP,
+    updated_by INTEGER,
+    FOREIGN KEY (employee_id) REFERENCES employees(id),
+    FOREIGN KEY (cost_center_id) REFERENCES cost_centers(id),
+    FOREIGN KEY (account_id) REFERENCES accounts(id),
+    FOREIGN KEY (submitted_by) REFERENCES users(id),
+    FOREIGN KEY (approved_by) REFERENCES users(id),
+    FOREIGN KEY (rejected_by) REFERENCES users(id),
+    FOREIGN KEY (created_by) REFERENCES users(id),
+    FOREIGN KEY (updated_by) REFERENCES users(id),
+    FOREIGN KEY (reimbursement_id) REFERENCES reimbursements(id)
+);
+ 
+CREATE TABLE IF NOT EXISTS reimbursements (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    reimbursement_number VARCHAR(50) UNIQUE NOT NULL,
+    employee_id INTEGER NOT NULL,
+    total_amount DECIMAL(15,2) NOT NULL,
+    currency VARCHAR(10) DEFAULT 'IDR',
+    payment_method VARCHAR(50),
+    payment_reference VARCHAR(100),
+    paid_at TIMESTAMP,
+    paid_by INTEGER,
+    status VARCHAR(20) DEFAULT 'pending',
+    notes TEXT,
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    submitted_by INTEGER,
+    approved_at TIMESTAMP,
+    approved_by INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by INTEGER,
+    updated_at TIMESTAMP,
+    updated_by INTEGER,
+    FOREIGN KEY (employee_id) REFERENCES employees(id),
+    FOREIGN KEY (paid_by) REFERENCES users(id),
+    FOREIGN KEY (submitted_by) REFERENCES users(id),
+    FOREIGN KEY (approved_by) REFERENCES users(id),
+    FOREIGN KEY (created_by) REFERENCES users(id),
+    FOREIGN KEY (updated_by) REFERENCES users(id)
+);
+ 
+CREATE INDEX IF NOT EXISTS idx_expenses_employee_id ON expenses(employee_id);
+CREATE INDEX IF NOT EXISTS idx_expenses_status ON expenses(status);
+CREATE INDEX IF NOT EXISTS idx_expenses_expense_date ON expenses(expense_date);
+CREATE INDEX IF NOT EXISTS idx_expenses_reimbursement_id ON expenses(reimbursement_id);
+CREATE INDEX IF NOT EXISTS idx_reimbursements_employee_id ON reimbursements(employee_id);
+CREATE INDEX IF NOT EXISTS idx_reimbursements_status ON reimbursements(status);
