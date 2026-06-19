@@ -1,4 +1,7 @@
-from flask import Blueprint, request, jsonify, send_file
+from flask import Blueprint, request, jsonify, send_file, current_app
+import redis
+import os
+import json
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, Machine, WorkOrder, ProductionRecord, BillOfMaterials, BOMItem, ProductionSchedule, Product, Employee
 from models.production import RemainingStock
@@ -60,7 +63,7 @@ production_bp = Blueprint('production', __name__)
 @jwt_required()
 def get_machines():
     """
-    Get all active machines
+    Get all active machines (cached for 10 minutes)
     ---
     tags:
       - Production
@@ -99,8 +102,18 @@ def get_machines():
         description: Server error
     """
     try:
+        # Try to get from Redis cache (direct approach)
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            cached_data = r.get('production_machines')
+            if cached_data:
+                return jsonify(json.loads(cached_data)), 200
+        except Exception as cache_error:
+            print(f"Redis cache error (using fallback): {cache_error}")
+        
         machines = Machine.query.filter_by(is_active=True).all()
-        return jsonify({
+        result = {
             'machines': [{
                 'id': m.id,
                 'code': m.code,
@@ -123,7 +136,17 @@ def get_machines():
                 'created_at': m.created_at.isoformat() if m.created_at else None,
                 'updated_at': m.updated_at.isoformat() if m.updated_at else None
             } for m in machines]
-        }), 200
+        }
+        
+        # Cache for 10 minutes (600 seconds) - direct Redis
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            r.setex('production_machines', 600, json.dumps(result))
+        except Exception as cache_error:
+            print(f"Redis cache set error (continuing without cache): {cache_error}")
+        
+        return jsonify(result), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -242,6 +265,15 @@ def get_or_update_machine(id):
                     pass
             
             db.session.commit()
+            
+            # Invalidate cache (direct Redis)
+            try:
+                redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+                r = redis.from_url(redis_url)
+                r.delete('production_machines')
+                r.delete(f'machine_{id}')
+            except Exception as cache_error:
+                print(f"Redis cache invalidation error (continuing): {cache_error}")
             
             # Debug: show what was saved
             print(f"=== SAVED MACHINE {id} ===")
@@ -495,6 +527,18 @@ def get_work_orders():
         per_page = request.args.get('per_page', 50, type=int)
         status = request.args.get('status')
         
+        # Try cache for first page without filters (most common case)
+        cache_key = f'production_work_orders_page{page}_per{per_page}_status{status or "all"}'
+        if page == 1 and not status:
+            try:
+                redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+                r = redis.from_url(redis_url)
+                cached_data = r.get(cache_key)
+                if cached_data:
+                    return jsonify(json.loads(cached_data)), 200
+            except Exception as cache_error:
+                print(f"Redis cache error (using fallback): {cache_error}")
+        
         query = WorkOrder.query
         if status:
             query = query.filter_by(status=status)
@@ -525,6 +569,7 @@ def get_work_orders():
             result.append({
                 'id': wo.id,
                 'wo_number': wo.wo_number,
+                'product_id': wo.product_id,
                 'product_name': get_product_name_from_new(wo.product.code if wo.product else None) or (wo.product.name if wo.product else 'Unknown Product'),
                 'quantity': float(wo.quantity) if wo.quantity else 0,
                 'quantity_produced': float(wo.quantity_produced) if wo.quantity_produced else 0,
@@ -551,7 +596,7 @@ def get_work_orders():
             sqla_func.coalesce(sqla_func.sum(WorkOrder.quantity_produced), 0).label('total_produced')
         ).first()
         
-        return jsonify({
+        response_data = {
             'work_orders': result,
             'total': wos.total,
             'page': page,
@@ -563,7 +608,18 @@ def get_work_orders():
                 'completed': summary_query.completed if summary_query else 0,
                 'total_produced': float(summary_query.total_produced) if summary_query else 0
             }
-        }), 200
+        }
+        
+        # Cache for 2 minutes (120 seconds) - direct Redis
+        if page == 1 and not status:
+            try:
+                redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+                r = redis.from_url(redis_url)
+                r.setex(cache_key, 120, json.dumps(response_data))
+            except Exception as cache_error:
+                print(f"Redis cache set error (continuing without cache): {cache_error}")
+        
+        return jsonify(response_data), 200
     except Exception as e:
         print(f"Work orders error: {e}")
         import traceback
@@ -609,6 +665,7 @@ def get_work_orders_status_tracking():
             result.append({
                 'id': wo.id,
                 'wo_number': wo.wo_number,
+                'product_id': wo.product_id,
                 'product_name': wo.product.name if wo.product else 'Unknown',
                 'machine_name': wo.machine.name if wo.machine else None,
                 'quantity': quantity,
@@ -740,6 +797,7 @@ def get_work_order(id):
         response_data = {
             'id': wo.id,
             'wo_number': wo.wo_number,
+                'product_id': wo.product_id,
             'product_id': wo.product_id,
             'product_name': get_product_name_from_new(wo.product.code if wo.product else None) or (wo.product.name if wo.product else 'Unknown Product'),
             'product_code': wo.product.code if wo.product else None,
@@ -879,6 +937,14 @@ def get_work_order(id):
 @jwt_required()
 def create_work_order():
     try:
+        # Invalidate cache
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            r.delete('production_work_orders_page1_per50_statusall')
+        except Exception as cache_error:
+            print(f"Redis cache invalidation error (continuing): {cache_error}")
+        
         data = request.get_json()
         user_id = get_jwt_identity()
         
@@ -925,6 +991,14 @@ def create_work_order():
 def update_work_order(id):
     """Update work order"""
     try:
+        # Invalidate cache
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            r.delete('production_work_orders_page1_per50_statusall')
+        except Exception as cache_error:
+            print(f"Redis cache invalidation error (continuing): {cache_error}")
+        
         wo = db.session.get(WorkOrder, id)
         if not wo:
             return jsonify({'error': 'Work order not found'}), 404
@@ -974,6 +1048,14 @@ def update_work_order(id):
 def delete_work_order(id):
     """Delete work order"""
     try:
+        # Invalidate cache
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            r.delete('production_work_orders_page1_per50_statusall')
+        except Exception as cache_error:
+            print(f"Redis cache invalidation error (continuing): {cache_error}")
+        
         wo = db.session.get(WorkOrder, id)
         if not wo:
             return jsonify({'error': 'Work order not found'}), 404
@@ -1056,6 +1138,20 @@ def delete_work_order(id):
         
         db.session.delete(wo)
         db.session.commit()
+        
+        # Invalidate OEE cache
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            keys = r.keys('oee_daily_controller_*')
+            if keys:
+                r.delete(*keys)
+            keys_records = r.keys('oee_records_*')
+            if keys_records:
+                r.delete(*keys_records)
+        except Exception as cache_error:
+            print(f"Redis cache invalidation error (continuing): {cache_error}")
+            
         return jsonify({'message': 'Work order deleted successfully'}), 200
     except Exception as e:
         db.session.rollback()
@@ -1150,6 +1246,7 @@ def update_work_order_status(id):
         response = {
             'message': f'Work order status updated to {new_status}',
             'wo_number': wo.wo_number,
+                'product_id': wo.product_id,
             'old_status': old_status,
             'new_status': new_status
         }
@@ -1220,6 +1317,7 @@ def get_work_order_production_records(id):
                 'work_order_id': sp.work_order_id,
                 'production_date': sp.production_date.isoformat() if sp.production_date else None,
                 'shift': sp.shift,
+                'sub_shift': sp.sub_shift,
                 'quantity_good': float(sp.good_quantity) if sp.good_quantity else 0,
                 'downtime_minutes': sp.downtime_minutes or 0,
                 'runtime': sp.actual_runtime or 0,
@@ -1742,6 +1840,19 @@ def create_work_order_production_record(id):
         except Exception as notif_err:
             print(f"Notification error (non-critical): {notif_err}")
         
+        # Invalidate OEE cache
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            keys = r.keys('oee_daily_controller_*')
+            if keys:
+                r.delete(*keys)
+            keys_records = r.keys('oee_records_*')
+            if keys_records:
+                r.delete(*keys_records)
+        except Exception as cache_error:
+            print(f"Redis cache invalidation error (continuing): {cache_error}")
+
         return jsonify({
             'message': 'Production record created',
             'record_id': record.id,
@@ -2065,6 +2176,7 @@ def complete_work_order(id):
             'success': True,
             'message': f'Work order completed. {qty_good} units received to warehouse.' if qty_good > 0 else 'Work order completed.',
             'wo_number': wo.wo_number,
+                'product_id': wo.product_id,
             'quantity_received': qty_good
         }
         if integration_results:
@@ -2110,12 +2222,14 @@ def bulk_complete_work_orders():
                 completed_list.append({
                     'id': wo.id,
                     'wo_number': wo.wo_number,
+                'product_id': wo.product_id,
                     'quantity_good': qty_good
                 })
             except Exception as item_err:
                 errors.append({
                     'id': wo.id,
                     'wo_number': wo.wo_number,
+                'product_id': wo.product_id,
                     'error': str(item_err)
                 })
         
@@ -2203,6 +2317,20 @@ def create_production_record():
         wo.quantity_scrap = float(wo.quantity_scrap or 0) + float(data.get('quantity_scrap', 0))
         
         db.session.commit()
+        
+        # Invalidate OEE cache
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            keys = r.keys('oee_daily_controller_*')
+            if keys:
+                r.delete(*keys)
+            keys_records = r.keys('oee_records_*')
+            if keys_records:
+                r.delete(*keys_records)
+        except Exception as cache_error:
+            print(f"Redis cache invalidation error (continuing): {cache_error}")
+            
         return jsonify({'message': 'Production record created', 'record_id': record.id}), 201
     except Exception as e:
         db.session.rollback()
@@ -2432,6 +2560,19 @@ def update_production_record(record_id):
         
         db.session.commit()
         
+        # Invalidate OEE cache
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            keys = r.keys('oee_daily_controller_*')
+            if keys:
+                r.delete(*keys)
+            keys_records = r.keys('oee_records_*')
+            if keys_records:
+                r.delete(*keys_records)
+        except Exception as cache_error:
+            print(f"Redis cache invalidation error (continuing): {cache_error}")
+            
         return jsonify({
             'message': 'Production record updated successfully',
             'record': {
@@ -2487,8 +2628,18 @@ def get_boms():
         description: Server error
     """
     try:
+        # Try cache
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            cached_data = r.get('production_boms')
+            if cached_data:
+                return jsonify(json.loads(cached_data)), 200
+        except Exception as cache_error:
+            print(f"Redis cache error (using fallback): {cache_error}")
+        
         boms = BillOfMaterials.query.filter_by(is_active=True).all()
-        return jsonify({
+        result = {
             'boms': [{
                 'id': b.id,
                 'bom_number': b.bom_number,
@@ -2497,7 +2648,17 @@ def get_boms():
                 'batch_size': float(b.batch_size),
                 'item_count': len(b.items)
             } for b in boms]
-        }), 200
+        }
+        
+        # Cache for 5 minutes (300 seconds) - direct Redis
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            r.setex('production_boms', 300, json.dumps(result))
+        except Exception as cache_error:
+            print(f"Redis cache set error (continuing without cache): {cache_error}")
+        
+        return jsonify(result), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -2567,6 +2728,14 @@ def create_bom():
         description: Server error
     """
     try:
+        # Invalidate cache
+        try:
+            redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+            r = redis.from_url(redis_url)
+            r.delete('production_boms')
+        except Exception as cache_error:
+            print(f"Redis cache invalidation error (continuing): {cache_error}")
+        
         data = request.get_json()
         user_id = get_jwt_identity()
         
@@ -3293,6 +3462,7 @@ def get_work_order_bom(wo_id):
                 'source': 'work_order',
                 'work_order_id': wo_id,
                 'wo_number': wo.wo_number,
+                'product_id': wo.product_id,
                 'bom_items': [{
                     'id': item.id,
                     'line_number': item.line_number,
@@ -3332,6 +3502,7 @@ def get_work_order_bom(wo_id):
                 'source': 'master_bom',
                 'work_order_id': wo_id,
                 'wo_number': wo.wo_number,
+                'product_id': wo.product_id,
                 'bom_id': bom.id,
                 'bom_number': bom.bom_number,
                 'pack_per_carton': bom.pack_per_carton or 1,
@@ -3356,6 +3527,7 @@ def get_work_order_bom(wo_id):
             'source': 'none',
             'work_order_id': wo_id,
             'wo_number': wo.wo_number,
+                'product_id': wo.product_id,
             'bom_items': [],
             'message': 'No BOM associated with this work order'
         }), 200
