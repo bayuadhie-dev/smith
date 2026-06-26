@@ -173,9 +173,9 @@ const navigate = useNavigate()
           setBom(bomData)
           setShowBOMDetails(true)
           
-          // Auto-fill pack per karton from BOM if available
+          // Auto-fill pack per karton dari BOM hanya jika user belum mengubah (masih default 1)
           const ppk = bomData.pack_per_carton || bomProduct.pack_per_carton
-          if (ppk && ppk > 1) {
+          if (ppk && ppk > 1 && packPerKarton <= 1) {
             setPackPerKarton(ppk)
             setTargetCalc(prev => ({ ...prev, pack_per_karton: String(ppk) }))
           }
