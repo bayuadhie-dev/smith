@@ -1,0 +1,2301 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Keyword Manager - GMS ERP</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ═══════════════════════════════════════════════
+       RESET & BASE
+       ═══════════════════════════════════════════════ */
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-tertiary: #334155;
+      --bg-card: rgba(30, 41, 59, 0.6);
+      --bg-card-hover: rgba(51, 65, 85, 0.5);
+      --border-color: rgba(148, 163, 184, 0.12);
+      --border-glow: rgba(148, 163, 184, 0.25);
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --glass-bg: rgba(15, 23, 42, 0.75);
+      --glass-border: rgba(148, 163, 184, 0.08);
+      --cat-istirahat: #a855f7;
+      --cat-idle: #f97316;
+      --cat-design: #3b82f6;
+      --cat-mesin: #ef4444;
+      --cat-operator: #f59e0b;
+      --cat-material: #eab308;
+      --cat-others: #6b7280;
+      --success: #22c55e;
+      --error: #ef4444;
+      --info: #3b82f6;
+      --warning: #f59e0b;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      --shadow-sm: 0 2px 8px rgba(0,0,0,0.2);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.3);
+      --shadow-lg: 0 8px 32px rgba(0,0,0,0.4);
+      --shadow-glow: 0 0 30px rgba(56, 189, 248, 0.05);
+      --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* Ambient background orbs */
+    body::before,
+    body::after {
+      content: '';
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.07;
+      pointer-events: none;
+      z-index: 0;
+    }
+    body::before {
+      width: 600px; height: 600px;
+      background: var(--cat-design);
+      top: -150px; left: -100px;
+    }
+    body::after {
+      width: 500px; height: 500px;
+      background: var(--cat-istirahat);
+      bottom: -100px; right: -80px;
+    }
+
+    /* ═══════════════════════════════════════════════
+       SCROLLBAR
+       ═══════════════════════════════════════════════ */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb {
+      background: var(--bg-tertiary);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+    /* ═══════════════════════════════════════════════
+       LAYOUT SHELL
+       ═══════════════════════════════════════════════ */
+    .app-container {
+      position: relative;
+      z-index: 1;
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 24px 32px 32px;
+    }
+
+    /* ═══════════════════════════════════════════════
+       HEADER
+       ═══════════════════════════════════════════════ */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 32px;
+      background: var(--bg-card);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xl);
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-md), var(--shadow-glow);
+    }
+    .header-left { display: flex; flex-direction: column; gap: 4px; }
+    .header-title {
+      font-size: 1.75rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #f1f5f9 0%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .header-subtitle {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+    .header-stats {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px;
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.15);
+      border-radius: var(--radius-md);
+    }
+    .stats-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+    .stats-text {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+    .stats-count {
+      font-weight: 700;
+      color: #38bdf8;
+    }
+
+    /* ═══════════════════════════════════════════════
+       MAIN GRID
+       ═══════════════════════════════════════════════ */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    /* ═══════════════════════════════════════════════
+       SIDEBAR — CATEGORY LIST
+       ═══════════════════════════════════════════════ */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .sidebar-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      padding: 0 12px 8px;
+    }
+    .cat-card {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--transition-base);
+      overflow: hidden;
+      user-select: none;
+    }
+    .cat-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--cat-color, var(--text-muted));
+      border-radius: 0 2px 2px 0;
+      opacity: 0;
+      transition: opacity var(--transition-base);
+    }
+    .cat-card:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-glow);
+      transform: translateX(4px);
+    }
+    .cat-card:hover::before { opacity: 0.6; }
+    .cat-card.active {
+      background: rgba(56, 189, 248, 0.06);
+      border-color: rgba(56, 189, 248, 0.2);
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.04);
+    }
+    .cat-card.active::before { opacity: 1; }
+    .cat-icon {
+      width: 38px; height: 38px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: var(--radius-sm);
+      font-size: 1.2rem;
+      background: rgba(255,255,255,0.04);
+      flex-shrink: 0;
+    }
+    .cat-info { flex: 1; min-width: 0; }
+    .cat-name {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      text-transform: capitalize;
+    }
+    .cat-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 24px;
+      height: 24px;
+      padding: 0 8px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.06);
+      color: var(--text-secondary);
+      flex-shrink: 0;
+      transition: all var(--transition-base);
+    }
+    .cat-card.active .cat-badge {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+    }
+
+    /* ═══════════════════════════════════════════════
+       MAIN PANEL
+       ═══════════════════════════════════════════════ */
+    .main-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* ACTION BAR */
+    .action-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 16px 20px;
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+    }
+    .search-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 200px;
+    }
+    .search-wrap svg {
+      position: absolute;
+      left: 14px; top: 50%;
+      transform: translateY(-50%);
+      width: 16px; height: 16px;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+    .search-input {
+      width: 100%;
+      padding: 10px 14px 10px 40px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.875rem;
+      transition: all var(--transition-base);
+      outline: none;
+    }
+    .search-input::placeholder { color: var(--text-muted); }
+    .search-input:focus {
+      border-color: var(--cat-design);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+      background: rgba(255,255,255,0.06);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 18px;
+      font-family: inherit;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all var(--transition-base);
+      white-space: nowrap;
+      position: relative;
+      overflow: hidden;
+      outline: none;
+    }
+    .btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0);
+      transition: background var(--transition-fast);
+    }
+    .btn:hover::after { background: rgba(255,255,255,0.08); }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+    .btn:disabled::after { display: none; }
+
+    .btn-green  { background: linear-gradient(135deg, #16a34a, #15803d); color: #fff; }
+    .btn-blue   { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; }
+    .btn-orange { background: linear-gradient(135deg, #ea580c, #c2410c); color: #fff; }
+    .btn-purple { background: linear-gradient(135deg, #9333ea, #7e22ce); color: #fff; }
+    .btn-gray   { background: linear-gradient(135deg, #475569, #334155); color: #cbd5e1; }
+    .btn-red    { background: linear-gradient(135deg, #dc2626, #b91c1c); color: #fff; }
+    .btn-sm     { padding: 7px 12px; font-size: 0.75rem; }
+
+    .btn .spinner {
+      display: none;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    .btn.loading .spinner { display: inline-block; }
+    .btn.loading .btn-text { opacity: 0.5; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ═══════════════════════════════════════════════
+       TABLE
+       ═══════════════════════════════════════════════ */
+    .table-container {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .table-wrap {
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    thead th {
+      padding: 14px 18px;
+      text-align: left;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      background: rgba(255,255,255,0.02);
+      border-bottom: 1px solid var(--border-color);
+      white-space: nowrap;
+    }
+    tbody tr {
+      transition: background var(--transition-fast);
+      border-bottom: 1px solid rgba(148,163,184,0.05);
+    }
+    tbody tr:nth-child(even) { background: rgba(255,255,255,0.01); }
+    tbody tr:hover { background: rgba(56, 189, 248, 0.04); }
+    tbody td {
+      padding: 12px 18px;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      vertical-align: middle;
+    }
+    .td-keyword {
+      font-weight: 600;
+      color: var(--text-primary);
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 0.8125rem;
+    }
+    .td-no {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      font-weight: 500;
+      width: 50px;
+    }
+
+    /* Category badge */
+    .kategori-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 12px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    .badge-istirahat { background: rgba(168,85,247,0.12); color: #c084fc; }
+    .badge-idle      { background: rgba(249,115,22,0.12); color: #fb923c; }
+    .badge-design    { background: rgba(59,130,246,0.12); color: #60a5fa; }
+    .badge-mesin     { background: rgba(239,68,68,0.12); color: #f87171; }
+    .badge-operator  { background: rgba(245,158,11,0.12); color: #fbbf24; }
+    .badge-material  { background: rgba(234,179,8,0.12); color: #facc15; }
+    .badge-others    { background: rgba(107,114,128,0.12); color: #9ca3af; }
+
+    .td-actions {
+      display: flex;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .icon-btn {
+      width: 34px; height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      font-size: 0.875rem;
+      outline: none;
+    }
+    .icon-btn:hover {
+      background: rgba(255,255,255,0.06);
+      border-color: var(--border-glow);
+      color: var(--text-primary);
+    }
+    .icon-btn.delete:hover {
+      background: rgba(239,68,68,0.1);
+      border-color: rgba(239,68,68,0.3);
+      color: var(--error);
+    }
+
+    /* Empty & loading states */
+    .empty-state, .loading-state {
+      padding: 64px 24px;
+      text-align: center;
+    }
+    .empty-state .empty-icon {
+      font-size: 3rem;
+      margin-bottom: 16px;
+      opacity: 0.3;
+    }
+    .empty-state .empty-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+    .empty-state .empty-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .loading-state .table-spinner {
+      width: 32px; height: 32px;
+      border: 3px solid var(--bg-tertiary);
+      border-top-color: var(--cat-design);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 12px;
+    }
+
+    /* ═══════════════════════════════════════════════
+       MODALS
+       ═══════════════════════════════════════════════ */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all var(--transition-base);
+      padding: 24px;
+    }
+    .modal-overlay.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+    .modal {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-lg), 0 0 80px rgba(0,0,0,0.3);
+      width: 100%;
+      max-width: 520px;
+      max-height: 90vh;
+      overflow-y: auto;
+      transform: translateY(20px) scale(0.97);
+      transition: transform var(--transition-slow);
+    }
+    .modal-overlay.visible .modal {
+      transform: translateY(0) scale(1);
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 28px 0;
+    }
+    .modal-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .modal-close {
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      border: none; border-radius: 8px;
+      background: rgba(255,255,255,0.04);
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: all var(--transition-fast);
+    }
+    .modal-close:hover {
+      background: rgba(239,68,68,0.1);
+      color: var(--error);
+    }
+    .modal-body { padding: 20px 28px 28px; }
+
+    /* Form elements */
+    .form-group { margin-bottom: 18px; }
+    .form-group:last-child { margin-bottom: 0; }
+    .form-label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .form-input,
+    .form-select,
+    .form-textarea {
+      width: 100%;
+      padding: 11px 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.9rem;
+      transition: all var(--transition-base);
+      outline: none;
+    }
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+      border-color: var(--cat-design);
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+      background: rgba(255,255,255,0.06);
+    }
+    .form-select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M4.646 5.646a.5.5 0 0 1 .708 0L8 8.293l2.646-2.647a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-3-3a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
+    }
+    .form-select option {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+    .form-textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 24px;
+    }
+
+    /* Test result */
+    .test-result {
+      margin-top: 20px;
+      padding: 18px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      display: none;
+    }
+    .test-result.show { display: block; animation: fadeSlideIn 0.3s ease; }
+    .test-result-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+    .test-result-category {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .test-result-keyword {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    .test-result-keyword mark {
+      background: rgba(250, 204, 21, 0.2);
+      color: #fde047;
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
+
+    /* Sync file list */
+    .sync-file-list {
+      list-style: none;
+      margin: 16px 0;
+    }
+    .sync-file-list li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(148,163,184,0.06);
+      border-radius: var(--radius-sm);
+      margin-bottom: 6px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+    .sync-file-list li .file-icon { font-size: 1rem; }
+
+    .warning-box {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 14px 16px;
+      background: rgba(245,158,11,0.08);
+      border: 1px solid rgba(245,158,11,0.2);
+      border-radius: var(--radius-sm);
+      margin-top: 12px;
+    }
+    .warning-box .warn-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+    .warning-box .warn-text {
+      font-size: 0.85rem;
+      color: #fbbf24;
+      line-height: 1.5;
+    }
+
+    .danger-box {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 14px 16px;
+      background: rgba(239,68,68,0.08);
+      border: 1px solid rgba(239,68,68,0.2);
+      border-radius: var(--radius-sm);
+      margin: 12px 0;
+    }
+    .danger-box .warn-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+    .danger-box .warn-text {
+      font-size: 0.85rem;
+      color: #f87171;
+      line-height: 1.5;
+    }
+    .regen-count {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      text-align: center;
+      margin: 12px 0;
+    }
+    .regen-count-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    /* ═══════════════════════════════════════════════
+       OPERATION LOG PANEL
+       ═══════════════════════════════════════════════ */
+    .log-panel {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .log-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      cursor: pointer;
+      user-select: none;
+      transition: background var(--transition-fast);
+    }
+    .log-header:hover { background: rgba(255,255,255,0.02); }
+    .log-header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .log-header-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    .log-count-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.06);
+      color: var(--text-muted);
+    }
+    .log-toggle {
+      font-size: 1rem;
+      color: var(--text-muted);
+      transition: transform var(--transition-base);
+    }
+    .log-panel.expanded .log-toggle { transform: rotate(180deg); }
+    .log-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height var(--transition-slow);
+    }
+    .log-panel.expanded .log-body { max-height: 300px; }
+    .log-content {
+      padding: 0 20px 16px;
+      max-height: 270px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .log-entry {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      animation: fadeSlideIn 0.25s ease;
+    }
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .log-entry.success { background: rgba(34,197,94,0.06); }
+    .log-entry.error   { background: rgba(239,68,68,0.06); }
+    .log-entry.info    { background: rgba(59,130,246,0.06); }
+    .log-entry.warning { background: rgba(245,158,11,0.06); }
+    .log-time {
+      color: var(--text-muted);
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.7rem;
+      white-space: nowrap;
+      margin-top: 1px;
+    }
+    .log-msg { color: var(--text-secondary); line-height: 1.4; }
+    .log-msg.success { color: #4ade80; }
+    .log-msg.error   { color: #f87171; }
+    .log-msg.info    { color: #60a5fa; }
+    .log-msg.warning { color: #fbbf24; }
+    .log-empty {
+      text-align: center;
+      padding: 24px;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    /* ═══════════════════════════════════════════════
+       TOAST NOTIFICATIONS
+       ═══════════════════════════════════════════════ */
+    .toast-container {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+    .toast {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      min-width: 300px;
+      max-width: 420px;
+      pointer-events: auto;
+      animation: toastIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .toast.removing {
+      animation: toastOut 0.3s ease forwards;
+    }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateX(60px) scale(0.95); }
+      to   { opacity: 1; transform: translateX(0) scale(1); }
+    }
+    @keyframes toastOut {
+      to { opacity: 0; transform: translateX(60px) scale(0.95); }
+    }
+    .toast-icon { font-size: 1.15rem; flex-shrink: 0; }
+    .toast-msg {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      flex: 1;
+    }
+    .toast.success { border-left: 3px solid var(--success); }
+    .toast.error   { border-left: 3px solid var(--error); }
+    .toast.info    { border-left: 3px solid var(--info); }
+    .toast.warning { border-left: 3px solid var(--warning); }
+
+    /* ═══════════════════════════════════════════════
+       RESPONSIVE
+       ═══════════════════════════════════════════════ */
+    @media (max-width: 1024px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+      .sidebar {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .sidebar-title { width: 100%; }
+      .cat-card {
+        flex: 1 1 auto;
+        min-width: 120px;
+      }
+      .cat-card:hover { transform: translateY(-2px); }
+    }
+    @media (max-width: 768px) {
+      .app-container { padding: 16px; }
+      .header { flex-direction: column; gap: 16px; padding: 20px; }
+      .action-bar { flex-direction: column; align-items: stretch; }
+      .search-wrap { min-width: unset; }
+      .btn { justify-content: center; }
+    }
+
+    /* ═══════════════════════════════════════════════
+       DELETE CONFIRM INLINE
+       ═══════════════════════════════════════════════ */
+    .confirm-delete-row td {
+      background: rgba(239,68,68,0.06) !important;
+    }
+    .confirm-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .confirm-text {
+      font-size: 0.8rem;
+      color: #f87171;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <!-- ═══════════ HEADER ═══════════ -->
+  <header class="header">
+    <div class="header-left">
+      <h1 class="header-title">⚙️ Downtime Keyword Manager</h1>
+      <p class="header-subtitle">Kelola keyword downtime dari satu tempat</p>
+    </div>
+    <div class="header-stats">
+      <span class="stats-dot"></span>
+      <span class="stats-text">Total keyword: <span class="stats-count" id="totalKeywords">—</span></span>
+    </div>
+  </header>
+
+  <!-- ═══════════ MAIN GRID ═══════════ -->
+  <div class="main-grid">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="categorySidebar">
+      <div class="sidebar-title">Kategori</div>
+      <!-- Populated by JS -->
+    </aside>
+
+    <!-- MAIN PANEL -->
+    <div class="main-panel">
+      <!-- ACTION BAR -->
+      <div class="action-bar">
+        <div class="search-wrap">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" class="search-input" id="searchInput" placeholder="Cari keyword..." autocomplete="off">
+        </div>
+        <button class="btn btn-green" onclick="openAddModal()">
+          <span class="btn-text">+ Tambah Keyword</span>
+        </button>
+        <button class="btn btn-blue" onclick="openSyncModal()" id="btnSync">
+          <span class="spinner"></span>
+          <span class="btn-text">🔄 Sync ke File</span>
+        </button>
+        <button class="btn btn-orange" onclick="openRegenModal()" id="btnRegen">
+          <span class="spinner"></span>
+          <span class="btn-text">🔃 Regenerate</span>
+        </button>
+        <button class="btn btn-purple" onclick="openTestModal()">
+          <span class="btn-text">🧪 Test Keyword</span>
+        </button>
+        <button class="btn btn-gray" onclick="importFromCode()" id="btnImport">
+          <span class="spinner"></span>
+          <span class="btn-text">📥 Import dari Code</span>
+        </button>
+        <button class="btn" onclick="openUsageModal()" style="background:rgba(20,184,166,0.15);border-color:rgba(20,184,166,0.4);color:#2dd4bf">
+          <span class="btn-text">📊 Penggunaan</span>
+        </button>
+      </div>
+
+      <!-- TABLE -->
+      <div class="table-container">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:50px">No</th>
+                <th>Keyword</th>
+                <th>Kategori</th>
+                <th>Catatan</th>
+                <th style="width:100px">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="keywordTableBody">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+        <div id="tableEmptyState" class="empty-state" style="display:none">
+          <div class="empty-icon">📭</div>
+          <div class="empty-title">Belum ada keyword</div>
+          <div class="empty-desc">Klik '+ Tambah Keyword' atau 'Import dari Code' untuk memulai</div>
+        </div>
+        <div id="tableLoading" class="loading-state" style="display:none">
+          <div class="table-spinner"></div>
+          <div style="color:var(--text-muted); font-size:0.85rem">Memuat data...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ OPERATION LOG ═══════════ -->
+  <div class="log-panel" id="logPanel">
+    <div class="log-header" onclick="toggleLog()">
+      <div class="log-header-left">
+        <span class="log-header-title">📋 Operation Log</span>
+        <span class="log-count-badge" id="logCountBadge">0</span>
+      </div>
+      <span class="log-toggle">▼</span>
+    </div>
+    <div class="log-body">
+      <div class="log-content" id="logContent">
+        <div class="log-empty" id="logEmpty">Belum ada log operasi</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ TOAST CONTAINER ═══════════ -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ═══════════ MODAL: ADD / EDIT KEYWORD ═══════════ -->
+<div class="modal-overlay" id="modalKeyword">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modalKeywordTitle">Tambah Keyword</h3>
+      <button class="modal-close" onclick="closeModal('modalKeyword')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editKeywordId">
+
+      <!-- KATEGORI (shown in both add & edit mode) -->
+      <div class="form-group">
+        <label class="form-label">Kategori</label>
+        <select class="form-select" id="inputCategory">
+          <option value="istirahat">🕌 Istirahat</option>
+          <option value="idle">⏳ Idle</option>
+          <option value="design">🎨 Design</option>
+          <option value="mesin">⚙️ Mesin</option>
+          <option value="operator">👷 Operator</option>
+          <option value="material">📦 Material</option>
+          <option value="others">📋 Others</option>
+        </select>
+      </div>
+
+      <!-- SINGLE KEYWORD (edit mode only) -->
+      <div class="form-group" id="singleKeywordGroup">
+        <label class="form-label">Keyword</label>
+        <input type="text" class="form-input" id="inputKeyword" placeholder="Contoh: istirahat sholat">
+      </div>
+
+      <!-- MULTI KEYWORD (add mode only) -->
+      <div id="multiKeywordGroup" style="display:none">
+        <div class="form-group" style="margin-bottom:8px">
+          <label class="form-label" style="display:flex;align-items:center;justify-content:space-between">
+            <span>Keyword</span>
+            <span style="font-size:0.75rem;color:var(--text-muted);font-weight:400">Tambah banyak sekaligus</span>
+          </label>
+          <div id="keywordInputList" style="display:flex;flex-direction:column;gap:8px"></div>
+          <button type="button" onclick="addKeywordRow()" style="
+            margin-top:8px;
+            display:flex;align-items:center;gap:6px;
+            background:none;border:1px dashed var(--border-color);
+            color:var(--text-muted);border-radius:var(--radius-sm);
+            padding:7px 14px;cursor:pointer;font-size:0.82rem;width:100%;
+            justify-content:center;transition:all 0.2s
+          " onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+             onmouseout="this.style.borderColor='var(--border-color)';this.style.color='var(--text-muted)'">
+            <span style="font-size:1.1rem;line-height:1">+</span> Tambah baris keyword
+          </button>
+        </div>
+
+        <!-- Duplicate warning area -->
+        <div id="duplicateWarningBox" style="display:none;margin-bottom:12px;
+          background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);
+          border-radius:var(--radius-sm);padding:10px 14px">
+          <div style="font-size:0.78rem;font-weight:600;color:#fbbf24;margin-bottom:6px">
+            ⚠️ Keyword berikut sudah ada (akan dilewati):
+          </div>
+          <div id="duplicateList" style="font-size:0.78rem;color:var(--text-secondary)"></div>
+        </div>
+      </div>
+
+      <!-- CATATAN -->
+      <div class="form-group">
+        <label class="form-label">Catatan <span style="color:var(--text-muted);font-weight:400">(opsional)</span></label>
+        <input type="text" class="form-input" id="inputNotes" placeholder="Catatan opsional...">
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-gray" onclick="closeModal('modalKeyword')">Batal</button>
+        <button class="btn btn-green" onclick="saveKeyword()" id="btnSaveKeyword">
+          <span class="spinner"></span>
+          <span class="btn-text">Simpan</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════ MODAL: TEST KEYWORD ═══════════ -->
+<div class="modal-overlay" id="modalTest">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">🧪 Test Keyword Detection</h3>
+      <button class="modal-close" onclick="closeModal('modalTest')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Masukkan alasan downtime...</label>
+        <textarea class="form-textarea" id="inputTestText" placeholder="Contoh: menunggu bahan baku datang dari gudang" style="min-height:100px"></textarea>
+      </div>
+      <div class="form-actions" style="justify-content:flex-start">
+        <button class="btn btn-purple" onclick="testKeyword()" id="btnTestDetect">
+          <span class="spinner"></span>
+          <span class="btn-text">Deteksi</span>
+        </button>
+      </div>
+      <div class="test-result" id="testResultBox">
+        <div class="test-result-label">Hasil Deteksi</div>
+        <div class="test-result-category" id="testResultCategory"></div>
+        <div class="test-result-keyword" id="testResultKeyword"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ MODAL: SYNC CONFIRMATION ═══════════ -->
+<div class="modal-overlay" id="modalSync">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">🔄 Sync ke Semua File</h3>
+      <button class="modal-close" onclick="closeModal('modalSync')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:12px">
+        File-file berikut akan diperbarui dengan keyword terbaru dari database:
+      </p>
+      <ul class="sync-file-list">
+        <li><span class="file-icon">🐍</span> backend/utils/helpers.py</li>
+        <li><span class="file-icon">🐍</span> backend/routes/oee.py <span style="color:var(--text-muted);font-size:0.75rem">(3 idle_keywords blocks)</span></li>
+        <li><span class="file-icon">⚛️</span> frontend/.../WorkOrderProductionInput.tsx</li>
+        <li><span class="file-icon">⚛️</span> frontend/.../EditProductionRecord.tsx</li>
+      </ul>
+      <div class="warning-box">
+        <span class="warn-icon">⚠️</span>
+        <span class="warn-text">Pastikan tidak ada proses deployment yang sedang berjalan. File akan di-overwrite dengan data dari database.</span>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-gray" onclick="closeModal('modalSync')">Batal</button>
+        <button class="btn btn-blue" onclick="syncToFiles()" id="btnSyncConfirm">
+          <span class="spinner"></span>
+          <span class="btn-text">Konfirmasi Sync</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ MODAL: REGENERATE CONFIRMATION ═══════════ -->
+<div class="modal-overlay" id="modalRegen">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">🔃 Regenerate Downtime</h3>
+      <button class="modal-close" onclick="closeModal('modalRegen')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="regen-count" id="regenRecordCount">—</div>
+      <div class="regen-count-label">record downtime akan di-proses ulang</div>
+      <div class="danger-box">
+        <span class="warn-icon">🔴</span>
+        <span class="warn-text">Ini akan re-kategorisasi <strong>SEMUA</strong> downtime record di database berdasarkan keyword terbaru. Proses ini tidak bisa di-undo.</span>
+      </div>
+      <div class="warning-box">
+        <span class="warn-icon">⏳</span>
+        <span class="warn-text">Proses ini mungkin memakan waktu beberapa menit tergantung jumlah record.</span>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-gray" onclick="closeModal('modalRegen')">Batal</button>
+        <button class="btn btn-orange" onclick="regenerate()" id="btnRegenConfirm">
+          <span class="spinner"></span>
+          <span class="btn-text">Konfirmasi Regenerate</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════ MODAL: KEYWORD USAGE ANALYTICS ═══════════ -->
+<div class="modal-overlay" id="modalUsage">
+  <div class="modal" style="max-width:900px;width:95vw">
+    <div class="modal-header">
+      <h3 class="modal-title">📊 Log Penggunaan Keyword</h3>
+      <button class="modal-close" onclick="closeModal('modalUsage')">✕</button>
+    </div>
+    <div class="modal-body" style="padding:0">
+
+      <!-- FILTER BAR -->
+      <div style="display:flex;flex-wrap:wrap;gap:10px;padding:16px 20px;border-bottom:1px solid var(--border-color);background:var(--bg-tertiary)">
+        <div style="display:flex;flex-direction:column;gap:4px;min-width:130px">
+          <label style="font-size:0.72rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Dari Tanggal</label>
+          <input type="date" id="usageDateFrom" class="form-input" style="padding:6px 10px;font-size:0.82rem">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;min-width:130px">
+          <label style="font-size:0.72rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Sampai Tanggal</label>
+          <input type="date" id="usageDateTo" class="form-input" style="padding:6px 10px;font-size:0.82rem">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;min-width:150px">
+          <label style="font-size:0.72rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Mesin</label>
+          <select id="usageMachine" class="form-select" style="padding:6px 10px;font-size:0.82rem">
+            <option value="">Semua Mesin</option>
+          </select>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;min-width:130px">
+          <label style="font-size:0.72rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Kategori</label>
+          <select id="usageCategory" class="form-select" style="padding:6px 10px;font-size:0.82rem">
+            <option value="">Semua Kategori</option>
+            <option value="istirahat">🕌 Istirahat</option>
+            <option value="idle">⏳ Idle</option>
+            <option value="design">🎨 Design</option>
+            <option value="mesin">⚙️ Mesin</option>
+            <option value="operator">👷 Operator</option>
+            <option value="material">📦 Material</option>
+            <option value="others">📋 Others</option>
+          </select>
+        </div>
+        <div style="display:flex;align-items:flex-end;gap:8px">
+          <button class="btn btn-blue" onclick="loadUsageData()" id="btnLoadUsage" style="padding:7px 16px">
+            <span class="spinner"></span>
+            <span class="btn-text">Tampilkan</span>
+          </button>
+          <button class="btn btn-gray" onclick="resetUsageFilters()" style="padding:7px 12px;font-size:0.8rem">Reset</button>
+        </div>
+      </div>
+
+      <!-- SUMMARY BAR -->
+      <div id="usageSummary" style="display:none;padding:10px 20px;border-bottom:1px solid var(--border-color);
+        font-size:0.8rem;color:var(--text-muted);display:flex;gap:20px;flex-wrap:wrap"></div>
+
+      <!-- TABLE -->
+      <div style="overflow-x:auto;max-height:60vh">
+        <table id="usageTable" style="width:100%;border-collapse:collapse;font-size:0.82rem">
+          <thead>
+            <tr style="position:sticky;top:0;z-index:1;background:var(--bg-secondary)">
+              <th style="padding:10px 16px;text-align:left;font-size:0.72rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border-color);cursor:pointer" onclick="sortUsage('keyword')">
+                Keyword / Alasan ↕
+              </th>
+              <th style="padding:10px 16px;text-align:left;font-size:0.72rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border-color);cursor:pointer;white-space:nowrap" onclick="sortUsage('category')">
+                Kategori ↕
+              </th>
+              <th style="padding:10px 16px;text-align:left;font-size:0.72rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border-color)">
+                Mesin
+              </th>
+              <th style="padding:10px 16px;text-align:center;font-size:0.72rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border-color);cursor:pointer;white-space:nowrap" onclick="sortUsage('count')">
+                Frekuensi ↕
+              </th>
+              <th style="padding:10px 16px;text-align:center;font-size:0.72rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border-color);cursor:pointer;white-space:nowrap" onclick="sortUsage('total_duration')">
+                Total (mnt) ↕
+              </th>
+              <th style="padding:10px 16px;text-align:left;font-size:0.72rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border-color);white-space:nowrap">
+                Rentang Tanggal
+              </th>
+            </tr>
+          </thead>
+          <tbody id="usageTableBody">
+            <tr><td colspan="6" style="padding:40px;text-align:center;color:var(--text-muted)">
+              Klik "Tampilkan" untuk memuat data
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ MODAL: QUICK ADD KEYWORD FROM USAGE ═══════════ -->
+<div class="modal-overlay" id="modalQuickAdd">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <h3 class="modal-title">➕ Tambahkan ke Keyword</h3>
+      <button class="modal-close" onclick="closeModal('modalQuickAdd')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom:16px;padding:10px 14px;background:var(--bg-tertiary);border-radius:var(--radius-sm);border:1px solid var(--border-color)">
+        <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em;font-weight:600">Keyword yang akan ditambahkan</div>
+        <div id="quickAddKeywordText" style="font-family:monospace;font-size:0.9rem;color:var(--text-primary);word-break:break-all"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Masukkan ke Kategori</label>
+        <select class="form-select" id="quickAddCategory" style="font-size:0.9rem">
+          <option value="istirahat">🕌 Istirahat</option>
+          <option value="idle">⏳ Idle</option>
+          <option value="design">🎨 Design</option>
+          <option value="mesin">⚙️ Mesin</option>
+          <option value="operator">👷 Operator</option>
+          <option value="material">📦 Material</option>
+          <option value="others" selected>📋 Others</option>
+        </select>
+      </div>
+      <div class="form-actions" style="margin-top:20px">
+        <button class="btn btn-gray" onclick="closeModal('modalQuickAdd')">Batal</button>
+        <button class="btn btn-green" onclick="confirmQuickAdd()" id="btnQuickAddConfirm">
+          <span class="spinner"></span>
+          <span class="btn-text">✓ Tambahkan</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+/* ═══════════════════════════════════════════════════
+   API ENDPOINTS
+   ═══════════════════════════════════════════════════ */
+const API = {
+  getAll:          '/keywordedit/api/keywords',
+  getByCategory:   (cat) => `/keywordedit/api/keywords?category=${cat}`,
+  create:          '/keywordedit/api/keywords',
+  update:          (id)  => `/keywordedit/api/keywords/${id}`,
+  delete:          (id)  => `/keywordedit/api/keywords/${id}`,
+  importFromCode:  '/keywordedit/api/import-from-code',
+  syncToFiles:     '/keywordedit/api/sync-to-files',
+  regenerate:      '/keywordedit/api/regenerate',
+  test:            '/keywordedit/api/test-keyword',
+  stats:           '/keywordedit/api/stats',
+};
+
+/* ═══════════════════════════════════════════════════
+   STATE
+   ═══════════════════════════════════════════════════ */
+const CATEGORIES = [
+  { key: 'all',       label: 'Semua Kategori', icon: '📊', color: '#e2e8f0' },
+  { key: 'istirahat', label: 'Istirahat',      icon: '🕌', color: '#a855f7' },
+  { key: 'idle',      label: 'Idle',           icon: '⏳', color: '#f97316' },
+  { key: 'design',    label: 'Design',         icon: '🎨', color: '#3b82f6' },
+  { key: 'mesin',     label: 'Mesin',          icon: '⚙️', color: '#ef4444' },
+  { key: 'operator',  label: 'Operator',       icon: '👷', color: '#f59e0b' },
+  { key: 'material',  label: 'Material',       icon: '📦', color: '#eab308' },
+  { key: 'others',    label: 'Others',         icon: '📋', color: '#6b7280' },
+];
+
+let activeCategory = 'all';
+let allKeywords    = [];
+let logCount       = 0;
+
+/* ═══════════════════════════════════════════════════
+   INIT
+   ═══════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  renderCategorySidebar();
+  loadStats();
+  loadKeywords('all');
+
+  document.getElementById('searchInput').addEventListener('input', (e) => {
+    filterKeywords(e.target.value);
+  });
+
+  // Close modals on overlay click
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeModal(overlay.id);
+    });
+  });
+
+  // Close modals on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.modal-overlay.visible').forEach(m => closeModal(m.id));
+    }
+  });
+});
+
+/* ═══════════════════════════════════════════════════
+   CATEGORY SIDEBAR
+   ═══════════════════════════════════════════════════ */
+function renderCategorySidebar() {
+  const sidebar = document.getElementById('categorySidebar');
+  const title = sidebar.querySelector('.sidebar-title');
+  sidebar.innerHTML = '';
+  sidebar.appendChild(title);
+
+  CATEGORIES.forEach(cat => {
+    const card = document.createElement('div');
+    card.className = `cat-card${cat.key === activeCategory ? ' active' : ''}`;
+    card.style.setProperty('--cat-color', cat.color);
+    card.dataset.category = cat.key;
+    card.onclick = () => selectCategory(cat.key);
+    card.innerHTML = `
+      <div class="cat-icon">${cat.icon}</div>
+      <div class="cat-info">
+        <div class="cat-name">${cat.label}</div>
+      </div>
+      <span class="cat-badge" id="badge-${cat.key}">—</span>
+    `;
+    sidebar.appendChild(card);
+  });
+}
+
+function selectCategory(category) {
+  activeCategory = category;
+  // Update active state
+  document.querySelectorAll('.cat-card').forEach(c => {
+    c.classList.toggle('active', c.dataset.category === category);
+  });
+  document.getElementById('searchInput').value = '';
+  loadKeywords(category);
+}
+
+/* ═══════════════════════════════════════════════════
+   LOAD STATS
+   ═══════════════════════════════════════════════════ */
+async function loadStats() {
+  try {
+    const res = await fetch(API.stats);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    const cats = data.categories || data;
+    let total = data.total || 0;
+    CATEGORIES.forEach(cat => {
+      const badge = document.getElementById(`badge-${cat.key}`);
+      if (cat.key === 'all') {
+        if (badge) badge.textContent = total;
+      } else {
+        const count = cats[cat.key] || 0;
+        if (badge) badge.textContent = count;
+      }
+    });
+    document.getElementById('totalKeywords').textContent = total;
+  } catch (err) {
+    console.error('Failed to load stats:', err);
+    // Silently fail – badges stay with "—"
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   LOAD KEYWORDS
+   ═══════════════════════════════════════════════════ */
+async function loadKeywords(category) {
+  const tbody   = document.getElementById('keywordTableBody');
+  const empty   = document.getElementById('tableEmptyState');
+  const loading = document.getElementById('tableLoading');
+
+  tbody.innerHTML = '';
+  empty.style.display = 'none';
+  loading.style.display = 'block';
+
+  try {
+    const url = category === 'all' ? API.getAll : API.getByCategory(category);
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    allKeywords = Array.isArray(data) ? data : (data.keywords || data.data || []);
+
+    loading.style.display = 'none';
+
+    if (allKeywords.length === 0) {
+      empty.style.display = 'block';
+      return;
+    }
+
+    renderTable(allKeywords);
+  } catch (err) {
+    loading.style.display = 'none';
+    empty.style.display = 'block';
+    empty.querySelector('.empty-title').textContent = 'Gagal memuat data';
+    empty.querySelector('.empty-desc').textContent = err.message;
+    showToast('Gagal memuat keyword: ' + err.message, 'error');
+  }
+}
+
+function renderTable(keywords) {
+  const tbody = document.getElementById('keywordTableBody');
+  const empty = document.getElementById('tableEmptyState');
+  tbody.innerHTML = '';
+
+  if (keywords.length === 0) {
+    empty.style.display = 'block';
+    empty.querySelector('.empty-title').textContent = 'Belum ada keyword';
+    empty.querySelector('.empty-desc').textContent = "Klik '+ Tambah Keyword' atau 'Import dari Code' untuk memulai";
+    return;
+  }
+
+  empty.style.display = 'none';
+
+  keywords.forEach((kw, i) => {
+    const tr = document.createElement('tr');
+    tr.dataset.keyword = (kw.keyword || '').toLowerCase();
+    tr.dataset.id = kw.id;
+    const cat = kw.category || kw.kategori || 'others';
+    tr.innerHTML = `
+      <td class="td-no">${i + 1}</td>
+      <td class="td-keyword">${escapeHtml(kw.keyword || '')}</td>
+      <td><span class="kategori-badge badge-${cat}">${cat}</span></td>
+      <td>${escapeHtml(kw.notes || kw.catatan || '—')}</td>
+      <td>
+        <div class="td-actions">
+          <button class="icon-btn" title="Edit" onclick="openEditModal(${kw.id})">✏️</button>
+          <button class="icon-btn delete" title="Hapus" onclick="deleteKeyword(${kw.id}, this)">🗑️</button>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+/* ═══════════════════════════════════════════════════
+   FILTER (CLIENT-SIDE)
+   ═══════════════════════════════════════════════════ */
+function filterKeywords(searchText) {
+  const term = searchText.toLowerCase().trim();
+  const rows = document.querySelectorAll('#keywordTableBody tr');
+  let visibleIdx = 0;
+
+  rows.forEach(row => {
+    const keyword = row.dataset.keyword || '';
+    const match = !term || keyword.includes(term);
+    row.style.display = match ? '' : 'none';
+    if (match) {
+      visibleIdx++;
+      row.querySelector('.td-no').textContent = visibleIdx;
+    }
+  });
+
+  const empty = document.getElementById('tableEmptyState');
+  if (visibleIdx === 0 && rows.length > 0) {
+    empty.style.display = 'block';
+    empty.querySelector('.empty-title').textContent = 'Tidak ditemukan';
+    empty.querySelector('.empty-desc').textContent = `Tidak ada keyword yang cocok dengan "${searchText}"`;
+  } else if (rows.length > 0) {
+    empty.style.display = 'none';
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   CREATE / UPDATE KEYWORD
+   ═══════════════════════════════════════════════════ */
+function openAddModal() {
+  document.getElementById('modalKeywordTitle').textContent = 'Tambah Keyword';
+  document.getElementById('editKeywordId').value = '';
+  document.getElementById('inputCategory').value = activeCategory === 'all' ? 'others' : activeCategory;
+  document.getElementById('inputNotes').value = '';
+
+  // Switch to multi-keyword mode
+  document.getElementById('singleKeywordGroup').style.display = 'none';
+  document.getElementById('multiKeywordGroup').style.display = 'block';
+  document.getElementById('duplicateWarningBox').style.display = 'none';
+  document.getElementById('btnSaveKeyword').querySelector('.btn-text').textContent = 'Simpan Semua';
+
+  // Reset keyword rows — start with 3 empty rows
+  const list = document.getElementById('keywordInputList');
+  list.innerHTML = '';
+  addKeywordRow();
+  addKeywordRow();
+  addKeywordRow();
+
+  openModal('modalKeyword');
+  setTimeout(() => list.querySelector('input')?.focus(), 200);
+}
+
+function addKeywordRow() {
+  const list = document.getElementById('keywordInputList');
+  const idx  = list.children.length;
+  const row  = document.createElement('div');
+  row.style.cssText = 'display:flex;gap:8px;align-items:center';
+  row.innerHTML = `
+    <input type="text" class="form-input kw-row-input" placeholder="Ketik keyword..." autocomplete="off"
+      style="flex:1;font-family:monospace;font-size:0.85rem"
+      onkeydown="handleKeywordRowKey(event, this)">
+    <button type="button" onclick="removeKeywordRow(this)" title="Hapus baris" style="
+      flex-shrink:0;background:none;border:1px solid var(--border-color);
+      color:var(--text-muted);border-radius:var(--radius-sm);
+      width:34px;height:34px;cursor:pointer;font-size:1rem;
+      display:flex;align-items:center;justify-content:center;transition:all 0.15s
+    " onmouseover="this.style.borderColor='#f87171';this.style.color='#f87171'"
+       onmouseout="this.style.borderColor='var(--border-color)';this.style.color='var(--text-muted)'">
+      ✕
+    </button>
+  `;
+  list.appendChild(row);
+  row.querySelector('input').focus();
+}
+
+function removeKeywordRow(btn) {
+  const list = document.getElementById('keywordInputList');
+  if (list.children.length <= 1) {
+    // Clear the last row instead of removing it
+    btn.previousElementSibling.value = '';
+    return;
+  }
+  btn.parentElement.remove();
+}
+
+function handleKeywordRowKey(e, input) {
+  // Enter = add new row
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    addKeywordRow();
+  }
+}
+
+function openEditModal(id) {
+  const kw = allKeywords.find(k => k.id === id);
+  if (!kw) return;
+
+  document.getElementById('modalKeywordTitle').textContent = 'Edit Keyword';
+  document.getElementById('editKeywordId').value = id;
+  document.getElementById('inputKeyword').value = kw.keyword || '';
+  document.getElementById('inputCategory').value = kw.category || kw.kategori || 'others';
+  document.getElementById('inputNotes').value = kw.notes || kw.catatan || '';
+
+  // Switch to single keyword mode (edit)
+  document.getElementById('singleKeywordGroup').style.display = 'block';
+  document.getElementById('multiKeywordGroup').style.display = 'none';
+  document.getElementById('btnSaveKeyword').querySelector('.btn-text').textContent = 'Simpan';
+
+  openModal('modalKeyword');
+  setTimeout(() => document.getElementById('inputKeyword').focus(), 200);
+}
+
+async function saveKeyword() {
+  const id       = document.getElementById('editKeywordId').value;
+  const category = document.getElementById('inputCategory').value;
+  const notes    = document.getElementById('inputNotes').value.trim();
+  const btn      = document.getElementById('btnSaveKeyword');
+
+  // ── EDIT MODE (single keyword) ──
+  if (id) {
+    const keyword = document.getElementById('inputKeyword').value.trim();
+    if (!keyword) {
+      showToast('Keyword tidak boleh kosong', 'warning');
+      document.getElementById('inputKeyword').focus();
+      return;
+    }
+    setLoading(btn, true);
+    try {
+      const res = await fetch(API.update(id), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ keyword, category, notes }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || errData.error || `HTTP ${res.status}`);
+      }
+      showToast(`Keyword "${keyword}" berhasil diperbarui`, 'success');
+      addLog(`Keyword "${keyword}" diperbarui → kategori: ${category}`, 'success');
+      closeModal('modalKeyword');
+      await refreshData();
+    } catch (err) {
+      showToast('Gagal menyimpan: ' + err.message, 'error');
+    } finally {
+      setLoading(btn, false);
+    }
+    return;
+  }
+
+  // ── ADD MODE (bulk / multi keyword) ──
+  const inputs = document.querySelectorAll('.kw-row-input');
+  const keywords = [];
+  inputs.forEach(inp => {
+    const v = inp.value.trim().toLowerCase();
+    if (v) keywords.push(v);
+  });
+
+  if (keywords.length === 0) {
+    showToast('Isi minimal 1 keyword', 'warning');
+    document.querySelector('.kw-row-input')?.focus();
+    return;
+  }
+
+  // Check for duplicates in the input list itself
+  const unique = [...new Set(keywords)];
+  if (unique.length < keywords.length) {
+    showToast('Ada keyword yang sama dalam daftar input', 'warning');
+    return;
+  }
+
+  setLoading(btn, true);
+  document.getElementById('duplicateWarningBox').style.display = 'none';
+
+  try {
+    const res = await fetch('/keywordedit/api/keywords/bulk', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ keywords, category, notes }),
+    });
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.message || errData.error || `HTTP ${res.status}`);
+    }
+    const data = await res.json();
+
+    // Show duplicate warning if any
+    if (data.duplicates && data.duplicates.length > 0) {
+      const box  = document.getElementById('duplicateWarningBox');
+      const list = document.getElementById('duplicateList');
+      list.innerHTML = data.duplicates.map(d =>
+        `<span style="display:inline-block;margin:2px 4px 2px 0;
+          background:rgba(245,158,11,0.15);border-radius:4px;
+          padding:2px 8px;font-family:monospace">
+          ${d.keyword} <span style="color:var(--text-muted)">(${d.existing_category})</span>
+        </span>`
+      ).join('');
+      box.style.display = 'block';
+    }
+
+    if (data.added_count > 0) {
+      showToast(data.message, 'success');
+      addLog(`Bulk add ke kategori "${category}": ${data.message}`, 'success');
+      if (!data.duplicate_count) closeModal('modalKeyword');
+      await refreshData();
+    } else {
+      showToast(data.message || 'Semua keyword sudah ada', 'warning');
+    }
+  } catch (err) {
+    showToast('Gagal menyimpan: ' + err.message, 'error');
+    addLog(`Bulk add gagal: ${err.message}`, 'error');
+  } finally {
+    setLoading(btn, false);
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════
+   DELETE KEYWORD
+   ═══════════════════════════════════════════════════ */
+async function deleteKeyword(id, btnEl) {
+  const kw = allKeywords.find(k => k.id === id);
+  const kwName = kw ? kw.keyword : `ID ${id}`;
+
+  // Show inline confirmation
+  const row = btnEl.closest('tr');
+  const actionCell = btnEl.closest('.td-actions');
+  const originalHTML = actionCell.innerHTML;
+
+  actionCell.innerHTML = `
+    <div class="confirm-actions">
+      <span class="confirm-text">Hapus?</span>
+      <button class="btn btn-red btn-sm" onclick="confirmDelete(${id}, this, '${escapeAttr(kwName)}')">Ya</button>
+      <button class="btn btn-gray btn-sm" onclick="cancelDelete(this, \`${escapeJs(originalHTML)}\`)">Batal</button>
+    </div>
+  `;
+  row.classList.add('confirm-delete-row');
+}
+
+async function confirmDelete(id, btnEl, kwName) {
+  const row = btnEl.closest('tr');
+  try {
+    const res = await fetch(API.delete(id), { method: 'DELETE' });
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.message || errData.error || `HTTP ${res.status}`);
+    }
+    // Animate row out
+    row.style.transition = 'opacity 0.3s, transform 0.3s';
+    row.style.opacity = '0';
+    row.style.transform = 'translateX(20px)';
+    setTimeout(async () => {
+      showToast(`Keyword "${kwName}" berhasil dihapus`, 'success');
+      addLog(`Keyword "${kwName}" dihapus`, 'warning');
+      await refreshData();
+    }, 300);
+  } catch (err) {
+    showToast('Gagal menghapus: ' + err.message, 'error');
+    addLog(`Gagal menghapus keyword "${kwName}": ${err.message}`, 'error');
+    row.classList.remove('confirm-delete-row');
+  }
+}
+
+function cancelDelete(btnEl, originalHTML) {
+  const row = btnEl.closest('tr');
+  const actionCell = btnEl.closest('.td-actions') || btnEl.closest('td').querySelector('.td-actions') || btnEl.closest('td');
+  // Find the td-actions container, which is now replaced with confirm-actions
+  const td = btnEl.closest('td');
+  td.innerHTML = `<div class="td-actions">${originalHTML}</div>`;
+  row.classList.remove('confirm-delete-row');
+}
+
+/* ═══════════════════════════════════════════════════
+   IMPORT FROM CODE
+   ═══════════════════════════════════════════════════ */
+async function importFromCode() {
+  const btn = document.getElementById('btnImport');
+  setLoading(btn, true);
+  addLog('Memulai import keyword dari source code...', 'info');
+
+  try {
+    const res = await fetch(API.importFromCode, { method: 'POST' });
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.message || errData.error || `HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    const imported = data.imported || data.count || 0;
+    showToast(`Berhasil import ${imported} keyword dari code`, 'success');
+    addLog(`Import selesai: ${imported} keyword berhasil diimport`, 'success');
+    await refreshData();
+  } catch (err) {
+    showToast('Gagal import: ' + err.message, 'error');
+    addLog(`Import gagal: ${err.message}`, 'error');
+  } finally {
+    setLoading(btn, false);
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   SYNC TO FILES
+   ═══════════════════════════════════════════════════ */
+function openSyncModal() {
+  openModal('modalSync');
+}
+
+async function syncToFiles() {
+  const btn = document.getElementById('btnSyncConfirm');
+  setLoading(btn, true);
+  addLog('Memulai sync keyword ke file...', 'info');
+
+  try {
+    const res = await fetch(API.syncToFiles, { method: 'POST' });
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.message || errData.error || `HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    if (data.results) {
+      data.results.forEach(r => {
+        addLog(`${r.file}: ${r.success ? '✅' : '❌'} ${r.message}`, r.success ? 'success' : 'error');
+      });
+    }
+    showToast(data.message || 'Sync ke file berhasil!', data.success ? 'success' : 'warning');
+    closeModal('modalSync');
+  } catch (err) {
+    showToast('Sync gagal: ' + err.message, 'error');
+    addLog(`Sync gagal: ${err.message}`, 'error');
+  } finally {
+    setLoading(btn, false);
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   REGENERATE DOWNTIME
+   ═══════════════════════════════════════════════════ */
+async function openRegenModal() {
+  document.getElementById('regenRecordCount').textContent = '—';
+  openModal('modalRegen');
+
+  // Try to fetch record count from stats
+  try {
+    const res = await fetch(API.stats);
+    if (res.ok) {
+      const data = await res.json();
+      const count = data.total_downtime_records || data.downtime_count || '?';
+      document.getElementById('regenRecordCount').textContent = count.toLocaleString ? count.toLocaleString('id-ID') : count;
+    }
+  } catch { /* silent */ }
+}
+
+async function regenerate() {
+  const btn = document.getElementById('btnRegenConfirm');
+  setLoading(btn, true);
+  addLog('Memulai regenerate downtime...', 'info');
+
+  try {
+    const res = await fetch(API.regenerate, { method: 'POST' });
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.message || errData.error || `HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    const updated = data.updated || 0;
+    const total = data.total || 0;
+    showToast(data.message || `Regenerate selesai: ${updated} dari ${total} record diperbarui`, 'success');
+    addLog(data.message || `Regenerate selesai: ${updated}/${total} record diperbarui`, 'success');
+    if (data.errors && data.errors.length > 0) {
+      data.errors.forEach(e => addLog(`Error: ${e}`, 'error'));
+    }
+    closeModal('modalRegen');
+  } catch (err) {
+    showToast('Regenerate gagal: ' + err.message, 'error');
+    addLog(`Regenerate gagal: ${err.message}`, 'error');
+  } finally {
+    setLoading(btn, false);
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   TEST KEYWORD
+   ═══════════════════════════════════════════════════ */
+function openTestModal() {
+  document.getElementById('inputTestText').value = '';
+  document.getElementById('testResultBox').classList.remove('show');
+  openModal('modalTest');
+  setTimeout(() => document.getElementById('inputTestText').focus(), 200);
+}
+
+async function testKeyword() {
+  const text = document.getElementById('inputTestText').value.trim();
+  if (!text) {
+    showToast('Masukkan teks alasan downtime', 'warning');
+    return;
+  }
+
+  const btn = document.getElementById('btnTestDetect');
+  setLoading(btn, true);
+  document.getElementById('testResultBox').classList.remove('show');
+
+  try {
+    const res = await fetch(API.test, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    const data = await res.json();
+    const category = data.category || data.kategori || 'others';
+    const matched  = data.matched_keyword || data.keyword || '';
+
+    const catInfo = CATEGORIES.find(c => c.key === category) || CATEGORIES[CATEGORIES.length - 1];
+    document.getElementById('testResultCategory').innerHTML =
+      `<span class="kategori-badge badge-${category}" style="font-size:0.85rem;padding:6px 16px">${catInfo.icon} ${category}</span>`;
+
+    if (matched) {
+      const highlighted = text.replace(
+        new RegExp(`(${escapeRegex(matched)})`, 'gi'),
+        '<mark>$1</mark>'
+      );
+      document.getElementById('testResultKeyword').innerHTML =
+        `Keyword cocok: <strong>${escapeHtml(matched)}</strong><br>Teks: "${highlighted}"`;
+    } else {
+      document.getElementById('testResultKeyword').innerHTML = 'Tidak ada keyword yang cocok secara spesifik';
+    }
+
+    document.getElementById('testResultBox').classList.add('show');
+  } catch (err) {
+    showToast('Test gagal: ' + err.message, 'error');
+  } finally {
+    setLoading(btn, false);
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   MODAL HELPERS
+   ═══════════════════════════════════════════════════ */
+function openModal(id) {
+  document.getElementById(id).classList.add('visible');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('visible');
+  // Check if any other modals are still open
+  const anyOpen = document.querySelector('.modal-overlay.visible');
+  if (!anyOpen) document.body.style.overflow = '';
+}
+
+/* ═══════════════════════════════════════════════════
+   LOG PANEL
+   ═══════════════════════════════════════════════════ */
+function toggleLog() {
+  document.getElementById('logPanel').classList.toggle('expanded');
+}
+
+function addLog(message, type = 'info') {
+  const content = document.getElementById('logContent');
+  const empty   = document.getElementById('logEmpty');
+  if (empty) empty.remove();
+
+  logCount++;
+  document.getElementById('logCountBadge').textContent = logCount;
+
+  const now = new Date();
+  const time = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+  const entry = document.createElement('div');
+  entry.className = `log-entry ${type}`;
+  entry.innerHTML = `
+    <span class="log-time">${time}</span>
+    <span class="log-msg ${type}">${escapeHtml(message)}</span>
+  `;
+  content.appendChild(entry);
+  content.scrollTop = content.scrollHeight;
+
+  // Auto-expand if collapsed
+  const panel = document.getElementById('logPanel');
+  if (!panel.classList.contains('expanded')) {
+    panel.classList.add('expanded');
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   TOAST NOTIFICATIONS
+   ═══════════════════════════════════════════════════ */
+function showToast(message, type = 'info') {
+  const container = document.getElementById('toastContainer');
+  const icons = { success: '✅', error: '❌', info: 'ℹ️', warning: '⚠️' };
+
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `
+    <span class="toast-icon">${icons[type] || 'ℹ️'}</span>
+    <span class="toast-msg">${escapeHtml(message)}</span>
+  `;
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add('removing');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+/* ═══════════════════════════════════════════════════
+   UTILITIES
+   ═══════════════════════════════════════════════════ */
+function setLoading(btn, loading) {
+  if (!btn) return;
+  btn.classList.toggle('loading', loading);
+  btn.disabled = loading;
+}
+
+async function refreshData() {
+  await Promise.all([
+    loadStats(),
+    loadKeywords(activeCategory),
+  ]);
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function escapeAttr(str) {
+  return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
+function escapeJs(str) {
+  return str.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$');
+}
+
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/* ═══════════════════════════════════════════════════
+   USAGE ANALYTICS
+   ═══════════════════════════════════════════════════ */
+const CAT_COLORS = {
+  istirahat: { bg: 'rgba(168,85,247,0.15)', text: '#c084fc', border: 'rgba(168,85,247,0.3)' },
+  idle:      { bg: 'rgba(249,115,22,0.15)', text: '#fb923c', border: 'rgba(249,115,22,0.3)' },
+  design:    { bg: 'rgba(59,130,246,0.15)',  text: '#60a5fa', border: 'rgba(59,130,246,0.3)' },
+  mesin:     { bg: 'rgba(239,68,68,0.15)',   text: '#f87171', border: 'rgba(239,68,68,0.3)' },
+  operator:  { bg: 'rgba(245,158,11,0.15)',  text: '#fbbf24', border: 'rgba(245,158,11,0.3)' },
+  material:  { bg: 'rgba(234,179,8,0.15)',   text: '#facc15', border: 'rgba(234,179,8,0.3)' },
+  others:    { bg: 'rgba(107,114,128,0.15)', text: '#9ca3af', border: 'rgba(107,114,128,0.3)' },
+};
+
+let usageData      = [];
+let usageSortField = 'count';
+let usageSortAsc   = false;
+let machinesLoaded = false;
+
+function openUsageModal() {
+  openModal('modalUsage');
+  // Set default date range: last 30 days
+  if (!document.getElementById('usageDateFrom').value) {
+    const today = new Date();
+    const from  = new Date(today);
+    from.setDate(from.getDate() - 30);
+    document.getElementById('usageDateTo').value   = today.toISOString().slice(0,10);
+    document.getElementById('usageDateFrom').value = from.toISOString().slice(0,10);
+  }
+  loadUsageData();
+}
+
+function resetUsageFilters() {
+  document.getElementById('usageDateFrom').value = '';
+  document.getElementById('usageDateTo').value   = '';
+  document.getElementById('usageMachine').value  = '';
+  document.getElementById('usageCategory').value = '';
+  usageData = [];
+  renderUsageTable([]);
+  document.getElementById('usageSummary').style.display = 'none';
+}
+
+async function loadUsageData() {
+  const btn = document.getElementById('btnLoadUsage');
+  setLoading(btn, true);
+
+  const params = new URLSearchParams();
+  const df = document.getElementById('usageDateFrom').value;
+  const dt = document.getElementById('usageDateTo').value;
+  const mc = document.getElementById('usageMachine').value;
+  const ct = document.getElementById('usageCategory').value;
+  if (df) params.set('date_from', df);
+  if (dt) params.set('date_to',   dt);
+  if (mc) params.set('machine',   mc);
+  if (ct) params.set('category',  ct);
+
+  try {
+    const res = await fetch(`/keywordedit/api/keyword-usage?${params}`);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    usageData = data.rows || [];
+
+    // Populate machine dropdown (first load)
+    if (!machinesLoaded && data.machines) {
+      const sel = document.getElementById('usageMachine');
+      data.machines.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value       = m.id;
+        opt.textContent = m.name;
+        sel.appendChild(opt);
+      });
+      machinesLoaded = true;
+    }
+
+    // Summary bar
+    const totalCount    = usageData.reduce((s,r) => s + r.count, 0);
+    const totalDuration = usageData.reduce((s,r) => s + r.total_duration, 0);
+    const unmatched     = usageData.filter(r => !r.matched).length;
+    const summary = document.getElementById('usageSummary');
+    summary.style.display = 'flex';
+    summary.innerHTML = `
+      <span>📋 <strong>${data.total_records}</strong> shift records diproses</span>
+      <span>🔢 <strong>${totalCount}</strong> total kejadian</span>
+      <span>⏱ <strong>${totalDuration}</strong> mnt total durasi</span>
+      <span>🔑 <strong>${usageData.length}</strong> keyword unik</span>
+      ${unmatched > 0 ? `<span style="color:#fbbf24">⚠️ <strong>${unmatched}</strong> alasan belum ada keyword-nya</span>` : ''}
+    `;
+
+    sortUsage(usageSortField, true);
+  } catch (err) {
+    showToast('Gagal memuat data: ' + err.message, 'error');
+    document.getElementById('usageTableBody').innerHTML =
+      `<tr><td colspan="6" style="padding:30px;text-align:center;color:#f87171">Error: ${err.message}</td></tr>`;
+  } finally {
+    setLoading(btn, false);
+  }
+}
+
+function sortUsage(field, keepDir = false) {
+  if (!keepDir) {
+    usageSortAsc = (usageSortField === field) ? !usageSortAsc : false;
+    usageSortField = field;
+  }
+  const sorted = [...usageData].sort((a, b) => {
+    let va = a[field], vb = b[field];
+    if (typeof va === 'string') va = va.toLowerCase();
+    if (typeof vb === 'string') vb = vb.toLowerCase();
+    if (va < vb) return usageSortAsc ? -1 :  1;
+    if (va > vb) return usageSortAsc ?  1 : -1;
+    return 0;
+  });
+  renderUsageTable(sorted);
+}
+
+function renderUsageTable(rows) {
+  const tbody = document.getElementById('usageTableBody');
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="padding:40px;text-align:center;color:var(--text-muted)">Tidak ada data</td></tr>`;
+    return;
+  }
+
+  const maxCount = Math.max(...rows.map(r => r.count), 1);
+
+  tbody.innerHTML = rows.map((r, i) => {
+    const c      = CAT_COLORS[r.category] || CAT_COLORS.others;
+    const catBadge = `<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.72rem;font-weight:600;
+      background:${c.bg};color:${c.text};border:1px solid ${c.border}">${r.category}</span>`;
+
+    // Bar chart inside count cell
+    const pct     = Math.round((r.count / maxCount) * 100);
+    const rowBg   = i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)';
+    const unmatch = !r.matched
+      ? `<span title="Belum ada keyword yang cocok — pertimbangkan tambah keyword baru" style="margin-left:6px;font-size:0.7rem;color:#fbbf24;cursor:help">⚠️</span>`
+      : '';
+
+    // Highlight unmatched rows
+    const kwStyle = r.matched
+      ? 'font-family:monospace;font-size:0.82rem'
+      : 'font-family:monospace;font-size:0.82rem;color:#fbbf24';
+
+    // Date range display
+    const dateRange = r.first_date === r.last_date
+      ? r.first_date
+      : `${r.first_date} → ${r.last_date}`;
+
+    // Tooltip with sample reasons
+    const tooltip = r.sample_reasons && r.sample_reasons.length
+      ? `title="${r.sample_reasons.join(' | ').replace(/"/g, '&quot;')}"`
+      : '';
+
+    return `<tr style="background:${rowBg};border-bottom:1px solid rgba(255,255,255,0.04);transition:background 0.15s"
+      onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='${rowBg}'">
+      <td style="padding:9px 16px;max-width:280px">
+        <div style="display:flex;align-items:flex-start;gap:8px">
+          <div style="flex:1;min-width:0">
+            <span style="${kwStyle}" ${tooltip}>${r.keyword}</span>${unmatch}
+            ${!r.matched && r.sample_reasons && r.sample_reasons[0]
+              ? `<div style="font-size:0.7rem;color:var(--text-muted);margin-top:2px;font-style:italic">"${r.sample_reasons[0]}"</div>`
+              : ''}
+          </div>
+          ${!r.matched ? `
+            <button onclick="quickAddKeyword('${r.keyword.replace(/'/g, "\\'")}')"
+              title="Tambahkan sebagai keyword baru"
+              style="flex-shrink:0;padding:3px 10px;font-size:0.72rem;font-weight:600;
+                background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.35);
+                color:#4ade80;border-radius:4px;cursor:pointer;white-space:nowrap;
+                transition:all 0.15s"
+              onmouseover="this.style.background='rgba(34,197,94,0.25)'"
+              onmouseout="this.style.background='rgba(34,197,94,0.15)'">
+              + Tambahkan
+            </button>` : ''}
+        </div>
+      </td>
+      <td style="padding:9px 16px">${catBadge}</td>
+      <td style="padding:9px 16px;font-size:0.8rem;color:var(--text-secondary)">${r.machine_name || '-'}</td>
+      <td style="padding:9px 16px;text-align:center">
+        <div style="display:flex;align-items:center;gap:8px;justify-content:center">
+          <div style="width:60px;height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden">
+            <div style="width:${pct}%;height:100%;background:${c.text};border-radius:2px"></div>
+          </div>
+          <span style="font-weight:600;color:var(--text-primary)">${r.count}×</span>
+        </div>
+      </td>
+      <td style="padding:9px 16px;text-align:center;font-weight:600;color:var(--text-secondary)">${r.total_duration}</td>
+      <td style="padding:9px 16px;font-size:0.75rem;color:var(--text-muted);white-space:nowrap">
+        ${dateRange}
+        <div style="font-size:0.7rem;margin-top:1px">${r.date_count} hari</div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+/* ═══════════════════════════════════════════════════
+   QUICK ADD KEYWORD FROM USAGE TABLE
+   ═══════════════════════════════════════════════════ */
+let _quickAddKeywordValue = '';
+
+function quickAddKeyword(keyword) {
+  _quickAddKeywordValue = keyword;
+  document.getElementById('quickAddKeywordText').textContent = keyword;
+  document.getElementById('quickAddCategory').value = 'others';
+  openModal('modalQuickAdd');
+}
+
+async function confirmQuickAdd() {
+  const keyword  = _quickAddKeywordValue;
+  const category = document.getElementById('quickAddCategory').value;
+  if (!keyword) return;
+
+  const btn = document.getElementById('btnQuickAddConfirm');
+  setLoading(btn, true);
+
+  try {
+    const res = await fetch(API.create, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ keyword, category, notes: 'Dari log penggunaan' }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || data.error || `HTTP ${res.status}`);
+
+    showToast(`"${keyword}" ditambahkan ke kategori ${category}!`, 'success');
+    addLog(`Quick-add: "${keyword}" → kategori ${category}`, 'success');
+    closeModal('modalQuickAdd');
+
+    // Mark row as matched in current table (update UI without reload)
+    usageData = usageData.map(r =>
+      r.keyword === keyword ? { ...r, matched: true, category } : r
+    );
+    sortUsage(usageSortField, true);
+
+    // Also refresh main keyword list in background
+    refreshData();
+  } catch (err) {
+    showToast('Gagal menambahkan: ' + err.message, 'error');
+  } finally {
+    setLoading(btn, false);
+  }
+}
+</script>
+</body>
+</html>
