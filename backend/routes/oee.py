@@ -106,38 +106,27 @@ def get_records():
             
             # IDLE TIME keywords - sinkron dengan daily controller
             idle_keywords = [
-                # Tunggu kain
-                'tunggu kain', 'ambil kain', 'menunggu kain', 'nunggu kain', 'kain belum datang',
-                # Tunggu obat/tinta
-                'tunggu obat', 'menunggu obat', 'nunggu obat', 'obat belum datang',
-                'tunggu tinta', 'menunggu tinta', 'nunggu tinta',
-                # Tunggu ingredient
-                'tunggu ingredient', 'ingredient habis', 'tunggu bahan kimia',
-                # Tunggu stiker
-                'tunggu stiker', 'menunggu stiker', 'nunggu stiker', 'stiker belum datang',
-                # Tunggu packing/packaging
-                'tunggu packing', 'tunggu packaging', 'menunggu packing', 'nunggu packing',
-                'packaging belum datang', 'box belum datang',
-                # Tunggu mixing
-                'tunggu mixing', 'menunggu mixing', 'nunggu mixing', 'mixing belum siap',
-                # Tunggu label/karton/box
-                'tunggu label', 'tunggu box', 'tunggu karton', 'tunggu lem',
-                # Tunggu produk (dari mesin lain)
-                'tunggu produk',
-                # Tunggu temperatur
-                'tunggu temperatur stabil', 'tunggu temperatur',
-                'tunggu temperature stabil', 'tunggu temperature',
-                # General tunggu
-                'tunggu bahan', 'tunggu material', 'tunggu order', 'tunggu instruksi',
-                'tunggu approval', 'tunggu qc', 'tunggu hasil qc',
-                # xxx habis (idle karena kehabisan)
-                'kain habis', 'stiker habis', 'packing habis', 'packaging habis',
-                'label habis', 'karton habis', 'box habis', 'lem habis', 'tinta habis',
-                'bahan habis', 'material habis',
-                # English
-                'waiting for', 'standby material', 'waiting material', 'no material',
-                # Idle lainnya
-                'idle', 'standby', 'menganggur', 'tidak ada order', 'no order', 'menhabiskan order'
+                'ambil kain', 'ambil stiker', 'box belum datang', 'box habis', 'buat carton', 
+                'idle', 'ingredient habis', 'kain belum datang', 'kain habis', 'karton habis', 
+                'keranjang habis', 'label habis', 'lem habis', 'listrik padam', 'menganggur', 
+                'menghabiskan order', 'menhabiskan order', 'menunggu kain', 'menunggu mixing', 
+                'menunggu obat', 'menunggu packaging', 'menunggu stiker', 'menunggu tinta', 
+                'menyiapkan produk', 'mixing belum siap', 'no order', 'nunggu kain', 
+                'nunggu mixing', 'nunggu obat', 'nunggu packaging', 'nunggu stiker', 
+                'nunggu tinta', 'obat belum datang', 'obat habis', 'operator dialihkan ke mc 7', 
+                'opr dialihkan ke mc 11', 'opr jalan di mc 10', 'packaging belum datang', 
+                'packaging habis', 'packing habis', 'persiapan produk', 
+                'produk habis ( opr dialihkan ke packing manual )', 'siapkan produk', 'standby', 
+                'stiker belum datang', 'stiker habis', 'susun produk', 'tidak ada order', 
+                'tinta habis', 'troli habis', 'trolley habis', 'tunggu approval', 'tunggu bahan', 
+                'tunggu bahan kimia', 'tunggu box', 'tunggu glove', 'tunggu gloves', 
+                'tunggu hasil qc', 'tunggu ingredient', 'tunggu instruksi', 'tunggu kain', 
+                'tunggu karton', 'tunggu keranjang', 'tunggu label', 'tunggu lem', 
+                'tunggu material', 'tunggu mixing', 'tunggu obat', 'tunggu order', 
+                'tunggu packaging', 'tunggu produk', 'tunggu qc', 'tunggu sarung tangan', 
+                'tunggu stiker', 'tunggu temperatur', 'tunggu temperatur stabil', 
+                'tunggu temperature', 'tunggu temperature stabil', 'tunggu tinta', 'tunggu troli', 
+                'tunggu trolley', 'waiting for'
             ]
             
             if sp.issues:
@@ -1393,40 +1382,26 @@ def get_daily_controller():
         
         # IDLE TIME keywords - sinkron dengan frontend
         idle_keywords = [
-            # Tunggu kain
-            'tunggu kain', 'ambil kain', 'menunggu kain', 'nunggu kain', 'kain belum datang',
-            # Tunggu obat/tinta
-            'tunggu obat', 'menunggu obat', 'nunggu obat', 'obat belum datang',
-            'tunggu tinta', 'menunggu tinta', 'nunggu tinta',
-            # Tunggu ingredient
-            'tunggu ingredient', 'ingredient habis', 'tunggu bahan kimia',
-            # Tunggu stiker
-            'tunggu stiker', 'menunggu stiker', 'nunggu stiker', 'stiker belum datang',
-            # Tunggu packing/packaging
-            'tunggu packing', 'tunggu packaging', 'menunggu packing', 'nunggu packing',
-            'packaging belum datang', 'box belum datang',
-            # Tunggu mixing
-            'tunggu mixing', 'menunggu mixing', 'nunggu mixing', 'mixing belum siap',
-            # Tunggu label/karton/box
-            'tunggu label', 'tunggu box', 'tunggu karton', 'tunggu lem',
-            # Tunggu produk (dari mesin lain)
-            'tunggu produk',
-            # Tunggu temperatur
-            'tunggu temperatur stabil', 'tunggu temperatur',
-            'tunggu temperature stabil', 'tunggu temperature',
-            # General tunggu
-            'tunggu bahan', 'tunggu material', 'tunggu order', 'tunggu instruksi',
-            'tunggu approval', 'tunggu qc', 'tunggu hasil qc',
-            # xxx habis (idle karena kehabisan)
-            'kain habis', 'stiker habis', 'packing habis', 'packaging habis',
-            'label habis', 'karton habis', 'box habis', 'lem habis', 'tinta habis',
-            'bahan habis', 'material habis',
-            # English
-            'waiting for', 'standby material', 'waiting material', 'no material',
-            # Idle lainnya
-            'idle', 'standby', 'menganggur', 'tidak ada order', 'no order', 'menhabiskan order',
-            # Susun produk
-            'susun produk'
+            'ambil kain', 'ambil stiker', 'box belum datang', 'box habis', 'buat carton', 'idle', 
+            'ingredient habis', 'kain belum datang', 'kain habis', 'karton habis', 
+            'keranjang habis', 'label habis', 'lem habis', 'listrik padam', 'menganggur', 
+            'menghabiskan order', 'menhabiskan order', 'menunggu kain', 'menunggu mixing', 
+            'menunggu obat', 'menunggu packaging', 'menunggu stiker', 'menunggu tinta', 
+            'menyiapkan produk', 'mixing belum siap', 'no order', 'nunggu kain', 'nunggu mixing', 
+            'nunggu obat', 'nunggu packaging', 'nunggu stiker', 'nunggu tinta', 
+            'obat belum datang', 'obat habis', 'operator dialihkan ke mc 7', 
+            'opr dialihkan ke mc 11', 'opr jalan di mc 10', 'packaging belum datang', 
+            'packaging habis', 'packing habis', 'persiapan produk', 
+            'produk habis ( opr dialihkan ke packing manual )', 'siapkan produk', 'standby', 
+            'stiker belum datang', 'stiker habis', 'susun produk', 'tidak ada order', 
+            'tinta habis', 'troli habis', 'trolley habis', 'tunggu approval', 'tunggu bahan', 
+            'tunggu bahan kimia', 'tunggu box', 'tunggu glove', 'tunggu gloves', 'tunggu hasil qc', 
+            'tunggu ingredient', 'tunggu instruksi', 'tunggu kain', 'tunggu karton', 
+            'tunggu keranjang', 'tunggu label', 'tunggu lem', 'tunggu material', 'tunggu mixing', 
+            'tunggu obat', 'tunggu order', 'tunggu packaging', 'tunggu produk', 'tunggu qc', 
+            'tunggu sarung tangan', 'tunggu stiker', 'tunggu temperatur', 
+            'tunggu temperatur stabil', 'tunggu temperature', 'tunggu temperature stabil', 
+            'tunggu tinta', 'tunggu troli', 'tunggu trolley', 'waiting for'
         ]
         
         for sp in shift_records:
@@ -2034,25 +2009,26 @@ def get_daily_controller_detail():
         
         # IDLE TIME keywords
         idle_keywords = [
-            'tunggu kain', 'ambil kain', 'menunggu kain', 'nunggu kain', 'kain belum datang',
-            'tunggu obat', 'menunggu obat', 'nunggu obat', 'obat belum datang',
-            'tunggu tinta', 'menunggu tinta', 'nunggu tinta',
-            'tunggu ingredient', 'ingredient habis', 'tunggu bahan kimia',
-            'tunggu stiker', 'menunggu stiker', 'nunggu stiker', 'stiker belum datang',
-            'tunggu packing', 'tunggu packaging', 'menunggu packing', 'nunggu packing',
-            'packaging belum datang', 'box belum datang',
-            'tunggu mixing', 'menunggu mixing', 'nunggu mixing', 'mixing belum siap',
-            'tunggu label', 'tunggu box', 'tunggu karton', 'tunggu lem',
-            'tunggu produk', 'tunggu temperatur stabil', 'tunggu temperatur',
-            'tunggu temperature stabil', 'tunggu temperature',
-            'tunggu bahan', 'tunggu material', 'tunggu order', 'tunggu instruksi',
-            'tunggu approval', 'tunggu qc', 'tunggu hasil qc',
-            'kain habis', 'stiker habis', 'packing habis', 'packaging habis',
-            'label habis', 'karton habis', 'box habis', 'lem habis', 'tinta habis',
-            'bahan habis', 'material habis',
-            'waiting for', 'standby material', 'waiting material', 'no material',
-            'idle', 'standby', 'menganggur', 'tidak ada order', 'no order', 'menhabiskan order',
-            'susun produk'
+            'ambil kain', 'ambil stiker', 'box belum datang', 'box habis', 'buat carton', 'idle', 
+            'ingredient habis', 'kain belum datang', 'kain habis', 'karton habis', 
+            'keranjang habis', 'label habis', 'lem habis', 'listrik padam', 'menganggur', 
+            'menghabiskan order', 'menhabiskan order', 'menunggu kain', 'menunggu mixing', 
+            'menunggu obat', 'menunggu packaging', 'menunggu stiker', 'menunggu tinta', 
+            'menyiapkan produk', 'mixing belum siap', 'no order', 'nunggu kain', 'nunggu mixing', 
+            'nunggu obat', 'nunggu packaging', 'nunggu stiker', 'nunggu tinta', 
+            'obat belum datang', 'obat habis', 'operator dialihkan ke mc 7', 
+            'opr dialihkan ke mc 11', 'opr jalan di mc 10', 'packaging belum datang', 
+            'packaging habis', 'packing habis', 'persiapan produk', 
+            'produk habis ( opr dialihkan ke packing manual )', 'siapkan produk', 'standby', 
+            'stiker belum datang', 'stiker habis', 'susun produk', 'tidak ada order', 
+            'tinta habis', 'troli habis', 'trolley habis', 'tunggu approval', 'tunggu bahan', 
+            'tunggu bahan kimia', 'tunggu box', 'tunggu glove', 'tunggu gloves', 'tunggu hasil qc', 
+            'tunggu ingredient', 'tunggu instruksi', 'tunggu kain', 'tunggu karton', 
+            'tunggu keranjang', 'tunggu label', 'tunggu lem', 'tunggu material', 'tunggu mixing', 
+            'tunggu obat', 'tunggu order', 'tunggu packaging', 'tunggu produk', 'tunggu qc', 
+            'tunggu sarung tangan', 'tunggu stiker', 'tunggu temperatur', 
+            'tunggu temperatur stabil', 'tunggu temperature', 'tunggu temperature stabil', 
+            'tunggu tinta', 'tunggu troli', 'tunggu trolley', 'waiting for'
         ]
         
         # Downtime category mapping - use unified function from helpers
