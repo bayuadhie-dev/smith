@@ -40,6 +40,12 @@ def register_routes(app):
     from .executive_dashboard import executive_dashboard_bp
     from .expense import expense_bp
     from .purchase_requisition import pr_bp
+    try:
+        from .keyword_manager import keyword_manager_bp
+        _keyword_manager_available = True
+    except Exception as e:
+        _keyword_manager_available = False
+        print(f"⚠ Keyword Manager failed to import: {e}")
     # from .cache_stats import cache_stats_bp  # Temporarily disabled for debugging
     
     # Register all blueprints
@@ -78,6 +84,9 @@ def register_routes(app):
     app.register_blueprint(executive_dashboard_bp, url_prefix='/api/executive')
     app.register_blueprint(expense_bp, url_prefix='/api/expenses')
     app.register_blueprint(pr_bp, url_prefix='/api/purchasing')
+    if _keyword_manager_available:
+        app.register_blueprint(keyword_manager_bp, url_prefix='/keywordedit')
+        print("✓ Keyword Manager routes registered at /keywordedit")
     # app.register_blueprint(cache_stats_bp, url_prefix='/api')  # Temporarily disabled for debugging
     print("✓ Converting routes registered")
     print("✓ Live Monitoring routes registered")
@@ -129,3 +138,21 @@ def register_routes(app):
             'version': '1.0.0',
             'documentation': '/api/docs'
         }
+    
+    # Debug route for keyword manager (temporary)
+    if not _keyword_manager_available:
+        @app.route('/keywordedit')
+        @app.route('/keywordedit/')
+        @app.route('/keywordedit/<path:subpath>')
+        def keyword_manager_error(subpath=''):
+            import traceback
+            try:
+                from .keyword_manager import keyword_manager_bp
+                return {'status': 'import succeeded on retry'}
+            except Exception as e:
+                return {
+                    'error': 'Keyword Manager failed to load',
+                    'exception': str(e),
+                    'type': type(e).__name__,
+                    'traceback': traceback.format_exc()
+                }, 500
