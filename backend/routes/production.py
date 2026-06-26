@@ -941,7 +941,8 @@ def create_work_order():
         try:
             redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
             r = redis.from_url(redis_url)
-            r.delete('production_work_orders_page1_per50_statusall')
+            for key in r.scan_iter("production_work_orders_*"):
+                r.delete(key)
         except Exception as cache_error:
             print(f"Redis cache invalidation error (continuing): {cache_error}")
         
@@ -980,7 +981,16 @@ def create_work_order():
         
         db.session.add(wo)
         db.session.commit()
-        
+
+        # Invalidate WO list cache
+        try:
+            import os, redis as _redis
+            r = _redis.from_url(os.getenv('REDIS_URL', 'redis://localhost:6379/0'))
+            for key in r.scan_iter('production_work_orders_*'):
+                r.delete(key)
+        except Exception:
+            pass
+
         return jsonify({'message': 'Work order created', 'wo_id': wo.id, 'wo_number': wo_number}), 201
     except Exception as e:
         db.session.rollback()
@@ -995,7 +1005,8 @@ def update_work_order(id):
         try:
             redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
             r = redis.from_url(redis_url)
-            r.delete('production_work_orders_page1_per50_statusall')
+            for key in r.scan_iter("production_work_orders_*"):
+                r.delete(key)
         except Exception as cache_error:
             print(f"Redis cache invalidation error (continuing): {cache_error}")
         
@@ -1052,7 +1063,8 @@ def delete_work_order(id):
         try:
             redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
             r = redis.from_url(redis_url)
-            r.delete('production_work_orders_page1_per50_statusall')
+            for key in r.scan_iter("production_work_orders_*"):
+                r.delete(key)
         except Exception as cache_error:
             print(f"Redis cache invalidation error (continuing): {cache_error}")
         
