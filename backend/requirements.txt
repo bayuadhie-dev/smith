@@ -4,7 +4,7 @@ Flask-SQLAlchemy==3.1.1
 Flask-Migrate==4.0.5
 Flask-CORS==4.0.0
 Flask-JWT-Extended==4.5.3
-Flask-SocketIO==5.3.5  # Real-time communication
+Flask-SocketIO==5.6.1  # Real-time communication
 
 # Database
 # psycopg2-binary==2.9.9
@@ -15,8 +15,8 @@ redis==5.0.1
 Flask-Caching==2.1.0
 
 # WebSocket support
-python-socketio==5.10.0
-python-engineio==4.8.0
+python-socketio==5.16.3
+python-engineio==4.13.2
 
 # Production Server
 gunicorn==21.2.0
