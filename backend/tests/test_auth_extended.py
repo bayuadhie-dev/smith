@@ -27,7 +27,7 @@ class TestAuthExtended:
         response = client.post('/api/auth/register', json={
             'username': 'newuser3',
             'email': 'invalid-email',
-            'password': 'pass123',
+            'password': 'Pass123!',
             'full_name': 'New User'
         })
         assert response.status_code in [201, 400, 500]
@@ -47,7 +47,7 @@ class TestAuthExtended:
     def test_change_password_wrong_current(self, client, auth_headers):
         response = client.post('/api/auth/change-password', json={
             'current_password': 'wrongpassword',
-            'new_password': 'newpass456'
+            'new_password': 'NewPass456!'
         }, headers=auth_headers)
         assert response.status_code == 401
 
@@ -83,7 +83,7 @@ class TestAuthValidation:
     def test_login_inactive_user(self, client, app, db_session):
         from models import User
         # Create inactive user
-        password_hash = app.bcrypt.generate_password_hash('pass123').decode('utf-8')
+        password_hash = app.bcrypt.generate_password_hash('pass123!').decode('utf-8')
         user = User(
             username='inactiveuser',
             email='inactive@test.com',
@@ -96,7 +96,7 @@ class TestAuthValidation:
 
         response = client.post('/api/auth/login', json={
             'username': 'inactiveuser',
-            'password': 'pass123'
+            'password': 'Pass123!'
         })
         assert response.status_code in [401, 403]
 
@@ -104,8 +104,9 @@ class TestAuthValidation:
         response = client.post('/api/auth/register', json={
             'username': 'differentuser',
             'email': 'test@example.com',  # Same as test_user
-            'password': 'pass123',
-            'full_name': 'Different User'
+            'password': 'Pass123!',
+            'full_name': 'Different User',
+            'captcha_token': 'test'
         })
         assert response.status_code in [409, 500]
 
@@ -113,8 +114,9 @@ class TestAuthValidation:
         response = client.post('/api/auth/register', json={
             'username': 'testuser',  # Same as test_user
             'email': 'different@example.com',
-            'password': 'pass123',
-            'full_name': 'Different User'
+            'password': 'Pass123!',
+            'full_name': 'Different User',
+            'captcha_token': 'test'
         })
         assert response.status_code in [409, 500]
 
@@ -122,8 +124,9 @@ class TestAuthValidation:
         response = client.post('/api/auth/register', json={
             'username': 'newuser999',
             'email': 'newuser999@example.com',
-            'password': 'pass123',
-            'full_name': 'New User 999'
+            'password': 'Pass123!',
+            'full_name': 'New User 999',
+            'captcha_token': 'test'
         })
         assert response.status_code in [201, 409]
 
@@ -137,9 +140,10 @@ class TestAuthValidation:
         response = client.post('/api/auth/register', json={
             'username': 'newuser998',
             'email': 'newuser998@example.com',
-            'password': 'pass123',
+            'password': 'Pass123!',
             'full_name': 'New User 998',
-            'role_id': role.id
+            'role_id': role.id,
+            'captcha_token': 'test'
         })
         assert response.status_code in [201, 409]
 
@@ -147,7 +151,7 @@ class TestAuthValidation:
         # Get refresh token from login
         response = client.post('/api/auth/login', json={
             'username': 'testuser',
-            'password': 'testpass123'
+            'password': 'testpass123!'
         })
         if response.status_code == 200:
             refresh_token = response.json.get('refresh_token')
@@ -198,7 +202,7 @@ class TestAuthValidation:
     def test_reset_password_invalid_token(self, client):
         response = client.post('/api/auth/reset-password', json={
             'token': 'invalid_token',
-            'password': 'newpass123'
+            'password': 'newpass123!'
         })
         assert response.status_code == 400
 

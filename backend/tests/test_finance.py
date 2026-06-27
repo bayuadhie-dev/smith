@@ -30,7 +30,7 @@ def test_get_revenue(client, auth_headers):
 
 def test_get_chart_of_accounts(client, auth_headers):
     """Test chart of accounts"""
-    response = client.get('/api/finance/accounting/chart-of-accounts', headers=auth_headers)
+    response = client.get('/api/finance/chart-of-accounts', headers=auth_headers)
     assert response.status_code in [200, 404]
 
 
