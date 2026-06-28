@@ -368,9 +368,10 @@ def _create_work_order(plan, quantity, scheduled_date, user_id):
 def create_plan_from_forecast(forecast_id):
     """Create production plan from sales forecast"""
     try:
-        forecast = db.session.get(SalesForecast, forecast_id) or abort(404)
-        user_id = int(get_jwt_identity())
-        
+        forecast = db.session.get(SalesForecast, forecast_id)
+        if not forecast:
+            return error_response('Forecast not found'), 404
+        user_id = int(get_jwt_identity())       
         # Check if forecast is approved
         if forecast.status != 'approved':
             return error_response('Forecast must be approved'), 400

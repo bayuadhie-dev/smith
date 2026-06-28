@@ -10,6 +10,8 @@ from models.production import Machine, WorkOrder
 from models.warehouse import WarehouseZone, WarehouseLocation, Inventory
 from models.work_order_bom import WorkOrderBOMItem
 from models.production import ProductionApproval
+from models.sales import SalesForecast
+from models.production import ProductionPlan
 
 class TestProductionExtended:
     def test_get_work_orders(self, client, auth_headers):
@@ -2092,6 +2094,71 @@ class TestProductionApprovalWorkflow:
         """Forwarding a non-existent approval should return 404"""
         response = client.put(
             '/api/production/production-approvals/999999/forward-to-finance',
+            headers=auth_headers
+        )
+        assert response.status_code == 404
+
+class TestCreatePlanFromForecast:
+    """Tests for create_plan_from_forecast endpoint"""
+
+    @pytest.fixture
+    def approved_forecast(self, db_session, test_product, test_user):
+        forecast = SalesForecast(
+            forecast_number='FC-TEST-001',
+            name='Test Forecast Q1',
+            forecast_type='quarterly',
+            period_start=datetime(2026, 1, 1).date(),
+            period_end=datetime(2026, 3, 31).date(),
+            product_id=test_product.id,
+            most_likely=500,
+            status='approved',
+            created_by=test_user.id
+        )
+        db_session.add(forecast)
+        db_session.commit()
+        return forecast
+
+    def test_create_plan_from_approved_forecast_success(self, client, auth_headers, approved_forecast):
+        """Creating a plan from an approved forecast should succeed and use most_likely as planned quantity"""
+        response = client.post(
+            f'/api/production-planning/production-plans/from-forecast/{approved_forecast.id}',
+            headers=auth_headers
+        )
+        assert response.status_code == 201
+        data = response.get_json()
+        plan_id = data['data']['plan_id']
+
+        plan = db.session.get(ProductionPlan, plan_id)
+        assert float(plan.planned_quantity) == 500
+        assert plan.based_on == 'forecast'
+        assert plan.sales_forecast_id == approved_forecast.id
+
+    def test_create_plan_from_unapproved_forecast_rejected(self, client, auth_headers, db_session, test_product, test_user):
+        """Creating a plan from a draft (not yet approved) forecast should be rejected"""
+        forecast = SalesForecast(
+            forecast_number='FC-TEST-002',
+            name='Test Forecast Draft',
+            forecast_type='monthly',
+            period_start=datetime(2026, 4, 1).date(),
+            period_end=datetime(2026, 4, 30).date(),
+            product_id=test_product.id,
+            most_likely=300,
+            status='draft',
+            created_by=test_user.id
+        )
+        db_session.add(forecast)
+        db_session.commit()
+
+        response = client.post(
+            f'/api/production-planning/production-plans/from-forecast/{forecast.id}',
+            headers=auth_headers
+        )
+        assert response.status_code == 400
+
+    def test_create_plan_from_nonexistent_forecast(self, client, auth_headers):
+        """Creating a plan from a non-existent forecast should return 404"""
+        response = client.post(
+            '/api/production-planning/production-plans/from-forecast/999999',
             headers=auth_headers
         )
         assert response.status_code == 404
