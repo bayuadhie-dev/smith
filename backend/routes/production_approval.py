@@ -839,7 +839,7 @@ def forward_to_finance(id):
                 description=f'Material Cost - {wo.product.name if wo.product else "N/A"}',
                 quantity=float(approval.quantity_good),
                 unit_price=float(approval.material_cost) / float(approval.quantity_good) if float(approval.quantity_good) > 0 else 0,
-                amount=float(approval.material_cost)
+                total_amount=float(approval.material_cost)
             ))
             line_number += 1
         
@@ -850,7 +850,7 @@ def forward_to_finance(id):
                 description='Labor Cost',
                 quantity=float(approval.quantity_good),
                 unit_price=float(approval.labor_cost) / float(approval.quantity_good) if float(approval.quantity_good) > 0 else 0,
-                amount=float(approval.labor_cost)
+                total_amount=float(approval.labor_cost)
             ))
             line_number += 1
         
@@ -861,7 +861,7 @@ def forward_to_finance(id):
                 description='Overhead Cost',
                 quantity=float(approval.quantity_good),
                 unit_price=float(approval.overhead_cost) / float(approval.quantity_good) if float(approval.quantity_good) > 0 else 0,
-                amount=float(approval.overhead_cost)
+                total_amount=float(approval.overhead_cost)
             ))
         
         # Update approval
