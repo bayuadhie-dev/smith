@@ -3,7 +3,7 @@ Extended tests for production routes to increase coverage
 """
 import pytest
 from datetime import datetime, timedelta
-
+from routes.production_input import calculate_oee_with_downtime_categories
 
 class TestProductionExtended:
     def test_get_work_orders(self, client, auth_headers):
@@ -1616,3 +1616,163 @@ class TestWorkOrderBOM:
     def test_reset_work_order_bom(self, client, auth_headers):
         response = client.post('/api/production/work-orders/1/bom/reset', headers=auth_headers)
         assert response.status_code in [200, 400, 404, 500]
+class TestCalculateOEEWithDowntimeCategories:
+    """Unit tests for OEE calculation with capped downtime categories"""
+
+    def test_no_downtime_full_efficiency(self):
+        """No downtime at all should give 100% efficiency"""
+        data = {
+            'downtime_mesin': 0,
+            'downtime_operator': 0,
+            'downtime_material': 0,
+            'downtime_design': 0,
+            'downtime_others': 0,
+            'idle_time': 0
+        }
+        result = calculate_oee_with_downtime_categories(data, planned_runtime=480)
+        assert result['efficiency_rate'] == 100
+        assert result['base_efficiency'] == 100
+        assert result['total_downtime'] == 0
+
+    def test_machine_downtime_under_limit_counts_fully(self):
+        """Mesin downtime under the 15% cap should count fully, no capping applied"""
+        # 480 * 10% = 48 minutes, well under the 15% cap
+        data = {
+            'downtime_mesin': 48,
+            'downtime_operator': 0,
+            'downtime_material': 0,
+            'downtime_design': 0,
+            'downtime_others': 0,
+            'idle_time': 0
+        }
+        result = calculate_oee_with_downtime_categories(data, planned_runtime=480)
+        assert result['loss_mesin'] == 10.0
+        assert result['efficiency_rate'] == 90.0
+        # Under the cap, base and capped efficiency should match
+        assert result['base_efficiency'] == result['efficiency_rate']
+
+    def test_machine_downtime_over_limit_gets_capped(self):
+        """Mesin downtime over the 15% cap should be capped, base_efficiency reflects true loss"""
+        # 480 * 25% = 120 minutes, well over the 15% cap
+        data = {
+            'downtime_mesin': 120,
+            'downtime_operator': 0,
+            'downtime_material': 0,
+            'downtime_design': 0,
+            'downtime_others': 0,
+            'idle_time': 0
+        }
+        result = calculate_oee_with_downtime_categories(data, planned_runtime=480)
+        assert result['loss_mesin'] == 15.0  # capped at limit
+        assert result['efficiency_rate'] == 85.0  # 100 - 15 (capped)
+        assert result['base_efficiency'] == 75.0  # 100 - 25 (uncapped, for reference)
+
+    def test_operator_downtime_capped_at_7_percent(self):
+        """Operator downtime over the 7% cap should be capped at 7%"""
+        # 480 * 20% = 96 minutes, well over the 7% cap
+        data = {
+            'downtime_mesin': 0,
+            'downtime_operator': 96,
+            'downtime_material': 0,
+            'downtime_design': 0,
+            'downtime_others': 0,
+            'idle_time': 0
+        }
+        result = calculate_oee_with_downtime_categories(data, planned_runtime=480)
+        assert result['loss_operator'] == 7.0
+        assert result['efficiency_rate'] == 93.0
+
+    def test_material_downtime_has_no_cap(self):
+        """Material downtime should count fully with no cap, even at high percentages"""
+        # 480 * 30% = 144 minutes - would be way over other categories' caps
+        data = {
+            'downtime_mesin': 0,
+            'downtime_operator': 0,
+            'downtime_material': 144,
+            'downtime_design': 0,
+            'downtime_others': 0,
+            'idle_time': 0
+        }
+        result = calculate_oee_with_downtime_categories(data, planned_runtime=480)
+        assert result['loss_material'] == 30.0  # uncapped
+        assert result['efficiency_rate'] == 70.0
+
+    def test_design_downtime_capped_at_8_percent(self):
+        """Design change downtime over the 8% cap should be capped at 8%"""
+        data = {
+            'downtime_mesin': 0,
+            'downtime_operator': 0,
+            'downtime_material': 0,
+            'downtime_design': 96,  # 20% of 480
+            'downtime_others': 0,
+            'idle_time': 0
+        }
+        result = calculate_oee_with_downtime_categories(data, planned_runtime=480)
+        assert result['loss_design'] == 8.0
+        assert result['efficiency_rate'] == 92.0
+
+    def test_others_downtime_capped_at_10_percent(self):
+        """Others downtime over the 10% cap should be capped at 10%"""
+        data = {
+            'downtime_mesin': 0,
+            'downtime_operator': 0,
+            'downtime_material': 0,
+            'downtime_design': 0,
+            'downtime_others': 96,  # 20% of 480
+            'idle_time': 0
+        }
+        result = calculate_oee_with_downtime_categories(data, planned_runtime=480)
+        assert result['loss_others'] == 10.0
+        assert result['efficiency_rate'] == 90.0
+
+    def test_multiple_categories_combined(self):
+        """Multiple downtime categories combined, each capped independently"""
+        data = {
+            'downtime_mesin': 120,     # 25% raw -> capped 15%
+            'downtime_operator': 96,   # 20% raw -> capped 7%
+            'downtime_material': 24,   # 5% raw -> uncapped, counts fully
+            'downtime_design': 0,
+            'downtime_others': 0,
+            'idle_time': 0
+        }
+        result = calculate_oee_with_downtime_categories(data, planned_runtime=480)
+        # Total capped loss: 15 + 7 + 5 = 27
+        assert result['loss_mesin'] == 15.0
+        assert result['loss_operator'] == 7.0
+        assert result['loss_material'] == 5.0
+        assert result['efficiency_rate'] == 73.0
+
+    def test_zero_planned_runtime_does_not_crash(self):
+        """planned_runtime of 0 should not raise a division-by-zero error"""
+        data = {
+            'downtime_mesin': 10,
+            'downtime_operator': 5,
+            'downtime_material': 0,
+            'downtime_design': 0,
+            'downtime_others': 0,
+            'idle_time': 0
+        }
+        result = calculate_oee_with_downtime_categories(data, planned_runtime=0)
+        assert result['loss_mesin'] == 0
+        assert result['loss_operator'] == 0
+        assert result['efficiency_rate'] == 100
+
+    def test_efficiency_never_goes_below_zero(self):
+        """Even with extreme combined downtime, efficiency_rate should floor at 0, not go negative"""
+        data = {
+            'downtime_mesin': 480,
+            'downtime_operator': 480,
+            'downtime_material': 480,
+            'downtime_design': 480,
+            'downtime_others': 480,
+            'idle_time': 0
+        }
+        result = calculate_oee_with_downtime_categories(data, planned_runtime=480)
+        assert result['efficiency_rate'] >= 0
+
+    def test_missing_downtime_fields_default_to_zero(self):
+        """Missing downtime category fields in input dict should default to 0, not crash"""
+        data = {}
+        result = calculate_oee_with_downtime_categories(data, planned_runtime=480)
+        assert result['efficiency_rate'] == 100
+        assert result['total_downtime'] == 0
