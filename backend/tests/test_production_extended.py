@@ -4,6 +4,11 @@ Extended tests for production routes to increase coverage
 import pytest
 from datetime import datetime, timedelta
 from routes.production_input import calculate_oee_with_downtime_categories
+from routes.production_integration import auto_deduct_materials, auto_receive_finished_goods
+from models import db
+from models.production import Machine, WorkOrder
+from models.warehouse import WarehouseZone, WarehouseLocation, Inventory
+from models.work_order_bom import WorkOrderBOMItem
 
 class TestProductionExtended:
     def test_get_work_orders(self, client, auth_headers):
@@ -1776,3 +1781,171 @@ class TestCalculateOEEWithDowntimeCategories:
         result = calculate_oee_with_downtime_categories(data, planned_runtime=480)
         assert result['efficiency_rate'] == 100
         assert result['total_downtime'] == 0
+
+class TestProductionIntegration:
+    """Tests for auto_deduct_materials and auto_receive_finished_goods"""
+
+    @pytest.fixture
+    def warehouse_location(self, db_session):
+        """Create a minimal warehouse zone + location for inventory tests"""
+        zone = WarehouseZone(
+            code='ZONE-TEST',
+            name='Test Zone',
+            material_type='raw_materials',
+            zone_type='storage'
+        )
+        db_session.add(zone)
+        db_session.commit()
+
+        location = WarehouseLocation(
+            zone_id=zone.id,
+            location_code='ZONE-TEST-R1-L1-P1',
+            rack='R1',
+            level='L1',
+            position='P1',
+            capacity_uom='KG'
+        )
+        db_session.add(location)
+        db_session.commit()
+        return location
+
+    @pytest.fixture
+    def material_inventory(self, db_session, test_material, warehouse_location):
+        """Create inventory stock for the test material"""
+        inv = Inventory(
+            material_id=test_material.id,
+            location_id=warehouse_location.id,
+            quantity_on_hand=100,
+            quantity_available=100
+        )
+        db_session.add(inv)
+        db_session.commit()
+        return inv
+
+    @pytest.fixture
+    def test_machine(self, db_session):
+        machine = Machine(
+            code='MC-TEST',
+            name='Test Machine',
+            machine_type='nonwoven_machine'
+        )
+        db_session.add(machine)
+        db_session.commit()
+        return machine
+
+    @pytest.fixture
+    def work_order_with_bom(self, db_session, test_product, test_material, material_inventory):
+        """Create a work order with one BOM item requiring the test material"""
+        wo = WorkOrder(
+            wo_number='WO-TEST-001',
+            product_id=test_product.id,
+            bom_id=None,
+            quantity=10,
+            uom='PCS',
+            status='in_progress'
+        )
+        db_session.add(wo)
+        db_session.commit()
+
+        # Give it a bom_id so auto_deduct_materials doesn't reject for "no BOM attached"
+        wo.bom_id = 1
+        db_session.commit()
+
+        bom_item = WorkOrderBOMItem(
+            work_order_id=wo.id,
+            line_number=1,
+            material_id=test_material.id,
+            item_name=test_material.name,
+            quantity_per_unit=2,  # 2 KG per unit
+            uom='KG',
+            quantity_planned=20  # 2 * 10 units
+        )
+        db_session.add(bom_item)
+        db_session.commit()
+        return wo
+
+    def test_auto_deduct_materials_success(self, app, db_session, work_order_with_bom, material_inventory):
+        """Deducting materials with sufficient stock should succeed and reduce inventory"""
+        inventory_id = material_inventory.id
+        with app.app_context():
+            success, message, transactions = auto_deduct_materials(work_order_with_bom.id)
+
+            assert success is True
+            assert len(transactions) == 1
+
+            updated_inv = db.session.get(Inventory, inventory_id)
+            # Started with 100, BOM needs 20 (2 per unit * 10 units)
+            assert float(updated_inv.quantity_on_hand) == 80
+            assert float(updated_inv.quantity_available) == 80
+
+    def test_auto_deduct_materials_insufficient_stock(self, app, db_session, work_order_with_bom, material_inventory):
+        """Deducting materials with insufficient stock should fail and not modify inventory"""
+        # Reduce available stock below what's required (BOM needs 20)
+        material_inventory.quantity_on_hand = 5
+        material_inventory.quantity_available = 5
+        db_session.commit()
+        inventory_id = material_inventory.id
+
+        with app.app_context():
+            success, message, insufficient = auto_deduct_materials(work_order_with_bom.id)
+
+            assert success is False
+            assert len(insufficient) == 1
+            assert insufficient[0]['required'] == 20
+
+            updated_inv = db.session.get(Inventory, inventory_id)
+            # Stock should remain untouched since deduction failed
+            assert float(updated_inv.quantity_on_hand) == 5
+
+    def test_auto_deduct_materials_no_work_order(self, app):
+        """Calling with a non-existent work order ID should fail gracefully"""
+        with app.app_context():
+            success, message, data = auto_deduct_materials(999999)
+            assert success is False
+            assert 'not found' in message.lower()
+
+    def test_auto_deduct_materials_no_bom_items(self, app, db_session, test_product):
+        """Work order with a bom_id but zero actual BOM items should fail gracefully"""
+        with app.app_context():
+            wo = WorkOrder(
+                wo_number='WO-TEST-002',
+                product_id=test_product.id,
+                bom_id=1,
+                quantity=5,
+                uom='PCS',
+                status='in_progress'
+            )
+            db_session.add(wo)
+            db_session.commit()
+
+            success, message, data = auto_deduct_materials(wo.id)
+            assert success is False
+            assert 'no bom items' in message.lower()
+
+    def test_auto_receive_finished_goods_creates_inventory(self, app, db_session, test_product, warehouse_location):
+        """Receiving finished goods for a product with no existing inventory should create one"""
+        with app.app_context():
+            wo = WorkOrder(
+                wo_number='WO-TEST-003',
+                product_id=test_product.id,
+                quantity=50,
+                uom='PCS',
+                status='completed'
+            )
+            db_session.add(wo)
+            db_session.commit()
+
+            success, message, inventory_id = auto_receive_finished_goods(wo.id, 50)
+
+            assert success is True
+            assert inventory_id is not None
+
+            inv = db.session.get(Inventory, inventory_id)
+            assert float(inv.quantity_on_hand) == 50
+
+    def test_auto_receive_finished_goods_no_work_order(self, app):
+        """Receiving for a non-existent work order should fail gracefully"""
+        with app.app_context():
+            success, message, inventory_id = auto_receive_finished_goods(999999, 10)
+            assert success is False
+            assert inventory_id is None
