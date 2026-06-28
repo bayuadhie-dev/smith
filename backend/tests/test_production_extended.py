@@ -2162,3 +2162,83 @@ class TestCreatePlanFromForecast:
             headers=auth_headers
         )
         assert response.status_code == 404
+
+class TestUpdateWorkOrderBOMItem:
+    """Tests for update_work_order_bom_item endpoint - quantity_planned and variance calculation"""
+
+    @pytest.fixture
+    def wo_with_bom_item(self, db_session, test_product, test_material):
+        wo = WorkOrder(
+            wo_number='WO-BOMVAR-001',
+            product_id=test_product.id,
+            quantity=10,
+            uom='PCS',
+            status='in_progress'
+        )
+        db_session.add(wo)
+        db_session.commit()
+
+        item = WorkOrderBOMItem(
+            work_order_id=wo.id,
+            line_number=1,
+            material_id=test_material.id,
+            item_name=test_material.name,
+            quantity_per_unit=2,
+            uom='KG',
+            quantity_planned=20  # 2 * 10
+        )
+        db_session.add(item)
+        db_session.commit()
+        return wo, item
+
+    def test_update_recalculates_quantity_planned(self, client, auth_headers, wo_with_bom_item):
+        """Changing quantity_per_unit should recalculate quantity_planned based on WO quantity"""
+        wo, item = wo_with_bom_item
+        response = client.put(
+            f'/api/production/work-orders/{wo.id}/bom/{item.id}',
+            json={'quantity_per_unit': 3},
+            headers=auth_headers
+        )
+        assert response.status_code == 200
+        data = response.get_json()
+        # New quantity_planned should be 3 * 10 (WO quantity) = 30
+        assert float(data['item']['quantity_planned']) == 30
+
+    def test_update_calculates_variance_when_actual_provided(self, client, auth_headers, wo_with_bom_item):
+        """Providing quantity_actual should calculate quantity_variance against quantity_planned"""
+        wo, item = wo_with_bom_item
+        response = client.put(
+            f'/api/production/work-orders/{wo.id}/bom/{item.id}',
+            json={'quantity_actual': 25},
+            headers=auth_headers
+        )
+        assert response.status_code == 200
+
+        updated_item = db.session.get(WorkOrderBOMItem, item.id)
+        # planned stays 20 (quantity_per_unit unchanged), actual is 25, variance = 25 - 20 = 5
+        assert float(updated_item.quantity_variance) == 5
+
+    def test_update_with_zero_actual_still_calculates_variance(self, client, auth_headers, wo_with_bom_item):
+        """quantity_actual=0 is a valid value (zero usage) and should still update variance, not be ignored"""
+        wo, item = wo_with_bom_item
+        response = client.put(
+            f'/api/production/work-orders/{wo.id}/bom/{item.id}',
+            json={'quantity_actual': 0},
+            headers=auth_headers
+        )
+        assert response.status_code == 200
+
+        updated_item = db.session.get(WorkOrderBOMItem, item.id)
+        assert float(updated_item.quantity_actual) == 0
+        # Variance should be 0 - 20 = -20, NOT left as None/unchanged
+        assert float(updated_item.quantity_variance) == -20
+
+    def test_update_nonexistent_item_returns_404(self, client, auth_headers, wo_with_bom_item):
+        """Updating a BOM item that doesn't exist for this WO should return 404"""
+        wo, item = wo_with_bom_item
+        response = client.put(
+            f'/api/production/work-orders/{wo.id}/bom/999999',
+            json={'quantity_actual': 10},
+            headers=auth_headers
+        )
+        assert response.status_code == 404

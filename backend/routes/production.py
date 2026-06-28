@@ -3667,7 +3667,7 @@ def update_work_order_bom_item(wo_id, item_id):
             item.quantity_planned = qty_per_unit * wo_quantity
             
             # Calculate variance if actual is set
-            if item.quantity_actual:
+            if item.quantity_actual is not None:
                 item.quantity_variance = float(item.quantity_actual) - float(item.quantity_planned)
         
         # Mark as modified
