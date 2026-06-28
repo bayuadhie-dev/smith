@@ -9,6 +9,7 @@ from models import db
 from models.production import Machine, WorkOrder
 from models.warehouse import WarehouseZone, WarehouseLocation, Inventory
 from models.work_order_bom import WorkOrderBOMItem
+from models.production import ProductionApproval
 
 class TestProductionExtended:
     def test_get_work_orders(self, client, auth_headers):
@@ -1949,3 +1950,148 @@ class TestProductionIntegration:
             success, message, inventory_id = auto_receive_finished_goods(999999, 10)
             assert success is False
             assert inventory_id is None
+
+
+class TestProductionApprovalWorkflow:
+    """Tests for submit_wo_for_approval and forward_to_finance endpoints"""
+
+    @pytest.fixture
+    def completed_work_order(self, db_session, test_product):
+        """A work order that's ready to be submitted for approval"""
+        wo = WorkOrder(
+            wo_number='WO-APPROVAL-001',
+            product_id=test_product.id,
+            quantity=100,
+            uom='PCS',
+            status='completed',
+            quantity_produced=100,
+            quantity_good=95,
+            quantity_scrap=5
+        )
+        db_session.add(wo)
+        db_session.commit()
+        return wo
+
+    def test_submit_wo_for_approval_success(self, client, auth_headers, completed_work_order):
+        """Submitting a completed work order should create a pending approval"""
+        response = client.post(
+            f'/api/production/work-orders/{completed_work_order.id}/submit-for-approval',
+            headers=auth_headers
+        )
+        assert response.status_code == 201
+        data = response.get_json()
+        assert data['approval']['status'] == 'pending'
+        assert float(data['approval']['quantity_good']) == 95
+
+    def test_submit_wo_for_approval_not_completed(self, client, auth_headers, db_session, test_product):
+        """Submitting a work order that isn't completed yet should be rejected"""
+        wo = WorkOrder(
+            wo_number='WO-APPROVAL-002',
+            product_id=test_product.id,
+            quantity=50,
+            uom='PCS',
+            status='in_progress'
+        )
+        db_session.add(wo)
+        db_session.commit()
+
+        response = client.post(
+            f'/api/production/work-orders/{wo.id}/submit-for-approval',
+            headers=auth_headers
+        )
+        assert response.status_code == 400
+
+    def test_submit_wo_for_approval_already_submitted(self, client, auth_headers, completed_work_order):
+        """Submitting the same work order twice should be rejected on the second attempt"""
+        first = client.post(
+            f'/api/production/work-orders/{completed_work_order.id}/submit-for-approval',
+            headers=auth_headers
+        )
+        assert first.status_code == 201
+
+        second = client.post(
+            f'/api/production/work-orders/{completed_work_order.id}/submit-for-approval',
+            headers=auth_headers
+        )
+        assert second.status_code == 400
+
+    def test_submit_wo_for_approval_not_found(self, client, auth_headers):
+        """Submitting a non-existent work order should return 404"""
+        response = client.post(
+            '/api/production/work-orders/999999/submit-for-approval',
+            headers=auth_headers
+        )
+        assert response.status_code == 404
+
+    @pytest.fixture
+    def approved_approval(self, db_session, completed_work_order, test_user):
+        """A production approval already in 'approved' status, ready to forward"""
+        approval = ProductionApproval(
+            approval_number='PA-TEST-001',
+            work_order_id=completed_work_order.id,
+            quantity_produced=100,
+            quantity_good=95,
+            quantity_reject=5,
+            material_cost=1000,
+            labor_cost=500,
+            overhead_cost=200,
+            total_cost=1700,
+            cost_per_unit=17.89,
+            status='approved',
+            submitted_by=test_user.id
+        )
+        db_session.add(approval)
+        db_session.commit()
+        return approval
+
+    def test_forward_to_finance_success(self, client, auth_headers, approved_approval):
+        """Forwarding an approved production should create an invoice with cost breakdown"""
+        response = client.put(
+            f'/api/production/production-approvals/{approved_approval.id}/forward-to-finance',
+            headers=auth_headers
+        )
+        assert response.status_code == 200
+        data = response.get_json()
+        assert 'invoice_id' in data
+        assert data['invoice_id'] is not None
+
+    def test_forward_to_finance_not_approved(self, client, auth_headers, db_session, completed_work_order, test_user):
+        """Forwarding an approval that's still pending should be rejected"""
+        approval = ProductionApproval(
+            approval_number='PA-TEST-002',
+            work_order_id=completed_work_order.id,
+            quantity_produced=100,
+            quantity_good=95,
+            status='pending',
+            submitted_by=test_user.id
+        )
+        db_session.add(approval)
+        db_session.commit()
+
+        response = client.put(
+            f'/api/production/production-approvals/{approval.id}/forward-to-finance',
+            headers=auth_headers
+        )
+        assert response.status_code == 400
+
+    def test_forward_to_finance_already_forwarded(self, client, auth_headers, approved_approval):
+        """Forwarding the same approval twice should be rejected on the second attempt"""
+        first = client.put(
+            f'/api/production/production-approvals/{approved_approval.id}/forward-to-finance',
+            headers=auth_headers
+        )
+        assert first.status_code == 200
+
+        second = client.put(
+            f'/api/production/production-approvals/{approved_approval.id}/forward-to-finance',
+            headers=auth_headers
+        )
+        assert second.status_code == 400
+
+    def test_forward_to_finance_not_found(self, client, auth_headers):
+        """Forwarding a non-existent approval should return 404"""
+        response = client.put(
+            '/api/production/production-approvals/999999/forward-to-finance',
+            headers=auth_headers
+        )
+        assert response.status_code == 404
