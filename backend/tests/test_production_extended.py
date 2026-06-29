@@ -3274,3 +3274,52 @@ class TestGetWorkOrderDetail:
         assert response.status_code == 404
 
 
+class TestBOMMasterCRUD:
+    """Tests for get_boms and create_bom (master BOM, not WO-level)"""
+
+    def test_get_boms_only_returns_active(self, client, auth_headers, db_session, test_product):
+        active_bom = BillOfMaterials(bom_number='BOM-MASTER-001', product_id=test_product.id, batch_uom='PCS', is_active=True)
+        inactive_bom = BillOfMaterials(bom_number='BOM-MASTER-002', product_id=test_product.id, batch_uom='PCS', is_active=False)
+        db_session.add_all([active_bom, inactive_bom])
+        db_session.commit()
+
+        response = client.get('/api/production/bom', headers=auth_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        bom_numbers = [b['bom_number'] for b in data['boms']]
+        assert 'BOM-MASTER-001' in bom_numbers
+        assert 'BOM-MASTER-002' not in bom_numbers
+
+    def test_create_bom_with_items(self, client, auth_headers, test_product, test_material):
+        response = client.post(
+            '/api/production/bom',
+            json={
+                'product_id': test_product.id, 'batch_size': 100, 'batch_uom': 'PCS',
+                'items': [
+                    {'material_id': test_material.id, 'quantity': 5, 'uom': 'KG'},
+                    {'material_id': test_material.id, 'quantity': 2, 'uom': 'KG', 'scrap_percent': 3}
+                ]
+            },
+            headers=auth_headers
+        )
+        assert response.status_code == 201
+        data = response.get_json()
+
+        bom = db.session.get(BillOfMaterials, data['bom_id'])
+        items = BOMItem.query.filter_by(bom_id=bom.id).order_by(BOMItem.line_number).all()
+        assert len(items) == 2
+        assert items[0].line_number == 1
+        assert items[1].line_number == 2
+        assert float(items[1].scrap_percent) == 3
+
+    def test_create_bom_with_no_items(self, client, auth_headers, test_product):
+        """A BOM with an empty items list should still succeed (just no BOMItem rows)"""
+        response = client.post(
+            '/api/production/bom',
+            json={'product_id': test_product.id, 'batch_size': 50, 'batch_uom': 'PCS', 'items': []},
+            headers=auth_headers
+        )
+        assert response.status_code == 201
+        data = response.get_json()
+        items = BOMItem.query.filter_by(bom_id=data['bom_id']).all()
+        assert len(items) == 0
