@@ -3034,3 +3034,34 @@ class TestRemainingStockCRUD:
         assert response.status_code == 404
 
 
+class TestBulkCompleteWorkOrders:
+    """Tests for bulk_complete_work_orders endpoint"""
+
+    def test_bulk_complete_no_in_progress_orders(self, client, auth_headers):
+        """With no in_progress WOs, should return success with completed=0, not error"""
+        response = client.put('/api/production/work-orders/bulk-complete', headers=auth_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['completed'] == 0
+
+    def test_bulk_complete_multiple_work_orders(self, client, auth_headers, db_session, test_product):
+        """Multiple in_progress WOs should all be processed in a single call"""
+        wo1 = WorkOrder(wo_number='WO-BULK-001', product_id=test_product.id, quantity=10, uom='PCS',
+                         status='in_progress', quantity_good=10)
+        wo2 = WorkOrder(wo_number='WO-BULK-002', product_id=test_product.id, quantity=20, uom='PCS',
+                         status='in_progress', quantity_good=20)
+        wo3 = WorkOrder(wo_number='WO-BULK-003', product_id=test_product.id, quantity=5, uom='PCS',
+                         status='planned')  # not in_progress, should be untouched
+        db_session.add_all([wo1, wo2, wo3])
+        db_session.commit()
+
+        response = client.put('/api/production/work-orders/bulk-complete', headers=auth_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['completed'] == 2
+        assert len(data['errors']) == 0
+
+        db_session.expire_all()
+        # wo3 should remain untouched since it wasn't in_progress
+        untouched_wo = db.session.get(WorkOrder, wo3.id)
+        assert untouched_wo.status == 'planned'
