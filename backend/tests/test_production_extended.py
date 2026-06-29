@@ -2860,3 +2860,90 @@ class TestMachineCRUDAndEfficiency:
     def test_machine_efficiency_not_found(self, client, auth_headers):
         response = client.get('/api/production/machines/999999/efficiency', headers=auth_headers)
         assert response.status_code == 404
+
+class TestProductionRecordCRUD:
+    """Tests for create_production_record and update_production_record - WO total accumulation"""
+
+    def test_create_production_record_accumulates_wo_totals(self, client, auth_headers, db_session, test_product):
+        """Creating a production record should ADD to WO totals, not overwrite"""
+        wo = WorkOrder(
+            wo_number='WO-REC-001', product_id=test_product.id,
+            quantity=200, uom='PCS', status='in_progress',
+            quantity_produced=10, quantity_good=8, quantity_scrap=2
+        )
+        db_session.add(wo)
+        db_session.commit()
+
+        response = client.post(
+            '/api/production/production-records',
+            json={
+                'work_order_id': wo.id, 'quantity_produced': 50,
+                'quantity_good': 48, 'quantity_scrap': 2, 'uom': 'PCS'
+            },
+            headers=auth_headers
+        )
+        assert response.status_code == 201
+
+        db_session.expire_all()
+        updated_wo = db.session.get(WorkOrder, wo.id)
+        # Started at 10/8/2, added 50/48/2 -> should be 60/56/4, not overwritten to 50/48/2
+        assert float(updated_wo.quantity_produced) == 60
+        assert float(updated_wo.quantity_good) == 56
+        assert float(updated_wo.quantity_scrap) == 4
+
+    def test_create_production_record_uses_wo_product_when_not_specified(self, client, auth_headers, db_session, test_product):
+        """If product_id is omitted, it should fall back to the work order's product"""
+        wo = WorkOrder(wo_number='WO-REC-002', product_id=test_product.id, quantity=100, uom='PCS', status='in_progress')
+        db_session.add(wo)
+        db_session.commit()
+
+        response = client.post(
+            '/api/production/production-records',
+            json={'work_order_id': wo.id, 'quantity_produced': 20, 'quantity_good': 20, 'uom': 'PCS'},
+            headers=auth_headers
+        )
+        assert response.status_code == 201
+        data = response.get_json()
+
+        record = db.session.get(ProductionRecord, data['record_id'])
+        assert record.product_id == test_product.id
+
+    def test_update_production_record_adjusts_wo_totals_by_difference(self, client, auth_headers, db_session, test_product):
+        """Updating a record's quantity should adjust WO totals by the DIFFERENCE, not re-add the new value wholesale"""
+        wo = WorkOrder(
+            wo_number='WO-REC-003', product_id=test_product.id,
+            quantity=200, uom='PCS', status='in_progress',
+            quantity_produced=50, quantity_good=48, quantity_scrap=2
+        )
+        db_session.add(wo)
+        db_session.commit()
+
+        record = ProductionRecord(
+            work_order_id=wo.id, production_date=datetime.utcnow(),
+            quantity_produced=50, quantity_good=48, quantity_scrap=2, uom='PCS'
+        )
+        db_session.add(record)
+        db_session.commit()
+
+        response = client.put(
+            f'/api/production/production-records/{record.id}',
+            json={'quantity_produced': 70, 'quantity_good': 65, 'quantity_scrap': 5},
+            headers=auth_headers
+        )
+        assert response.status_code == 200
+
+        db_session.expire_all()
+        updated_wo = db.session.get(WorkOrder, wo.id)
+        # WO was 50/48/2. Record changed from 50/48/2 to 70/65/5 (diff: +20/+17/+3)
+        # WO should become 70/65/5, not 50+70=120 (wholesale re-add)
+        assert float(updated_wo.quantity_produced) == 70
+        assert float(updated_wo.quantity_good) == 65
+        assert float(updated_wo.quantity_scrap) == 5
+
+    def test_update_production_record_not_found(self, client, auth_headers):
+        response = client.put('/api/production/production-records/999999', json={'quantity_produced': 1}, headers=auth_headers)
+        assert response.status_code == 404
+
+    def test_get_production_record_not_found(self, client, auth_headers):
+        response = client.get('/api/production/production-records/999999', headers=auth_headers)
+        assert response.status_code == 404
