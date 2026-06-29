@@ -3231,3 +3231,46 @@ class TestGetWorkOrdersList:
         data = response.get_json()
         assert data['summary']['total'] == 0
         assert data['summary']['total_produced'] == 0
+
+
+class TestGetWorkOrderDetail:
+    """Tests for get_work_order (detail endpoint) - BOM materials and consumption fallback chain"""
+
+    def test_get_work_order_detail_basic(self, client, auth_headers, db_session, test_product):
+        wo = WorkOrder(wo_number='WO-DETAIL-001', product_id=test_product.id, quantity=10, uom='PCS', status='planned')
+        db_session.add(wo)
+        db_session.commit()
+
+        response = client.get(f'/api/production/work-orders/{wo.id}', headers=auth_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['work_order']['wo_number'] == 'WO-DETAIL-001'
+        assert data['work_order']['bom_materials'] == []
+
+    def test_get_work_order_detail_with_bom_materials(self, client, auth_headers, db_session, test_product, test_material):
+        """A WO whose product has an active BOM should include calculated bom_materials"""
+        bom = BillOfMaterials(bom_number='BOM-DETAIL-001', product_id=test_product.id, batch_uom='PCS', is_active=True)
+        db_session.add(bom)
+        db_session.commit()
+
+        bom_item = BOMItem(bom_id=bom.id, line_number=1, material_id=test_material.id, quantity=3, uom='KG', unit_cost=10)
+        db_session.add(bom_item)
+        db_session.commit()
+
+        wo = WorkOrder(wo_number='WO-DETAIL-002', product_id=test_product.id, bom_id=bom.id, quantity=10, uom='PCS', status='planned')
+        db_session.add(wo)
+        db_session.commit()
+
+        response = client.get(f'/api/production/work-orders/{wo.id}', headers=auth_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        assert len(data['work_order']['bom_materials']) == 1
+        material = data['work_order']['bom_materials'][0]
+        assert material['quantity_per_karton'] == 3
+        assert material['unit_cost'] == 10
+
+    def test_get_work_order_detail_not_found(self, client, auth_headers):
+        response = client.get('/api/production/work-orders/999999', headers=auth_headers)
+        assert response.status_code == 404
+
+
