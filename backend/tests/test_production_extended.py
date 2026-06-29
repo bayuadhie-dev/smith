@@ -2771,3 +2771,92 @@ class TestWorkOrderCRUD:
     def test_delete_work_order_not_found(self, client, auth_headers):
         response = client.delete('/api/production/work-orders/999999', headers=auth_headers)
         assert response.status_code == 404
+
+class TestMachineCRUDAndEfficiency:
+    """Tests for create_machine, update_machine, get_machine_efficiency"""
+
+    def test_create_machine_success(self, client, auth_headers):
+        response = client.post(
+            '/api/production/machines',
+            json={'code': 'MC-NEW-001', 'name': 'New Test Machine', 'machine_type': 'nonwoven_machine'},
+            headers=auth_headers
+        )
+        assert response.status_code == 201
+        data = response.get_json()
+        machine = db.session.get(Machine, data['machine_id'])
+        assert machine.status == 'idle'
+        assert machine.code == 'MC-NEW-001'
+
+    def test_create_machine_missing_required_field(self, client, auth_headers):
+        """Missing required 'code' field should fail (KeyError caught as 500)"""
+        response = client.post(
+            '/api/production/machines',
+            json={'name': 'No Code Machine', 'machine_type': 'nonwoven_machine'},
+            headers=auth_headers
+        )
+        assert response.status_code == 500
+
+    def test_update_machine_success(self, client, auth_headers, db_session):
+        machine = Machine(code='MC-UPD-001', name='Old Name', machine_type='cutting_machine')
+        db_session.add(machine)
+        db_session.commit()
+
+        response = client.put(
+            f'/api/production/machines/{machine.id}/update',
+            json={'name': 'Updated Name', 'status': 'maintenance', 'efficiency': 85.5},
+            headers=auth_headers
+        )
+        assert response.status_code == 200
+
+        db_session.expire_all()
+        updated = db.session.get(Machine, machine.id)
+        assert updated.name == 'Updated Name'
+        assert updated.status == 'maintenance'
+        assert float(updated.efficiency) == 85.5
+
+    def test_update_machine_not_found(self, client, auth_headers):
+        response = client.put('/api/production/machines/999999/update', json={'name': 'X'}, headers=auth_headers)
+        assert response.status_code == 404
+
+    def test_machine_efficiency_no_production_records(self, client, auth_headers, db_session):
+        """A machine with zero production records should return zeroed metrics, not crash"""
+        machine = Machine(code='MC-EFF-001', name='Idle Machine', machine_type='packing_machine')
+        db_session.add(machine)
+        db_session.commit()
+
+        response = client.get(f'/api/production/machines/{machine.id}/efficiency', headers=auth_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['production']['total_produced'] == 0
+        assert data['production']['quality_rate'] == 0
+        assert data['efficiency']['oee'] == 0
+
+    def test_machine_efficiency_with_production_records(self, client, auth_headers, db_session, test_product):
+        machine = Machine(code='MC-EFF-002', name='Active Machine', machine_type='nonwoven_machine', efficiency=90)
+        db_session.add(machine)
+        db_session.commit()
+
+        wo = WorkOrder(wo_number='WO-EFF-001', product_id=test_product.id, quantity=100, uom='PCS', status='in_progress')
+        db_session.add(wo)
+        db_session.commit()
+
+        record = ProductionRecord(
+            work_order_id=wo.id, machine_id=machine.id, production_date=datetime.utcnow(),
+            quantity_produced=100, quantity_good=95, quantity_scrap=5,
+            uom='PCS', downtime_minutes=60
+        )
+        db_session.add(record)
+        db_session.commit()
+
+        response = client.get(f'/api/production/machines/{machine.id}/efficiency', headers=auth_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['production']['total_produced'] == 100
+        assert data['production']['quality_rate'] == 95.0
+        assert data['production']['scrap_rate'] == 5.0
+        # OEE should be a positive number less than or equal to 100
+        assert 0 < data['efficiency']['oee'] <= 100
+
+    def test_machine_efficiency_not_found(self, client, auth_headers):
+        response = client.get('/api/production/machines/999999/efficiency', headers=auth_headers)
+        assert response.status_code == 404
