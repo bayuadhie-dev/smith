@@ -3176,3 +3176,58 @@ class TestPackingListSync:
             headers=auth_headers
         )
         assert response.status_code == 404
+
+class TestGetWorkOrdersList:
+    """Tests for get_work_orders - filtering, summary counts, pack_per_carton resolution"""
+
+    def test_list_filters_by_status(self, client, auth_headers, db_session, test_product):
+        wo1 = WorkOrder(wo_number='WO-LIST-001', product_id=test_product.id, quantity=10, uom='PCS', status='planned')
+        wo2 = WorkOrder(wo_number='WO-LIST-002', product_id=test_product.id, quantity=10, uom='PCS', status='completed')
+        db_session.add_all([wo1, wo2])
+        db_session.commit()
+
+        response = client.get('/api/production/work-orders?status=completed', headers=auth_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        statuses = [wo['status'] for wo in data['work_orders']]
+        assert all(s == 'completed' for s in statuses)
+        assert any(wo['wo_number'] == 'WO-LIST-002' for wo in data['work_orders'])
+        assert not any(wo['wo_number'] == 'WO-LIST-001' for wo in data['work_orders'])
+
+    def test_list_summary_counts_total_orders(self, client, auth_headers, db_session, test_product):
+        wo1 = WorkOrder(wo_number='WO-LIST-003', product_id=test_product.id, quantity=10, uom='PCS', status='in_progress')
+        wo2 = WorkOrder(wo_number='WO-LIST-004', product_id=test_product.id, quantity=10, uom='PCS', status='completed', quantity_produced=10)
+        db_session.add_all([wo1, wo2])
+        db_session.commit()
+
+        response = client.get('/api/production/work-orders?status=in_progress', headers=auth_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        # Summary counts are across ALL work orders, not just the filtered/paginated result
+        assert data['summary']['total'] >= 2
+        assert data['summary']['in_progress'] >= 1
+        assert data['summary']['completed'] >= 1
+
+    def test_list_pack_per_carton_resolves_from_wo_field(self, client, auth_headers, db_session, test_product):
+        """WO's own pack_per_carton should take priority over BOM's"""
+        wo = WorkOrder(
+            wo_number='WO-LIST-005', product_id=test_product.id, quantity=10,
+            uom='PCS', status='planned', pack_per_carton=5, quantity_good=50
+        )
+        db_session.add(wo)
+        db_session.commit()
+
+        response = client.get('/api/production/work-orders', headers=auth_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        wo_data = next(w for w in data['work_orders'] if w['wo_number'] == 'WO-LIST-005')
+        assert wo_data['pack_per_carton'] == 5
+        assert wo_data['total_cartons'] == 10  # 50 quantity_good / 5 per carton
+
+    def test_list_empty_database_returns_zero_summary(self, client, auth_headers):
+        """An empty database should not crash the summary aggregation query"""
+        response = client.get('/api/production/work-orders', headers=auth_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['summary']['total'] == 0
+        assert data['summary']['total_produced'] == 0
