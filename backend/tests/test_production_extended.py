@@ -16,6 +16,7 @@ from models.material_issue import MaterialIssue
 from models.production import BillOfMaterials, BOMItem
 from models.wip_job_costing import WIPBatch
 from models.production import ProductionRecord
+from models.production import RemainingStock
 
 class TestProductionExtended:
     def test_get_work_orders(self, client, auth_headers):
@@ -2947,3 +2948,89 @@ class TestProductionRecordCRUD:
     def test_get_production_record_not_found(self, client, auth_headers):
         response = client.get('/api/production/production-records/999999', headers=auth_headers)
         assert response.status_code == 404
+
+class TestRemainingStockCRUD:
+    """Tests for remaining_stock CRUD endpoints"""
+
+    def test_create_remaining_stock_success(self, client, auth_headers):
+        response = client.post(
+            '/api/production/remaining-stocks',
+            json={'product_name': 'Sisa Produk A', 'qty_karton': 10},
+            headers=auth_headers
+        )
+        assert response.status_code == 201
+        data = response.get_json()
+        assert data['remaining_stock']['product_name'] == 'Sisa Produk A'
+
+    def test_create_remaining_stock_missing_product_name(self, client, auth_headers):
+        response = client.post(
+            '/api/production/remaining-stocks',
+            json={'qty_karton': 10},
+            headers=auth_headers
+        )
+        assert response.status_code == 400
+
+    def test_create_remaining_stock_zero_qty_rejected(self, client, auth_headers):
+        response = client.post(
+            '/api/production/remaining-stocks',
+            json={'product_name': 'Sisa Produk B', 'qty_karton': 0},
+            headers=auth_headers
+        )
+        assert response.status_code == 400
+
+    def test_create_remaining_stock_auto_fills_from_product(self, client, auth_headers, test_product):
+        """When product_id is given, product_name/code should be overridden from the product, not the manual input"""
+        response = client.post(
+            '/api/production/remaining-stocks',
+            json={
+                'product_id': test_product.id,
+                'product_name': 'This Should Be Overridden',
+                'qty_karton': 5
+            },
+            headers=auth_headers
+        )
+        assert response.status_code == 201
+        data = response.get_json()
+        assert data['remaining_stock']['product_name'] == test_product.name
+        assert data['remaining_stock']['product_code'] == test_product.code
+
+    def test_update_remaining_stock_success(self, client, auth_headers, db_session):
+        stock = RemainingStock(product_name='Old Name', qty_karton=10)
+        db_session.add(stock)
+        db_session.commit()
+
+        response = client.put(
+            f'/api/production/remaining-stocks/{stock.id}',
+            json={'product_name': 'New Name', 'qty_karton': 20},
+            headers=auth_headers
+        )
+        assert response.status_code == 200
+
+        db_session.expire_all()
+        updated = db.session.get(RemainingStock, stock.id)
+        assert updated.product_name == 'New Name'
+        assert float(updated.qty_karton) == 20
+
+    def test_update_remaining_stock_not_found(self, client, auth_headers):
+        response = client.put('/api/production/remaining-stocks/999999', json={'product_name': 'X'}, headers=auth_headers)
+        assert response.status_code == 404
+
+    def test_delete_remaining_stock_success(self, client, auth_headers, db_session):
+        stock = RemainingStock(product_name='To Delete', qty_karton=5)
+        db_session.add(stock)
+        db_session.commit()
+        stock_id = stock.id
+
+        response = client.delete(f'/api/production/remaining-stocks/{stock_id}', headers=auth_headers)
+        assert response.status_code == 200
+        assert db.session.get(RemainingStock, stock_id) is None
+
+    def test_delete_remaining_stock_not_found(self, client, auth_headers):
+        response = client.delete('/api/production/remaining-stocks/999999', headers=auth_headers)
+        assert response.status_code == 404
+
+    def test_get_remaining_stock_not_found(self, client, auth_headers):
+        response = client.get('/api/production/remaining-stocks/999999', headers=auth_headers)
+        assert response.status_code == 404
+
+
