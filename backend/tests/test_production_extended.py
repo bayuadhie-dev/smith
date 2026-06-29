@@ -2537,3 +2537,110 @@ class TestCompleteWorkOrder:
         response = client.put('/api/production/work-orders/999999/complete', headers=auth_headers)
         assert response.status_code == 404
 
+class TestCopyBOMToWorkOrder:
+    """Tests for copy_bom_to_work_order - carton-based quantity calculation"""
+
+    @pytest.fixture
+    def master_bom_with_carton(self, db_session, test_product, test_material):
+        """A master BOM with pack_per_carton = 5, requiring 2 KG of material per carton"""
+        bom = BillOfMaterials(
+            bom_number='BOM-COPY-001', product_id=test_product.id,
+            batch_uom='PCS', pack_per_carton=5, is_active=True
+        )
+        db_session.add(bom)
+        db_session.commit()
+
+        bom_item = BOMItem(
+            bom_id=bom.id, line_number=1, material_id=test_material.id,
+            quantity=2, uom='KG'
+        )
+        db_session.add(bom_item)
+        db_session.commit()
+        return bom, bom_item
+
+    def test_copy_bom_calculates_planned_quantity_by_carton(self, client, auth_headers, db_session, test_product, master_bom_with_carton):
+        """WO quantity 23 with pack_per_carton 5 should round up to 5 cartons, planned = 2*5=10"""
+        bom, bom_item = master_bom_with_carton
+        wo = WorkOrder(
+            wo_number='WO-COPY-001', product_id=test_product.id,
+            bom_id=bom.id, quantity=23, uom='PCS', status='planned'
+        )
+        db_session.add(wo)
+        db_session.commit()
+
+        response = client.post(
+            f'/api/production/work-orders/{wo.id}/bom/copy-from-master',
+            headers=auth_headers
+        )
+        assert response.status_code == 201
+        data = response.get_json()
+        assert data['items_copied'] == 1
+
+        wo_item = WorkOrderBOMItem.query.filter_by(work_order_id=wo.id).first()
+        # ceil(23 / 5) = 5 cartons; 2 KG/carton * 5 cartons = 10 KG planned
+        assert float(wo_item.quantity_planned) == 10
+
+    def test_copy_bom_exact_carton_multiple(self, client, auth_headers, db_session, test_product, master_bom_with_carton):
+        """WO quantity exactly divisible by pack_per_carton should not round up unnecessarily"""
+        bom, bom_item = master_bom_with_carton
+        wo = WorkOrder(
+            wo_number='WO-COPY-002', product_id=test_product.id,
+            bom_id=bom.id, quantity=20, uom='PCS', status='planned'
+        )
+        db_session.add(wo)
+        db_session.commit()
+
+        response = client.post(
+            f'/api/production/work-orders/{wo.id}/bom/copy-from-master',
+            headers=auth_headers
+        )
+        assert response.status_code == 201
+
+        wo_item = WorkOrderBOMItem.query.filter_by(work_order_id=wo.id).first()
+        # 20 / 5 = exactly 4 cartons; 2 * 4 = 8 KG planned
+        assert float(wo_item.quantity_planned) == 8
+
+    def test_copy_bom_rejects_if_already_has_items(self, client, auth_headers, db_session, test_product, test_material, master_bom_with_carton):
+        """Copying BOM to a WO that already has BOM items should be rejected"""
+        bom, bom_item = master_bom_with_carton
+        wo = WorkOrder(
+            wo_number='WO-COPY-003', product_id=test_product.id,
+            bom_id=bom.id, quantity=10, uom='PCS', status='planned'
+        )
+        db_session.add(wo)
+        db_session.commit()
+
+        existing_item = WorkOrderBOMItem(
+            work_order_id=wo.id, line_number=1, material_id=test_material.id,
+            item_name='Existing Item', quantity_per_unit=1, uom='KG'
+        )
+        db_session.add(existing_item)
+        db_session.commit()
+
+        response = client.post(
+            f'/api/production/work-orders/{wo.id}/bom/copy-from-master',
+            headers=auth_headers
+        )
+        assert response.status_code == 400
+
+    def test_copy_bom_no_bom_found(self, client, auth_headers, db_session, test_product):
+        """A WO whose product has no BOM at all should return 404"""
+        wo = WorkOrder(
+            wo_number='WO-COPY-004', product_id=test_product.id,
+            quantity=10, uom='PCS', status='planned'
+        )
+        db_session.add(wo)
+        db_session.commit()
+
+        response = client.post(
+            f'/api/production/work-orders/{wo.id}/bom/copy-from-master',
+            headers=auth_headers
+        )
+        assert response.status_code == 404
+
+    def test_copy_bom_work_order_not_found(self, client, auth_headers):
+        response = client.post(
+            '/api/production/work-orders/999999/bom/copy-from-master',
+            headers=auth_headers
+        )
+        assert response.status_code == 404
