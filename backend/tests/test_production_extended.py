@@ -17,6 +17,7 @@ from models.production import BillOfMaterials, BOMItem
 from models.wip_job_costing import WIPBatch
 from models.production import ProductionRecord
 from models.production import RemainingStock
+from models.production import PackingList, PackingListItem
 
 class TestProductionExtended:
     def test_get_work_orders(self, client, auth_headers):
@@ -3065,3 +3066,113 @@ class TestBulkCompleteWorkOrders:
         # wo3 should remain untouched since it wasn't in_progress
         untouched_wo = db.session.get(WorkOrder, wo3.id)
         assert untouched_wo.status == 'planned'
+
+
+class TestPackingListSync:
+    """Tests for get_packing_list and sync_packing_list - carton number wraparound logic"""
+
+    def test_get_packing_list_creates_if_not_exists(self, client, auth_headers, db_session, test_product):
+        wo = WorkOrder(wo_number='WO-PL-001', product_id=test_product.id, quantity=10, uom='PCS', status='planned')
+        db_session.add(wo)
+        db_session.commit()
+
+        response = client.get(f'/api/production/work-orders/{wo.id}/packing-list', headers=auth_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['packing_list'] is not None
+
+    def test_get_packing_list_not_found_wo(self, client, auth_headers):
+        response = client.get('/api/production/work-orders/999999/packing-list', headers=auth_headers)
+        assert response.status_code == 404
+
+    def test_sync_packing_list_sequential_numbering(self, client, auth_headers, db_session, test_product):
+        """Basic case: 5 cartons starting at 1 should be numbered 1,2,3,4,5"""
+        wo = WorkOrder(wo_number='WO-PL-002', product_id=test_product.id, quantity=10, uom='PCS', status='planned')
+        db_session.add(wo)
+        db_session.commit()
+
+        response = client.post(
+            f'/api/production/work-orders/{wo.id}/packing-list/sync',
+            json={'total_karton': 5, 'start_carton_number': 1, 'product_name': 'Test Product'},
+            headers=auth_headers
+        )
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['items_created'] == 5
+
+        packing_list = PackingList.query.filter_by(work_order_id=wo.id).first()
+        items = PackingListItem.query.filter_by(packing_list_id=packing_list.id).order_by(PackingListItem.carton_number).all()
+        carton_numbers = [item.carton_number for item in items]
+        assert carton_numbers == [1, 2, 3, 4, 5]
+        assert packing_list.last_carton_number == 5
+
+    def test_sync_packing_list_wraps_around_at_10000(self, client, auth_headers, db_session, test_product):
+        """Starting near the 10000 boundary should wrap around to 1, not continue to 10001+"""
+        wo = WorkOrder(wo_number='WO-PL-003', product_id=test_product.id, quantity=10, uom='PCS', status='planned')
+        db_session.add(wo)
+        db_session.commit()
+
+        response = client.post(
+            f'/api/production/work-orders/{wo.id}/packing-list/sync',
+            json={'total_karton': 5, 'start_carton_number': 9998, 'product_name': 'Test Product'},
+            headers=auth_headers
+        )
+        assert response.status_code == 200
+
+        packing_list = PackingList.query.filter_by(work_order_id=wo.id).first()
+        items = PackingListItem.query.filter_by(packing_list_id=packing_list.id).order_by(PackingListItem.id).all()
+        carton_numbers = [item.carton_number for item in items]
+        # 9998, 9999, 10000, then wrap to 1, 2
+        assert carton_numbers == [9998, 9999, 10000, 1, 2]
+
+    def test_sync_packing_list_replaces_existing_items(self, client, auth_headers, db_session, test_product):
+        """Calling sync again should DELETE old items and create fresh ones, not accumulate duplicates"""
+        wo = WorkOrder(wo_number='WO-PL-004', product_id=test_product.id, quantity=10, uom='PCS', status='planned')
+        db_session.add(wo)
+        db_session.commit()
+
+        first = client.post(
+            f'/api/production/work-orders/{wo.id}/packing-list/sync',
+            json={'total_karton': 10, 'start_carton_number': 1, 'product_name': 'Test Product'},
+            headers=auth_headers
+        )
+        assert first.status_code == 200
+
+        second = client.post(
+            f'/api/production/work-orders/{wo.id}/packing-list/sync',
+            json={'total_karton': 3, 'start_carton_number': 1, 'product_name': 'Test Product'},
+            headers=auth_headers
+        )
+        assert second.status_code == 200
+        data = second.get_json()
+        assert data['items_created'] == 3
+
+        packing_list = PackingList.query.filter_by(work_order_id=wo.id).first()
+        total_items = PackingListItem.query.filter_by(packing_list_id=packing_list.id).count()
+        assert total_items == 3  # not 13 (10 old + 3 new)
+
+    def test_sync_packing_list_start_number_above_10000_normalized(self, client, auth_headers, db_session, test_product):
+        """start_carton_number above 10000 should be normalized into the valid 1-10000 range"""
+        wo = WorkOrder(wo_number='WO-PL-005', product_id=test_product.id, quantity=10, uom='PCS', status='planned')
+        db_session.add(wo)
+        db_session.commit()
+
+        response = client.post(
+            f'/api/production/work-orders/{wo.id}/packing-list/sync',
+            json={'total_karton': 1, 'start_carton_number': 10005, 'product_name': 'Test Product'},
+            headers=auth_headers
+        )
+        assert response.status_code == 200
+
+        packing_list = PackingList.query.filter_by(work_order_id=wo.id).first()
+        item = PackingListItem.query.filter_by(packing_list_id=packing_list.id).first()
+        # 10005 should normalize to 5 (10005 - 1) % 10000 + 1 = 5
+        assert item.carton_number == 5
+
+    def test_sync_packing_list_not_found_wo(self, client, auth_headers):
+        response = client.post(
+            '/api/production/work-orders/999999/packing-list/sync',
+            json={'total_karton': 1},
+            headers=auth_headers
+        )
+        assert response.status_code == 404
