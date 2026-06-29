@@ -75,7 +75,7 @@ class WIPBatch(db.Model):
     
     def update_wip_value(self):
         """Update total WIP value from cost components"""
-        self.total_wip_value = self.material_cost + self.labor_cost + self.overhead_cost
+        self.total_wip_value = (self.material_cost or 0) + (self.labor_cost or 0) + (self.overhead_cost or 0)
         return self.total_wip_value
 
 class WIPStageMovement(db.Model):

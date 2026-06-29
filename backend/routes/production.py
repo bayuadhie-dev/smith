@@ -2013,9 +2013,9 @@ def start_work_order(id):
                         source_location_id = inv.location_id
                         
                         # Deduct from source inventory
-                        inv.quantity_on_hand -= issue_qty
-                        if inv.quantity_available >= issue_qty:
-                            inv.quantity_available -= issue_qty
+                        inv.quantity_on_hand = float(inv.quantity_on_hand) - issue_qty
+                        if float(inv.quantity_available) >= issue_qty:
+                            inv.quantity_available = float(inv.quantity_available) - issue_qty
                         inv.updated_at = datetime.utcnow()
                         
                         # Create stock_out movement from source
@@ -2080,7 +2080,7 @@ def start_work_order(id):
                     # Calculate material cost
                     issued_qty = required_qty - remaining_to_issue
                     material = db.session.get(Material, bom_item.material_id)
-                    unit_cost = float(material.unit_cost) if material and material.unit_cost else 0
+                    unit_cost = float(material.cost_per_unit) if material and material.cost_per_unit else 0
                     item_cost = issued_qty * unit_cost
                     total_material_cost += item_cost
                     
