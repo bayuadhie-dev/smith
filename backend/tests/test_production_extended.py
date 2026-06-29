@@ -15,6 +15,7 @@ from models.production import ProductionPlan
 from models.material_issue import MaterialIssue
 from models.production import BillOfMaterials, BOMItem
 from models.wip_job_costing import WIPBatch
+from models.production import ProductionRecord
 
 class TestProductionExtended:
     def test_get_work_orders(self, client, auth_headers):
@@ -2643,4 +2644,130 @@ class TestCopyBOMToWorkOrder:
             '/api/production/work-orders/999999/bom/copy-from-master',
             headers=auth_headers
         )
+        assert response.status_code == 404
+
+class TestWorkOrderCRUD:
+    """Tests for create_work_order, update_work_order, delete_work_order"""
+
+    def test_create_work_order_uses_product_uom_when_not_specified(self, client, auth_headers, test_product):
+        """If uom is not provided, it should fall back to the product's primary_uom"""
+        response = client.post(
+            '/api/production/work-orders',
+            json={'product_id': test_product.id, 'quantity': 100},
+            headers=auth_headers
+        )
+        assert response.status_code == 201
+        data = response.get_json()
+        wo = db.session.get(WorkOrder, data['wo_id'])
+        assert wo.uom == test_product.primary_uom
+
+    def test_create_work_order_with_explicit_uom(self, client, auth_headers, test_product):
+        response = client.post(
+            '/api/production/work-orders',
+            json={'product_id': test_product.id, 'quantity': 50, 'uom': 'KG'},
+            headers=auth_headers
+        )
+        assert response.status_code == 201
+        data = response.get_json()
+        wo = db.session.get(WorkOrder, data['wo_id'])
+        assert wo.uom == 'KG'
+        assert wo.status == 'planned'
+
+    def test_update_work_order_allowed_when_planned(self, client, auth_headers, db_session, test_product):
+        wo = WorkOrder(wo_number='WO-CRUD-001', product_id=test_product.id, quantity=10, uom='PCS', status='planned')
+        db_session.add(wo)
+        db_session.commit()
+
+        response = client.put(
+            f'/api/production/work-orders/{wo.id}',
+            json={'quantity': 99, 'priority': 'urgent'},
+            headers=auth_headers
+        )
+        assert response.status_code == 200
+
+        db_session.expire_all()
+        updated_wo = db.session.get(WorkOrder, wo.id)
+        assert float(updated_wo.quantity) == 99
+        assert updated_wo.priority == 'urgent'
+
+    def test_update_work_order_blocked_when_completed_without_force(self, client, auth_headers, db_session, test_product):
+        wo = WorkOrder(wo_number='WO-CRUD-002', product_id=test_product.id, quantity=10, uom='PCS', status='completed')
+        db_session.add(wo)
+        db_session.commit()
+
+        response = client.put(
+            f'/api/production/work-orders/{wo.id}',
+            json={'quantity': 99},
+            headers=auth_headers
+        )
+        assert response.status_code == 400
+
+    def test_update_work_order_allowed_when_completed_with_force(self, client, auth_headers, db_session, test_product):
+        wo = WorkOrder(wo_number='WO-CRUD-003', product_id=test_product.id, quantity=10, uom='PCS', status='completed')
+        db_session.add(wo)
+        db_session.commit()
+
+        response = client.put(
+            f'/api/production/work-orders/{wo.id}',
+            json={'quantity': 99, 'force': True},
+            headers=auth_headers
+        )
+        assert response.status_code == 200
+
+    def test_update_work_order_not_found(self, client, auth_headers):
+        response = client.put('/api/production/work-orders/999999', json={'quantity': 1}, headers=auth_headers)
+        assert response.status_code == 404
+
+    def test_delete_simple_work_order_succeeds(self, client, auth_headers, db_session, test_product):
+        """A WO with no production records or related data should delete cleanly"""
+        wo = WorkOrder(wo_number='WO-CRUD-004', product_id=test_product.id, quantity=10, uom='PCS', status='planned')
+        db_session.add(wo)
+        db_session.commit()
+        wo_id = wo.id
+
+        response = client.delete(f'/api/production/work-orders/{wo_id}', headers=auth_headers)
+        assert response.status_code == 200
+        assert db.session.get(WorkOrder, wo_id) is None
+
+    def test_delete_work_order_with_production_records_blocked_without_force(self, client, auth_headers, db_session, test_product):
+        """A WO with existing production records should be blocked from deletion unless force=true"""
+        wo = WorkOrder(wo_number='WO-CRUD-005', product_id=test_product.id, quantity=10, uom='PCS', status='completed')
+        db_session.add(wo)
+        db_session.commit()
+
+        record = ProductionRecord(
+            work_order_id=wo.id, production_date=datetime.utcnow().date(),
+            quantity_produced=5, quantity_good=5, uom='PCS'
+        )
+        db_session.add(record)
+        db_session.commit()
+
+        response = client.delete(f'/api/production/work-orders/{wo.id}', headers=auth_headers)
+        assert response.status_code == 400
+        data = response.get_json()
+        assert data['has_production'] is True
+
+        # WO should still exist since deletion was blocked
+        assert db.session.get(WorkOrder, wo.id) is not None
+
+    def test_delete_work_order_with_force_succeeds(self, client, auth_headers, db_session, test_product):
+        """Deleting with force=true should succeed even with existing production records"""
+        wo = WorkOrder(wo_number='WO-CRUD-006', product_id=test_product.id, quantity=10, uom='PCS', status='completed')
+        db_session.add(wo)
+        db_session.commit()
+        wo_id = wo.id
+
+        record = ProductionRecord(
+            work_order_id=wo_id, production_date=datetime.utcnow().date(),
+            quantity_produced=5, quantity_good=5, uom='PCS'
+        )
+        db_session.add(record)
+        db_session.commit()
+
+        response = client.delete(f'/api/production/work-orders/{wo_id}?force=true', headers=auth_headers)
+        assert response.status_code == 200
+        assert db.session.get(WorkOrder, wo_id) is None
+
+    def test_delete_work_order_not_found(self, client, auth_headers):
+        response = client.delete('/api/production/work-orders/999999', headers=auth_headers)
         assert response.status_code == 404
