@@ -3677,3 +3677,75 @@ class TestPackingListItemsAndBatchMixing:
             headers=auth_headers
         )
         assert response.status_code == 404
+
+
+class TestGetWorkOrderProductionRecords:
+    """Tests for get_work_order_production_records (GET /work-orders/<id>/production-records)"""
+
+    def test_returns_records_for_this_work_order(self, client, auth_headers, db_session, test_product):
+        wo = WorkOrder(wo_number='WO-PRLIST-001', product_id=test_product.id, quantity=10, uom='PCS', status='in_progress')
+        db_session.add(wo)
+        db_session.commit()
+
+        record = ProductionRecord(
+            work_order_id=wo.id, production_date=datetime.utcnow().date(),
+            quantity_produced=5, quantity_good=4, uom='PCS'
+        )
+        db_session.add(record)
+        db_session.commit()
+
+        response = client.get(f'/api/production/work-orders/{wo.id}/production-records', headers=auth_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        assert len(data['records']) == 1
+        assert data['records'][0]['quantity_produced'] == 5
+        assert data['records'][0]['quantity_good'] == 4
+
+    def test_not_found_returns_404(self, client, auth_headers):
+        response = client.get('/api/production/work-orders/999999/production-records', headers=auth_headers)
+        assert response.status_code == 404
+
+    def test_no_machine_returns_empty_machine_records(self, client, auth_headers, db_session, test_product):
+        wo = WorkOrder(wo_number='WO-PRLIST-002', product_id=test_product.id, quantity=10, uom='PCS', status='planned')
+        db_session.add(wo)
+        db_session.commit()
+
+        response = client.get(f'/api/production/work-orders/{wo.id}/production-records', headers=auth_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['machine_records'] == []
+
+    def test_machine_records_include_shifts_from_other_work_orders_on_same_machine(self, client, auth_headers, db_session, test_product, test_user):
+        """Documents a real quirk: machine_records is filtered ONLY by machine_id,
+        not scoped to this work order at all. A WO sharing a machine with another
+        WO will see the OTHER WO's shift production data mixed into its own
+        'production records' response."""
+        from models.production import ShiftProduction
+        machine = Machine(code='MC-PRLIST-001', name='Shared Machine', machine_type='nonwoven_machine')
+        db_session.add(machine)
+        db_session.commit()
+
+        wo_a = WorkOrder(wo_number='WO-PRLIST-003', product_id=test_product.id, quantity=10, uom='PCS', status='in_progress', machine_id=machine.id)
+        wo_b = WorkOrder(wo_number='WO-PRLIST-004', product_id=test_product.id, quantity=10, uom='PCS', status='in_progress', machine_id=machine.id)
+        db_session.add_all([wo_a, wo_b])
+        db_session.commit()
+
+        # This ShiftProduction belongs to wo_b, NOT wo_a
+        shift_for_b = ShiftProduction(
+            production_date=datetime.utcnow().date(), shift='shift_1',
+            shift_start=time(6, 30), shift_end=time(15, 0), uom='pcs',
+            planned_runtime=480, actual_runtime=450,
+            machine_id=machine.id, work_order_id=wo_b.id, product_id=test_product.id,
+            target_quantity=100, actual_quantity=20, good_quantity=18,
+            created_by=test_user.id
+        )
+        db_session.add(shift_for_b)
+        db_session.commit()
+
+        response = client.get(f'/api/production/work-orders/{wo_a.id}/production-records', headers=auth_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        # wo_a has no own ShiftProduction, but wo_b's shift entry still shows up
+        # here because the query filters by machine_id only, not work_order_id.
+        machine_record_wo_ids = [r['work_order_id'] for r in data['machine_records']]
+        assert wo_b.id in machine_record_wo_ids
