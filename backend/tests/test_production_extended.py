@@ -2,7 +2,7 @@
 Extended tests for production routes to increase coverage
 """
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 from routes.production_input import calculate_oee_with_downtime_categories
 from routes.production_integration import auto_deduct_materials, auto_receive_finished_goods
 from models import db
@@ -18,6 +18,7 @@ from models.wip_job_costing import WIPBatch
 from models.production import ProductionRecord
 from models.production import RemainingStock
 from models.production import PackingList, PackingListItem
+from models.production import ProductionSchedule
 
 class TestProductionExtended:
     def test_get_work_orders(self, client, auth_headers):
@@ -3323,3 +3324,136 @@ class TestBOMMasterCRUD:
         data = response.get_json()
         items = BOMItem.query.filter_by(bom_id=data['bom_id']).all()
         assert len(items) == 0
+
+
+class TestGetWorkOrdersStatusTracking:
+    """Tests for get_work_orders_status_tracking - input status derivation and shift aggregation"""
+
+    def test_not_started_when_no_shift_production(self, client, auth_headers, db_session, test_product):
+        wo = WorkOrder(wo_number='WO-STATUS-001', product_id=test_product.id, quantity=100, uom='PCS', status='planned')
+        db_session.add(wo)
+        db_session.commit()
+
+        response = client.get('/api/production/work-orders/status-tracking', headers=auth_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        wo_data = next(w for w in data['work_orders'] if w['wo_number'] == 'WO-STATUS-001')
+        assert wo_data['input_status'] == 'not_started'
+        assert wo_data['total_shifts'] == 0
+        assert wo_data['last_input_date'] is None
+
+    def test_in_progress_status_with_shift_production(self, client, auth_headers, db_session, test_product, test_user):
+        from models.production import ShiftProduction
+        wo = WorkOrder(wo_number='WO-STATUS-002', product_id=test_product.id, quantity=100, uom='PCS', status='in_progress')
+        db_session.add(wo)
+        db_session.commit()
+
+        shift = ShiftProduction(
+            production_date=datetime.utcnow().date(), shift='shift_1',
+            shift_start=time(6, 30), shift_end=time(15, 0), uom='pcs',
+            planned_runtime=480, actual_runtime=450,
+            work_order_id=wo.id, product_id=test_product.id,
+            target_quantity=100, actual_quantity=20, good_quantity=18,
+            created_by=test_user.id
+        )
+        db_session.add(shift)
+        db_session.commit()
+
+        response = client.get('/api/production/work-orders/status-tracking', headers=auth_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        wo_data = next(w for w in data['work_orders'] if w['wo_number'] == 'WO-STATUS-002')
+        assert wo_data['input_status'] == 'in_progress'
+        assert wo_data['total_shifts'] == 1
+        assert wo_data['last_input_by'] == test_user.full_name
+
+    def test_completed_status_with_shifts(self, client, auth_headers, db_session, test_product, test_user):
+        from models.production import ShiftProduction
+        wo = WorkOrder(wo_number='WO-STATUS-003', product_id=test_product.id, quantity=100, uom='PCS', status='completed', quantity_good=100)
+        db_session.add(wo)
+        db_session.commit()
+
+        shift = ShiftProduction(
+            production_date=datetime.utcnow().date(), shift='shift_1',
+            shift_start=time(6, 30), shift_end=time(15, 0), uom='pcs',
+            planned_runtime=480, actual_runtime=450,
+            work_order_id=wo.id, product_id=test_product.id,
+            target_quantity=100, actual_quantity=100, good_quantity=100,
+            created_by=test_user.id
+        )
+        db_session.add(shift)
+        db_session.commit()
+
+        response = client.get('/api/production/work-orders/status-tracking', headers=auth_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        wo_data = next(w for w in data['work_orders'] if w['wo_number'] == 'WO-STATUS-003')
+        assert wo_data['input_status'] == 'completed'
+        assert wo_data['progress_percent'] == 100.0
+
+    def test_completed_wo_without_shifts_still_shows_not_started(self, client, auth_headers, db_session, test_product):
+        """Quirk: not_started check runs BEFORE the completed check, so a WO marked
+        completed with zero ShiftProduction rows still reports input_status='not_started'."""
+        wo = WorkOrder(wo_number='WO-STATUS-004', product_id=test_product.id, quantity=100, uom='PCS', status='completed', quantity_good=100)
+        db_session.add(wo)
+        db_session.commit()
+
+        response = client.get('/api/production/work-orders/status-tracking', headers=auth_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        wo_data = next(w for w in data['work_orders'] if w['wo_number'] == 'WO-STATUS-004')
+        assert wo_data['input_status'] == 'not_started'
+
+    def test_cancelled_work_orders_excluded(self, client, auth_headers, db_session, test_product):
+        wo = WorkOrder(wo_number='WO-STATUS-005', product_id=test_product.id, quantity=100, uom='PCS', status='cancelled')
+        db_session.add(wo)
+        db_session.commit()
+
+        response = client.get('/api/production/work-orders/status-tracking', headers=auth_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        assert not any(w['wo_number'] == 'WO-STATUS-005' for w in data['work_orders'])
+
+    def test_progress_percent_zero_quantity_no_division_error(self, client, auth_headers, db_session, test_product):
+        wo = WorkOrder(wo_number='WO-STATUS-006', product_id=test_product.id, quantity=0, uom='PCS', status='planned')
+        db_session.add(wo)
+        db_session.commit()
+
+        response = client.get('/api/production/work-orders/status-tracking', headers=auth_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        wo_data = next(w for w in data['work_orders'] if w['wo_number'] == 'WO-STATUS-006')
+        assert wo_data['progress_percent'] == 0
+
+    def test_multiple_shifts_aggregate_correctly(self, client, auth_headers, db_session, test_product, test_user):
+        from models.production import ShiftProduction
+        wo = WorkOrder(wo_number='WO-STATUS-007', product_id=test_product.id, quantity=100, uom='PCS', status='in_progress')
+        db_session.add(wo)
+        db_session.commit()
+
+        shift1 = ShiftProduction(
+            production_date=datetime.utcnow().date() - timedelta(days=1), shift='shift_1',
+            shift_start=time(6, 30), shift_end=time(15, 0), uom='pcs',
+            planned_runtime=480, actual_runtime=450,
+            work_order_id=wo.id, product_id=test_product.id,
+            target_quantity=100, actual_quantity=10, good_quantity=10,
+            created_by=test_user.id
+        )
+        shift2 = ShiftProduction(
+            production_date=datetime.utcnow().date(), shift='shift_2',
+            shift_start=time(6, 30), shift_end=time(15, 0), uom='pcs',
+            planned_runtime=480, actual_runtime=450,
+            work_order_id=wo.id, product_id=test_product.id,
+            target_quantity=100, actual_quantity=15, good_quantity=15,
+            created_by=test_user.id
+        )
+        db_session.add_all([shift1, shift2])
+        db_session.commit()
+
+        response = client.get('/api/production/work-orders/status-tracking', headers=auth_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        wo_data = next(w for w in data['work_orders'] if w['wo_number'] == 'WO-STATUS-007')
+        assert wo_data['total_shifts'] == 2
+        assert wo_data['last_input_date'] is not None
+        assert wo_data['last_input_by'] == test_user.full_name
