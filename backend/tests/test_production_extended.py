@@ -3540,3 +3540,140 @@ class TestGetProductionDashboard:
         assert data['work_orders']['completed'] == 0
         assert data['machines']['total_active'] == 0
         assert data['machines']['status_breakdown'] == {}
+
+
+class TestPackingListItemsAndBatchMixing:
+    """Tests for update_packing_list_items and set_batch_mixing"""
+
+    def _sync_items(self, client, auth_headers, wo_id, total_karton, start_carton_number=1, product_name='Test Product'):
+        return client.post(
+            f'/api/production/work-orders/{wo_id}/packing-list/sync',
+            json={'total_karton': total_karton, 'start_carton_number': start_carton_number, 'product_name': product_name},
+            headers=auth_headers
+        )
+
+    def test_update_items_sets_weight_kg(self, client, auth_headers, db_session, test_product):
+        wo = WorkOrder(wo_number='WO-PLI-001', product_id=test_product.id, quantity=10, uom='PCS', status='planned')
+        db_session.add(wo)
+        db_session.commit()
+        self._sync_items(client, auth_headers, wo.id, 3)
+
+        packing_list = PackingList.query.filter_by(work_order_id=wo.id).first()
+        item = PackingListItem.query.filter_by(packing_list_id=packing_list.id).order_by(PackingListItem.carton_number).first()
+
+        response = client.put(
+            f'/api/production/work-orders/{wo.id}/packing-list/items',
+            json={'product_name': 'Test Product', 'items': [{'id': item.id, 'weight_kg': 12.5}]},
+            headers=auth_headers
+        )
+        assert response.status_code == 200
+
+        updated_item = db.session.get(PackingListItem, item.id)
+        assert float(updated_item.weight_kg) == 12.5
+
+    def test_update_items_ignores_item_belonging_to_other_packing_list(self, client, auth_headers, db_session, test_product):
+        """Security check: item_id from a DIFFERENT packing list should be silently skipped,
+        not leak an update into the wrong WO's data."""
+        wo1 = WorkOrder(wo_number='WO-PLI-002', product_id=test_product.id, quantity=10, uom='PCS', status='planned')
+        wo2 = WorkOrder(wo_number='WO-PLI-003', product_id=test_product.id, quantity=10, uom='PCS', status='planned')
+        db_session.add_all([wo1, wo2])
+        db_session.commit()
+
+        self._sync_items(client, auth_headers, wo1.id, 1, product_name='Product A')
+        self._sync_items(client, auth_headers, wo2.id, 1, product_name='Product B')
+
+        pl2 = PackingList.query.filter_by(work_order_id=wo2.id).first()
+        item_in_wo2 = PackingListItem.query.filter_by(packing_list_id=pl2.id).first()
+        original_weight = item_in_wo2.weight_kg
+
+        response = client.put(
+            f'/api/production/work-orders/{wo1.id}/packing-list/items',
+            json={'product_name': 'Product A', 'items': [{'id': item_in_wo2.id, 'weight_kg': 999}]},
+            headers=auth_headers
+        )
+        assert response.status_code == 200
+
+        untouched_item = db.session.get(PackingListItem, item_in_wo2.id)
+        assert untouched_item.weight_kg == original_weight
+
+    def test_update_items_not_found_returns_404(self, client, auth_headers):
+        response = client.put(
+            '/api/production/work-orders/999999/packing-list/items',
+            json={'items': []},
+            headers=auth_headers
+        )
+        assert response.status_code == 404
+
+    def test_set_batch_mixing_updates_current_batch_mixing(self, client, auth_headers, db_session, test_product):
+        wo = WorkOrder(wo_number='WO-PLI-004', product_id=test_product.id, quantity=10, uom='PCS', status='planned')
+        db_session.add(wo)
+        db_session.commit()
+        self._sync_items(client, auth_headers, wo.id, 3)
+
+        response = client.post(
+            f'/api/production/work-orders/{wo.id}/packing-list/batch-mixing',
+            json={'product_name': 'Test Product', 'batch_mixing': 'BATCH-A'},
+            headers=auth_headers
+        )
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['current_batch_mixing'] == 'BATCH-A'
+
+    def test_set_batch_mixing_propagates_to_subsequent_cartons(self, client, auth_headers, db_session, test_product):
+        wo = WorkOrder(wo_number='WO-PLI-005', product_id=test_product.id, quantity=10, uom='PCS', status='planned')
+        db_session.add(wo)
+        db_session.commit()
+        self._sync_items(client, auth_headers, wo.id, 5)  # cartons 1-5
+
+        response = client.post(
+            f'/api/production/work-orders/{wo.id}/packing-list/batch-mixing',
+            json={'product_name': 'Test Product', 'batch_mixing': 'BATCH-B', 'start_from_carton': 3},
+            headers=auth_headers
+        )
+        assert response.status_code == 200
+
+        packing_list = PackingList.query.filter_by(work_order_id=wo.id).first()
+        items = PackingListItem.query.filter_by(packing_list_id=packing_list.id).order_by(PackingListItem.carton_number).all()
+        batch_by_carton = {i.carton_number: i.batch_mixing for i in items}
+        assert batch_by_carton[3] == 'BATCH-B'
+        assert batch_by_carton[4] == 'BATCH-B'
+        assert batch_by_carton[5] == 'BATCH-B'
+        assert batch_by_carton[1] != 'BATCH-B'
+        assert batch_by_carton[2] != 'BATCH-B'
+
+    def test_set_batch_mixing_does_not_propagate_across_carton_wraparound(self, client, auth_headers, db_session, test_product):
+        """Documents a real quirk: subsequent-item propagation filters on
+        carton_number >= start_from_carton. When cartons wrap around the 10000
+        boundary, the wrapped low-numbered cartons (chronologically AFTER the
+        high-numbered ones) are excluded, so batch mixing does not propagate
+        correctly across the wraparound point."""
+        wo = WorkOrder(wo_number='WO-PLI-006', product_id=test_product.id, quantity=10, uom='PCS', status='planned')
+        db_session.add(wo)
+        db_session.commit()
+        # 9998, 9999, 10000, 1, 2
+        self._sync_items(client, auth_headers, wo.id, 5, start_carton_number=9998)
+
+        response = client.post(
+            f'/api/production/work-orders/{wo.id}/packing-list/batch-mixing',
+            json={'product_name': 'Test Product', 'batch_mixing': 'BATCH-WRAP', 'start_from_carton': 9999},
+            headers=auth_headers
+        )
+        assert response.status_code == 200
+
+        packing_list = PackingList.query.filter_by(work_order_id=wo.id).first()
+        items = PackingListItem.query.filter_by(packing_list_id=packing_list.id).order_by(PackingListItem.id).all()
+        batch_by_carton = {i.carton_number: i.batch_mixing for i in items}
+        assert batch_by_carton[9999] == 'BATCH-WRAP'
+        assert batch_by_carton[10000] == 'BATCH-WRAP'
+        # Quirk: cartons 1 and 2 are the wrapped continuation (produced AFTER
+        # carton 10000) but do NOT receive the new batch mixing.
+        assert batch_by_carton[1] != 'BATCH-WRAP'
+        assert batch_by_carton[2] != 'BATCH-WRAP'
+
+    def test_set_batch_mixing_not_found_returns_404(self, client, auth_headers):
+        response = client.post(
+            '/api/production/work-orders/999999/packing-list/batch-mixing',
+            json={'batch_mixing': 'X'},
+            headers=auth_headers
+        )
+        assert response.status_code == 404
