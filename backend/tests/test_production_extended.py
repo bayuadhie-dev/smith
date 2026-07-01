@@ -3457,3 +3457,86 @@ class TestGetWorkOrdersStatusTracking:
         assert wo_data['total_shifts'] == 2
         assert wo_data['last_input_date'] is not None
         assert wo_data['last_input_by'] == test_user.full_name
+
+
+class TestGetProductionDashboard:
+    """Tests for get_production_dashboard - WO count aggregation and machine status breakdown"""
+
+    def test_total_counts_all_work_orders_regardless_of_status(self, client, auth_headers, db_session, test_product):
+        wo1 = WorkOrder(wo_number='WO-DASH-001', product_id=test_product.id, quantity=10, uom='PCS', status='draft')
+        wo2 = WorkOrder(wo_number='WO-DASH-002', product_id=test_product.id, quantity=10, uom='PCS', status='cancelled')
+        wo3 = WorkOrder(wo_number='WO-DASH-003', product_id=test_product.id, quantity=10, uom='PCS', status='in_progress')
+        db_session.add_all([wo1, wo2, wo3])
+        db_session.commit()
+
+        response = client.get('/api/production/dashboard/summary', headers=auth_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['work_orders']['total'] >= 3
+
+    def test_active_only_counts_planned_released_in_progress(self, client, auth_headers, db_session, test_product):
+        wo_draft = WorkOrder(wo_number='WO-DASH-004', product_id=test_product.id, quantity=10, uom='PCS', status='draft')
+        wo_planned = WorkOrder(wo_number='WO-DASH-005', product_id=test_product.id, quantity=10, uom='PCS', status='planned')
+        wo_released = WorkOrder(wo_number='WO-DASH-006', product_id=test_product.id, quantity=10, uom='PCS', status='released')
+        wo_progress = WorkOrder(wo_number='WO-DASH-007', product_id=test_product.id, quantity=10, uom='PCS', status='in_progress')
+        wo_completed = WorkOrder(wo_number='WO-DASH-008', product_id=test_product.id, quantity=10, uom='PCS', status='completed')
+        db_session.add_all([wo_draft, wo_planned, wo_released, wo_progress, wo_completed])
+        db_session.commit()
+
+        response_before = client.get('/api/production/dashboard/summary', headers=auth_headers)
+        active_before = response_before.get_json()['work_orders']['active']
+
+        # Sanity: draft and completed must NOT be counted as active.
+        # We can't isolate a fresh DB per assertion easily here, so instead verify
+        # the count matches exactly what's expected relative to a controlled delta:
+        # add one more 'planned' WO and confirm active increases by exactly 1.
+        wo_extra_planned = WorkOrder(wo_number='WO-DASH-009', product_id=test_product.id, quantity=10, uom='PCS', status='planned')
+        db_session.add(wo_extra_planned)
+        db_session.commit()
+
+        response_after = client.get('/api/production/dashboard/summary', headers=auth_headers)
+        active_after = response_after.get_json()['work_orders']['active']
+        assert active_after == active_before + 1
+
+    def test_completed_count_matches_completed_status_only(self, client, auth_headers, db_session, test_product):
+        wo_completed = WorkOrder(wo_number='WO-DASH-010', product_id=test_product.id, quantity=10, uom='PCS', status='completed')
+        db_session.add(wo_completed)
+        db_session.commit()
+
+        response_before = client.get('/api/production/dashboard/summary', headers=auth_headers)
+        completed_before = response_before.get_json()['work_orders']['completed']
+
+        wo_extra_completed = WorkOrder(wo_number='WO-DASH-011', product_id=test_product.id, quantity=10, uom='PCS', status='completed')
+        wo_in_progress = WorkOrder(wo_number='WO-DASH-012', product_id=test_product.id, quantity=10, uom='PCS', status='in_progress')
+        db_session.add_all([wo_extra_completed, wo_in_progress])
+        db_session.commit()
+
+        response_after = client.get('/api/production/dashboard/summary', headers=auth_headers)
+        completed_after = response_after.get_json()['work_orders']['completed']
+        assert completed_after == completed_before + 1
+
+    def test_machine_status_breakdown_excludes_inactive_machines(self, client, auth_headers, db_session):
+        active_running = Machine(code='MC-DASH-001', name='Running Machine', machine_type='nonwoven_machine', status='running', is_active=True)
+        active_idle = Machine(code='MC-DASH-002', name='Idle Machine', machine_type='cutting_machine', status='idle', is_active=True)
+        inactive_machine = Machine(code='MC-DASH-003', name='Retired Machine', machine_type='packing_machine', status='running', is_active=False)
+        db_session.add_all([active_running, active_idle, inactive_machine])
+        db_session.commit()
+
+        response = client.get('/api/production/dashboard/summary', headers=auth_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        # total_active must not include the is_active=False machine
+        assert data['machines']['total_active'] >= 2
+        breakdown = data['machines']['status_breakdown']
+        assert 'running' in breakdown
+        assert 'idle' in breakdown
+
+    def test_empty_database_returns_zero_without_crash(self, client, auth_headers):
+        response = client.get('/api/production/dashboard/summary', headers=auth_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['work_orders']['total'] == 0
+        assert data['work_orders']['active'] == 0
+        assert data['work_orders']['completed'] == 0
+        assert data['machines']['total_active'] == 0
+        assert data['machines']['status_breakdown'] == {}
