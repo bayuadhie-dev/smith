@@ -3888,3 +3888,93 @@ class TestCreateWorkOrderProductionRecord:
         wip_batch = WIPBatch.query.filter_by(work_order_id=wo.id).first()
         assert wip_batch is not None
         assert float(wip_batch.labor_cost) > 0
+
+
+class TestGetAndCreateSchedules:
+    """Tests for get_schedules (GET /schedules) and create_schedule (POST /schedules)"""
+
+    def test_get_schedules_empty_list(self, client, auth_headers):
+        response = client.get('/api/production/schedules', headers=auth_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['schedules'] == []
+
+    def test_create_and_list_schedule(self, client, auth_headers, db_session, test_product, test_user):
+        machine = Machine(code='MC-SCH-001', name='Schedule Machine', machine_type='nonwoven_machine')
+        db_session.add(machine)
+        db_session.commit()
+
+        wo = WorkOrder(wo_number='WO-SCH-001', product_id=test_product.id, quantity=100, uom='PCS', status='planned')
+        db_session.add(wo)
+        db_session.commit()
+
+        response = client.post(
+            '/api/production/schedules',
+            json={
+                'work_order_id': wo.id,
+                'machine_id': machine.id,
+                'scheduled_start': '2026-07-05T08:00:00',
+                'scheduled_end': '2026-07-05T16:00:00',
+                'shift': '1'
+            },
+            headers=auth_headers
+        )
+        assert response.status_code == 201
+        data = response.get_json()
+        assert data['schedule_id'] is not None
+        assert data['schedule_number'].startswith('SCH')
+
+        list_response = client.get('/api/production/schedules', headers=auth_headers)
+        assert list_response.status_code == 200
+        schedules = list_response.get_json()['schedules']
+        assert len(schedules) == 1
+        assert schedules[0]['wo_number'] == 'WO-SCH-001'
+        assert schedules[0]['machine_name'] == 'Schedule Machine'
+        assert schedules[0]['status'] == 'scheduled'
+
+    def test_create_schedule_missing_required_field_returns_500_not_400(self, client, auth_headers, db_session):
+        """Documents an API quality gap: create_schedule accesses data['work_order_id']
+        etc. directly (not .get()), so a missing required field raises an uncaught
+        KeyError that the generic except Exception turns into a 500, instead of a
+        proper 400 validation error. Callers can't tell "bad request" from "server broke"."""
+        machine = Machine(code='MC-SCH-002', name='Schedule Machine 2', machine_type='nonwoven_machine')
+        db_session.add(machine)
+        db_session.commit()
+
+        response = client.post(
+            '/api/production/schedules',
+            json={
+                # 'work_order_id' intentionally omitted
+                'machine_id': machine.id,
+                'scheduled_start': '2026-07-05T08:00:00',
+                'scheduled_end': '2026-07-05T16:00:00'
+            },
+            headers=auth_headers
+        )
+        assert response.status_code == 500
+
+    def test_create_schedule_does_not_validate_work_order_exists(self, client, auth_headers, db_session):
+        """Documents a real bug: create_schedule never verifies work_order_id/machine_id
+        reference existing rows before saving. A schedule pointing at a non-existent
+        WorkOrder is accepted (201), but then crashes get_schedules() with a 500 because
+        it accesses s.work_order.wo_number without a None check - taking down the ENTIRE
+        schedule list for everyone, not just the bad record."""
+        machine = Machine(code='MC-SCH-003', name='Schedule Machine 3', machine_type='nonwoven_machine')
+        db_session.add(machine)
+        db_session.commit()
+
+        response = client.post(
+            '/api/production/schedules',
+            json={
+                'work_order_id': 999999,  # does not exist
+                'machine_id': machine.id,
+                'scheduled_start': '2026-07-05T08:00:00',
+                'scheduled_end': '2026-07-05T16:00:00'
+            },
+            headers=auth_headers
+        )
+        assert response.status_code == 201  # accepted despite invalid reference
+
+        list_response = client.get('/api/production/schedules', headers=auth_headers)
+        # get_schedules crashes because s.work_order is None
+        assert list_response.status_code == 500
