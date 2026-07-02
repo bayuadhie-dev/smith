@@ -228,7 +228,7 @@ const WeeklyProductionPlan: React.FC = () => {
 
   const getWeekPeriod = () => {
     if (weekDates.length < 5) return '';
-    const months = ['DESEMBER', 'JANUARI', 'FEBRUARI', 'MARET', 'APRIL', 'MEI', 'JUNI', 'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER'];
+    const months = ['JANUARI', 'FEBRUARI', 'MARET', 'APRIL', 'MEI', 'JUNI', 'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DESEMBER'];
     return `WEEK ${weekNumber} ${months[weekDates[0].getMonth()]} ${weekDates[0].getFullYear()}`;
   };
 
