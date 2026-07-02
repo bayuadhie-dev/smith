@@ -3978,3 +3978,125 @@ class TestGetAndCreateSchedules:
         list_response = client.get('/api/production/schedules', headers=auth_headers)
         # get_schedules crashes because s.work_order is None
         assert list_response.status_code == 500
+
+
+class TestWorkOrderBOMItemDeleteActualReset:
+    """Tests for delete_work_order_bom_item, update_work_order_bom_actual, reset_work_order_bom"""
+
+    def _make_wo_and_item(self, db_session, test_product, test_material, wo_number, quantity_planned=20):
+        wo = WorkOrder(wo_number=wo_number, product_id=test_product.id, quantity=10, uom='PCS', status='in_progress')
+        db_session.add(wo)
+        db_session.commit()
+
+        item = WorkOrderBOMItem(
+            work_order_id=wo.id, line_number=1, material_id=test_material.id,
+            item_name=test_material.name, quantity_per_unit=2, uom='KG',
+            quantity_planned=quantity_planned
+        )
+        db_session.add(item)
+        db_session.commit()
+        return wo, item
+
+    # --- DELETE ---
+
+    def test_delete_bom_item_removes_it(self, client, auth_headers, db_session, test_product, test_material):
+        wo, item = self._make_wo_and_item(db_session, test_product, test_material, 'WO-BOMDEL-001')
+
+        response = client.delete(f'/api/production/work-orders/{wo.id}/bom/{item.id}', headers=auth_headers)
+        assert response.status_code == 200
+
+        assert db.session.get(WorkOrderBOMItem, item.id) is None
+
+    def test_delete_bom_item_not_found_returns_404(self, client, auth_headers, db_session, test_product, test_material):
+        wo, _ = self._make_wo_and_item(db_session, test_product, test_material, 'WO-BOMDEL-002')
+
+        response = client.delete(f'/api/production/work-orders/{wo.id}/bom/999999', headers=auth_headers)
+        assert response.status_code == 404
+
+    def test_delete_bom_item_scoped_to_correct_wo(self, client, auth_headers, db_session, test_product, test_material):
+        """Security check: an item_id belonging to a DIFFERENT WO should not be
+        deletable via another WO's URL."""
+        wo1, item1 = self._make_wo_and_item(db_session, test_product, test_material, 'WO-BOMDEL-003')
+        wo2, _ = self._make_wo_and_item(db_session, test_product, test_material, 'WO-BOMDEL-004')
+
+        response = client.delete(f'/api/production/work-orders/{wo2.id}/bom/{item1.id}', headers=auth_headers)
+        assert response.status_code == 404
+
+        assert db.session.get(WorkOrderBOMItem, item1.id) is not None
+
+    # --- BULK UPDATE ACTUAL ---
+
+    def test_bulk_update_actual_sets_quantity_and_variance(self, client, auth_headers, db_session, test_product, test_material):
+        wo, item = self._make_wo_and_item(db_session, test_product, test_material, 'WO-BOMACT-001', quantity_planned=20)
+
+        response = client.put(
+            f'/api/production/work-orders/{wo.id}/bom/actual',
+            json={'items': [{'item_id': item.id, 'quantity_actual': 22, 'notes': 'slight overuse'}]},
+            headers=auth_headers
+        )
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['updated'] == 1
+
+        updated_item = db.session.get(WorkOrderBOMItem, item.id)
+        assert float(updated_item.quantity_actual) == 22
+        assert float(updated_item.quantity_variance) == 2  # 22 - 20
+        assert updated_item.notes == 'slight overuse'
+        assert updated_item.is_modified is True
+
+    def test_bulk_update_actual_zero_quantity_planned_skips_variance(self, client, auth_headers, db_session, test_product, test_material):
+        """Documents the same falsy-check bug pattern as bug #3 (update_work_order_bom_item):
+        `if item.quantity_planned:` treats a legitimate quantity_planned=0 as falsy, so
+        quantity_variance is never calculated even though quantity_actual is correctly saved."""
+        wo, item = self._make_wo_and_item(db_session, test_product, test_material, 'WO-BOMACT-002', quantity_planned=0)
+
+        response = client.put(
+            f'/api/production/work-orders/{wo.id}/bom/actual',
+            json={'items': [{'item_id': item.id, 'quantity_actual': 5}]},
+            headers=auth_headers
+        )
+        assert response.status_code == 200
+
+        updated_item = db.session.get(WorkOrderBOMItem, item.id)
+        assert float(updated_item.quantity_actual) == 5
+        # BUG: variance should be 5 - 0 = 5, but the falsy check skips it entirely
+        assert updated_item.quantity_variance is None
+
+    def test_bulk_update_actual_skips_items_from_other_work_orders_silently(self, client, auth_headers, db_session, test_product, test_material):
+        wo1, item1 = self._make_wo_and_item(db_session, test_product, test_material, 'WO-BOMACT-003')
+        wo2, item2 = self._make_wo_and_item(db_session, test_product, test_material, 'WO-BOMACT-004')
+
+        response = client.put(
+            f'/api/production/work-orders/{wo1.id}/bom/actual',
+            json={'items': [{'item_id': item2.id, 'quantity_actual': 99}]},
+            headers=auth_headers
+        )
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['updated'] == 0
+
+        untouched_item2 = db.session.get(WorkOrderBOMItem, item2.id)
+        assert untouched_item2.quantity_actual is None
+
+    def test_bulk_update_actual_wo_not_found_returns_404(self, client, auth_headers):
+        response = client.put(
+            '/api/production/work-orders/999999/bom/actual',
+            json={'items': []},
+            headers=auth_headers
+        )
+        assert response.status_code == 404
+
+    # --- RESET ---
+
+    def test_reset_deletes_all_bom_items_without_recreating(self, client, auth_headers, db_session, test_product, test_material):
+        wo, item = self._make_wo_and_item(db_session, test_product, test_material, 'WO-BOMRST-001')
+
+        response = client.post(f'/api/production/work-orders/{wo.id}/bom/reset', headers=auth_headers)
+        assert response.status_code == 200
+
+        remaining = WorkOrderBOMItem.query.filter_by(work_order_id=wo.id).all()
+        assert remaining == []
+
+    def test_reset_wo_not_found_returns_404(self, client, auth_headers):
+        response = client.post('/api/production/work-orders/999999/bom/reset', headers=auth_headers)
+        assert response.status_code == 404
