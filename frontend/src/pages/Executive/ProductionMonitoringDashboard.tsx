@@ -1281,6 +1281,50 @@ const ProductsTab: React.FC<{ data: any; viewMode: 'monthly' | 'weekly' }> = ({ 
 // ==================== MACHINES TAB ====================
 // ==================== MACHINES TAB ====================
 const MachinesTab: React.FC<{ data: any }> = ({ data }) => {
+  const [expandedMachines, setExpandedMachines] = useState<Set<string>>(new Set());
+
+  const toggleMachine = (machineName: string) => {
+    setExpandedMachines(prev => {
+      const n = new Set(prev);
+      n.has(machineName) ? n.delete(machineName) : n.add(machineName);
+      return n;
+    });
+  };
+
+  // Gather and group downtime records per machine from daily_table
+  const machineDowntimes = useMemo(() => {
+    const downtimes: Record<string, any[]> = {};
+    
+    // Initialize empty array for each machine in data
+    data.machines.forEach((m: any) => {
+      downtimes[m.machine_name] = [];
+    });
+    
+    // Collect all downtime records
+    if (data.daily_table) {
+      data.daily_table.forEach((day: any) => {
+        if (day.downtime_records) {
+          day.downtime_records.forEach((record: any) => {
+            const mName = record.machine_name;
+            if (downtimes[mName]) {
+              downtimes[mName].push({
+                ...record,
+                date: day.date
+              });
+            }
+          });
+        }
+      });
+    }
+    
+    // Sort each machine's downtime records by duration desc
+    Object.keys(downtimes).forEach(mName => {
+      downtimes[mName].sort((a, b) => b.duration_minutes - a.duration_minutes);
+    });
+    
+    return downtimes;
+  }, [data.machines, data.daily_table]);
+
   // Prepare machine comparison data for charts
   const machineChartData = data.machines.map((m: any) => ({
     name: m.machine_name,
@@ -1405,10 +1449,11 @@ const MachinesTab: React.FC<{ data: any }> = ({ data }) => {
       {/* Detailed Table */}
       <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">📋 Detail Lengkap per Mesin</h3>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 mb-3">Klik baris mesin untuk melihat rincian downtime dan detail kerja mesin tersebut</p>
         <div className="overflow-x-auto">
-          <table className="w-full text-xs">
+          <table className="w-full text-xs border-collapse">
             <thead>
-              <tr className="bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300">
+              <tr className="bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300 border-b">
                 <th className="px-3 py-2 text-left">Mesin</th>
                 <th className="px-3 py-2 text-right">OEE</th>
                 <th className="px-3 py-2 text-right">Grade A</th>
@@ -1425,22 +1470,108 @@ const MachinesTab: React.FC<{ data: any }> = ({ data }) => {
             </thead>
             <tbody className="divide-y dark:divide-gray-700">
               {data.machines.map((m: any, i: number) => (
-                <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                  <td className="px-3 py-2 font-medium text-gray-900 dark:text-white">{m.machine_name}</td>
-                  <td className={`px-3 py-2 text-right font-bold ${m.avg_oee >= 60 ? 'text-green-600' : m.avg_oee >= 40 ? 'text-yellow-600' : 'text-red-600'}`}>
-                    {m.avg_oee}%
-                  </td>
-                  <td className="px-3 py-2 text-right text-green-600 font-medium">{fmtNum(m.grade_a)}</td>
-                  <td className="px-3 py-2 text-right text-yellow-500">{fmtNum(m.grade_b)}</td>
-                  <td className="px-3 py-2 text-right text-red-500">{fmtNum(m.grade_c)}</td>
-                  <td className="px-3 py-2 text-right">{fmtNum(m.total_produced)}</td>
-                  <td className="px-3 py-2 text-right font-medium">{fmtNum(m.total_ctn || 0)}</td>
-                  <td className="px-3 py-2 text-right">{m.quality_rate}%</td>
-                  <td className="px-3 py-2 text-right text-green-600">{fmtMin(m.runtime)}</td>
-                  <td className="px-3 py-2 text-right text-red-500">{fmtMin(m.downtime)}</td>
-                  <td className="px-3 py-2 text-right text-yellow-500">{fmtMin(m.idle_time)}</td>
-                  <td className="px-3 py-2 text-right">{m.shift_count}</td>
-                </tr>
+                <React.Fragment key={i}>
+                  <tr 
+                    className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-t border-gray-100" 
+                    onClick={() => toggleMachine(m.machine_name)}
+                  >
+                    <td className="px-3 py-2 font-medium text-gray-900 dark:text-white flex items-center gap-1.5">
+                      {expandedMachines.has(m.machine_name) ? <ChevronUpIcon className="h-3 w-3 text-blue-500" /> : <ChevronDownIcon className="h-3 w-3 text-blue-500" />}
+                      <span>{m.machine_name}</span>
+                    </td>
+                    <td className={`px-3 py-2 text-right font-bold ${m.avg_oee >= 60 ? 'text-green-600' : m.avg_oee >= 40 ? 'text-yellow-600' : 'text-red-600'}`}>
+                      {m.avg_oee}%
+                    </td>
+                    <td className="px-3 py-2 text-right text-green-600 font-medium">{fmtNum(m.grade_a)}</td>
+                    <td className="px-3 py-2 text-right text-yellow-500">{fmtNum(m.grade_b)}</td>
+                    <td className="px-3 py-2 text-right text-red-500">{fmtNum(m.grade_c)}</td>
+                    <td className="px-3 py-2 text-right">{fmtNum(m.total_produced)}</td>
+                    <td className="px-3 py-2 text-right font-medium">{fmtNum(m.total_ctn || 0)}</td>
+                    <td className="px-3 py-2 text-right">{m.quality_rate}%</td>
+                    <td className="px-3 py-2 text-right text-green-600">{fmtMin(m.runtime)}</td>
+                    <td className="px-3 py-2 text-right text-red-500">{fmtMin(m.downtime)}</td>
+                    <td className="px-3 py-2 text-right text-yellow-500">{fmtMin(m.idle_time)}</td>
+                    <td className="px-3 py-2 text-right">{m.shift_count}</td>
+                  </tr>
+                  
+                  {/* Expanded machine downtime items */}
+                  {expandedMachines.has(m.machine_name) && (
+                    <tr className="bg-gray-50/50 dark:bg-gray-800/30 border-t border-b">
+                      <td colSpan={12} className="px-4 py-3">
+                        <div className="space-y-2 border-l-2 border-red-500 pl-3 py-1">
+                          <h4 className="text-[11.5px] font-bold text-red-700 dark:text-red-400 uppercase tracking-wider">
+                            ⚠️ Rincian Downtime & Detail Kerja: {m.machine_name}
+                          </h4>
+                          {machineDowntimes[m.machine_name] && machineDowntimes[m.machine_name].length > 0 ? (
+                            <div className="overflow-x-auto max-h-60 border border-gray-200 dark:border-gray-700 rounded-lg">
+                              <table className="w-full text-left text-[11px] border-collapse">
+                                <thead className="bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400 font-semibold border-b">
+                                  <tr>
+                                    <th className="px-3 py-2 text-center w-12">No. Urut</th>
+                                    <th className="px-3 py-2 w-24">Tanggal</th>
+                                    <th className="px-3 py-2 text-center w-16">Shift</th>
+                                    <th className="px-3 py-2">Alasan & Kategori</th>
+                                    <th className="px-3 py-2 text-right w-24">Durasi (Menit)</th>
+                                    <th className="px-3 py-2 w-24">PIC</th>
+                                    <th className="px-3 py-2">Nama Produk</th>
+                                    <th className="px-3 py-2">Nomor WO</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100 dark:divide-gray-700 bg-white dark:bg-gray-800">
+                                  {machineDowntimes[m.machine_name].map((dt: any, dtIdx: number) => {
+                                    const catColors: Record<string, string> = {
+                                      mesin: 'bg-red-100 text-red-700 border-red-200',
+                                      operator: 'bg-orange-100 text-orange-700 border-orange-200',
+                                      material: 'bg-blue-100 text-blue-700 border-blue-200',
+                                      design: 'bg-purple-100 text-purple-700 border-purple-200',
+                                      idle: 'bg-yellow-100 text-yellow-700 border-yellow-200',
+                                      others: 'bg-gray-100 text-gray-700 border-gray-200'
+                                    };
+                                    const catLabels: Record<string, string> = {
+                                      mesin: 'Mesin', operator: 'Operator', material: 'Material',
+                                      design: 'Design', idle: 'Idle', others: 'Lainnya'
+                                    };
+                                    const dateLabel = dt.date.split('-').reverse().join('/');
+                                    
+                                    return (
+                                      <tr key={dtIdx} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                        <td className="px-3 py-1.5 text-center text-gray-500 font-medium">{dtIdx + 1}</td>
+                                        <td className="px-3 py-1.5 text-gray-700 dark:text-gray-300 font-medium">{dateLabel}</td>
+                                        <td className="px-3 py-1.5 text-center">
+                                          <span className="px-1.5 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded font-bold text-[10px]">
+                                            S{dt.shift}
+                                          </span>
+                                        </td>
+                                        <td className="px-3 py-1.5">
+                                          <span className="text-gray-800 dark:text-gray-200 font-medium">{dt.reason}</span>
+                                          <span className={`ml-2 px-1.5 py-0.5 rounded text-[9px] font-medium border ${catColors[dt.category] || catColors.others}`}>
+                                            {catLabels[dt.category] || dt.category}
+                                          </span>
+                                        </td>
+                                        <td className="px-3 py-1.5 text-right font-bold text-red-600">{dt.duration_minutes}m</td>
+                                        <td className="px-3 py-1.5">
+                                          {dt.pic ? (
+                                            <span className="px-1.5 py-0.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 rounded font-medium">
+                                              {dt.pic}
+                                            </span>
+                                          ) : <span className="text-gray-400">—</span>}
+                                        </td>
+                                        <td className="px-3 py-1.5 text-gray-600 dark:text-gray-400">{stripPackagingSuffix(dt.product_name)}</td>
+                                        <td className="px-3 py-1.5 text-blue-600 dark:text-blue-400 font-medium">{dt.wo_number}</td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                          ) : (
+                            <p className="text-center text-gray-400 py-3 text-xs font-medium">Tidak ada rincian downtime untuk mesin ini pada periode terpilih.</p>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
               ))}
             </tbody>
             <tfoot>

@@ -2389,8 +2389,8 @@ class TestUpdateWorkOrderStatus:
         # the outer transaction and silently roll back the status change.
         # Tracked for a dedicated fix; not addressed here to avoid touching
         # WIP accounting behavior without focused review.
-        # assert updated_wo.status == 'completed'
-        # assert updated_wo.actual_end_date is not None
+        assert updated_wo.status == 'completed'
+        assert updated_wo.actual_end_date is not None
 
     def test_invalid_status_rejected(self, client, auth_headers, wo_ready_to_start):
         """An unrecognized status value should be rejected with 400"""
@@ -3749,3 +3749,142 @@ class TestGetWorkOrderProductionRecords:
         # here because the query filters by machine_id only, not work_order_id.
         machine_record_wo_ids = [r['work_order_id'] for r in data['machine_records']]
         assert wo_b.id in machine_record_wo_ids
+
+
+class TestCreateWorkOrderProductionRecord:
+    """Tests for create_work_order_production_record (POST /work-orders/<id>/production-records).
+
+    This endpoint is large (~300 lines) and touches ProductionRecord, ShiftProduction,
+    WorkOrder quantity aggregation, warehouse buffer stock, and WIP job costing
+    (labor + overhead). Tests here focus on the financially/operationally
+    significant paths rather than every branch.
+    """
+
+    def test_missing_machine_id_returns_400(self, client, auth_headers, db_session, test_product):
+        wo = WorkOrder(wo_number='WO-CPR-001', product_id=test_product.id, quantity=100, uom='PCS', status='in_progress')
+        db_session.add(wo)
+        db_session.commit()
+
+        response = client.post(
+            f'/api/production/work-orders/{wo.id}/production-records',
+            json={'quantity_produced': 10, 'quantity_good': 9},
+            headers=auth_headers
+        )
+        assert response.status_code == 400
+
+    def test_not_found_wo_returns_404(self, client, auth_headers):
+        response = client.post(
+            '/api/production/work-orders/999999/production-records',
+            json={'quantity_produced': 10, 'quantity_good': 9, 'machine_id': 1},
+            headers=auth_headers
+        )
+        assert response.status_code == 404
+
+    def test_creates_record_and_aggregates_wo_quantities(self, client, auth_headers, db_session, test_product):
+        machine = Machine(code='MC-CPR-001', name='Test Machine', machine_type='nonwoven_machine')
+        db_session.add(machine)
+        db_session.commit()
+
+        wo = WorkOrder(wo_number='WO-CPR-002', product_id=test_product.id, quantity=1000, uom='PCS', status='in_progress', machine_id=machine.id)
+        db_session.add(wo)
+        db_session.commit()
+
+        response = client.post(
+            f'/api/production/work-orders/{wo.id}/production-records',
+            json={'quantity_produced': 100, 'quantity_good': 95, 'quantity_reject': 5, 'shift': '1'},
+            headers=auth_headers
+        )
+        assert response.status_code == 201
+        data = response.get_json()
+        assert data['work_order_progress']['quantity_produced'] == 100
+        assert data['work_order_progress']['quantity_good'] == 95
+        assert data['work_order_progress']['quantity_scrap'] == 5
+
+    def test_quantities_accumulate_across_multiple_shift_entries(self, client, auth_headers, db_session, test_product):
+        """A second production record for the same WO should ADD to totals, not overwrite them."""
+        machine = Machine(code='MC-CPR-002', name='Test Machine 2', machine_type='nonwoven_machine')
+        db_session.add(machine)
+        db_session.commit()
+
+        wo = WorkOrder(wo_number='WO-CPR-003', product_id=test_product.id, quantity=1000, uom='PCS', status='in_progress', machine_id=machine.id)
+        db_session.add(wo)
+        db_session.commit()
+
+        client.post(
+            f'/api/production/work-orders/{wo.id}/production-records',
+            json={'quantity_produced': 100, 'quantity_good': 95, 'shift': '1'},
+            headers=auth_headers
+        )
+        second = client.post(
+            f'/api/production/work-orders/{wo.id}/production-records',
+            json={'quantity_produced': 50, 'quantity_good': 48, 'shift': '2'},
+            headers=auth_headers
+        )
+        assert second.status_code == 201
+        data = second.get_json()
+        assert data['work_order_progress']['quantity_produced'] == 150
+        assert data['work_order_progress']['quantity_good'] == 143
+
+    def test_buffer_stock_added_to_inventory_when_exceeding_target(self, client, auth_headers, db_session, test_product):
+        """Producing more good quantity than the WO target should push the excess
+        into Inventory as finished-goods buffer stock."""
+        zone = WarehouseZone(code='ZONE-CPR-001', name='Zone FG CPR', material_type='finished_goods', zone_type='storage')
+        db_session.add(zone)
+        db_session.commit()
+
+        location = WarehouseLocation(
+            zone_id=zone.id, location_code='ZONE-CPR-001-R1-L1-P1',
+            rack='R1', level='L1', position='P1', capacity_uom='PCS'
+        )
+        db_session.add(location)
+        db_session.commit()
+
+        machine = Machine(code='MC-CPR-003', name='Test Machine 3', machine_type='nonwoven_machine')
+        db_session.add(machine)
+        db_session.commit()
+
+        wo = WorkOrder(wo_number='WO-CPR-004', product_id=test_product.id, quantity=50, uom='PCS', status='in_progress', machine_id=machine.id)
+        db_session.add(wo)
+        db_session.commit()
+
+        response = client.post(
+            f'/api/production/work-orders/{wo.id}/production-records',
+            json={'quantity_produced': 60, 'quantity_good': 60, 'shift': '1'},
+            headers=auth_headers
+        )
+        assert response.status_code == 201
+        data = response.get_json()
+        assert data['buffer_stock']['quantity'] == 10  # 60 produced vs 50 target
+        assert data['buffer_stock']['added_to_inventory'] is True
+
+        inventory = Inventory.query.filter_by(product_id=test_product.id, stock_status='released').first()
+        assert inventory is not None
+        assert float(inventory.quantity_on_hand) == 10
+
+    def test_wip_batch_and_job_costing_created(self, client, auth_headers, db_session, test_product):
+        """Confirms the WIP job-costing integration creates a WIPBatch and a
+        labor cost entry alongside the production record."""
+        machine = Machine(code='MC-CPR-004', name='Test Machine 4', machine_type='nonwoven_machine')
+        db_session.add(machine)
+        db_session.commit()
+
+        wo = WorkOrder(wo_number='WO-CPR-005', product_id=test_product.id, quantity=1000, uom='PCS', status='in_progress', machine_id=machine.id)
+        db_session.add(wo)
+        db_session.commit()
+
+        response = client.post(
+            f'/api/production/work-orders/{wo.id}/production-records',
+            json={
+                'quantity_produced': 100, 'quantity_good': 95, 'shift': '1',
+                'runtime': 120, 'machine_speed': 10
+            },
+            headers=auth_headers
+        )
+        assert response.status_code == 201
+        data = response.get_json()
+        assert data['job_costing']['labor_cost'] > 0
+        assert data['job_costing']['wip_batch_id'] is not None
+
+        wip_batch = WIPBatch.query.filter_by(work_order_id=wo.id).first()
+        assert wip_batch is not None
+        assert float(wip_batch.labor_cost) > 0

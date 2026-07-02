@@ -1595,7 +1595,7 @@ def create_work_order_production_record(id):
         
         # Add buffer stock to inventory as finished goods
         if buffer_stock_qty > 0:
-            from models.warehouse import Inventory, InventoryMovement, WarehouseLocation
+            from models.warehouse import Inventory, InventoryMovement, WarehouseLocation, WarehouseZone
             
             # Find or create inventory for this product
             # First try to find existing inventory for this product
@@ -1606,8 +1606,10 @@ def create_work_order_production_record(id):
             
             if not inventory:
                 # Find a suitable location for finished goods
-                fg_location = WarehouseLocation.query.filter(
-                    WarehouseLocation.material_type.in_(['finished_goods', 'all'])
+                fg_location = WarehouseLocation.query.join(
+                    WarehouseZone, WarehouseLocation.zone_id == WarehouseZone.id
+                ).filter(
+                    WarehouseZone.material_type.in_(['finished_goods', 'all'])
                 ).first()
                 
                 if fg_location:

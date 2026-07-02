@@ -12,12 +12,12 @@ import {
 } from '@heroicons/react/24/outline';
 
 // Public routes that should NOT trigger session handling
-const PUBLIC_ROUTES = ['/absensi', '/', '/login', '/register'];
+const PUBLIC_ROUTES = ['/absensi', '/', '/login', '/register', '/forgot-password', '/reset-password'];
 
 // Check if current path is public (no hooks needed)
 const isPublicPath = () => {
   const path = window.location.pathname;
-  return PUBLIC_ROUTES.some(route => path === route || path.startsWith('/tv/'));
+  return PUBLIC_ROUTES.some(route => path === route || path.startsWith('/tv/')) || path.startsWith('/public/');
 };
 
 // Session timeout configuration (in milliseconds)

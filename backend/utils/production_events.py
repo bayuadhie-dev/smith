@@ -133,10 +133,19 @@ def register_production_events(app):
     def work_order_completed(mapper, connection, target):
         """
         Auto-close WIP Ledger when Work Order is completed
+
+
+
+        
+        IMPORTANT: this runs inside SQLAlchemy's after_update event, which fires
+        DURING an in-progress flush. Do NOT call db.session.commit()/rollback()
+        here - that interrupts the flush that's already running and corrupts the
+        session's identity map, causing StaleDataError on unrelated updates later
+        in the same request. Just mutate the object; it rides along with the
+        outer transaction that's already in progress.
         """
         if target.status == 'completed':
             # Update WIP Ledger status
-            with app.app_context():
                 try:
                     wip_ledger = db.session.query(WIPLedger).filter_by(
                         work_order_id=target.id
@@ -147,13 +156,11 @@ def register_production_events(app):
                         wip_ledger.end_date = datetime.utcnow()
                         wip_ledger.actual_quantity = target.quantity_produced or target.quantity
                         
-                        db.session.commit()
                         
                         print(f"✓ Auto-closed WIP Ledger for Work Order {target.order_number}")
                         
                 except Exception as e:
                     print(f"✗ Failed to auto-close WIP Ledger: {str(e)}")
-                    db.session.rollback()
     
     print("✓ Production event listeners registered")
 

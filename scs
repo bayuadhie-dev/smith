@@ -1,0 +1,52 @@
+[1mdiff --git a/backend/routes/production.py b/backend/routes/production.py[m
+[1mindex 6bbe692..ce483d4 100644[m
+[1m--- a/backend/routes/production.py[m
+[1m+++ b/backend/routes/production.py[m
+[36m@@ -941,7 +941,8 @@[m [mdef create_work_order():[m
+         try:[m
+             redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')[m
+             r = redis.from_url(redis_url)[m
+[31m-            r.delete('production_work_orders_page1_per50_statusall')[m
+[32m+[m[32m            for key in r.scan_iter("production_work_orders_*"):[m
+[32m+[m[32m                r.delete(key)[m
+         except Exception as cache_error:[m
+             print(f"Redis cache invalidation error (continuing): {cache_error}")[m
+         [m
+[36m@@ -980,7 +981,16 @@[m [mdef create_work_order():[m
+         [m
+         db.session.add(wo)[m
+         db.session.commit()[m
+[31m-        [m
+[32m+[m
+[32m+[m[32m        # Invalidate WO list cache[m
+[32m+[m[32m        try:[m
+[32m+[m[32m            import os, redis as _redis[m
+[32m+[m[32m            r = _redis.from_url(os.getenv('REDIS_URL', 'redis://localhost:6379/0'))[m
+[32m+[m[32m            for key in r.scan_iter('production_work_orders_*'):[m
+[32m+[m[32m                r.delete(key)[m
+[32m+[m[32m        except Exception:[m
+[32m+[m[32m            pass[m
+[32m+[m
+         return jsonify({'message': 'Work order created', 'wo_id': wo.id, 'wo_number': wo_number}), 201[m
+     except Exception as e:[m
+         db.session.rollback()[m
+[36m@@ -995,7 +1005,8 @@[m [mdef update_work_order(id):[m
+         try:[m
+             redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')[m
+             r = redis.from_url(redis_url)[m
+[31m-            r.delete('production_work_orders_page1_per50_statusall')[m
+[32m+[m[32m            for key in r.scan_iter("production_work_orders_*"):[m
+[32m+[m[32m                r.delete(key)[m
+         except Exception as cache_error:[m
+             print(f"Redis cache invalidation error (continuing): {cache_error}")[m
+         [m
+[36m@@ -1052,7 +1063,8 @@[m [mdef delete_work_order(id):[m
+         try:[m
+             redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')[m
+             r = redis.from_url(redis_url)[m
+[31m-            r.delete('production_work_orders_page1_per50_statusall')[m
+[32m+[m[32m            for key in r.scan_iter("production_work_orders_*"):[m
+[32m+[m[32m                r.delete(key)[m
+         except Exception as cache_error:[m
+             print(f"Redis cache invalidation error (continuing): {cache_error}")[m
+         [m

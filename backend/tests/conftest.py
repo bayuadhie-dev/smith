@@ -159,3 +159,4 @@ def reset_db(db_session):
     for table in reversed(db.metadata.sorted_tables):
         db_session.execute(table.delete())
     db_session.commit()
+    db_session.expire_all()

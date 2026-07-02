@@ -1341,7 +1341,7 @@ def get_machine_analytics(machine_id):
 
 
 @oee_bp.route('/daily-controller', methods=['GET'])
-@jwt_required()
+@jwt_required(optional=True)
 def get_daily_controller():
     """Get all machines' production data for a specific date - Daily Controller view"""
     try:
@@ -1983,7 +1983,7 @@ def get_daily_controller():
 
 
 @oee_bp.route('/daily-controller-detail', methods=['GET'])
-@jwt_required()
+@jwt_required(optional=True)
 def get_daily_controller_detail():
     """Get detailed production data for a specific date - includes all downtime, timeline, and WO details"""
     try:

@@ -39,7 +39,7 @@ def get_week_number(date):
 
 
 @downtime_actions_bp.route('/action-items', methods=['GET'])
-@jwt_required()
+@jwt_required(optional=True)
 def get_action_items():
     """Get action items with filters"""
     try:
