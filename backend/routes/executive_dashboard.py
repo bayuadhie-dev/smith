@@ -58,7 +58,25 @@ def clean_product_name(name):
     """
     if not name:
         return name
-    
+def normalize_product_name(name):
+    """Normalize product name for matching WIP vs FG:
+    - Strip WIP prefix
+    - Strip BND suffix
+    - Strip @xxx patterns
+    - Strip quotes and extra spaces
+    """
+    if not name:
+        return ''
+    import re
+    name = name.strip().strip("'").strip()
+    # Remove WIP prefix
+    if name.upper().startswith('WIP '):
+        name = name[4:].strip()
+    # Remove @... pattern
+    name = re.sub(r'\s*@\S+', '', name).strip()
+    # Remove BND suffix
+    name = re.sub(r'\s+BND$', '', name).strip()
+    return name.upper()    
     # Remove @ prefix at the start
     if name.startswith('@'):
         name = name[1:].strip()
@@ -2145,7 +2163,7 @@ def get_production_monitoring():
             
             product_name = product_data[1] if product_data else f"Product {ms.product_id}"
             # Clean product name (remove @ prefix and @... suffixes)
-            product_name = clean_product_name(product_name)
+            product_name = normalize_product_name(product_name)
             product_code = product_data[0] if product_data else ''
             pack_per_ctn = int(product_data[2]) if product_data and product_data[2] else 50
             
@@ -2191,7 +2209,7 @@ def get_production_monitoring():
                     
                     product_name = item.product.name
                     # Clean product name (remove @ prefix and @... suffixes)
-                    product_name = clean_product_name(product_name)
+                    product_name = normalize_product_name(product_name)
                     
                     product_code = item.product.code or ''
                     pack_per_ctn = int(item.product.pack_per_karton) if item.product.pack_per_karton else 50
@@ -2253,8 +2271,8 @@ def get_production_monitoring():
             WeeklyProductionPlan.year == year,
             WeeklyProductionPlan.status.in_(['approved', 'in_progress', 'completed']),
             db.and_(
-                WeeklyProductionPlan.week_start <= current_week_end,
-                WeeklyProductionPlan.week_end >= current_week_start
+                WeeklyProductionPlan.week_start >= current_week_start,
+                WeeklyProductionPlan.week_start <= current_week_start
             )
         ).all()
         
@@ -2279,7 +2297,7 @@ def get_production_monitoring():
                 
                 product_name = item.product.name
                 # Clean product name (remove @ prefix and @... suffixes)
-                product_name = clean_product_name(product_name)
+                product_name = normalize_product_name(product_name)
                 
                 pack_per_ctn = int(item.product.pack_per_karton) if item.product.pack_per_karton else 50
                 
@@ -2332,7 +2350,7 @@ def get_production_monitoring():
             if not product_data or not product_data[1]:
                 continue
 
-            sgi_product_name = clean_product_name(product_data[1])
+            sgi_product_name = normalize_product_name(product_data[1])
             if not sgi_product_name:
                 continue
 
@@ -2448,7 +2466,7 @@ def get_production_monitoring():
             
             # Clean product name (remove @ prefix and @... suffixes)
             if product_name:
-                product_name = clean_product_name(product_name)
+                product_name = normalize_product_name(product_name)
 
             
 
@@ -2544,25 +2562,24 @@ def get_production_monitoring():
 
             
 
-            if product_name not in daily_product_data[date_str]:
+            # Group by product name and machine name to show them separately
+            machine_name = sp.machine.name if sp.machine else 'N/A'
+            group_key = f"{product_name}__{machine_name}"
 
-                daily_product_data[date_str][product_name] = {
-
+            if group_key not in daily_product_data[date_str]:
+                daily_product_data[date_str][group_key] = {
                     'product_name': product_name,
-            'product_code': product_code,
-            'grade_a': 0, 'grade_b': 0, 'grade_c': 0,
-            'total_pcs': 0, 'total_ctn': 0,
-            'runtime': 0, 'downtime': 0, 'idle_time': 0,
-            'planned_runtime': 0,
-            'pack_per_ctn': pack_per_ctn,
-            'machines': set(),
-            'shifts': []
-
+                    'product_code': product_code,
+                    'grade_a': 0, 'grade_b': 0, 'grade_c': 0,
+                    'total_pcs': 0, 'total_ctn': 0,
+                    'runtime': 0, 'downtime': 0, 'idle_time': 0,
+                    'planned_runtime': 0,
+                    'pack_per_ctn': pack_per_ctn,
+                    'machines': set(),
+                    'shifts': []
                 }
 
-            
-
-            dpd = daily_product_data[date_str][product_name]
+            dpd = daily_product_data[date_str][group_key]
 
             dpd['grade_a'] += grade_a
 
@@ -2645,8 +2662,12 @@ def get_production_monitoring():
 
             if product_name not in product_totals:
                 # Get target from targets_by_product (from MonthlySchedule or WeeklyProductionPlan)
-                target_from_plan = targets_by_product.get(product_name, {}).get('target_ctn_monthly', 0)
-                
+                if view_mode == 'weekly':
+                     target_from_plan = weekly_targets_by_product.get(product_name, {}).get('target_ctn_weekly', 0)
+                     if target_from_plan == 0:
+                         target_from_plan = targets_by_product.get(product_name, {}).get('target_ctn_monthly', 0)
+                else:
+                     target_from_plan = targets_by_product.get(product_name, {}).get('target_ctn_monthly', 0)                
                 # If no target from plan, try to get from work order
                 if target_from_plan == 0 and sp.work_order:
                     wo_target_qty = float(sp.work_order.quantity or 0)
@@ -2916,9 +2937,8 @@ def get_production_monitoring():
 
             day_idle = 0
 
-            
-
-            for pname, pdata in daily_product_data[date_str].items():
+            for group_key, pdata in daily_product_data[date_str].items():
+                pname = pdata['product_name']
 
                 # Cumulative tracking
 
@@ -2932,8 +2952,12 @@ def get_production_monitoring():
 
                 
 
-                target_monthly = targets_by_product.get(pname, {}).get('target_ctn_monthly', 0)
-
+                if view_mode == 'weekly':
+                    target_monthly = weekly_targets_by_product.get(pname, {}).get('target_ctn_weekly', 0)
+                    if target_monthly == 0:
+                        target_monthly = targets_by_product.get(pname, {}).get('target_ctn_monthly', 0)
+                else:
+                    target_monthly = targets_by_product.get(pname, {}).get('target_ctn_monthly', 0)
                 
 
                 # Convert machines set to comma-separated string
@@ -2942,16 +2966,14 @@ def get_production_monitoring():
                 products_for_day.append({
 
                     **pdata,
-            'machines': machines_str,
-            'total_ctn': round(pdata['total_ctn'], 2),
-            'cumulative_ctn': round(cumulative_by_product[pname]['ctn'], 2),
-            'target_monthly_ctn': round(target_monthly, 2),
-            'gap_ctn': round(target_monthly - cumulative_by_product[pname]['ctn'], 2),
-            'shifts': pdata['shifts']
+                    'machines': machines_str,
+                    'total_ctn': round(pdata['total_ctn'], 2),
+                    'cumulative_ctn': round(cumulative_by_product[pname]['ctn'], 2),
+                    'target_monthly_ctn': round(target_monthly, 2),
+                    'gap_ctn': round(target_monthly - cumulative_by_product[pname]['ctn'], 2),
+                    'shifts': pdata['shifts']
 
                 })
-
-                
 
                 day_total_a += pdata['grade_a']
 
@@ -3123,7 +3145,7 @@ def get_production_monitoring():
                 continue
             
             # Clean product name (remove @ prefix and @... suffixes)
-            product_name = clean_product_name(sp.product.name)
+            product_name = normalize_product_name(sp.product.name)
             
             machine_name = sp.machine.name if sp.machine else f"Machine {sp.machine_id}"
             
