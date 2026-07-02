@@ -4100,3 +4100,66 @@ class TestWorkOrderBOMItemDeleteActualReset:
     def test_reset_wo_not_found_returns_404(self, client, auth_headers):
         response = client.post('/api/production/work-orders/999999/bom/reset', headers=auth_headers)
         assert response.status_code == 404
+
+
+
+class TestGetTraceability:
+    """Tests for get_traceability (GET /traceability/<search_term>)"""
+
+    def test_finds_by_exact_batch_number(self, client, auth_headers, db_session, test_product):
+        wo = WorkOrder(
+            wo_number='WO-TRACE-001', product_id=test_product.id, quantity=100, uom='PCS',
+            status='in_progress', batch_number='BATCH-XYZ-001'
+        )
+        db_session.add(wo)
+        db_session.commit()
+
+        response = client.get('/api/production/traceability/BATCH-XYZ-001', headers=auth_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['work_order']['wo_number'] == 'WO-TRACE-001'
+        assert data['batch_number'] == 'BATCH-XYZ-001'
+
+    def test_finds_by_exact_wo_number(self, client, auth_headers, db_session, test_product):
+        wo = WorkOrder(wo_number='WO-TRACE-002', product_id=test_product.id, quantity=100, uom='PCS', status='in_progress')
+        db_session.add(wo)
+        db_session.commit()
+
+        response = client.get('/api/production/traceability/WO-TRACE-002', headers=auth_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['work_order']['wo_number'] == 'WO-TRACE-002'
+
+    def test_finds_by_partial_wo_number_match(self, client, auth_headers, db_session, test_product):
+        wo = WorkOrder(wo_number='WO-TRACE-003-SPECIAL', product_id=test_product.id, quantity=100, uom='PCS', status='in_progress')
+        db_session.add(wo)
+        db_session.commit()
+
+        response = client.get('/api/production/traceability/TRACE-003', headers=auth_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['work_order']['wo_number'] == 'WO-TRACE-003-SPECIAL'
+
+    def test_not_found_returns_404(self, client, auth_headers):
+        response = client.get('/api/production/traceability/NONEXISTENT-999', headers=auth_headers)
+        assert response.status_code == 404
+
+    def test_includes_production_records(self, client, auth_headers, db_session, test_product):
+        wo = WorkOrder(wo_number='WO-TRACE-004', product_id=test_product.id, quantity=100, uom='PCS', status='in_progress')
+        db_session.add(wo)
+        db_session.commit()
+
+        record = ProductionRecord(
+            work_order_id=wo.id, production_date=datetime.utcnow().date(),
+            quantity_produced=50, quantity_good=48, quantity_scrap=2, uom='PCS'
+        )
+        db_session.add(record)
+        db_session.commit()
+
+        response = client.get('/api/production/traceability/WO-TRACE-004', headers=auth_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        assert len(data['production_records']) == 1
+        assert data['production_records'][0]['quantity_produced'] == 50
+        assert data['production_records'][0]['quantity_good'] == 48
+        assert data['production_records'][0]['quantity_scrap'] == 2
