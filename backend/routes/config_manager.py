@@ -238,6 +238,10 @@ MASTER_CONFIGS = [
     {'key': 'notifications.digest_frequency',    'category': 'notifications', 'name': 'Email Digest Frequency',      'value': 'daily', 'type': 'string',  'description': 'Frekuensi pengiriman email rangkuman: realtime, daily, atau weekly.'},
     {'key': 'notifications.low_stock_email',     'category': 'notifications', 'name': 'Low Stock Email Alert',       'value': 'true',  'type': 'boolean', 'description': 'Kirim email alert ketika ada material/produk yang mencapai batas stok rendah.'},
     {'key': 'notifications.production_summary',  'category': 'notifications', 'name': 'Daily Production Summary Email','value': 'true', 'type': 'boolean', 'description': 'Kirim email ringkasan produksi harian ke supervisor dan manajer produksi.'},
+    {'key': 'notifications.whatsapp_enabled',     'category': 'notifications', 'name': 'WhatsApp Notifications Enabled','value': 'false', 'type': 'boolean', 'description': 'Aktifkan pengiriman notifikasi WhatsApp otomatis ketika Work Order selesai.'},
+    {'key': 'notifications.whatsapp_api_url',     'category': 'notifications', 'name': 'WhatsApp API Gateway URL',    'value': 'http://localhost:8000/send-message', 'type': 'string', 'description': 'URL API Gateway untuk mengirimkan pesan WhatsApp.'},
+    {'key': 'notifications.whatsapp_token',       'category': 'notifications', 'name': 'WhatsApp API Secret Token',  'value': 'local-wa-secret-token', 'type': 'string', 'description': 'Token rahasia (X-API-Key) untuk mencocokkan request dari backend ke WA Gateway.'},
+    {'key': 'notifications.whatsapp_target_phones','category': 'notifications', 'name': 'WhatsApp Target Phone Numbers','value': '6281234567890', 'type': 'string', 'description': 'Nomor tujuan penerima notifikasi (pisahkan dengan koma jika lebih dari satu, tanpa tanda + atau spasi).'},
 
     # ────────────────────────────────────────────────────────
     # FINANCE — Dashboard Estimation Ratios

@@ -132,36 +132,46 @@ def register_production_events(app):
     @event.listens_for(WorkOrder, 'after_update')
     def work_order_completed(mapper, connection, target):
         """
-        Auto-close WIP Ledger when Work Order is completed
-
-
-
-        
-        IMPORTANT: this runs inside SQLAlchemy's after_update event, which fires
-        DURING an in-progress flush. Do NOT call db.session.commit()/rollback()
-        here - that interrupts the flush that's already running and corrupts the
-        session's identity map, causing StaleDataError on unrelated updates later
-        in the same request. Just mutate the object; it rides along with the
-        outer transaction that's already in progress.
+        Auto-close WIP Ledger when Work Order is completed and trigger WA notification.
         """
-        if target.status == 'completed':
-            # Update WIP Ledger status
-                try:
-                    wip_ledger = db.session.query(WIPLedger).filter_by(
-                        work_order_id=target.id
-                    ).first()
+        # Inspect state changes to see if status was changed to completed in this update
+        from sqlalchemy import inspect
+        state = inspect(target)
+        status_history = state.attrs.status.history
+        
+        if status_history.has_changes() and target.status == 'completed':
+            # 1. Update WIP Ledger status
+            try:
+                wip_ledger = db.session.query(WIPLedger).filter_by(
+                    work_order_id=target.id
+                ).first()
+                
+                if wip_ledger and wip_ledger.status == 'active':
+                    wip_ledger.status = 'completed'
+                    wip_ledger.end_date = datetime.utcnow()
+                    wip_ledger.actual_quantity = target.quantity_produced or target.quantity
+                    print(f"✓ Auto-closed WIP Ledger for Work Order {target.order_number}")
                     
-                    if wip_ledger and wip_ledger.status == 'active':
-                        wip_ledger.status = 'completed'
-                        wip_ledger.end_date = datetime.utcnow()
-                        wip_ledger.actual_quantity = target.quantity_produced or target.quantity
-                        
-                        
-                        print(f"✓ Auto-closed WIP Ledger for Work Order {target.order_number}")
-                        
-                except Exception as e:
-                    print(f"✗ Failed to auto-close WIP Ledger: {str(e)}")
-    
+            except Exception as e:
+                print(f"✗ Failed to auto-close WIP Ledger: {str(e)}")
+                
+            # 2. Trigger Async WA Notification
+            import threading
+            from utils.production_notifications import trigger_wo_completion_whatsapp_notification
+            
+            def send_async(app_ctx, wo_id):
+                with app_ctx:
+                    try:
+                        trigger_wo_completion_whatsapp_notification(wo_id)
+                    except Exception as err:
+                        print(f"✗ Error sending async WA notification: {err}")
+            
+            # Start background thread to avoid blocking SQLAlchemy flush/commit
+            threading.Thread(
+                target=send_async,
+                args=(app.app_context(), target.id)
+            ).start()
+            
     print("✓ Production event listeners registered")
 
 
