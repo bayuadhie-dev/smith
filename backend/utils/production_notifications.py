@@ -126,7 +126,7 @@ def format_wo_completion_message(metrics):
 
 def trigger_wo_completion_whatsapp_notification(work_order_id):
     """
-    Generate the WO completion report and send it to target phone numbers via WhatsApp gateway.
+    Generate the WO completion report and send it to target phone numbers via WhatsApp gateway/Twilio.
     """
     # 1. Check if WhatsApp notification is enabled
     is_enabled = get_setting_value('notifications.whatsapp_enabled', 'false') == 'true'
@@ -135,8 +135,7 @@ def trigger_wo_completion_whatsapp_notification(work_order_id):
         return False
 
     # 2. Get API config
-    api_url = get_setting_value('notifications.whatsapp_api_url', 'http://localhost:8000/send-message')
-    api_token = get_setting_value('notifications.whatsapp_token', 'local-wa-secret-token')
+    provider = get_setting_value('notifications.whatsapp_provider', 'local')
     phones_str = get_setting_value('notifications.whatsapp_target_phones', '')
     
     if not phones_str:
@@ -157,32 +156,80 @@ def trigger_wo_completion_whatsapp_notification(work_order_id):
     target_phones = [p.strip() for p in phones_str.split(',') if p.strip()]
     success_count = 0
 
-    for phone in target_phones:
-        try:
-            logger.info(f"Sending WA notification for WO {metrics['wo_number']} to {phone}...")
-            response = requests.post(
-                api_url,
-                headers={
-                    'Content-Type': 'application/json',
-                    'X-API-Key': api_token
-                },
-                json={
-                    'to': phone,
-                    'message': message
-                },
-                timeout=10 # 10 seconds timeout to prevent blocking backend
-            )
-            
-            if response.status_code == 200:
-                res_data = response.json()
-                if res_data.get('success'):
+    if provider == 'twilio':
+        account_sid = get_setting_value('notifications.twilio_account_sid', '')
+        auth_token = get_setting_value('notifications.twilio_auth_token', '')
+        from_number = get_setting_value('notifications.twilio_from_number', '')
+        
+        if not account_sid or not auth_token or not from_number:
+            logger.error("Twilio WhatsApp configurations are incomplete.")
+            return False
+
+        from requests.auth import HTTPBasicAuth
+        twilio_url = f"https://api.twilio.com/2010-04-01/Accounts/{account_sid}/Messages.json"
+        
+        # Ensure twilio from number starts with whatsapp:
+        twilio_from = from_number.strip()
+        if not twilio_from.startswith('whatsapp:'):
+            twilio_from = f"whatsapp:{twilio_from}"
+
+        for phone in target_phones:
+            try:
+                # Ensure target phone starts with whatsapp:
+                twilio_to = phone
+                if not twilio_to.startswith('whatsapp:'):
+                    twilio_to = f"whatsapp:{twilio_to}"
+
+                logger.info(f"Sending Twilio WA notification for WO {metrics['wo_number']} to {twilio_to}...")
+                response = requests.post(
+                    twilio_url,
+                    auth=HTTPBasicAuth(account_sid, auth_token),
+                    data={
+                        'From': twilio_from,
+                        'To': twilio_to,
+                        'Body': message
+                    },
+                    timeout=10
+                )
+                
+                if response.status_code in (200, 201):
                     success_count += 1
-                    logger.info(f"✓ WA message sent successfully to {phone}")
+                    logger.info(f"✓ Twilio WA message sent successfully to {phone}")
                 else:
-                    logger.error(f"✗ Gateway returned failure: {res_data.get('message')}")
-            else:
-                logger.error(f"✗ Failed to connect to WA gateway. Status: {response.status_code}, Response: {response.text}")
-        except requests.exceptions.RequestException as e:
-            logger.error(f"✗ Network error connecting to WhatsApp gateway: {e}")
+                    logger.error(f"✗ Twilio API returned error status {response.status_code}: {response.text}")
+            except requests.exceptions.RequestException as e:
+                logger.error(f"✗ Network error connecting to Twilio API: {e}")
+    else:
+        # Local self-hosted Node.js gateway
+        api_url = get_setting_value('notifications.whatsapp_api_url', 'http://localhost:8000/send-message')
+        api_token = get_setting_value('notifications.whatsapp_token', 'local-wa-secret-token')
+
+        for phone in target_phones:
+            try:
+                logger.info(f"Sending Local WA notification for WO {metrics['wo_number']} to {phone}...")
+                response = requests.post(
+                    api_url,
+                    headers={
+                        'Content-Type': 'application/json',
+                        'X-API-Key': api_token
+                    },
+                    json={
+                        'to': phone,
+                        'message': message
+                    },
+                    timeout=10
+                )
+                
+                if response.status_code == 200:
+                    res_data = response.json()
+                    if res_data.get('success'):
+                        success_count += 1
+                        logger.info(f"✓ Local WA message sent successfully to {phone}")
+                    else:
+                        logger.error(f"✗ Local WA Gateway returned failure: {res_data.get('message')}")
+                else:
+                    logger.error(f"✗ Failed to connect to Local WA gateway. Status: {response.status_code}, Response: {response.text}")
+            except requests.exceptions.RequestException as e:
+                logger.error(f"✗ Network error connecting to Local WhatsApp gateway: {e}")
 
     return success_count > 0
