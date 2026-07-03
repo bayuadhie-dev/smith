@@ -166,12 +166,20 @@ app.post('/send-message', apiLimiter, async (req, res) => {
                 cleanNumber = '62' + cleanNumber.substring(1);
             }
             
-            if (!cleanNumber.endsWith('@s.whatsapp.net')) {
+            try {
+                // Query server for the correct JID (handles new privacy JIDs / @lid formats)
+                const [result] = await sock.onWhatsApp(cleanNumber);
+                if (result && result.exists) {
+                    jid = result.jid;
+                    console.log(`Resolved JID via onWhatsApp: ${jid}`);
+                } else {
+                    jid = `${cleanNumber}@s.whatsapp.net`;
+                    console.log(`onWhatsApp returned no result, using fallback: ${jid}`);
+                }
+            } catch (e) {
                 jid = `${cleanNumber}@s.whatsapp.net`;
-            } else {
-                jid = cleanNumber;
+                console.log(`Error resolving JID via onWhatsApp, using fallback: ${jid}`);
             }
-            console.log(`Sending to Personal JID: ${jid}`);
         }
 
         const sent = await sock.sendMessage(jid, { text: message });
