@@ -276,31 +276,33 @@ def update_converting_production(prod_id):
         production = db.session.get(ConvertingProduction, prod_id) or abort(404)
         data = request.get_json()
         
-        if 'actual_quantity' in data:
-            production.actual_quantity = float(data['actual_quantity'])
+        mdata = production.get_machine_data() or {}
+        
         if 'good_quantity' in data:
-            production.good_quantity = float(data['good_quantity'])
+            production.grade_a = float(data['good_quantity'])
+        elif 'actual_quantity' in data:
+            production.grade_a = float(data['actual_quantity'])
+            
         if 'reject_quantity' in data:
-            production.reject_quantity = float(data['reject_quantity'])
+            production.grade_b = float(data['reject_quantity'])
+            
         if 'downtime_minutes' in data:
-            production.downtime_minutes = int(data['downtime_minutes'])
+            mdata['downtime_minutes'] = int(data['downtime_minutes'])
         if 'idle_time' in data:
-            production.idle_time = int(data['idle_time'])
+            mdata['idle_time'] = int(data['idle_time'])
+        if 'machine_speed' in data:
+            mdata['machine_speed'] = float(data['machine_speed'])
+        if 'planned_runtime' in data:
+            mdata['production_hour_minutes'] = int(data['planned_runtime'])
+            
+        if mdata:
+            production.set_machine_data(mdata)
+            
         if 'notes' in data:
             production.notes = data['notes']
-        if 'issues' in data:
-            production.issues = data['issues']
         if 'operator_name' in data:
             production.operator_name = data['operator_name']
-        
-        # Recalculate
-        production.actual_runtime = production.planned_runtime - production.downtime_minutes - production.idle_time
-        if production.machine_speed > 0 and production.actual_runtime > 0:
-            expected = production.machine_speed * production.actual_runtime
-            production.efficiency_rate = round((float(production.good_quantity) / expected) * 100, 2)
-        if float(production.actual_quantity) > 0:
-            production.quality_rate = round((float(production.good_quantity) / float(production.actual_quantity)) * 100, 2)
-        
+            
         db.session.commit()
         
         return jsonify({'message': 'Data produksi berhasil diupdate'}), 200

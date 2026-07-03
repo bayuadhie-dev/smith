@@ -3,7 +3,7 @@ import {
   ChartBarIcon, ExclamationTriangleIcon,
   ClockIcon, CubeIcon, CogIcon, ChevronDownIcon, ChevronUpIcon,
   PresentationChartLineIcon, CalendarDaysIcon, ArrowsRightLeftIcon,
-  BoltIcon, BeakerIcon
+  BoltIcon, BeakerIcon, ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
@@ -49,7 +49,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
   const [viewMode, setViewMode] = useState<'monthly' | 'weekly'>('monthly');
   const [weekNumber, setWeekNumber] = useState(0);
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
-  const [activeTab, setActiveTab] = useState<'overview' | 'daily' | 'dailySwiper' | 'products' | 'machines' | 'downtime' | 'graph' | 'fg' | 'shift' | 'analytics'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'daily' | 'dailySwiper' | 'converting' | 'products' | 'machines' | 'downtime' | 'graph' | 'fg' | 'shift' | 'analytics'>('overview');
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [refreshInterval, setRefreshInterval] = useState(5); // minutes
   const [fgData, setFgData] = useState<any>(null);
@@ -297,6 +297,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
     { id: 'overview', label: 'Overview', icon: ChartBarIcon },
     { id: 'daily', label: 'Detail Harian', icon: ClockIcon },
     { id: 'dailySwiper', label: 'Controller', icon: CalendarDaysIcon },
+    { id: 'converting', label: 'mc converting', icon: CogIcon },
     { id: 'products', label: 'Per Produk', icon: CubeIcon },
     { id: 'machines', label: 'Per Mesin', icon: CogIcon },
     { id: 'downtime', label: 'Downtime', icon: ExclamationTriangleIcon },
@@ -489,6 +490,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
       {activeTab === 'graph' && <GraphTab data={data} />}
       {activeTab === 'shift' && <ShiftTab data={data} />}
       {activeTab === 'analytics' && <AnalyticsTab data={data} dailyChartData={dailyChartData} />}
+      {activeTab === 'converting' && <ConvertingTab />}
       {activeTab === 'fg' && (
         <FGConversionTab
           fgData={fgData}
@@ -2756,6 +2758,359 @@ const FGConversionTab: React.FC<{
           </table>
         </div>
       </div>
+    </div>
+  );
+};
+
+// ==================== MC CONVERTING TAB ====================
+interface ConvertingShiftData {
+  id: number;
+  shift: string;
+  product_name: string;
+  actual_quantity: number;
+  good_quantity: number;
+  reject_quantity: number;
+  efficiency_rate: number;
+  operator_name: string;
+  specification?: string;
+}
+
+interface ConvertingMachineData {
+  id: number;
+  code: string;
+  name: string;
+  machine_type: string;
+  status: string;
+  target_efficiency: number;
+  shifts: ConvertingShiftData[];
+  total_output: number;
+  total_good: number;
+  total_reject: number;
+  avg_efficiency: number;
+}
+
+interface ConvertingSummaryData {
+  total_machines: number;
+  active_machines: number;
+  total_output: number;
+  total_good: number;
+  total_reject: number;
+  quality_rate: number;
+}
+
+const ConvertingTab: React.FC = () => {
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [machines, setMachines] = useState<ConvertingMachineData[]>([]);
+  const [summary, setSummary] = useState<ConvertingSummaryData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [expandedMachine, setExpandedMachine] = useState<number | null>(null);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const res = await axiosInstance.get(`/api/converting/dashboard?date=${date}`);
+      setMachines(res.data.machines || []);
+      setSummary(res.data.summary || null);
+    } catch (error) {
+      console.error('Error fetching converting dashboard:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [date]);
+
+  const changeDate = (delta: number) => {
+    const d = new Date(date);
+    d.setDate(d.getDate() + delta);
+    setDate(d.toISOString().split('T')[0]);
+  };
+
+  const getEfficiencyColor = (eff: number, target: number) => {
+    if (eff >= target) return 'text-green-650 dark:text-green-400 font-bold';
+    if (eff >= target * 0.8) return 'text-yellow-650 dark:text-yellow-400 font-bold';
+    return 'text-red-600 dark:text-red-400 font-bold';
+  };
+
+  const getShiftBadgeStyle = (eff: number, target: number) => {
+    if (eff >= target) return 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800/30';
+    if (eff >= target * 0.8) return 'bg-yellow-50 dark:bg-yellow-900/10 border-yellow-200 dark:border-yellow-800/30';
+    return 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800/30';
+  };
+
+  const getMachineTypeLabel = (type: string) => {
+    const labels: Record<string, string> = {
+      perforating: 'Perforating',
+      slitting: 'Slitting',
+      laminasi: 'Laminasi Kain',
+      bagmaker: 'Bagmaker',
+      folding: 'Folding',
+      cutting: 'Cutting',
+    };
+    return labels[type] || type;
+  };
+
+  const getMachineTypeColor = (type: string) => {
+    const colors: Record<string, string> = {
+      perforating: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+      slitting: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
+      laminasi: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
+      bagmaker: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+      folding: 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-400',
+      cutting: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+    };
+    return colors[type] || 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400';
+  };
+
+  const toggleExpand = (machineId: number) => {
+    setExpandedMachine(expandedMachine === machineId ? null : machineId);
+  };
+
+  const formatDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    return `${days[d.getDay()]} , ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  };
+
+  // Group machines by type
+  const machinesByType = useMemo(() => {
+    return machines.reduce((acc, m) => {
+      if (!acc[m.machine_type]) acc[m.machine_type] = [];
+      acc[m.machine_type].push(m);
+      return acc;
+    }, {} as Record<string, ConvertingMachineData[]>);
+  }, [machines]);
+
+  return (
+    <div className="space-y-6">
+      {/* Date Selector */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 p-4">
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => changeDate(-1)}
+            className="p-2 hover:bg-slate-100 dark:hover:bg-gray-700 rounded-lg transition-colors border"
+          >
+            <ChevronLeftIcon className="h-5 w-5 text-slate-600 dark:text-gray-300" />
+          </button>
+
+          <div className="flex items-center gap-3">
+            <CalendarDaysIcon className="h-5 w-5 text-blue-600" />
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="text-lg font-semibold text-slate-800 dark:text-white dark:bg-gray-800 border-none focus:ring-0 cursor-pointer"
+            />
+            <span className="text-slate-500 dark:text-gray-400">|</span>
+            <span className="text-slate-600 dark:text-gray-300">{formatDate(date)}</span>
+          </div>
+
+          <button
+            onClick={() => changeDate(1)}
+            className="p-2 hover:bg-slate-100 dark:hover:bg-gray-700 rounded-lg transition-colors border"
+          >
+            <ChevronRightIcon className="h-5 w-5 text-slate-600 dark:text-gray-300" />
+          </button>
+        </div>
+      </div>
+
+      {/* Summary Cards */}
+      {summary && (
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white shadow-sm">
+            <div className="flex items-center gap-2 mb-2">
+              <CogIcon className="h-5 w-5 opacity-80" />
+              <span className="text-sm opacity-80 font-medium">Mesin Aktif</span>
+            </div>
+            <p className="text-3xl font-bold">{summary.active_machines} <span className="text-sm font-normal">/ {summary.total_machines}</span></p>
+          </div>
+
+          <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white shadow-sm">
+            <div className="flex items-center gap-2 mb-2">
+              <CubeIcon className="h-5 w-5 opacity-80" />
+              <span className="text-sm opacity-80 font-medium">Total Output</span>
+            </div>
+            <p className="text-3xl font-bold">{summary.total_output.toLocaleString()}</p>
+          </div>
+
+          <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl p-4 text-white shadow-sm">
+            <div className="flex items-center gap-2 mb-2">
+              <CheckCircleIcon className="h-5 w-5 opacity-80" />
+              <span className="text-sm opacity-80 font-medium">Grade A</span>
+            </div>
+            <p className="text-3xl font-bold">{summary.total_good.toLocaleString()}</p>
+          </div>
+
+          <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white shadow-sm">
+            <div className="flex items-center gap-2 mb-2">
+              <ExclamationTriangleIcon className="h-5 w-5 opacity-80" />
+              <span className="text-sm opacity-80 font-medium">Reject / Scrap</span>
+            </div>
+            <p className="text-3xl font-bold">{summary.total_reject.toLocaleString()}</p>
+          </div>
+
+          <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white shadow-sm col-span-2 lg:col-span-1">
+            <div className="flex items-center gap-2 mb-2">
+              <PresentationChartLineIcon className="h-5 w-5 opacity-80" />
+              <span className="text-sm opacity-80 font-medium">Quality Rate</span>
+            </div>
+            <p className="text-3xl font-bold">{summary.quality_rate}%</p>
+          </div>
+        </div>
+      )}
+
+      {/* Loading State */}
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      ) : machines.length === 0 ? (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 p-12 text-center">
+          <CogIcon className="h-16 w-16 text-slate-300 dark:text-gray-600 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-slate-600 dark:text-gray-300">Tidak ada data converting</h3>
+          <p className="text-slate-400 dark:text-gray-500 mt-1">Belum ada hasil produksi converting yang diinput untuk tanggal ini</p>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {Object.entries(machinesByType).map(([type, typeMachines]) => (
+            <div key={type} className="space-y-3">
+              <h2 className="text-lg font-bold text-slate-700 dark:text-gray-300 flex items-center gap-2">
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getMachineTypeColor(type)}`}>
+                  {getMachineTypeLabel(type)}
+                </span>
+                <span className="text-sm text-slate-400">({typeMachines.length} mesin)</span>
+              </h2>
+
+              <div className="space-y-4">
+                {typeMachines.map((machine) => (
+                  <div
+                    key={machine.id}
+                    className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 overflow-hidden"
+                  >
+                    {/* Card Header - Clickable */}
+                    <div
+                      className="p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors"
+                      onClick={() => toggleExpand(machine.id)}
+                    >
+                      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white">
+                            <CogIcon className="h-6 w-6" />
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-slate-800 dark:text-white text-lg">{machine.name}</h3>
+                            <p className="text-xs text-slate-400">{machine.code}</p>
+                          </div>
+                        </div>
+
+                        {/* Stats overview */}
+                        <div className="flex flex-wrap items-center gap-4 ml-16 lg:ml-0">
+                          {/* Shifts efficiency */}
+                          <div className="flex items-center gap-1.5">
+                            {machine.shifts.map((s) => (
+                              <div
+                                key={s.id}
+                                className={`text-center px-2.5 py-1 rounded-lg border min-w-[80px] ${getShiftBadgeStyle(s.efficiency_rate, machine.target_efficiency)}`}
+                              >
+                                <p className="text-[9px] text-slate-400 dark:text-gray-500 font-semibold">Shift {s.shift}</p>
+                                <p className={`text-sm font-extrabold ${getEfficiencyColor(s.efficiency_rate, machine.target_efficiency)}`}>
+                                  {s.efficiency_rate}%
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+
+                          <div className="h-8 w-px bg-slate-200 dark:bg-gray-700 hidden sm:block"></div>
+
+                          <div className="text-center px-2">
+                            <p className="text-[10px] text-slate-400 dark:text-gray-500 font-medium">Output</p>
+                            <p className="text-base font-bold text-slate-800 dark:text-white">
+                              {machine.total_output.toLocaleString()}
+                            </p>
+                          </div>
+
+                          <div className="text-center px-2">
+                            <p className="text-[10px] text-slate-400 dark:text-gray-500 font-medium">Grade A</p>
+                            <p className="text-base font-bold text-green-600">
+                              {machine.total_good.toLocaleString()}
+                            </p>
+                          </div>
+
+                          {machine.total_reject > 0 && (
+                            <div className="text-center px-2">
+                              <p className="text-[10px] text-slate-400 dark:text-gray-500 font-medium">Reject</p>
+                              <p className="text-base font-bold text-red-500">
+                                {machine.total_reject.toLocaleString()}
+                              </p>
+                            </div>
+                          )}
+
+                          <div className="h-8 w-px bg-slate-200 dark:bg-gray-700 hidden sm:block"></div>
+
+                          <div className="text-center px-2">
+                            <p className="text-[10px] text-slate-400 dark:text-gray-500 font-medium">Avg Eff</p>
+                            <p className={`text-base font-bold ${getEfficiencyColor(machine.avg_efficiency, machine.target_efficiency)}`}>
+                              {machine.avg_efficiency}%
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Card Detail - Expanded */}
+                    {expandedMachine === machine.id && (
+                      <div className="border-t border-slate-100 dark:border-gray-700 bg-slate-50/50 dark:bg-gray-900/10 p-4">
+                        {machine.shifts.length === 0 ? (
+                          <p className="text-center text-sm text-slate-400 py-4">Belum ada data detail shift.</p>
+                        ) : (
+                          <div className="overflow-x-auto">
+                            <table className="min-w-full text-sm">
+                              <thead>
+                                <tr className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider border-b dark:border-gray-700">
+                                  <th className="pb-2">Shift</th>
+                                  <th className="pb-2">Produk</th>
+                                  <th className="pb-2">Operator</th>
+                                  <th className="pb-2 text-right">Target</th>
+                                  <th className="pb-2 text-right">Output</th>
+                                  <th className="pb-2 text-right">Grade A</th>
+                                  <th className="pb-2 text-right">Reject</th>
+                                  <th className="pb-2 text-right">Efisiensi</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-slate-100 dark:divide-gray-700">
+                                {machine.shifts.map((s) => (
+                                  <tr key={s.id} className="hover:bg-slate-50/50 dark:hover:bg-gray-800/10">
+                                    <td className="py-2.5 font-semibold text-slate-700 dark:text-gray-300">Shift {s.shift}</td>
+                                    <td className="py-2.5">
+                                      <p className="font-medium text-slate-800 dark:text-white">{s.product_name || '-'}</p>
+                                      {s.specification && <p className="text-[10px] text-slate-400">{s.specification}</p>}
+                                    </td>
+                                    <td className="py-2.5 text-slate-600 dark:text-gray-400">{s.operator_name || '-'}</td>
+                                    <td className="py-2.5 text-right font-medium text-slate-600 dark:text-gray-400">{machine.target_efficiency}%</td>
+                                    <td className="py-2.5 text-right font-semibold text-slate-700 dark:text-gray-300">{s.actual_quantity.toLocaleString()}</td>
+                                    <td className="py-2.5 text-right font-semibold text-green-600">{s.good_quantity.toLocaleString()}</td>
+                                    <td className="py-2.5 text-right font-semibold text-red-500">{s.reject_quantity.toLocaleString()}</td>
+                                    <td className={`py-2.5 text-right font-extrabold ${getEfficiencyColor(s.efficiency_rate, machine.target_efficiency)}`}>
+                                      {s.efficiency_rate}%
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
