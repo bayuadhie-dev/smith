@@ -331,11 +331,16 @@ class WIPWorkflowIntegration:
             
         # Calculate material cost from BOM
         from .production import WorkOrder
+        from models.settings import SystemSetting
         work_order = WorkOrder.query.get(work_order_id)
+        
+        # Get fallback material cost per unit from system settings
+        mat_cost_setting = SystemSetting.query.filter_by(setting_key='job_costing.material_cost_per_unit').first()
+        mat_cost_per_unit = float(mat_cost_setting.setting_value) if mat_cost_setting and mat_cost_setting.setting_value else 50000
         
         # Simplified material cost calculation
         # In real implementation, this would calculate from BOM and material issues
-        estimated_material_cost = work_order.quantity_to_produce * 50000  # IDR 50k per unit
+        estimated_material_cost = work_order.quantity_to_produce * mat_cost_per_unit
         
         wip_batch.material_cost = estimated_material_cost
         wip_batch.update_wip_value()
@@ -349,7 +354,7 @@ class WIPWorkflowIntegration:
             cost_category='raw_material',
             description='Material cost for production',
             quantity=work_order.quantity_to_produce,
-            unit_cost=50000,  # IDR 50k per unit
+            unit_cost=mat_cost_per_unit,
             total_cost=estimated_material_cost,
             created_by=user_id
         )

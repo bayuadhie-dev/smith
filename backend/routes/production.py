@@ -1682,12 +1682,15 @@ def create_work_order_production_record(id):
         wip_batch.qty_in_process = float(wo.quantity) - wip_batch.qty_completed - wip_batch.qty_rejected
         
         # Calculate labor cost (based on actual runtime and labor rate)
-        labor_rate_per_hour = float(data.get('labor_rate', 25000))  # Default Rp 25.000/jam
+        from utils.helpers import get_setting_value
+        db_labor_rate = get_setting_value('job_costing.labor_rate', 25000)
+        labor_rate_per_hour = float(data.get('labor_rate') or db_labor_rate)
         labor_hours = actual_runtime / 60
         labor_cost = labor_hours * labor_rate_per_hour
         
         # Calculate overhead cost (machine cost per hour)
-        overhead_rate_per_hour = float(data.get('overhead_rate', 50000))  # Default Rp 50.000/jam
+        db_overhead_rate = get_setting_value('job_costing.overhead_rate', 50000)
+        overhead_rate_per_hour = float(data.get('overhead_rate') or db_overhead_rate)
         overhead_cost = labor_hours * overhead_rate_per_hour
         
         # Create job cost entry for labor
