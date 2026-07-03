@@ -90,14 +90,15 @@ client.on('disconnected', (reason) => {
 // Listen for message status updates (ticks)
 client.on('message_ack', (msg, ack) => {
     const statusLabels = {
-        0: 'ERROR',
-        1: 'PENDING',
-        2: 'SERVER_ACK',
-        3: 'DELIVERED',
-        4: 'READ',
-        5: 'PLAYED'
+        [-1]: 'ERROR',
+        0: 'PENDING',
+        1: 'SERVER_ACK',
+        2: 'DELIVERED',
+        3: 'READ',
+        4: 'PLAYED'
     };
-    console.log(`[STATUS UPDATE] ${msg.id.id} → ${statusLabels[ack] || ack}`);
+    const status = statusLabels[ack] !== undefined ? statusLabels[ack] : `UNKNOWN (${ack})`;
+    console.log(`[STATUS UPDATE] ${msg.id.id} → ${status}`);
 });
 
 console.log('Starting WhatsApp Client...');
