@@ -472,7 +472,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
 
       {/* TAB CONTENT */}
       {activeTab === 'overview' && <OverviewTab data={data} dailyChartData={dailyChartData} timePieData={timePieData} downtimePieData={downtimePieData} displaySummary={displaySummary} viewMode={viewMode} />}
-      {activeTab === 'daily' && <DailyTab data={data} expandedDays={expandedDays} toggleDay={toggleDay} calculateDailyTarget={calculateDailyTarget} />}
+      {activeTab === 'daily' && <DailyTab data={data} expandedDays={expandedDays} toggleDay={toggleDay} calculateDailyTarget={calculateDailyTarget} viewMode={viewMode} />}
       {activeTab === 'dailySwiper' && (
         <div className="mt-6">
           <DailyControllerSwiper
@@ -701,7 +701,7 @@ const OverviewTab: React.FC<{ data: any; dailyChartData: any[]; timePieData: any
 };
 
 // ==================== DAILY TAB ====================
-const DailyTab: React.FC<{ data: any; expandedDays: Set<string>; toggleDay: (d: string) => void; calculateDailyTarget: (weeklyTarget: number, workingDays: number) => number }> = ({ data, expandedDays, toggleDay, calculateDailyTarget }) => {
+const DailyTab: React.FC<{ data: any; expandedDays: Set<string>; toggleDay: (d: string) => void; calculateDailyTarget: (weeklyTarget: number, workingDays: number) => number; viewMode: 'monthly' | 'weekly' }> = ({ data, expandedDays, toggleDay, calculateDailyTarget, viewMode }) => {
   const dayNames: Record<string, string> = {
     Monday: 'Senin', Tuesday: 'Selasa', Wednesday: 'Rabu', Thursday: 'Kamis',
     Friday: 'Jumat', Saturday: 'Sabtu', Sunday: 'Minggu'
@@ -727,7 +727,7 @@ const DailyTab: React.FC<{ data: any; expandedDays: Set<string>; toggleDay: (d: 
                 <th className="px-2 py-2.5 text-right">Total (pcs)</th>
                 <th className="px-2 py-2.5 text-right">Karton</th>
                 <th className="px-2 py-2.5 text-right">Kumulatif</th>
-                <th className="px-2 py-2.5 text-right">Target</th>
+                <th className="px-2 py-2.5 text-right font-semibold">Target {viewMode === 'weekly' ? '(Minggu)' : '(Bulan)'}</th>
                 <th className="px-2 py-2.5 text-right">Sisa</th>
                 <th className="px-2 py-2.5 text-right text-green-700">RT</th>
                 <th className="px-2 py-2.5 text-right text-red-700">DT</th>
@@ -813,116 +813,167 @@ const DailyTab: React.FC<{ data: any; expandedDays: Set<string>; toggleDay: (d: 
                         design: 'Design', idle: 'Idle', others: 'Lainnya'
                       };
                       
+                      // Group downtime records by Machine -> Product -> Shift
+                      const grouped: Record<string, Record<string, Record<number, any[]>>> = {};
+                      allRecords.forEach((dt: any) => {
+                        const machine = dt.machine_name || 'N/A';
+                        const product = stripPackagingSuffix(dt.product_name) || 'N/A';
+                        const shiftNum = dt.shift || 0;
+                        
+                        if (!grouped[machine]) grouped[machine] = {};
+                        if (!grouped[machine][product]) grouped[machine][product] = {};
+                        if (!grouped[machine][product][shiftNum]) grouped[machine][product][shiftNum] = [];
+                        grouped[machine][product][shiftNum].push(dt);
+                      });
+
+                      const machineKeys = Object.keys(grouped).sort();
+
                       return (
                         <>
-                          {/* TOP 5 UNPLANNED DOWNTIME SECTION */}
-                          {unplannedRecords.length > 0 && (
-                            <tr className="bg-gradient-to-r from-red-100 to-orange-100">
-                              <td colSpan={13} className="px-6 py-2">
-                                <span className="text-xs font-bold text-red-700 uppercase tracking-wider">
-                                  ⚠️ Top 5 Unplanned Downtime (Mesin & Idle) per Shift
-                                </span>
-                              </td>
-                            </tr>
-                          )}
-                          {shifts.map((shiftNum: number) => {
-                            const shiftUnplanned = unplannedRecords
-                              .filter((d: any) => d.shift === shiftNum)
-                              .sort((a: any, b: any) => {
-                                if (a.product_name !== b.product_name) return a.product_name.localeCompare(b.product_name);
-                                if (a.machine_name !== b.machine_name) return a.machine_name.localeCompare(b.machine_name);
-                                return b.duration_minutes - a.duration_minutes;
-                              })
-                              .slice(0, 5);
-                            
-                            if (shiftUnplanned.length === 0) return null;
-                            
-                            const totalUnplanned = unplannedRecords
-                              .filter((d: any) => d.shift === shiftNum)
-                              .reduce((s: number, d: any) => s + d.duration_minutes, 0);
-                            
-                            return (
-                              <React.Fragment key={`top5-shift-${day.date}-${shiftNum}`}>
-                                <tr className="bg-red-50/70">
-                                  <td colSpan={13} className="px-6 py-1">
-                                    <div className="flex items-center gap-2">
-                                      <span className={`px-2 py-0.5 rounded text-white text-[10px] font-bold ${shiftColors[shiftNum] || 'bg-gray-500'}`}>
-                                        Shift {shiftNum}
-                                      </span>
-                                      <span className="text-[10px] font-semibold text-red-600">
-                                        Top 5 • Total Unplanned: {totalUnplanned}m
-                                      </span>
-                                    </div>
-                                  </td>
-                                </tr>
-                                {shiftUnplanned.map((dt: any, dtIdx: number) => (
-                                  <tr key={`top5-${day.date}-${shiftNum}-${dtIdx}`} className="bg-red-50/40 text-[11px]">
-                                    <td className="px-3 py-1 sticky left-0 bg-red-50/40 z-10 text-red-500 text-center font-bold">{dtIdx + 1}</td>
-                                    <td className="px-3 py-1" colSpan={4}>
-                                      <span className="text-gray-800 dark:text-gray-100 font-medium">{dt.reason}</span>
-                                      <span className={`ml-2 px-1.5 py-0.5 rounded text-[9px] font-medium border ${catColors[dt.category]}`}>
-                                        {catLabels[dt.category]}
-                                      </span>
-                                    </td>
-                                    <td className="px-2 py-1 text-right font-bold text-red-600">{dt.duration_minutes}m</td>
-                                    <td className="px-2 py-1 text-center">
-                                      <span className="px-1.5 py-0.5 bg-indigo-100 text-indigo-700 rounded text-[9px] font-medium">{dt.pic}</span>
-                                    </td>
-                                    <td className="px-2 py-1 text-gray-600 dark:text-gray-300 text-[10px] font-medium">{dt.machine_name}</td>
-                                    <td className="px-2 py-1 text-gray-500 dark:text-gray-400 text-[10px]" colSpan={2}>{stripPackagingSuffix(dt.product_name)}</td>
-                                    <td className="px-2 py-1 text-blue-600 text-[10px]" colSpan={2}>{dt.wo_number}</td>
-                                  </tr>
-                                ))}
-                              </React.Fragment>
-                            );
-                          })}
-                          
-                          {/* ALL DOWNTIME SECTION */}
+                          {/* Section Header */}
                           <tr className="bg-gradient-to-r from-slate-100 to-slate-200">
-                            <td colSpan={13} className="px-6 py-2">
-                              <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                                📋 Semua Downtime per Shift
+                            <td colSpan={14} className="px-6 py-2 border-b">
+                              <span className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1">
+                                📋 Laporan Downtime (Dikelompokkan per Mesin, Produk, & Shift)
                               </span>
                             </td>
                           </tr>
-                          {shifts.map((shiftNum: number) => {
-                            const shiftItems = allRecords
-                              .filter((d: any) => d.shift === shiftNum)
-                              .sort((a: any, b: any) => b.duration_minutes - a.duration_minutes);
-                            const totalMin = shiftItems.reduce((s: number, d: any) => s + d.duration_minutes, 0);
+
+                          {machineKeys.map((machineName) => {
+                            const machData = grouped[machineName];
+                            const productKeys = Object.keys(machData).sort();
                             
+                            // Calculate total duration for this machine
+                            let machTotalMin = 0;
+                            Object.values(machData).forEach((prodData) => {
+                              Object.values(prodData).forEach((items) => {
+                                items.forEach((item) => {
+                                  machTotalMin += item.duration_minutes || 0;
+                                });
+                              });
+                            });
+
                             return (
-                              <React.Fragment key={`all-shift-${day.date}-${shiftNum}`}>
-                                <tr className="bg-slate-50/70">
-                                  <td colSpan={13} className="px-6 py-1">
+                              <React.Fragment key={`group-mach-${day.date}-${machineName}`}>
+                                {/* Machine Header Row */}
+                                <tr className="bg-indigo-50 dark:bg-gray-800 border-t border-b border-indigo-100 dark:border-gray-700">
+                                  <td colSpan={14} className="px-4 py-1.5">
                                     <div className="flex items-center gap-2">
-                                      <span className={`px-2 py-0.5 rounded text-white text-[10px] font-bold ${shiftColors[shiftNum] || 'bg-gray-500'}`}>
-                                        Shift {shiftNum}
+                                      <span className="text-xs font-bold text-indigo-900 dark:text-indigo-200">
+                                        🖥️ Mesin: <span className="font-extrabold">{machineName}</span>
                                       </span>
-                                      <span className="text-[10px] font-medium text-slate-600">
-                                        {shiftItems.length} downtime • Total: {totalMin}m
+                                      <span className="text-[10px] font-semibold bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-400 px-1.5 py-0.5 rounded">
+                                        Total Downtime: {machTotalMin}m
                                       </span>
                                     </div>
                                   </td>
                                 </tr>
-                                {shiftItems.map((dt: any, dtIdx: number) => (
-                                  <tr key={`all-${day.date}-${shiftNum}-${dtIdx}`} className="bg-slate-50/30 text-[11px]">
-                                    <td className="px-3 py-1 sticky left-0 bg-slate-50/30 z-10 text-gray-400 text-center">{dtIdx + 1}</td>
-                                    <td className="px-3 py-1" colSpan={4}>
-                                      <span className="text-gray-800 dark:text-gray-100 font-medium">{dt.reason}</span>
-                                      <span className={`ml-2 px-1.5 py-0.5 rounded text-[9px] font-medium border ${catColors[dt.category] || catColors.others}`}>
-                                        {catLabels[dt.category] || dt.category}
-                                      </span>
-                                    </td>
-                                    <td className="px-2 py-1 text-right font-bold text-red-600">{dt.duration_minutes}m</td>
-                                    <td className="px-2 py-1 text-center">
-                                      <span className="px-1.5 py-0.5 bg-indigo-100 text-indigo-700 rounded text-[9px] font-medium">{dt.pic}</span>
-                                    </td>
-                                    <td className="px-2 py-1 text-gray-600 dark:text-gray-300 text-[10px] font-medium">{dt.machine_name}</td>
-                                    <td className="px-2 py-1 text-gray-500 dark:text-gray-400 text-[10px]" colSpan={2}>{stripPackagingSuffix(dt.product_name)}</td>
-                                    <td className="px-2 py-1 text-blue-600 text-[10px]" colSpan={2}>{dt.wo_number}</td>
-                                  </tr>
-                                ))}
+
+                                {productKeys.map((productName) => {
+                                  const prodData = machData[productName];
+                                  const shiftKeys = Object.keys(prodData).map(Number).sort((a, b) => a - b);
+                                  
+                                  // Calculate total duration for this product
+                                  let prodTotalMin = 0;
+                                  Object.values(prodData).forEach((items) => {
+                                    items.forEach((item) => {
+                                      prodTotalMin += item.duration_minutes || 0;
+                                    });
+                                  });
+
+                                  return (
+                                    <React.Fragment key={`group-mach-prod-${day.date}-${machineName}-${productName}`}>
+                                      {/* Product Sub-header Row */}
+                                      <tr className="bg-slate-50/50 dark:bg-gray-900/30 border-b border-gray-100">
+                                        <td className="px-3 py-1"></td>
+                                        <td colSpan={13} className="px-3 py-1">
+                                          <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                                            <span>📦 Produk: <span className="text-gray-900 dark:text-gray-100 font-bold">{productName}</span></span>
+                                            <span className="text-[10px] bg-slate-200 text-slate-700 dark:bg-slate-750 dark:text-slate-300 px-1.5 py-0.5 rounded">
+                                              Subtotal: {prodTotalMin}m
+                                            </span>
+                                          </div>
+                                        </td>
+                                      </tr>
+
+                                      {shiftKeys.map((shiftNum) => {
+                                        const items = prodData[shiftNum];
+                                        
+                                        // Aggregate items with the same reason and category in this shift
+                                        const aggregatedItems: any[] = [];
+                                        const itemMap: Record<string, any> = {};
+                                        items.forEach((item: any) => {
+                                          const aggKey = `${item.reason}__${item.category}`;
+                                          if (!itemMap[aggKey]) {
+                                            itemMap[aggKey] = {
+                                              ...item,
+                                              duration_minutes: 0,
+                                              count: 0,
+                                              pics: new Set<string>(),
+                                              wos: new Set<string>()
+                                            };
+                                            aggregatedItems.push(itemMap[aggKey]);
+                                          }
+                                          itemMap[aggKey].duration_minutes += item.duration_minutes || 0;
+                                          itemMap[aggKey].count += 1;
+                                          if (item.pic) itemMap[aggKey].pics.add(item.pic);
+                                          if (item.wo_number) itemMap[aggKey].wos.add(item.wo_number);
+                                        });
+
+                                        // Resolve PIC and WO strings
+                                        aggregatedItems.forEach((agg) => {
+                                          agg.pic = Array.from(agg.pics).join(', ') || 'N/A';
+                                          agg.wo_number = Array.from(agg.wos).join(', ') || 'N/A';
+                                        });
+
+                                        const sortedItems = [...aggregatedItems].sort((a: any, b: any) => {
+                                          const isUnplannedA = a.category === 'mesin' || a.category === 'idle';
+                                          const isUnplannedB = b.category === 'mesin' || b.category === 'idle';
+                                          
+                                          if (isUnplannedA && !isUnplannedB) return -1;
+                                          if (!isUnplannedA && isUnplannedB) return 1;
+                                          
+                                          return b.duration_minutes - a.duration_minutes;
+                                        });
+                                        
+                                        return (
+                                          <React.Fragment key={`group-mach-prod-shift-${day.date}-${machineName}-${productName}-${shiftNum}`}>
+                                            {sortedItems.map((dt: any, dtIdx: number) => (
+                                              <tr key={`dt-item-${day.date}-${machineName}-${productName}-${shiftNum}-${dtIdx}`} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 text-[11px] border-b border-gray-50">
+                                                <td className="px-3 py-1 text-gray-400 text-center font-bold">{dtIdx + 1}</td>
+                                                <td className="px-3 py-1 text-gray-800 dark:text-gray-100" colSpan={5}>
+                                                  <span className={`mr-2 px-1.5 py-0.5 rounded text-[9px] font-bold ${shiftColors[shiftNum] || 'bg-gray-500'} text-white`}>
+                                                    Shift {shiftNum}
+                                                  </span>
+                                                  {dt.count > 1 && (
+                                                    <span className="mr-1.5 px-1.5 py-0.5 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 rounded text-[9px] font-extrabold" title={`${dt.count} kejadian`}>
+                                                      {dt.count}x
+                                                    </span>
+                                                  )}
+                                                  <span className="font-medium">{dt.reason}</span>
+                                                  <span className={`ml-2 px-1.5 py-0.5 rounded text-[9px] font-semibold border ${catColors[dt.category] || catColors.others}`}>
+                                                    {catLabels[dt.category] || dt.category}
+                                                  </span>
+                                                </td>
+                                                <td className="px-2 py-1 text-right font-bold text-red-600" colSpan={2}>
+                                                  {dt.duration_minutes}m
+                                                </td>
+                                                <td className="px-2 py-1 text-center" colSpan={2}>
+                                                  <span className="px-1.5 py-0.5 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/30 dark:text-indigo-300 rounded text-[9px] font-semibold">
+                                                    PIC: {dt.pic || 'N/A'}
+                                                  </span>
+                                                </td>
+                                                <td className="px-2 py-1 text-blue-600 dark:text-blue-400 text-[10px]" colSpan={4}>
+                                                  WO: <span className="font-medium">{dt.wo_number || 'N/A'}</span>
+                                                </td>
+                                              </tr>
+                                            ))}
+                                          </React.Fragment>
+                                        );
+                                      })}
+                                    </React.Fragment>
+                                  );
+                                })}
                               </React.Fragment>
                             );
                           })}
@@ -1278,7 +1329,6 @@ const ProductsTab: React.FC<{ data: any; viewMode: 'monthly' | 'weekly' }> = ({ 
   );
 };
 
-// ==================== MACHINES TAB ====================
 // ==================== MACHINES TAB ====================
 const MachinesTab: React.FC<{ data: any }> = ({ data }) => {
   const [expandedMachines, setExpandedMachines] = useState<Set<string>>(new Set());
