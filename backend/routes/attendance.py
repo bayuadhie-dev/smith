@@ -208,8 +208,18 @@ def public_clock_in():
         # Build notes with name tag
         notes_parts = [f'[NAME:{formatted_name}]']
         
-        # Check if late (after 08:30)
-        late_threshold = datetime.combine(today, datetime.strptime('08:30', '%H:%M').time())
+        # Check if late (after office start + tolerance)
+        from utils.helpers import get_setting_value
+        from datetime import timedelta
+        start_time_str = get_setting_value('attendance.office_start_time', '08:00')
+        tolerance_min = get_setting_value('attendance.late_tolerance_minutes', 30)
+        try:
+            start_time = datetime.strptime(start_time_str, '%H:%M')
+        except ValueError:
+            start_time = datetime.strptime('08:00', '%H:%M')
+        late_time = (start_time + timedelta(minutes=int(tolerance_min))).time()
+        late_threshold = datetime.combine(today, late_time)
+        
         status = 'present'
         if now > late_threshold:
             status = 'late'
@@ -300,8 +310,14 @@ def public_clock_out():
             worked_seconds = (now - attendance.clock_in).total_seconds()
             attendance.worked_hours = round(worked_seconds / 3600, 2)
             
-            # Calculate overtime (after 17:00)
-            standard_end = datetime.combine(today, datetime.strptime('17:00', '%H:%M').time())
+            # Calculate overtime (after office end time)
+            from utils.helpers import get_setting_value
+            end_time_str = get_setting_value('attendance.office_end_time', '17:00')
+            try:
+                end_time = datetime.strptime(end_time_str, '%H:%M').time()
+            except ValueError:
+                end_time = datetime.strptime('17:00', '%H:%M').time()
+            standard_end = datetime.combine(today, end_time)
             if now > standard_end:
                 overtime_seconds = (now - standard_end).total_seconds()
                 attendance.overtime_hours = round(overtime_seconds / 3600, 2)
@@ -398,8 +414,18 @@ def clock_in():
             verification_status='verified'  # Auto-verified if face detected
         )
         
-        # Check if late (after 08:30)
-        late_threshold = datetime.combine(today, datetime.strptime('08:30', '%H:%M').time())
+        # Check if late (after office start + tolerance)
+        from utils.helpers import get_setting_value
+        from datetime import timedelta
+        start_time_str = get_setting_value('attendance.office_start_time', '08:00')
+        tolerance_min = get_setting_value('attendance.late_tolerance_minutes', 30)
+        try:
+            start_time = datetime.strptime(start_time_str, '%H:%M')
+        except ValueError:
+            start_time = datetime.strptime('08:00', '%H:%M')
+        late_time = (start_time + timedelta(minutes=int(tolerance_min))).time()
+        late_threshold = datetime.combine(today, late_time)
+        
         if now > late_threshold:
             attendance.status = 'late'
             late_minutes = int((now - late_threshold).total_seconds() / 60)
@@ -480,14 +506,26 @@ def clock_out():
             worked_seconds = (now - attendance.clock_in).total_seconds()
             attendance.worked_hours = round(worked_seconds / 3600, 2)
             
-            # Calculate overtime (after 17:00)
-            standard_end = datetime.combine(today, datetime.strptime('17:00', '%H:%M').time())
+            # Calculate overtime (after office end time)
+            from utils.helpers import get_setting_value
+            end_time_str = get_setting_value('attendance.office_end_time', '17:00')
+            try:
+                end_time = datetime.strptime(end_time_str, '%H:%M').time()
+            except ValueError:
+                end_time = datetime.strptime('17:00', '%H:%M').time()
+            standard_end = datetime.combine(today, end_time)
             if now > standard_end:
                 overtime_seconds = (now - standard_end).total_seconds()
                 attendance.overtime_hours = round(overtime_seconds / 3600, 2)
         
-        # Check early leave (before 17:00)
-        early_threshold = datetime.combine(today, datetime.strptime('17:00', '%H:%M').time())
+        # Check early leave (before office end time)
+        from utils.helpers import get_setting_value
+        end_time_str = get_setting_value('attendance.office_end_time', '17:00')
+        try:
+            end_time = datetime.strptime(end_time_str, '%H:%M').time()
+        except ValueError:
+            end_time = datetime.strptime('17:00', '%H:%M').time()
+        early_threshold = datetime.combine(today, end_time)
         if now < early_threshold:
             early_minutes = int((early_threshold - now).total_seconds() / 60)
             if attendance.notes:

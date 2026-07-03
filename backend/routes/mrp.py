@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, Material, Product, BillOfMaterials, BOMItem, WorkOrder, SalesOrder, SalesForecast, Inventory, Machine, PurchaseOrder
 from sqlalchemy import func
 from utils.i18n import success_response, error_response, get_message
+from utils.helpers import get_setting_value
 from datetime import datetime, timedelta
 from math import isnan, isinf
 import json
@@ -137,7 +138,8 @@ def get_material_requirements():
     """Calculate material requirements based on sales orders and forecasts"""
     try:
         # Get time horizon for MRP calculation
-        days_ahead = request.args.get('days_ahead', 30, type=int)
+        default_horizon = int(get_setting_value('mrp.planning_horizon_days', 30))
+        days_ahead = request.args.get('days_ahead', default_horizon, type=int)
         include_forecasts = request.args.get('include_forecasts', 'true').lower() == 'true'
 
         start_date = get_local_now().date()
@@ -573,7 +575,7 @@ def get_simulation_templates():
                 'config': {
                     'include_forecasts': True,
                     'forecast_confidence': 'worst_case',
-                    'demand_multiplier': 1.1
+                    'demand_multiplier': get_setting_value('mrp.conservative_demand_multiplier', 1.1)
                 }
             },
             {
@@ -613,7 +615,7 @@ def get_simulation_templates():
                 'config': {
                     'include_forecasts': True,
                     'forecast_confidence': 'most_likely',
-                    'demand_multiplier': 1.25
+                    'demand_multiplier': get_setting_value('mrp.high_demand_multiplier', 1.25)
                 }
             },
             {
@@ -623,7 +625,7 @@ def get_simulation_templates():
                 'config': {
                     'include_forecasts': True,
                     'forecast_confidence': 'most_likely',
-                    'demand_multiplier': 0.8
+                    'demand_multiplier': get_setting_value('mrp.low_demand_multiplier', 0.8)
                 }
             }
         ]
@@ -715,9 +717,10 @@ def get_dashboard_demand_forecast():
                 forecasted_demand = float(forecast_record.most_likely_quantity)
                 variance = ((forecasted_demand - current_demand) / current_demand * 100) if current_demand > 0 else 0
                 
-                if variance > 5:
+                trend_threshold = get_setting_value('mrp.demand_trend_threshold_pct', 5.0)
+                if variance > trend_threshold:
                     trend = 'up'
-                elif variance < -5:
+                elif variance < -trend_threshold:
                     trend = 'down'
                 else:
                     trend = 'stable'
@@ -749,10 +752,12 @@ def get_dashboard_capacity():
             try:
                 # Calculate available capacity (hours per day) - ensure valid number
                 machine_capacity = getattr(machine, 'capacity_per_hour', 100) or 100
-                available_capacity = float(machine_capacity) * 8  # 8 hour shift
+                shift_hours = float(get_setting_value('production.shift2_runtime', 480)) / 60.0 # fallback to shift 2 = 8 hours
+                available_capacity = float(machine_capacity) * shift_hours
                 
                 # Calculate planned capacity from work orders (simplified to avoid date issues)
-                planned_capacity = available_capacity * 0.7  # Assume 70% planned utilization
+                planned_util_rate = float(get_setting_value('mrp.planned_utilization_pct', 70.0)) / 100.0
+                planned_capacity = available_capacity * planned_util_rate
                 
                 # Calculate utilization percentage
                 utilization_percent = (planned_capacity / available_capacity * 100) if available_capacity > 0 else 0
@@ -762,7 +767,8 @@ def get_dashboard_capacity():
                 planned_capacity = float(planned_capacity) if not (isnan(planned_capacity) or isinf(planned_capacity)) else 70.0
                 utilization_percent = float(utilization_percent) if not (isnan(utilization_percent) or isinf(utilization_percent)) else 70.0
                 
-                bottleneck = utilization_percent > 95
+                bottleneck_threshold = float(get_setting_value('mrp.bottleneck_utilization_pct', 95.0))
+                bottleneck = utilization_percent > bottleneck_threshold
                 
                 capacity.append({
                     'resource': f"{machine.name} ({machine.code})" if hasattr(machine, 'name') and hasattr(machine, 'code') else f"Machine {machine.id}",
@@ -1253,7 +1259,7 @@ def create_po_from_shortage():
                 po_number=po_number,
                 supplier_id=supplier_id,
                 order_date=get_local_now().date(),
-                required_date=get_local_now().date() + timedelta(days=supplier.lead_time_days or 7),
+                required_date=get_local_now().date() + timedelta(days=supplier.lead_time_days or int(get_setting_value('warehouse.default_lead_time_days', 7))),
                 status='draft',
                 priority='high',  # Auto-generated POs are high priority
                 notes=f'Auto-generated from {reference_type} {reference_number} due to material shortage',
@@ -1463,7 +1469,7 @@ def create_po_from_shortage_internal(shortage_items, reference_type, reference_i
             po_number=po_number,
             supplier_id=supplier_id,
             order_date=get_local_now().date(),
-            required_date=get_local_now().date() + timedelta(days=supplier.lead_time_days or 7),
+            required_date=get_local_now().date() + timedelta(days=supplier.lead_time_days or int(get_setting_value('warehouse.default_lead_time_days', 7))),
             status='draft',
             priority='high',
             notes=f'Auto-generated from {reference_type} {reference_number}',

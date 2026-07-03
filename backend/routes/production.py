@@ -1447,13 +1447,14 @@ def create_work_order_production_record(id):
         # Keep planned_runtime for backward compatibility
         shift_num = data.get('shift', '1')
         is_friday = production_date.weekday() == 4  # 4 = Friday
-        default_runtime = 510
+        from utils.helpers import get_setting_value
+        default_runtime = int(get_setting_value('production.shift1_runtime_regular', 510))
         if shift_num in ['1', 'shift_1']:
-            default_runtime = 540 if is_friday else 510
+            default_runtime = int(get_setting_value('production.shift1_runtime_friday', 540)) if is_friday else int(get_setting_value('production.shift1_runtime_regular', 510))
         elif shift_num in ['2', 'shift_2']:
-            default_runtime = 480
+            default_runtime = int(get_setting_value('production.shift2_runtime', 480))
         elif shift_num in ['3', 'shift_3']:
-            default_runtime = 450
+            default_runtime = int(get_setting_value('production.shift3_runtime', 450))
         
         planned_runtime = average_time  # Use average_time as planned_runtime
         actual_runtime = runtime  # Use calculated runtime as actual_runtime

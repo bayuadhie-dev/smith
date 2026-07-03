@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime, date, timedelta
 from models import db, ConvertingMachine, ConvertingProduction, Employee, Product
+from utils.helpers import get_setting_value
 
 converting_bp = Blueprint('converting', __name__)
 
@@ -63,7 +64,7 @@ def create_converting_machine():
             name=data['name'],
             machine_type=data['machine_type'],
             default_speed=data.get('default_speed', 0),
-            target_efficiency=data.get('target_efficiency', 60),
+            target_efficiency=data.get('target_efficiency', get_setting_value('converting.default_target_efficiency', 60.0)),
             notes=data.get('notes')
         )
         db.session.add(machine)
@@ -141,7 +142,7 @@ def seed_converting_machines():
                     name=m['name'],
                     machine_type=m['machine_type'],
                     default_speed=m['default_speed'],
-                    target_efficiency=60
+                    target_efficiency=get_setting_value('converting.default_target_efficiency', 60.0)
                 )
                 db.session.add(machine)
                 created += 1

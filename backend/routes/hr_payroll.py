@@ -495,9 +495,12 @@ def calculate_employee_payroll(employee, period, attendance_data, salary_compone
     if pay_type == 'fixed':
         # Fixed: gaji tetap penuh, tidak ada potongan absensi
         basic_salary = monthly_salary
+        from utils.helpers import get_setting_value
         # Overtime tetap dihitung
         if basic_salary > 0:
-            overtime_rate = (basic_salary / Decimal('173')) * Decimal('1.5')
+            divisor = Decimal(str(get_setting_value('hr.working_hours_divisor', 173)))
+            multiplier = Decimal(str(get_setting_value('hr.overtime_multiplier', 1.5)))
+            overtime_rate = (basic_salary / divisor) * multiplier
             overtime_amount = overtime_rate * overtime_hours
     
     elif pay_type == 'monthly':
@@ -507,7 +510,10 @@ def calculate_employee_payroll(employee, period, attendance_data, salary_compone
             daily_rate = basic_salary / Decimal(str(total_working_days))
             absence_deduction = daily_rate * Decimal(str(days_absent))
         if basic_salary > 0:
-            overtime_rate = (basic_salary / Decimal('173')) * Decimal('1.5')
+            from utils.helpers import get_setting_value
+            divisor = Decimal(str(get_setting_value('hr.working_hours_divisor', 173)))
+            multiplier = Decimal(str(get_setting_value('hr.overtime_multiplier', 1.5)))
+            overtime_rate = (basic_salary / divisor) * multiplier
             overtime_amount = overtime_rate * overtime_hours
     
     elif pay_type == 'weekly':
@@ -573,12 +579,17 @@ def calculate_employee_payroll(employee, period, attendance_data, salary_compone
     pension_deduction = Decimal('0')
     
     if pay_type not in ('outsourcing', 'piecework', 'daily'):
-        # BPJS Kesehatan: 1% employee share (max base 12jt)
-        bpjs_base = min(gross_salary, Decimal('12000000'))
-        insurance_deduction = (bpjs_base * Decimal('0.01')).quantize(Decimal('1'))
+        from utils.helpers import get_setting_value
+        # BPJS Kesehatan: employee share (max base 12jt)
+        bpjs_kesehatan_max = Decimal(str(get_setting_value('hr.bpjs_kesehatan_max_base', 12000000)))
+        bpjs_kesehatan_rate = Decimal(str(get_setting_value('hr.bpjs_kesehatan_employee', 1.0))) / Decimal('100')
+        bpjs_jht_rate = Decimal(str(get_setting_value('hr.bpjs_jht_employee', 2.0))) / Decimal('100')
         
-        # BPJS Ketenagakerjaan JHT: 2% employee share
-        pension_deduction = (gross_salary * Decimal('0.02')).quantize(Decimal('1'))
+        bpjs_base = min(gross_salary, bpjs_kesehatan_max)
+        insurance_deduction = (bpjs_base * bpjs_kesehatan_rate).quantize(Decimal('1'))
+        
+        # BPJS Ketenagakerjaan JHT: employee share
+        pension_deduction = (gross_salary * bpjs_jht_rate).quantize(Decimal('1'))
     
     # ===== PPh 21 — TER PP 58/2023, DITANGGUNG PERUSAHAAN =====
     # PPh 21 dihitung dari bruto untuk pelaporan, tapi TIDAK dipotong dari gaji karyawan.

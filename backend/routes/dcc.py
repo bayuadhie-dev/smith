@@ -1672,7 +1672,9 @@ def submit_document_review(doc_id):
 @jwt_required()
 def get_expiring_documents():
     """Get documents expiring in 3-4 months (for review alert)"""
-    threshold = date.today() + timedelta(days=120)
+    from utils.helpers import get_setting_value
+    alert_days = get_setting_value('dcc.expiry_alert_days', 120)
+    threshold = date.today() + timedelta(days=int(alert_days))
     revisions = DccDocumentRevision.query.filter(
         DccDocumentRevision.status == 'active',
         DccDocumentRevision.expiry_date.isnot(None),

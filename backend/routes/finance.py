@@ -723,7 +723,13 @@ def get_income_statement():
                 Invoice.invoice_type == 'sales'
             ).scalar() or 0
             
-            total_expenses = float(total_revenue) * 0.77 if total_revenue else 0
+            from utils.helpers import get_setting_value
+            exp_rate = float(get_setting_value('finance.fallback_expense_ratio', 77.0)) / 100.0
+            total_expenses = float(total_revenue) * exp_rate if total_revenue else 0
+            
+            cogs_rate = float(get_setting_value('finance.fallback_cogs_ratio', 60.0)) / 100.0
+            opex_rate = float(get_setting_value('finance.fallback_opex_ratio', 35.0)) / 100.0
+            other_rate = max(0.0, 1.0 - cogs_rate - opex_rate)
             
             income_statement = {
                 'revenue': {
@@ -732,9 +738,9 @@ def get_income_statement():
                     'total_revenue': float(total_revenue)
                 },
                 'expenses': {
-                    'cost_of_goods_sold': total_expenses * 0.6,
-                    'operating_expenses': total_expenses * 0.35,
-                    'other_expenses': total_expenses * 0.05,
+                    'cost_of_goods_sold': total_expenses * cogs_rate,
+                    'operating_expenses': total_expenses * opex_rate,
+                    'other_expenses': total_expenses * other_rate,
                     'total_expenses': total_expenses
                 },
                 'net_income': float(total_revenue) - total_expenses
@@ -1076,11 +1082,14 @@ def get_dashboard_revenue():
             months = ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
             for i, month in enumerate(months):
                 # Add growth trend and variance
-                growth_factor = 1 + (i * 0.08)  # 8% monthly growth
+                from utils.helpers import get_setting_value
+                growth_rate = float(get_setting_value('finance.assumed_monthly_growth', 8.0)) / 100.0
+                growth_factor = 1 + (i * growth_rate)
                 variance = 1 + ((i % 3) * 0.05)  # Some variance
                 
                 monthly_revenue = revenue_base * growth_factor * variance
-                monthly_expenses = monthly_revenue * 0.77  # 77% expense ratio
+                exp_rate = float(get_setting_value('finance.fallback_expense_ratio', 77.0)) / 100.0
+                monthly_expenses = monthly_revenue * exp_rate
                 monthly_profit = monthly_revenue - monthly_expenses
                 
                 revenue.append({

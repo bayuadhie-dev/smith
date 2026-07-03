@@ -1,12 +1,34 @@
 import os
+import json
+from functools import wraps
 from flask import Blueprint, request, jsonify, render_template, send_file
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db
+from models.user import User
 from models.settings import SystemSetting
+from models.settings_extended import AuditLog
 from sqlalchemy import text
 from datetime import datetime
 from utils.timezone import get_local_now
 
 config_manager_bp = Blueprint('config_manager', __name__, template_folder='../templates')
+
+_configs_seeded = False
+
+def require_super_admin(f):
+    @wraps(f)
+    @jwt_required()
+    def decorated(*args, **kwargs):
+        try:
+            user_id = get_jwt_identity()
+            user = User.query.get(int(user_id))
+            if not user or not user.is_super_admin:
+                return jsonify({'success': False, 'message': 'Forbidden: Akses khusus Super Admin'}), 403
+            return f(*args, **kwargs)
+        except Exception as e:
+            return jsonify({'success': False, 'message': f'Authentication error: {str(e)}'}), 401
+    return decorated
+
 
 def get_project_root():
     return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -285,8 +307,67 @@ MASTER_CONFIGS = [
 ]
 
 
+
+VALIDATION_RULES = {
+    'security.session_timeout': {'min': 60, 'max': 86400},
+    'security.password_min_length': {'min': 4, 'max': 32},
+    'security.max_login_attempts': {'min': 1, 'max': 20},
+    'security.account_lockout_duration': {'min': 30, 'max': 86400},
+    'security.jwt_expiry_hours': {'min': 1, 'max': 168},
+    'logging.log_level': {'allowed_values': ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']},
+    'hr.working_hours_divisor': {'min': 100, 'max': 300},
+    'hr.overtime_multiplier': {'min': 1.0, 'max': 5.0},
+    'hr.bpjs_kesehatan_employee': {'min': 0.0, 'max': 5.0},
+    'hr.bpjs_kesehatan_max_base': {'min': 1000000, 'max': 50000000},
+    'hr.bpjs_jht_employee': {'min': 0.0, 'max': 10.0},
+    'attendance.late_tolerance_minutes': {'min': 0, 'max': 180},
+    'quality.accept_rate_threshold': {'min': 50.0, 'max': 100.0},
+    'converting.min_grade_a_percent': {'min': 50.0, 'max': 100.0},
+    'converting.max_loss_percent': {'min': 0.0, 'max': 50.0},
+    'finance.default_tax_rate': {'min': 0.0, 'max': 50.0},
+    'finance.fallback_expense_ratio': {'min': 0.0, 'max': 100.0},
+    'finance.fallback_cogs_ratio': {'min': 0.0, 'max': 100.0},
+    'finance.fallback_opex_ratio': {'min': 0.0, 'max': 100.0},
+}
+
+def validate_config_value(key, val, data_type):
+    """Validate config values based on pre-defined validation rules"""
+    rules = VALIDATION_RULES.get(key)
+    if not rules:
+        return True, ""
+    
+    try:
+        if data_type == 'integer':
+            typed_val = int(val)
+        elif data_type == 'float':
+            typed_val = float(val)
+        elif data_type == 'boolean':
+            if str(val).lower() not in ['true', 'false', '1', '0', 'yes', 'no']:
+                return False, f"Nilai '{val}' bukan boolean yang valid."
+            return True, ""
+        else:
+            typed_val = str(val)
+    except ValueError:
+        return False, f"Nilai '{val}' tidak sesuai dengan tipe data '{data_type}'."
+
+    if 'allowed_values' in rules and typed_val not in rules['allowed_values']:
+        allowed_str = ", ".join(map(str, rules['allowed_values']))
+        return False, f"Nilai harus salah satu dari: {allowed_str}."
+
+    if 'min' in rules and typed_val < rules['min']:
+        return False, f"Nilai tidak boleh kurang dari {rules['min']}."
+
+    if 'max' in rules and typed_val > rules['max']:
+        return False, f"Nilai tidak boleh lebih dari {rules['max']}."
+
+    return True, ""
+
+
 def seed_default_configs():
     """Seed all default configuration settings if they do not exist"""
+    global _configs_seeded
+    if _configs_seeded:
+        return
     try:
         inserted = 0
         for ds in MASTER_CONFIGS:
@@ -304,6 +385,7 @@ def seed_default_configs():
                 db.session.add(new_setting)
                 inserted += 1
         db.session.commit()
+        _configs_seeded = True
         if inserted > 0:
             print(f"✓ Seeded {inserted} new configuration settings.")
     except Exception as e:
@@ -319,6 +401,7 @@ def index():
     return render_template('config_manager.html')
 
 @config_manager_bp.route('/api/configs', methods=['GET'])
+@require_super_admin
 def get_configs():
     """Retrieve all editable system configurations"""
     try:
@@ -347,32 +430,67 @@ def get_configs():
         return jsonify({'success': False, 'message': str(e)}), 500
 
 @config_manager_bp.route('/api/configs', methods=['POST', 'PUT'])
+@require_super_admin
 def update_configs():
-    """Update configuration values"""
+    """Update configuration values with validation and audit logging"""
     try:
+        user_id = get_jwt_identity()
         data = request.get_json() or {}
         updates = data.get('updates', [])
 
         if not updates and isinstance(data, dict):
             updates = [{'key': k, 'value': str(v)} for k, v in data.items() if k != 'updates']
 
-        updated_count = 0
+        # 1. First Pass: Validate all updates
+        validated_items = []
         for item in updates:
             key = item.get('key')
             val = item.get('value')
 
             setting = SystemSetting.query.filter_by(setting_key=key).first()
-            if setting and setting.is_editable:
-                if setting.data_type == 'boolean':
-                    if isinstance(val, bool):
-                        setting.setting_value = 'true' if val else 'false'
-                    else:
-                        setting.setting_value = 'true' if str(val).lower() in ['true', '1', 'yes'] else 'false'
-                else:
-                    setting.setting_value = str(val)
+            if not setting or not setting.is_editable:
+                continue
 
-                setting.updated_at = get_local_now()
-                updated_count += 1
+            # Format/clean value for validation
+            if setting.data_type == 'boolean':
+                val_str = 'true' if str(val).lower() in ['true', '1', 'yes', 'checked'] else 'false'
+            else:
+                val_str = str(val).strip()
+
+            is_valid, err_msg = validate_config_value(key, val_str, setting.data_type or 'string')
+            if not is_valid:
+                return jsonify({'success': False, 'message': f'Validasi gagal pada {setting.setting_name or key}: {err_msg}'}), 400
+
+            validated_items.append((setting, val_str))
+
+        # 2. Second Pass: Apply changes and create Audit Logs
+        updated_count = 0
+        for setting, new_val in validated_items:
+            old_val = setting.setting_value
+            if old_val == new_val:
+                continue
+
+            setting.setting_value = new_val
+            setting.updated_at = get_local_now()
+            updated_count += 1
+
+            # Log this change to the Audit Log table
+            log_entry = AuditLog(
+                user_id=int(user_id),
+                action='update',
+                resource_type='system_setting',
+                resource_id=str(setting.id),
+                resource_name=setting.setting_key,
+                old_values=json.dumps({'value': old_val}),
+                new_values=json.dumps({'value': new_val}),
+                ip_address=request.remote_addr,
+                user_agent=request.headers.get('User-Agent', '')[:500],
+                request_method=request.method,
+                request_url=request.url,
+                status='success',
+                timestamp=get_local_now()
+            )
+            db.session.add(log_entry)
 
         db.session.commit()
         return jsonify({
@@ -382,3 +500,4 @@ def update_configs():
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500
+

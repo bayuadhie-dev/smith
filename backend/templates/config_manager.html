@@ -116,10 +116,24 @@
       'ui':            { label: '🎨 User Interface',         desc: 'Tema tampilan dan preferensi antarmuka.' },
     };
 
+    // Helper to get authorization headers
+    function getAuthHeaders() {
+      const token = localStorage.getItem('token');
+      return token ? { 'Authorization': 'Bearer ' + token } : {};
+    }
+
     // Load configurations from API
     async function loadConfigs() {
       try {
-        const response = await fetch('/configedit/api/configs');
+        const response = await fetch('/configedit/api/configs', {
+          headers: getAuthHeaders()
+        });
+        
+        if (response.status === 401 || response.status === 403) {
+          showUnauthorized();
+          return;
+        }
+
         const data = await response.json();
         if (data.success) {
           allConfigs = data.configs;
@@ -133,9 +147,25 @@
       }
     }
 
+    function showUnauthorized() {
+      const container = document.getElementById('configContainer');
+      container.innerHTML = `
+        <div class="text-center py-16 px-6 bg-slate-900/60 rounded-2xl border border-red-900/30 flex flex-col items-center justify-center gap-4">
+          <div class="text-5xl">🔒</div>
+          <h3 class="text-xl font-bold text-red-400">Akses Terbatas (Super Admin Only)</h3>
+          <p class="text-slate-400 text-sm max-w-md">Anda harus masuk menggunakan akun Super Admin untuk melihat atau memodifikasi konfigurasi sistem ERP.</p>
+          <a href="/login" class="mt-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg shadow-lg hover:shadow-blue-500/25 transition text-sm">
+            Kembali ke Login
+          </a>
+        </div>
+      `;
+      // Disable save button
+      const saveBtn = document.querySelector('button[onclick="saveAllChanges()"]');
+      if (saveBtn) saveBtn.disabled = true;
+    }
+
     // Populate Category Navigation
     function populateCategories() {
-      // Find all unique categories present in the data
       const categories = [...new Set(allConfigs.map(c => c.category))];
       
       const nav = document.getElementById('categoryNav');
@@ -198,9 +228,13 @@
               <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
             </label>
           `;
-        } else if (config.type === 'integer' || config.type === 'number') {
+        } else if (config.type === 'integer') {
           inputHtml = `
-            <input type="number" value="${val}" class="w-48 bg-slate-900 border border-slate-700 rounded-lg px-3.5 py-2 text-sm text-white focus:outline-none focus:border-blue-500" oninput="handleChange('${config.key}', this.value)">
+            <input type="number" step="1" value="${val}" class="w-48 bg-slate-900 border border-slate-700 rounded-lg px-3.5 py-2 text-sm text-white focus:outline-none focus:border-blue-500" oninput="handleChange('${config.key}', this.value)">
+          `;
+        } else if (config.type === 'float' || config.type === 'number') {
+          inputHtml = `
+            <input type="number" step="any" value="${val}" class="w-48 bg-slate-900 border border-slate-700 rounded-lg px-3.5 py-2 text-sm text-white focus:outline-none focus:border-blue-500" oninput="handleChange('${config.key}', this.value)">
           `;
         } else {
           inputHtml = `
@@ -243,10 +277,17 @@
         const response = await fetch('/configedit/api/configs', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            ...getAuthHeaders()
           },
           body: JSON.stringify({ updates })
         });
+        
+        if (response.status === 401 || response.status === 403) {
+          showUnauthorized();
+          return;
+        }
+
         const data = await response.json();
         
         if (data.success) {
@@ -260,6 +301,7 @@
         showToast('❌ Error jaringan saat menyimpan pengaturan', 'error');
       }
     }
+
 
     // Show custom toast notification
     function showToast(message, type = 'success') {

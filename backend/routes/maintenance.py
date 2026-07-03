@@ -564,7 +564,8 @@ def get_maintenance_kpis():
             mttr = total_duration / len(completed_records) if completed_records else 0
         
         # MTBF calculation (simplified)
-        mtbf = 168  # Default 1 week in hours
+        from utils.helpers import get_setting_value
+        mtbf = get_setting_value('maintenance.default_mtbf_hours', 168.0)
         
         # Preventive maintenance percentage
         preventive_count = base_query.filter(
@@ -574,7 +575,8 @@ def get_maintenance_kpis():
         preventive_percentage = (preventive_count / total_work_orders * 100) if total_work_orders > 0 else 0
         
         # Equipment uptime (simplified calculation)
-        equipment_uptime = max(0, 100 - (total_work_orders * 2))
+        reduction_per_wo = get_setting_value('maintenance.uptime_reduction_per_wo', 2.0)
+        equipment_uptime = max(0, 100 - (total_work_orders * reduction_per_wo))
         
         return jsonify({
             'total_work_orders': total_work_orders,
@@ -627,7 +629,7 @@ def get_work_orders_summary():
                 'status': record.status,
                 'scheduled_date': record.maintenance_date.isoformat() if record.maintenance_date else '',
                 'assigned_to': 'Technician',
-                'estimated_duration': float(record.duration_hours or 4)
+                'estimated_duration': float(record.duration_hours or get_setting_value('maintenance.default_duration_hours', 4.0))
             })
         
         return jsonify({'work_orders': work_orders}), 200
@@ -709,15 +711,16 @@ def get_equipment_performance():
                 ])
                 
                 # Simplified calculations
-                uptime_percentage = max(0, 100 - (len(records) * 1.5))
+                reduction_pct = get_setting_value('maintenance.uptime_reduction_per_wo', 2.0)
+                uptime_percentage = max(0, 100 - (len(records) * (reduction_pct * 0.75))) # scaling down slightly for per-machine records
                 mttr = total_downtime / len(records) if total_downtime > 0 else 0
-                mtbf = 168  # Default 1 week
+                mtbf = get_setting_value('maintenance.default_mtbf_hours', 168.0)
                 maintenance_cost = sum([float(record.cost or 0) for record in records])
                 last_maintenance = max([record.maintenance_date for record in records]).isoformat()
             else:
                 uptime_percentage = 100
                 mttr = 0
-                mtbf = 168
+                mtbf = get_setting_value('maintenance.default_mtbf_hours', 168.0)
                 maintenance_cost = 0
                 last_maintenance = get_local_now().isoformat()
             
