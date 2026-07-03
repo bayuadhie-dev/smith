@@ -81,9 +81,27 @@ client.on('qr', (qr) => {
     console.log('\n======================================================================\n');
 });
 
-client.on('ready', () => {
+client.on('ready', async () => {
     isReady = true;
     console.log('✓ WhatsApp Client is READY and connected!');
+    
+    try {
+        const chats = await client.getChats();
+        const groups = chats.filter(chat => chat.isGroup);
+        if (groups.length > 0) {
+            console.log('\n======================================================================');
+            console.log('LIST OF YOUR WHATSAPP GROUPS (Use the Group JID in your ERP config):');
+            console.log('======================================================================');
+            groups.forEach(g => {
+                console.log(`- ${g.name}: ${g.id._serialized}`);
+            });
+            console.log('======================================================================\n');
+        } else {
+            console.log('No WhatsApp groups found.');
+        }
+    } catch (e) {
+        console.error('Error fetching groups list:', e);
+    }
 });
 
 client.on('disconnected', (reason) => {
