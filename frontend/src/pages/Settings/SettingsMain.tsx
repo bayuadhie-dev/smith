@@ -29,6 +29,15 @@ const SettingsMain: React.FC = () => {
   const settingsCards: SettingsCard[] = [
     // System Settings
     {
+      id: 'configedit',
+      title: 'Centralized Config Editor',
+      description: 'Centralized GUI editor for all module settings (Job Costing, OEE, HR, etc.)',
+      icon: CogIcon,
+      path: '/configedit',
+      category: 'system',
+      isNew: true
+    },
+    {
       id: 'system-config',
       title: 'Advanced System Configuration',
       description: 'Configure advanced system settings and parameters',
@@ -137,6 +146,40 @@ const SettingsMain: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {systemSettings.map((setting) => {
             const IconComponent = setting.icon;
+            const isBackendRoute = setting.path.startsWith('/configedit');
+            const token = localStorage.getItem('token') || '';
+            const href = isBackendRoute ? `${setting.path}/?token=${token}` : '';
+
+            if (isBackendRoute) {
+              return (
+                <a
+                  key={setting.id}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-all duration-200 p-6 border border-gray-200 dark:border-gray-700 hover:border-blue-300 group"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="p-3 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
+                      <IconComponent className="h-6 w-6 text-blue-600" />
+                    </div>
+                    {setting.isNew && (
+                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                        New
+                      </span>
+                    )}
+                  </div>
+                  
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-blue-700 transition-colors">
+                    {setting.title}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
+                    {setting.description}
+                  </p>
+                </a>
+              );
+            }
+
             return (
               <Link
                 key={setting.id}
@@ -149,6 +192,7 @@ const SettingsMain: React.FC = () => {
                   </div>
                   {setting.isNew && (
                     <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                      New
                     </span>
                   )}
                 </div>
