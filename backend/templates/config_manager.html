@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configuration Manager - GMS ERP</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0f172a;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.1) 0, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.1) 0, transparent 50%);
+    }
+    .glass {
+      background: rgba(30, 41, 59, 0.45);
+      backdrop-filter: blur(16px);
+      border: 1px border rgba(255, 255, 255, 0.05);
+    }
+  </style>
+</head>
+<body class="text-slate-100 min-h-screen pb-12">
+  <div class="max-w-6xl mx-auto px-4 pt-8">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 border-b border-slate-800 pb-6">
+      <div>
+        <h1 class="text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+          <span class="text-blue-500">⚙️</span> Configuration Manager
+        </h1>
+        <p class="text-slate-400 text-sm mt-1">
+          Ubah konfigurasi dan parameter sistem ERP secara langsung tanpa menyentuh file kode program.
+        </p>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="/app/production/work-orders" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-semibold rounded-lg transition">
+           Kembali ke Dashboard
+        </a>
+      </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      
+      <!-- Categories Sidebar -->
+      <div class="lg:col-span-1 space-y-3">
+        <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider px-2">Kategori Setingan</h3>
+        <nav class="space-y-1" id="categoryNav">
+          <!-- Dynamically populated categories -->
+        </nav>
+      </div>
+
+      <!-- Config Cards List -->
+      <div class="lg:col-span-3">
+        <div class="glass rounded-xl p-6 shadow-xl border border-slate-800">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h2 class="text-xl font-bold text-white" id="categoryTitle">Kategori</h2>
+              <p class="text-slate-400 text-xs mt-0.5" id="categoryDesc">Daftar konfigurasi yang tersedia.</p>
+            </div>
+            <button onclick="saveAllChanges()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-lg shadow-lg hover:shadow-blue-500/20 transition flex items-center gap-2">
+              💾 Simpan Perubahan
+            </button>
+          </div>
+
+          <!-- Config Items Container -->
+          <div class="space-y-4" id="configContainer">
+            <!-- Dynamically populated items -->
+            <div class="text-center py-12 text-slate-500" id="loadingState">
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+              Sedang memuat konfigurasi...
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-5 right-5 px-6 py-3.5 rounded-xl shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-3 z-50 glass">
+    <span id="toastIcon"></span>
+    <span id="toastMessage" class="text-sm font-medium"></span>
+  </div>
+
+  <script>
+    let allConfigs = [];
+    let activeCategory = 'job_costing';
+    let pendingChanges = {};
+
+    const categoryMetaData = {
+      'job_costing': {
+        label: '💼 Job Costing & Rates',
+        desc: 'Konfigurasi tarif tenaga kerja langsung, overhead mesin, dan estimasi biaya bahan.'
+      },
+      'system': {
+        label: '🖥️ System Settings',
+        desc: 'Konfigurasi format tanggal, bahasa default, dan setelan dasar ERP.'
+      },
+      'notifications': {
+        label: '🔔 Notifications',
+        desc: 'Aktifkan atau matikan notifikasi desktop, suara, atau alert inventaris.'
+      },
+      'backup': {
+        label: '💾 Backup Configuration',
+        desc: 'Frekuensi dan pengaturan backup basis data otomatis.'
+      },
+      'security': {
+        label: '🛡️ Security',
+        desc: 'Setelan timeout sesi user dan autentikasi.'
+      },
+      'ui': {
+        label: '🎨 User Interface',
+        desc: 'Konfigurasi tema tampilan web.'
+      }
+    };
+
+    // Load configurations from API
+    async function loadConfigs() {
+      try {
+        const response = await fetch('/configedit/api/configs');
+        const data = await response.json();
+        if (data.success) {
+          allConfigs = data.configs;
+          populateCategories();
+          renderConfigs();
+        } else {
+          showToast('❌ Gagal memuat data: ' + data.message, 'error');
+        }
+      } catch (err) {
+        showToast('❌ Error jaringan saat mengambil data', 'error');
+      }
+    }
+
+    // Populate Category Navigation
+    function populateCategories() {
+      // Find all unique categories present in the data
+      const categories = [...new Set(allConfigs.map(c => c.category))];
+      
+      const nav = document.getElementById('categoryNav');
+      nav.innerHTML = '';
+      
+      categories.forEach(cat => {
+        const meta = categoryMetaData[cat] || { label: cat.toUpperCase(), desc: 'Pengaturan umum.' };
+        const isActive = cat === activeCategory;
+        
+        const btn = document.createElement('button');
+        btn.className = `w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition flex items-center justify-between ${
+          isActive 
+            ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25' 
+            : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+        }`;
+        btn.onclick = () => switchCategory(cat);
+        btn.innerHTML = `<span>${meta.label}</span>`;
+        nav.appendChild(btn);
+      });
+    }
+
+    // Switch active category
+    function switchCategory(cat) {
+      activeCategory = cat;
+      populateCategories();
+      renderConfigs();
+    }
+
+    // Render configs in active category
+    function renderConfigs() {
+      const container = document.getElementById('configContainer');
+      container.innerHTML = '';
+      
+      const meta = categoryMetaData[activeCategory] || { label: activeCategory.toUpperCase(), desc: '' };
+      document.getElementById('categoryTitle').innerText = meta.label;
+      document.getElementById('categoryDesc').innerText = meta.desc;
+
+      const filtered = allConfigs.filter(c => c.category === activeCategory);
+      
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-12 text-slate-500">
+            Tidak ada konfigurasi di kategori ini.
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(config => {
+        const val = pendingChanges[config.key] !== undefined ? pendingChanges[config.key] : config.value;
+        const card = document.createElement('div');
+        card.className = 'p-5 bg-slate-800/40 rounded-xl border border-slate-700/50 hover:border-slate-600/50 transition flex flex-col md:flex-row md:items-center justify-between gap-4';
+        
+        let inputHtml = '';
+        if (config.type === 'boolean') {
+          const isTrue = val === 'true' || val === true;
+          inputHtml = `
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" class="sr-only peer" ${isTrue ? 'checked' : ''} onchange="handleChange('${config.key}', this.checked ? 'true' : 'false')">
+              <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          `;
+        } else if (config.type === 'integer' || config.type === 'number') {
+          inputHtml = `
+            <input type="number" value="${val}" class="w-48 bg-slate-900 border border-slate-700 rounded-lg px-3.5 py-2 text-sm text-white focus:outline-none focus:border-blue-500" oninput="handleChange('${config.key}', this.value)">
+          `;
+        } else {
+          inputHtml = `
+            <input type="text" value="${val}" class="w-72 bg-slate-900 border border-slate-700 rounded-lg px-3.5 py-2 text-sm text-white focus:outline-none focus:border-blue-500" oninput="handleChange('${config.key}', this.value)">
+          `;
+        }
+
+        card.innerHTML = `
+          <div class="flex-1">
+            <h4 class="font-bold text-white text-base">${config.name}</h4>
+            <p class="text-slate-400 text-xs mt-1 max-w-xl">${config.description}</p>
+            <span class="text-[10px] text-slate-500 font-mono mt-2 block bg-slate-900/50 w-fit px-1.5 py-0.5 rounded border border-slate-800">Key: ${config.key}</span>
+          </div>
+          <div class="flex items-center">
+            ${inputHtml}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // Handle single input change
+    function handleChange(key, value) {
+      pendingChanges[key] = value;
+    }
+
+    // Save all changes to API
+    async function saveAllChanges() {
+      const updates = Object.entries(pendingChanges).map(([k, v]) => ({
+        key: k,
+        value: v
+      }));
+
+      if (updates.length === 0) {
+        showToast('ℹ️ Tidak ada perubahan yang perlu disimpan.', 'info');
+        return;
+      }
+
+      try {
+        const response = await fetch('/configedit/api/configs', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ updates })
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          showToast('✅ Pengaturan berhasil disimpan!', 'success');
+          pendingChanges = {};
+          await loadConfigs();
+        } else {
+          showToast('❌ Gagal menyimpan: ' + data.message, 'error');
+        }
+      } catch (err) {
+        showToast('❌ Error jaringan saat menyimpan pengaturan', 'error');
+      }
+    }
+
+    // Show custom toast notification
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const icon = document.getElementById('toastIcon');
+      const msg = document.getElementById('toastMessage');
+
+      msg.innerText = message;
+      
+      if (type === 'success') {
+        icon.innerText = '✨';
+        toast.className = toast.className.replace(/border-[a-z0-9-/]+/g, '') + ' border border-green-500';
+      } else if (type === 'error') {
+        icon.innerText = '💥';
+        toast.className = toast.className.replace(/border-[a-z0-9-/]+/g, '') + ' border border-red-500';
+      } else {
+        icon.innerText = 'ℹ️';
+        toast.className = toast.className.replace(/border-[a-z0-9-/]+/g, '') + ' border border-blue-500';
+      }
+
+      toast.style.transform = 'translateY(0)';
+      toast.style.opacity = '1';
+
+      setTimeout(() => {
+        toast.style.transform = 'translateY(80px)';
+        toast.style.opacity = '0';
+      }, 3500);
+    }
+
+    // Initialize on load
+    window.addEventListener('load', loadConfigs);
+  </script>
+</body>
+</html>
