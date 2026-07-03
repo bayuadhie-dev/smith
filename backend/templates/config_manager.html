@@ -90,34 +90,30 @@
     let pendingChanges = {};
 
     const categoryMetaData = {
-      'job_costing': {
-        label: '💼 Job Costing & Rates',
-        desc: 'Konfigurasi tarif tenaga kerja langsung, overhead mesin, dan estimasi biaya bahan.'
-      },
-      'production': {
-        label: '🏭 Production & Fallbacks',
-        desc: 'Nilai default berat kering, volume cairan, dan berat akhir per pack.'
-      },
-      'system': {
-        label: '🖥️ System Settings',
-        desc: 'Konfigurasi format tanggal, bahasa default, dan setelan dasar ERP.'
-      },
-      'notifications': {
-        label: '🔔 Notifications',
-        desc: 'Aktifkan atau matikan notifikasi desktop, suara, atau alert inventaris.'
-      },
-      'backup': {
-        label: '💾 Backup Configuration',
-        desc: 'Frekuensi dan pengaturan backup basis data otomatis.'
-      },
-      'security': {
-        label: '🛡️ Security',
-        desc: 'Setelan timeout sesi user dan autentikasi.'
-      },
-      'ui': {
-        label: '🎨 User Interface',
-        desc: 'Konfigurasi tema tampilan web.'
-      }
+      'general':       { label: '⚙️ General',                desc: 'Nama sistem, timezone, bahasa, dan konfigurasi dasar aplikasi.' },
+      'database':      { label: '🗄️ Database',               desc: 'Connection pool, timeout, dan retensi backup database.' },
+      'security':      { label: '🛡️ Security',               desc: 'Session timeout, aturan password, dan proteksi akun login.' },
+      'performance':   { label: '⚡ Performance & Cache',    desc: 'Cache Redis, ukuran pagination, dan batas upload file.' },
+      'logging':       { label: '📋 Logging & Audit',        desc: 'Level log, retensi log, dan audit trail aktivitas user.' },
+      'production':    { label: '🏭 Production & Shifts',    desc: 'Waktu efektif per shift dan nilai fallback konsumsi material.' },
+      'job_costing':   { label: '💼 Job Costing & Rates',    desc: 'Tarif tenaga kerja, overhead mesin, dan biaya material fallback.' },
+      'hr':            { label: '👥 HR & Payroll',            desc: 'Jam kerja, lembur, BPJS, PPh 21, dan aturan kepegawaian.' },
+      'attendance':    { label: '🕐 Attendance',             desc: 'Jam masuk/pulang, toleransi keterlambatan, dan absensi digital.' },
+      'warehouse':     { label: '📦 Warehouse',              desc: 'FIFO, auto reorder, lead time, dan siklus stok opname.' },
+      'purchasing':    { label: '🛒 Purchasing',             desc: 'Batas auto-approve PO, jangka tempo pembayaran, dan masa berlaku PO.' },
+      'sales':         { label: '💰 Sales',                  desc: 'Batas approval SO, margin minimum, dan jangka tempo customer.' },
+      'quality':       { label: '🔬 Quality Control',        desc: 'Acceptance rate, SPC sigma, sample rate, dan auto-hold batch.' },
+      'oee':           { label: '📊 OEE',                    desc: 'Target world class, warning/critical threshold, dan target per komponen.' },
+      'maintenance':   { label: '🔧 Maintenance',            desc: 'MTBF, MTTR, durasi default, PM alert, dan lokasi spare parts.' },
+      'mrp':           { label: '📅 MRP',                    desc: 'Horizon perencanaan, safety stock, skenario demand, dan utilisasi kapasitas.' },
+      'finance':       { label: '💵 Finance',                desc: 'PPN, invoice due, petty cash, dan rasio estimasi dashboard keuangan.' },
+      'rd':            { label: '🧪 Research & Development', desc: 'Approval trial, minimum batch percobaan, dan masa berlaku formula.' },
+      'shipping':      { label: '🚚 Shipping',               desc: 'Carrier default, lead time pengiriman, dan konfirmasi otomatis.' },
+      'converting':    { label: '🔄 Converting',             desc: 'Target efisiensi mesin dan batas Grade A / losses proses converting.' },
+      'dcc':           { label: '📄 Document Control',       desc: 'Alert kadaluwarsa dokumen, siklus review, dan approval revisi.' },
+      'notifications': { label: '🔔 Notifications',          desc: 'Email alert, push notification, dan frekuensi email digest.' },
+      'backup':        { label: '💾 Backup',                 desc: 'Status backup otomatis dan frekuensi backup database.' },
+      'ui':            { label: '🎨 User Interface',         desc: 'Tema tampilan dan preferensi antarmuka.' },
     };
 
     // Load configurations from API
