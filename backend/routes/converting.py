@@ -467,3 +467,98 @@ def get_converting_daily_report():
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@converting_bp.route('/api/converting/monthly-summary', methods=['GET'])
+@jwt_required()
+def get_converting_monthly_summary():
+    """Get weekly or monthly summary for converting module"""
+    try:
+        year_str = request.args.get('year')
+        month_str = request.args.get('month')
+        view_mode = request.args.get('view', 'monthly')  # 'weekly' or 'monthly'
+        week_number = request.args.get('week', 0, type=int)
+        
+        if not year_str or not month_str:
+            return jsonify({'error': 'Parameter year dan month wajib diisi'}), 400
+            
+        y = int(year_str)
+        m = int(month_str)
+        
+        # Calculate date range
+        start_date = date(y, m, 1)
+        if m == 12:
+            end_date = date(y + 1, 1, 1) - timedelta(days=1)
+        else:
+            end_date = date(y, m + 1, 1) - timedelta(days=1)
+
+        # For weekly view, calculate week boundaries (Monday-Sunday)
+        if view_mode == 'weekly' and week_number > 0:
+            first_day_of_month = date(y, m, 1)
+            days_until_monday = (7 - first_day_of_month.weekday()) % 7
+            if first_day_of_month.weekday() != 0:
+                first_monday = first_day_of_month + timedelta(days=days_until_monday)
+            else:
+                first_monday = first_day_of_month
+
+            week_start = first_monday + timedelta(days=(week_number - 1) * 7)
+            week_end = min(week_start + timedelta(days=6), end_date)
+            start_date = week_start
+            end_date = week_end
+            
+        # Query all production records in the date range
+        records = ConvertingProduction.query.filter(
+            ConvertingProduction.production_date.between(start_date, end_date)
+        ).all()
+        
+        # Group by date
+        daily_data = {}
+        total_output = 0
+        total_good = 0
+        total_reject = 0
+        
+        for r in records:
+            d_str = r.production_date.isoformat()
+            if d_str not in daily_data:
+                daily_data[d_str] = {
+                    'date': d_str,
+                    'output': 0,
+                    'good': 0,
+                    'reject': 0,
+                    'machines': set()
+                }
+            
+            output_val = float(r.actual_quantity) if r.actual_quantity else 0
+            good_val = float(r.good_quantity) if r.good_quantity else 0
+            reject_val = float(r.reject_quantity) if r.reject_quantity else 0
+            
+            daily_data[d_str]['output'] += output_val
+            daily_data[d_str]['good'] += good_val
+            daily_data[d_str]['reject'] += reject_val
+            if r.machine:
+                daily_data[d_str]['machines'].add(r.machine.name)
+                
+            total_output += output_val
+            total_good += good_val
+            total_reject += reject_val
+            
+        # Format daily_data to list
+        daily_list = []
+        for d, val in daily_data.items():
+            val['machines'] = ', '.join(sorted(list(val['machines'])))
+            daily_list.append(val)
+            
+        daily_list.sort(key=lambda x: x['date'], reverse=True)
+        
+        return jsonify({
+            'success': True,
+            'summary': {
+                'total_output': total_output,
+                'total_good': total_good,
+                'total_reject': total_reject,
+                'quality_rate': round((total_good / total_output) * 100, 2) if total_output > 0 else 100
+            },
+            'daily_records': daily_list
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

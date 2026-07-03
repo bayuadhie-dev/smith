@@ -55,6 +55,8 @@ const ProductionMonitoringDashboard: React.FC = () => {
   const [fgData, setFgData] = useState<any>(null);
   const [fgLoading, setFgLoading] = useState(false);
   const [fgFetched, setFgFetched] = useState(false);
+  const [convertingMonthlyData, setConvertingMonthlyData] = useState<any>(null);
+  const [convertingMonthlyLoading, setConvertingMonthlyLoading] = useState(false);
 
   // Prevent search engine indexing
   useEffect(() => {
@@ -174,7 +176,10 @@ const ProductionMonitoringDashboard: React.FC = () => {
     };
   }, []);
 
-  useEffect(() => { fetchData(); }, [year, month, viewMode, weekNumber]);
+  useEffect(() => {
+    fetchData();
+    fetchConvertingMonthlyData();
+  }, [year, month, viewMode, weekNumber]);
 
   // When month/year changes, reset weekNumber to 0 (show all weeks)
   useEffect(() => {
@@ -187,6 +192,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
     
     const intervalId = setInterval(() => {
       fetchData();
+      fetchConvertingMonthlyData();
     }, refreshInterval * 60 * 1000); // Convert minutes to milliseconds
     
     return () => clearInterval(intervalId);
@@ -211,6 +217,22 @@ const ProductionMonitoringDashboard: React.FC = () => {
         setData(res.data.data);
       }
     } catch (e) { console.error(e); } finally { setLoading(false); }
+  };
+
+  const fetchConvertingMonthlyData = async () => {
+    try {
+      setConvertingMonthlyLoading(true);
+      const params = new URLSearchParams({ year: String(year), month: String(month), view: viewMode });
+      if (viewMode === 'weekly' && weekNumber > 0) params.set('week', String(weekNumber));
+      const res = await axiosInstance.get(`/api/converting/monthly-summary?${params}`);
+      if (res.data.success) {
+        setConvertingMonthlyData(res.data);
+      }
+    } catch (e) {
+      console.error('Error fetching converting monthly summary:', e);
+    } finally {
+      setConvertingMonthlyLoading(false);
+    }
   };
 
   const toggleDay = (date: string) => {
@@ -472,8 +494,27 @@ const ProductionMonitoringDashboard: React.FC = () => {
       </div>
 
       {/* TAB CONTENT */}
-      {activeTab === 'overview' && <OverviewTab data={data} dailyChartData={dailyChartData} timePieData={timePieData} downtimePieData={downtimePieData} displaySummary={displaySummary} viewMode={viewMode} />}
-      {activeTab === 'daily' && <DailyTab data={data} expandedDays={expandedDays} toggleDay={toggleDay} calculateDailyTarget={calculateDailyTarget} viewMode={viewMode} />}
+      {activeTab === 'overview' && (
+        <OverviewTab
+          data={data}
+          dailyChartData={dailyChartData}
+          timePieData={timePieData}
+          downtimePieData={downtimePieData}
+          displaySummary={displaySummary}
+          viewMode={viewMode}
+          convertingSummary={convertingMonthlyData?.summary}
+        />
+      )}
+      {activeTab === 'daily' && (
+        <DailyTab
+          data={data}
+          expandedDays={expandedDays}
+          toggleDay={toggleDay}
+          calculateDailyTarget={calculateDailyTarget}
+          viewMode={viewMode}
+          convertingDailyRecords={convertingMonthlyData?.daily_records}
+        />
+      )}
       {activeTab === 'dailySwiper' && (
         <div className="mt-6">
           <DailyControllerSwiper
@@ -506,7 +547,15 @@ const ProductionMonitoringDashboard: React.FC = () => {
 };
 
 // ==================== OVERVIEW TAB ====================
-const OverviewTab: React.FC<{ data: any; dailyChartData: any[]; timePieData: any[]; downtimePieData: any[]; displaySummary: any; viewMode: string }> = ({ data, dailyChartData, timePieData, downtimePieData, displaySummary, viewMode }) => {
+const OverviewTab: React.FC<{
+  data: any;
+  dailyChartData: any[];
+  timePieData: any[];
+  downtimePieData: any[];
+  displaySummary: any;
+  viewMode: string;
+  convertingSummary?: any;
+}> = ({ data, dailyChartData, timePieData, downtimePieData, displaySummary, viewMode, convertingSummary }) => {
   const s = displaySummary || {};
   const totalWd = s.total_working_days || 22;
   const elapsed = s.working_days || 0;
@@ -529,6 +578,30 @@ const OverviewTab: React.FC<{ data: any; dailyChartData: any[]; timePieData: any
 
   return (
   <div className="space-y-5">
+    {/* Converting Production Summary */}
+    {convertingSummary && convertingSummary.total_output > 0 && (
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border border-gray-200 dark:border-gray-700">
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Ringkasan Produksi Converting ({viewMode === 'weekly' ? 'Mingguan' : 'Bulanan'})</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/10 rounded-lg border border-blue-100 dark:border-blue-800/30">
+            <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase font-semibold">Total Output</p>
+            <p className="text-lg font-bold text-blue-600 dark:text-blue-400">{fmtNum(convertingSummary.total_output)} pcs</p>
+          </div>
+          <div className="text-center p-3 bg-green-50 dark:bg-green-900/10 rounded-lg border border-green-100 dark:border-green-800/30">
+            <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase font-semibold">Grade A (Good)</p>
+            <p className="text-lg font-bold text-green-600 dark:text-green-400">{fmtNum(convertingSummary.total_good)} pcs</p>
+          </div>
+          <div className="text-center p-3 bg-red-50 dark:bg-red-900/10 rounded-lg border border-red-100 dark:border-red-800/30">
+            <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase font-semibold">Reject / Scrap</p>
+            <p className="text-lg font-bold text-red-550 dark:text-red-400">{fmtNum(convertingSummary.total_reject)} pcs</p>
+          </div>
+          <div className="text-center p-3 bg-purple-50 dark:bg-purple-900/10 rounded-lg border border-purple-100 dark:border-purple-800/30">
+            <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase font-semibold">Quality Rate</p>
+            <p className="text-lg font-bold text-purple-600 dark:text-purple-400">{convertingSummary.quality_rate}%</p>
+          </div>
+        </div>
+      </div>
+    )}
     {/* Pace Indicator — compact */}
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 overflow-hidden">
       <div className="h-1 w-full" style={{ backgroundColor: accentBg }} />
@@ -703,14 +776,21 @@ const OverviewTab: React.FC<{ data: any; dailyChartData: any[]; timePieData: any
 };
 
 // ==================== DAILY TAB ====================
-const DailyTab: React.FC<{ data: any; expandedDays: Set<string>; toggleDay: (d: string) => void; calculateDailyTarget: (weeklyTarget: number, workingDays: number) => number; viewMode: 'monthly' | 'weekly' }> = ({ data, expandedDays, toggleDay, calculateDailyTarget, viewMode }) => {
+const DailyTab: React.FC<{
+  data: any;
+  expandedDays: Set<string>;
+  toggleDay: (d: string) => void;
+  calculateDailyTarget: (weeklyTarget: number, workingDays: number) => number;
+  viewMode: 'monthly' | 'weekly';
+  convertingDailyRecords?: any[];
+}> = ({ data, expandedDays, toggleDay, calculateDailyTarget, viewMode, convertingDailyRecords }) => {
   const dayNames: Record<string, string> = {
     Monday: 'Senin', Tuesday: 'Selasa', Wednesday: 'Rabu', Thursday: 'Kamis',
     Friday: 'Jumat', Saturday: 'Sabtu', Sunday: 'Minggu'
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow border overflow-hidden">
         <div className="p-4 border-b bg-gray-50 dark:bg-gray-900">
           <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Detail Harian - Produksi per Hari per Produk</h3>
@@ -996,6 +1076,46 @@ const DailyTab: React.FC<{ data: any; expandedDays: Set<string>; toggleDay: (d: 
           </table>
         </div>
       </div>
+
+      {/* Converting Daily Summary Table */}
+      {convertingDailyRecords && convertingDailyRecords.length > 0 && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow border overflow-hidden mt-6">
+          <div className="p-4 border-b bg-gray-50 dark:bg-gray-900">
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Detail Harian - Produksi Converting</h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Rincian hasil output harian mesin Converting ({viewMode === 'weekly' ? 'Mingguan' : 'Bulanan'})</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 font-medium">
+                  <th className="px-3 py-2.5 text-left">Tanggal</th>
+                  <th className="px-3 py-2.5 text-left">Mesin Aktif</th>
+                  <th className="px-2 py-2.5 text-right text-green-700">Grade A (pcs)</th>
+                  <th className="px-2 py-2.5 text-right text-red-700">Reject (pcs)</th>
+                  <th className="px-2 py-2.5 text-right">Total Output (pcs)</th>
+                  <th className="px-2 py-2.5 text-right">Quality Rate</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                {convertingDailyRecords.map((r: any) => {
+                  const dateLabel = r.date.split('-').reverse().join('/');
+                  const qr = r.output > 0 ? ((r.good / r.output) * 100).toFixed(2) : '100.00';
+                  return (
+                    <tr key={r.date} className="hover:bg-gray-50 dark:hover:bg-gray-750">
+                      <td className="px-3 py-2 font-semibold text-blue-800 dark:text-blue-400">{dateLabel}</td>
+                      <td className="px-3 py-2 text-gray-600 dark:text-gray-300 max-w-[250px] truncate" title={r.machines}>{r.machines || '-'}</td>
+                      <td className="px-2 py-2 text-right text-green-700 font-semibold">{fmtNum(r.good)}</td>
+                      <td className="px-2 py-2 text-right text-red-600 font-semibold">{fmtNum(r.reject)}</td>
+                      <td className="px-2 py-2 text-right font-bold text-gray-900 dark:text-white">{fmtNum(r.output)}</td>
+                      <td className={`px-2 py-2 text-right font-semibold ${+qr >= 95 ? 'text-green-600' : 'text-yellow-600'}`}>{qr}%</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
