@@ -155,8 +155,16 @@ app.post('/send-message', apiLimiter, async (req, res) => {
                 // Resolve JID from WhatsApp server (handles registration checks and formatting)
                 const numberId = await client.getNumberId(cleanNumber);
                 if (numberId) {
-                    jid = numberId._serialized;
-                    console.log(`Resolved JID via getNumberId: ${jid}`);
+                    const resolvedJid = numberId._serialized;
+                    if (resolvedJid.endsWith('@lid')) {
+                        // whatsapp-web.js doesn't fully support sending directly to @lid JIDs yet.
+                        // Force using the standard phone-number based @c.us JID which is fully supported.
+                        jid = `${cleanNumber}@c.us`;
+                        console.log(`Resolved JID is LID: ${resolvedJid}, forcing compatible JID format: ${jid}`);
+                    } else {
+                        jid = resolvedJid;
+                        console.log(`Resolved JID via getNumberId: ${jid}`);
+                    }
                 } else {
                     jid = `${cleanNumber}@c.us`;
                     console.log(`getNumberId returned no ID, using fallback: ${jid}`);
