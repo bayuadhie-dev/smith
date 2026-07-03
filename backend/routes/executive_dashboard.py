@@ -2148,64 +2148,28 @@ def get_production_monitoring():
         # ===== 1. GET MONTHLY TARGETS =====
         # Priority: Use MonthlySchedule if available, otherwise use WeeklyProductionPlan
         
-        monthly_schedules = MonthlySchedule.query.filter_by(year=year, month=month).all()
+        from models.production import WeeklyProductionPlan, WeeklyProductionPlanItem
+        
+        weekly_plans = WeeklyProductionPlan.query.filter(
+            WeeklyProductionPlan.year == year,
+            WeeklyProductionPlan.status.in_(['approved', 'in_progress', 'completed']),
+            # Plan overlaps with the month: week starts before or during month AND ends after or during month
+            db.and_(
+                WeeklyProductionPlan.week_start <= end_date,
+                WeeklyProductionPlan.week_end >= start_date
+            )
+        ).all()
         
         targets_by_product = {}
         total_target_ctn = 0
-        has_monthly_schedule = len(monthly_schedules) > 0
+        has_weekly_plans = False
         
-        # First, try to get targets from MonthlySchedule (higher priority)
-        for ms in monthly_schedules:
-            product_data = db.session.execute(
-                db.text("SELECT code, name, pack_per_karton FROM products WHERE id = :id"),
-                {'id': ms.product_id}
-            ).fetchone()
-            
-            product_name = product_data[1] if product_data else f"Product {ms.product_id}"
-            # Clean product name (remove @ prefix and @... suffixes)
-            product_name = normalize_product_name(product_name)
-            product_code = product_data[0] if product_data else ''
-            pack_per_ctn = int(product_data[2]) if product_data and product_data[2] else 50
-            
-            target_ctn = float(ms.target_ctn or 0)
-            
-            if product_name not in targets_by_product:
-                targets_by_product[product_name] = {
-                    'product_id': ms.product_id,
-                    'product_code': product_code,
-                    'product_name': product_name,
-                    'target_ctn_monthly': 0,
-                    'pack_per_ctn': pack_per_ctn,
-                    'machines': []
-                }
-            
-            targets_by_product[product_name]['target_ctn_monthly'] += target_ctn
-            machine_name = ms.machine.name if ms.machine else "Unassigned"
-            targets_by_product[product_name]['machines'].append({
-                'machine_id': ms.machine_id,
-                'machine_name': machine_name,
-                'target_ctn': target_ctn
-            })
-            total_target_ctn += target_ctn
-        
-        # If no MonthlySchedule data, fallback to WeeklyProductionPlan
-        if not has_monthly_schedule:
-            from models.production import WeeklyProductionPlan, WeeklyProductionPlanItem
-            
-            weekly_plans = WeeklyProductionPlan.query.filter(
-                WeeklyProductionPlan.year == year,
-                WeeklyProductionPlan.status.in_(['approved', 'in_progress', 'completed']),
-                # Plan overlaps with the month: week starts before or during month AND ends after or during month
-                db.and_(
-                    WeeklyProductionPlan.week_start <= end_date,
-                    WeeklyProductionPlan.week_end >= start_date
-                )
-            ).all()
-            
+        if weekly_plans:
             for plan in weekly_plans:
                 for item in plan.items:
                     if not item.product:
                         continue
+                    has_weekly_plans = True
                     
                     product_name = item.product.name
                     # Clean product name (remove @ prefix and @... suffixes)
@@ -2251,6 +2215,42 @@ def get_production_monitoring():
                                     break
                     
                     total_target_ctn += target_ctn
+        
+        # If no WeeklyProductionPlan data, fallback to MonthlySchedule
+        if not has_weekly_plans:
+            monthly_schedules = MonthlySchedule.query.filter_by(year=year, month=month).all()
+            for ms in monthly_schedules:
+                product_data = db.session.execute(
+                    db.text("SELECT code, name, pack_per_karton FROM products WHERE id = :id"),
+                    {'id': ms.product_id}
+                ).fetchone()
+                
+                product_name = product_data[1] if product_data else f"Product {ms.product_id}"
+                # Clean product name (remove @ prefix and @... suffixes)
+                product_name = normalize_product_name(product_name)
+                product_code = product_data[0] if product_data else ''
+                pack_per_ctn = int(product_data[2]) if product_data and product_data[2] else 50
+                
+                target_ctn = float(ms.target_ctn or 0)
+                
+                if product_name not in targets_by_product:
+                    targets_by_product[product_name] = {
+                        'product_id': ms.product_id,
+                        'product_code': product_code,
+                        'product_name': product_name,
+                        'target_ctn_monthly': 0,
+                        'pack_per_ctn': pack_per_ctn,
+                        'machines': []
+                    }
+                
+                targets_by_product[product_name]['target_ctn_monthly'] += target_ctn
+                machine_name = ms.machine.name if ms.machine else "Unassigned"
+                targets_by_product[product_name]['machines'].append({
+                    'machine_id': ms.machine_id,
+                    'machine_name': machine_name,
+                    'target_ctn': target_ctn
+                })
+                total_target_ctn += ms.target_ctn if ms.target_ctn else 0
         
         # ===== 1B. GET WEEKLY TARGETS (for current week or specified week) =====
         from models.production import WeeklyProductionPlan, WeeklyProductionPlanItem
@@ -2562,9 +2562,9 @@ def get_production_monitoring():
 
             
 
-            # Group by product name and machine name to show them separately
+            # Group by product name, product code, and machine name to keep WIP and FG separate
             machine_name = sp.machine.name if sp.machine else 'N/A'
-            group_key = f"{product_name}__{machine_name}"
+            group_key = f"{product_code}__{product_name}__{machine_name}"
 
             if group_key not in daily_product_data[date_str]:
                 daily_product_data[date_str][group_key] = {
