@@ -83,7 +83,7 @@ let sock = null;
 let isReady = false;
 
 async function startWhatsApp() {
-    const { state, saveCreds } = await useMultiFileAuthState('./.baileys_auth');
+    const { state, saveCreds } = await useMultiFileAuthState(path.resolve(__dirname, './.baileys_auth'));
 
     sock = makeWASocket({
         auth: state,
