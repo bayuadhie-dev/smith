@@ -3,33 +3,41 @@
  * Path: /home/superadmin/Documents/SourceCode/scripts/wa_gateway.js
  * Exposes: POST http://localhost:8000/send-message
  */
+// Load environment variables from backend/.env
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../backend/.env') });
+
 const express = require('express');
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const PORT = 8000;
 
 // Security Configurations
-const SECRET_TOKEN = 'local-wa-secret-token'; // Fallback matching default setting
+const SECRET_TOKEN = process.env.WA_SECRET_TOKEN;
+if (!SECRET_TOKEN) {
+    console.error('✗ ERROR: WA_SECRET_TOKEN is not defined in your .env file!');
+    process.exit(1);
+}
 
 app.use(express.json());
 
-// Request Security Middleware: Restrict to localhost & Verify X-API-Key
+// 1. IP Security Middleware: Strict localhost whitelist
 app.use((req, res, next) => {
     const clientIp = req.ip || req.connection.remoteAddress;
     
-    // Check if request is from localhost (IPv4 127.0.0.1 or IPv6 ::1 or ::ffff:127.0.0.1)
-    const isLocal = clientIp === '127.0.0.1' || 
-                    clientIp === '::1' || 
-                    clientIp === '::ffff:127.0.0.1' || 
-                    clientIp.includes('127.0.0.1');
+    // Whitelist only loopback addresses
+    const allowedIps = ['127.0.0.1', '::1', '::ffff:127.0.0.1'];
+    const isLocal = allowedIps.includes(clientIp);
                     
     if (!isLocal) {
         console.warn(`[Blocked] Unauthorized access attempt from remote IP: ${clientIp}`);
         return res.status(403).json({ success: false, message: 'Forbidden: Access restricted to localhost' });
     }
 
+    // 2. Token Security: X-API-Key Header verification
     const apiKey = req.headers['x-api-key'];
     if (!apiKey || apiKey !== SECRET_TOKEN) {
         console.warn(`[Blocked] Invalid or missing API key from IP: ${clientIp}`);
@@ -37,6 +45,15 @@ app.use((req, res, next) => {
     }
 
     next();
+});
+
+// 3. Rate Limiter Middleware: Max 10 requests per minute
+const apiLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute window
+    max: 10, // Limit each IP to 10 requests per windowMs
+    message: { success: false, message: 'Too many requests. Rate limit is 10 messages per minute.' },
+    standardHeaders: true,
+    legacyHeaders: false,
 });
 
 // Initialize WhatsApp Client with Memory Optimization
@@ -86,7 +103,7 @@ console.log('Starting WhatsApp Client...');
 client.initialize();
 
 // REST API endpoint to send message
-app.post('/send-message', async (req, res) => {
+app.post('/send-message', apiLimiter, async (req, res) => {
     try {
         const { to, message } = req.body;
 
