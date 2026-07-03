@@ -16,10 +16,9 @@ const app = express();
 const PORT = 8000;
 
 // Security Configurations
-const SECRET_TOKEN = process.env.WA_SECRET_TOKEN;
-if (!SECRET_TOKEN) {
-    console.error('✗ ERROR: WA_SECRET_TOKEN is not defined in your .env file!');
-    process.exit(1);
+const SECRET_TOKEN = process.env.WA_SECRET_TOKEN || 'local-wa-secret-token';
+if (!process.env.WA_SECRET_TOKEN) {
+    console.warn('⚠️  WARNING: WA_SECRET_TOKEN is not defined in your .env file. Using default fallback token.');
 }
 
 app.use(express.json());
