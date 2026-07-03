@@ -87,6 +87,19 @@ client.on('disconnected', (reason) => {
     console.warn(`! WhatsApp connection closed: ${reason}`);
 });
 
+// Listen for message status updates (ticks)
+client.on('message_ack', (msg, ack) => {
+    const statusLabels = {
+        0: 'ERROR',
+        1: 'PENDING',
+        2: 'SERVER_ACK',
+        3: 'DELIVERED',
+        4: 'READ',
+        5: 'PLAYED'
+    };
+    console.log(`[STATUS UPDATE] ${msg.id.id} → ${statusLabels[ack] || ack}`);
+});
+
 console.log('Starting WhatsApp Client...');
 client.initialize();
 
