@@ -1594,6 +1594,26 @@ const Settings: React.FC = () => {
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Advanced Settings</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Centralized Config Editor */}
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+                <div className="flex items-center mb-4">
+                  <CogIcon className="h-8 w-8 text-teal-600 mr-3" />
+                  <div>
+                    <h4 className="font-semibold text-gray-900 dark:text-white">Centralized Config Editor</h4>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Manage all module configurations</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    const token = localStorage.getItem('token') || '';
+                    window.open(`/configedit/?token=${token}`, '_blank');
+                  }}
+                  className="inline-flex items-center px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 transition-colors"
+                >
+                  Configure
+                </button>
+              </div>
+
               {/* System Configuration */}
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center mb-4">
@@ -1607,6 +1627,7 @@ const Settings: React.FC = () => {
                   onClick={() => navigate('/app/settings/system-config')}
                   className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                 >
+                  Configure
                 </button>
               </div>
 
