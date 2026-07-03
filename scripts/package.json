@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "whatsapp-web.js": "^1.26.0",
+    "dotenv": "^17.4.2",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.3.1",
+    "qrcode-terminal": "^0.12.0"
+  }
+}
