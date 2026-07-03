@@ -134,10 +134,16 @@ def trigger_wo_completion_whatsapp_notification(work_order_id):
         logger.info("WhatsApp notifications are disabled.")
         return False
 
+    import os
+
     # 2. Get API config
     provider = get_setting_value('notifications.whatsapp_provider', 'local')
     phones_str = get_setting_value('notifications.whatsapp_target_phones', '')
     
+    # Fallback to environment variables if database holds placeholders or is empty
+    if not phones_str or '6281234567890' in phones_str:
+        phones_str = os.environ.get('TWILIO_TARGET_PHONES', phones_str)
+
     if not phones_str:
         logger.warning("No target phone numbers configured for WhatsApp notifications.")
         return False
@@ -158,8 +164,16 @@ def trigger_wo_completion_whatsapp_notification(work_order_id):
 
     if provider == 'twilio':
         account_sid = get_setting_value('notifications.twilio_account_sid', '')
+        if not account_sid or 'ACxxxx' in account_sid:
+            account_sid = os.environ.get('TWILIO_ACCOUNT_SID', account_sid)
+
         auth_token = get_setting_value('notifications.twilio_auth_token', '')
+        if not auth_token or 'xxxxxx' in auth_token:
+            auth_token = os.environ.get('TWILIO_AUTH_TOKEN', auth_token)
+
         from_number = get_setting_value('notifications.twilio_from_number', '')
+        if not from_number or '14155238886' in from_number:
+            from_number = os.environ.get('TWILIO_FROM_NUMBER', from_number)
         
         if not account_sid or not auth_token or not from_number:
             logger.error("Twilio WhatsApp configurations are incomplete.")

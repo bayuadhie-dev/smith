@@ -206,12 +206,20 @@ def test_trigger_twilio_notification(app, db_session, mocker):
     from utils.production_notifications import trigger_wo_completion_whatsapp_notification
     import requests
     
+    # Mock environment variables to ensure test isolation from developer's .env
+    mocker.patch.dict('os.environ', {
+        'TWILIO_TARGET_PHONES': '6281234567890',
+        'TWILIO_ACCOUNT_SID': 'ACmocked123',
+        'TWILIO_AUTH_TOKEN': 'auth_token_secret',
+        'TWILIO_FROM_NUMBER': '+14155238886'
+    })
+    
     # Mock settings
     mocker.patch('utils.production_notifications.get_setting_value', side_effect=lambda key, default=None: {
         'notifications.whatsapp_enabled': 'true',
         'notifications.whatsapp_provider': 'twilio',
-        'notifications.twilio_account_sid': 'ACmocked123',
-        'notifications.twilio_auth_token': 'auth_token_secret',
+        'notifications.twilio_account_sid': 'ACxxxx', # Default placeholder triggers env fallback
+        'notifications.twilio_auth_token': 'xxxxxx',
         'notifications.twilio_from_number': '+14155238886',
         'notifications.whatsapp_target_phones': '6281234567890'
     }.get(key, default))
