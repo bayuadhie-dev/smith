@@ -2875,14 +2875,19 @@ const ConvertingTab: React.FC = () => {
     return `${days[d.getDay()]} , ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
   };
 
+  // Filter to only include machines with production records (shifts)
+  const activeMachines = useMemo(() => {
+    return machines.filter(m => m.shifts && m.shifts.length > 0);
+  }, [machines]);
+
   // Group machines by type
   const machinesByType = useMemo(() => {
-    return machines.reduce((acc, m) => {
+    return activeMachines.reduce((acc, m) => {
       if (!acc[m.machine_type]) acc[m.machine_type] = [];
       acc[m.machine_type].push(m);
       return acc;
     }, {} as Record<string, ConvertingMachineData[]>);
-  }, [machines]);
+  }, [activeMachines]);
 
   return (
     <div className="space-y-6">
@@ -2967,7 +2972,7 @@ const ConvertingTab: React.FC = () => {
         <div className="flex justify-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
-      ) : machines.length === 0 ? (
+      ) : activeMachines.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 p-12 text-center">
           <CogIcon className="h-16 w-16 text-slate-300 dark:text-gray-600 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-slate-600 dark:text-gray-300">Tidak ada data converting</h3>
