@@ -1,24 +1,56 @@
 /**
- * Self-Hosted local WhatsApp Gateway Microservice
+ * Self-Hosted local WhatsApp Gateway Microservice (Baileys)
  * Path: /home/superadmin/Documents/SourceCode/scripts/wa_gateway.js
  * Exposes: POST http://localhost:8000/send-message
  */
-// Load environment variables from backend/.env
+// Filter ALL output streams to strip any accidental session/key dumps from libraries
+const SENSITIVE_PATTERN = /privKey|rootKey|chainKey|SessionEntry|registrationId|ephemeralKeyPair|preKeyId|baseKey|remoteIdentityKey/i;
+
+const wrapLogFn = (original) => (...args) => {
+    const str = args.map(a => {
+        try {
+            return typeof a === 'string' ? a : JSON.stringify(a);
+        } catch (e) {
+            return '';
+        }
+    }).join(' ');
+    if (SENSITIVE_PATTERN.test(str)) return;
+    original(...args);
+};
+
+console.log = wrapLogFn(console.log.bind(console));
+console.error = wrapLogFn(console.error.bind(console));
+console.warn = wrapLogFn(console.warn.bind(console));
+console.info = wrapLogFn(console.info.bind(console));
+
+const originalStdoutWrite = process.stdout.write.bind(process.stdout);
+process.stdout.write = (chunk, ...rest) => {
+    const str = chunk.toString();
+    if (SENSITIVE_PATTERN.test(str)) return true;
+    return originalStdoutWrite(chunk, ...rest);
+};
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../backend/.env') });
 
 const express = require('express');
-const { Client, LocalAuth } = require('whatsapp-web.js');
-const qrcode = require('qrcode-terminal');
 const rateLimit = require('express-rate-limit');
+const qrcode = require('qrcode-terminal');
+const pino = require('pino');
+const {
+    default: makeWASocket,
+    useMultiFileAuthState,
+    DisconnectReason,
+    fetchLatestBaileysVersion
+} = require('@whiskeysockets/baileys');
 
 const app = express();
 const PORT = 8000;
 
 // Security Configurations
-const SECRET_TOKEN = process.env.WA_SECRET_TOKEN || 'local-wa-secret-token';
-if (!process.env.WA_SECRET_TOKEN) {
-    console.warn('⚠️  WARNING: WA_SECRET_TOKEN is not defined in your .env file. Using default fallback token.');
+const SECRET_TOKEN = process.env.WA_SECRET_TOKEN;
+if (!SECRET_TOKEN) {
+    console.error('✗ ERROR: WA_SECRET_TOKEN is not defined in your .env file!');
+    process.exit(1);
 }
 
 app.use(express.json());
@@ -26,130 +58,130 @@ app.use(express.json());
 // 1. IP Security Middleware: Strict localhost whitelist
 app.use((req, res, next) => {
     const clientIp = req.ip || req.connection.remoteAddress;
-    
-    // Whitelist only loopback addresses
     const allowedIps = ['127.0.0.1', '::1', '::ffff:127.0.0.1'];
-    const isLocal = allowedIps.includes(clientIp);
-                    
-    if (!isLocal) {
+    if (!allowedIps.includes(clientIp)) {
         console.warn(`[Blocked] Unauthorized access attempt from remote IP: ${clientIp}`);
         return res.status(403).json({ success: false, message: 'Forbidden: Access restricted to localhost' });
     }
-
-    // 2. Token Security: X-API-Key Header verification
     const apiKey = req.headers['x-api-key'];
     if (!apiKey || apiKey !== SECRET_TOKEN) {
         console.warn(`[Blocked] Invalid or missing API key from IP: ${clientIp}`);
         return res.status(401).json({ success: false, message: 'Unauthorized: Invalid API key' });
     }
-
     next();
 });
 
-// 3. Rate Limiter Middleware: Max 10 requests per minute
+// 2. Rate Limiter Middleware
 const apiLimiter = rateLimit({
-    windowMs: 60 * 1000, // 1 minute window
-    max: 10, // Limit each IP to 10 requests per windowMs
+    windowMs: 60 * 1000,
+    max: 10,
     message: { success: false, message: 'Too many requests. Rate limit is 10 messages per minute.' },
     standardHeaders: true,
     legacyHeaders: false,
 });
 
-// Initialize WhatsApp Client with Memory Optimization
-const client = new Client({
-    authStrategy: new LocalAuth({
-        dataPath: './.wwebjs_auth' // Persistent auth folder
-    }),
-    puppeteer: {
-        headless: true,
-        args: [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',
-            '--disable-accelerated-2d-canvas',
-            '--no-first-run',
-            '--no-zygote',
-            '--single-process', // Extremely reduces RAM footprint (forces single OS process)
-            '--disable-gpu',
-            '--disable-extensions'
-        ]
-    }
-});
+let sock = null;
+let isReady = false;
 
-// QR Code Generation
-client.on('qr', (qr) => {
-    console.log('\n======================================================================');
-    console.log('SCAN THIS QR CODE WITH YOUR WHATSAPP TO LOGIN:');
-    console.log('======================================================================\n');
-    qrcode.generate(qr, { small: true });
-    console.log('\n======================================================================\n');
-});
+async function startWhatsApp() {
+    const { state, saveCreds } = await useMultiFileAuthState('./.baileys_auth');
+    const { version } = await fetchLatestBaileysVersion();
 
-client.on('ready', async () => {
-    console.log('✓ WhatsApp Client is READY and connected!');
-    
-    // Print joined groups and their IDs for easy copying
-    try {
-        const chats = await client.getChats();
-        const groups = chats.filter(chat => chat.isGroup);
-        if (groups.length > 0) {
-            console.log('\n=========================================');
-            console.log('  LIST GRUP WHATSAPP ANDA & GROUP ID:');
-            console.log('=========================================');
-            groups.forEach(g => {
-                console.log(`Nama Grup : ${g.name}`);
-                console.log(`Group ID  : ${g.id._serialized}`);
-                console.log('-----------------------------------------');
-            });
-            console.log('=========================================\n');
-        } else {
-            console.log('No joined groups found.');
+    sock = makeWASocket({
+        version,
+        auth: state,
+        logger: pino({ level: 'fatal' }),
+        printQRInTerminal: false // kita handle manual biar konsisten sama style lama
+    });
+
+    sock.ev.on('connection.update', (update) => {
+        const { connection, lastDisconnect, qr } = update;
+
+        if (qr) {
+            console.log('\n======================================================================');
+            console.log('SCAN THIS QR CODE WITH YOUR WHATSAPP TO LOGIN:');
+            console.log('======================================================================\n');
+            qrcode.generate(qr, { small: true });
+            console.log('\n======================================================================\n');
         }
-    } catch (err) {
-        console.error('Error fetching chats list:', err);
-    }
-});
 
-client.on('auth_failure', (msg) => {
-    console.error('✗ Authentication failure:', msg);
-});
+        if (connection === 'close') {
+            isReady = false;
+            const statusCode = lastDisconnect?.error?.output?.statusCode;
+            const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+            console.warn(`! WhatsApp connection closed. Status: ${statusCode}. Reconnecting: ${shouldReconnect}`);
+            if (shouldReconnect) {
+                startWhatsApp();
+            } else {
+                console.error('✗ Logged out. Delete .baileys_auth folder and restart to re-scan QR.');
+            }
+        } else if (connection === 'open') {
+            isReady = true;
+            console.log('✓ WhatsApp Client is READY and connected!');
+        }
+    });
 
-client.on('disconnected', (reason) => {
-    console.warn('! WhatsApp Client was disconnected:', reason);
-});
+    sock.ev.on('creds.update', saveCreds);
 
-// Initialize Client
+    sock.ev.on('messages.upsert', () => {
+        // placeholder kalau nanti mau handle pesan masuk
+    });
+    
+    sock.ev.on('messages.update', (updates) => {
+        for (const { key, update } of updates) {
+            if (update.status !== undefined) {
+                // 0=ERROR, 1=PENDING, 2=SERVER_ACK, 3=DELIVERY_ACK, 4=READ, 5=PLAYED
+                const statusLabels = { 0: 'ERROR', 1: 'PENDING', 2: 'SERVER_ACK', 3: 'DELIVERED', 4: 'READ', 5: 'PLAYED' };
+                console.log(`[STATUS UPDATE] ${key.id} → ${statusLabels[update.status] || update.status}`);
+            }
+        }
+    });
+}
+
 console.log('Starting WhatsApp Client...');
-client.initialize();
+startWhatsApp();
 
 // REST API endpoint to send message
 app.post('/send-message', apiLimiter, async (req, res) => {
     try {
-        const { to, message } = req.body;
+        if (!isReady || !sock) {
+            return res.status(503).json({ success: false, message: 'WhatsApp client is not ready yet' });
+        }
 
+        const { to, message } = req.body;
         if (!to || !message) {
             return res.status(400).json({ success: false, message: 'Missing fields: to and message are required' });
         }
 
-        let cleanNumber = to.trim();
-        
-        // If it's a group ID, send as-is; otherwise clean and format as standard chat ID
-        if (cleanNumber.endsWith('@g.us')) {
-            console.log(`Sending message to WhatsApp Group JID: ${cleanNumber}`);
-        } else {
-            cleanNumber = cleanNumber.replace(/[^0-9]/g, '');
-            if (!cleanNumber.endsWith('@c.us')) {
-                cleanNumber = `${cleanNumber}@c.us`;
+        let jid = to.trim();
+
+        // 1. If it's already a group JID, send directly
+        if (jid.endsWith('@g.us')) {
+            console.log(`Sending to Group JID: ${jid}`);
+        }
+        // 2. Otherwise format as personal JID
+        else {
+            // Remove non-digit characters
+            let cleanNumber = jid.replace(/[^0-9]/g, '');
+            
+            // Convert Indonesian local format (08xxx) to international (628xxx)
+            if (cleanNumber.startsWith('0')) {
+                cleanNumber = '62' + cleanNumber.substring(1);
             }
-            console.log(`Sending message to Chat JID: ${cleanNumber}`);
+            
+            if (!cleanNumber.endsWith('@s.whatsapp.net')) {
+                jid = `${cleanNumber}@s.whatsapp.net`;
+            } else {
+                jid = cleanNumber;
+            }
+            console.log(`Sending to Personal JID: ${jid}`);
         }
 
-        const response = await client.sendMessage(cleanNumber, message);
-        
-        return res.json({ 
-            success: true, 
-            message: 'Message sent successfully', 
-            id: response.id.id 
+        const sent = await sock.sendMessage(jid, { text: message });
+        return res.json({
+            success: true,
+            message: 'Message sent successfully',
+            id: sent.key.id
         });
     } catch (error) {
         console.error('Error sending message:', error);
@@ -167,17 +199,15 @@ const shutdown = async () => {
     console.log('\nGracefully shutting down WA Gateway...');
     server.close();
     try {
-        if (client) {
-            console.log('Destroying WhatsApp client session...');
-            await client.destroy();
-            console.log('WhatsApp client destroyed.');
+        if (sock) {
+            console.log('Closing WhatsApp socket...');
+            sock.end(undefined);
         }
     } catch (e) {
-        console.error('Error during client destroy:', e);
+        console.error('Error during socket close:', e);
     }
     process.exit(0);
 };
-
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
 process.on('SIGHUP', shutdown);
