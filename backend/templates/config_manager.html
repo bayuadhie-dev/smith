@@ -332,7 +332,17 @@
     }
 
     // Initialize on load
-    window.addEventListener('load', loadConfigs);
+    window.addEventListener('load', () => {
+      // Check if token is passed via query string
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlToken = urlParams.get('token');
+      if (urlToken) {
+        localStorage.setItem('token', urlToken);
+        // Clean URL query string without reloading page
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+      loadConfigs();
+    });
   </script>
 </body>
 </html>
