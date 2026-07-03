@@ -151,12 +151,20 @@ app.post('/send-message', apiLimiter, async (req, res) => {
                 cleanNumber = '62' + cleanNumber.substring(1);
             }
             
-            if (!cleanNumber.endsWith('@c.us')) {
+            try {
+                // Resolve JID from WhatsApp server (handles registration checks and formatting)
+                const numberId = await client.getNumberId(cleanNumber);
+                if (numberId) {
+                    jid = numberId._serialized;
+                    console.log(`Resolved JID via getNumberId: ${jid}`);
+                } else {
+                    jid = `${cleanNumber}@c.us`;
+                    console.log(`getNumberId returned no ID, using fallback: ${jid}`);
+                }
+            } catch (e) {
                 jid = `${cleanNumber}@c.us`;
-            } else {
-                jid = cleanNumber;
+                console.log(`Error resolving getNumberId, using fallback: ${jid}`);
             }
-            console.log(`Sending to Personal JID: ${jid}`);
         }
 
         const sentMessage = await client.sendMessage(jid, message);
