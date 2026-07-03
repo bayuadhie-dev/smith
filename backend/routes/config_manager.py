@@ -61,6 +61,142 @@ def seed_default_configs():
             'value': '1.2',
             'type': 'float',
             'description': 'Berat akhir default per pack (kg) jika spesifikasi produk tidak ditemukan.'
+        },
+        {
+            'key': 'general.system_name',
+            'category': 'general',
+            'name': 'System Name',
+            'value': 'SMITH ERP',
+            'type': 'string',
+            'description': 'Nama aplikasi sistem.'
+        },
+        {
+            'key': 'general.system_version',
+            'category': 'general',
+            'name': 'System Version',
+            'value': '1.0.0',
+            'type': 'string',
+            'description': 'Versi aplikasi sistem.'
+        },
+        {
+            'key': 'database.connection_pool_size',
+            'category': 'database',
+            'name': 'Connection Pool Size',
+            'value': '10',
+            'type': 'integer',
+            'description': 'Ukuran maksimum koneksi database pool.'
+        },
+        {
+            'key': 'database.connection_timeout',
+            'category': 'database',
+            'name': 'Connection Timeout',
+            'value': '30',
+            'type': 'integer',
+            'description': 'Batas waktu koneksi database (detik).'
+        },
+        {
+            'key': 'database.query_timeout',
+            'category': 'database',
+            'name': 'Query Timeout',
+            'value': '60',
+            'type': 'integer',
+            'description': 'Batas waktu eksekusi query (detik).'
+        },
+        {
+            'key': 'database.backup_retention_days',
+            'category': 'database',
+            'name': 'Backup Retention Days',
+            'value': '30',
+            'type': 'integer',
+            'description': 'Durasi penyimpanan file backup database (hari).'
+        },
+        {
+            'key': 'security.session_timeout',
+            'category': 'security',
+            'name': 'Session Timeout Seconds',
+            'value': '3600',
+            'type': 'integer',
+            'description': 'Durasi maksimum sesi aktif user (detik).'
+        },
+        {
+            'key': 'security.password_min_length',
+            'category': 'security',
+            'name': 'Min Password Length',
+            'value': '8',
+            'type': 'integer',
+            'description': 'Panjang minimum password user.'
+        },
+        {
+            'key': 'security.password_require_special',
+            'category': 'security',
+            'name': 'Require Special Characters',
+            'value': 'true',
+            'type': 'boolean',
+            'description': 'Wajibkan karakter khusus pada password baru.'
+        },
+        {
+            'key': 'security.max_login_attempts',
+            'category': 'security',
+            'name': 'Max Login Attempts',
+            'value': '5',
+            'type': 'integer',
+            'description': 'Batas maksimum kegagalan login sebelum akun dikunci.'
+        },
+        {
+            'key': 'security.account_lockout_duration',
+            'category': 'security',
+            'name': 'Account Lockout Duration',
+            'value': '900',
+            'type': 'integer',
+            'description': 'Durasi akun dikunci setelah melebihi batas percobaan login (detik).'
+        },
+        {
+            'key': 'performance.cache_enabled',
+            'category': 'performance',
+            'name': 'Cache Enabled',
+            'value': 'true',
+            'type': 'boolean',
+            'description': 'Aktifkan cache performa aplikasi.'
+        },
+        {
+            'key': 'performance.cache_timeout',
+            'category': 'performance',
+            'name': 'Cache Timeout',
+            'value': '300',
+            'type': 'integer',
+            'description': 'Durasi penyimpanan data cache (detik).'
+        },
+        {
+            'key': 'performance.pagination_size',
+            'category': 'performance',
+            'name': 'Pagination Page Size',
+            'value': '20',
+            'type': 'integer',
+            'description': 'Jumlah default baris data per halaman.'
+        },
+        {
+            'key': 'logging.log_level',
+            'category': 'logging',
+            'name': 'Log Level',
+            'value': 'INFO',
+            'type': 'string',
+            'description': 'Level log aplikasi (DEBUG, INFO, WARNING, ERROR).'
+        },
+        {
+            'key': 'logging.log_retention_days',
+            'category': 'logging',
+            'name': 'Log Retention Days',
+            'value': '90',
+            'type': 'integer',
+            'description': 'Durasi penyimpanan file log (hari).'
+        },
+        {
+            'key': 'logging.audit_enabled',
+            'category': 'logging',
+            'name': 'Audit Logging Enabled',
+            'value': 'true',
+            'type': 'boolean',
+            'description': 'Aktifkan pencatatan riwayat aktivitas user (Audit Trail).'
         }
     ]
     

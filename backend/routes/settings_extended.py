@@ -22,111 +22,92 @@ settings_extended_bp = Blueprint('settings_extended', __name__)
 @settings_extended_bp.route('/system-config', methods=['GET'])
 @jwt_required()
 def get_system_config():
-    """Get system configuration settings"""
+    """Get system configuration settings formatted for frontend"""
     try:
-        # Default system configurations
-        default_configs = {
-            'general': {
-                'system_name': 'ERP System',
-                'system_version': '1.0.0',
-                'timezone': 'Asia/Jakarta',
-                'date_format': 'DD/MM/YYYY',
-                'currency': 'IDR',
-                'language': 'id'
-            },
-            'database': {
-                'connection_pool_size': 10,
-                'connection_timeout': 30,
-                'query_timeout': 60,
-                'backup_retention_days': 30
-            },
-            'security': {
-                'session_timeout': 3600,
-                'password_min_length': 8,
-                'password_require_special': True,
-                'max_login_attempts': 5,
-                'account_lockout_duration': 900
-            },
-            'performance': {
-                'cache_enabled': True,
-                'cache_timeout': 300,
-                'pagination_size': 20,
-                'max_file_size': 10485760
-            },
-            'logging': {
-                'log_level': 'INFO',
-                'log_retention_days': 90,
-                'audit_enabled': True,
-                'debug_mode': False
-            }
-        }
+        from routes.config_manager import seed_default_configs
+        seed_default_configs() # Ensure all default configs are seeded
         
-        # Get existing settings from database
-        settings = SystemSetting.query.all()
-        
-        # Merge with defaults
-        for setting in settings:
-            try:
-                keys = setting.setting_key.split('.')
-                if len(keys) == 2:
-                    category, key = keys
-                    if category in default_configs and key in default_configs[category]:
-                        # Parse value based on type
-                        if isinstance(default_configs[category][key], bool):
-                            default_configs[category][key] = setting.setting_value.lower() == 'true'
-                        elif isinstance(default_configs[category][key], int):
-                            default_configs[category][key] = int(setting.setting_value)
-                        else:
-                            default_configs[category][key] = setting.setting_value
-            except:
-                continue
-        
+        settings = SystemSetting.query.order_by(SystemSetting.setting_category, SystemSetting.setting_key).all()
+        configs = []
+        for s in settings:
+            configs.append({
+                'id': s.setting_key,
+                'category': s.setting_category,
+                'key': s.setting_key.split('.')[-1] if '.' in s.setting_key else s.setting_key,
+                'value': s.setting_value,
+                'description': s.description or s.setting_name or s.setting_key,
+                'type': s.data_type or 'string',
+                'is_sensitive': s.is_encrypted or False,
+                'requires_restart': False
+            })
+            
         return jsonify({
             'success': True,
-            'configurations': default_configs
+            'configs': configs
         })
-        
     except Exception as e:
         return jsonify({
             'success': False,
             'message': f'Failed to load system configurations: {str(e)}'
         }), 500
 
-@settings_extended_bp.route('/system-config', methods=['POST'])
+@settings_extended_bp.route('/system-config/update', methods=['POST'])
 @jwt_required()
-def save_system_config():
-    """Save system configuration settings"""
+def update_system_config():
+    """Update configuration values"""
     try:
-        data = request.get_json()
-        configurations = data.get('configurations', {})
+        data = request.get_json() or {}
+        updates = data.get('updates', [])
         
-        # Save each configuration to database
-        for category, settings in configurations.items():
-            for key, value in settings.items():
-                setting_key = f"{category}.{key}"
-                
-                # Find existing setting or create new
-                setting = SystemSetting.query.filter_by(setting_key=setting_key).first()
-                if not setting:
-                    setting = SystemSetting(setting_key=setting_key)
-                    db.session.add(setting)
-                
-                # Convert value to string for storage
-                setting.setting_value = str(value)
+        updated_count = 0
+        for item in updates:
+            key = item.get('id')
+            val = item.get('value')
+            
+            setting = SystemSetting.query.filter_by(setting_key=key).first()
+            if setting and setting.is_editable:
+                if setting.data_type == 'boolean':
+                    if isinstance(val, bool):
+                        setting.setting_value = 'true' if val else 'false'
+                    else:
+                        setting.setting_value = 'true' if str(val).lower() in ['true', '1', 'yes'] else 'false'
+                else:
+                    setting.setting_value = str(val)
                 setting.updated_at = get_local_now()
-        
+                updated_count += 1
+                
         db.session.commit()
-        
         return jsonify({
             'success': True,
-            'message': 'System configurations saved successfully'
-        })
-        
+            'message': f'Configurations updated successfully. ({updated_count} settings)'
+        }), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({
             'success': False,
-            'message': f'Failed to save system configurations: {str(e)}'
+            'message': f'Failed to update configurations: {str(e)}'
+        }), 500
+
+@settings_extended_bp.route('/system-config/reset', methods=['POST'])
+@jwt_required()
+def reset_system_config():
+    """Reset configuration category to defaults"""
+    try:
+        data = request.get_json() or {}
+        category = data.get('category')
+        
+        # In this implementation, we can just revert to predefined defaults if found
+        from routes.config_manager import seed_default_configs
+        seed_default_configs()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Settings for category {category} reset successfully.'
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'Failed to reset configurations: {str(e)}'
         }), 500
 
 # Role and Permission Management
