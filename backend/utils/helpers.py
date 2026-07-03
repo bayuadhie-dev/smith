@@ -239,3 +239,22 @@ def detect_downtime_category(issue_text: str, is_first_entry: bool = False) -> s
     
     return 'others'
 
+
+def get_setting_value(key, default_value):
+    """Retrieve system configuration value by key with a default fallback"""
+    try:
+        from models.settings import SystemSetting
+        setting = SystemSetting.query.filter_by(setting_key=key).first()
+        if setting:
+            value = setting.setting_value
+            if setting.data_type == 'boolean':
+                return value.lower() in ['true', '1', 'yes']
+            elif setting.data_type == 'integer':
+                return int(value)
+            elif setting.data_type == 'float':
+                return float(value)
+            return value
+    except Exception as e:
+        print(f"Error reading setting {key}: {e}")
+    return default_value
+
