@@ -39,8 +39,7 @@ const pino = require('pino');
 const {
     default: makeWASocket,
     useMultiFileAuthState,
-    DisconnectReason,
-    fetchLatestBaileysVersion
+    DisconnectReason
 } = require('@whiskeysockets/baileys');
 
 const app = express();
@@ -85,10 +84,8 @@ let isReady = false;
 
 async function startWhatsApp() {
     const { state, saveCreds } = await useMultiFileAuthState('./.baileys_auth');
-    const { version } = await fetchLatestBaileysVersion();
 
     sock = makeWASocket({
-        version,
         auth: state,
         logger: pino({ level: 'fatal' }),
         printQRInTerminal: false // kita handle manual biar konsisten sama style lama
