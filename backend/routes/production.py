@@ -789,9 +789,10 @@ def get_work_order(id):
                 else:
                     # Final fallback - use default values if no data found
                     # This ensures waste calculation always works
-                    consumption_data['berat_kering_per_pack'] = 0.8  # Default 800g per pack
-                    consumption_data['volume_per_pack'] = 0.5  # Default 500ml per pack
-                    consumption_data['berat_akhir_per_pack'] = 1.2  # Default 1.2kg per pack
+                    from utils.helpers import get_setting_value
+                    consumption_data['berat_kering_per_pack'] = get_setting_value('production.fallback_dry_weight', 0.8)
+                    consumption_data['volume_per_pack'] = get_setting_value('production.fallback_liquid_volume', 0.5)
+                    consumption_data['berat_akhir_per_pack'] = get_setting_value('production.fallback_final_weight', 1.2)
         
         # Build response safely
         response_data = {

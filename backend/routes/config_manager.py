@@ -37,6 +37,30 @@ def seed_default_configs():
             'value': '50000',
             'type': 'integer',
             'description': 'Estimasi biaya bahan baku per unit produk jika tidak didefinisikan di BOM (Rupiah)'
+        },
+        {
+            'key': 'production.fallback_dry_weight',
+            'category': 'production',
+            'name': 'Fallback Dry Weight per Pack',
+            'value': '0.8',
+            'type': 'float',
+            'description': 'Berat kering default per pack (kg) jika spesifikasi produk tidak ditemukan.'
+        },
+        {
+            'key': 'production.fallback_liquid_volume',
+            'category': 'production',
+            'name': 'Fallback Liquid Volume per Pack',
+            'value': '0.5',
+            'type': 'float',
+            'description': 'Volume cairan default per pack (Liter) jika spesifikasi produk tidak ditemukan.'
+        },
+        {
+            'key': 'production.fallback_final_weight',
+            'category': 'production',
+            'name': 'Fallback Final Weight per Pack',
+            'value': '1.2',
+            'type': 'float',
+            'description': 'Berat akhir default per pack (kg) jika spesifikasi produk tidak ditemukan.'
         }
     ]
     
