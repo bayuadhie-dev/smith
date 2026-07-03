@@ -86,8 +86,29 @@ client.on('qr', (qr) => {
     console.log('\n======================================================================\n');
 });
 
-client.on('ready', () => {
+client.on('ready', async () => {
     console.log('✓ WhatsApp Client is READY and connected!');
+    
+    // Print joined groups and their IDs for easy copying
+    try {
+        const chats = await client.getChats();
+        const groups = chats.filter(chat => chat.isGroup);
+        if (groups.length > 0) {
+            console.log('\n=========================================');
+            console.log('  LIST GRUP WHATSAPP ANDA & GROUP ID:');
+            console.log('=========================================');
+            groups.forEach(g => {
+                console.log(`Nama Grup : ${g.name}`);
+                console.log(`Group ID  : ${g.id._serialized}`);
+                console.log('-----------------------------------------');
+            });
+            console.log('=========================================\n');
+        } else {
+            console.log('No joined groups found.');
+        }
+    } catch (err) {
+        console.error('Error fetching chats list:', err);
+    }
 });
 
 client.on('auth_failure', (msg) => {
@@ -111,13 +132,19 @@ app.post('/send-message', apiLimiter, async (req, res) => {
             return res.status(400).json({ success: false, message: 'Missing fields: to and message are required' });
         }
 
-        // Clean phone number format: remove +, spaces, and ensure ends with @c.us
-        let cleanNumber = to.replace(/[^0-9]/g, '');
-        if (!cleanNumber.endsWith('@c.us')) {
-            cleanNumber = `${cleanNumber}@c.us`;
+        let cleanNumber = to.trim();
+        
+        // If it's a group ID, send as-is; otherwise clean and format as standard chat ID
+        if (cleanNumber.endsWith('@g.us')) {
+            console.log(`Sending message to WhatsApp Group JID: ${cleanNumber}`);
+        } else {
+            cleanNumber = cleanNumber.replace(/[^0-9]/g, '');
+            if (!cleanNumber.endsWith('@c.us')) {
+                cleanNumber = `${cleanNumber}@c.us`;
+            }
+            console.log(`Sending message to Chat JID: ${cleanNumber}`);
         }
 
-        console.log(`Sending message to ${cleanNumber}...`);
         const response = await client.sendMessage(cleanNumber, message);
         
         return res.json({ 
