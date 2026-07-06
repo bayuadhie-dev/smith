@@ -64,6 +64,20 @@ const detectCategory = (reason: string, isFirstEntry: boolean = false): string =
   return 'others';
 };
 
+const getDowntimeBgClass = (reason: string, defaultClass: string = '') => {
+  if (!reason || !reason.trim()) return defaultClass;
+  const cat = detectCategory(reason, false);
+  const catColors: Record<string, string> = {
+    mesin: 'bg-red-50 text-red-900 border-red-300 focus:ring-red-500 focus:border-red-500',
+    operator: 'bg-orange-50 text-orange-900 border-orange-300 focus:ring-orange-500 focus:border-orange-500',
+    material: 'bg-blue-50 text-blue-900 border-blue-300 focus:ring-blue-500 focus:border-blue-500',
+    design: 'bg-purple-50 text-purple-900 border-purple-300 focus:ring-purple-500 focus:border-purple-500',
+    idle: 'bg-yellow-50 text-yellow-900 border-yellow-300 focus:ring-yellow-500 focus:border-yellow-500',
+    others: 'bg-gray-50 text-gray-900 border-gray-200 focus:ring-gray-500 focus:border-gray-500'
+  };
+  return catColors[cat] || defaultClass;
+};
+
 /* ═══════════ Helpers ═══════════ */
 const mkSlit = (): SlittingRow => ({ no_roll: '', width: 0, weight: 0, length: 0, thick: 0, slitting: Array(10).fill(0), loss: 0, total_length: 0, total_weight: 0 })
 const mkPerf = (): PerforatingRow => ({ no_roll: '', width: 0, weight: 0, length: 0, repeat_length: 0, repeat_width: 0 })
@@ -583,8 +597,8 @@ export default function ConvertingInput() {
                 {bagRows.map((row, idx) => (
                   <tr key={idx} className="hover:bg-slate-50">
                     <td className={`${tdc} text-center text-xs text-slate-400`}>{row.no}</td>
-                    <td className={`${tdc} bg-yellow-50/20`}><input value={row.plan_downtime} onChange={e => setBagRows(rs => rs.map((r, i) => i === idx ? { ...r, plan_downtime: e.target.value } : r))} className={`${ic} w-28`} placeholder="Keterangan" /></td>
-                    <td className={`${tdc} bg-red-50/20`}><input value={row.unplan_downtime} onChange={e => setBagRows(rs => rs.map((r, i) => i === idx ? { ...r, unplan_downtime: e.target.value } : r))} className={`${ic} w-28`} placeholder="Keterangan" /></td>
+                    <td className={`${tdc} bg-yellow-50/20`}><input value={row.plan_downtime} onChange={e => setBagRows(rs => rs.map((r, i) => i === idx ? { ...r, plan_downtime: e.target.value } : r))} className={`${ic} w-28 ${getDowntimeBgClass(row.plan_downtime)}`} placeholder="Keterangan" /></td>
+                    <td className={`${tdc} bg-red-50/20`}><input value={row.unplan_downtime} onChange={e => setBagRows(rs => rs.map((r, i) => i === idx ? { ...r, unplan_downtime: e.target.value } : r))} className={`${ic} w-28 ${getDowntimeBgClass(row.unplan_downtime)}`} placeholder="Keterangan" /></td>
                     <td className={tdc}><input type="number" value={row.total_minutes || ''} onChange={e => setBagRows(rs => rs.map((r, i) => i === idx ? { ...r, total_minutes: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
                     <td className={tdc}><input value={row.no_roll} onChange={e => setBagRows(rs => rs.map((r, i) => i === idx ? { ...r, no_roll: e.target.value } : r))} className={`${ic} w-24`} /></td>
                     <td className={tdc}><input type="number" step="0.01" value={row.roll_weight || ''} onChange={e => setBagRows(rs => rs.map((r, i) => i === idx ? { ...r, roll_weight: N(e.target.value) } : r))} className={`${ic} w-20`} /></td>
