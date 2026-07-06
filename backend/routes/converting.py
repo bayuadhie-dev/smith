@@ -329,7 +329,7 @@ def delete_converting_production(prod_id):
 # ============ DASHBOARD ============
 
 @converting_bp.route('/api/converting/dashboard', methods=['GET'])
-@jwt_required()
+@jwt_required(optional=True)
 def get_converting_dashboard():
     """Get converting dashboard data"""
     try:
@@ -470,7 +470,7 @@ def get_converting_daily_report():
 
 
 @converting_bp.route('/api/converting/monthly-summary', methods=['GET'])
-@jwt_required()
+@jwt_required(optional=True)
 def get_converting_monthly_summary():
     """Get weekly or monthly summary for converting module"""
     try:
