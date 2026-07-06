@@ -393,6 +393,14 @@ def update_converting_production(prod_id):
             production.notes = data['notes']
         if 'operator_name' in data:
             production.operator_name = data['operator_name']
+        if 'product_name' in data:
+            production.product_name = data['product_name']
+        if 'specification' in data:
+            production.specification = data['specification']
+        if 'njo' in data:
+            production.njo = data['njo']
+        if 'loss_kg' in data:
+            production.loss_kg = float(data['loss_kg']) if data['loss_kg'] is not None else None
             
         db.session.commit()
         
@@ -466,7 +474,12 @@ def get_converting_dashboard():
                     'reject_quantity': float(p.reject_quantity) if p.reject_quantity else 0,
                     'efficiency_rate': float(p.efficiency_rate) if p.efficiency_rate else 0,
                     'operator_name': p.operator_name,
-                    'downtime_entries': p.downtime_entries
+                    'downtime_entries': p.downtime_entries,
+                    'specification': p.specification,
+                    'njo': p.njo,
+                    'notes': p.notes,
+                    'loss_kg': float(p.loss_kg) if p.loss_kg else 0,
+                    'machine_data': p.machine_data_dict
                 })
                 machine_data[p.machine_id]['total_output'] += float(p.actual_quantity) if p.actual_quantity else 0
                 machine_data[p.machine_id]['total_good'] += float(p.good_quantity) if p.good_quantity else 0
