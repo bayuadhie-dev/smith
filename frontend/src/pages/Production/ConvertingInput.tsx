@@ -172,18 +172,47 @@ export default function ConvertingInput() {
       else if (mtype === 'bagmaker') {
         const tA = bagRows.reduce((s, r) => s + N(r.output_grade_a), 0)
         const tC = bagRows.reduce((s, r) => s + N(r.output_grade_c), 0)
-        machine_data = { production_hour_minutes: prodHourMin, machine_speed: machineSpeed, rows: bagRows, total_grade_a: tA, total_grade_c: tC }
+        
+        // Extract downtime entries from rows
+        const extractedEntries: any[] = []
+        bagRows.forEach(row => {
+          const rowMinutes = N(row.total_minutes)
+          if (rowMinutes > 0) {
+            const reason = (row.plan_downtime || row.unplan_downtime || '').trim()
+            if (reason) {
+              extractedEntries.push({
+                reason: reason,
+                duration_minutes: rowMinutes,
+                frequency: 1,
+                category: detectCategory(reason, false)
+              })
+            }
+          }
+        })
+        const totalDowntime = extractedEntries.reduce((s, e) => s + e.duration_minutes, 0)
+
+        machine_data = { 
+          production_hour_minutes: prodHourMin, 
+          machine_speed: machineSpeed, 
+          rows: bagRows, 
+          total_grade_a: tA, 
+          total_grade_c: tC,
+          downtime_minutes: totalDowntime,
+          downtime_entries: extractedEntries
+        }
         fA = tA; fB = tC; fL = 0
       }
       
-      // Inject downtime details
-      machine_data.downtime_minutes = totalDowntime || downtimeMin
-      machine_data.downtime_entries = downtimeEntries.map(e => ({
-        reason: e.reason,
-        duration_minutes: N(e.duration_minutes),
-        frequency: N(e.frequency),
-        category: e.category
-      }))
+      // Inject downtime details for other machine types
+      if (mtype !== 'bagmaker') {
+        machine_data.downtime_minutes = totalDowntime || downtimeMin
+        machine_data.downtime_entries = downtimeEntries.map(e => ({
+          reason: e.reason,
+          duration_minutes: N(e.duration_minutes),
+          frequency: N(e.frequency),
+          category: e.category
+        }))
+      }
       
       await axiosInstance.post('/api/converting/production', { 
         production_date: productionDate, 
@@ -580,7 +609,7 @@ export default function ConvertingInput() {
       </>)}
 
       {/* SECTION INPUT DOWNTIME (SAMA DENGAN INPUT PRODUKSI UTAMA) */}
-      {machineId && (
+      {machineId && mtype !== 'bagmaker' && (
         <div className={sc}>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
