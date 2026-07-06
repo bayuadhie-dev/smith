@@ -87,19 +87,85 @@ const ConvertingDashboard: React.FC = () => {
     others: { label: 'Lainnya', bgColor: 'bg-gray-50/50', textColor: 'text-gray-700', borderColor: 'border-gray-200' }
   };
 
-  const detectCategory = (reason: string): string => {
-    const text = reason.toLowerCase();
-    const mesinKeywords = ['mesin', 'trouble', 'rusak', 'error', 'bocor', 'kabel', 'pompa', 'sparepart', 'part', 'pisau', 'ganti pisau', 'sensor', 'pneumatic', 'piston', 'rantai', 'gearbox', 'v-belt', 'belt', 'bearing', 'pemanas', 'heater', 'thermo', 'dinamo', 'motor', 'inverter', 'patah', 'selang', 'olil', 'grease', 'kebocoran', 'trip', 'pln', 'listrik mati', 'genset'];
-    const operatorKeywords = ['human error', 'keluar jalur (sambungan)', 'kesalahan operator', 'kurang teliti', 'lupa', 'operator error', 'salah input', 'salah pasang', 'salah setting', 'salah ukur', 'sambungan', 'setting', 'telat', 'tidak fokus', 'kebingungan', 'lambat', 'training'];
-    const materialKeywords = ['bahan baku', 'bahan cacat', 'bahan habis', 'bahan kurang', 'bahan rusak', 'benang habis', 'corak salah', 'defect', 'kain kusut', 'kain melipat', 'kain rusak', 'kain tipis', 'karton core', 'lem habis', 'material kurang', 'material lambat', 'material rusak', 'packing habis', 'plastik habis', 'rol peang', 'roll peang', 'stiker habis', 'tinta habis', 'tunggu kain', 'tunggu core', 'tunggu lem', 'tunggu plastik', 'tunggu stiker'];
-    const designKeywords = ['corak', 'desain', 'design', 'ganti corak', 'ganti desain', 'ganti design', 'ganti gambar', 'ganti motif', 'ganti ukuran', 'motif', 'setting motif', 'setting ukuran', 'ukuran salah'];
-    const idleKeywords = ['break', 'istirahat', 'makan', 'minum', 'shalat', 'sholat', 'solat', 'toilet', 'tunggu instruksi', 'tunggu SPK', 'belum ada order', 'order habis', 'tunggu jadwal', 'tunggu spv', 'tunggu supervisor', 'koordinasi', 'meeting', 'briefing', 'senam', 'bersih-bersih', '5S', 'clean up', 'pemeliharaan mandiri'];
+  const CATEGORY_KEYWORDS: Record<string, string[]> = {
+    idle: [
+      'ambil kain', 'ambil stiker', 'box belum datang', 'box habis', 'buat carton', 'idle', 
+      'ingredient habis', 'kain belum datang', 'kain habis', 'karton habis', 'keranjang habis', 
+      'label habis', 'lem habis', 'listrik padam', 'menganggur', 'menghabiskan order', 
+      'menhabiskan order', 'menunggu kain', 'menunggu mixing', 'menunggu obat', 'menunggu packaging', 
+      'menunggu stiker', 'menunggu tinta', 'menyiapkan produk', 'mixing belum siap', 'no order', 
+      'nunggu kain', 'nunggu mixing', 'nunggu obat', 'nunggu packaging', 'nunggu stiker', 
+      'nunggu tinta', 'obat belum datang', 'obat habis', 'operator dialihkan ke mc 7', 
+      'operator toilet', 'operator istirahat', 'operator makan',
+      'opr dialihkan ke mc 11', 'opr jalan di mc 10', 'packaging belum datang', 'packaging habis', 
+      'packing habis', 'persiapan produk', 'produk habis ( opr dialihkan ke packing manual )', 
+      'siapkan produk', 'standby', 'stiker belum datang', 'stiker habis', 'susun produk', 
+      'tidak ada order', 'tinta habis', 'troli habis', 'trolley habis', 'tunggu approval', 
+      'tunggu bahan', 'tunggu bahan kimia', 'tunggu box', 'tunggu glove', 'tunggu gloves', 
+      'tunggu hasil qc', 'tunggu ingredient', 'tunggu instruksi', 'tunggu kain', 'tunggu karton', 
+      'tunggu keranjang', 'tunggu label', 'tunggu lem', 'tunggu material', 'tunggu mixing', 
+      'tunggu obat', 'tunggu order', 'tunggu packaging', 'tunggu produk', 'tunggu qc', 
+      'tunggu sarung tangan', 'tunggu stiker', 'tunggu temperatur', 'tunggu temperatur stabil', 
+      'tunggu temperatur', 'tunggu temperatur stabil', 'tunggu tinta', 'tunggu troli', 
+      'tunggu trolley', 'waiting for', 'break', 'istirahat', 'makan', 'minum', 'shalat', 'sholat', 'solat', 'toilet'
+    ],
+    mesin: [
+      'angin bocor', 'angin drop', 'angin habis', 'bak mesin', 'baut stacking lepas', 'bearing', 
+      'belt putus', 'breakdown', 'calibration', 'cartridge inkjet', 'catridge bocor', 'compressor', 
+      'control panel error', 'conveyor', 'dosing', 'dossing', 'end seal', 'endseal', 'exhaust error', 
+      'exouse error', 'feeding', 'folding', 'ganti sparepart', 'guset', 'head inkjet', 'hidrolik', 
+      'home position error', 'hydraulic', 'ink jet', 'ink-jet', 'inkjet', 'inkjet error', 
+      'inkjet macet', 'jarum bengkok', 'jarum patah', 'kain keluar jalur', 'kain menggulung', 
+      'kalibrasi', 'ke seal', 'keluar jalur', 'keluar jalur (bak mesin', 'keseal', 'lebar kain', 
+      'lebar kain tidak maksimal', 'lipatan', 'listrik mati', 'maintenance', 
+      'mc pompa obat tanki bocor', 'mc press', 'menggulung', 'merge phase error', 'mesin error', 
+      'mesin macet', 'mesin mati', 'mesin rusak', 'mesin trouble', 'motor rusak', 'needle', 
+      'overheat', 'overheating', 'packaging panjang pendek', 'packaging putus', 
+      'pendorong kain patah', 'penjepit', 'perbaikan', 'pisau', 'pneumatic', 'posisi stiker', 
+      'pound', 'power failure', 'print error ( printing buram )', 'printer inkjet', 'produk bocor', 
+      'pusher', 'rantai lepas', 'relay', 'seal bawah', 'seal bocor', 'seal error ( produk sobek )', 
+      'seal melipat', 'seal rapuh', 'seal samping', 'selang', 'sensor', 'setting inkjet', 'simetris', 
+      'simetris error', 'sparepart', 'stacker', 'stacking', 'stiker double', 'stiker putus', 'suhu', 
+      'tekanan angin', 'temperature', 'tension', 'terseal', 'tidak maksimal', 'tidak rapi', 
+      'tidak stabil', 'timbangan error', 'tinta inkjet', 'tumpukan', 'vanbelt'
+    ],
+    material: [
+      'bahan baku', 'bahan cacat', 'bahan habis', 'bahan kurang', 'bahan rusak', 'benang habis', 
+      'benang putus', 'kain cacat', 'kain gembos', 'kain rusak', 'kain terlalu tipis', 
+      'kain tidak sesuai', 'kain tipis', 'keluar jalur (kain gembos', 
+      'keluar jalur (kain terlalu tipis', 'keluar jalur (kain tidak sesuai', 'kualitas kain', 
+      'material cacat', 'material habis', 'material kurang', 'material rusak', 'raw material'
+    ],
+    design: [
+      'changeover', 'cleaning', 'desain salah', 'design error', 'ganti', 'ganti karton', 
+      'ganti label', 'ganti order', 'ganti packaging', 'ganti produk', 'ganti stiker', 'pasang kain', 
+      'pasang packaging', 'pasang stiker', 'pattern salah', 'persiapan produksi', 'pola salah', 
+      'prototype', 're packing', 're-pack', 'repack', 'repacking', 'revisi desain', 'revisi design', 
+      'sample', 'sanitasi', 'setting dan tunggu temperatur', 'setting tunggu temperatur', 
+      'spec salah', 'spesifikasi salah', 'testing design', 'trial', 'ukuran salah', 'warmup'
+    ],
+    operator: [
+      'human error', 'keluar jalur (sambungan)', 'kesalahan operator', 'kurang teliti', 'lupa', 
+      'operator error', 'salah input', 'salah pasang', 'salah setting', 'salah ukur', 'sambungan', 
+      'setting', 'telat', 'tidak fokus'
+    ],
+    others: []
+  };
 
-    if (mesinKeywords.some(kw => text.includes(kw))) return 'mesin';
-    if (operatorKeywords.some(kw => text.includes(kw))) return 'operator';
-    if (materialKeywords.some(kw => text.includes(kw))) return 'material';
-    if (designKeywords.some(kw => text.includes(kw))) return 'design';
-    if (idleKeywords.some(kw => text.includes(kw))) return 'idle';
+  const detectCategory = (reason: string): string => {
+    const lowerReason = reason.toLowerCase();
+    if (lowerReason.includes('setting mc') || lowerReason.includes('setting mesin')) {
+      return 'mesin';
+    }
+    const categoryOrder = ['idle', 'operator', 'material', 'mesin', 'design', 'others'];
+    for (const category of categoryOrder) {
+      const keywords = CATEGORY_KEYWORDS[category] || [];
+      for (const keyword of keywords) {
+        if (lowerReason.includes(keyword.toLowerCase())) {
+          return category;
+        }
+      }
+    }
     return 'others';
   };
 

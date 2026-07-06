@@ -29,34 +29,80 @@ interface DowntimeEntry {
 }
 
 const CATEGORY_KEYWORDS: Record<string, string[]> = {
-  idle: ['tunggu', 'listrik', 'mati lampu', 'padam', 'menunggu'],
-  operator: ['operator', 'makan', 'toilet', 'istirahat', 'sholat', 'sakit', 'izin', 'absent', 'ganti shift'],
-  material: ['kain', 'benang', 'habis', 'lem', 'stiker', 'baku', 'roll', 'bahan'],
-  design: ['changeover', 'ganti produk', 'ganti ukuran', 'ganti pola', 'trial', 'sample'],
-  mesin: ['setting', 'rusak', 'error', 'trouble', 'macet', 'sparepart', 'pisau', 'sensor', 'suhu', 'seal', 'inkjet', 'belt', 'rantai', 'motor']
-};
-
-const DOWNTIME_CATEGORIES = {
-  mesin: { label: 'Mesin', color: 'red', bgColor: 'bg-red-50', borderColor: 'border-red-300', textColor: 'text-red-700' },
-  operator: { label: 'Operator', color: 'orange', bgColor: 'bg-orange-50', borderColor: 'border-orange-300', textColor: 'text-orange-700' },
-  material: { label: 'Raw Material', color: 'yellow', bgColor: 'bg-yellow-50', borderColor: 'border-yellow-300', textColor: 'text-yellow-700' },
-  design: { label: 'Design Change', color: 'blue', bgColor: 'bg-blue-50', borderColor: 'border-blue-300', textColor: 'text-blue-700' },
-  idle: { label: 'Idle Time', color: 'orange', bgColor: 'bg-orange-50', borderColor: 'border-orange-300', textColor: 'text-orange-700' },
-  others: { label: 'Others', color: 'gray', bgColor: 'bg-gray-50', borderColor: 'border-gray-200', textColor: 'text-gray-600' }
+  idle: [
+    'ambil kain', 'ambil stiker', 'box belum datang', 'box habis', 'buat carton', 'idle', 
+    'ingredient habis', 'kain belum datang', 'kain habis', 'karton habis', 'keranjang habis', 
+    'label habis', 'lem habis', 'listrik padam', 'menganggur', 'menghabiskan order', 
+    'menhabiskan order', 'menunggu kain', 'menunggu mixing', 'menunggu obat', 'menunggu packaging', 
+    'menunggu stiker', 'menunggu tinta', 'menyiapkan produk', 'mixing belum siap', 'no order', 
+    'nunggu kain', 'nunggu mixing', 'nunggu obat', 'nunggu packaging', 'nunggu stiker', 
+    'nunggu tinta', 'obat belum datang', 'obat habis', 'operator dialihkan ke mc 7', 
+    'operator toilet', 'operator istirahat', 'operator makan',
+    'opr dialihkan ke mc 11', 'opr jalan di mc 10', 'packaging belum datang', 'packaging habis', 
+    'packing habis', 'persiapan produk', 'produk habis ( opr dialihkan ke packing manual )', 
+    'siapkan produk', 'standby', 'stiker belum datang', 'stiker habis', 'susun produk', 
+    'tidak ada order', 'tinta habis', 'troli habis', 'trolley habis', 'tunggu approval', 
+    'tunggu bahan', 'tunggu bahan kimia', 'tunggu box', 'tunggu glove', 'tunggu gloves', 
+    'tunggu hasil qc', 'tunggu ingredient', 'tunggu instruksi', 'tunggu kain', 'tunggu karton', 
+    'tunggu keranjang', 'tunggu label', 'tunggu lem', 'tunggu material', 'tunggu mixing', 
+    'tunggu obat', 'tunggu order', 'tunggu packaging', 'tunggu produk', 'tunggu qc', 
+    'tunggu sarung tangan', 'tunggu stiker', 'tunggu temperatur', 'tunggu temperatur stabil', 
+    'tunggu temperatur', 'tunggu temperatur stabil', 'tunggu tinta', 'tunggu troli', 
+    'tunggu trolley', 'waiting for', 'break', 'istirahat', 'makan', 'minum', 'shalat', 'sholat', 'solat', 'toilet'
+  ],
+  mesin: [
+    'angin bocor', 'angin drop', 'angin habis', 'bak mesin', 'baut stacking lepas', 'bearing', 
+    'belt putus', 'breakdown', 'calibration', 'cartridge inkjet', 'catridge bocor', 'compressor', 
+    'control panel error', 'conveyor', 'dosing', 'dossing', 'end seal', 'endseal', 'exhaust error', 
+    'exouse error', 'feeding', 'folding', 'ganti sparepart', 'guset', 'head inkjet', 'hidrolik', 
+    'home position error', 'hydraulic', 'ink jet', 'ink-jet', 'inkjet', 'inkjet error', 
+    'inkjet macet', 'jarum bengkok', 'jarum patah', 'kain keluar jalur', 'kain menggulung', 
+    'kalibrasi', 'ke seal', 'keluar jalur', 'keluar jalur (bak mesin', 'keseal', 'lebar kain', 
+    'lebar kain tidak maksimal', 'lipatan', 'listrik mati', 'maintenance', 
+    'mc pompa obat tanki bocor', 'mc press', 'menggulung', 'merge phase error', 'mesin error', 
+    'mesin macet', 'mesin mati', 'mesin rusak', 'mesin trouble', 'motor rusak', 'needle', 
+    'overheat', 'overheating', 'packaging panjang pendek', 'packaging putus', 
+    'pendorong kain patah', 'penjepit', 'perbaikan', 'pisau', 'pneumatic', 'posisi stiker', 
+    'pound', 'power failure', 'print error ( printing buram )', 'printer inkjet', 'produk bocor', 
+    'pusher', 'rantai lepas', 'relay', 'seal bawah', 'seal bocor', 'seal error ( produk sobek )', 
+    'seal melipat', 'seal rapuh', 'seal samping', 'selang', 'sensor', 'setting inkjet', 'simetris', 
+    'simetris error', 'sparepart', 'stacker', 'stacking', 'stiker double', 'stiker putus', 'suhu', 
+    'tekanan angin', 'temperature', 'tension', 'terseal', 'tidak maksimal', 'tidak rapi', 
+    'tidak stabil', 'timbangan error', 'tinta inkjet', 'tumpukan', 'vanbelt'
+  ],
+  material: [
+    'bahan baku', 'bahan cacat', 'bahan habis', 'bahan kurang', 'bahan rusak', 'benang habis', 
+    'benang putus', 'kain cacat', 'kain gembos', 'kain rusak', 'kain terlalu tipis', 
+    'kain tidak sesuai', 'kain tipis', 'keluar jalur (kain gembos', 
+    'keluar jalur (kain terlalu tipis', 'keluar jalur (kain tidak sesuai', 'kualitas kain', 
+    'material cacat', 'material habis', 'material kurang', 'material rusak', 'raw material'
+  ],
+  design: [
+    'changeover', 'cleaning', 'desain salah', 'design error', 'ganti', 'ganti karton', 
+    'ganti label', 'ganti order', 'ganti packaging', 'ganti produk', 'ganti stiker', 'pasang kain', 
+    'pasang packaging', 'pasang stiker', 'pattern salah', 'persiapan produksi', 'pola salah', 
+    'prototype', 're packing', 're-pack', 'repack', 'repacking', 'revisi desain', 'revisi design', 
+    'sample', 'sanitasi', 'setting dan tunggu temperatur', 'setting tunggu temperatur', 
+    'spec salah', 'spesifikasi salah', 'testing design', 'trial', 'ukuran salah', 'warmup'
+  ],
+  operator: [
+    'human error', 'keluar jalur (sambungan)', 'kesalahan operator', 'kurang teliti', 'lupa', 
+    'operator error', 'salah input', 'salah pasang', 'salah setting', 'salah ukur', 'sambungan', 
+    'setting', 'telat', 'tidak fokus'
+  ],
+  others: []
 };
 
 const detectCategory = (reason: string, isFirstEntry: boolean = false): string => {
   const lowerReason = reason.toLowerCase();
-  
   if (lowerReason.includes('setting mc') || lowerReason.includes('setting mesin')) {
     return isFirstEntry ? 'design' : 'mesin';
   }
-
-  const categoryOrder = ['idle', 'operator', 'material', 'mesin', 'design'];
+  const categoryOrder = ['idle', 'operator', 'material', 'mesin', 'design', 'others'];
   for (const category of categoryOrder) {
-    const keywords = CATEGORY_KEYWORDS[category];
+    const keywords = CATEGORY_KEYWORDS[category] || [];
     for (const keyword of keywords) {
-      if (lowerReason.includes(keyword)) {
+      if (lowerReason.includes(keyword.toLowerCase())) {
         return category;
       }
     }
@@ -64,9 +110,34 @@ const detectCategory = (reason: string, isFirstEntry: boolean = false): string =
   return 'others';
 };
 
-const getDowntimeBgClass = (reason: string, defaultClass: string = '') => {
+const detectPlannedCategory = (reason: string): string => {
+  const lowerReason = reason.toLowerCase();
+  const order = ['design', 'material', 'operator', 'others'];
+  for (const cat of order) {
+    const keywords = CATEGORY_KEYWORDS[cat] || [];
+    for (const keyword of keywords) {
+      if (lowerReason.includes(keyword.toLowerCase())) {
+        return cat;
+      }
+    }
+  }
+  return 'others';
+};
+
+const detectUnplannedCategory = (reason: string): string => {
+  const lowerReason = reason.toLowerCase();
+  const keywords = CATEGORY_KEYWORDS['idle'] || [];
+  for (const keyword of keywords) {
+    if (lowerReason.includes(keyword.toLowerCase())) {
+      return 'idle';
+    }
+  }
+  return 'mesin';
+};
+
+const getDowntimeBgClass = (reason: string, isPlanned: boolean, defaultClass: string = '') => {
   if (!reason || !reason.trim()) return defaultClass;
-  const cat = detectCategory(reason, false);
+  const cat = isPlanned ? detectPlannedCategory(reason) : detectUnplannedCategory(reason);
   const catColors: Record<string, string> = {
     mesin: 'bg-red-50 text-red-900 border-red-300 focus:ring-red-500 focus:border-red-500',
     operator: 'bg-orange-50 text-orange-900 border-orange-300 focus:ring-orange-500 focus:border-orange-500',
@@ -192,13 +263,21 @@ export default function ConvertingInput() {
         bagRows.forEach(row => {
           const rowMinutes = N(row.total_minutes)
           if (rowMinutes > 0) {
-            const reason = (row.plan_downtime || row.unplan_downtime || '').trim()
-            if (reason) {
+            if (row.plan_downtime && row.plan_downtime.trim()) {
+              const reason = row.plan_downtime.trim()
               extractedEntries.push({
                 reason: reason,
                 duration_minutes: rowMinutes,
                 frequency: 1,
-                category: detectCategory(reason, false)
+                category: detectPlannedCategory(reason)
+              })
+            } else if (row.unplan_downtime && row.unplan_downtime.trim()) {
+              const reason = row.unplan_downtime.trim()
+              extractedEntries.push({
+                reason: reason,
+                duration_minutes: rowMinutes,
+                frequency: 1,
+                category: detectUnplannedCategory(reason)
               })
             }
           }
@@ -597,8 +676,8 @@ export default function ConvertingInput() {
                 {bagRows.map((row, idx) => (
                   <tr key={idx} className="hover:bg-slate-50">
                     <td className={`${tdc} text-center text-xs text-slate-400`}>{row.no}</td>
-                    <td className={`${tdc} bg-yellow-50/20`}><input value={row.plan_downtime} onChange={e => setBagRows(rs => rs.map((r, i) => i === idx ? { ...r, plan_downtime: e.target.value } : r))} className={`${ic} w-28 ${getDowntimeBgClass(row.plan_downtime)}`} placeholder="Keterangan" /></td>
-                    <td className={`${tdc} bg-red-50/20`}><input value={row.unplan_downtime} onChange={e => setBagRows(rs => rs.map((r, i) => i === idx ? { ...r, unplan_downtime: e.target.value } : r))} className={`${ic} w-28 ${getDowntimeBgClass(row.unplan_downtime)}`} placeholder="Keterangan" /></td>
+                    <td className={`${tdc} bg-yellow-50/20`}><input value={row.plan_downtime} onChange={e => setBagRows(rs => rs.map((r, i) => i === idx ? { ...r, plan_downtime: e.target.value } : r))} className={`${ic} w-28 ${getDowntimeBgClass(row.plan_downtime, true)}`} placeholder="Keterangan" /></td>
+                    <td className={`${tdc} bg-red-50/20`}><input value={row.unplan_downtime} onChange={e => setBagRows(rs => rs.map((r, i) => i === idx ? { ...r, unplan_downtime: e.target.value } : r))} className={`${ic} w-28 ${getDowntimeBgClass(row.unplan_downtime, false)}`} placeholder="Keterangan" /></td>
                     <td className={tdc}><input type="number" value={row.total_minutes || ''} onChange={e => setBagRows(rs => rs.map((r, i) => i === idx ? { ...r, total_minutes: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
                     <td className={tdc}><input value={row.no_roll} onChange={e => setBagRows(rs => rs.map((r, i) => i === idx ? { ...r, no_roll: e.target.value } : r))} className={`${ic} w-24`} /></td>
                     <td className={tdc}><input type="number" step="0.01" value={row.roll_weight || ''} onChange={e => setBagRows(rs => rs.map((r, i) => i === idx ? { ...r, roll_weight: N(e.target.value) } : r))} className={`${ic} w-20`} /></td>
