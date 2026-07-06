@@ -234,7 +234,11 @@ const ConvertingDashboard: React.FC = () => {
                       {machine.shifts.map((shift) => (
                         <div key={shift.id} className="flex items-center justify-between py-2 border-b last:border-0">
                           <div>
-                            <p className="font-medium text-slate-700">{shift.shift.replace('_', ' ').toUpperCase()}</p>
+                            <p className="font-medium text-slate-700">
+                              {typeof shift.shift === 'string' 
+                                ? shift.shift.replace('_', ' ').toUpperCase() 
+                                : `SHIFT ${shift.shift}`}
+                            </p>
                             <p className="text-xs text-slate-500">{shift.product_name}</p>
                             {shift.operator_name && (
                               <p className="text-xs text-slate-400">Op: {shift.operator_name}</p>
