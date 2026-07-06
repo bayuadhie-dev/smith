@@ -113,3 +113,58 @@ def test_converting_monthly_summary_endpoint(client, app, auth_headers):
         db.session.delete(machine)
         db.session.commit()
 
+
+def test_converting_downtime_categorization_and_properties(client, app, auth_headers):
+    """Test detailed downtime entries, auto-categorization, and model properties in Converting"""
+    with app.app_context():
+        # 1. Create a test machine
+        machine = ConvertingMachine(
+            code='TEST-MC-DT-01',
+            name='Test Machine Downtime',
+            machine_type='cutting',
+            default_speed=80.0,
+            target_efficiency=80.0
+        )
+        db.session.add(machine)
+        db.session.commit()
+
+        # 2. Test create endpoint with downtime entries
+        payload = {
+            'production_date': '2026-07-06',
+            'shift': 2,
+            'machine_id': machine.id,
+            'grade_a': 200,
+            'grade_b': 10,
+            'operator_name': 'Operator Test',
+            'notes': 'Test downtime',
+            'downtime_entries': [
+                {'reason': 'pisau cutting rusak', 'duration_minutes': 15, 'frequency': 2}, # mesin: 30 mins
+                {'reason': 'tunggu kain dari warehouse', 'duration_minutes': 10, 'frequency': 1}, # idle: 10 mins
+                {'reason': 'kesalahan operator', 'duration_minutes': 5, 'frequency': 1} # operator: 5 mins
+            ]
+        }
+        res = client.post('/api/converting/production', json=payload, headers=auth_headers)
+        assert res.status_code == 201
+        
+        # 3. Load record and assert on dynamic model properties
+        prod = ConvertingProduction.query.filter_by(machine_id=machine.id).first()
+        assert prod is not None
+        assert prod.downtime_minutes == 45 # 15*2 + 10 + 5
+        assert prod.downtime_mesin == 30
+        assert prod.downtime_idle == 10
+        assert prod.downtime_operator == 5
+        assert prod.downtime_material == 0
+        assert prod.downtime_design == 0
+        assert len(prod.downtime_entries) == 3
+        
+        # Verify detected categories in array
+        assert prod.downtime_entries[0]['category'] == 'mesin'
+        assert prod.downtime_entries[1]['category'] == 'idle'
+        assert prod.downtime_entries[2]['category'] == 'operator'
+
+        # 4. Clean up
+        db.session.delete(prod)
+        db.session.delete(machine)
+        db.session.commit()
+
+

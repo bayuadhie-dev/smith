@@ -249,7 +249,55 @@ def create_converting_production():
         )
         
         # Set machine-specific data as JSON
-        machine_data = data.get('machine_data')
+        machine_data = data.get('machine_data') or {}
+        
+        # Process downtime entries if provided
+        downtime_entries = data.get('downtime_entries') or machine_data.get('downtime_entries', [])
+        if downtime_entries:
+            from utils.helpers import detect_downtime_category
+            
+            downtime_by_category = {
+                'mesin': 0,
+                'operator': 0,
+                'material': 0,
+                'design': 0,
+                'idle': 0,
+                'others': 0
+            }
+            
+            processed_entries = []
+            total_downtime_mins = 0
+            
+            for entry in downtime_entries:
+                reason = entry.get('reason', '')
+                duration = int(entry.get('duration_minutes', 0))
+                frequency = int(entry.get('frequency', 1))
+                
+                entry_total = duration * frequency
+                total_downtime_mins += entry_total
+                
+                detected_cat = detect_downtime_category(reason)
+                if detected_cat == 'istirahat':
+                    detected_cat = 'others'
+                    
+                downtime_by_category[detected_cat] = downtime_by_category.get(detected_cat, 0) + entry_total
+                
+                processed_entries.append({
+                    'reason': reason,
+                    'duration_minutes': duration,
+                    'frequency': frequency,
+                    'category': detected_cat
+                })
+                
+            machine_data['downtime_entries'] = processed_entries
+            machine_data['downtime_minutes'] = total_downtime_mins
+            for cat, mins in downtime_by_category.items():
+                machine_data[f'downtime_{cat}'] = mins
+                
+        # Also sync downtime_minutes directly if no entries but total is passed
+        elif 'downtime_minutes' in data:
+            machine_data['downtime_minutes'] = int(data['downtime_minutes'])
+            
         if machine_data:
             production.set_machine_data(machine_data)
         
@@ -286,8 +334,51 @@ def update_converting_production(prod_id):
         if 'reject_quantity' in data:
             production.grade_b = float(data['reject_quantity'])
             
-        if 'downtime_minutes' in data:
+        if 'downtime_entries' in data or ('machine_data' in data and 'downtime_entries' in data['machine_data']):
+            downtime_entries = data.get('downtime_entries') or data.get('machine_data', {}).get('downtime_entries', [])
+            from utils.helpers import detect_downtime_category
+            
+            downtime_by_category = {
+                'mesin': 0,
+                'operator': 0,
+                'material': 0,
+                'design': 0,
+                'idle': 0,
+                'others': 0
+            }
+            
+            processed_entries = []
+            total_downtime_mins = 0
+            
+            for entry in downtime_entries:
+                reason = entry.get('reason', '')
+                duration = int(entry.get('duration_minutes', 0))
+                frequency = int(entry.get('frequency', 1))
+                
+                entry_total = duration * frequency
+                total_downtime_mins += entry_total
+                
+                detected_cat = detect_downtime_category(reason)
+                if detected_cat == 'istirahat':
+                    detected_cat = 'others'
+                    
+                downtime_by_category[detected_cat] = downtime_by_category.get(detected_cat, 0) + entry_total
+                
+                processed_entries.append({
+                    'reason': reason,
+                    'duration_minutes': duration,
+                    'frequency': frequency,
+                    'category': detected_cat
+                })
+                
+            mdata['downtime_entries'] = processed_entries
+            mdata['downtime_minutes'] = total_downtime_mins
+            for cat, mins in downtime_by_category.items():
+                mdata[f'downtime_{cat}'] = mins
+                
+        elif 'downtime_minutes' in data:
             mdata['downtime_minutes'] = int(data['downtime_minutes'])
+            
         if 'idle_time' in data:
             mdata['idle_time'] = int(data['idle_time'])
         if 'machine_speed' in data:
@@ -374,7 +465,8 @@ def get_converting_dashboard():
                     'good_quantity': float(p.good_quantity) if p.good_quantity else 0,
                     'reject_quantity': float(p.reject_quantity) if p.reject_quantity else 0,
                     'efficiency_rate': float(p.efficiency_rate) if p.efficiency_rate else 0,
-                    'operator_name': p.operator_name
+                    'operator_name': p.operator_name,
+                    'downtime_entries': p.downtime_entries
                 })
                 machine_data[p.machine_id]['total_output'] += float(p.actual_quantity) if p.actual_quantity else 0
                 machine_data[p.machine_id]['total_good'] += float(p.good_quantity) if p.good_quantity else 0
@@ -517,6 +609,17 @@ def get_converting_monthly_summary():
         total_good = 0
         total_reject = 0
         
+        # Aggregated downtime across the whole period (month/week)
+        period_downtime = {
+            'mesin': 0,
+            'operator': 0,
+            'material': 0,
+            'design': 0,
+            'idle': 0,
+            'others': 0
+        }
+        period_total_downtime = 0
+        
         for r in records:
             d_str = r.production_date.isoformat()
             if d_str not in daily_data:
@@ -525,7 +628,8 @@ def get_converting_monthly_summary():
                     'output': 0,
                     'good': 0,
                     'reject': 0,
-                    'machines': set()
+                    'machines': set(),
+                    'downtime_records': []
                 }
             
             output_val = float(r.actual_quantity) if r.actual_quantity else 0
@@ -542,6 +646,29 @@ def get_converting_monthly_summary():
             total_good += good_val
             total_reject += reject_val
             
+            # Process downtime entries for this record
+            entries = r.downtime_entries or []
+            for entry in entries:
+                duration = int(entry.get('duration_minutes', 0))
+                frequency = int(entry.get('frequency', 1))
+                entry_total = duration * frequency
+                
+                cat = entry.get('category', 'others')
+                if cat == 'istirahat':
+                    cat = 'others'
+                    
+                period_downtime[cat] = period_downtime.get(cat, 0) + entry_total
+                period_total_downtime += entry_total
+                
+                daily_data[d_str]['downtime_records'].append({
+                    'machine_name': r.machine.name if r.machine else 'N/A',
+                    'product_name': r.product_name or 'N/A',
+                    'shift': r.shift,
+                    'duration_minutes': entry_total,
+                    'downtime_reason': entry.get('reason', ''),
+                    'downtime_category': cat
+                })
+            
         # Format daily_data to list
         daily_list = []
         for d, val in daily_data.items():
@@ -556,7 +683,9 @@ def get_converting_monthly_summary():
                 'total_output': total_output,
                 'total_good': total_good,
                 'total_reject': total_reject,
-                'quality_rate': round((total_good / total_output) * 100, 2) if total_output > 0 else 100
+                'quality_rate': round((total_good / total_output) * 100, 2) if total_output > 0 else 100,
+                'total_downtime': period_total_downtime,
+                'downtime_breakdown': period_downtime
             },
             'daily_records': daily_list
         }), 200

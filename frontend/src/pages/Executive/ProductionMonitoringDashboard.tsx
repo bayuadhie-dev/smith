@@ -784,6 +784,16 @@ const DailyTab: React.FC<{
   viewMode: 'monthly' | 'weekly';
   convertingDailyRecords?: any[];
 }> = ({ data, expandedDays, toggleDay, calculateDailyTarget, viewMode, convertingDailyRecords }) => {
+  const [expandedConvertingDays, setExpandedConvertingDays] = useState<Set<string>>(new Set());
+  const toggleConvertingDay = (d: string) => {
+    setExpandedConvertingDays(prev => {
+      const next = new Set(prev);
+      if (next.has(d)) next.delete(d);
+      else next.add(d);
+      return next;
+    });
+  };
+
   const dayNames: Record<string, string> = {
     Monday: 'Senin', Tuesday: 'Selasa', Wednesday: 'Rabu', Thursday: 'Kamis',
     Friday: 'Jumat', Saturday: 'Sabtu', Sunday: 'Minggu'
@@ -1082,10 +1092,10 @@ const DailyTab: React.FC<{
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow border overflow-hidden mt-6">
           <div className="p-4 border-b bg-gray-50 dark:bg-gray-900">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Detail Harian - Produksi Converting</h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Rincian hasil output harian mesin Converting ({viewMode === 'weekly' ? 'Mingguan' : 'Bulanan'})</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Rincian hasil output harian mesin Converting ({viewMode === 'weekly' ? 'Mingguan' : 'Bulanan'}). Klik tanggal untuk melihat rincian downtime.</p>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-xs">
+            <table className="w-full text-xs text-left">
               <thead>
                 <tr className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 font-medium">
                   <th className="px-3 py-2.5 text-left">Tanggal</th>
@@ -1100,15 +1110,93 @@ const DailyTab: React.FC<{
                 {convertingDailyRecords.map((r: any) => {
                   const dateLabel = r.date.split('-').reverse().join('/');
                   const qr = r.output > 0 ? ((r.good / r.output) * 100).toFixed(2) : '100.00';
+                  const isExpanded = expandedConvertingDays.has(r.date);
+                  
+                  // Category styling matching the main daily OEE tab
+                  const catColors: Record<string, string> = {
+                    mesin: 'bg-red-100 text-red-700 border-red-300',
+                    operator: 'bg-orange-100 text-orange-700 border-orange-300',
+                    material: 'bg-blue-100 text-blue-700 border-blue-300',
+                    design: 'bg-purple-100 text-purple-700 border-purple-300',
+                    idle: 'bg-yellow-100 text-yellow-700 border-yellow-300',
+                    others: 'bg-gray-100 text-gray-700 border-gray-300'
+                  };
+                  const catLabels: Record<string, string> = {
+                    mesin: 'Mesin', operator: 'Operator', material: 'Material',
+                    design: 'Design', idle: 'Idle', others: 'Lainnya'
+                  };
+
                   return (
-                    <tr key={r.date} className="hover:bg-gray-50 dark:hover:bg-gray-750">
-                      <td className="px-3 py-2 font-semibold text-blue-800 dark:text-blue-400">{dateLabel}</td>
-                      <td className="px-3 py-2 text-gray-600 dark:text-gray-300 max-w-[250px] truncate" title={r.machines}>{r.machines || '-'}</td>
-                      <td className="px-2 py-2 text-right text-green-700 font-semibold">{fmtNum(r.good)}</td>
-                      <td className="px-2 py-2 text-right text-red-600 font-semibold">{fmtNum(r.reject)}</td>
-                      <td className="px-2 py-2 text-right font-bold text-gray-900 dark:text-white">{fmtNum(r.output)}</td>
-                      <td className={`px-2 py-2 text-right font-semibold ${+qr >= 95 ? 'text-green-600' : 'text-yellow-600'}`}>{qr}%</td>
-                    </tr>
+                    <React.Fragment key={r.date}>
+                      <tr 
+                        className="hover:bg-gray-50 dark:hover:bg-gray-750 cursor-pointer"
+                        onClick={() => toggleConvertingDay(r.date)}
+                      >
+                        <td className="px-3 py-2 font-semibold text-blue-800 dark:text-blue-400 flex items-center gap-1.5">
+                          {isExpanded ? (
+                            <ChevronUpIcon className="h-3 w-3 text-slate-500" />
+                          ) : (
+                            <ChevronDownIcon className="h-3 w-3 text-slate-500" />
+                          )}
+                          {dateLabel}
+                        </td>
+                        <td className="px-3 py-2 text-gray-600 dark:text-gray-300 max-w-[250px] truncate" title={r.machines}>{r.machines || '-'}</td>
+                        <td className="px-2 py-2 text-right text-green-700 font-semibold">{fmtNum(r.good)}</td>
+                        <td className="px-2 py-2 text-right text-red-600 font-semibold">{fmtNum(r.reject)}</td>
+                        <td className="px-2 py-2 text-right font-bold text-gray-900 dark:text-white">{fmtNum(r.output)}</td>
+                        <td className={`px-2 py-2 text-right font-semibold ${+qr >= 95 ? 'text-green-600' : 'text-yellow-600'}`}>{qr}%</td>
+                      </tr>
+                      {isExpanded && (
+                        <tr className="bg-gray-50 dark:bg-gray-900/50">
+                          <td colSpan={6} className="px-4 py-3 border-t border-b">
+                            <div className="space-y-3">
+                              <h4 className="font-semibold text-xs text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                                <ClockIcon className="h-3.5 w-3.5 text-slate-500" />
+                                Rincian Waktu Henti (Downtime) Converting - {dateLabel}
+                              </h4>
+                              {r.downtime_records && r.downtime_records.length > 0 ? (
+                                <div className="overflow-x-auto rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                                  <table className="w-full text-left text-xs">
+                                    <thead className="bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-b">
+                                      <tr>
+                                        <th className="px-3 py-2">Mesin</th>
+                                        <th className="px-3 py-2">Produk</th>
+                                        <th className="px-3 py-2 text-center">Shift</th>
+                                        <th className="px-3 py-2">Alasan Downtime</th>
+                                        <th className="px-3 py-2">Kategori</th>
+                                        <th className="px-3 py-2 text-right">Durasi</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                                      {r.downtime_records.map((rec: any, idx: number) => {
+                                        const cConfigClass = catColors[rec.downtime_category] || catColors.others;
+                                        const cLabel = catLabels[rec.downtime_category] || catLabels.others;
+                                        return (
+                                          <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-750">
+                                            <td className="px-3 py-2 font-medium text-gray-900 dark:text-white">{rec.machine_name}</td>
+                                            <td className="px-3 py-2 text-gray-600 dark:text-gray-400">{rec.product_name}</td>
+                                            <td className="px-3 py-2 text-center">Shift {rec.shift}</td>
+                                            <td className="px-3 py-2 italic text-gray-700 dark:text-gray-300">"{rec.downtime_reason}"</td>
+                                            <td className="px-3 py-2">
+                                              <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${cConfigClass}`}>
+                                                {cLabel}
+                                              </span>
+                                            </td>
+                                            <td className="px-3 py-2 text-right font-bold text-gray-900 dark:text-white">{rec.duration_minutes} menit</td>
+                                          </tr>
+                                        );
+                                      })}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              ) : (
+                                <p className="text-gray-400 dark:text-gray-500 text-xs italic pl-5">Tidak ada downtime tercatat untuk hari ini</p>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   );
                 })}
               </tbody>
@@ -3227,6 +3315,64 @@ const ConvertingTab: React.FC = () => {
                             </table>
                           </div>
                         )}
+                        
+                        {(() => {
+                          const machineDowntimes = machine.shifts.flatMap(s => 
+                            (s.downtime_entries || []).map((dt: any) => ({ ...dt, shift: s.shift }))
+                          );
+                          if (machineDowntimes.length === 0) return null;
+                          return (
+                            <div className="mt-4 pt-4 border-t border-slate-100 dark:border-gray-700">
+                              <h4 className="text-xs font-bold text-slate-700 dark:text-gray-300 mb-2 uppercase tracking-wider flex items-center gap-1">
+                                ⚠️ Rincian Downtime Mesin Hari Ini
+                              </h4>
+                              <div className="overflow-x-auto rounded border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                                <table className="min-w-full text-xs text-left">
+                                  <thead className="bg-slate-50 dark:bg-gray-900 text-slate-700 dark:text-gray-300 border-b">
+                                    <tr>
+                                      <th className="px-3 py-1.5">Shift</th>
+                                      <th className="px-3 py-1.5">Alasan Downtime</th>
+                                      <th className="px-3 py-1.5">Kategori</th>
+                                      <th className="px-3 py-1.5 text-right">Durasi</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-slate-100 dark:divide-gray-700">
+                                    {machineDowntimes.map((rec: any, idx: number) => {
+                                      const catColors: Record<string, string> = {
+                                        mesin: 'bg-red-100 text-red-700 border-red-300',
+                                        operator: 'bg-orange-100 text-orange-700 border-orange-300',
+                                        material: 'bg-blue-100 text-blue-700 border-blue-300',
+                                        design: 'bg-purple-100 text-purple-700 border-purple-300',
+                                        idle: 'bg-yellow-100 text-yellow-700 border-yellow-300',
+                                        others: 'bg-gray-100 text-gray-700 border-gray-300'
+                                      };
+                                      const catLabels: Record<string, string> = {
+                                        mesin: 'Mesin', operator: 'Operator', material: 'Material',
+                                        design: 'Design', idle: 'Idle', others: 'Lainnya'
+                                      };
+                                      const cConfigClass = catColors[rec.category] || catColors.others;
+                                      const cLabel = catLabels[rec.category] || catLabels.others;
+                                      return (
+                                        <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-gray-800/10">
+                                          <td className="px-3 py-1.5 font-semibold text-slate-700 dark:text-gray-300">Shift {rec.shift}</td>
+                                          <td className="px-3 py-1.5 italic text-slate-700 dark:text-gray-300">"{rec.reason}"</td>
+                                          <td className="px-3 py-1.5">
+                                            <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${cConfigClass}`}>
+                                              {cLabel}
+                                            </span>
+                                          </td>
+                                          <td className="px-3 py-1.5 text-right font-bold text-slate-900 dark:text-white">
+                                            {(rec.duration_minutes * (rec.frequency || 1))} menit
+                                          </td>
+                                        </tr>
+                                      );
+                                    })}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </div>
                     )}
                   </div>

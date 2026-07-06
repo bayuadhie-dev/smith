@@ -157,8 +157,8 @@ class ConvertingProduction(db.Model):
             expected = speed * runtime
             if expected > 0:
                 return round((self.good_quantity / expected) * 100, 2)
-        # Fallback to machine target efficiency or default 60% if speed/runtime info is missing
-        return float(self.machine.target_efficiency) if self.machine and self.machine.target_efficiency else 60.0
+        # Fallback to machine target efficiency or default 80% if speed/runtime info is missing
+        return float(self.machine.target_efficiency) if self.machine and self.machine.target_efficiency else 80.0
 
     @property
     def quality_rate(self):
@@ -167,6 +167,42 @@ class ConvertingProduction(db.Model):
         if total > 0:
             return round((self.good_quantity / total) * 100, 2)
         return 100.0
+
+    # Downtime categories dynamic properties
+    @property
+    def downtime_mesin(self):
+        """Downtime minutes for machine breakdown/maintenance category"""
+        return int(self.machine_data_dict.get('downtime_mesin', 0))
+
+    @property
+    def downtime_operator(self):
+        """Downtime minutes for operator error category"""
+        return int(self.machine_data_dict.get('downtime_operator', 0))
+
+    @property
+    def downtime_material(self):
+        """Downtime minutes for material shortage/issue category"""
+        return int(self.machine_data_dict.get('downtime_material', 0))
+
+    @property
+    def downtime_design(self):
+        """Downtime minutes for changeover/design setup category"""
+        return int(self.machine_data_dict.get('downtime_design', 0))
+
+    @property
+    def downtime_idle(self):
+        """Downtime minutes for idle time category"""
+        return int(self.machine_data_dict.get('downtime_idle', 0))
+
+    @property
+    def downtime_others(self):
+        """Downtime minutes for other miscellaneous categories"""
+        return int(self.machine_data_dict.get('downtime_others', 0))
+
+    @property
+    def downtime_entries(self):
+        """List of detailed downtime entries"""
+        return self.machine_data_dict.get('downtime_entries', [])
     
     def __repr__(self):
         return f'<ConvertingProduction {self.id} - {self.production_date} Shift {self.shift}>'

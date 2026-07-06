@@ -6,6 +6,8 @@ import {
   ArrowLeftIcon,
   PlusIcon,
   TrashIcon,
+  ClockIcon,
+  CogIcon
 } from '@heroicons/react/24/outline'
 
 /* ═══════════ Types ═══════════ */
@@ -17,6 +19,50 @@ interface CuttingRow { no_roll: string; width: number; weight: number; length: n
 interface LaminasiRow { no: number; time_start: string; time_end: string; total_minutes: number; date: string; product_name: string; film_type: string; film_gsm: number; nonwoven_type: string; nonwoven_gsm: number; winding_width: number; winding_length: number; gsm_total: number; speed: number; lem_type: string; lem_usage: number }
 interface BagmakerRow { no: number; plan_downtime: string; unplan_downtime: string; total_minutes: number; no_roll: string; roll_weight: number; roll_length: number; output_grade_a: number; output_grade_c: number }
 interface AxisSettings { initial_torque: number; setting_tension: number; actual_tension: number; actual_torque: number; actual_diameter: number; initial_diameter: number; rate_coating: number; rewind_angle: number }
+
+interface DowntimeEntry {
+  id: number;
+  reason: string;
+  duration_minutes: number;
+  frequency: number;
+  category: string;
+}
+
+const CATEGORY_KEYWORDS: Record<string, string[]> = {
+  idle: ['tunggu', 'listrik', 'mati lampu', 'padam', 'menunggu'],
+  operator: ['operator', 'makan', 'toilet', 'istirahat', 'sholat', 'sakit', 'izin', 'absent', 'ganti shift'],
+  material: ['kain', 'benang', 'habis', 'lem', 'stiker', 'baku', 'roll', 'bahan'],
+  design: ['changeover', 'ganti produk', 'ganti ukuran', 'ganti pola', 'trial', 'sample'],
+  mesin: ['setting', 'rusak', 'error', 'trouble', 'macet', 'sparepart', 'pisau', 'sensor', 'suhu', 'seal', 'inkjet', 'belt', 'rantai', 'motor']
+};
+
+const DOWNTIME_CATEGORIES = {
+  mesin: { label: 'Mesin', color: 'red', bgColor: 'bg-red-50', borderColor: 'border-red-300', textColor: 'text-red-700' },
+  operator: { label: 'Operator', color: 'orange', bgColor: 'bg-orange-50', borderColor: 'border-orange-300', textColor: 'text-orange-700' },
+  material: { label: 'Raw Material', color: 'yellow', bgColor: 'bg-yellow-50', borderColor: 'border-yellow-300', textColor: 'text-yellow-700' },
+  design: { label: 'Design Change', color: 'blue', bgColor: 'bg-blue-50', borderColor: 'border-blue-300', textColor: 'text-blue-700' },
+  idle: { label: 'Idle Time', color: 'orange', bgColor: 'bg-orange-50', borderColor: 'border-orange-300', textColor: 'text-orange-700' },
+  others: { label: 'Others', color: 'gray', bgColor: 'bg-gray-50', borderColor: 'border-gray-200', textColor: 'text-gray-600' }
+};
+
+const detectCategory = (reason: string, isFirstEntry: boolean = false): string => {
+  const lowerReason = reason.toLowerCase();
+  
+  if (lowerReason.includes('setting mc') || lowerReason.includes('setting mesin')) {
+    return isFirstEntry ? 'design' : 'mesin';
+  }
+
+  const categoryOrder = ['idle', 'operator', 'material', 'mesin', 'design'];
+  for (const category of categoryOrder) {
+    const keywords = CATEGORY_KEYWORDS[category];
+    for (const keyword of keywords) {
+      if (lowerReason.includes(keyword)) {
+        return category;
+      }
+    }
+  }
+  return 'others';
+};
 
 /* ═══════════ Helpers ═══════════ */
 const mkSlit = (): SlittingRow => ({ no_roll: '', width: 0, weight: 0, length: 0, thick: 0, slitting: Array(10).fill(0), loss: 0, total_length: 0, total_weight: 0 })
@@ -65,6 +111,7 @@ export default function ConvertingInput() {
   const [downtimeMin, setDowntimeMin] = useState(0)
   const [machineSpeed, setMachineSpeed] = useState(0)
   const [bagRows, setBagRows] = useState<BagmakerRow[]>([mkBag(1)])
+  const [downtimeEntries, setDowntimeEntries] = useState<DowntimeEntry[]>([])
 
   const machine = machines.find(m => m.id === machineId)
   const mtype = machine?.machine_type || ''
@@ -79,12 +126,42 @@ export default function ConvertingInput() {
     axiosInstance.get('/api/converting/machines').then(r => setMachines(r.data.machines || [])).catch(() => toast.error('Gagal memuat daftar mesin'))
   }, [])
 
+  const addDowntimeEntry = () => {
+    setDowntimeEntries(prev => [
+      ...prev,
+      {
+        id: Date.now() + Math.random(),
+        reason: '',
+        duration_minutes: 0,
+        frequency: 1,
+        category: 'others'
+      }
+    ]);
+  };
+
+  const removeDowntimeEntry = (id: number) => {
+    setDowntimeEntries(prev => prev.filter(e => e.id !== id));
+  };
+
+  const updateDowntimeEntry = (id: number, field: keyof DowntimeEntry, value: any) => {
+    setDowntimeEntries(prev => prev.map((entry, index) => {
+      if (entry.id !== id) return entry;
+      const updated = { ...entry, [field]: value };
+      if (field === 'reason') {
+        updated.category = detectCategory(value, index === 0);
+      }
+      return updated;
+    }));
+  };
+
   /* ─── Submit ─── */
   const handleSubmit = async () => {
     if (!machineId) { toast.error('Pilih mesin terlebih dahulu'); return }
     if (!productionDate) { toast.error('Tanggal wajib diisi'); return }
     setSubmitting(true)
     try {
+      const totalDowntime = downtimeEntries.reduce((sum, e) => sum + (N(e.duration_minutes) * N(e.frequency)), 0)
+      
       let machine_data: any = {}
       let fA = gradeA, fB = gradeB, fL = lossKg
       if (mtype === 'slitting') { machine_data = { rows: slitRows }; fA = 0; fB = 0; fL = 0 }
@@ -95,10 +172,33 @@ export default function ConvertingInput() {
       else if (mtype === 'bagmaker') {
         const tA = bagRows.reduce((s, r) => s + N(r.output_grade_a), 0)
         const tC = bagRows.reduce((s, r) => s + N(r.output_grade_c), 0)
-        machine_data = { production_hour_minutes: prodHourMin, downtime_minutes: downtimeMin, machine_speed: machineSpeed, rows: bagRows, total_grade_a: tA, total_grade_c: tC }
+        machine_data = { production_hour_minutes: prodHourMin, machine_speed: machineSpeed, rows: bagRows, total_grade_a: tA, total_grade_c: tC }
         fA = tA; fB = tC; fL = 0
       }
-      await axiosInstance.post('/api/converting/production', { production_date: productionDate, shift, machine_id: machineId, njo, product_name: productName, specification, grade_a: fA, grade_b: fB, loss_kg: fL, operator_name: operatorName, notes, machine_data })
+      
+      // Inject downtime details
+      machine_data.downtime_minutes = totalDowntime || downtimeMin
+      machine_data.downtime_entries = downtimeEntries.map(e => ({
+        reason: e.reason,
+        duration_minutes: N(e.duration_minutes),
+        frequency: N(e.frequency),
+        category: e.category
+      }))
+      
+      await axiosInstance.post('/api/converting/production', { 
+        production_date: productionDate, 
+        shift, 
+        machine_id: machineId, 
+        njo, 
+        product_name: productName, 
+        specification, 
+        grade_a: fA, 
+        grade_b: fB, 
+        loss_kg: fL, 
+        operator_name: operatorName, 
+        notes, 
+        machine_data 
+      })
       toast.success('Data produksi berhasil disimpan')
       navigate('/app/production/converting')
     } catch (err: any) { toast.error(err?.response?.data?.error || 'Gagal menyimpan') } finally { setSubmitting(false) }
@@ -478,6 +578,103 @@ export default function ConvertingInput() {
           </div>
         </div>
       </>)}
+
+      {/* SECTION INPUT DOWNTIME (SAMA DENGAN INPUT PRODUKSI UTAMA) */}
+      {machineId && (
+        <div className={sc}>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <ClockIcon className="h-5 w-5 text-slate-500" />
+              <h3 className="font-semibold text-slate-800">Input Downtime</h3>
+            </div>
+            <button
+              type="button"
+              onClick={addDowntimeEntry}
+              className="flex items-center gap-1 text-sm px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              <PlusIcon className="h-4 w-4" /> Tambah Downtime
+            </button>
+          </div>
+
+          {downtimeEntries.length === 0 ? (
+            <div className="text-center py-6 bg-slate-50 rounded-lg border border-dashed border-slate-200">
+              <ClockIcon className="h-8 w-8 mx-auto text-slate-400 mb-2" />
+              <p className="text-slate-500 text-sm">Tidak ada downtime</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {downtimeEntries.map((entry, index) => {
+                const catConfig = DOWNTIME_CATEGORIES[entry.category as keyof typeof DOWNTIME_CATEGORIES] || DOWNTIME_CATEGORIES.others;
+                return (
+                  <div key={entry.id} className={`p-4 rounded-lg border ${catConfig.bgColor} ${catConfig.borderColor}`}>
+                    <div className="flex items-center gap-4 flex-wrap md:flex-nowrap">
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${catConfig.textColor} bg-white border border-current`}>
+                        {index + 1}
+                      </div>
+                      
+                      <div className="flex-1 min-w-[200px]">
+                        <label className="block text-xs font-medium text-slate-500 mb-1">Alasan Downtime</label>
+                        <input
+                          type="text"
+                          value={entry.reason}
+                          onChange={(e) => updateDowntimeEntry(entry.id, 'reason', e.target.value)}
+                          className="w-full px-3 py-1.5 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                          placeholder="Contoh: setting pisau, ganti kain..."
+                          required
+                        />
+                      </div>
+
+                      <div className="w-28">
+                        <label className="block text-xs font-medium text-slate-500 mb-1">Durasi (menit)</label>
+                        <input
+                          type="number"
+                          value={entry.duration_minutes || ''}
+                          onChange={(e) => updateDowntimeEntry(entry.id, 'duration_minutes', N(e.target.value))}
+                          className="w-full px-3 py-1.5 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-center"
+                          placeholder="0"
+                          min="1"
+                          required
+                        />
+                      </div>
+
+                      <div className="w-24">
+                        <label className="block text-xs font-medium text-slate-500 mb-1">Frekuensi</label>
+                        <input
+                          type="number"
+                          value={entry.frequency || ''}
+                          onChange={(e) => updateDowntimeEntry(entry.id, 'frequency', N(e.target.value))}
+                          className="w-full px-3 py-1.5 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-center"
+                          placeholder="1"
+                          min="1"
+                        />
+                      </div>
+
+                      <div className="w-32">
+                        <label className="block text-xs font-medium text-slate-500 mb-1">Kategori (Auto)</label>
+                        <span className={`inline-block w-full text-center px-3 py-1.5 rounded text-xs font-semibold border ${catConfig.textColor} bg-white ${catConfig.borderColor}`}>
+                          {catConfig.label}
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => removeDowntimeEntry(entry.id)}
+                        className="p-2 text-red-500 hover:text-red-700 self-end md:self-center"
+                      >
+                        <TrashIcon className="h-5 w-5" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+              
+              <div className="text-right pt-2 border-t font-semibold text-slate-700">
+                Total Downtime: {downtimeEntries.reduce((sum, e) => sum + (N(e.duration_minutes) * N(e.frequency)), 0)} menit
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Submit */}
       {machineId && (
