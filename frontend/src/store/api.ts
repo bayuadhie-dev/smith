@@ -100,6 +100,17 @@ export const api = createApi({
     // Warehouse Enhanced
     'WarehouseEnhanced',
     'WarehouseAlerts',
+    'Production',
+    'Positions',
+    'OEEAlert',
+    'Desk',
+    'Workspace',
+    'QualityEnhanced',
+    'QualityAlerts',
+    'QualityAnalytics',
+    'QualityTargets',
+    'QualityAudits',
+    'QualityTraining',
   ],
   endpoints: () => ({}),
 })

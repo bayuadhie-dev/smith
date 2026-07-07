@@ -1,6 +1,3 @@
-import {
-  api
-} from 'lucide-react';
 import { configureStore } from '@reduxjs/toolkit'
 import authReducer from './slices/authSlice'
 import { api } from './api'

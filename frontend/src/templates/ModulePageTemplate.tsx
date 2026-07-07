@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import {
   FunnelIcon,
-  MagnifyingGlassIcon
+  MagnifyingGlassIcon,
+  PlusIcon
 } from '@heroicons/react/24/outline';
 import { getPageTitle, getCommonButtons } from '../utils/translateHelper'
 /**
@@ -29,8 +30,6 @@ const ModulePageTemplate: React.FC<ModulePageTemplateProps> = ({
   addButtonText,
   children
 }) => {
-  const { t } = useLanguage();
-
   const { t } = useLanguage();
   const buttons = getCommonButtons(t)
   const [searchTerm, setSearchTerm] = useState('')

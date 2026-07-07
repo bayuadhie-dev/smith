@@ -1,4 +1,3 @@
-import { fetchBaseQuery } from '../../services/api';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 
 export interface CustomerReturn {

@@ -7,7 +7,7 @@ import { render, RenderOptions } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
 import { configureStore } from '@reduxjs/toolkit';
-import { api } from '../services/api';
+import { api } from '../store/api';
 
 // Create a test store
 export function createTestStore(preloadedState = {}) {

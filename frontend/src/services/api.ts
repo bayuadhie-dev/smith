@@ -1053,7 +1053,7 @@ export const {
   useUnassignRosterMutation,
   useGetWeeklyRosterQuery,
   useCopyWeeklyRosterMutation,
-  useCreateAttendanceMutation: useRecordAttendanceMutation,
+  useRecordAttendanceMutation,
   // Extended HR hooks
   useGetEmployeeDetailQuery,
   // Attendance Management
@@ -1289,7 +1289,7 @@ export const oeeApi = api.injectEndpoints({
           params: filteredParams,
         }
       },
-      providesTags: ['OEE', 'Machine', 'Maintenance'],
+      providesTags: ['OEE', 'Machines', 'Maintenance'],
     }),
     getOEEAlerts: builder.query({
       query: (params) => {
@@ -1348,7 +1348,7 @@ export const oeeApi = api.injectEndpoints({
         url: `/oee/machines/${machineId}/analytics`,
         params,
       }),
-      providesTags: ['OEE', 'Machine', 'Maintenance'],
+      providesTags: ['OEE', 'Machines', 'Maintenance'],
     }),
   }),
 })
