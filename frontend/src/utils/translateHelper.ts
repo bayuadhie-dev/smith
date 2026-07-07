@@ -1,5 +1,3 @@
-
-const { t } = useLanguage();
 /**
  * Translation Helper Utility
  * Helper functions for consistent translation implementation across all modules

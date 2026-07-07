@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCreateUserMutation, useUpdateUserMutation } from '../../services/api';
 import { useAssignUserRolesMutation } from '../../services/userManagementApi';
-import type { Role, User } from '../../types/auth';
+import type { Role, User } from '../../services/userManagementApi';
 import {
   XMarkIcon
 } from '@heroicons/react/24/outline';

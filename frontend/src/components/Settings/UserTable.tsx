@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
-import type { User } from '../../types/auth';
+import type { User } from '../../services/userManagementApi';
 import {
   EyeIcon,
   PencilIcon,

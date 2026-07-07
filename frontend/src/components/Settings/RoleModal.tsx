@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCreateRoleMutation, useUpdateRoleMutation } from '../../services/userManagementApi';
-import type { Permission, Role } from '../../types/auth';
+import type { Permission, Role } from '../../services/userManagementApi';
 import {
   XMarkIcon
 } from '@heroicons/react/24/outline';

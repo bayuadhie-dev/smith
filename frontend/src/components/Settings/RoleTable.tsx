@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
-import type { Role } from '../../types/auth';
+import type { Role } from '../../services/userManagementApi';
 import {
   PencilIcon,
   ShieldCheckIcon,

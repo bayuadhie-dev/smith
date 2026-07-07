@@ -183,6 +183,7 @@ export const useWarehouseTranslations = () => {
 };
 
 export const useProductionTranslations = () => {
+  const { t } = useLanguage();
   return {
     title: t('production.title'),
     dashboard: t('production.dashboard'),
@@ -208,6 +209,7 @@ export const useProductionTranslations = () => {
 };
 
 export const useSalesTranslations = () => {
+  const { t } = useLanguage();
   return {
     title: t('sales.title'),
     activities: t('sales.activities'),
@@ -241,6 +243,7 @@ export const useSalesTranslations = () => {
 };
 
 export const useFinanceTranslations = () => {
+  const { t } = useLanguage();
   return {
     title: t('finance.title'),
     dashboard: t('finance.dashboard'),
@@ -266,6 +269,7 @@ export const useFinanceTranslations = () => {
 };
 
 export const useHRTranslations = () => {
+  const { t } = useLanguage();
   return {
     title: t('hr.title'),
     dashboard: t('hr.dashboard'),

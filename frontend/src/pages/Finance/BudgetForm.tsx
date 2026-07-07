@@ -11,7 +11,8 @@ import {
   ExclamationCircleIcon,
   HashtagIcon as Hash,
   PlusIcon as Plus,
-  TrashIcon as Trash2
+  TrashIcon as Trash2,
+  XMarkIcon as X
 } from '@heroicons/react/24/outline';
 interface Account {
   id: number;
