@@ -3,7 +3,8 @@ import {
   ChartBarIcon, ExclamationTriangleIcon,
   ClockIcon, CubeIcon, CogIcon, ChevronDownIcon, ChevronUpIcon,
   PresentationChartLineIcon, CalendarDaysIcon, ArrowsRightLeftIcon,
-  BoltIcon, BeakerIcon, ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon
+  BoltIcon, BeakerIcon, ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon,
+  DocumentTextIcon
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
@@ -1148,50 +1149,99 @@ const DailyTab: React.FC<{
                       </tr>
                       {isExpanded && (
                         <tr className="bg-gray-50 dark:bg-gray-900/50">
-                          <td colSpan={6} className="px-4 py-3 border-t border-b">
-                            <div className="space-y-3">
-                              <h4 className="font-semibold text-xs text-gray-700 dark:text-gray-300 flex items-center gap-1">
-                                <ClockIcon className="h-3.5 w-3.5 text-slate-500" />
-                                Rincian Waktu Henti (Downtime) Converting - {dateLabel}
-                              </h4>
-                              {r.downtime_records && r.downtime_records.length > 0 ? (
-                                <div className="overflow-x-auto rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-                                  <table className="w-full text-left text-xs">
-                                    <thead className="bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-b">
-                                      <tr>
-                                        <th className="px-3 py-2">Mesin</th>
-                                        <th className="px-3 py-2">Produk</th>
-                                        <th className="px-3 py-2 text-center">Shift</th>
-                                        <th className="px-3 py-2">Alasan Downtime</th>
-                                        <th className="px-3 py-2">Kategori</th>
-                                        <th className="px-3 py-2 text-right">Durasi</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                                      {r.downtime_records.map((rec: any, idx: number) => {
-                                        const cConfigClass = catColors[rec.downtime_category] || catColors.others;
-                                        const cLabel = catLabels[rec.downtime_category] || catLabels.others;
-                                        return (
-                                          <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-750">
-                                            <td className="px-3 py-2 font-medium text-gray-900 dark:text-white">{rec.machine_name}</td>
-                                            <td className="px-3 py-2 text-gray-600 dark:text-gray-400">{rec.product_name}</td>
-                                            <td className="px-3 py-2 text-center">Shift {rec.shift}</td>
-                                            <td className="px-3 py-2 italic text-gray-700 dark:text-gray-300">"{rec.downtime_reason}"</td>
-                                            <td className="px-3 py-2">
-                                              <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${cConfigClass}`}>
-                                                {cLabel}
-                                              </span>
+                          <td colSpan={6} className="px-4 py-4 border-t border-b">
+                            <div className="space-y-5">
+                              {/* 1. Rincian Hasil Produksi */}
+                              <div className="space-y-2">
+                                <h4 className="font-bold text-xs text-indigo-900 dark:text-indigo-300 flex items-center gap-1.5 uppercase tracking-wider">
+                                  <DocumentTextIcon className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                                  📋 Rincian Hasil Produksi Converting - {dateLabel}
+                                </h4>
+                                {r.production_records && r.production_records.length > 0 ? (
+                                  <div className="overflow-x-auto rounded-lg border border-indigo-100 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
+                                    <table className="w-full text-left text-xs">
+                                      <thead className="bg-indigo-50/50 dark:bg-gray-900 text-indigo-950 dark:text-gray-300 border-b border-indigo-100 dark:border-gray-700">
+                                        <tr>
+                                          <th className="px-3 py-2.5">Mesin</th>
+                                          <th className="px-3 py-2.5 text-center">Shift</th>
+                                          <th className="px-3 py-2.5">Produk</th>
+                                          <th className="px-3 py-2.5">Operator</th>
+                                          <th className="px-3 py-2.5 text-right text-green-750 font-bold">Grade A (pcs)</th>
+                                          <th className="px-3 py-2.5 text-right text-red-700 font-bold">Reject (pcs)</th>
+                                          <th className="px-3 py-2.5 text-right font-black">Total Output</th>
+                                          <th className="px-3 py-2.5 text-right font-black text-blue-750">Efisiensi</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody className="divide-y divide-gray-100 dark:divide-gray-750">
+                                        {r.production_records.map((pRec: any, pIdx: number) => (
+                                          <tr key={pIdx} className="hover:bg-gray-50/80 dark:hover:bg-gray-750 transition-colors">
+                                            <td className="px-3 py-2 font-semibold text-gray-950 dark:text-white">
+                                              {pRec.machine_name} <span className="text-[10px] text-gray-400 font-normal">({pRec.machine_code})</span>
                                             </td>
-                                            <td className="px-3 py-2 text-right font-bold text-gray-900 dark:text-white">{rec.duration_minutes} menit</td>
+                                            <td className="px-3 py-2 text-center text-gray-850 dark:text-gray-200">Shift {pRec.shift}</td>
+                                            <td className="px-3 py-2 text-gray-650 dark:text-gray-400 font-medium">{pRec.product_name}</td>
+                                            <td className="px-3 py-2 text-gray-600 dark:text-gray-400">{pRec.operator_name}</td>
+                                            <td className="px-3 py-2 text-right text-green-700 font-bold">{fmtNum(pRec.good_quantity)}</td>
+                                            <td className="px-3 py-2 text-right text-red-600 font-semibold">{fmtNum(pRec.reject_quantity)}</td>
+                                            <td className="px-3 py-2 text-right font-bold text-gray-900 dark:text-white">{fmtNum(pRec.total_output)}</td>
+                                            <td className="px-3 py-2 text-right font-extrabold text-blue-600">
+                                              {pRec.efficiency_rate ? `${pRec.efficiency_rate.toFixed(1)}%` : '-'}
+                                            </td>
                                           </tr>
-                                        );
-                                      })}
-                                    </tbody>
-                                  </table>
-                                </div>
-                              ) : (
-                                <p className="text-gray-400 dark:text-gray-500 text-xs italic pl-5">Tidak ada downtime tercatat untuk hari ini</p>
-                              )}
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                ) : (
+                                  <p className="text-gray-400 dark:text-gray-500 text-xs italic pl-6">Tidak ada data produksi tercatat untuk hari ini</p>
+                                )}
+                              </div>
+
+                              {/* 2. Rincian Waktu Henti (Downtime) */}
+                              <div className="space-y-2 pt-2 border-t border-gray-200 dark:border-gray-700/60">
+                                <h4 className="font-bold text-xs text-rose-900 dark:text-rose-300 flex items-center gap-1.5 uppercase tracking-wider">
+                                  <ClockIcon className="h-4 w-4 text-rose-600 dark:text-rose-400" />
+                                  ⚠️ Rincian Waktu Henti (Downtime) Converting - {dateLabel}
+                                </h4>
+                                {r.downtime_records && r.downtime_records.length > 0 ? (
+                                  <div className="overflow-x-auto rounded-lg border border-rose-100 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
+                                    <table className="w-full text-left text-xs">
+                                      <thead className="bg-rose-50/50 dark:bg-gray-900 text-rose-950 dark:text-gray-300 border-b border-rose-100 dark:border-gray-700">
+                                        <tr>
+                                          <th className="px-3 py-2.5">Mesin</th>
+                                          <th className="px-3 py-2.5">Produk</th>
+                                          <th className="px-3 py-2.5 text-center">Shift</th>
+                                          <th className="px-3 py-2.5">Alasan Downtime</th>
+                                          <th className="px-3 py-2.5">Kategori</th>
+                                          <th className="px-3 py-2.5 text-right">Durasi</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody className="divide-y divide-gray-100 dark:divide-gray-750">
+                                        {r.downtime_records.map((rec: any, idx: number) => {
+                                          const cConfigClass = catColors[rec.downtime_category] || catColors.others;
+                                          const cLabel = catLabels[rec.downtime_category] || catLabels.others;
+                                          return (
+                                            <tr key={idx} className="hover:bg-gray-50/80 dark:hover:bg-gray-750 transition-colors">
+                                              <td className="px-3 py-2 font-semibold text-gray-950 dark:text-white">{rec.machine_name}</td>
+                                              <td className="px-3 py-2 text-gray-650 dark:text-gray-400 font-medium">{rec.product_name}</td>
+                                              <td className="px-3 py-2 text-center text-gray-850 dark:text-gray-200">Shift {rec.shift}</td>
+                                              <td className="px-3 py-2 italic text-gray-850 dark:text-gray-300">"{rec.downtime_reason}"</td>
+                                              <td className="px-3 py-2">
+                                                <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${cConfigClass}`}>
+                                                  {cLabel}
+                                                </span>
+                                              </td>
+                                              <td className="px-3 py-2 text-right font-bold text-red-600 dark:text-red-400">{rec.duration_minutes} menit</td>
+                                            </tr>
+                                          );
+                                        })}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                ) : (
+                                  <p className="text-gray-400 dark:text-gray-500 text-xs italic pl-6">Tidak ada downtime tercatat untuk hari ini</p>
+                                )}
+                              </div>
                             </div>
                           </td>
                         </tr>
@@ -2981,6 +3031,8 @@ interface ConvertingShiftData {
   efficiency_rate: number;
   operator_name: string;
   specification?: string;
+  downtime_entries?: any[];
+  machine_data?: any;
 }
 
 interface ConvertingMachineData {

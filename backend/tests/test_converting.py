@@ -97,6 +97,13 @@ def test_converting_monthly_summary_endpoint(client, app, auth_headers):
         assert data['summary']['total_good'] == 1300.0 # 500 + 800
         assert data['summary']['total_reject'] == 50.0 # 50 + 0
         assert len(data['daily_records']) == 2
+        
+        # Verify production_records serialization
+        assert 'production_records' in data['daily_records'][0]
+        p_records = data['daily_records'][0]['production_records']
+        assert len(p_records) == 1
+        assert p_records[0]['machine_name'] == 'Test Machine 2'
+        assert p_records[0]['good_quantity'] in [500.0, 800.0]
 
         # 3. Test weekly view (Week 1 of May 2026 starts first Monday May 4 to May 10)
         res_wk = client.get('/api/converting/monthly-summary?year=2026&month=5&view=weekly&week=1', headers=auth_headers)

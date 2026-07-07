@@ -642,7 +642,8 @@ def get_converting_monthly_summary():
                     'good': 0,
                     'reject': 0,
                     'machines': set(),
-                    'downtime_records': []
+                    'downtime_records': [],
+                    'production_records': []
                 }
             
             output_val = float(r.actual_quantity) if r.actual_quantity else 0
@@ -658,6 +659,20 @@ def get_converting_monthly_summary():
             total_output += output_val
             total_good += good_val
             total_reject += reject_val
+            
+            # Add production details
+            daily_data[d_str]['production_records'].append({
+                'id': r.id,
+                'machine_name': r.machine.name if r.machine else 'N/A',
+                'machine_code': r.machine.code if r.machine else 'N/A',
+                'shift': r.shift,
+                'product_name': r.product_name or '-',
+                'good_quantity': good_val,
+                'reject_quantity': reject_val,
+                'total_output': output_val,
+                'efficiency_rate': float(r.efficiency_rate) if r.efficiency_rate else 0,
+                'operator_name': r.operator_name or '-'
+            })
             
             # Process downtime entries for this record
             entries = r.downtime_entries or []
