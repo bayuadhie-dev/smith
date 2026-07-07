@@ -473,6 +473,7 @@ def get_converting_dashboard():
                     'good_quantity': float(p.good_quantity) if p.good_quantity else 0,
                     'reject_quantity': float(p.reject_quantity) if p.reject_quantity else 0,
                     'efficiency_rate': float(p.efficiency_rate) if p.efficiency_rate else 0,
+                    'is_efficiency_unreasonable': p.is_efficiency_unreasonable,
                     'operator_name': p.operator_name,
                     'downtime_entries': p.downtime_entries,
                     'specification': p.specification,
@@ -555,7 +556,8 @@ def get_converting_daily_report():
                 'output': float(p.actual_quantity) if p.actual_quantity else 0,
                 'good': float(p.good_quantity) if p.good_quantity else 0,
                 'reject': float(p.reject_quantity) if p.reject_quantity else 0,
-                'efficiency': float(p.efficiency_rate) if p.efficiency_rate else 0
+                'efficiency': float(p.efficiency_rate) if p.efficiency_rate else 0,
+                'is_efficiency_unreasonable': p.is_efficiency_unreasonable
             })
             
             by_type[mtype]['total_output'] += float(p.actual_quantity) if p.actual_quantity else 0
@@ -671,6 +673,7 @@ def get_converting_monthly_summary():
                 'reject_quantity': reject_val,
                 'total_output': output_val,
                 'efficiency_rate': float(r.efficiency_rate) if r.efficiency_rate else 0,
+                'is_efficiency_unreasonable': r.is_efficiency_unreasonable,
                 'operator_name': r.operator_name or '-'
             })
             

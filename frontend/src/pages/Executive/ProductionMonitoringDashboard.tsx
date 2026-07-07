@@ -266,12 +266,22 @@ const ProductionMonitoringDashboard: React.FC = () => {
     ].filter((d: any) => d.value > 0);
   }, [data]);
 
+  const combinedDowntimeByCategory = useMemo(() => {
+    if (!data) return {};
+    const categories: Record<string, number> = { ...data.downtime_by_category };
+    if (convertingMonthlyData?.summary?.downtime_breakdown) {
+      Object.entries(convertingMonthlyData.summary.downtime_breakdown).forEach(([k, v]) => {
+        categories[k] = (categories[k] || 0) + (v as number);
+      });
+    }
+    return categories;
+  }, [data, convertingMonthlyData]);
+
   const downtimePieData = useMemo(() => {
-    if (!data) return [];
-    return Object.entries(data.downtime_by_category)
+    return Object.entries(combinedDowntimeByCategory)
       .filter(([_, v]) => (v as number) > 0)
       .map(([k, v]) => ({ name: CATEGORY_LABELS[k] || k, value: v as number, color: DOWNTIME_COLORS[k] || '#6B7280' }));
-  }, [data]);
+  }, [combinedDowntimeByCategory]);
 
   // Compute display values based on viewMode (must be before conditional returns)
   const displaySummary = useMemo(() => {
@@ -528,7 +538,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
       )}
       {activeTab === 'products' && <ProductsTab data={data} viewMode={viewMode} />}
       {activeTab === 'machines' && <MachinesTab data={data} />}
-      {activeTab === 'downtime' && <DowntimeTab data={data} downtimePieData={downtimePieData} />}
+      {activeTab === 'downtime' && <DowntimeTab data={data} downtimePieData={downtimePieData} combinedDowntimeByCategory={combinedDowntimeByCategory} />}
       {activeTab === 'graph' && <GraphTab data={data} />}
       {activeTab === 'shift' && <ShiftTab data={data} />}
       {activeTab === 'analytics' && <AnalyticsTab data={data} dailyChartData={dailyChartData} />}
@@ -1184,8 +1194,24 @@ const DailyTab: React.FC<{
                                             <td className="px-3 py-2 text-right text-green-700 font-bold">{fmtNum(pRec.good_quantity)}</td>
                                             <td className="px-3 py-2 text-right text-red-600 font-semibold">{fmtNum(pRec.reject_quantity)}</td>
                                             <td className="px-3 py-2 text-right font-bold text-gray-900 dark:text-white">{fmtNum(pRec.total_output)}</td>
-                                            <td className="px-3 py-2 text-right font-extrabold text-blue-600">
-                                              {pRec.efficiency_rate ? `${pRec.efficiency_rate.toFixed(1)}%` : '-'}
+                                            <td className="px-3 py-2 text-right">
+                                              {pRec.efficiency_rate ? (() => {
+                                                const rate = pRec.efficiency_rate;
+                                                const colorClass = rate >= 80 ? 'bg-green-500' : rate >= 70 ? 'bg-yellow-500' : 'bg-red-500';
+                                                return (
+                                                  <div className="flex items-center justify-end gap-2">
+                                                    <div className="w-12 bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden hidden sm:block">
+                                                      <div className={`h-full ${colorClass}`} style={{ width: `${rate}%` }} />
+                                                    </div>
+                                                    <span className={`font-bold ${rate >= 80 ? 'text-green-600' : rate >= 70 ? 'text-yellow-600' : 'text-red-600'}`}>
+                                                      {rate.toFixed(1)}%
+                                                    </span>
+                                                    {pRec.is_efficiency_unreasonable && (
+                                                      <ExclamationTriangleIcon className="h-4 w-4 text-amber-500 animate-pulse" title="Efisiensi tidak logis (>100%)" />
+                                                    )}
+                                                  </div>
+                                                );
+                                              })() : '-'}
                                             </td>
                                           </tr>
                                         ))}
@@ -1908,7 +1934,7 @@ const MachinesTab: React.FC<{ data: any }> = ({ data }) => {
 };
 
 // ==================== DOWNTIME TAB ====================
-const DowntimeTab: React.FC<{ data: any; downtimePieData: any[] }> = ({ data, downtimePieData }) => (
+const DowntimeTab: React.FC<{ data: any; downtimePieData: any[]; combinedDowntimeByCategory: Record<string, number> }> = ({ data, downtimePieData, combinedDowntimeByCategory }) => (
   <div className="space-y-5">
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
       {/* Category Pie */}
@@ -1932,7 +1958,7 @@ const DowntimeTab: React.FC<{ data: any; downtimePieData: any[] }> = ({ data, do
             <div key={k} className="flex items-center gap-1.5">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: c }} />
               <span className="text-xs text-gray-600 dark:text-gray-300">{CATEGORY_LABELS[k]}</span>
-              <span className="text-xs text-gray-400">({fmtMin(data.downtime_by_category[k] || 0)})</span>
+              <span className="text-xs text-gray-400">({fmtMin(combinedDowntimeByCategory[k] || 0)})</span>
             </div>
           ))}
         </div>
@@ -1941,17 +1967,18 @@ const DowntimeTab: React.FC<{ data: any; downtimePieData: any[] }> = ({ data, do
       <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Breakdown Waktu Downtime</h3>
         <div className="space-y-3">
-          {Object.entries(data.downtime_by_category).map(([k, v]) => {
-            const total = Object.values(data.downtime_by_category).reduce((a: number, b: any) => a + b, 0) as number;
-            const pct = total > 0 ? ((v as number) / total * 100) : 0;
+          {Object.entries(DOWNTIME_COLORS).map(([k, color]) => {
+            const v = combinedDowntimeByCategory[k] || 0;
+            const total = Object.values(combinedDowntimeByCategory).reduce((a: number, b: any) => a + b, 0) as number;
+            const pct = total > 0 ? (v / total * 100) : 0;
             return (
               <div key={k}>
                 <div className="flex justify-between text-xs mb-1">
                   <span className="font-medium text-gray-700 dark:text-gray-200">{CATEGORY_LABELS[k]}</span>
-                  <span className="text-gray-500 dark:text-gray-400">{fmtMin(v as number)} ({pct.toFixed(1)}%)</span>
+                  <span className="text-gray-500 dark:text-gray-400">{fmtMin(v)} ({pct.toFixed(1)}%)</span>
                 </div>
                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                  <div className="h-2.5 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: DOWNTIME_COLORS[k] }} />
+                  <div className="h-2.5 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: color }} />
                 </div>
               </div>
             );
@@ -3033,6 +3060,7 @@ interface ConvertingShiftData {
   specification?: string;
   downtime_entries?: any[];
   machine_data?: any;
+  is_efficiency_unreasonable?: boolean;
 }
 
 interface ConvertingMachineData {

@@ -150,15 +150,28 @@ class ConvertingProduction(db.Model):
 
     @property
     def efficiency_rate(self):
-        """OEE / Efficiency rate in percentage"""
+        """OEE / Efficiency rate in percentage (capped at 100.0%)"""
         speed = self.machine_speed
         runtime = self.actual_runtime
         if speed > 0 and runtime > 0:
             expected = speed * runtime
             if expected > 0:
-                return round((self.good_quantity / expected) * 100, 2)
+                raw_val = round((self.good_quantity / expected) * 100, 2)
+                return min(raw_val, 100.0)
         # Fallback to machine target efficiency or default 80% if speed/runtime info is missing
-        return float(self.machine.target_efficiency) if self.machine and self.machine.target_efficiency else 80.0
+        return min(float(self.machine.target_efficiency), 100.0) if self.machine and self.machine.target_efficiency else 80.0
+
+    @property
+    def is_efficiency_unreasonable(self):
+        """Check if raw calculated efficiency rate exceeds 100% (unreasonable)"""
+        speed = self.machine_speed
+        runtime = self.actual_runtime
+        if speed > 0 and runtime > 0:
+            expected = speed * runtime
+            if expected > 0:
+                raw_val = (self.good_quantity / expected) * 100
+                return raw_val > 100.05
+        return False
 
     @property
     def quality_rate(self):
