@@ -10,7 +10,8 @@ import {
   ExclamationCircleIcon
 ,
   MapPinIcon as MapPin,
-  TruckIcon as Truck
+  TruckIcon as Truck,
+  XMarkIcon as X
 } from '@heroicons/react/24/outline';
 interface TrackingFormData {
   shipping_order_id: number;

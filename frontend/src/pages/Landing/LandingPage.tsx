@@ -11,8 +11,16 @@ import {
   LightBulbIcon,
   ShieldCheckIcon,
   SparklesIcon,
-  UsersIcon
-
+  UsersIcon,
+  CubeIcon,
+  ShoppingCartIcon,
+  ShoppingBagIcon,
+  BeakerIcon,
+  TruckIcon,
+  BanknotesIcon,
+  WrenchScrewdriverIcon,
+  RocketLaunchIcon,
+  CloudIcon
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 interface SystemModule {
@@ -28,10 +36,23 @@ interface SystemModule {
   itemCount?: number;
 }
 
+interface FeatureModule {
+  id: string;
+  name: string;
+  description: string;
+  icon: React.ComponentType<{ className?: string }>;
+  href: string;
+  color: string;
+  gradient: string;
+  features: string[];
+}
+
 const LandingPage: React.FC = () => {
   const { t } = useLanguage();
 
   const [companyName, setCompanyName] = useState('Your Company');
+  const [isVisible, setIsVisible] = useState(false);
+  const [currentFeature, setCurrentFeature] = useState(0);
   const [companyInfo, setCompanyInfo] = useState({
     industry: 'Manufacturing',
     description: 'Advanced Enterprise Resource Planning System'
@@ -47,6 +68,7 @@ const LandingPage: React.FC = () => {
   useEffect(() => {
     loadCompanySettings();
     loadSystemStats();
+    setIsVisible(true);
     
     // Update time every minute
     const timeInterval = setInterval(() => {

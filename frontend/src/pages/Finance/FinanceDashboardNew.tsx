@@ -8,7 +8,7 @@ import {
   BanknotesIcon,
   BookOpenIcon,
   CalculatorIcon,
-  ChartBarIcon as Calculator,
+  ChartBarIcon,
   ChartPieIcon,
   CheckCircleIcon
 ,

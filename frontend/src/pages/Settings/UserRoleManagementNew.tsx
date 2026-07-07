@@ -9,9 +9,11 @@ import {
   useGetRolesQuery,
   useGetPermissionsQuery,
   useDeleteUserMutation,
-  useDeleteRoleMutation
+  useDeleteRoleMutation,
+  User,
+  Role,
+  Permission
 } from '../../services/userManagementApi';
-import type { User, Role, Permission } from '../../types/auth';
 import UserManagementHeader from '../../components/Settings/UserManagementHeader';
 import UserTable from '../../components/Settings/UserTable';
 import RoleTable from '../../components/Settings/RoleTable';
@@ -162,6 +164,7 @@ const UserRoleManagementNew: React.FC = () => {
         setFilterStatus={setFilterStatus}
         onCreateUser={handleCreateUser}
         onCreateRole={handleCreateRole}
+        onCreatePermission={() => {}}
         userCount={users.length}
         roleCount={roles.length}
         permissionCount={permissions.length}

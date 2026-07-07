@@ -1,24 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import {
   ArrowDownTrayIcon,
   ArrowLeftIcon,
   CalendarIcon as Calendar,
   CheckCircleIcon,
+  CheckCircleIcon as CheckCircle,
   ClockIcon,
   CubeIcon,
   DocumentTextIcon,
-  EnvelopeIcon as Mail
-,
+  EnvelopeIcon as Mail,
   ExclamationTriangleIcon,
   MapPinIcon as MapPin,
   PencilIcon as Edit,
   PhoneIcon,
   PrinterIcon,
   TruckIcon,
+  TruckIcon as Truck,
   UserIcon,
-  XCircleIcon
+  XCircleIcon,
+  TrashIcon as Trash2
 } from '@heroicons/react/24/outline';
 interface ShippingOrderDetails {
   id: number;

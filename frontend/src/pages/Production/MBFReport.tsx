@@ -105,6 +105,8 @@ interface MBFReportDetail {
   glvcn_grade_b: number;
   glvcn_grade_c: number;
   glvcn_waste_packaging: number;
+  octn_waste_cloth_chem?: string;
+  glvcn_waste_cloth_chem?: string;
 }
 
 interface FormData {

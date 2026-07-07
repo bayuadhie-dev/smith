@@ -13,7 +13,8 @@ import {
   DocumentTextIcon,
   ExclamationCircleIcon,
   HashtagIcon as Hash,
-  MapPinIcon
+  MapPinIcon,
+  XMarkIcon as X
 } from '@heroicons/react/24/outline';
 interface Product {
   id: number;

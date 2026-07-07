@@ -10,8 +10,8 @@ import {
   ExclamationTriangleIcon as AlertTriangle,
   PlusIcon as Plus,
   TrashIcon as Trash2,
-  ViewfinderCircleIcon as Target
-
+  ViewfinderCircleIcon as Target,
+  XMarkIcon as X
 } from '@heroicons/react/24/outline';
 interface ProjectFormData {
   project_number: string;
@@ -292,14 +292,14 @@ const ProjectDetailsForm: React.FC = () => {
   const removeItem = (section: string, index: number) => {
     setFormData(prev => ({
       ...prev,
-      [section]: prev[section as keyof typeof prev].filter((_: any, i: number) => i !== index)
+      [section]: (prev[section as keyof typeof prev] as any[]).filter((_: any, i: number) => i !== index)
     }));
   };
 
   const updateItem = (section: string, index: number, field: string, value: any) => {
     setFormData(prev => ({
       ...prev,
-      [section]: prev[section as keyof typeof prev].map((item: any, i: number) => 
+      [section]: (prev[section as keyof typeof prev] as any[]).map((item: any, i: number) => 
         i === index ? { ...item, [field]: value } : item
       )
     }));

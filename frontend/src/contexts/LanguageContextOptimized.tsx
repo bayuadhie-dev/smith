@@ -177,7 +177,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
 // Hook for getting specific module translations with memoization
 export const useModuleTranslations = (module: string) => {
-  const { t, language } = useTranslation()
+  const { t, language } = useLanguage()
   
   return useMemo(() => {
     const moduleTranslations: Record<string, string> = {}
@@ -205,7 +205,7 @@ export const useTranslationPerformance = () => {
 
   useEffect(() => {
     // Monitor translation performance
-    const originalT = LanguageContext._currentValue?.t
+    const originalT = (LanguageContext as any)._currentValue?.t
     
     if (originalT) {
       const monitoredT = (key: string, params?: Record<string, string | number>) => {

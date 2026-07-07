@@ -57,8 +57,8 @@ const RosterManagementIntegrated: React.FC = () => {
 
   // API Queries - Integrated data sources
   const { data: employeesData, isLoading: employeesLoading } = useGetEmployeesQuery({});
-  const { data: machinesData, isLoading: machinesLoading } = useGetMachinesQuery();
-  const { data: shiftsData, isLoading: shiftsLoading } = useGetShiftsQuery();
+  const { data: machinesData, isLoading: machinesLoading } = useGetMachinesQuery(undefined);
+  const { data: shiftsData, isLoading: shiftsLoading } = useGetShiftsQuery(undefined);
   
   // Roster data for the selected week
   const weekStart = startOfWeek(selectedWeek, { weekStartsOn: 1 });

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { notificationService } from '../../services/notificationService';
 import axiosInstance from '../../utils/axiosConfig';
@@ -1686,7 +1686,7 @@ const Settings: React.FC = () => {
               {/* External Connectors */}
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center mb-4">
-                  <Link className="h-8 w-8 text-blue-600 mr-3" />
+                  <LinkIcon className="h-8 w-8 text-blue-600 mr-3" />
                   <div>
                     <h4 className="font-semibold text-gray-900 dark:text-white">External Connectors</h4>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Connect external systems</p>

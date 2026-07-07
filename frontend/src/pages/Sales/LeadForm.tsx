@@ -4,6 +4,17 @@ import PageHeader from '../../components/Layout/PageHeader';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import axiosInstance from '../../utils/axiosConfig';
 import { useLanguage } from '../../contexts/LanguageContext';
+import {
+  UserGroupIcon,
+  BuildingOfficeIcon,
+  BanknotesIcon,
+  GlobeAltIcon,
+  UserIcon,
+  EnvelopeIcon,
+  PhoneIcon,
+  MapPinIcon,
+  StarIcon
+} from '@heroicons/react/24/outline';
 interface User {
   id: number;
   full_name: string;

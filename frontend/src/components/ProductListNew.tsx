@@ -17,39 +17,39 @@ interface ProductNew {
   id: number;
   kode_produk: string;
   nama_produk: string;
-  gramasi?: string;  // Changed to string for MANUAL values
-  cd?: string;
-  md?: string;
-  sheet_per_pack?: string;
-  pack_per_karton?: string;
-  berat_kering?: string;
-  ratio?: string;
-  ingredient?: string;
-  ukuran_batch_vol?: string;
-  ukuran_batch_ctn?: string;
+  gramasi?: string | number;  // Changed to string | number for MANUAL values
+  cd?: string | number;
+  md?: string | number;
+  sheet_per_pack?: string | number;
+  pack_per_karton?: string | number;
+  berat_kering?: string | number;
+  ratio?: string | number;
+  ingredient?: string | number;
+  ukuran_batch_vol?: string | number;
+  ukuran_batch_ctn?: string | number;
   spunlace?: string;
-  rayon?: string;
-  polyester?: string;
-  es?: string;
-  slitting_cm?: string;
-  lebar_mr_net_cm?: string;
-  lebar_mr_gross_cm?: string;
+  rayon?: string | number;
+  polyester?: string | number;
+  es?: string | number;
+  slitting_cm?: string | number;
+  lebar_mr_net_cm?: string | number;
+  lebar_mr_gross_cm?: string | number;
   keterangan_slitting?: string;
   no_mesin_epd?: string;
-  speed_epd_pack_menit?: string;
-  meter_kain?: string;
-  kg_kain?: string;
-  kebutuhan_rayon_kg?: string;
-  kebutuhan_polyester_kg?: string;
-  kebutuhan_es_kg?: string;
+  speed_epd_pack_menit?: string | number;
+  meter_kain?: string | number;
+  kg_kain?: string | number;
+  kebutuhan_rayon_kg?: string | number;
+  kebutuhan_polyester_kg?: string | number;
+  kebutuhan_es_kg?: string | number;
   process_produksi?: string;
   kode_jumbo_roll?: string;
   nama_jumbo_roll?: string;
   kode_main_roll?: string;
   nama_main_roll?: string;
-  kapasitas_mixing_kg?: string;
-  actual_mixing_kg?: string;
-  dosing_kg?: string;
+  kapasitas_mixing_kg?: string | number;
+  actual_mixing_kg?: string | number;
+  dosing_kg?: string | number;
   is_active: boolean;
   version: number;
   notes?: string;
@@ -536,7 +536,7 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
                           <div className="text-xs space-y-0.5">
                             <div>{formatNumber(product.sheet_per_pack)} sheet/pack</div>
                             <div>{formatNumber(product.pack_per_karton)} pack/karton</div>
-                            <div className="text-gray-500 dark:text-gray-400">Total: {formatNumber((product.sheet_per_pack || 0) * (product.pack_per_karton || 0))}</div>
+                            <div className="text-gray-500 dark:text-gray-400">Total: {formatNumber(Number(product.sheet_per_pack || 0) * Number(product.pack_per_karton || 0))}</div>
                           </div>
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">

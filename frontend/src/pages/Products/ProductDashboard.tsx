@@ -42,8 +42,8 @@ interface StockAlert {
   product_name: string;
   current_stock: number;
   min_stock: number;
-  status: 'low_stock' | 'out_of_stock';
-  last_updated: string;
+  status: 'low_stock' | 'out_of_stock' | 'normal';
+  last_updated?: string;
 }
 
 interface TrendData {
@@ -118,13 +118,13 @@ const ProductDashboard: React.FC = () => {
         avg_price: 0
       });
       setTopProducts([
-        { id: 1, name: 'No Data', sales_qty: 0, sales_value: 0, profit_margin: 0 }
+        { product_name: 'No Data', sales_qty: 0, sales_value: 0, profit_margin: 0 }
       ]);
       setCategoryData([
-        { category: 'No Data', count: 0, percentage: 100 }
+        { category: 'No Data', product_count: 0, total_value: 0 }
       ]);
       setStockAlerts([
-        { id: 1, product_name: 'No Data', status: 'normal', stock_level: 0, min_stock: 0 }
+        { id: 1, product_name: 'No Data', status: 'normal', current_stock: 0, min_stock: 0 }
       ]);
       setTrendData([
         { month: 'Jan', new_products: 0, discontinued: 0, sales_volume: 0 },

@@ -9,7 +9,7 @@ import {
 interface Permission {
   id: number;
   name: string;
-  code: string;
+  code?: string;
   description?: string;
   module?: string;
   is_active: boolean;
@@ -132,7 +132,7 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
                       </div>
                       
                       <p className="text-xs text-gray-600 dark:text-gray-300 mt-1 font-mono bg-white dark:bg-gray-800 px-2 py-1 rounded">
-                        {permission.code}
+                        {permission.code || (permission as any).action || ''}
                       </p>
                       
                       {permission.description && (

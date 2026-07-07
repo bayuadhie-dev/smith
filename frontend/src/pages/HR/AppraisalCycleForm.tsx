@@ -10,7 +10,7 @@ export default function AppraisalCycleForm() {
 
 const navigate = useNavigate()
   const [createAppraisalCycle, { isLoading }] = useCreateAppraisalCycleMutation()
-  const { data: templatesData } = useGetAppraisalTemplatesQuery()
+  const { data: templatesData } = useGetAppraisalTemplatesQuery(undefined)
   
   const [formData, setFormData] = useState({
     cycle_name: '',

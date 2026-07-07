@@ -4,16 +4,16 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import {
   CalendarIcon as Calendar,
   CheckBadgeIcon as QualityIcon,
-  CheckCircleIcon,
+  CheckCircleIcon as CheckCircle,
   CheckIcon as Save,
   CubeIcon,
   DocumentTextIcon,
   ExclamationCircleIcon,
   ExclamationTriangleIcon as AlertTriangle,
-  HashtagIcon as Hash
-,
+  HashtagIcon as Hash,
   UserIcon as User,
-  XCircleIcon as XCircle
+  XCircleIcon as XCircle,
+  XMarkIcon as X
 } from '@heroicons/react/24/outline';
 interface Product {
   id: number;

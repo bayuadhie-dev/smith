@@ -4,7 +4,7 @@ import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
   KeyIcon,
-  LinkIcon,
+  LinkIcon as Link,
   PauseIcon,
   PencilIcon,
   PlayIcon

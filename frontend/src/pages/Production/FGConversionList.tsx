@@ -10,6 +10,7 @@ import {
   BeakerIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
+import { Link } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import toast from 'react-hot-toast';
 

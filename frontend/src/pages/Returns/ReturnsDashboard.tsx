@@ -27,7 +27,7 @@ const [page, setPage] = useState(1)
     qc_status: qcStatusFilter || undefined
   })
 
-  const { data: analytics } = useGetReturnAnalyticsQuery()
+  const { data: analytics } = useGetReturnAnalyticsQuery() as any
 
   const getStatusIcon = (status: string) => {
     switch (status) {

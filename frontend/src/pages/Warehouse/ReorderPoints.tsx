@@ -11,6 +11,8 @@ import {
   FunnelIcon,
   XCircleIcon
 } from '@heroicons/react/24/outline';
+import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Bar } from 'recharts';
+
 export default function ReorderPoints() {
     const { t } = useLanguage();
 

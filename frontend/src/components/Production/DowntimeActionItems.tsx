@@ -152,7 +152,7 @@ const DowntimeActionItems: React.FC<DowntimeActionItemsProps> = ({
       });
       
       // Check if response is actually JSON error (content-type mismatch)
-      const contentType = response.headers['content-type'] || '';
+      const contentType = String(response.headers['content-type'] || '');
       if (contentType.includes('application/json')) {
         // Backend returned JSON error instead of file
         const text = await response.data.text();
@@ -202,7 +202,7 @@ const DowntimeActionItems: React.FC<DowntimeActionItemsProps> = ({
       });
       
       // Check if response is actually JSON error
-      const contentType = response.headers['content-type'] || '';
+      const contentType = String(response.headers['content-type'] || '');
       if (contentType.includes('application/json')) {
         const text = await response.data.text();
         const errorData = JSON.parse(text);

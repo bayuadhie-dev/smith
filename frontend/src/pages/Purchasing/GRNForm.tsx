@@ -14,7 +14,8 @@ import {
   TruckIcon as Truck
 ,
   UserIcon as User,
-  XCircleIcon as XCircle
+  XCircleIcon as XCircle,
+  XMarkIcon as X
 } from '@heroicons/react/24/outline';
 interface PurchaseOrder {
   id: number;

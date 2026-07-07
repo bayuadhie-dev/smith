@@ -12,7 +12,8 @@ import {
   MapPinIcon,
   ExclamationTriangleIcon as AlertTriangle,
   TruckIcon as Truck,
-  CheckIcon as Save
+  CheckIcon as Save,
+  XMarkIcon as X
 } from '@heroicons/react/24/outline';
 interface Product {
   id: number;

@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import {
   CalendarIcon as Calendar,
-  CheckCircleIcon,
+  CheckCircleIcon as CheckCircle,
   CheckIcon as Save,
   ClockIcon,
   DocumentTextIcon,
@@ -12,8 +12,8 @@ import {
   MapPinIcon,
   ClockIcon as Timer,
   UserIcon as User,
-  XCircleIcon,
-  XMarkIcon
+  XCircleIcon as XCircle,
+  XMarkIcon as X
 } from '@heroicons/react/24/outline';
 interface Employee {
   id: number;

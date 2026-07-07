@@ -320,3 +320,8 @@ backups/
 Downloads/
 Public/
 uploads/
+
+# WhatsApp gateway sessions/cache (jangan pernah commit - berisi token akses WhatsApp)
+scripts/.wwebjs_auth/
+scripts/.wwebjs_cache/
+scripts/.baileys_auth/

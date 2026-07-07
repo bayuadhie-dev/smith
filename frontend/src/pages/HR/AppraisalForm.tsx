@@ -9,8 +9,8 @@ import {
   ExclamationCircleIcon,
   StarIcon as Star,
   UserIcon as User,
-  ViewfinderCircleIcon as Target
-
+  ViewfinderCircleIcon as Target,
+  XMarkIcon as X
 } from '@heroicons/react/24/outline';
 interface Employee {
   id: number;

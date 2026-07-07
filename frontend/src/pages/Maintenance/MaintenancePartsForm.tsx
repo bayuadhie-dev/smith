@@ -8,7 +8,8 @@ import {
   CurrencyDollarIcon,
   DocumentTextIcon,
   PlusIcon as Plus,
-  TrashIcon as Trash2
+  TrashIcon as Trash2,
+  XMarkIcon as X
 } from '@heroicons/react/24/outline';
 interface PartsFormData {
   request_number: string;

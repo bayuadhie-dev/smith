@@ -304,6 +304,18 @@ const ServerSettings: React.FC = () => {
     setRoleForm({
       name: role.name,
       color: role.color,
+      can_manage_server: false,
+      can_manage_channels: false,
+      can_manage_roles: false,
+      can_manage_messages: false,
+      can_kick_members: false,
+      can_ban_members: false,
+      can_invite: true,
+      can_send_messages: true,
+      can_attach_files: true,
+      can_add_reactions: true,
+      can_mention_everyone: false,
+      can_pin_messages: false,
       ...role.permissions
     });
     setShowRoleModal(true);

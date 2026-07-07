@@ -33,7 +33,7 @@ export default function ProjectList() {
     project_type: typeFilter || undefined
   })
   
-  const { data: analyticsData } = useGetProjectsAnalyticsQuery()
+  const { data: analyticsData } = useGetProjectsAnalyticsQuery(undefined)
   const [deleteProject] = useDeleteProjectMutation()
 
   const handleDelete = async (id: number, name: string) => {

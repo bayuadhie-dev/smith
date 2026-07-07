@@ -12,6 +12,7 @@ import {
   useGetSalesOrdersQuery,
   useGetCustomersQuery
 } from '../../services/api';
+import { useCreateShippingOrderMutation as useCreateShipmentMutation } from '../../services/shippingApi';
 interface ShipmentFormData {
   sales_order_ids?: number[]
   customer_id?: number
@@ -42,6 +43,7 @@ const navigate = useNavigate()
   
   const { data: salesOrders } = useGetSalesOrdersQuery({})
   const { data: customers } = useGetCustomersQuery({})
+  const [createShipment] = useCreateShipmentMutation()
   
   const { register, control, handleSubmit, watch, formState: { errors } } = useForm<ShipmentFormData>({
     defaultValues: {

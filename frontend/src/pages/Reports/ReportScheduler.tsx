@@ -122,7 +122,7 @@ const navigate = useNavigate()
   const [newSchedule, setNewSchedule] = useState({
     name: '',
     reportType: '',
-    frequency: 'daily' as const,
+    frequency: 'daily' as 'daily' | 'weekly' | 'monthly' | 'quarterly',
     time: '08:00',
     dayOfWeek: 1,
     dayOfMonth: 1,

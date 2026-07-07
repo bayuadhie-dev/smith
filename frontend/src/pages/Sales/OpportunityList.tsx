@@ -5,7 +5,12 @@ import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import axiosInstance from '../../utils/axiosConfig';
 import { formatRupiah } from '../../utils/currencyUtils';
 import { useLanguage } from '../../contexts/LanguageContext';
-  Squares2X2Icon
+import {
+  Squares2X2Icon,
+  FunnelIcon,
+  PlusIcon,
+  MagnifyingGlassIcon
+} from '@heroicons/react/24/outline';
 interface Pipeline {
   id: number;
   name: string;

@@ -26,7 +26,7 @@ export default function WarehouseDashboardEnhanced() {
 
 const [alertFilter, setAlertFilter] = useState('active')
   
-  const { data: dashboardData, isLoading: dashboardLoading } = useGetWarehouseDashboardQuery()
+  const { data: dashboardData, isLoading: dashboardLoading } = useGetWarehouseDashboardQuery(undefined)
   const { data: alertsData, isLoading: alertsLoading } = useGetWarehouseAlertsQuery({ status: alertFilter })
   
   // Traditional warehouse data

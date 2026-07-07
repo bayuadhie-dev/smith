@@ -8,6 +8,7 @@ import {
   ExclamationCircleIcon,
   HashtagIcon as Hash,
   MapPinIcon,
+  XMarkIcon as X,
   QrCodeIcon as Barcode
 } from '@heroicons/react/24/outline';
 interface Product {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { useGetReturnQuery, useCreateQCInspectionMutation, useCreateDispositionMutation } from '../../services/returnsApi'
 import { useLanguage } from '../../contexts/LanguageContext';
 import {
@@ -395,6 +395,7 @@ function QCInspectionModal({ item, onSubmit, onClose }: any) {
     qc_notes: '',
     recommendation: ''
   })
+  const { t } = useLanguage();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -515,6 +516,7 @@ function DispositionModal({ item, onSubmit, onClose }: any) {
     waste_category: '',
     notes: ''
   })
+  const { t } = useLanguage();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()

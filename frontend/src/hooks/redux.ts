@@ -1,7 +1,3 @@
-import React, { useDispatch, useSelector } from 'react';
-import {
-  TypedUseSelectorHook
-} from 'lucide-react';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux'
 import type { RootState, AppDispatch } from '../store'
 

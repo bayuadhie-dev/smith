@@ -13,7 +13,10 @@ import {
   InformationCircleIcon as StatusIcon,
   MagnifyingGlassIcon,
   PlusIcon,
-  UserIcon
+  UserIcon,
+  ArrowTopRightOnSquareIcon,
+  XCircleIcon,
+  DocumentDuplicateIcon
 } from '@heroicons/react/24/outline';
 import { useState, useEffect } from 'react'
 import axiosInstance from '../../utils/axiosConfig'

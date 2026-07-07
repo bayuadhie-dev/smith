@@ -4,6 +4,25 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import axiosInstance from '../../utils/axiosConfig';
 import { formatRupiah } from '../../utils/currencyUtils';
 import { useLanguage } from '../../contexts/LanguageContext';
+import {
+  ArrowUpIcon,
+  ArrowDownIcon,
+  ArrowRightIcon,
+  ExclamationTriangleIcon,
+  BuildingStorefrontIcon,
+  CogIcon,
+  ChartBarIcon,
+  CubeIcon,
+  ShoppingCartIcon,
+  CheckCircleIcon,
+  WrenchScrewdriverIcon,
+  UsersIcon,
+  BanknotesIcon,
+  TruckIcon,
+  BeakerIcon,
+  ShoppingBagIcon,
+  BellIcon
+} from '@heroicons/react/24/outline';
 interface ExecutiveDashboardData {
   financial: {
     sales_today: number;

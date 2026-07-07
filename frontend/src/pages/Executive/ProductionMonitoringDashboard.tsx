@@ -1175,10 +1175,12 @@ const DailyTab: React.FC<{
                                           <th className="px-3 py-2.5">Mesin</th>
                                           <th className="px-3 py-2.5 text-center">Shift</th>
                                           <th className="px-3 py-2.5">Produk</th>
-                                          <th className="px-3 py-2.5">Operator</th>
+                                          <th className="px-3 py-2.5 text-right">Target Efisiensi</th>
                                           <th className="px-3 py-2.5 text-right text-green-750 font-bold">Grade A (pcs)</th>
                                           <th className="px-3 py-2.5 text-right text-red-700 font-bold">Reject (pcs)</th>
                                           <th className="px-3 py-2.5 text-right font-black">Total Output</th>
+                                          <th className="px-3 py-2.5 text-right font-semibold">Target Speed</th>
+                                          <th className="px-3 py-2.5 text-right font-semibold">Actual Speed</th>
                                           <th className="px-3 py-2.5 text-right font-black text-blue-750">Efisiensi</th>
                                         </tr>
                                       </thead>
@@ -1190,10 +1192,12 @@ const DailyTab: React.FC<{
                                             </td>
                                             <td className="px-3 py-2 text-center text-gray-850 dark:text-gray-200">Shift {pRec.shift}</td>
                                             <td className="px-3 py-2 text-gray-650 dark:text-gray-400 font-medium">{pRec.product_name}</td>
-                                            <td className="px-3 py-2 text-gray-600 dark:text-gray-400">{pRec.operator_name}</td>
+                                            <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-400">{pRec.machine_target_efficiency ? `${pRec.machine_target_efficiency}%` : '-'}</td>
                                             <td className="px-3 py-2 text-right text-green-700 font-bold">{fmtNum(pRec.good_quantity)}</td>
                                             <td className="px-3 py-2 text-right text-red-600 font-semibold">{fmtNum(pRec.reject_quantity)}</td>
                                             <td className="px-3 py-2 text-right font-bold text-gray-900 dark:text-white">{fmtNum(pRec.total_output)}</td>
+                                            <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-400">{pRec.target_speed ? fmtNum(pRec.target_speed) : '-'}</td>
+                                            <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-400">{pRec.actual_speed ? fmtNum(pRec.actual_speed) : '-'}</td>
                                             <td className="px-3 py-2 text-right">
                                               {pRec.efficiency_rate ? (() => {
                                                 const rate = pRec.efficiency_rate;

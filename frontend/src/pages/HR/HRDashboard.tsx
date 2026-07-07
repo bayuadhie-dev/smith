@@ -49,7 +49,7 @@ export default function HRDashboard() {
   const pendingLeaves = leavesData?.leaves?.length || 0
   const ongoingTrainings = trainingsData?.sessions?.length || 0
 
-  const attendanceRate = activeEmployees > 0 ? ((presentToday / activeEmployees) * 100).toFixed(1) : 0
+  const attendanceRate = activeEmployees > 0 ? ((presentToday / activeEmployees) * 100).toFixed(1) : '0'
 
   // Quick Stats
   const quickStats = [

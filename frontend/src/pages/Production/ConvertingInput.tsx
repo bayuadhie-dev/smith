@@ -27,7 +27,14 @@ interface DowntimeEntry {
   frequency: number;
   category: string;
 }
-
+const DOWNTIME_CATEGORIES = {
+  mesin: { label: 'Mesin', bgColor: 'bg-red-50/50', textColor: 'text-red-700', borderColor: 'border-red-200' },
+  operator: { label: 'Operator', bgColor: 'bg-orange-50/50', textColor: 'text-orange-700', borderColor: 'border-orange-200' },
+  material: { label: 'Material', bgColor: 'bg-blue-50/50', textColor: 'text-blue-700', borderColor: 'border-blue-200' },
+  design: { label: 'Design', bgColor: 'bg-purple-50/50', textColor: 'text-purple-700', borderColor: 'border-purple-200' },
+  idle: { label: 'Idle', bgColor: 'bg-yellow-50/50', textColor: 'text-yellow-700', borderColor: 'border-yellow-200' },
+  others: { label: 'Lainnya', bgColor: 'bg-gray-50/50', textColor: 'text-gray-700', borderColor: 'border-gray-200' }
+};
 const CATEGORY_KEYWORDS: Record<string, string[]> = {
   idle: [
     'ambil kain', 'ambil stiker', 'box belum datang', 'box habis', 'buat carton', 'idle', 
@@ -195,6 +202,8 @@ export default function ConvertingInput() {
   const [prodHourMin, setProdHourMin] = useState(0)
   const [downtimeMin, setDowntimeMin] = useState(0)
   const [machineSpeed, setMachineSpeed] = useState(0)
+  const [targetSpeed, setTargetSpeed] = useState(0)
+  const [actualSpeed, setActualSpeed] = useState(0)
   const [bagRows, setBagRows] = useState<BagmakerRow[]>([mkBag(1)])
   const [downtimeEntries, setDowntimeEntries] = useState<DowntimeEntry[]>([])
 
@@ -319,7 +328,9 @@ export default function ConvertingInput() {
         loss_kg: fL, 
         operator_name: operatorName, 
         notes, 
-        machine_data 
+        machine_data,
+        target_speed: (mtype === 'bagmaker' || mtype === 'laminasi') ? (targetSpeed || null) : null,
+        actual_speed: (mtype === 'bagmaker' || mtype === 'laminasi') ? (actualSpeed || null) : null
       })
       toast.success('Data produksi berhasil disimpan')
       navigate('/app/production/converting')
@@ -547,6 +558,14 @@ export default function ConvertingInput() {
         </div>
       </>)}
       {mtype === 'laminasi' && (<>
+        {/* Speed Settings */}
+        <div className={sc}>
+          <h3 className="font-semibold text-slate-800 mb-4">Target &amp; Actual Speed</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div><label className={lc}>Target Speed</label><input type="number" value={targetSpeed || ''} onChange={e => setTargetSpeed(N(e.target.value))} className={ic} placeholder="0" /></div>
+            <div><label className={lc}>Actual Speed</label><input type="number" value={actualSpeed || ''} onChange={e => setActualSpeed(N(e.target.value))} className={ic} placeholder="0" /></div>
+          </div>
+        </div>
         {/* Film Axis Settings */}
         <div className={sc}>
           <h3 className="font-semibold text-slate-800 mb-4">Film Axis</h3>
@@ -647,7 +666,9 @@ export default function ConvertingInput() {
           <div className="grid grid-cols-3 gap-4">
             <div><label className={lc}>Production Hour (menit)</label><input type="number" value={prodHourMin || ''} onChange={e => setProdHourMin(N(e.target.value))} className={ic} placeholder="0" /></div>
             <div><label className={lc}>Downtime (menit)</label><input type="number" value={downtimeMin || ''} onChange={e => setDowntimeMin(N(e.target.value))} className={ic} placeholder="0" /></div>
-            <div><label className={lc}>Speed Mesin</label><input type="number" value={machineSpeed || ''} onChange={e => setMachineSpeed(N(e.target.value))} className={ic} placeholder="0" /></div>
+            <div><label className={lc}>Speed Mesin (Actual)</label><input type="number" value={machineSpeed || ''} onChange={e => setMachineSpeed(N(e.target.value))} className={ic} placeholder="0" /></div>
+            <div><label className={lc}>Target Speed</label><input type="number" value={targetSpeed || ''} onChange={e => setTargetSpeed(N(e.target.value))} className={ic} placeholder="0" /></div>
+            <div><label className={lc}>Actual Speed</label><input type="number" value={actualSpeed || ''} onChange={e => setActualSpeed(N(e.target.value))} className={ic} placeholder="0" /></div>
           </div>
         </div>
         {/* Bagmaker Rows */}

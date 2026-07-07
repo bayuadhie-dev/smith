@@ -8,6 +8,8 @@ import {
   CubeIcon,
   InformationCircleIcon
 } from '@heroicons/react/24/outline';
+import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, BarChart, CartesianGrid, XAxis, YAxis, Bar, ScatterChart, Scatter } from 'recharts';
+
 export default function ABCAnalysis() {
     const { t } = useLanguage();
 

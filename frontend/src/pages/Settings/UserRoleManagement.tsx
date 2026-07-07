@@ -12,7 +12,10 @@ import {
   useGetPermissionsQuery,
   useGetRolesQuery,
   useGetUsersQuery,
-  useCreatePermissionMutation
+  useCreatePermissionMutation,
+  User,
+  Role,
+  Permission
 } from '../../services/userManagementApi';
 import UserManagementHeader from '../../components/Settings/UserManagementHeader';
 import UserTable from '../../components/Settings/UserTable';

@@ -8,8 +8,8 @@ import {
   ChartBarIcon,
   CheckCircleIcon,
   ClipboardDocumentListIcon,
-  ExclamationTriangleIcon
-
+  ExclamationTriangleIcon,
+  CubeIcon
 } from '@heroicons/react/24/outline';
 
 const MRP: React.FC = () => {

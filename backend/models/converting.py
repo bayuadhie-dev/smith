@@ -55,6 +55,10 @@ class ConvertingProduction(db.Model):
     grade_a = db.Column(db.Numeric(15, 2), default=0)  # kg atau pcs
     grade_b = db.Column(db.Numeric(15, 2), default=0)
     loss_kg = db.Column(db.Numeric(15, 2), default=0)
+    # Speed tracking - hanya relevan untuk Bagmaker & Laminasi
+    # Diinput manual oleh operator saat membuat laporan shift (pcs/menit)
+    target_speed = db.Column(db.Integer, nullable=True)
+    actual_speed = db.Column(db.Integer, nullable=True)
     
     # Machine-specific data disimpan sebagai JSON
     # Slitting: {rows: [{no_roll, width, weight, length, thick, slitting: [kg1..kg10], loss, total_length, total_weight}]}
@@ -157,9 +161,9 @@ class ConvertingProduction(db.Model):
             expected = speed * runtime
             if expected > 0:
                 raw_val = round((self.good_quantity / expected) * 100, 2)
-                return min(raw_val, 100.0)
+                return raw_val
         # Fallback to machine target efficiency or default 80% if speed/runtime info is missing
-        return min(float(self.machine.target_efficiency), 100.0) if self.machine and self.machine.target_efficiency else 80.0
+        return float(self.machine.target_efficiency) if self.machine and self.machine.target_efficiency else 80.0
 
     @property
     def is_efficiency_unreasonable(self):

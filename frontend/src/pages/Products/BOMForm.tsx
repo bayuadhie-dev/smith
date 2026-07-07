@@ -555,7 +555,7 @@ const BOMForm: React.FC = () => {
                     const product = products.find(p => p.id === value);
                     setFormData(prev => ({
                       ...prev,
-                      product_id: value || 0,
+                      product_id: Number(value) || 0,
                       pack_per_carton: product?.pack_per_carton || prev.pack_per_carton,
                       batch_size: product?.pack_per_carton || prev.batch_size
                     }));

@@ -204,6 +204,8 @@ def get_converting_productions():
                 'grade_a': float(p.grade_a) if p.grade_a else 0,
                 'grade_b': float(p.grade_b) if p.grade_b else 0,
                 'loss_kg': float(p.loss_kg) if p.loss_kg else 0,
+                'target_speed': p.target_speed,
+                'actual_speed': p.actual_speed,
                 'machine_data': p.get_machine_data(),
                 'operator_name': p.operator_name,
                 'notes': p.notes,
@@ -242,6 +244,8 @@ def create_converting_production():
             grade_a=float(data.get('grade_a', 0)),
             grade_b=float(data.get('grade_b', 0)),
             loss_kg=float(data.get('loss_kg', 0)),
+            target_speed=int(data['target_speed']) if data.get('target_speed') not in (None, '') else None,
+            actual_speed=int(data['actual_speed']) if data.get('actual_speed') not in (None, '') else None,
             operator_name=data.get('operator_name'),
             notes=data.get('notes'),
             status=data.get('status', 'completed'),
@@ -333,6 +337,12 @@ def update_converting_production(prod_id):
             
         if 'reject_quantity' in data:
             production.grade_b = float(data['reject_quantity'])
+
+        if 'target_speed' in data:
+            production.target_speed = int(data['target_speed']) if data['target_speed'] not in (None, '') else None
+
+        if 'actual_speed' in data:
+            production.actual_speed = int(data['actual_speed']) if data['actual_speed'] not in (None, '') else None
             
         if 'downtime_entries' in data or ('machine_data' in data and 'downtime_entries' in data['machine_data']):
             downtime_entries = data.get('downtime_entries') or data.get('machine_data', {}).get('downtime_entries', [])
@@ -480,6 +490,8 @@ def get_converting_dashboard():
                     'njo': p.njo,
                     'notes': p.notes,
                     'loss_kg': float(p.loss_kg) if p.loss_kg else 0,
+                    'target_speed': p.target_speed,
+                    'actual_speed': p.actual_speed,
                     'machine_data': p.machine_data_dict
                 })
                 machine_data[p.machine_id]['total_output'] += float(p.actual_quantity) if p.actual_quantity else 0
@@ -674,7 +686,10 @@ def get_converting_monthly_summary():
                 'total_output': output_val,
                 'efficiency_rate': float(r.efficiency_rate) if r.efficiency_rate else 0,
                 'is_efficiency_unreasonable': r.is_efficiency_unreasonable,
-                'operator_name': r.operator_name or '-'
+                'operator_name': r.operator_name or '-',
+                'target_speed': r.target_speed,
+                'actual_speed': r.actual_speed,
+                'machine_target_efficiency': float(r.machine.target_efficiency) if r.machine and r.machine.target_efficiency else None
             })
             
             # Process downtime entries for this record

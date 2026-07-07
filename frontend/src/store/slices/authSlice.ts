@@ -28,6 +28,7 @@ interface User {
   is_admin: boolean
   is_super_admin: boolean
   roles: string[]
+  last_login?: string
 }
 
 interface AuthState {

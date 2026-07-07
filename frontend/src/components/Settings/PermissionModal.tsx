@@ -4,7 +4,7 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 interface Permission {
   id?: number;
   name: string;
-  code: string;
+  code?: string;
   description?: string;
   module: string;
   action: string;

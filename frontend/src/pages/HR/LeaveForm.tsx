@@ -3,15 +3,17 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import {
   CalendarIcon as Calendar,
-  CheckCircleIcon,
+  CheckCircleIcon as CheckCircle,
   CheckIcon as Save,
   ClockIcon,
   DocumentTextIcon,
   ExclamationCircleIcon,
   HashtagIcon as Hash,
   InformationCircleIcon as StatusIcon,
-  UserIcon as User
-
+  UserIcon as User,
+  PauseIcon as Pause,
+  XCircleIcon as XCircle,
+  XMarkIcon as X
 } from '@heroicons/react/24/outline';
 interface Employee {
   id: number;
