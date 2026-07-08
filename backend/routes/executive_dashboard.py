@@ -3846,3 +3846,116 @@ def get_fg_conversion_summary():
         import traceback
         traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@executive_dashboard_bp.route('/all-time-downtime', methods=['GET'])
+@jwt_required()
+def get_all_time_downtime():
+    try:
+        # 1. Fetch PM downtime records from all ShiftProduction entries
+        shift_productions = ShiftProduction.query.filter(
+            ShiftProduction.issues.isnot(None),
+            ShiftProduction.issues != ''
+        ).all()
+        
+        downtime_reasons = {}
+        import re
+        from utils import detect_downtime_category
+        
+        for sp in shift_productions:
+            product_name = sp.product.name if sp.product else f"Product {sp.product_id}"
+            
+            issue_parts = sp.issues.split(';')
+            for idx, part in enumerate(issue_parts):
+                part = part.strip()
+                if not part:
+                    continue
+                
+                # Match pattern: "XX menit - reason [category]" or "XX menit - reason"
+                match = re.match(r'(\d+)\s*menit\s*-\s*(.+?)(?:\s*\[([^\]]+)\])?\s*$', part, re.IGNORECASE)
+                if match:
+                    duration = int(match.group(1))
+                    reason = match.group(2).strip()
+                    explicit_category = match.group(3).strip() if match.group(3) else None
+                    
+                    reason = re.sub(r'\s*\[.+\]\s*$', '', reason).strip()
+                    
+                    excluded = ['istirahat', 'sholat', 'solat', 'toilet', 'makan', 'minum']
+                    if any(kw in reason.lower() for kw in excluded):
+                        continue
+                    
+                    category = explicit_category.lower() if explicit_category else detect_downtime_category(reason, idx == 0)
+                    if detect_downtime_category(reason.lower()) == 'idle':
+                        category = 'idle'
+                        
+                    key = f"{reason.lower()}||{category.lower()}"
+                    if key not in downtime_reasons:
+                        downtime_reasons[key] = {
+                            'reason': reason,
+                            'category': category,
+                            'count': 0,
+                            'total_minutes': 0,
+                            'machines': set(),
+                            'products': set()
+                        }
+                    
+                    downtime_reasons[key]['count'] += 1
+                    downtime_reasons[key]['total_minutes'] += duration
+                    if sp.machine and sp.machine.name:
+                        downtime_reasons[key]['machines'].add(sp.machine.name)
+                    if product_name:
+                        downtime_reasons[key]['products'].add(product_name)
+
+        # 2. Fetch Converting downtime records from all ConvertingProduction entries
+        converting_records = ConvertingProduction.query.all()
+        for r in converting_records:
+            mdata = r.machine_data_dict
+            if not mdata:
+                continue
+            
+            dentries = mdata.get('downtime_entries', [])
+            machine_name = r.machine.name if r.machine else 'N/A'
+            product_name = r.product_name or 'N/A'
+            
+            for entry in dentries:
+                reason = entry.get('reason', 'Lainnya')
+                duration = int(entry.get('duration_minutes', 0))
+                category = entry.get('category', 'others')
+                
+                key = f"{reason.lower()}||{category.lower()}"
+                if key not in downtime_reasons:
+                    downtime_reasons[key] = {
+                        'reason': reason,
+                        'category': category,
+                        'count': 0,
+                        'total_minutes': 0,
+                        'machines': set(),
+                        'products': set()
+                    }
+                
+                downtime_reasons[key]['count'] += 1
+                downtime_reasons[key]['total_minutes'] += duration
+                if machine_name and machine_name != 'N/A':
+                    downtime_reasons[key]['machines'].add(machine_name)
+                if product_name and product_name != 'N/A':
+                    downtime_reasons[key]['products'].add(product_name)
+
+        # 3. Format result
+        result = []
+        for key, dt in downtime_reasons.items():
+            result.append({
+                'reason': dt['reason'],
+                'category': dt['category'],
+                'count': dt['count'],
+                'total_minutes': dt['total_minutes'],
+                'machines': ', '.join(sorted(dt['machines'])) if dt['machines'] else 'N/A',
+                'products': ', '.join(sorted(dt['products'])) if dt['products'] else 'N/A'
+            })
+            
+        return jsonify({
+            'success': True,
+            'downtime': result
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500

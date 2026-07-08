@@ -58,6 +58,8 @@ const ProductionMonitoringDashboard: React.FC = () => {
   const [fgFetched, setFgFetched] = useState(false);
   const [convertingMonthlyData, setConvertingMonthlyData] = useState<any>(null);
   const [convertingMonthlyLoading, setConvertingMonthlyLoading] = useState(false);
+  const [allTimeDowntime, setAllTimeDowntime] = useState<any[]>([]);
+  const [allTimeDowntimeLoading, setAllTimeDowntimeLoading] = useState(false);
 
   // Prevent search engine indexing
   useEffect(() => {
@@ -235,6 +237,26 @@ const ProductionMonitoringDashboard: React.FC = () => {
       setConvertingMonthlyLoading(false);
     }
   };
+
+  const fetchAllTimeDowntime = async () => {
+    try {
+      setAllTimeDowntimeLoading(true);
+      const res = await axiosInstance.get('/api/executive/all-time-downtime');
+      if (res.data.success) {
+        setAllTimeDowntime(res.data.downtime || []);
+      }
+    } catch (e) {
+      console.error('Error fetching all time downtime:', e);
+    } finally {
+      setAllTimeDowntimeLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'downtime' && allTimeDowntime.length === 0) {
+      fetchAllTimeDowntime();
+    }
+  }, [activeTab, allTimeDowntime.length]);
 
   const toggleDay = (date: string) => {
     setExpandedDays(prev => { const n = new Set(prev); n.has(date) ? n.delete(date) : n.add(date); return n; });
@@ -545,6 +567,8 @@ const ProductionMonitoringDashboard: React.FC = () => {
           downtimePieData={downtimePieData}
           combinedDowntimeByCategory={combinedDowntimeByCategory}
           convertingDailyRecords={convertingMonthlyData?.daily_records}
+          allTimeDowntime={allTimeDowntime}
+          allTimeDowntimeLoading={allTimeDowntimeLoading}
         />
       )}
       {activeTab === 'graph' && <GraphTab data={data} />}
@@ -1995,7 +2019,19 @@ const DowntimeTab: React.FC<{
   downtimePieData: any[];
   combinedDowntimeByCategory: Record<string, number>;
   convertingDailyRecords?: any[];
-}> = ({ data, downtimePieData, combinedDowntimeByCategory, convertingDailyRecords }) => {
+  allTimeDowntime: any[];
+  allTimeDowntimeLoading: boolean;
+}> = ({ data, downtimePieData, combinedDowntimeByCategory, convertingDailyRecords, allTimeDowntime, allTimeDowntimeLoading }) => {
+  const sortedAllTimeDowntime = useMemo(() => {
+    const unplannedCategories = ['mesin', 'idle'];
+    return [...allTimeDowntime].sort((a: any, b: any) => {
+      const aU = unplannedCategories.includes(a.category) ? 0 : 1;
+      const bU = unplannedCategories.includes(b.category) ? 0 : 1;
+      if (aU !== bU) return aU - bU;
+      return b.total_minutes - a.total_minutes;
+    });
+  }, [allTimeDowntime]);
+
   const mergedTopDowntime = useMemo(() => {
     if (!data) return [];
     
@@ -2209,13 +2245,18 @@ const DowntimeTab: React.FC<{
       <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border mt-5">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-            📋 Daftar Seluruh Kejadian Downtime ({mergedTopDowntime.length} record)
+            📋 Daftar Seluruh Kejadian Downtime (Sepanjang Waktu - {allTimeDowntime.length} record)
           </h3>
           <span className="text-[10px] bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
             Laporan Lengkap
           </span>
         </div>
-        {mergedTopDowntime.length > 0 ? (
+        {allTimeDowntimeLoading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span className="text-xs text-gray-500 ml-3">Memuat data sepanjang waktu...</span>
+          </div>
+        ) : sortedAllTimeDowntime.length > 0 ? (
           <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
             <table className="w-full text-xs">
               <thead className="sticky top-0 bg-white dark:bg-gray-800 shadow-sm z-10">
@@ -2232,12 +2273,12 @@ const DowntimeTab: React.FC<{
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                {mergedTopDowntime.map((item: any, idx: number) => {
-                  const maxMin = mergedTopDowntime[0]?.total_minutes || 1;
+                {sortedAllTimeDowntime.map((item: any, idx: number) => {
+                  const maxMin = sortedAllTimeDowntime[0]?.total_minutes || 1;
                   const pct = (item.total_minutes / maxMin) * 100;
                   const isUnplanned = unplannedCategories.includes(item.category);
                   return (
-                    <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-750 dark:bg-gray-900/40 transition-colors">
+                    <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-755 dark:bg-gray-900/40 transition-colors">
                       <td className="px-3 py-2 font-medium text-slate-400">{idx + 1}</td>
                       <td className="px-3 py-2">
                         <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${isUnplanned ? 'bg-red-50 text-red-600 dark:bg-red-950/20 dark:text-red-400' : 'bg-blue-50 text-blue-600 dark:bg-blue-950/20 dark:text-blue-400'}`}>
@@ -2270,7 +2311,9 @@ const DowntimeTab: React.FC<{
               </tbody>
             </table>
           </div>
-        ) : <p className="text-center text-gray-400 py-6">Tidak ada data downtime</p>}
+        ) : (
+          <p className="text-center text-gray-400 py-6">Tidak ada data downtime sepanjang waktu</p>
+        )}
       </div>
     </div>
   );
