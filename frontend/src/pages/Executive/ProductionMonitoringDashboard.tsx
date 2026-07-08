@@ -2204,6 +2204,74 @@ const DowntimeTab: React.FC<{
           </div>
         ) : <p className="text-center text-gray-400 py-6">Tidak ada data downtime</p>}
       </div>
+
+      {/* All Downtime Reasons Table */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border mt-5">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+            📋 Daftar Seluruh Kejadian Downtime ({mergedTopDowntime.length} record)
+          </h3>
+          <span className="text-[10px] bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+            Laporan Lengkap
+          </span>
+        </div>
+        {mergedTopDowntime.length > 0 ? (
+          <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
+            <table className="w-full text-xs">
+              <thead className="sticky top-0 bg-white dark:bg-gray-800 shadow-sm z-10">
+                <tr className="bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300">
+                  <th className="px-3 py-2 text-left">#</th>
+                  <th className="px-3 py-2 text-left">Tipe</th>
+                  <th className="px-3 py-2 text-left">Alasan</th>
+                  <th className="px-3 py-2 text-left">Kategori</th>
+                  <th className="px-3 py-2 text-left">Mesin</th>
+                  <th className="px-3 py-2 text-left">Produk</th>
+                  <th className="px-3 py-2 text-right">Frekuensi</th>
+                  <th className="px-3 py-2 text-right">Total Waktu</th>
+                  <th className="px-3 py-2 text-left">Impact</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                {mergedTopDowntime.map((item: any, idx: number) => {
+                  const maxMin = mergedTopDowntime[0]?.total_minutes || 1;
+                  const pct = (item.total_minutes / maxMin) * 100;
+                  const isUnplanned = unplannedCategories.includes(item.category);
+                  return (
+                    <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-750 dark:bg-gray-900/40 transition-colors">
+                      <td className="px-3 py-2 font-medium text-slate-400">{idx + 1}</td>
+                      <td className="px-3 py-2">
+                        <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${isUnplanned ? 'bg-red-50 text-red-600 dark:bg-red-950/20 dark:text-red-400' : 'bg-blue-50 text-blue-600 dark:bg-blue-950/20 dark:text-blue-400'}`}>
+                          {isUnplanned ? 'Unplanned' : 'Planned'}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 text-gray-800 dark:text-gray-200 font-semibold">{item.reason}</td>
+                      <td className="px-3 py-2">
+                        <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium" style={{
+                          backgroundColor: DOWNTIME_COLORS[item.category] ? DOWNTIME_COLORS[item.category] + '20' : '#F3F4F6',
+                          color: DOWNTIME_COLORS[item.category] || '#6B7280'
+                        }}>{CATEGORY_LABELS[item.category] || item.category}</span>
+                      </td>
+                      <td className="px-3 py-2 text-gray-600 dark:text-gray-400 text-[11px] max-w-[150px] truncate" title={item.machines}>
+                        {item.machines || 'N/A'}
+                      </td>
+                      <td className="px-3 py-2 text-gray-600 dark:text-gray-400 text-[11px] max-w-[150px] truncate" title={item.products}>
+                        {item.products ? stripPackagingSuffix(item.products) : 'N/A'}
+                      </td>
+                      <td className="px-3 py-2 text-right font-bold text-slate-700 dark:text-slate-350">{item.count}x</td>
+                      <td className="px-3 py-2 text-right font-bold text-red-600">{fmtMin(item.total_minutes)}</td>
+                      <td className="px-3 py-2 w-36">
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
+                          <div className={`h-full rounded-full ${isUnplanned ? 'bg-red-500' : 'bg-blue-500'}`} style={{ width: `${pct}%` }} />
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : <p className="text-center text-gray-400 py-6">Tidak ada data downtime</p>}
+      </div>
     </div>
   );
 };
