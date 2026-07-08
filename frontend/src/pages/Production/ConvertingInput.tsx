@@ -11,7 +11,7 @@ import {
 } from '@heroicons/react/24/outline'
 
 /* ═══════════ Types ═══════════ */
-interface Machine { id: number; code: string; name: string; machine_type: string }
+interface Machine { id: number; code: string; name: string; machine_type: string; default_speed?: number; target_efficiency?: number }
 interface SlittingRow { no_roll: string; width: number; weight: number; length: number; thick: number; slitting: number[]; loss: number; total_length: number; total_weight: number }
 interface PerforatingRow { no_roll: string; width: number; weight: number; length: number; repeat_length: number; repeat_width: number }
 interface FoldingRow { no_roll: string; no_slitting: string; weight: number; length: number }
@@ -207,8 +207,22 @@ export default function ConvertingInput() {
   const [bagRows, setBagRows] = useState<BagmakerRow[]>([mkBag(1)])
   const [downtimeEntries, setDowntimeEntries] = useState<DowntimeEntry[]>([])
 
+  // Calculator States
+  const [calcSpeed, setCalcSpeed] = useState<number>(0)
+  const [calcEfficiency, setCalcEfficiency] = useState<number>(60)
+  const [calcRuntime, setCalcRuntime] = useState<number>(480)
+  const [calcTargetQty, setCalcTargetQty] = useState<number>(0)
+  const [isCalcOpen, setIsCalcOpen] = useState<boolean>(false)
+
   const machine = machines.find(m => m.id === machineId)
   const mtype = machine?.machine_type || ''
+
+  useEffect(() => {
+    if (machine) {
+      setCalcSpeed(machine.default_speed || 0)
+      setCalcEfficiency(machine.target_efficiency || 60)
+    }
+  }, [machineId, machine])
 
   const machinesByType = useMemo(() => {
     const g: Record<string, Machine[]> = {}
@@ -371,6 +385,97 @@ export default function ConvertingInput() {
           <div><label className={lc}>Catatan</label><input value={notes} onChange={e => setNotes(e.target.value)} className={ic} placeholder="Catatan" /></div>
         </div>
       </div>
+
+      {/* Target & Capacity Calculator */}
+      {machine && (
+        <div className="bg-blue-50/40 dark:bg-slate-800 rounded-xl p-5 mb-4 border border-blue-100 dark:border-slate-700 shadow-sm">
+          <div className="flex items-center justify-between cursor-pointer" onClick={() => setIsCalcOpen(!isCalcOpen)}>
+            <div className="flex items-center gap-2">
+              <span className="text-lg">🧮</span>
+              <div>
+                <h3 className="font-semibold text-slate-800 dark:text-white text-sm">Kalkulator Estimasi Target &amp; Kapasitas ({machine.name})</h3>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Gunakan untuk mensimulasikan target produksi shift berdasarkan kecepatan dan efisiensi.</p>
+              </div>
+            </div>
+            <button type="button" className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 font-bold uppercase tracking-wider">
+              {isCalcOpen ? 'Sembunyikan' : 'Tampilkan Kalkulator'}
+            </button>
+          </div>
+
+          {isCalcOpen && (
+            <div className="mt-4 pt-4 border-t border-blue-100/70 dark:border-slate-700/60 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 mb-1 uppercase">Kapasitas Speed (pcs/mnt)</label>
+                  <input
+                    type="number"
+                    value={calcSpeed || ''}
+                    onChange={e => setCalcSpeed(N(e.target.value))}
+                    className="w-full px-2 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 dark:text-white"
+                    placeholder="Speed"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 mb-1 uppercase">Target Efisiensi (%)</label>
+                  <input
+                    type="number"
+                    value={calcEfficiency || ''}
+                    onChange={e => setCalcEfficiency(N(e.target.value))}
+                    className="w-full px-2 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 dark:text-white"
+                    placeholder="Efisiensi"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 mb-1 uppercase">Durasi Rencana (menit)</label>
+                  <input
+                    type="number"
+                    value={calcRuntime || ''}
+                    onChange={e => setCalcRuntime(N(e.target.value))}
+                    className="w-full px-2 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 dark:text-white"
+                    placeholder="Durasi"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 mb-1 uppercase">Simulasi Target (pcs)</label>
+                  <input
+                    type="number"
+                    value={calcTargetQty || ''}
+                    onChange={e => setCalcTargetQty(N(e.target.value))}
+                    className="w-full px-2 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 dark:text-white"
+                    placeholder="Input target pcs"
+                  />
+                </div>
+              </div>
+
+              <div className="p-3 bg-white dark:bg-slate-900/60 rounded-lg border border-blue-100/50 dark:border-slate-700/60 flex flex-wrap gap-x-6 gap-y-2 justify-between items-center text-xs">
+                <div>
+                  <span className="text-slate-400 font-semibold uppercase tracking-wide mr-1">Kapasitas Maksimal (100%):</span>
+                  <strong className="text-slate-800 dark:text-white text-sm font-extrabold">{parseFloat((calcSpeed * calcRuntime).toFixed(0)).toLocaleString('id-ID')} pcs</strong>
+                </div>
+                <div>
+                  <span className="text-slate-400 font-semibold uppercase tracking-wide mr-1">Target Output Rencana ({calcEfficiency}%):</span>
+                  <strong className="text-blue-600 dark:text-blue-400 text-sm font-extrabold">{parseFloat((calcSpeed * calcRuntime * (calcEfficiency / 100)).toFixed(0)).toLocaleString('id-ID')} pcs</strong>
+                </div>
+                {calcTargetQty > 0 && (
+                  <div className="border-l pl-4 border-slate-200 dark:border-slate-700">
+                    <span className="text-slate-400 font-semibold uppercase tracking-wide mr-1">Estimasi Waktu Butuh:</span>
+                    <strong className="text-indigo-600 dark:text-indigo-400 text-sm font-extrabold">
+                      {calcSpeed * (calcEfficiency / 100) > 0
+                        ? (() => {
+                            const mins = calcTargetQty / (calcSpeed * (calcEfficiency / 100));
+                            const hrs = Math.floor(mins / 60);
+                            const remMins = Math.round(mins % 60);
+                            return hrs > 0 ? `${hrs} jam ${remMins} menit` : `${remMins} menit`;
+                          })()
+                        : '∞'}
+                    </strong>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* PLACEHOLDER: machine-specific forms will be inserted here */}
       {mtype === 'slitting' && (
