@@ -2022,15 +2022,23 @@ const DowntimeTab: React.FC<{
   allTimeDowntime: any[];
   allTimeDowntimeLoading: boolean;
 }> = ({ data, downtimePieData, combinedDowntimeByCategory, convertingDailyRecords, allTimeDowntime, allTimeDowntimeLoading }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [expandedKey, setExpandedKey] = useState<string | null>(null);
+
   const sortedAllTimeDowntime = useMemo(() => {
-    const unplannedCategories = ['mesin', 'idle'];
-    return [...allTimeDowntime].sort((a: any, b: any) => {
-      const aU = unplannedCategories.includes(a.category) ? 0 : 1;
-      const bU = unplannedCategories.includes(b.category) ? 0 : 1;
-      if (aU !== bU) return aU - bU;
-      return b.total_minutes - a.total_minutes;
-    });
-  }, [allTimeDowntime]);
+    let list = [...allTimeDowntime];
+    if (searchTerm.trim()) {
+      const q = searchTerm.toLowerCase().trim();
+      list = list.filter(item => 
+        (item.reason || '').toLowerCase().includes(q) ||
+        (item.category || '').toLowerCase().includes(q) ||
+        (item.machines || '').toLowerCase().includes(q) ||
+        (item.products || '').toLowerCase().includes(q)
+      );
+    }
+    // Sort by count (frequency) descending
+    return list.sort((a: any, b: any) => (b.count || 0) - (a.count || 0));
+  }, [allTimeDowntime, searchTerm]);
 
   const mergedTopDowntime = useMemo(() => {
     if (!data) return [];
@@ -2243,13 +2251,25 @@ const DowntimeTab: React.FC<{
 
       {/* All Downtime Reasons Table */}
       <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border mt-5">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-            📋 Daftar Seluruh Kejadian Downtime (Sepanjang Waktu - {allTimeDowntime.length} record)
-          </h3>
-          <span className="text-[10px] bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
-            Laporan Lengkap
-          </span>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+              📋 Daftar Seluruh Kejadian Downtime (Sepanjang Waktu - {allTimeDowntime.length} record)
+            </h3>
+            <p className="text-[10px] text-gray-400 mt-0.5">Urut berdasarkan frekuensi kejadian terbanyak. Klik baris untuk melihat riwayat per kejadian.</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              placeholder="Cari alasan, mesin, produk..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-950 dark:text-white w-64 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+            <span className="text-[10px] bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-2 py-1 rounded-full font-bold uppercase tracking-wider">
+              Laporan Lengkap
+            </span>
+          </div>
         </div>
         {allTimeDowntimeLoading ? (
           <div className="flex justify-center items-center py-12">
@@ -2257,7 +2277,7 @@ const DowntimeTab: React.FC<{
             <span className="text-xs text-gray-500 ml-3">Memuat data sepanjang waktu...</span>
           </div>
         ) : sortedAllTimeDowntime.length > 0 ? (
-          <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
+          <div className="overflow-x-auto max-h-[550px] overflow-y-auto">
             <table className="w-full text-xs">
               <thead className="sticky top-0 bg-white dark:bg-gray-800 shadow-sm z-10">
                 <tr className="bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300">
@@ -2272,40 +2292,91 @@ const DowntimeTab: React.FC<{
                   <th className="px-3 py-2 text-left">Impact</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+              <tbody className="divide-y divide-gray-105 dark:divide-gray-700">
                 {sortedAllTimeDowntime.map((item: any, idx: number) => {
                   const maxMin = sortedAllTimeDowntime[0]?.total_minutes || 1;
                   const pct = (item.total_minutes / maxMin) * 100;
                   const isUnplanned = unplannedCategories.includes(item.category);
+                  const rowKey = `${item.reason}||${item.category}`;
+                  const isExpanded = expandedKey === rowKey;
                   return (
-                    <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-755 dark:bg-gray-900/40 transition-colors">
-                      <td className="px-3 py-2 font-medium text-slate-400">{idx + 1}</td>
-                      <td className="px-3 py-2">
-                        <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${isUnplanned ? 'bg-red-50 text-red-600 dark:bg-red-950/20 dark:text-red-400' : 'bg-blue-50 text-blue-600 dark:bg-blue-950/20 dark:text-blue-400'}`}>
-                          {isUnplanned ? 'Unplanned' : 'Planned'}
-                        </span>
-                      </td>
-                      <td className="px-3 py-2 text-gray-800 dark:text-gray-200 font-semibold">{item.reason}</td>
-                      <td className="px-3 py-2">
-                        <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium" style={{
-                          backgroundColor: DOWNTIME_COLORS[item.category] ? DOWNTIME_COLORS[item.category] + '20' : '#F3F4F6',
-                          color: DOWNTIME_COLORS[item.category] || '#6B7280'
-                        }}>{CATEGORY_LABELS[item.category] || item.category}</span>
-                      </td>
-                      <td className="px-3 py-2 text-gray-600 dark:text-gray-400 text-[11px] max-w-[150px] truncate" title={item.machines}>
-                        {item.machines || 'N/A'}
-                      </td>
-                      <td className="px-3 py-2 text-gray-600 dark:text-gray-400 text-[11px] max-w-[150px] truncate" title={item.products}>
-                        {item.products ? stripPackagingSuffix(item.products) : 'N/A'}
-                      </td>
-                      <td className="px-3 py-2 text-right font-bold text-slate-700 dark:text-slate-350">{item.count}x</td>
-                      <td className="px-3 py-2 text-right font-bold text-red-600">{fmtMin(item.total_minutes)}</td>
-                      <td className="px-3 py-2 w-36">
-                        <div className="w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
-                          <div className={`h-full rounded-full ${isUnplanned ? 'bg-red-500' : 'bg-blue-500'}`} style={{ width: `${pct}%` }} />
-                        </div>
-                      </td>
-                    </tr>
+                    <React.Fragment key={idx}>
+                      <tr 
+                        onClick={() => setExpandedKey(isExpanded ? null : rowKey)}
+                        className="hover:bg-gray-50 dark:hover:bg-gray-750 dark:bg-gray-900/40 transition-colors cursor-pointer select-none"
+                      >
+                        <td className="px-3 py-2 font-medium text-slate-400 flex items-center gap-1">
+                          <span className="text-[9px] text-slate-400 w-3 inline-block text-center">{isExpanded ? '▼' : '▶'}</span>
+                          {idx + 1}
+                        </td>
+                        <td className="px-3 py-2">
+                          <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${isUnplanned ? 'bg-red-50 text-red-600 dark:bg-red-950/20 dark:text-red-400' : 'bg-blue-50 text-blue-600 dark:bg-blue-950/20 dark:text-blue-400'}`}>
+                            {isUnplanned ? 'Unplanned' : 'Planned'}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 text-gray-800 dark:text-gray-250 font-bold">{item.reason}</td>
+                        <td className="px-3 py-2">
+                          <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium" style={{
+                            backgroundColor: DOWNTIME_COLORS[item.category] ? DOWNTIME_COLORS[item.category] + '20' : '#F3F4F6',
+                            color: DOWNTIME_COLORS[item.category] || '#6B7280'
+                          }}>{CATEGORY_LABELS[item.category] || item.category}</span>
+                        </td>
+                        <td className="px-3 py-2 text-gray-600 dark:text-gray-400 text-[11px] max-w-[150px] truncate" title={item.machines}>
+                          {item.machines || 'N/A'}
+                        </td>
+                        <td className="px-3 py-2 text-gray-600 dark:text-gray-400 text-[11px] max-w-[150px] truncate" title={item.products}>
+                          {item.products ? stripPackagingSuffix(item.products) : 'N/A'}
+                        </td>
+                        <td className="px-3 py-2 text-right font-bold text-slate-700 dark:text-slate-350">{item.count}x</td>
+                        <td className="px-3 py-2 text-right font-bold text-red-605 dark:text-red-500">{fmtMin(item.total_minutes)}</td>
+                        <td className="px-3 py-2 w-36">
+                          <div className="w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
+                            <div className={`h-full rounded-full ${isUnplanned ? 'bg-red-500' : 'bg-blue-500'}`} style={{ width: `${pct}%` }} />
+                          </div>
+                        </td>
+                      </tr>
+                      {isExpanded && (
+                        <tr>
+                          <td colSpan={9} className="px-6 py-3 bg-slate-50/50 dark:bg-slate-900/60 border-t border-b border-slate-100 dark:border-slate-800">
+                            <div className="space-y-2">
+                              <h4 className="font-semibold text-slate-700 dark:text-slate-300 text-xs flex items-center gap-1.5">
+                                🔍 Riwayat Detail Kejadian untuk "{item.reason}"
+                              </h4>
+                              {item.occurrences && item.occurrences.length > 0 ? (
+                                <div className="overflow-x-auto rounded-lg border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-905 max-h-60 overflow-y-auto">
+                                  <table className="min-w-full text-[11px] text-left">
+                                    <thead className="bg-slate-100 dark:bg-slate-800 text-slate-650 dark:text-slate-400 uppercase tracking-wider sticky top-0 z-20">
+                                      <tr>
+                                        <th className="px-3 py-1.5 font-bold">Tanggal</th>
+                                        <th className="px-3 py-1.5 font-bold">Shift</th>
+                                        <th className="px-3 py-1.5 font-bold">Mesin</th>
+                                        <th className="px-3 py-1.5 font-bold">Produk</th>
+                                        <th className="px-3 py-1.5 font-bold text-right">Durasi</th>
+                                        <th className="px-3 py-1.5 font-bold">Alasan Input</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
+                                      {item.occurrences.map((occ: any, oIdx: number) => (
+                                        <tr key={oIdx} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 text-slate-600 dark:text-slate-300">
+                                          <td className="px-3 py-1.5 font-medium">{occ.date}</td>
+                                          <td className="px-3 py-1.5 capitalize">{occ.shift?.replace('_', ' ') || 'N/A'}</td>
+                                          <td className="px-3 py-1.5 font-semibold text-slate-700 dark:text-slate-200">{occ.machine}</td>
+                                          <td className="px-3 py-1.5">{occ.product ? stripPackagingSuffix(occ.product) : 'N/A'}</td>
+                                          <td className="px-3 py-1.5 text-right font-bold text-red-600">{fmtMin(occ.duration)}</td>
+                                          <td className="px-3 py-1.5 italic text-slate-500 dark:text-slate-400">{occ.reason || '-'}</td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              ) : (
+                                <p className="text-slate-400 italic text-[11px]">Tidak ada detail record kejadian.</p>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   );
                 })}
               </tbody>

@@ -3884,7 +3884,7 @@ def get_all_time_downtime():
                     if any(kw in reason.lower() for kw in excluded):
                         continue
                     
-                    category = explicit_category.lower() if explicit_category else detect_downtime_category(reason, idx == 0)
+                    category = explicit_category.lower() if explicit_category else detect_downtime_category(reason)
                     if detect_downtime_category(reason.lower()) == 'idle':
                         category = 'idle'
                         
@@ -3896,7 +3896,8 @@ def get_all_time_downtime():
                             'count': 0,
                             'total_minutes': 0,
                             'machines': set(),
-                            'products': set()
+                            'products': set(),
+                            'occurrences': []
                         }
                     
                     downtime_reasons[key]['count'] += 1
@@ -3905,6 +3906,16 @@ def get_all_time_downtime():
                         downtime_reasons[key]['machines'].add(sp.machine.name)
                     if product_name:
                         downtime_reasons[key]['products'].add(product_name)
+                    
+                    date_str = sp.production_date.strftime('%Y-%m-%d') if hasattr(sp.production_date, 'strftime') else (str(sp.production_date) if sp.production_date else 'N/A')
+                    downtime_reasons[key]['occurrences'].append({
+                        'date': date_str,
+                        'shift': sp.shift or 'N/A',
+                        'machine': sp.machine.name if sp.machine else 'N/A',
+                        'product': product_name,
+                        'duration': duration,
+                        'reason': reason
+                    })
 
         # 2. Fetch Converting downtime records from all ConvertingProduction entries
         converting_records = ConvertingProduction.query.all()
@@ -3930,7 +3941,8 @@ def get_all_time_downtime():
                         'count': 0,
                         'total_minutes': 0,
                         'machines': set(),
-                        'products': set()
+                        'products': set(),
+                        'occurrences': []
                     }
                 
                 downtime_reasons[key]['count'] += 1
@@ -3939,17 +3951,30 @@ def get_all_time_downtime():
                     downtime_reasons[key]['machines'].add(machine_name)
                 if product_name and product_name != 'N/A':
                     downtime_reasons[key]['products'].add(product_name)
+                
+                date_str = r.production_date.strftime('%Y-%m-%d') if hasattr(r.production_date, 'strftime') else (str(r.production_date) if r.production_date else 'N/A')
+                downtime_reasons[key]['occurrences'].append({
+                    'date': date_str,
+                    'shift': r.shift or 'N/A',
+                    'machine': machine_name,
+                    'product': product_name,
+                    'duration': duration,
+                    'reason': reason
+                })
 
-        # 3. Format result
+        # 3. Format result and sort occurrences by date descending
         result = []
         for key, dt in downtime_reasons.items():
+            # Sort occurrences descending by date
+            dt['occurrences'].sort(key=lambda x: x['date'], reverse=True)
             result.append({
                 'reason': dt['reason'],
                 'category': dt['category'],
                 'count': dt['count'],
                 'total_minutes': dt['total_minutes'],
                 'machines': ', '.join(sorted(dt['machines'])) if dt['machines'] else 'N/A',
-                'products': ', '.join(sorted(dt['products'])) if dt['products'] else 'N/A'
+                'products': ', '.join(sorted(dt['products'])) if dt['products'] else 'N/A',
+                'occurrences': dt['occurrences']
             })
             
         return jsonify({
