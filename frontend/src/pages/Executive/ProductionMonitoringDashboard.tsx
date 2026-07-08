@@ -539,7 +539,14 @@ const ProductionMonitoringDashboard: React.FC = () => {
       )}
       {activeTab === 'products' && <ProductsTab data={data} viewMode={viewMode} />}
       {activeTab === 'machines' && <MachinesTab data={data} />}
-      {activeTab === 'downtime' && <DowntimeTab data={data} downtimePieData={downtimePieData} combinedDowntimeByCategory={combinedDowntimeByCategory} />}
+      {activeTab === 'downtime' && (
+        <DowntimeTab
+          data={data}
+          downtimePieData={downtimePieData}
+          combinedDowntimeByCategory={combinedDowntimeByCategory}
+          convertingDailyRecords={convertingMonthlyData?.daily_records}
+        />
+      )}
       {activeTab === 'graph' && <GraphTab data={data} />}
       {activeTab === 'shift' && <ShiftTab data={data} />}
       {activeTab === 'analytics' && <AnalyticsTab data={data} dailyChartData={dailyChartData} />}
@@ -1983,135 +1990,223 @@ const MachinesTab: React.FC<{ data: any }> = ({ data }) => {
 };
 
 // ==================== DOWNTIME TAB ====================
-const DowntimeTab: React.FC<{ data: any; downtimePieData: any[]; combinedDowntimeByCategory: Record<string, number> }> = ({ data, downtimePieData, combinedDowntimeByCategory }) => (
-  <div className="space-y-5">
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-      {/* Category Pie */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Downtime per Kategori</h3>
-        <div className="h-72 flex items-center">
-          {downtimePieData.length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={downtimePieData} cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={3} dataKey="value"
-                  label={({ name, value }) => `${name}: ${fmtMin(value)}`}>
-                  {downtimePieData.map((e: any, i: number) => <Cell key={i} fill={e.color} />)}
-                </Pie>
-                <Tooltip formatter={(v: number) => fmtMin(v)} />
-              </PieChart>
-            </ResponsiveContainer>
-          ) : <p className="w-full text-center text-gray-400">No downtime data</p>}
+const DowntimeTab: React.FC<{
+  data: any;
+  downtimePieData: any[];
+  combinedDowntimeByCategory: Record<string, number>;
+  convertingDailyRecords?: any[];
+}> = ({ data, downtimePieData, combinedDowntimeByCategory, convertingDailyRecords }) => {
+  const mergedTopDowntime = useMemo(() => {
+    if (!data) return [];
+    
+    // Group all reasons by "reason||category" to combine identical ones
+    const reasonsMap: Record<string, {
+      reason: string;
+      category: string;
+      count: number;
+      total_minutes: number;
+      machinesSet: Set<string>;
+      productsSet: Set<string>;
+    }> = {};
+
+    // 1. Process Main PM downtime reasons
+    if (data.top_downtime_reasons) {
+      data.top_downtime_reasons.forEach((dt: any) => {
+        const key = `${dt.reason.toLowerCase()}||${dt.category.toLowerCase()}`;
+        if (!reasonsMap[key]) {
+          reasonsMap[key] = {
+            reason: dt.reason,
+            category: dt.category,
+            count: 0,
+            total_minutes: 0,
+            machinesSet: new Set<string>(),
+            productsSet: new Set<string>()
+          };
+        }
+        reasonsMap[key].count += dt.count || 0;
+        reasonsMap[key].total_minutes += dt.total_minutes || 0;
+        if (dt.machines && dt.machines !== 'N/A') {
+          dt.machines.split(', ').forEach((m: string) => reasonsMap[key].machinesSet.add(m));
+        }
+        if (dt.products && dt.products !== 'N/A') {
+          dt.products.split(', ').forEach((p: string) => reasonsMap[key].productsSet.add(p));
+        }
+      });
+    }
+
+    // 2. Process Converting downtime records
+    if (convertingDailyRecords) {
+      convertingDailyRecords.forEach((day: any) => {
+        if (day.downtime_records) {
+          day.downtime_records.forEach((rec: any) => {
+            const reason = rec.downtime_reason || 'Lainnya';
+            const category = rec.downtime_category || 'others';
+            const duration = rec.duration_minutes || 0;
+            const machine = rec.machine_name || 'N/A';
+            const product = rec.product_name || 'N/A';
+
+            const key = `${reason.toLowerCase()}||${category.toLowerCase()}`;
+            if (!reasonsMap[key]) {
+              reasonsMap[key] = {
+                reason: reason,
+                category: category,
+                count: 0,
+                total_minutes: 0,
+                machinesSet: new Set<string>(),
+                productsSet: new Set<string>()
+              };
+            }
+            reasonsMap[key].count += 1;
+            reasonsMap[key].total_minutes += duration;
+            if (machine && machine !== 'N/A') reasonsMap[key].machinesSet.add(machine);
+            if (product && product !== 'N/A') reasonsMap[key].productsSet.add(product);
+          });
+        }
+      });
+    }
+
+    // Convert map to list
+    const unplannedCategories = ['mesin', 'idle'];
+    const result = Object.values(reasonsMap).map(item => ({
+      reason: item.reason,
+      category: item.category,
+      count: item.count,
+      total_minutes: item.total_minutes,
+      machines: Array.from(item.machinesSet).sort().join(', ') || 'N/A',
+      products: Array.from(item.productsSet).sort().join(', ') || 'N/A'
+    }));
+
+    // Sort: Unplanned first, then by total minutes descending
+    return result.sort((a: any, b: any) => {
+      const aU = unplannedCategories.includes(a.category) ? 0 : 1;
+      const bU = unplannedCategories.includes(b.category) ? 0 : 1;
+      if (aU !== bU) return aU - bU;
+      return b.total_minutes - a.total_minutes;
+    });
+  }, [data, convertingDailyRecords]);
+
+  const unplannedCategories = ['mesin', 'idle'];
+  const sortedDowntime = mergedTopDowntime.slice(0, 10);
+
+  return (
+    <div className="space-y-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {/* Category Pie */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Downtime per Kategori</h3>
+          <div className="h-72 flex items-center">
+            {downtimePieData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={downtimePieData} cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={3} dataKey="value"
+                    label={({ name, value }) => `${name}: ${fmtMin(value)}`}>
+                    {downtimePieData.map((e: any, i: number) => <Cell key={i} fill={e.color} />)}
+                  </Pie>
+                  <Tooltip formatter={(v: number) => fmtMin(v)} />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : <p className="w-full text-center text-gray-400">No downtime data</p>}
+          </div>
+          <div className="flex flex-wrap justify-center gap-4 mt-2">
+            {Object.entries(DOWNTIME_COLORS).map(([k, c]) => (
+              <div key={k} className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: c }} />
+                <span className="text-xs text-gray-600 dark:text-gray-300">{CATEGORY_LABELS[k]}</span>
+                <span className="text-xs text-gray-400">({fmtMin(combinedDowntimeByCategory[k] || 0)})</span>
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="flex flex-wrap justify-center gap-4 mt-2">
-          {Object.entries(DOWNTIME_COLORS).map(([k, c]) => (
-            <div key={k} className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: c }} />
-              <span className="text-xs text-gray-600 dark:text-gray-300">{CATEGORY_LABELS[k]}</span>
-              <span className="text-xs text-gray-400">({fmtMin(combinedDowntimeByCategory[k] || 0)})</span>
-            </div>
-          ))}
+        {/* Category Breakdown Cards */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Breakdown Waktu Downtime</h3>
+          <div className="space-y-3">
+            {Object.entries(DOWNTIME_COLORS).map(([k, color]) => {
+              const v = combinedDowntimeByCategory[k] || 0;
+              const total = Object.values(combinedDowntimeByCategory).reduce((a: number, b: any) => a + b, 0) as number;
+              const pct = total > 0 ? (v / total * 100) : 0;
+              return (
+                <div key={k}>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="font-medium text-gray-700 dark:text-gray-200">{CATEGORY_LABELS[k]}</span>
+                    <span className="text-gray-500 dark:text-gray-400">{fmtMin(v)} ({pct.toFixed(1)}%)</span>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                    <div className="h-2.5 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: color }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
-      {/* Category Breakdown Cards */}
+
+      {/* Top Downtime Reasons - Combined list */}
       <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Breakdown Waktu Downtime</h3>
-        <div className="space-y-3">
-          {Object.entries(DOWNTIME_COLORS).map(([k, color]) => {
-            const v = combinedDowntimeByCategory[k] || 0;
-            const total = Object.values(combinedDowntimeByCategory).reduce((a: number, b: any) => a + b, 0) as number;
-            const pct = total > 0 ? (v / total * 100) : 0;
-            return (
-              <div key={k}>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="font-medium text-gray-700 dark:text-gray-200">{CATEGORY_LABELS[k]}</span>
-                  <span className="text-gray-500 dark:text-gray-400">{fmtMin(v)} ({pct.toFixed(1)}%)</span>
-                </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                  <div className="h-2.5 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: color }} />
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+          <ExclamationTriangleIcon className="h-4 w-4 inline mr-1 text-red-500" />
+          Top 10 Downtime (Seluruh Mesin)
+        </h3>
+        {sortedDowntime.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300">
+                  <th className="px-3 py-2 text-left">#</th>
+                  <th className="px-3 py-2 text-left">Tipe</th>
+                  <th className="px-3 py-2 text-left">Alasan</th>
+                  <th className="px-3 py-2 text-left">Kategori</th>
+                  <th className="px-3 py-2 text-left">Mesin</th>
+                  <th className="px-3 py-2 text-left">Produk</th>
+                  <th className="px-3 py-2 text-right">Frekuensi</th>
+                  <th className="px-3 py-2 text-right">Total Waktu</th>
+                  <th className="px-3 py-2 text-left">Impact</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {sortedDowntime.map((item: any, idx: number) => {
+                  const maxMin = sortedDowntime[0]?.total_minutes || 1;
+                  const pct = (item.total_minutes / maxMin) * 100;
+                  const isUnplanned = unplannedCategories.includes(item.category);
+                  return (
+                    <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                      <td className="px-3 py-2 font-medium">{idx + 1}</td>
+                      <td className="px-3 py-2">
+                        <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${isUnplanned ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>
+                          {isUnplanned ? 'Unplanned' : 'Planned'}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 text-gray-700 dark:text-gray-200">{item.reason}</td>
+                      <td className="px-3 py-2">
+                        <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium" style={{
+                          backgroundColor: DOWNTIME_COLORS[item.category] ? DOWNTIME_COLORS[item.category] + '20' : '#F3F4F6',
+                          color: DOWNTIME_COLORS[item.category] || '#6B7280'
+                        }}>{CATEGORY_LABELS[item.category] || item.category}</span>
+                      </td>
+                      <td className="px-3 py-2 text-gray-600 dark:text-gray-300 text-[11px] max-w-[150px] truncate" title={item.machines}>
+                        {item.machines || 'N/A'}
+                      </td>
+                      <td className="px-3 py-2 text-gray-600 dark:text-gray-300 text-[11px] max-w-[150px] truncate" title={item.products}>
+                        {item.products ? stripPackagingSuffix(item.products) : 'N/A'}
+                      </td>
+                      <td className="px-3 py-2 text-right">{item.count}x</td>
+                      <td className="px-3 py-2 text-right font-medium text-red-600">{fmtMin(item.total_minutes)}</td>
+                      <td className="px-3 py-2 w-36">
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                          <div className={`h-2 rounded-full ${isUnplanned ? 'bg-red-500' : 'bg-blue-500'}`} style={{ width: `${pct}%` }} />
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : <p className="text-center text-gray-400 py-6">Tidak ada data downtime</p>}
       </div>
     </div>
-    {/* Top Downtime Reasons - Single table with Unplanned/Planned indicator */}
-    {(() => {
-      const unplannedCategories = ['mesin', 'idle'];
-      const sorted = [...data.top_downtime_reasons].sort((a: any, b: any) => {
-        const aU = unplannedCategories.includes(a.category) ? 0 : 1;
-        const bU = unplannedCategories.includes(b.category) ? 0 : 1;
-        if (aU !== bU) return aU - bU;
-        return b.total_minutes - a.total_minutes;
-      });
-
-      return (
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
-            <ExclamationTriangleIcon className="h-4 w-4 inline mr-1 text-red-500" />
-            Top 10 Downtime
-          </h3>
-          {sorted.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300">
-                    <th className="px-3 py-2 text-left">#</th>
-                    <th className="px-3 py-2 text-left">Tipe</th>
-                    <th className="px-3 py-2 text-left">Alasan</th>
-                    <th className="px-3 py-2 text-left">Kategori</th>
-                    <th className="px-3 py-2 text-left">Mesin</th>
-                    <th className="px-3 py-2 text-left">Produk</th>
-                    <th className="px-3 py-2 text-right">Frekuensi</th>
-                    <th className="px-3 py-2 text-right">Total Waktu</th>
-                    <th className="px-3 py-2 text-left">Impact</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {sorted.map((item: any, idx: number) => {
-                    const maxMin = sorted[0]?.total_minutes || 1;
-                    const pct = (item.total_minutes / maxMin) * 100;
-                    const isUnplanned = unplannedCategories.includes(item.category);
-                    return (
-                      <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
-                        <td className="px-3 py-2 font-medium">{idx + 1}</td>
-                        <td className="px-3 py-2">
-                          <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${isUnplanned ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>
-                            {isUnplanned ? 'Unplanned' : 'Planned'}
-                          </span>
-                        </td>
-                        <td className="px-3 py-2 text-gray-700 dark:text-gray-200">{item.reason}</td>
-                        <td className="px-3 py-2">
-                          <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium" style={{
-                            backgroundColor: DOWNTIME_COLORS[item.category] ? DOWNTIME_COLORS[item.category] + '20' : '#F3F4F6',
-                            color: DOWNTIME_COLORS[item.category] || '#6B7280'
-                          }}>{CATEGORY_LABELS[item.category] || item.category}</span>
-                        </td>
-                        <td className="px-3 py-2 text-gray-600 dark:text-gray-300 text-[11px]">
-                          {item.machines || 'N/A'}
-                        </td>
-                        <td className="px-3 py-2 text-gray-600 dark:text-gray-300 text-[11px]">
-                          {item.products ? stripPackagingSuffix(item.products) : 'N/A'}
-                        </td>
-                        <td className="px-3 py-2 text-right">{item.count}x</td>
-                        <td className="px-3 py-2 text-right font-medium text-red-600">{fmtMin(item.total_minutes)}</td>
-                        <td className="px-3 py-2 w-36">
-                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                            <div className={`h-2 rounded-full ${isUnplanned ? 'bg-red-500' : 'bg-blue-500'}`} style={{ width: `${pct}%` }} />
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          ) : <p className="text-center text-gray-400 py-6">Tidak ada data downtime</p>}
-        </div>
-      );
-    })()}
-  </div>
-);
+  );
+};
 
 // ==================== GRAPH TAB ====================
 const GraphTab: React.FC<{ data: any }> = ({ data }) => {
