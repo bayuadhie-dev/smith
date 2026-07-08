@@ -514,6 +514,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
           displaySummary={displaySummary}
           viewMode={viewMode}
           convertingSummary={convertingMonthlyData?.summary}
+          convertingDailyRecords={convertingMonthlyData?.daily_records}
         />
       )}
       {activeTab === 'daily' && (
@@ -566,7 +567,8 @@ const OverviewTab: React.FC<{
   displaySummary: any;
   viewMode: string;
   convertingSummary?: any;
-}> = ({ data, dailyChartData, timePieData, downtimePieData, displaySummary, viewMode, convertingSummary }) => {
+  convertingDailyRecords?: any[];
+}> = ({ data, dailyChartData, timePieData, downtimePieData, displaySummary, viewMode, convertingSummary, convertingDailyRecords }) => {
   const s = displaySummary || {};
   const totalWd = s.total_working_days || 22;
   const elapsed = s.working_days || 0;
@@ -586,6 +588,26 @@ const OverviewTab: React.FC<{
   const accentText = { ahead: 'text-emerald-600', 'on-track': 'text-blue-600', 'at-risk': 'text-amber-600', behind: 'text-red-600' }[paceStatus];
   const accentBadge = { ahead: 'bg-emerald-100 text-emerald-700', 'on-track': 'bg-blue-100 text-blue-700', 'at-risk': 'bg-amber-100 text-amber-700', behind: 'bg-red-100 text-red-700' }[paceStatus];
   const accentBar  = { ahead: 'bg-emerald-500', 'on-track': 'bg-blue-500', 'at-risk': 'bg-amber-500', behind: 'bg-red-500' }[paceStatus];
+
+  const machineBreakdown = useMemo(() => {
+    if (!convertingDailyRecords) return [];
+    const breakdown: Record<string, { name: string; code: string; output: number; good: number; reject: number }> = {};
+    convertingDailyRecords.forEach((day: any) => {
+      if (day.production_records) {
+        day.production_records.forEach((rec: any) => {
+          const mName = rec.machine_name || 'N/A';
+          const mCode = rec.machine_code || 'N/A';
+          if (!breakdown[mCode]) {
+            breakdown[mCode] = { name: mName, code: mCode, output: 0, good: 0, reject: 0 };
+          }
+          breakdown[mCode].output += rec.total_output || 0;
+          breakdown[mCode].good += rec.good_quantity || 0;
+          breakdown[mCode].reject += rec.reject_quantity || 0;
+        });
+      }
+    });
+    return Object.values(breakdown).sort((a, b) => b.output - a.output);
+  }, [convertingDailyRecords]);
 
   return (
   <div className="space-y-5">
@@ -611,6 +633,29 @@ const OverviewTab: React.FC<{
             <p className="text-lg font-bold text-purple-600 dark:text-purple-400">{convertingSummary.quality_rate}%</p>
           </div>
         </div>
+
+        {machineBreakdown.length > 0 && (
+          <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+            <p className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">Breakdown Produksi per Mesin</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {machineBreakdown.map(m => {
+                const qr = m.output > 0 ? ((m.good / m.output) * 100).toFixed(2) : '100.00';
+                return (
+                  <div key={m.code} className="p-3 bg-gray-50 dark:bg-gray-900/30 rounded-lg border border-gray-100 dark:border-gray-700/50 flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-bold text-gray-700 dark:text-gray-250">{m.name} ({m.code})</p>
+                      <p className="text-[10px] text-gray-450 dark:text-gray-400">Quality Rate: {qr}%</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-extrabold text-gray-900 dark:text-white">{fmtNum(m.output)} pcs</p>
+                      <p className="text-[10px] text-emerald-600 dark:text-emerald-400">{fmtNum(m.good)} Good</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     )}
     {/* Pace Indicator — compact */}
