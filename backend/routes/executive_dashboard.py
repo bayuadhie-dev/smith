@@ -3849,7 +3849,7 @@ def get_fg_conversion_summary():
 
 
 @executive_dashboard_bp.route('/all-time-downtime', methods=['GET'])
-@jwt_required()
+@jwt_required(optional=True)
 def get_all_time_downtime():
     try:
         # 1. Fetch PM downtime records from all ShiftProduction entries
