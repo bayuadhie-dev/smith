@@ -2024,7 +2024,21 @@ const DowntimeTab: React.FC<{
 }> = ({ data, downtimePieData, combinedDowntimeByCategory, convertingDailyRecords, allTimeDowntime, allTimeDowntimeLoading }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
+  const [filterDateFrom, setFilterDateFrom] = useState('');
+  const [filterDateTo, setFilterDateTo] = useState('');
+  const [filterMachine, setFilterMachine] = useState('all');
+  const [filterType, setFilterType] = useState('all');
 
+  // Build machine option list from all occurrences
+  const machineOptions = useMemo(() => {
+    const set = new Set<string>();
+    allTimeDowntime.forEach((item: any) => {
+      if (item.machines) {
+        item.machines.split(', ').forEach((m: string) => { if (m && m !== 'N/A') set.add(m); });
+      }
+    });
+    return Array.from(set).sort();
+  }, [allTimeDowntime]);
   const sortedAllTimeDowntime = useMemo(() => {
     let list = [...allTimeDowntime];
     if (searchTerm.trim()) {
@@ -2037,9 +2051,40 @@ const DowntimeTab: React.FC<{
       );
     }
     // Sort by count (frequency) descending
-    return list.sort((a: any, b: any) => (b.count || 0) - (a.count || 0));
-  }, [allTimeDowntime, searchTerm]);
+    if (filterType !== 'all') {
+      const unplannedCategories = ['mesin', 'idle'];
+      list = list.filter(item => {
+        const isUnplanned = unplannedCategories.includes((item.category || '').toLowerCase());
+        return filterType === 'unplanned' ? isUnplanned : !isUnplanned;
+      });
+    }  
+    if (filterMachine !== 'all') {
+      list = list.filter(item => (item.machines || '').split(', ').includes(filterMachine));
+    }
 
+    if (filterDateFrom || filterDateTo) {
+      list = list
+        .map((item: any) => {
+          const occ = (item.occurrences || []).filter((o: any) => {
+            if (!o.date) return false;
+            if (filterDateFrom && o.date < filterDateFrom) return false;
+            if (filterDateTo && o.date > filterDateTo) return false;
+            return true;
+          });
+          if (occ.length === 0) return null;
+          return {
+            ...item,
+            occurrences: occ,
+            count: occ.length,
+            total_minutes: occ.reduce((sum: number, o: any) => sum + (o.duration || 0), 0)
+          };
+        })
+        .filter((item): item is any => item !== null);
+    }
+
+    // Sort by count (frequency) descending
+    return list.sort((a: any, b: any) => (b.count || 0) - (a.count || 0));
+  }, [allTimeDowntime, searchTerm, filterType, filterMachine, filterDateFrom, filterDateTo]);
   const mergedTopDowntime = useMemo(() => {
     if (!data) return [];
     
@@ -2254,24 +2299,64 @@ const DowntimeTab: React.FC<{
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
           <div>
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-              📋 Daftar Seluruh Kejadian Downtime (Sepanjang Waktu - {allTimeDowntime.length} record)
+              📋 Daftar Seluruh Kejadian Downtime (Sepanjang Waktu - {sortedAllTimeDowntime.length} record)
             </h3>
             <p className="text-[10px] text-gray-400 mt-0.5">Urut berdasarkan frekuensi kejadian terbanyak. Klik baris untuk melihat riwayat per kejadian.</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <input
               type="text"
               placeholder="Cari alasan, mesin, produk..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-950 dark:text-white w-64 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-950 dark:text-white w-56 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
+            <input
+              type="date"
+              value={filterDateFrom}
+              onChange={e => setFilterDateFrom(e.target.value)}
+              className="px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-950 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+              title="Dari tanggal"
+            />
+            <span className="text-[10px] text-gray-400">s/d</span>
+            <input
+              type="date"
+              value={filterDateTo}
+              onChange={e => setFilterDateTo(e.target.value)}
+              className="px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-950 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+              title="Sampai tanggal"
+            />
+            <select
+              value={filterMachine}
+              onChange={e => setFilterMachine(e.target.value)}
+              className="px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-950 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              <option value="all">Semua Mesin</option>
+              {machineOptions.map(m => <option key={m} value={m}>{m}</option>)}
+            </select>
+            <select
+              value={filterType}
+              onChange={e => setFilterType(e.target.value)}
+              className="px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-950 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              <option value="all">Semua Tipe</option>
+              <option value="planned">Planned</option>
+              <option value="unplanned">Unplanned</option>
+            </select>
+            {(filterDateFrom || filterDateTo || filterMachine !== 'all' || filterType !== 'all' || searchTerm) && (
+              <button
+                onClick={() => { setFilterDateFrom(''); setFilterDateTo(''); setFilterMachine('all'); setFilterType('all'); setSearchTerm(''); }}
+                className="px-2 py-1.5 text-[10px] text-blue-600 hover:text-blue-800 font-medium"
+              >
+                Reset
+              </button>
+            )}
             <span className="text-[10px] bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-2 py-1 rounded-full font-bold uppercase tracking-wider">
               Laporan Lengkap
             </span>
           </div>
         </div>
-        {allTimeDowntimeLoading ? (
+          {allTimeDowntimeLoading ? (
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             <span className="text-xs text-gray-500 ml-3">Memuat data sepanjang waktu...</span>
