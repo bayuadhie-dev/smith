@@ -2199,7 +2199,12 @@ def complete_work_order(id):
             }
         
         db.session.commit()
-        
+        # Send WhatsApp notification (best-effort, won't affect completion if it fails)
+        try:
+            from utils.production_notifications import trigger_wo_completion_whatsapp_notification
+            trigger_wo_completion_whatsapp_notification(id)
+        except Exception as notif_err:
+            print(f"Failed to send WO completion notification: {notif_err}")        
         response = {
             'success': True,
             'message': f'Work order completed. {qty_good} units received to warehouse.' if qty_good > 0 else 'Work order completed.',
@@ -2262,7 +2267,13 @@ def bulk_complete_work_orders():
                 })
         
         db.session.commit()
-        
+        # Send WhatsApp notification for each completed WO (best-effort)
+        try:
+            from utils.production_notifications import trigger_wo_completion_whatsapp_notification
+            for item in completed_list:
+                trigger_wo_completion_whatsapp_notification(item['id'])
+        except Exception as notif_err:
+            print(f"Failed to send bulk WO completion notifications: {notif_err}")        
         return jsonify({
             'success': True,
             'message': f'{len(completed_list)} Work Order berhasil diselesaikan',
