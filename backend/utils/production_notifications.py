@@ -6,8 +6,18 @@ from datetime import datetime
 from models import db
 from models.production import WorkOrder, ShiftProduction, DowntimeRecord
 from utils.helpers import get_setting_value
+from utils.timezone import utc_to_local
 
 logger = logging.getLogger(__name__)
+
+def format_phone_to_chat_id(phone):
+    """Convert phone number (any common format) to OpenWA chatId format."""
+    clean = ''.join(filter(str.isdigit, phone))
+    if clean.startswith('0'):
+        clean = '62' + clean[1:]
+    elif not clean.startswith('62'):
+        clean = '62' + clean
+    return f"{clean}@c.us"
 
 def calculate_wo_completion_metrics(work_order_id):
     """
@@ -77,7 +87,8 @@ def calculate_wo_completion_metrics(work_order_id):
         'total_downtime_mins': total_downtime,
         'oee_efficiency_pct': oee_efficiency,
         'downtime_items': sorted_downtime_items,
-        'top_categories': top_3_categories
+        'top_categories': top_3_categories,
+        'completion_date': wo.actual_end_date
     }
 
 def format_wo_completion_message(metrics):
@@ -93,8 +104,7 @@ def format_wo_completion_message(metrics):
         f"No. WO: *{metrics['wo_number']}*",
         f"Produk: *{metrics['product_name']}*",
         f"Mesin: *{metrics['machine_name']}*",
-        f"Tanggal Selesai: *{datetime.now().strftime('%d/%m/%Y %H:%M WIB')}*",
-        "",
+        f"Tanggal Selesai: *{utc_to_local(metrics['completion_date']).strftime('%d/%m/%Y %H:%M WIB') if metrics['completion_date'] else utc_to_local(datetime.utcnow()).strftime('%d/%m/%Y %H:%M WIB')}*",        
         "📊 *Metrik Produksi:*",
         f"- Total Grade A: *{metrics['total_grade_a']:,.0f} pcs*",
         f"- Total Karton: *{metrics['total_cartons']:,.1f} karton*",
@@ -129,7 +139,7 @@ def trigger_wo_completion_whatsapp_notification(work_order_id):
     Generate the WO completion report and send it to target phone numbers via WhatsApp gateway/Twilio.
     """
     # 1. Check if WhatsApp notification is enabled
-    is_enabled = get_setting_value('notifications.whatsapp_enabled', 'false') == 'true'
+    is_enabled = get_setting_value('notifications.whatsapp_enabled', False)
     if not is_enabled:
         logger.info("WhatsApp notifications are disabled.")
         return False
@@ -214,13 +224,18 @@ def trigger_wo_completion_whatsapp_notification(work_order_id):
             except requests.exceptions.RequestException as e:
                 logger.error(f"✗ Network error connecting to Twilio API: {e}")
     else:
-        # Local self-hosted Node.js gateway
-        api_url = get_setting_value('notifications.whatsapp_api_url', 'http://localhost:8000/send-message')
-        api_token = get_setting_value('notifications.whatsapp_token', 'local-wa-secret-token')
+        # OpenWA gateway
+        api_url = get_setting_value('notifications.whatsapp_api_url', '')
+        api_token = get_setting_value('notifications.whatsapp_token', '')
+
+        if not api_url or not api_token:
+            logger.error("OpenWA API URL or token not configured in system_settings.")
+            return False
 
         for phone in target_phones:
+            chat_id = format_phone_to_chat_id(phone)
             try:
-                logger.info(f"Sending Local WA notification for WO {metrics['wo_number']} to {phone}...")
+                logger.info(f"Sending OpenWA notification for WO {metrics['wo_number']} to {chat_id}...")
                 response = requests.post(
                     api_url,
                     headers={
@@ -228,22 +243,18 @@ def trigger_wo_completion_whatsapp_notification(work_order_id):
                         'X-API-Key': api_token
                     },
                     json={
-                        'to': phone,
-                        'message': message
+                        'chatId': chat_id,
+                        'text': message
                     },
                     timeout=10
                 )
-                
-                if response.status_code == 200:
-                    res_data = response.json()
-                    if res_data.get('success'):
-                        success_count += 1
-                        logger.info(f"✓ Local WA message sent successfully to {phone}")
-                    else:
-                        logger.error(f"✗ Local WA Gateway returned failure: {res_data.get('message')}")
-                else:
-                    logger.error(f"✗ Failed to connect to Local WA gateway. Status: {response.status_code}, Response: {response.text}")
-            except requests.exceptions.RequestException as e:
-                logger.error(f"✗ Network error connecting to Local WhatsApp gateway: {e}")
 
+                if response.status_code == 201:
+                    res_data = response.json()
+                    success_count += 1
+                    logger.info(f"✓ OpenWA message sent successfully to {chat_id} (messageId: {res_data.get('messageId')})")
+                else:
+                    logger.error(f"✗ OpenWA API returned status {response.status_code}: {response.text}")
+            except requests.exceptions.RequestException as e:
+                logger.error(f"✗ Network error connecting to OpenWA: {e}")
     return success_count > 0
