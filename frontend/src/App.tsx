@@ -318,6 +318,7 @@ import AuditTrail from './pages/Settings/AuditTrail'
 import BackupRestore from './pages/Settings/BackupRestore'
 import EmailSettings from './pages/Settings/EmailSettings'
 import KPITargetSettings from './pages/Settings/KPITargetSettings'
+import SystemHealth from './pages/Settings/SystemHealth'
 import UserProfile from './pages/Profile/UserProfile'
 import UserManual from './pages/Manual/UserManual'
 import FAQPage from './pages/Manual/FAQPage'
@@ -1068,6 +1069,7 @@ function App() {
                 <Route path="settings/backup-restore" element={<AdminRoute><BackupRestore /></AdminRoute>} />
                 <Route path="settings/email" element={<AdminRoute><EmailSettings /></AdminRoute>} />
                 <Route path="settings/kpi-targets" element={<AdminRoute><KPITargetSettings /></AdminRoute>} />
+                <Route path="settings/system-health" element={<AdminRoute><SystemHealth /></AdminRoute>} />
 
                 {/* Profile */}
                 <Route path="profile" element={<UserProfile />} />
