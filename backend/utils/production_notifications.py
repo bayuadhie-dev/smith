@@ -1,4 +1,5 @@
 import json
+import re
 import logging
 import requests
 from decimal import Decimal
@@ -9,6 +10,12 @@ from utils.helpers import get_setting_value
 from utils.timezone import utc_to_local
 
 logger = logging.getLogger(__name__)
+
+def clean_product_name(name):
+    """Strip trailing '@<number>' quantity code from product name for notifications."""
+    if not name:
+        return name
+    return re.sub(r'\s*@\d+\s*$', '', name).strip()
 
 def format_phone_to_chat_id(phone):
     """Convert phone number (any common format) to OpenWA chatId format."""
@@ -78,7 +85,7 @@ def calculate_wo_completion_metrics(work_order_id):
 
     return {
         'wo_number': wo.wo_number,
-        'product_name': wo.product.name if wo.product else "Unknown Product",
+        'product_name': clean_product_name(wo.product.name) if wo.product else "Unknown Product",
         'machine_name': wo.machine.name if wo.machine else "Unknown Machine",
         'total_grade_a': total_grade_a,
         'total_scrap': total_scrap,
