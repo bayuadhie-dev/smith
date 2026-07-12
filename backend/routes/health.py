@@ -251,3 +251,171 @@ def clear_cache():
         return jsonify({
             'error': str(e)
         }), 200
+
+
+@health_bp.route('/health/system', methods=['GET'])
+def system_health():
+    """Comprehensive system health  CPU, memory, disk, DB, OpenWA, PM2, recent errors."""
+    import psutil, time, os, requests as req
+    from utils.helpers import get_setting_value
+
+    result = {
+        'timestamp': get_local_now().isoformat(),
+        'server': os.uname().nodename,
+        'api': {}, 'resources': {}, 'database': {},
+        'whatsapp': {}, 'pm2': {}, 'recent_errors': [],
+    }
+
+    # API uptime
+    try:
+        proc = psutil.Process(os.getpid())
+        uptime_secs = time.time() - proc.create_time()
+        days, rem = divmod(int(uptime_secs), 86400)
+        hours, rem = divmod(rem, 3600)
+        result['api'] = {
+            'status': 'healthy',
+            'uptime_seconds': int(uptime_secs),
+            'uptime_human': f"{days}d {hours}h {rem//60}m",
+            'pid': os.getpid(),
+            'python_version': __import__('sys').version.split()[0],
+        }
+    except Exception as e:
+        result['api'] = {'status': 'error', 'error': str(e)}
+
+    # Resources
+    try:
+        mem = psutil.virtual_memory()
+        disk = psutil.disk_usage('/')
+        cpu = psutil.cpu_percent(interval=0.2)
+        result['resources'] = {
+            'cpu_percent': cpu,
+            'cpu_status': 'warning' if cpu > 80 else 'healthy',
+            'memory_used_mb': round(mem.used / 1024 / 1024, 1),
+            'memory_total_mb': round(mem.total / 1024 / 1024, 1),
+            'memory_percent': mem.percent,
+            'memory_status': 'warning' if mem.percent > 85 else 'healthy',
+            'disk_used_gb': round(disk.used / 1024**3, 1),
+            'disk_total_gb': round(disk.total / 1024**3, 1),
+            'disk_percent': disk.percent,
+            'disk_status': 'warning' if disk.percent > 85 else 'healthy',
+        }
+    except Exception as e:
+        result['resources'] = {'status': 'error', 'error': str(e)}
+
+    # Database
+    try:
+        from models import db as _db
+        from sqlalchemy import text, inspect as sa_inspect
+        _db.session.execute(text('SELECT 1'))
+        db_uri = str(_db.engine.url)
+        db_path = db_uri.replace('sqlite:///', '')
+        if not db_path.startswith('/'):
+            db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'instance', db_path))
+        db_size_mb = round(os.path.getsize(db_path) / 1024 / 1024, 1) if os.path.exists(db_path) else None
+        table_count = len(sa_inspect(_db.engine).get_table_names())
+        backup_dir = backup_dir = os.path.expanduser('~/backups')
+        backup_age = None
+        if os.path.isdir(backup_dir):
+            backups = sorted([
+                os.path.getmtime(os.path.join(backup_dir, f))
+                for f in os.listdir(backup_dir)
+                if f.endswith('.db') and f.startswith('erp_database')
+            ], reverse=True)
+            if backups:
+                age = int(time.time() - backups[0])
+                h, m2 = divmod(age // 60, 60)
+                backup_age = f"{h}h {m2}m ago" if h else f"{m2}m ago"
+        result['database'] = {
+            'status': 'healthy',
+            'size_mb': db_size_mb,
+            'table_count': table_count,
+            'last_backup': backup_age or 'unknown',
+            'engine': 'SQLite',
+        }
+    except Exception as e:
+        result['database'] = {'status': 'error', 'error': str(e)}
+
+    # WhatsApp / OpenWA
+    try:
+        import re as _re
+        owa_url = get_setting_value('notifications.whatsapp_api_url', '')
+        owa_token = get_setting_value('notifications.whatsapp_token', '')
+        mat = _re.search(r'(https?://[^/]+)/api/sessions/([^/]+)', owa_url or '')
+        if mat:
+            base, sid = mat.group(1), mat.group(2)
+            resp = req.get(f"{base}/api/sessions/{sid}", headers={'X-API-Key': owa_token}, timeout=4)
+            data = resp.json()
+            la = data.get('lastActive') or data.get('lastActiveAt') or ''
+            if la:
+                import datetime as _dt
+                ts = _dt.datetime.fromisoformat(la.replace('Z', '+00:00'))
+                age = int(time.time() - ts.timestamp())
+                la_human = 'just now' if age < 60 else (f"{age//60}m ago" if age < 3600 else f"{age//3600}h {(age%3600)//60}m ago")
+            else:
+                la_human = 'unknown'
+            result['whatsapp'] = {
+                'status': data.get('status', 'unknown'),
+                'healthy': data.get('status') == 'ready',
+                'session_name': data.get('name', ''),
+                'session_id': sid,
+                'phone': data.get('phone') or '',
+                'push_name': data.get('pushName', ''),
+                'last_active': la_human,
+                'gateway_url': base,
+            }
+        else:
+            result['whatsapp'] = {'status': 'not_configured', 'healthy': False}
+    except Exception as e:
+        result['whatsapp'] = {'status': 'error', 'healthy': False, 'error': str(e)}
+
+    # PM2 processes
+    try:
+        import subprocess, json as _json
+        pm2 = subprocess.run(['pm2', 'jlist'], capture_output=True, text=True, timeout=5)
+        procs = _json.loads(pm2.stdout) if pm2.returncode == 0 else []
+        result['pm2'] = {'processes': [{
+            'name': p.get('name'),
+            'status': p.get('pm2_env', {}).get('status'),
+            'restarts': p.get('pm2_env', {}).get('restart_time', 0),
+            'uptime_ms': p.get('pm2_env', {}).get('pm_uptime'),
+            'memory_mb': round(p.get('monit', {}).get('memory', 0) / 1024 / 1024, 1),
+            'cpu': p.get('monit', {}).get('cpu', 0),
+        } for p in procs]}
+    except Exception as e:
+        result['pm2'] = {'processes': [], 'error': str(e)}
+
+    # Recent errors
+    try:
+        log_path = os.path.expanduser('~/.pm2/logs/smith-backend-error.log')
+        errors = []
+        if os.path.exists(log_path):
+            lines = open(log_path, errors='replace').readlines()
+            for line in lines[-200:]:
+                line = line.strip()
+                if not line or ('404' in line and 'HEAD /' in line):
+                    continue
+                if any(k in line for k in ['ERROR', 'Error', 'Exception', 'Traceback', 'CRITICAL']):
+                    errors.append(line[-200:])
+        result['recent_errors'] = errors[-10:]
+    except Exception:
+        result['recent_errors'] = []
+
+    return jsonify(result), 200
+
+
+@health_bp.route('/health/whatsapp/reconnect', methods=['POST'])
+def whatsapp_reconnect():
+    """Trigger OpenWA session reconnect."""
+    import requests as req, re as _re
+    from utils.helpers import get_setting_value
+    owa_url = get_setting_value('notifications.whatsapp_api_url', '')
+    owa_token = get_setting_value('notifications.whatsapp_token', '')
+    mat = _re.search(r'(https?://[^/]+)/api/sessions/([^/]+)', owa_url or '')
+    if not mat:
+        return jsonify({'success': False, 'error': 'OpenWA not configured'}), 400
+    base, sid = mat.group(1), mat.group(2)
+    try:
+        r = req.post(f"{base}/api/sessions/{sid}/start", headers={'X-API-Key': owa_token}, timeout=6)
+        return jsonify({'success': r.status_code in (200, 201), 'status': r.json().get('status')}), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
