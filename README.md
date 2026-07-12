@@ -125,7 +125,7 @@
 ┌─────────────────────────────────────────────────────────────┐
 │                   Lapisan Database                            │
 │  SQLite (Development) / PostgreSQL (Production)             │
-│  306 Tabel · Alembic Migrations · Database Indexing         │
+│  308 Tabel · Alembic Migrations · Database Indexing         │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -808,7 +808,67 @@ GET/POST   /api/converting/productions
 | **Purchase Requisition** | Permintaan pembelian | `/api/purchasing` |
 | **Staff Leave (Public)** | Form izin staf tanpa login | `/api/staff-leave` |
 
+
+### 📱 **Modul WhatsApp Notification Gateway** 🆕
+
+**Fitur:**
+- **Notifikasi Work Order Otomatis** — Kirim pesan WhatsApp otomatis saat Work Order selesai, berisi ringkasan metrik produksi (quantity, OEE, downtime)
+- **Dual Provider Support**:
+  - **Local (Self-hosted)** — Gateway Node.js sendiri (OpenWA) dengan engine whatsapp-web.js/Baileys
+  - **Twilio WhatsApp Business API** — Alternatif provider terkelola untuk deployment yang butuh reliability lebih tinggi
+- **Multi-target** — Kirim ke beberapa nomor tujuan sekaligus (dipisah koma)
+- **Konfigurasi via Settings** — Enable/disable, pilih provider, API URL, token, dan nomor tujuan — semua diatur dari UI tanpa perlu redeploy
+- **Session Management** — Reconnect session WhatsApp langsung dari System Health Dashboard
+
+**Arsitektur:**
+```
+Work Order Selesai (Backend Event) →
+production_events.py (trigger) →
+production_notifications.py (format pesan + hitung metrik) →
+Provider Local: OpenWA Gateway (Node.js, port 2785) → WhatsApp Web/Baileys
+Provider Twilio: Twilio WhatsApp Business API
+```
+**File Terkait:**
+- `utils/production_notifications.py` — Formatting pesan & trigger notifikasi
+- `utils/production_events.py` — Event listener untuk WO completion
+- `routes/health.py` — Status monitoring & endpoint reconnect
+- `routes/config_manager.py` — Konfigurasi provider & target nomor
+- `scripts/OpenWA/` — Self-hosted WhatsApp gateway (Node.js, NestJS)
+
+**Endpoint API:**
+```bash
+POST   /api/health/whatsapp/reconnect   # Reconnect WhatsApp session
+GET    /api/health/system                # Status WhatsApp (bagian dari system health)
+```
+
+**Konfigurasi (Settings → Notifications):**
+| Key | Deskripsi |
+|-----|-----------|
+| `notifications.whatsapp_enabled` | Aktifkan/nonaktifkan notifikasi WhatsApp |
+| `notifications.whatsapp_provider` | `local` (self-hosted) atau `twilio` |
+| `notifications.whatsapp_api_url` | URL API gateway (untuk provider local) |
+| `notifications.whatsapp_token` | Token autentikasi ke gateway |
+| `notifications.whatsapp_target_phones` | Nomor tujuan (pisah koma) |
+
+### 🩺 **System Health Dashboard**
+
+Halaman monitoring real-time untuk kesehatan infrastruktur sistem, dapat diakses admin di `Settings → System Health`.
+
+**Menampilkan:**
+- **Status Komponen** — API server, database, WhatsApp gateway, frontend (healthy/warning/error)
+- **Resource Usage** — CPU, memory, disk usage server
+- **Info Database** — Jumlah tabel, ukuran database, waktu backup terakhir, engine (SQLite/PostgreSQL)
+- **WhatsApp Gateway** — Status koneksi, nomor aktif, push name, aktivitas terakhir, tombol reconnect
+- **PM2 Processes** — Uptime, jumlah restart, penggunaan memory per proses (backend, frontend, WhatsApp gateway)
+- **Auto-refresh** — Update otomatis berkala tanpa perlu reload manual
+
+**Endpoint API:**
+```bash
+GET    /api/health/system              # Status lengkap semua komponen
+POST   /api/health/whatsapp/reconnect  # Reconnect WhatsApp session
+```
 ---
+
 
 ## 🔄 Integrasi Alur Kerja
 
@@ -889,9 +949,6 @@ cp .env.example .env
 
 # Inisialisasi database
 flask db upgrade
-
-# (Opsional) Buat tabel SPC
-python create_spc_tables.py
 
 # Jalankan development server
 python app.py
@@ -1047,12 +1104,12 @@ SourceCode/
 ├── backend/                    # 496 files (excl. pycache)
 │   ├── app.py                  # Main Flask application
 │   ├── config.py               # Konfigurasi aplikasi
-│   ├── models/                 # 53 model files · 306 DB tables
+│   ├── models/                 # 53 model files · 308 DB tables
 │   │   ├── spc.py              # SPC models (5 tabel)
 │   │   ├── dcc.py              # DCC & CAPA models (13 tabel)
 │   │   ├── production.py       # Production models (~15 tabel)
 │   │   └── ...
-│   ├── routes/                 # 108 route files
+│   ├── routes/                 # 110 route files
 │   │   ├── spc.py              # SPC API endpoints
 │   │   ├── oee.py              # OEE + Quality Objective
 │   │   ├── production.py       # Production endpoints
@@ -1065,10 +1122,9 @@ SourceCode/
 │   ├── tests/                  # Test files
 │   ├── migrations/             # Alembic migration files
 │   ├── seeds/                  # Seed data files
-│   └── create_spc_tables.py    # SPC table migration script
 ├── frontend/                   # 481 .tsx/.ts files
 │   └── src/
-│       ├── pages/              # 39 module directories · 368 page files
+│       ├── pages/              # 40 module directories · 371 page files
 │       │   ├── Quality/SPC/    # SPCDashboard, SPCSampleForm
 │       │   ├── Production/     # 63 production pages
 │       │   ├── Finance/        # 27 finance pages
@@ -1082,9 +1138,9 @@ SourceCode/
 ├── docker-compose.yml          # Docker configuration
 └── README.md
 
-Backend:  ~256,000 lines of code
-Frontend: ~202,000 lines of code
-Total:    ~458,000+ lines of code
+Backend:  ~127,600 lines of code
+Frontend: ~204,400 lines of code
+Total:    ~332,000+ lines of code
 ```
 
 ---
@@ -1175,6 +1231,23 @@ Asisten AI adalah fitur chatbot terintegrasi yang memungkinkan pengguna untuk me
 
 ## 📈 Pembaruan Terbaru
 
+### ✨ v3.4 — Juli 2026 (WhatsApp Gateway, System Health, Codebase Cleanup)
+
+- **WhatsApp Notification Gateway** — Integrasi notifikasi WhatsApp otomatis saat Work Order selesai:
+  - **Dual Provider** — Self-hosted (OpenWA/Node.js gateway) atau Twilio WhatsApp Business API, dikonfigurasi via Settings
+  - **Auto-trigger** — Notifikasi otomatis ke nomor tujuan (multi-nomor) saat WO completion, dengan metrik ringkasan produksi
+  - **Konfigurasi Fleksibel** — Enable/disable, provider, API URL, token, dan target phone numbers via `config_manager`
+- **System Health Dashboard** — Halaman monitoring real-time di Settings (`/app/settings/system-health`):
+  - Status API server, database, WhatsApp gateway, dan frontend dalam satu tampilan
+  - Resource usage (CPU, memory, disk), info database (tabel, ukuran, backup terakhir)
+  - Status PM2 processes (uptime, restart count, memory per proses)
+  - WhatsApp Gateway detail: status koneksi, nomor aktif, aktivitas terakhir, tombol reconnect
+- **Automated Database Backup** — Cron job harian (02:00) dengan retensi lokal 7 hari & retensi Google Drive 90 hari (via rclone)
+- **Codebase Cleanup** — Pembersihan one-off debug/fix scripts dan arsip backup usang:
+  - Baris kode backend: ~256,000 → **~127,600** (penghapusan script sekali-pakai, bukan regresi fitur)
+  - Total baris kode: ~458,000 → **~332,000**
+- **Route files**: 108 → **110** | **Module directories**: 39 → **40** | **Page files**: 368 → **371** | **Database tables**: 306 → **308**
+
 ### ✨ v3.3 — Juni 2026 (SPC Module)
 
 - **Modul SPC Lengkap** — Statistical Process Control terintegrasi penuh:
@@ -1185,7 +1258,7 @@ Asisten AI adalah fitur chatbot terintegrasi yang memungkinkan pengguna untuk me
   - **Auto-create Specs**: Spesifikasi otomatis dari data produk (GSM, CD, MD) dengan toleransi ±10-15%
   - **7 Parameter Default**: GSM, CD, MD, THICKNESS, MOISTURE, PH, DEFECT_P
   - **Sidebar Integration**: Menu SPC di bawah modul Quality
-  - Database models: 52 → **53 files**, 301 → **306 tabel DB** ✅
+  - Database models: 52 → **53 files**, 301 → **308 tabel DB** ✅
 - **Export Fix** — Perbaikan export Excel & PDF "Top 3 Downtime" di Production Monitoring:
   - `@jwt_required(optional=True)` untuk halaman publik
   - Unique ParagraphStyle names (ReportLab)
@@ -1291,8 +1364,8 @@ See [LICENSE](LICENSE) for full terms.
 
 ### Selesai ✅
 - 20+ modul utama, 100+ sub-modul
-- **53 model files**, **306 tabel database**, **108 route files**
-- **~458,000+ baris kode** (backend + frontend)
+- **53 model files**, **308 tabel database**, **110 route files**
+- **~332,000+ baris kode** (backend + frontend)
 - Autentikasi & otorisasi (JWT + OAuth + Face Recognition)
 - 15+ alur kerja otomatis end-to-end
 - Asisten AI terintegrasi dengan grafik
@@ -1323,8 +1396,8 @@ See [LICENSE](LICENSE) for full terms.
 
 ## 🏆 Pencapaian
 
-- ✅ **306 Tabel DB** | **108 Route Files** | **53 Model Files**
-- ✅ **~458,000+ Baris Kode** (Backend + Frontend)
+- ✅ **308 Tabel DB** | **110. Route Files** | **53 Model Files**
+- ✅ **~332,000+ Baris Kode** (Backend + Frontend)
 - ✅ **20+ Modul Bisnis** dengan 100+ Sub-Modul
 - ✅ **40+ Peran** | **200+ Izin** | RBAC Penuh
 - ✅ **DCC & CAPA** Sesuai ISO 9001:2015
