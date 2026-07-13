@@ -59,11 +59,11 @@ def log_request(access_logger):
     import time
     
     def before_request():
-        g.start_time = time.time()
+        g.access_log_start_time = time.time()
     
     def after_request(response):
         # Check if start_time exists and is not None
-        start_time = getattr(g, 'start_time', None)
+        start_time = getattr(g, 'access_log_start_time', None)
         if start_time is not None:
             duration = (time.time() - start_time) * 1000  # ms
             
