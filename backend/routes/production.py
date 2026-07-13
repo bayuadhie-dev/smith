@@ -3849,7 +3849,7 @@ def update_work_order_bom_actual(wo_id):
             if not item:
                 continue
             item.quantity_actual = float(qty_actual)
-            if item.quantity_planned:
+            if item.quantity_planned is not None:
                 item.quantity_variance = float(qty_actual) - float(item.quantity_planned)
             if entry.get('notes') is not None:
                 item.notes = entry['notes']
