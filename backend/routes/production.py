@@ -2836,29 +2836,49 @@ def create_schedule():
     try:
         data = request.get_json()
         user_id = get_jwt_identity()
-        
+
+        # Validate required fields
+        required_fields = ['work_order_id', 'machine_id', 'scheduled_start', 'scheduled_end']
+        missing = [f for f in required_fields if f not in data or data[f] in (None, '')]
+        if missing:
+            return jsonify({'error': f"Missing required field(s): {', '.join(missing)}"}), 400
+
+        # Validate FK references exist
+        work_order = db.session.get(WorkOrder, data['work_order_id'])
+        if not work_order:
+            return jsonify({'error': f"Work order {data['work_order_id']} not found"}), 400
+
+        machine = db.session.get(Machine, data['machine_id'])
+        if not machine:
+            return jsonify({'error': f"Machine {data['machine_id']} not found"}), 400
+
+        try:
+            scheduled_start = datetime.fromisoformat(data['scheduled_start'])
+            scheduled_end = datetime.fromisoformat(data['scheduled_end'])
+        except (ValueError, TypeError):
+            return jsonify({'error': 'scheduled_start/scheduled_end must be valid ISO datetime strings'}), 400
+
         schedule_number = generate_number('SCH', ProductionSchedule, 'schedule_number')
-        
+
         schedule = ProductionSchedule(
             schedule_number=schedule_number,
             work_order_id=data['work_order_id'],
             machine_id=data['machine_id'],
-            scheduled_start=datetime.fromisoformat(data['scheduled_start']),
-            scheduled_end=datetime.fromisoformat(data['scheduled_end']),
+            scheduled_start=scheduled_start,
+            scheduled_end=scheduled_end,
             status='scheduled',
             shift=data.get('shift'),
             notes=data.get('notes'),
             created_by=user_id
         )
-        
+
         db.session.add(schedule)
         db.session.commit()
-        
+
         return jsonify({'message': 'Schedule created', 'schedule_id': schedule.id, 'schedule_number': schedule_number}), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
-
 @production_bp.route('/traceability/<search_term>', methods=['GET'])
 @jwt_required()
 def get_traceability(search_term):
