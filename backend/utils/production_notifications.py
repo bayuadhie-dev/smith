@@ -70,6 +70,18 @@ def calculate_wo_completion_metrics(work_order_id):
     
     sorted_downtime_items = sorted(downtime_items.items(), key=lambda x: x[1], reverse=True)
 
+    # 4b. Unplanned Downtime Detail (reason + category, unplanned only)
+    unplanned_items = {}
+    for record in downtime_records:
+        if record.downtime_type != 'unplanned':
+            continue
+        reason = record.downtime_reason or "Lain-lain"
+        category = record.downtime_category or "unknown"
+        key = (reason, category)
+        unplanned_items[key] = unplanned_items.get(key, 0) + (record.duration_minutes or 0)
+
+    sorted_unplanned_items = sorted(unplanned_items.items(), key=lambda x: x[1], reverse=True)
+
     # 5. Top 3 Categories (including Machine Downtime and Idle Time)
     categories = [
         ('Mesin (Breakdown/PM)', sum(int(s.downtime_mesin or 0) for s in shifts)),
@@ -94,6 +106,7 @@ def calculate_wo_completion_metrics(work_order_id):
         'total_downtime_mins': total_downtime,
         'oee_efficiency_pct': oee_efficiency,
         'downtime_items': sorted_downtime_items,
+        'unplanned_downtime_items': sorted_unplanned_items,
         'top_categories': top_3_categories,
         'completion_date': wo.actual_end_date
     }
@@ -128,7 +141,13 @@ def format_wo_completion_message(metrics):
         for i, (reason, minutes) in enumerate(metrics['downtime_items'], 1):
             msg_lines.append(f"{i}. *{reason}*: {minutes} menit")
         msg_lines.append("")
-
+    # Add unplanned downtime detail
+    if metrics.get('unplanned_downtime_items'):
+        msg_lines.append("🚨 *Rincian Downtime Unplanned:*")
+        for i, ((reason, category), minutes) in enumerate(metrics['unplanned_downtime_items'], 1):
+            msg_lines.append(f"{i}. *{reason}* ({category}): {minutes} menit")
+        msg_lines.append("")
+  
     # Add top 3 categories
     if metrics['top_categories']:
         msg_lines.append("🔥 *Top 3 Kategori Downtime & Idle:*")
