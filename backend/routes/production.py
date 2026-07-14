@@ -515,6 +515,104 @@ def get_machine_efficiency(id):
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+@production_bp.route('/work-center-summary', methods=['GET'])
+@jwt_required()
+def get_work_center_summary():
+    """
+    Get Work Center dashboard summary: all machines with today's aggregated
+    OEE and downtime breakdown from shift_productions.
+    ---
+    tags:
+      - Production
+    summary: Work Center summary (today)
+    security:
+      - BearerAuth: []
+    responses:
+      200:
+        description: Work center summary retrieved successfully
+      401:
+        description: Unauthorized
+      500:
+        description: Server error
+    """
+    try:
+        from models.production import ShiftProduction
+        date_param = request.args.get('date')
+        if date_param:
+            try:
+                target_date = datetime.strptime(date_param, '%Y-%m-%d').date()
+            except ValueError:
+                return jsonify({'error': 'Invalid date format, use YYYY-MM-DD'}), 400
+        else:
+            target_date = get_local_now().date()
+        # Aggregate today's ShiftProduction rows per machine in a single query
+        agg_rows = db.session.query(
+            ShiftProduction.machine_id,
+            func.avg(ShiftProduction.oee_score).label('avg_oee'),
+            func.sum(ShiftProduction.downtime_mesin).label('downtime_mesin'),
+            func.sum(ShiftProduction.downtime_operator).label('downtime_operator'),
+            func.sum(ShiftProduction.downtime_material).label('downtime_material'),
+            func.sum(ShiftProduction.downtime_design).label('downtime_design'),
+            func.sum(ShiftProduction.downtime_others).label('downtime_others'),
+            func.count(ShiftProduction.id).label('shift_count')
+        ).filter(
+            ShiftProduction.production_date == target_date,
+            ShiftProduction.machine_id.isnot(None)
+        ).group_by(ShiftProduction.machine_id).all()
+
+        # Index aggregation results by machine_id for O(1) lookup
+        agg_by_machine = {row.machine_id: row for row in agg_rows}
+
+        machines = Machine.query.filter_by(is_active=True).all()
+
+        result = {
+            'date': target_date.isoformat(),
+            'machines': []
+        }
+
+        for m in machines:
+            agg = agg_by_machine.get(m.id)
+
+            if agg:
+                oee_score = round(float(agg.avg_oee), 2) if agg.avg_oee is not None else None
+                downtime_mesin = int(agg.downtime_mesin or 0)
+                downtime_operator = int(agg.downtime_operator or 0)
+                downtime_material = int(agg.downtime_material or 0)
+                downtime_design = int(agg.downtime_design or 0)
+                downtime_others = int(agg.downtime_others or 0)
+                shift_count = int(agg.shift_count or 0)
+            else:
+                oee_score = None
+                downtime_mesin = downtime_operator = downtime_material = 0
+                downtime_design = downtime_others = 0
+                shift_count = 0
+
+            total_downtime = (downtime_mesin + downtime_operator + downtime_material
+                               + downtime_design + downtime_others)
+
+            result['machines'].append({
+                'id': m.id,
+                'code': m.code,
+                'name': m.name,
+                'department': m.department,
+                'status': m.status,
+                'capacity_per_hour': float(m.capacity_per_hour) if m.capacity_per_hour else None,
+                'capacity_uom': m.capacity_uom,
+                'today_shift_count': shift_count,
+                'oee_score': oee_score,
+                'downtime': {
+                    'mesin': downtime_mesin,
+                    'operator': downtime_operator,
+                    'material': downtime_material,
+                    'design': downtime_design,
+                    'others': downtime_others,
+                    'total': total_downtime
+                }
+            })
+
+        return jsonify(result), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 # ============= WORK ORDERS =============
 @production_bp.route('/work-orders', methods=['GET'])
