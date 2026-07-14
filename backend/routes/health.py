@@ -404,7 +404,6 @@ def system_health():
     return jsonify(result), 200
 
 @health_bp.route('/health/history', methods=['GET'])
-@jwt_required()
 def health_history():
     """
     Return aggregated health history for trend charts.
