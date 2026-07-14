@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -90,6 +91,165 @@ function Card({ children, className = '' }: { children: React.ReactNode; classNa
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">{children}</p>;
 }
+
+interface ResourcePoint {
+  timestamp: string;
+  cpu_percent: number | null;
+  memory_percent: number | null;
+  disk_percent: number | null;
+}
+interface StatusPoint {
+  timestamp: string;
+  database_status: string;
+  whatsapp_status: string;
+}
+interface SlowEndpoint {
+  endpoint: string;
+  avg_ms: number;
+  max_ms: number;
+  request_count: number;
+}
+interface HistoryData {
+  range: string;
+  point_count: number;
+  resource_series: ResourcePoint[];
+  status_series: StatusPoint[];
+  slowest_endpoints: SlowEndpoint[];
+}
+
+function fmtChartTime(ts: string, range: string) {
+  const d = new Date(ts);
+  if (range === '24h') {
+    return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+  }
+  return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+}
+
+function StatusUptimeBar({ points, statusKey, label }: { points: StatusPoint[]; statusKey: 'database_status' | 'whatsapp_status'; label: string }) {
+  const healthyValues = ['healthy', 'ready'];
+  return (
+    <div className="mb-4 last:mb-0">
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-xs text-gray-500">{label}</span>
+        <span className="text-xs text-gray-400">
+          {points.length > 0
+            ? `${Math.round((points.filter(p => healthyValues.includes(p[statusKey])).length / points.length) * 100)}% uptime`
+            : '—'}
+        </span>
+      </div>
+      <div className="flex gap-[1px] h-4 rounded overflow-hidden">
+        {points.map((p, i) => (
+          <div
+            key={i}
+            title={`${p.timestamp}: ${p[statusKey]}`}
+            className={`flex-1 ${healthyValues.includes(p[statusKey]) ? 'bg-green-400' : 'bg-red-400'}`}
+          />
+        ))}
+        {points.length === 0 && <div className="flex-1 bg-gray-100 dark:bg-gray-800" />}
+      </div>
+    </div>
+  );
+}
+
+function HealthHistorySection({ apiBase }: { apiBase: string }) {
+  const [history, setHistory] = useState<HistoryData | null>(null);
+  const [historyLoading, setHistoryLoading] = useState(true);
+  const [range, setRange] = useState<'24h' | '7d' | '30d'>('24h');
+
+  const fetchHistory = useCallback(async (selectedRange: string) => {
+    setHistoryLoading(true);
+    try {
+      const res = await axios.get(`${apiBase}/api/health/history`, { params: { range: selectedRange } });
+      setHistory(res.data);
+    } catch {
+      setHistory(null);
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, [apiBase]);
+
+  useEffect(() => { fetchHistory(range); }, [range, fetchHistory]);
+
+  return (
+    <Card className="col-span-full">
+      <div className="flex items-center justify-between mb-4">
+        <SectionTitle>Resource Trend</SectionTitle>
+        <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5">
+          {(['24h', '7d', '30d'] as const).map(r => (
+            <button
+              key={r}
+              onClick={() => setRange(r)}
+              className={`text-xs font-medium px-2.5 py-1 rounded-md transition-colors ${
+                range === r ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-500'
+              }`}
+            >
+              {r === '24h' ? '24 Jam' : r === '7d' ? '7 Hari' : '30 Hari'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {historyLoading && (
+        <div className="h-64 flex items-center justify-center text-sm text-gray-400">Memuat data trend...</div>
+      )}
+
+      {!historyLoading && (!history || history.point_count === 0) && (
+        <div className="h-64 flex items-center justify-center text-sm text-gray-400">
+          Belum ada data history. Data akan muncul setelah collector berjalan beberapa saat.
+        </div>
+      )}
+
+      {!historyLoading && history && history.point_count > 0 && (
+        <>
+          <div className="h-64 mb-6">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={history.resource_series}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.5} />
+                <XAxis
+                  dataKey="timestamp"
+                  tickFormatter={(ts) => fmtChartTime(ts, history.range)}
+                  tick={{ fontSize: 11, fill: '#9ca3af' }}
+                  minTickGap={30}
+                />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: '#9ca3af' }} unit="%" />
+                <Tooltip
+                  labelFormatter={(ts) => new Date(ts as string).toLocaleString('id-ID')}
+                  formatter={(value: number, name: string) => [`${value}%`, name]}
+                />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+                <Line type="monotone" dataKey="cpu_percent" name="CPU" stroke="#3b82f6" dot={false} strokeWidth={1.5} />
+                <Line type="monotone" dataKey="memory_percent" name="Memory" stroke="#8b5cf6" dot={false} strokeWidth={1.5} />
+                <Line type="monotone" dataKey="disk_percent" name="Disk" stroke="#f59e0b" dot={false} strokeWidth={1.5} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="mb-6">
+            <StatusUptimeBar points={history.status_series} statusKey="database_status" label="Database Uptime" />
+            <StatusUptimeBar points={history.status_series} statusKey="whatsapp_status" label="WhatsApp Gateway Uptime" />
+          </div>
+
+          {history.slowest_endpoints.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Endpoint Terlambat (Top 10)</p>
+              <div className="space-y-1.5">
+                {history.slowest_endpoints.map((ep, i) => (
+                  <div key={i} className="flex items-center justify-between text-xs py-1.5 border-b border-gray-100 dark:border-gray-800 last:border-0">
+                    <span className="font-mono text-gray-600 dark:text-gray-400 truncate flex-1 mr-3">{ep.endpoint}</span>
+                    <span className="text-gray-400 mr-3">{ep.request_count}x</span>
+                    <span className="font-medium text-gray-900 dark:text-gray-100 w-16 text-right">{ep.avg_ms}ms avg</span>
+                    <span className="text-gray-400 w-16 text-right">{ep.max_ms}ms max</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </Card>
+  );
+}
+
 
 export default function SystemHealth() {
   const [data, setData] = useState<HealthData | null>(null);
@@ -284,6 +444,7 @@ export default function SystemHealth() {
         </div>
       </Card>
 
+      <HealthHistorySection apiBase={API_BASE} />
       <Card className="mb-5">
         <SectionTitle>PM2 processes</SectionTitle>
         <div className="divide-y divide-gray-100 dark:divide-gray-800">

@@ -5,6 +5,7 @@ from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 from datetime import datetime
 import redis
+import json
 import os
 from utils.timezone import get_local_now, get_local_today
 
@@ -402,6 +403,95 @@ def system_health():
 
     return jsonify(result), 200
 
+@health_bp.route('/health/history', methods=['GET'])
+@jwt_required()
+def health_history():
+    """
+    Return aggregated health history for trend charts.
+    Query params:
+      range: '24h' | '7d' | '30d' (default '24h')
+      downsample: optional int, max number of points to return (default varies by range)
+    """
+    import glob
+
+    range_param = request.args.get('range', '24h')
+    range_days = {'24h': 1, '7d': 7, '30d': 30}.get(range_param, 1)
+
+    history_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logs', 'health_history')
+    now = get_local_now()
+    cutoff = now - __import__('datetime').timedelta(days=range_days)
+
+    all_points = []
+    if os.path.isdir(history_dir):
+        for file_path in sorted(glob.glob(os.path.join(history_dir, 'health_*.json'))):
+            try:
+                with open(file_path, 'r') as f:
+                    day_data = json.load(f)
+            except (json.JSONDecodeError, IOError):
+                continue
+            for point in day_data:
+                try:
+                    ts = datetime.fromisoformat(point['timestamp'])
+                except (KeyError, ValueError):
+                    continue
+                if ts.replace(tzinfo=None) >= cutoff.replace(tzinfo=None):
+                    all_points.append(point)
+
+    all_points.sort(key=lambda p: p['timestamp'])
+
+    # Downsample so the frontend isn't rendering 40k+ points for a 30-day range
+    default_max_points = {'24h': 288, '7d': 336, '30d': 360}  # ~5min, ~30min, ~2hr buckets
+    max_points = int(request.args.get('downsample', default_max_points.get(range_param, 288)))
+
+    if len(all_points) > max_points:
+        step = len(all_points) / max_points
+        sampled = []
+        i = 0.0
+        while int(i) < len(all_points):
+            sampled.append(all_points[int(i)])
+            i += step
+        all_points = sampled
+
+    # Build lightweight series for charts (resources) + separate status timeline
+    resource_series = [{
+        'timestamp': p['timestamp'],
+        'cpu_percent': p.get('resources', {}).get('cpu_percent'),
+        'memory_percent': p.get('resources', {}).get('memory_percent'),
+        'disk_percent': p.get('resources', {}).get('disk_percent'),
+    } for p in all_points]
+
+    status_series = [{
+        'timestamp': p['timestamp'],
+        'database_status': p.get('database_status'),
+        'whatsapp_status': p.get('whatsapp_status'),
+    } for p in all_points]
+
+    # Aggregate response times across the whole range: top slowest endpoints by avg
+    endpoint_totals = {}
+    for p in all_points:
+        for endpoint, stats in (p.get('response_times') or {}).items():
+            agg = endpoint_totals.setdefault(endpoint, {'count': 0, 'total_ms': 0.0, 'max_ms': 0.0})
+            agg['count'] += stats.get('count', 0)
+            agg['total_ms'] += stats.get('avg_ms', 0) * stats.get('count', 0)
+            agg['max_ms'] = max(agg['max_ms'], stats.get('max_ms', 0))
+
+    slowest_endpoints = sorted([
+        {
+            'endpoint': ep,
+            'avg_ms': round(agg['total_ms'] / agg['count'], 1) if agg['count'] else 0,
+            'max_ms': round(agg['max_ms'], 1),
+            'request_count': agg['count'],
+        }
+        for ep, agg in endpoint_totals.items()
+    ], key=lambda x: x['avg_ms'], reverse=True)[:10]
+
+    return jsonify({
+        'range': range_param,
+        'point_count': len(all_points),
+        'resource_series': resource_series,
+        'status_series': status_series,
+        'slowest_endpoints': slowest_endpoints,
+    }), 200
 
 @health_bp.route('/health/whatsapp/reconnect', methods=['POST'])
 def whatsapp_reconnect():
