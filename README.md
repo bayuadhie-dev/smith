@@ -204,6 +204,7 @@ GET/POST   /api/returns
 - **Breakdown Summary** — Rekap breakdown mesin
 - **FG Conversion** — Konversi produk Finish Good
 - **WIP Batch Management** — Manajemen batch WIP
+- **Work Center Dashboard** — Ringkasan status & OEE seluruh mesin per hari, dengan breakdown downtime per kategori (mesin, operator, material, design, others) dan navigasi tanggal historis
 
 **Input Produksi Per Shift:**
 - Entry data per shift (Shift 1, 2, 3) dengan sub-shift a/b/c
@@ -224,6 +225,7 @@ GET/POST   /api/returns
 ```bash
 GET/POST   /api/production/work-orders
 GET        /api/production/machines
+GET        /api/production/work-center-summary
 GET        /api/production/daily-controller
 POST       /api/production/work-order-records
 GET/POST   /api/schedule-grid
@@ -1230,6 +1232,14 @@ Asisten AI adalah fitur chatbot terintegrasi yang memungkinkan pengguna untuk me
 ---
 
 ## 📈 Pembaruan Terbaru
+
+### ✨ v3.5 — Juli 2026 (Work Center Dashboard)
+
+- **Work Center Dashboard** — Halaman ringkasan status mesin real-time (`/app/production/work-center`):
+  - **1 Endpoint Baru** — `GET /api/production/work-center-summary`, agregasi harian OEE & downtime per mesin dari data Shift Production (query tunggal ter-group, tanpa N+1)
+  - **Breakdown Downtime per Kategori** — Mesin, Operator, Material, Design, Others — ditampilkan dengan visualisasi bar per mesin (expandable row)
+  - **Navigasi Tanggal Historis** — Parameter `?date=` untuk melihat ringkasan hari mana pun, tidak terbatas hari ini
+  - **Sidebar Integration** — Menu "Work Center" di bawah Machine Data pada modul Produksi
 
 ### ✨ v3.4 — Juli 2026 (WhatsApp Gateway, System Health, Codebase Cleanup)
 
