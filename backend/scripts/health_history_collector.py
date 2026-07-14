@@ -56,25 +56,20 @@ def collect_resources():
     }
 
 
-def collect_db_status():
+def collect_db_status(app):
     try:
-        from app import create_app
         from models import db as _db
         from sqlalchemy import text
-        app = create_app()
         with app.app_context():
             _db.session.execute(text('SELECT 1'))
         return 'healthy'
     except Exception:
         return 'error'
 
-
-def collect_whatsapp_status():
+def collect_whatsapp_status(app):
     try:
         import requests as req
-        from app import create_app
         from utils.helpers import get_setting_value
-        app = create_app()
         with app.app_context():
             owa_url = get_setting_value('notifications.whatsapp_api_url', '')
             owa_token = get_setting_value('notifications.whatsapp_token', '')
@@ -179,14 +174,16 @@ def main():
     window_end = now.replace(second=0, microsecond=0)
     window_start = window_end - timedelta(minutes=1)
 
+    from app import create_app
+    app = create_app()
+
     snapshot = {
         'timestamp': now.isoformat(),
         'resources': collect_resources(),
-        'database_status': collect_db_status(),
-        'whatsapp_status': collect_whatsapp_status(),
+        'database_status': collect_db_status(app),
+        'whatsapp_status': collect_whatsapp_status(app),
         'response_times': collect_response_times(window_start, window_end),
     }
-
     append_snapshot(snapshot)
     rotate_old_files()
 
