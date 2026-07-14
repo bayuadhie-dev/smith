@@ -105,6 +105,7 @@ import InvoiceMatching from './pages/Purchasing/InvoiceMatching'
 import MachineList from './pages/Production/MachineList'
 import MachineForm from './pages/Production/MachineForm'
 import MachineDetail from './pages/Production/MachineDetail'
+import WorkCenterDashboard from './pages/Production/WorkCenterDashboard'
 import WorkOrderList from './pages/Production/WorkOrderList'
 import WorkOrderForm from './pages/Production/WorkOrderForm'
 import ProductionDashboard from './pages/Production/ProductionDashboard'
@@ -722,6 +723,7 @@ function App() {
                 <Route path="production/machines/:id" element={<MachineDetail />} />
                 <Route path="production/machines/:id/edit" element={<MachineForm />} />
                 <Route path="production/machines/:id/efficiency" element={<MachineDetail />} />
+                <Route path="production/work-center" element={<WorkCenterDashboard />} />
                 <Route path="production/machines/:id/analytics" element={<MachineDetail />} />
                 <Route path="production/controller" element={<DailyController />} />
                 <Route path="production/weekly-controller" element={<WeeklyController />} />

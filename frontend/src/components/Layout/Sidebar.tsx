@@ -276,6 +276,7 @@ function SidebarContent() {
             { name: 'Status Pengerjaan', href: '/app/production/work-order-status', icon: ClipboardDocumentListIcon },
             { name: 'WO Monitoring', href: '/app/production/work-orders-monitoring', icon: ChartBarIcon },
             { name: 'Machine Data', href: '/app/production/machines', icon: CogIcon },
+            { name: 'Work Center', href: '/app/production/work-center', icon: ChartBarIcon },
             {
               name: 'Controller', icon: ChartBarIcon, isSubMenu: true, subChildren: [
                 { name: 'Harian', href: '/app/production/controller' },
