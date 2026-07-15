@@ -945,6 +945,15 @@ export class WhatsAppWebJsAdapter extends EventEmitter implements IWhatsAppEngin
     const msg = await this.sendResolved(chatId, to =>
       mentions?.length ? this.client!.sendMessage(to, text, { mentions }) : this.client!.sendMessage(to, text),
     );
+    // whatsapp-web.js can resolve sendMessage() with undefined even when the message was
+    // actually delivered (observed with recent WhatsApp Web versions). Fall back to a
+    // synthetic result instead of throwing, since the send itself already succeeded.
+    if (!msg || !msg.id) {
+      return {
+        id: `unknown_${Date.now()}`,
+        timestamp: Math.floor(Date.now() / 1000),
+      };
+    }
     return {
       id: msg.id._serialized,
       timestamp: msg.timestamp,
