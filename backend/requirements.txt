@@ -24,7 +24,7 @@ waitress==2.1.2  # Windows-compatible WSGI server
 
 # Utilities
 python-dotenv==1.0.0
-Werkzeug==3.0.1
+Werkzeug==3.1.8
 
 # Date & Time
 python-dateutil==2.8.2
@@ -71,14 +71,14 @@ python-barcode==0.15.1
 Flask-Mail==0.9.1
 
 # Validation
-marshmallow==3.20.1
+marshmallow==4.3.0
 marshmallow-sqlalchemy==0.29.0
 
 # Scheduling (for automated depreciation & background tasks)
 APScheduler==3.10.4
 
 # HTTP Client
-requests==2.31.0
+requests==2.34.2
 
 # Google OAuth
 google-auth==2.25.2
