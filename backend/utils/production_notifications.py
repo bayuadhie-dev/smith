@@ -6,7 +6,7 @@ from decimal import Decimal
 from datetime import datetime
 from models import db
 from models.production import WorkOrder, ShiftProduction, DowntimeRecord
-from utils.helpers import get_setting_value
+from utils.helpers import get_setting_value, detect_downtime_category
 from utils.timezone import utc_to_local
 
 logger = logging.getLogger(__name__)
@@ -26,6 +26,59 @@ def format_phone_to_chat_id(phone):
         clean = '62' + clean
     return f"{clean}@c.us"
 
+def get_wo_downtime_breakdown(shifts, target_categories, top_n=5):
+    """
+    Parse the free-text `issues` field on each ShiftProduction to build a
+    top-N breakdown of downtime reasons for the given categories (e.g. 'mesin', 'idle').
+    Mirrors the parsing logic used in executive_dashboard's all-time-downtime endpoint.
+    """
+    reasons = {}
+
+    for sp in shifts:
+        if not sp.issues:
+            continue
+        issue_parts = sp.issues.split(';')
+        for idx, part in enumerate(issue_parts):
+            part = part.strip()
+            if not part:
+                continue
+
+            match = re.match(r'(\d+)\s*menit\s*-\s*(.+?)(?:\s*\[([^\]]+)\])?\s*$', part, re.IGNORECASE)
+            if not match:
+                continue
+
+            duration = int(match.group(1))
+            reason = match.group(2).strip()
+            explicit_category = match.group(3).strip() if match.group(3) else None
+
+            reason = re.sub(r'\s*\[.+\]\s*$', '', reason).strip()
+
+            excluded = ['istirahat', 'sholat', 'solat', 'toilet', 'makan', 'minum']
+            if any(kw in reason.lower() for kw in excluded):
+                continue
+
+            category = explicit_category.lower() if explicit_category else detect_downtime_category(reason, idx == 0)
+            if detect_downtime_category(reason.lower()) == 'idle':
+                category = 'idle'
+
+            if category not in target_categories:
+                continue
+
+            key = f"{reason.lower()}||{category}"
+            if key not in reasons:
+                reasons[key] = {'reason': reason, 'category': category, 'total_minutes': 0}
+            reasons[key]['total_minutes'] += duration
+
+    by_category = {}
+    for item in reasons.values():
+        by_category.setdefault(item['category'], []).append(item)
+
+    result = {}
+    for cat, items in by_category.items():
+        result[cat] = sorted(items, key=lambda x: x['total_minutes'], reverse=True)[:top_n]
+
+    return result
+
 def calculate_wo_completion_metrics(work_order_id):
     """
     Calculate production metrics, carton count, runtime, OEE efficiency,
@@ -36,7 +89,7 @@ def calculate_wo_completion_metrics(work_order_id):
         return None
 
     shifts = ShiftProduction.query.filter_by(work_order_id=work_order_id).all()
-    
+
     # 1. Basic Metrics
     total_grade_a = sum(float(s.good_quantity or 0) for s in shifts)
     total_scrap = sum(float(s.reject_quantity or 0) for s in shifts)
@@ -94,6 +147,7 @@ def calculate_wo_completion_metrics(work_order_id):
     
     # Filter categories with duration > 0, sort by duration, and take top 3
     top_3_categories = sorted([c for c in categories if c[1] > 0], key=lambda x: x[1], reverse=True)[:3]
+    downtime_breakdown = get_wo_downtime_breakdown(shifts, target_categories=['mesin', 'idle'], top_n=5)
 
     return {
         'wo_number': wo.wo_number,
@@ -108,7 +162,8 @@ def calculate_wo_completion_metrics(work_order_id):
         'downtime_items': sorted_downtime_items,
         'unplanned_downtime_items': sorted_unplanned_items,
         'top_categories': top_3_categories,
-        'completion_date': wo.actual_end_date
+        'completion_date': wo.actual_end_date,
+        'downtime_breakdown': downtime_breakdown
     }
 
 def format_wo_completion_message(metrics):
@@ -155,6 +210,15 @@ def format_wo_completion_message(metrics):
             msg_lines.append(f"{i}. *{cat_name}*: {minutes} menit")
         msg_lines.append("")
 
+    # Add detailed breakdown for mesin & idle categories
+    category_labels = {'mesin': '🔧 Mesin (Breakdown/PM)', 'idle': '⏳ Idle Time'}
+    for cat_key, label in category_labels.items():
+        items = metrics.get('downtime_breakdown', {}).get(cat_key, [])
+        if items:
+            msg_lines.append(f"*Top {len(items)} {label}:*")
+            for i, item in enumerate(items, 1):
+                msg_lines.append(f"{i}. {item['reason']}: {item['total_minutes']} menit")
+            msg_lines.append("")
     msg_lines.append("---------------------------------------")
     msg_lines.append("_Smith ERP - Sistem Notifikasi Otomatis_")
     
