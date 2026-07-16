@@ -61,7 +61,6 @@ Pillow==10.1.0  # Image processing if needed
 
 # PDF Generation
 reportlab==4.0.7
-PyPDF2==3.0.1  # PDF manipulation
 
 # QR Code & Barcode
 qrcode==7.4.2
