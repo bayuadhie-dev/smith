@@ -104,6 +104,142 @@ def _receive_fg_to_warehouse(packing_list, user_id):
         traceback.print_exc()
 
 
+def _deduct_wip_stock(pl, product_id, total_carton, batch_mixing, pack_per_carton, user_id):
+    """Helper to validate and deduct WIP stock for a packing list batch.
+    
+    Raises ValueError on validation failures (stok kurang, BOM tidak ditemukan, dll).
+    Writes WIPStockMovement records with batch_mixing set.
+    """
+    if total_carton <= 0:
+        return []
+
+    product = db.session.get(Product, product_id)
+    if not product:
+        raise ValueError('Product not found')
+
+    # Get BOM
+    bom = BillOfMaterials.query.filter_by(
+        product_id=product_id, is_active=True
+    ).first()
+
+    # Determine deduction mode
+    # Query WIP stock real-time from DB
+    direct_wip = WIPStock.query.filter_by(product_id=product_id).first()
+    use_direct = direct_wip and (direct_wip.quantity_carton or 0) > 0
+    deduction_details = []
+
+    if use_direct:
+        # === MODE: Direct deduction ===
+        if (direct_wip.quantity_carton or 0) < total_carton:
+            raise ValueError(f'Stok tidak cukup untuk {product.name}. Tersedia: {direct_wip.quantity_carton} karton, Diminta: {total_carton} karton')
+        
+        # Deduct
+        deduct_pcs = total_carton * pack_per_carton
+        direct_wip.quantity_carton = max(0, (direct_wip.quantity_carton or 0) - total_carton)
+        direct_wip.quantity_pcs = max(0, (direct_wip.quantity_pcs or 0) - deduct_pcs)
+        direct_wip.last_updated_at = get_local_now()
+
+        movement = WIPStockMovement(
+            wip_stock_id=direct_wip.id,
+            product_id=product_id,
+            movement_type='out',
+            quantity_pcs=deduct_pcs,
+            quantity_carton=total_carton,
+            reference_type='packing_list',
+            reference_id=pl.id,
+            reference_number=pl.packing_number,
+            batch_mixing=batch_mixing,
+            balance_pcs=direct_wip.quantity_pcs,
+            balance_carton=direct_wip.quantity_carton,
+            notes=f'Packing FG {product.name}: {total_carton} karton (Batch: {batch_mixing or "-"})',
+            created_by=user_id
+        )
+        db.session.add(movement)
+        deduction_details.append({
+            'wip_name': product.name,
+            'deducted_pcs': deduct_pcs,
+            'deducted_karton': total_carton
+        })
+    else:
+        # === MODE: BOM Components deduction ===
+        if not bom:
+            raise ValueError('Tidak ada BOM aktif dan tidak ada stok langsung untuk produk ini')
+
+        bom_items = BOMItem.query.filter_by(bom_id=bom.id).all()
+        wip_deductions = []
+
+        # Loop 1: Pre-validation (validate all components first)
+        for item in bom_items:
+            if not item.material_id:
+                continue
+            material = db.session.get(Material, item.material_id)
+            if not material or not (material.name or '').startswith('WIP '):
+                continue
+
+            qty_per_karton = float(item.quantity) if item.quantity else 0
+            if qty_per_karton <= 0:
+                continue
+
+            wip_product = Product.query.filter_by(code=material.code).first()
+            if not wip_product:
+                raise ValueError(f'Produk WIP tidak ditemukan untuk material {material.code} ({material.name})')
+
+            wip_stock = WIPStock.query.filter_by(product_id=wip_product.id).first()
+            deduct_pcs = int(qty_per_karton * total_carton)
+            available_pcs = wip_stock.quantity_pcs if wip_stock else 0
+
+            if available_pcs < deduct_pcs:
+                max_possible = int(available_pcs / qty_per_karton) if qty_per_karton > 0 else 0
+                raise ValueError(f'Stok WIP tidak cukup untuk {material.name}. '
+                                 f'Dibutuhkan: {deduct_pcs} pcs, Tersedia: {available_pcs} pcs (maks {max_possible} karton FG)')
+
+            wip_deductions.append({
+                'wip_stock': wip_stock,
+                'wip_product': wip_product,
+                'material_name': material.name,
+                'deduct_pcs': deduct_pcs,
+                'qty_per_karton': qty_per_karton
+            })
+
+        if not wip_deductions:
+            raise ValueError('BOM tidak memiliki komponen WIP dan tidak ada stok langsung.')
+
+        # Loop 2: Actual Deduction
+        for ded in wip_deductions:
+            wip_stock = ded['wip_stock']
+            wip_ppc = wip_stock.pack_per_carton or 1
+            deduct_pcs = ded['deduct_pcs']
+            deduct_karton = int(deduct_pcs / wip_ppc) if wip_ppc > 0 else 0
+
+            wip_stock.quantity_pcs = max(0, (wip_stock.quantity_pcs or 0) - deduct_pcs)
+            wip_stock.quantity_carton = max(0, (wip_stock.quantity_carton or 0) - deduct_karton)
+            wip_stock.last_updated_at = get_local_now()
+
+            movement = WIPStockMovement(
+                wip_stock_id=wip_stock.id,
+                product_id=ded['wip_product'].id,
+                movement_type='out',
+                quantity_pcs=deduct_pcs,
+                quantity_carton=deduct_karton,
+                reference_type='packing_list',
+                reference_id=pl.id,
+                reference_number=pl.packing_number,
+                batch_mixing=batch_mixing,
+                balance_pcs=wip_stock.quantity_pcs,
+                balance_carton=wip_stock.quantity_carton,
+                notes=f'Packing FG {product.name}: {total_carton} karton x {int(ded["qty_per_karton"])}/karton (Batch: {batch_mixing or "-"})',
+                created_by=user_id
+            )
+            db.session.add(movement)
+            deduction_details.append({
+                'wip_name': ded['material_name'],
+                'deducted_pcs': deduct_pcs,
+                'deducted_karton': deduct_karton
+            })
+
+    return deduction_details
+
+
 # ===========================================
 # WIP STOCK ENDPOINTS
 # ===========================================
@@ -354,20 +490,14 @@ def get_packing_list(id):
 def create_packing_list():
     """Create new packing list for Finished Good product.
     
-    Two deduction modes:
-    1. Direct: FG has its own WIP Stock -> deduct from FG WIP Stock directly
-    2. BOM Components: FG has WIP components in BOM -> deduct from each WIP component stock
+    Can be created with total_carton = 0 (empty draft) or total_carton > 0 (immediate creation).
     """
     try:
         data = request.get_json()
         product_id = data.get('product_id')
         total_carton = data.get('total_carton', 0)
-        
         if not product_id:
             return jsonify({'error': 'Product ID is required'}), 400
-        
-        if total_carton <= 0:
-            return jsonify({'error': 'Total carton must be greater than 0'}), 400
         
         # Validate: only Finished Good products can have packing lists
         product = db.session.get(Product, product_id)
@@ -377,7 +507,7 @@ def create_packing_list():
         if product.material_type == 'wip' or (product.name or '').startswith('WIP '):
             return jsonify({'error': 'Packing list hanya untuk produk Finished Good, bukan WIP'}), 400
         
-        # Get BOM (optional - needed for bom_components mode)
+        # Get BOM (optional)
         bom = BillOfMaterials.query.filter_by(
             product_id=product_id, is_active=True
         ).first()
@@ -385,89 +515,8 @@ def create_packing_list():
         # Use pack_per_carton from request if provided
         pack_per_carton = data.get('pack_per_carton') or (bom.pack_per_carton if bom else None) or 1
         
-        # Determine deduction mode: check if FG has direct WIP Stock
-        direct_wip = WIPStock.query.filter_by(product_id=product_id).first()
-        use_direct = direct_wip and (direct_wip.quantity_carton or 0) > 0
-        
-        deduction_details = []
-        
-        if use_direct:
-            # === MODE: Direct deduction from FG WIP Stock ===
-            if direct_wip.quantity_carton < total_carton:
-                return jsonify({
-                    'error': f'Stok tidak cukup. Tersedia: {direct_wip.quantity_carton} karton, Diminta: {total_carton} karton'
-                }), 400
-        else:
-            # === MODE: BOM Components deduction ===
-            if not bom:
-                return jsonify({'error': 'Tidak ada BOM aktif dan tidak ada stok langsung untuk produk ini'}), 400
-            
-            bom_items = BOMItem.query.filter_by(bom_id=bom.id).all()
-            wip_deductions = []
-            
-            for item in bom_items:
-                if not item.material_id:
-                    continue
-                material = db.session.get(Material, item.material_id)
-                if not material or not (material.name or '').startswith('WIP '):
-                    continue
-                
-                qty_per_karton = float(item.quantity) if item.quantity else 0
-                if qty_per_karton <= 0:
-                    continue
-                
-                wip_product = Product.query.filter_by(code=material.code).first()
-                if not wip_product:
-                    return jsonify({
-                        'error': f'Produk WIP tidak ditemukan untuk material {material.code} ({material.name})'
-                    }), 400
-                
-                wip_stock = WIPStock.query.filter_by(product_id=wip_product.id).first()
-                deduct_pcs = int(qty_per_karton * total_carton)
-                available_pcs = wip_stock.quantity_pcs if wip_stock else 0
-                
-                if available_pcs < deduct_pcs:
-                    max_possible = int(available_pcs / qty_per_karton) if qty_per_karton > 0 else 0
-                    return jsonify({
-                        'error': f'Stok WIP tidak cukup untuk {material.name}. '
-                                 f'Dibutuhkan: {deduct_pcs} pcs, Tersedia: {available_pcs} pcs (maks {max_possible} karton FG)'
-                    }), 400
-                
-                wip_deductions.append({
-                    'wip_stock': wip_stock,
-                    'wip_product': wip_product,
-                    'material_name': material.name,
-                    'deduct_pcs': deduct_pcs,
-                    'qty_per_karton': qty_per_karton
-                })
-            
-            if not wip_deductions:
-                return jsonify({'error': 'BOM tidak memiliki komponen WIP dan tidak ada stok langsung.'}), 400
-        
         user_id = get_jwt_identity()
         
-        # Get carton numbering
-        last_pl = PackingListNew.query.filter_by(product_id=product_id)\
-            .order_by(PackingListNew.end_carton_number.desc()).first()
-        
-        start_carton = data.get('start_carton_number')
-        if not start_carton:
-            if last_pl and last_pl.end_carton_number:
-                start_carton = last_pl.end_carton_number + 1
-                if start_carton > 10000:
-                    start_carton = 1
-            else:
-                start_carton = 1
-        else:
-            start_carton = int(start_carton)
-            if start_carton > 10000:
-                start_carton = ((start_carton - 1) % 10000) + 1
-        
-        end_carton = start_carton + total_carton - 1
-        if end_carton > 10000:
-            end_carton = ((end_carton - 1) % 10000) + 1
-        
-        # Create packing list
         pl = PackingListNew(
             packing_number=generate_packing_number(),
             product_id=product_id,
@@ -475,10 +524,8 @@ def create_packing_list():
             customer_id=data.get('customer_id'),
             customer_name=data.get('customer_name'),
             pack_per_carton=pack_per_carton,
-            total_carton=total_carton,
-            total_pcs=total_carton * pack_per_carton,
-            start_carton_number=start_carton,
-            end_carton_number=end_carton,
+            total_carton=0,  # initialized to 0
+            total_pcs=0,     # initialized to 0
             current_batch_mixing=data.get('batch_mixing'),
             status='draft',
             packing_date=get_local_today(),
@@ -488,80 +535,68 @@ def create_packing_list():
         db.session.add(pl)
         db.session.flush()
         
-        # Create packing list items (cartons)
-        for i in range(total_carton):
-            carton_num = start_carton + i
-            if carton_num > 10000:
-                carton_num = carton_num - 10000
-            
-            item = PackingListNewItem(
-                packing_list_id=pl.id,
-                carton_number=carton_num,
-                batch_mixing=data.get('batch_mixing'),
-                is_batch_start=(i == 0)
-            )
-            db.session.add(item)
+        deduction_details = []
         
-        # === Deduct stock ===
-        if use_direct:
-            # Direct: deduct from FG's own WIP Stock
-            deduct_pcs = total_carton * pack_per_carton
-            direct_wip.quantity_carton = max(0, (direct_wip.quantity_carton or 0) - total_carton)
-            direct_wip.quantity_pcs = max(0, (direct_wip.quantity_pcs or 0) - deduct_pcs)
-            direct_wip.last_updated_at = get_local_now()
+        if total_carton > 0:
+            # Skenario "Buat & Isi Langsung"
+            # Get carton numbering starting point
+            last_pl = PackingListNew.query.filter(
+                PackingListNew.product_id == product_id,
+                PackingListNew.id != pl.id
+            ).order_by(PackingListNew.end_carton_number.desc()).first()
             
-            movement = WIPStockMovement(
-                wip_stock_id=direct_wip.id,
+            start_carton = data.get('start_carton_number')
+            if not start_carton:
+                if last_pl and last_pl.end_carton_number:
+                    start_carton = last_pl.end_carton_number + 1
+                    if start_carton > 10000:
+                        start_carton = 1
+                else:
+                    start_carton = 1
+            else:
+                start_carton = int(start_carton)
+                if start_carton > 10000:
+                    start_carton = ((start_carton - 1) % 10000) + 1
+            
+            end_carton = start_carton + total_carton - 1
+            if end_carton > 10000:
+                end_carton = ((end_carton - 1) % 10000) + 1
+            
+            # Deduct stock using extracted helper (raises ValueError if fails)
+            cartons_per_pallet = data.get('cartons_per_pallet') or total_carton
+            batch_mixing = data.get('batch_mixing') or 'BATCH-01'
+            
+            deduction_details = _deduct_wip_stock(
+                pl=pl,
                 product_id=product_id,
-                movement_type='out',
-                quantity_pcs=deduct_pcs,
-                quantity_carton=total_carton,
-                reference_type='packing_list',
-                reference_id=pl.id,
-                reference_number=pl.packing_number,
-                balance_pcs=direct_wip.quantity_pcs,
-                balance_carton=direct_wip.quantity_carton,
-                notes=f'Packing FG {product.name}: {total_carton} karton',
-                created_by=user_id
+                total_carton=total_carton,
+                batch_mixing=batch_mixing,
+                pack_per_carton=pack_per_carton,
+                user_id=user_id
             )
-            db.session.add(movement)
-            deduction_details.append({
-                'wip_name': product.name,
-                'deducted_pcs': deduct_pcs,
-                'deducted_karton': total_carton
-            })
-        else:
-            # BOM Components: deduct from each WIP component
-            for ded in wip_deductions:
-                wip_stock = ded['wip_stock']
-                wip_ppc = wip_stock.pack_per_carton or 1
-                deduct_pcs = ded['deduct_pcs']
-                deduct_karton = int(deduct_pcs / wip_ppc) if wip_ppc > 0 else 0
+            
+            # Update PL details
+            pl.total_carton = total_carton
+            pl.total_pcs = total_carton * pack_per_carton
+            pl.start_carton_number = start_carton
+            pl.end_carton_number = end_carton
+            pl.highest_carton_number_used = end_carton
+            pl.current_batch_mixing = batch_mixing
+            
+            # Create carton items
+            for i in range(total_carton):
+                carton_num = start_carton + i
+                if carton_num > 10000:
+                    carton_num = carton_num - 10000
                 
-                wip_stock.quantity_pcs = max(0, (wip_stock.quantity_pcs or 0) - deduct_pcs)
-                wip_stock.quantity_carton = max(0, (wip_stock.quantity_carton or 0) - deduct_karton)
-                wip_stock.last_updated_at = get_local_now()
-                
-                movement = WIPStockMovement(
-                    wip_stock_id=wip_stock.id,
-                    product_id=ded['wip_product'].id,
-                    movement_type='out',
-                    quantity_pcs=deduct_pcs,
-                    quantity_carton=deduct_karton,
-                    reference_type='packing_list',
-                    reference_id=pl.id,
-                    reference_number=pl.packing_number,
-                    balance_pcs=wip_stock.quantity_pcs,
-                    balance_carton=wip_stock.quantity_carton,
-                    notes=f'Packing FG {product.name}: {total_carton} karton x {int(ded["qty_per_karton"])}/karton',
-                    created_by=user_id
+                item = PackingListNewItem(
+                    packing_list_id=pl.id,
+                    carton_number=carton_num,
+                    batch_mixing=batch_mixing,
+                    cartons_per_pallet=cartons_per_pallet,
+                    is_batch_start=(i == 0)
                 )
-                db.session.add(movement)
-                deduction_details.append({
-                    'wip_name': ded['material_name'],
-                    'deducted_pcs': deduct_pcs,
-                    'deducted_karton': deduct_karton
-                })
+                db.session.add(item)
         
         db.session.commit()
         
@@ -570,6 +605,10 @@ def create_packing_list():
             'packing_list': pl.to_dict(),
             'wip_deductions': deduction_details
         }), 201
+        
+    except ValueError as val_err:
+        db.session.rollback()
+        return jsonify({'error': str(val_err)}), 400
     except Exception as e:
         db.session.rollback()
         import traceback
@@ -600,9 +639,16 @@ def update_packing_list(id):
         if 'notes' in data:
             pl.notes = data['notes']
         if 'status' in data:
-            pl.status = data['status']
-            if data['status'] == 'completed':
+            new_status = data['status']
+            if new_status == 'completed':
+                # Validasi: tolak jika masih ada karton yang belum ditimbang (weight_kg is None)
+                unweighed_exists = pl.items.filter(PackingListNewItem.weight_kg.is_(None) | (PackingListNewItem.weight_kg == None)).count() > 0
+                if unweighed_exists:
+                    return jsonify({'error': 'Semua karton harus ditimbang terlebih dahulu sebelum diselesaikan'}), 400
+                pl.status = 'completed'
                 pl.completed_at = get_local_now()
+            else:
+                pl.status = new_status
         
         db.session.commit()
         
@@ -612,6 +658,192 @@ def update_packing_list(id):
         }), 200
     except Exception as e:
         db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@packing_list_bp.route('/<int:id>/batches', methods=['POST'])
+@jwt_required()
+def add_packing_list_batch(id):
+    """Add a new batch to an existing packing list and deduct WIP stock"""
+    try:
+        pl = db.session.get(PackingListNew, id) or abort(404)
+        
+        # Validate packing list status is editable
+        if pl.status in ('completed', 'released', 'rejected', 'cancelled'):
+            return jsonify({'error': f'Tidak dapat menambah batch pada packing list berstatus {pl.status}'}), 400
+            
+        data = request.get_json()
+        batch_mixing = data.get('batch_mixing')
+        total_carton = data.get('total_carton')
+        cartons_per_pallet = data.get('cartons_per_pallet')
+        
+        if not batch_mixing:
+            return jsonify({'error': 'Batch mixing harus diisi'}), 400
+            
+        if not total_carton or int(total_carton) <= 0:
+            return jsonify({'error': 'Jumlah karton harus lebih besar dari 0'}), 400
+            
+        if not cartons_per_pallet or int(cartons_per_pallet) <= 0:
+            return jsonify({'error': 'Karton per pallet harus lebih besar dari 0'}), 400
+            
+        total_carton = int(total_carton)
+        cartons_per_pallet = int(cartons_per_pallet)
+        
+        # Check if batch mixing already exists in this PL
+        existing_items = pl.items.filter_by(batch_mixing=batch_mixing).first()
+        if existing_items:
+            return jsonify({'error': f'Batch dengan nama "{batch_mixing}" sudah terdaftar'}), 400
+            
+        user_id = get_jwt_identity()
+        
+        # Determine start carton number using high-water mark
+        if pl.highest_carton_number_used is not None:
+            start_carton = pl.highest_carton_number_used + 1
+        else:
+            start_carton = pl.start_carton_number or 1
+            
+        if start_carton > 10000:
+            start_carton = ((start_carton - 1) % 10000) + 1
+            
+        end_carton = start_carton + total_carton - 1
+        if end_carton > 10000:
+            end_carton = ((end_carton - 1) % 10000) + 1
+            
+        # 1. Pre-validate & deduct WIP stock using extracted helper
+        # Helper raises ValueError if stock is insufficient
+        deduction_details = _deduct_wip_stock(
+            pl=pl,
+            product_id=pl.product_id,
+            total_carton=total_carton,
+            batch_mixing=batch_mixing,
+            pack_per_carton=pl.pack_per_carton,
+            user_id=user_id
+        )
+        
+        # 2. Generate carton items
+        for i in range(total_carton):
+            carton_num = start_carton + i
+            if carton_num > 10000:
+                carton_num = carton_num - 10000
+                
+            item = PackingListNewItem(
+                packing_list_id=pl.id,
+                carton_number=carton_num,
+                batch_mixing=batch_mixing,
+                cartons_per_pallet=cartons_per_pallet,
+                is_batch_start=(i == 0)
+            )
+            db.session.add(item)
+            
+        # 3. Update packing list headers (atomic)
+        pl.total_carton = (pl.total_carton or 0) + total_carton
+        pl.total_pcs = (pl.total_pcs or 0) + (total_carton * pl.pack_per_carton)
+        pl.highest_carton_number_used = end_carton
+        pl.end_carton_number = end_carton
+        pl.status = 'in_progress'  # Ensure status moves to in_progress
+        
+        db.session.commit()
+        
+        return jsonify({
+            'message': f'Batch {batch_mixing} berhasil ditambahkan',
+            'packing_list': pl.to_dict(),
+            'wip_deductions': deduction_details
+        }), 201
+        
+    except ValueError as val_err:
+        db.session.rollback()
+        return jsonify({'error': str(val_err)}), 400
+    except Exception as e:
+        db.session.rollback()
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+
+@packing_list_bp.route('/<int:id>/batches/<string:batch_name>', methods=['DELETE'])
+@jwt_required()
+def delete_packing_list_batch(id, batch_name):
+    """Delete a batch from a packing list and reverse its WIP stock deduction"""
+    try:
+        pl = db.session.get(PackingListNew, id) or abort(404)
+        
+        # Validate status is editable
+        if pl.status in ('completed', 'released', 'rejected', 'cancelled'):
+            return jsonify({'error': f'Tidak dapat menghapus batch pada packing list berstatus {pl.status}'}), 400
+            
+        # Get items for this batch
+        batch_items = pl.items.filter_by(batch_mixing=batch_name).all()
+        if not batch_items:
+            return jsonify({'error': f'Batch "{batch_name}" tidak ditemukan'}), 404
+            
+        # Validate that no carton in this batch has been weighed yet
+        weighed_exists = any(item.weight_kg is not None for item in batch_items)
+        if weighed_exists:
+            return jsonify({'error': 'Tidak dapat menghapus batch yang sudah ditimbang. Kosongkan berat karton terlebih dahulu.'}), 400
+            
+        user_id = get_jwt_identity()
+        product = db.session.get(Product, pl.product_id)
+        
+        # Find all WIPStockMovement out-movements recorded for this batch
+        out_movements = WIPStockMovement.query.filter_by(
+            reference_type='packing_list',
+            reference_id=pl.id,
+            batch_mixing=batch_name,
+            movement_type='out'
+        ).all()
+        
+        # Reverse each movement (pola reversal cancel_packing_list)
+        for out_mov in out_movements:
+            wip_stock = db.session.get(WIPStock, out_mov.wip_stock_id)
+            if not wip_stock:
+                continue
+                
+            return_pcs = out_mov.quantity_pcs or 0
+            return_karton = out_mov.quantity_carton or 0
+            
+            wip_stock.quantity_pcs = (wip_stock.quantity_pcs or 0) + return_pcs
+            wip_stock.quantity_carton = (wip_stock.quantity_carton or 0) + return_karton
+            wip_stock.last_updated_at = get_local_now()
+            
+            # Record incoming reversal movement
+            rev_movement = WIPStockMovement(
+                wip_stock_id=wip_stock.id,
+                product_id=out_mov.product_id,
+                movement_type='in',
+                quantity_pcs=return_pcs,
+                quantity_carton=return_karton,
+                reference_type='packing_list_batch_delete',
+                reference_id=pl.id,
+                reference_number=pl.packing_number,
+                batch_mixing=batch_name,
+                balance_pcs=wip_stock.quantity_pcs,
+                balance_carton=wip_stock.quantity_carton,
+                notes=f'Hapus batch {batch_name} dari PL: {pl.packing_number}',
+                created_by=user_id
+            )
+            db.session.add(rev_movement)
+            
+        # Delete carton records from DB
+        total_deleted = len(batch_items)
+        for item in batch_items:
+            db.session.delete(item)
+            
+        # Update PL header counters
+        pl.total_carton = max(0, (pl.total_carton or 0) - total_deleted)
+        pl.total_pcs = max(0, (pl.total_pcs or 0) - (total_deleted * pl.pack_per_carton))
+        # Note: highest_carton_number_used is NOT decreased (Pilihan B)
+        
+        db.session.commit()
+        
+        return jsonify({
+            'message': f'Batch "{batch_name}" berhasil dihapus, stok WIP dikembalikan',
+            'packing_list': pl.to_dict()
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 
@@ -676,12 +908,9 @@ def weigh_cartons(id):
                     
                     item.weigh_time = now_time
         
-        # Update packing list status if all items weighed
+        # Update packing list status to in_progress if items are weighed (Point 9 - Completion manual)
         weighed_count = pl.items.filter(PackingListNewItem.weight_kg.isnot(None)).count()
-        if weighed_count == pl.total_carton:
-            pl.status = 'completed'
-            pl.completed_at = get_local_now()
-        elif weighed_count > 0:
+        if weighed_count > 0 and pl.status == 'draft':
             pl.status = 'in_progress'
         
         db.session.commit()

@@ -417,7 +417,7 @@ def create_app(config_class=Config):
     from routes.waste import waste_bp
 
     from routes.oee import oee_bp
-
+    from routes.machine_health import machine_health_bp
     from routes.import_data import import_bp
 
     from routes.returns import returns_bp
@@ -595,7 +595,7 @@ def create_app(config_class=Config):
     app.register_blueprint(waste_bp, url_prefix='/api/waste')
 
     app.register_blueprint(oee_bp, url_prefix='/api/oee')
-
+    app.register_blueprint(machine_health_bp)
     app.register_blueprint(returns_bp, url_prefix='/api/returns')
 
     app.register_blueprint(warehouse_enhanced_bp, url_prefix='/api/warehouse-enhanced')
@@ -1586,5 +1586,5 @@ if __name__ == '__main__':
 
     print("\n" + "="*60 + "\n")
 
-    socketio.run(app, debug=True, host='0.0.0.0', port=5000, allow_unsafe_werkzeug=True)
+    socketio.run(app, debug=True, host='0.0.0.0', port=5000, allow_unsafe_werkzeug=True, use_reloader=False)
 

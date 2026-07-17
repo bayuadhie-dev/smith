@@ -1020,6 +1020,7 @@ class WIPStockMovement(db.Model):
     reference_type = db.Column(db.String(50), nullable=True)  # 'work_order', 'packing_list', 'adjustment'
     reference_id = db.Column(db.Integer, nullable=True)
     reference_number = db.Column(db.String(100), nullable=True)
+    batch_mixing = db.Column(db.String(100), nullable=True)
     
     # Balance after movement
     balance_pcs = db.Column(db.Integer, default=0)
@@ -1046,6 +1047,7 @@ class WIPStockMovement(db.Model):
             'reference_type': self.reference_type,
             'reference_id': self.reference_id,
             'reference_number': self.reference_number,
+            'batch_mixing': self.batch_mixing,
             'balance_pcs': self.balance_pcs,
             'balance_carton': self.balance_carton,
             'notes': self.notes,
@@ -1083,6 +1085,7 @@ class PackingListNew(db.Model):
     # Carton numbering
     start_carton_number = db.Column(db.Integer, default=1)
     end_carton_number = db.Column(db.Integer, default=0)
+    highest_carton_number_used = db.Column(db.Integer, nullable=True)
     
     # Current batch mixing
     current_batch_mixing = db.Column(db.String(100), nullable=True)
@@ -1130,6 +1133,7 @@ class PackingListNew(db.Model):
             'total_pcs': self.total_pcs,
             'start_carton_number': self.start_carton_number,
             'end_carton_number': self.end_carton_number,
+            'highest_carton_number_used': self.highest_carton_number_used,
             'current_batch_mixing': self.current_batch_mixing,
             'status': self.status,
             'packing_date': self.packing_date.isoformat() if self.packing_date else None,
@@ -1173,6 +1177,7 @@ class PackingListNewItem(db.Model):
     
     # Flag untuk menandai awal batch mixing baru
     is_batch_start = db.Column(db.Boolean, default=False)
+    cartons_per_pallet = db.Column(db.Integer, nullable=True)
     
     # QC status
     qc_status = db.Column(db.String(50), nullable=True)  # passed, failed, pending
@@ -1197,6 +1202,7 @@ class PackingListNewItem(db.Model):
             'weigh_time': self.weigh_time.isoformat() if self.weigh_time else None,
             'batch_mixing': self.batch_mixing,
             'is_batch_start': self.is_batch_start,
+            'cartons_per_pallet': self.cartons_per_pallet,
             'qc_status': self.qc_status,
             'qc_notes': self.qc_notes,
             'weighed_by': self.weigher.username if self.weigher else None,
