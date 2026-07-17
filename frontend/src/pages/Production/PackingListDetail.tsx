@@ -19,6 +19,7 @@ interface PackingListItem {
   weigh_time: string | null;
   batch_mixing: string | null;
   is_batch_start: boolean;
+  cartons_per_pallet?: number | null;
   qc_status: string | null;
   weighed_by: string | null;
 }
@@ -60,7 +61,7 @@ export default function PackingListDetail() {
   const [saving, setSaving] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const perPage = 50;
+  const perPage = 10000; // Load all items for grouping
 
   const [editedItems, setEditedItems] = useState<Record<number, { weight_kg?: number; weigh_date?: string }>>({});
   const [bulkWeighDate, setBulkWeighDate] = useState<string>(new Date().toISOString().split('T')[0]);
@@ -68,19 +69,40 @@ export default function PackingListDetail() {
   const [newBatchMixing, setNewBatchMixing] = useState('');
   const [batchStartCarton, setBatchStartCarton] = useState<number | null>(null);
 
+  // States for Add Batch feature
+  const [showAddBatchModal, setShowAddBatchModal] = useState(false);
+  const [addBatchName, setAddBatchName] = useState('');
+  const [addBatchTotalCarton, setAddBatchTotalCarton] = useState('');
+  const [addBatchCartonsPerPallet, setAddBatchCartonsPerPallet] = useState('');
+
+  // Accordion open/close states per batch mixing
+  const [expandedBatches, setExpandedBatches] = useState<Record<string, boolean>>({});
+
   useEffect(() => {
     if (id) {
       fetchPackingList();
     }
-  }, [id, page]);
+  }, [id]);
 
   const fetchPackingList = async () => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get(`/api/packing-list/${id}/items?page=${page}&per_page=${perPage}`);
+      const response = await axiosInstance.get(`/api/packing-list/${id}/items?page=1&per_page=${perPage}`);
       setPackingList(response.data.packing_list);
       setItems(response.data.items);
-      setTotalPages(response.data.pagination.pages);
+      setTotalPages(1);
+      
+      // Auto-expand newly added or first batch
+      const uniqueBatches = Array.from(new Set(response.data.items.map((i: any) => i.batch_mixing || 'UNASSIGNED'))) as string[];
+      setExpandedBatches(prev => {
+        const next = { ...prev };
+        uniqueBatches.forEach(b => {
+          if (next[b] === undefined) {
+            next[b] = true; // Default open
+          }
+        });
+        return next;
+      });
     } catch (error) {
       console.error('Error fetching packing list:', error);
       toast.error('Gagal memuat packing list');
@@ -187,8 +209,59 @@ export default function PackingListDetail() {
       await axiosInstance.put(`/api/packing-list/${id}`, { status: 'completed' });
       toast.success('Packing list selesai');
       fetchPackingList();
-    } catch (error) {
-      toast.error('Gagal menyelesaikan packing list');
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Gagal menyelesaikan packing list');
+    }
+  };
+
+  const handleAddBatch = async () => {
+    if (!addBatchName.trim()) {
+      toast.error('Nama Batch harus diisi');
+      return;
+    }
+    if (!addBatchTotalCarton || parseInt(addBatchTotalCarton) <= 0) {
+      toast.error('Jumlah karton harus lebih besar dari 0');
+      return;
+    }
+    if (!addBatchCartonsPerPallet || parseInt(addBatchCartonsPerPallet) <= 0) {
+      toast.error('Kapasitas karton/pallet harus lebih besar dari 0');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      await axiosInstance.post(`/api/packing-list/${id}/batches`, {
+        batch_mixing: addBatchName,
+        total_carton: parseInt(addBatchTotalCarton),
+        cartons_per_pallet: parseInt(addBatchCartonsPerPallet)
+      });
+      toast.success(`Batch ${addBatchName} berhasil ditambahkan`);
+      setShowAddBatchModal(false);
+      setAddBatchName('');
+      setAddBatchTotalCarton('');
+      setAddBatchCartonsPerPallet('');
+      fetchPackingList();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Gagal menambahkan batch');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteBatch = async (batchName: string) => {
+    if (!window.confirm(`Yakin ingin menghapus batch "${batchName}"? Seluruh karton dalam batch ini akan dihapus dan stok WIP dikembalikan.`)) {
+      return;
+    }
+
+    try {
+      setSaving(true);
+      await axiosInstance.delete(`/api/packing-list/${id}/batches/${batchName}`);
+      toast.success(`Batch "${batchName}" berhasil dihapus`);
+      fetchPackingList();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Gagal menghapus batch');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -240,6 +313,42 @@ export default function PackingListDetail() {
   const progress = packingList.total_carton > 0 
     ? Math.round((packingList.weighed_count / packingList.total_carton) * 100) 
     : 0;
+
+  // Group items by batch mixing
+  const groupedBatches = (() => {
+    const groups: Record<string, PackingListItem[]> = {};
+    items.forEach(item => {
+      const batchName = item.batch_mixing || 'UNASSIGNED';
+      if (!groups[batchName]) {
+        groups[batchName] = [];
+      }
+      groups[batchName].push(item);
+    });
+
+    return Object.entries(groups).map(([name, batchItems]) => {
+      const sorted = [...batchItems].sort((a, b) => a.carton_number - b.carton_number);
+      const minCarton = sorted[0]?.carton_number;
+      const maxCarton = sorted[sorted.length - 1]?.carton_number;
+      
+      const weighed = sorted.filter(i => i.weight_kg !== null);
+      const totalWeight = weighed.reduce((sum, i) => sum + (i.weight_kg || 0), 0);
+      const cartonsPerPallet = sorted[0]?.cartons_per_pallet || 0;
+      const estimatedPallets = cartonsPerPallet > 0 
+        ? Math.ceil(sorted.length / cartonsPerPallet) 
+        : 0;
+
+      return {
+        name,
+        items: sorted,
+        totalCartons: sorted.length,
+        weighedCount: weighed.length,
+        totalWeight,
+        cartonRange: minCarton && maxCarton ? `#${minCarton} - #${maxCarton}` : '-',
+        cartonsPerPallet,
+        estimatedPallets
+      };
+    });
+  })();
 
   return (
     <div className="p-6">
@@ -339,18 +448,25 @@ export default function PackingListDetail() {
             </div>
             <div className="flex-1" />
             <button
+              onClick={() => setShowAddBatchModal(true)}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-1.5 font-medium"
+            >
+              <PlusIcon className="h-5 w-5" />
+              Tambah Batch
+            </button>
+            <button
               onClick={() => openBatchModal()}
               className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
             >
               Ganti Batch Mixing
             </button>
-            {packingList.weighed_count === packingList.total_carton && (
+            {packingList.total_carton > 0 && (
               <button
                 onClick={handleComplete}
                 className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
               >
                 <CheckCircleIcon className="h-5 w-5" />
-                Selesaikan
+                Selesaikan Packing List
               </button>
             )}
             <button
@@ -368,9 +484,9 @@ export default function PackingListDetail() {
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         <div className="bg-green-50 border-b border-green-200 px-4 py-3 flex items-center justify-between">
           <div>
-            <h3 className="font-semibold text-green-800">📦 Daftar Karton</h3>
+            <h3 className="font-semibold text-green-800">📦 Daftar Karton (Per Batch)</h3>
             <p className="text-sm text-green-600">
-              Batch Mixing: {packingList.current_batch_mixing || '-'}
+              Total: {packingList.total_carton} karton ({packingList.total_pcs.toLocaleString()} pcs)
             </p>
           </div>
           {Object.keys(editedItems).length > 0 && (
@@ -385,103 +501,139 @@ export default function PackingListDetail() {
           )}
         </div>
 
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead className="bg-gray-50 dark:bg-gray-900">
-            <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Karton</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Batch Mixing</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Berat (kg)</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tgl Timbang</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Ditimbang Oleh</th>
-              <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-            {items.map((item) => (
-              <tr 
-                key={item.id} 
-                className={`${item.is_batch_start ? 'bg-yellow-50' : ''} ${item.weight_kg ? 'bg-green-50' : ''}`}
-              >
-                <td className="px-4 py-3 whitespace-nowrap">
-                  <span className="font-medium text-gray-900 dark:text-white">{item.carton_number}</span>
-                  {item.is_batch_start && (
-                    <span className="ml-2 px-2 py-0.5 text-xs bg-yellow-200 text-yellow-800 rounded">
-                      Batch Baru
-                    </span>
-                  )}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                  {item.batch_mixing || '-'}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap">
-                  {['completed', 'quarantine', 'released', 'rejected', 'cancelled'].includes(packingList.status) ? (
-                    <span className="text-sm">{item.weight_kg ? `${item.weight_kg} kg` : '-'}</span>
-                  ) : (
-                    <input
-                      type="number"
-                      step="0.001"
-                      min="0"
-                      value={editedItems[item.id]?.weight_kg ?? item.weight_kg ?? ''}
-                      onChange={(e) => handleWeightChange(item.id, e.target.value)}
-                      className="w-24 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm focus:ring-2 focus:ring-blue-500"
-                      placeholder="0.000"
-                    />
-                  )}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap">
-                  {['completed', 'quarantine', 'released', 'rejected', 'cancelled'].includes(packingList.status) ? (
-                    <span className="text-sm text-gray-600 dark:text-gray-300">
-                      {item.weigh_date ? new Date(item.weigh_date).toLocaleDateString('id-ID') : '-'}
-                    </span>
-                  ) : (
-                    <input
-                      type="date"
-                      value={editedItems[item.id]?.weigh_date || item.weigh_date || bulkWeighDate}
-                      onChange={(e) => handleWeighDateChange(item.id, e.target.value)}
-                      className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm focus:ring-2 focus:ring-blue-500"
-                    />
-                  )}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                  {item.weighed_by || '-'}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap text-center">
-                  {!['completed', 'quarantine', 'released', 'rejected', 'cancelled'].includes(packingList.status) && (
-                    <button
-                      onClick={() => openBatchModal(item.carton_number)}
-                      className="text-xs text-blue-600 hover:text-blue-800"
-                    >
-                      Set Batch
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="p-4 space-y-4">
+          {groupedBatches.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              Belum ada batch mixing. Silakan klik tombol "Tambah Batch" di atas untuk memulai.
+            </div>
+          ) : (
+            groupedBatches.map((batch) => {
+              const isOpen = expandedBatches[batch.name];
+              const isEditable = !['completed', 'quarantine', 'released', 'rejected', 'cancelled'].includes(packingList.status);
+              
+              return (
+                <div key={batch.name} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                  {/* Accordion Header */}
+                  <div className="bg-gray-50 dark:bg-gray-900/50 px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => toggleBatch(batch.name)}
+                        className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded text-gray-500 hover:text-gray-700 font-bold"
+                      >
+                        {isOpen ? '▼' : '▶'}
+                      </button>
+                      <div>
+                        <span className="font-bold text-gray-900 dark:text-white text-base">
+                          {batch.name}
+                        </span>
+                        <span className="ml-3 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200 px-2 py-0.5 rounded-full font-medium">
+                          {batch.cartonRange}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-6 text-sm">
+                      <div className="text-gray-600 dark:text-gray-300">
+                        Progress: <strong className="text-gray-900 dark:text-white">{batch.weighedCount}</strong> / {batch.totalCartons} krt
+                      </div>
+                      <div className="text-gray-600 dark:text-gray-300">
+                        Berat: <strong className="text-gray-900 dark:text-white">{batch.totalWeight.toFixed(3)} kg</strong>
+                      </div>
+                      <div className="text-gray-600 dark:text-gray-300 hidden sm:block">
+                        Pallet: <strong>{batch.estimatedPallets} pallet</strong> ({batch.cartonsPerPallet} krt/plt)
+                      </div>
+                      
+                      {isEditable && batch.weighedCount === 0 && (
+                        <button
+                          onClick={() => handleDeleteBatch(batch.name)}
+                          className="px-2.5 py-1 text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded font-medium transition-colors"
+                        >
+                          Hapus Batch
+                        </button>
+                      )}
+                    </div>
+                  </div>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="bg-gray-50 dark:bg-gray-900 px-4 py-3 flex items-center justify-between border-t">
-            <button
-              onClick={() => setPage(p => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className="px-3 py-1 border rounded disabled:opacity-50"
-            >
-              Sebelumnya
-            </button>
-            <span className="text-sm text-gray-600 dark:text-gray-300">
-              Halaman {page} dari {totalPages}
-            </span>
-            <button
-              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-              className="px-3 py-1 border rounded disabled:opacity-50"
-            >
-              Selanjutnya
-            </button>
-          </div>
-        )}
+                  {/* Accordion Body */}
+                  {isOpen && (
+                    <div className="border-t border-gray-200 dark:border-gray-700 overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead className="bg-gray-100/50 dark:bg-gray-900/30">
+                          <tr>
+                            <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">No. Karton</th>
+                            <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Berat (kg)</th>
+                            <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Tgl Timbang</th>
+                            <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Ditimbang Oleh</th>
+                            <th className="px-4 py-2.5 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
+                          {batch.items.map((item) => (
+                            <tr 
+                              key={item.id} 
+                              className={`${item.is_batch_start ? 'bg-yellow-50/40 dark:bg-yellow-900/10' : ''} ${item.weight_kg ? 'bg-green-50/40 dark:bg-green-900/10' : ''}`}
+                            >
+                              <td className="px-4 py-3 whitespace-nowrap">
+                                <span className="font-semibold text-gray-900 dark:text-white">#{item.carton_number}</span>
+                                {item.is_batch_start && (
+                                  <span className="ml-2 px-2 py-0.5 text-[10px] font-bold bg-yellow-200 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-200 rounded uppercase tracking-wider">
+                                    Awal Pallet
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap">
+                                {!isEditable ? (
+                                  <span className="text-sm font-medium">{item.weight_kg ? `${item.weight_kg} kg` : '-'}</span>
+                                ) : (
+                                  <input
+                                    type="number"
+                                    step="0.001"
+                                    min="0"
+                                    value={editedItems[item.id]?.weight_kg ?? item.weight_kg ?? ''}
+                                    onChange={(e) => handleWeightChange(item.id, e.target.value)}
+                                    className="w-24 px-2.5 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm font-medium focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                    placeholder="0.000"
+                                  />
+                                )}
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap">
+                                {!isEditable ? (
+                                  <span className="text-sm text-gray-600 dark:text-gray-300">
+                                    {item.weigh_date ? new Date(item.weigh_date).toLocaleDateString('id-ID') : '-'}
+                                  </span>
+                                ) : (
+                                  <input
+                                    type="date"
+                                    value={editedItems[item.id]?.weigh_date || item.weigh_date || bulkWeighDate}
+                                    onChange={(e) => handleWeighDateChange(item.id, e.target.value)}
+                                    className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                  />
+                                )}
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300 font-medium">
+                                {item.weighed_by || '-'}
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-center">
+                                {isEditable && (
+                                  <button
+                                    onClick={() => openBatchModal(item.carton_number)}
+                                    className="text-xs text-blue-600 hover:text-blue-800 font-semibold"
+                                  >
+                                    Ubah Batch
+                                  </button>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
       </div>
 
       {/* Batch Mixing Modal */}
@@ -502,7 +654,7 @@ export default function PackingListDetail() {
                   type="text"
                   value={newBatchMixing}
                   onChange={(e) => setNewBatchMixing(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   placeholder="Contoh: BATCH-001"
                 />
               </div>
@@ -520,6 +672,75 @@ export default function PackingListDetail() {
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
               >
                 {saving ? 'Menyimpan...' : 'Simpan'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Batch Modal */}
+      {showAddBatchModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">➕ Tambah Batch/Pallet Baru</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  Nama Batch Mixing *
+                </label>
+                <input
+                  type="text"
+                  value={addBatchName}
+                  onChange={(e) => setAddBatchName(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="Contoh: BATCH-02"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  Jumlah Karton *
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={addBatchTotalCarton}
+                  onChange={(e) => setAddBatchTotalCarton(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="Masukkan jumlah karton"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  Karton per Pallet *
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={addBatchCartonsPerPallet}
+                  onChange={(e) => setAddBatchCartonsPerPallet(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="Kapasitas karton per pallet (contoh: 6)"
+                />
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowAddBatchModal(false);
+                  setAddBatchName('');
+                  setAddBatchTotalCarton('');
+                  setAddBatchCartonsPerPallet('');
+                }}
+                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleAddBatch}
+                disabled={saving}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium"
+              >
+                {saving ? 'Menyimpan...' : 'Simpan Batch'}
               </button>
             </div>
           </div>

@@ -66,10 +66,12 @@ export default function PackingListNew() {
   const [wipProducts, setWipProducts] = useState<FGProduct[]>([]);
   const [creating, setCreating] = useState(false);
 
+  const [creationMode, setCreationMode] = useState<'draft' | 'immediate'>('draft');
+
   // Form state for new packing list
   const [formData, setFormData] = useState({
     product_id: '',
-    total_carton: '',
+    total_carton: '0',
     pack_per_carton: '',
     start_carton_number: '',
     customer_name: '',
@@ -115,44 +117,54 @@ export default function PackingListNew() {
     fetchWIPProducts();
     setFormData({
       product_id: '',
-      total_carton: '',
+      total_carton: '0',
       pack_per_carton: '',
       start_carton_number: '1',
       customer_name: '',
       batch_mixing: '',
       notes: ''
     });
+    setCreationMode('draft');
     setShowCreateModal(true);
   };
 
   const handleCreatePackingList = async () => {
-    if (!formData.product_id || !formData.total_carton) {
-      toast.error('Pilih produk dan jumlah karton');
+    if (!formData.product_id) {
+      toast.error('Pilih produk terlebih dahulu');
       return;
     }
 
-    const selectedProduct = wipProducts.find(p => p.id === parseInt(formData.product_id));
-    const totalCarton = parseInt(formData.total_carton);
+    const totalCarton = creationMode === 'draft' ? 0 : parseInt(formData.total_carton) || 0;
     
-    const ppc = parseInt(formData.pack_per_carton) || 0;
-    const maxK = selectedProduct && ppc > 0
-      ? Math.min(...selectedProduct.wip_components.map(c => Math.floor(c.wip_stock_pcs / ppc)))
-      : selectedProduct?.available_kartons || 0;
-    if (selectedProduct && totalCarton > maxK) {
-      toast.error(`Stok WIP tidak cukup. Maksimal: ${maxK} karton`);
-      return;
+    if (creationMode === 'immediate') {
+      if (totalCarton <= 0) {
+        toast.error('Jumlah karton harus lebih besar dari 0');
+        return;
+      }
+      
+      const selectedProduct = wipProducts.find(p => p.id === parseInt(formData.product_id));
+      const ppc = parseInt(formData.pack_per_carton) || 0;
+      const maxK = selectedProduct?.source === 'direct'
+        ? (selectedProduct.available_kartons || 0)
+        : (selectedProduct && ppc > 0 && selectedProduct.wip_components && selectedProduct.wip_components.length > 0
+            ? Math.min(...selectedProduct.wip_components.map((c: any) => Math.floor(c.wip_stock_pcs / ppc)))
+            : 0);
+      if (selectedProduct && totalCarton > maxK) {
+        toast.error(`Stok WIP tidak cukup. Maksimal: ${maxK} karton`);
+        return;
+      }
     }
 
     try {
       setCreating(true);
-      const startNumber = parseInt(formData.start_carton_number) || 1;
+      const startNumber = creationMode === 'draft' ? 1 : parseInt(formData.start_carton_number) || 1;
       await axiosInstance.post('/api/packing-list', {
         product_id: parseInt(formData.product_id),
         total_carton: totalCarton,
         pack_per_carton: parseInt(formData.pack_per_carton) || undefined,
         start_carton_number: startNumber,
         customer_name: formData.customer_name || null,
-        batch_mixing: formData.batch_mixing || null,
+        batch_mixing: creationMode === 'draft' ? null : (formData.batch_mixing || null),
         notes: formData.notes || null
       });
       
@@ -395,6 +407,48 @@ export default function PackingListNew() {
             </div>
 
             <div className="space-y-4">
+              {/* Tipe Pembuatan */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                  Metode Pembuatan *
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCreationMode('draft');
+                      setFormData(prev => ({ ...prev, total_carton: '0' }));
+                    }}
+                    className={`px-4 py-2 text-sm font-medium rounded-lg border flex items-center justify-center gap-1.5 transition-colors ${
+                      creationMode === 'draft'
+                        ? 'bg-blue-50 border-blue-500 text-blue-700 dark:bg-blue-900/30'
+                        : 'border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    📝 Buat Draft Kosong
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCreationMode('immediate');
+                      setFormData(prev => ({ ...prev, total_carton: '' }));
+                    }}
+                    className={`px-4 py-2 text-sm font-medium rounded-lg border flex items-center justify-center gap-1.5 transition-colors ${
+                      creationMode === 'immediate'
+                        ? 'bg-blue-50 border-blue-500 text-blue-700 dark:bg-blue-900/30'
+                        : 'border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    ⚡ Buat & Isi Langsung
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {creationMode === 'draft'
+                    ? 'Membuat PL kosong (0 karton). Batch & kapasitas pallet ditambahkan manual di halaman detail.'
+                    : 'Membuat PL langsung dengan karton awal, memotong stok WIP saat ini.'}
+                </p>
+              </div>
+
               {/* Product Selection */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
@@ -447,109 +501,127 @@ export default function PackingListNew() {
                 </div>
               )}
 
-              {/* FG Availability Info */}
-              {selectedProduct && userPPC > 0 && (
-                <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 space-y-2">
-                  <p className="text-sm font-medium text-purple-800">Ketersediaan untuk Packing:</p>
-                  <p className="text-lg font-bold text-purple-900">
-                    Maks {recalcMaxKartons.toLocaleString()} karton ({(recalcMaxKartons * userPPC).toLocaleString()} pcs)
-                  </p>
-                  <p className="text-xs text-purple-600">
-                    {selectedProduct.source === 'direct' ? 'Stok langsung (WIP Stock FG)' : `BOM: ${selectedProduct.bom_number}`}
-                  </p>
-                  {/* WIP Component Breakdown - only for bom_components mode */}
-                  {selectedProduct.source === 'bom_components' && selectedProduct.wip_components.length > 0 && (
-                    <div className="mt-2 border-t border-purple-200 pt-2">
-                      <p className="text-xs font-medium text-purple-700 mb-1">Komponen WIP per karton ({userPPC} pcs/krt):</p>
-                      {selectedProduct.wip_components.map((comp, idx) => {
-                        const compMaxKrt = Math.floor(comp.wip_stock_pcs / userPPC);
-                        const isBottleneck = compMaxKrt === recalcMaxKartons;
-                        return (
-                          <div key={idx} className={`flex justify-between text-xs py-0.5 ${isBottleneck && selectedProduct.wip_components.length > 1 ? 'text-red-600 font-medium' : 'text-purple-600'}`}>
-                            <span>{comp.material_name}</span>
-                            <span>
-                              Stok: {comp.wip_stock_pcs.toLocaleString()} pcs → {compMaxKrt.toLocaleString()} krt
-                            </span>
-                          </div>
-                        );
-                      })}
+              {/* FG Availability Info & Immediate Fields */}
+              {creationMode === 'immediate' && selectedProduct && (
+                <>
+                  {userPPC > 0 && (
+                    <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 space-y-2">
+                      <p className="text-sm font-medium text-purple-800">Ketersediaan untuk Packing:</p>
+                      <p className="text-lg font-bold text-purple-900">
+                        Maks {recalcMaxKartons.toLocaleString()} karton ({(recalcMaxKartons * userPPC).toLocaleString()} pcs)
+                      </p>
+                      <p className="text-xs text-purple-600">
+                        {selectedProduct.source === 'direct' ? 'Stok langsung (WIP Stock FG)' : `BOM: ${selectedProduct.bom_number}`}
+                      </p>
+                      {/* WIP Component Breakdown - only for bom_components mode */}
+                      {selectedProduct.source === 'bom_components' && selectedProduct.wip_components.length > 0 && (
+                        <div className="mt-2 border-t border-purple-200 pt-2">
+                          <p className="text-xs font-medium text-purple-700 mb-1">Komponen WIP per karton ({userPPC} pcs/krt):</p>
+                          {selectedProduct.wip_components.map((comp, idx) => {
+                            const compMaxKrt = Math.floor(comp.wip_stock_pcs / userPPC);
+                            const isBottleneck = compMaxKrt === recalcMaxKartons;
+                            return (
+                              <div key={idx} className={`flex justify-between text-xs py-0.5 ${isBottleneck && selectedProduct.wip_components.length > 1 ? 'text-red-600 font-medium' : 'text-purple-600'}`}>
+                                <span>{comp.material_name}</span>
+                                <span>
+                                  Stok: {comp.wip_stock_pcs.toLocaleString()} pcs → {compMaxKrt.toLocaleString()} krt
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   )}
-                </div>
-              )}
 
-              {/* Total Carton */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                  Jumlah Karton *
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max={recalcMaxKartons || 999999}
-                  value={formData.total_carton}
-                  onChange={(e) => setFormData({ ...formData, total_carton: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  placeholder="Masukkan jumlah karton"
-                />
-                {formData.total_carton && formData.pack_per_carton && (
-                  <p className="text-xs text-green-600 mt-1 font-medium">
-                    Total: {(parseInt(formData.total_carton) * parseInt(formData.pack_per_carton)).toLocaleString()} pcs
-                  </p>
-                )}
-              </div>
-
-              {/* Auto Numbering */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <label className="block text-sm font-medium text-blue-800 mb-2">
-                  🔢 Auto Numbering Karton (Maks 10.000)
-                </label>
-                <div className="grid grid-cols-2 gap-4">
+                  {/* Total Carton */}
                   <div>
-                    <label className="block text-xs text-blue-600 mb-1">Nomor Awal</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                      Jumlah Karton *
+                    </label>
                     <input
                       type="number"
                       min="1"
-                      max="10000"
-                      value={formData.start_carton_number}
-                      onChange={(e) => setFormData({ ...formData, start_carton_number: e.target.value })}
-                      className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                      placeholder="1"
+                      max={recalcMaxKartons || 999999}
+                      value={formData.total_carton}
+                      onChange={(e) => setFormData({ ...formData, total_carton: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      placeholder="Masukkan jumlah karton"
                     />
+                    {formData.total_carton && formData.pack_per_carton && (
+                      <p className="text-xs text-green-600 mt-1 font-medium">
+                        Total: {(parseInt(formData.total_carton) * parseInt(formData.pack_per_carton)).toLocaleString()} pcs
+                      </p>
+                    )}
                   </div>
+
+                  {/* Auto Numbering */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <label className="block text-sm font-medium text-blue-800 mb-2">
+                      🔢 Auto Numbering Karton (Maks 10.000)
+                    </label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs text-blue-600 mb-1">Nomor Awal</label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="10000"
+                          value={formData.start_carton_number}
+                          onChange={(e) => setFormData({ ...formData, start_carton_number: e.target.value })}
+                          className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                          placeholder="1"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-blue-600 mb-1">Nomor Akhir</label>
+                        <input
+                          type="text"
+                          readOnly
+                          value={formData.total_carton && formData.start_carton_number 
+                            ? (() => {
+                                const start = parseInt(formData.start_carton_number);
+                                const total = parseInt(formData.total_carton);
+                                let end = start + total - 1;
+                                if (end > 10000) end = ((end - 1) % 10000) + 1;
+                                return end.toString();
+                              })()
+                            : '-'}
+                          className="w-full px-3 py-2 border border-blue-200 rounded-lg bg-blue-100 text-blue-800 font-bold"
+                        />
+                      </div>
+                    </div>
+                    {formData.total_carton && formData.start_carton_number && (
+                      <p className="text-xs text-blue-600 mt-2">
+                        {(() => {
+                          const start = parseInt(formData.start_carton_number);
+                          const total = parseInt(formData.total_carton);
+                          let end = start + total - 1;
+                          const willWrap = end > 10000;
+                          if (willWrap) end = ((end - 1) % 10000) + 1;
+                          return willWrap 
+                            ? <>Karton: <strong>{start}</strong> → <strong>10000</strong> → <strong>1</strong> → <strong>{end}</strong> (reset setelah 10000)</>
+                            : <>Karton akan dinomori dari <strong>{start}</strong> sampai <strong>{end}</strong></>;
+                        })()}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Batch Mixing */}
                   <div>
-                    <label className="block text-xs text-blue-600 mb-1">Nomor Akhir</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                      Batch Mixing (opsional)
+                    </label>
                     <input
                       type="text"
-                      readOnly
-                      value={formData.total_carton && formData.start_carton_number 
-                        ? (() => {
-                            const start = parseInt(formData.start_carton_number);
-                            const total = parseInt(formData.total_carton);
-                            let end = start + total - 1;
-                            if (end > 10000) end = ((end - 1) % 10000) + 1;
-                            return end.toString();
-                          })()
-                        : '-'}
-                      className="w-full px-3 py-2 border border-blue-200 rounded-lg bg-blue-100 text-blue-800 font-bold"
+                      value={formData.batch_mixing}
+                      onChange={(e) => setFormData({ ...formData, batch_mixing: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      placeholder="Contoh: BATCH-001"
                     />
                   </div>
-                </div>
-                {formData.total_carton && formData.start_carton_number && (
-                  <p className="text-xs text-blue-600 mt-2">
-                    {(() => {
-                      const start = parseInt(formData.start_carton_number);
-                      const total = parseInt(formData.total_carton);
-                      let end = start + total - 1;
-                      const willWrap = end > 10000;
-                      if (willWrap) end = ((end - 1) % 10000) + 1;
-                      return willWrap 
-                        ? <>Karton: <strong>{start}</strong> → <strong>10000</strong> → <strong>1</strong> → <strong>{end}</strong> (reset setelah 10000)</>
-                        : <>Karton akan dinomori dari <strong>{start}</strong> sampai <strong>{end}</strong></>;
-                    })()}
-                  </p>
-                )}
-              </div>
+                </>
+              )}
 
               {/* Customer Name */}
               <div>
@@ -562,20 +634,6 @@ export default function PackingListNew() {
                   onChange={(e) => setFormData({ ...formData, customer_name: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                   placeholder="Nama customer"
-                />
-              </div>
-
-              {/* Batch Mixing */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                  Batch Mixing (opsional)
-                </label>
-                <input
-                  type="text"
-                  value={formData.batch_mixing}
-                  onChange={(e) => setFormData({ ...formData, batch_mixing: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  placeholder="Contoh: BATCH-001"
                 />
               </div>
 
