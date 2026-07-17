@@ -3856,7 +3856,7 @@ class TestCreateWorkOrderProductionRecord:
         data = response.get_json()
         assert data['buffer_stock']['quantity'] == 10  # 60 produced vs 50 target
         assert data['buffer_stock']['added_to_inventory'] is True
-
+        db_session.expire_all()
         inventory = Inventory.query.filter_by(product_id=test_product.id, stock_status='released').first()
         assert inventory is not None
         assert float(inventory.quantity_on_hand) == 10
