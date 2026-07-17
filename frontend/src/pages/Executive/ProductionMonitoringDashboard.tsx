@@ -1696,6 +1696,158 @@ const ProductsTab: React.FC<{ data: any; viewMode: 'monthly' | 'weekly' }> = ({ 
 };
 
 // ==================== MACHINES TAB ====================
+const MachineHealthWidget: React.FC = () => {
+  const [healthData, setHealthData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedMachine, setSelectedMachine] = useState<any>(null);
+  const [historyData, setHistoryData] = useState<any>(null);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  useEffect(() => {
+    axiosInstance.get('/api/machine-health/status')
+      .then(res => setHealthData(res.data))
+      .catch(() => setError('Gagal memuat data machine health'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const openDetail = (machine: any) => {
+    setSelectedMachine(machine);
+    setHistoryLoading(true);
+    axiosInstance.get(`/api/machine-health/history/${machine.machine_id}`)
+      .then(res => setHistoryData(res.data))
+      .catch(() => setHistoryData(null))
+      .finally(() => setHistoryLoading(false));
+  };
+
+  const closeDetail = () => {
+    setSelectedMachine(null);
+    setHistoryData(null);
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow mb-5">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (error || !healthData) {
+    return null; // Fail silently, don't block the rest of the tab
+  }
+
+  return (
+    <div className="mb-5">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="font-semibold text-gray-900 dark:text-white text-base flex items-center gap-2">
+          <ExclamationTriangleIcon className="w-5 h-5 text-orange-500" />
+          Machine Health Alert
+          <span className="text-xs font-normal text-gray-500">Minggu {healthData.week}</span>
+        </h3>
+        {healthData.anomaly_count > 0 && (
+          <span className="text-xs font-medium bg-red-100 text-red-700 px-2.5 py-1 rounded-full">
+            {healthData.anomaly_count} mesin anomali
+          </span>
+        )}
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+        {healthData.machines.map((m: any, i: number) => {
+          const borderColor = m.status === 'anomaly'
+            ? 'border-l-red-500'
+            : m.status === 'insufficient_data'
+            ? 'border-l-gray-300'
+            : 'border-l-green-500';
+          const pctOfThreshold = m.baseline
+            ? Math.round((m.current_week_downtime / m.baseline.threshold) * 100)
+            : 0;
+
+          return (
+            <button
+              key={i}
+              onClick={() => openDetail(m)}
+              className={`bg-white dark:bg-gray-800 rounded-lg p-3 shadow border-l-4 ${borderColor} text-left hover:shadow-md transition`}
+            >
+              <p className="text-xs font-semibold text-gray-900 dark:text-white truncate">{m.machine_code}</p>
+              <p className="text-[10px] text-gray-500 truncate mb-1.5">{m.machine_name}</p>
+              {m.status === 'insufficient_data' ? (
+                <p className="text-[10px] text-gray-400 italic">Data belum cukup</p>
+              ) : (
+                <>
+                  <p className={`text-lg font-bold ${m.status === 'anomaly' ? 'text-red-600' : 'text-gray-800 dark:text-gray-200'}`}>
+                    {fmtMin(m.current_week_downtime)}
+                  </p>
+                  <p className="text-[10px] text-gray-400">
+                    normal: ~{fmtMin(Math.round(m.baseline.avg))}
+                  </p>
+                  {m.status === 'anomaly' && (
+                    <p className="text-[10px] text-red-500 font-medium mt-0.5">
+                      {pctOfThreshold}% dari batas
+                    </p>
+                  )}
+                </>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Detail Modal */}
+      {selectedMachine && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={closeDetail}>
+          <div
+            className="bg-white dark:bg-gray-800 rounded-xl p-5 max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h4 className="font-semibold text-gray-900 dark:text-white">
+                  {selectedMachine.machine_code} — {selectedMachine.machine_name}
+                </h4>
+                <p className="text-xs text-gray-500">Riwayat downtime mingguan (kategori mesin)</p>
+              </div>
+              <button onClick={closeDetail} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+            </div>
+
+            {historyLoading ? (
+              <LoadingSpinner />
+            ) : historyData ? (
+              <>
+                <div className="grid grid-cols-3 gap-3 mb-4">
+                  <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 text-center">
+                    <p className="text-[10px] text-gray-500">Rata-rata Mingguan</p>
+                    <p className="text-base font-bold text-gray-800 dark:text-white">{fmtMin(Math.round(historyData.baseline?.avg || 0))}</p>
+                  </div>
+                  <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 text-center">
+                    <p className="text-[10px] text-gray-500">Batas Anomali</p>
+                    <p className="text-base font-bold text-gray-800 dark:text-white">{fmtMin(Math.round(historyData.baseline?.threshold || 0))}</p>
+                  </div>
+                  <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 text-center">
+                    <p className="text-[10px] text-gray-500">Jumlah Minggu Data</p>
+                    <p className="text-base font-bold text-gray-800 dark:text-white">{historyData.baseline?.num_weeks || 0}</p>
+                  </div>
+                </div>
+
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={historyData.weekly_history}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="week" tick={{ fontSize: 10 }} />
+                    <YAxis tick={{ fontSize: 10 }} />
+                    <Tooltip formatter={(v: any) => fmtMin(v)} />
+                    <Bar dataKey="total_downtime" fill="#EF4444" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </>
+            ) : (
+              <p className="text-sm text-gray-500">Gagal memuat riwayat.</p>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 const MachinesTab: React.FC<{ data: any }> = ({ data }) => {
   const [expandedMachines, setExpandedMachines] = useState<Set<string>>(new Set());
 
@@ -1754,7 +1906,9 @@ const MachinesTab: React.FC<{ data: any }> = ({ data }) => {
 
   return (
     <div className="space-y-5">
+      <MachineHealthWidget />
       {/* Machine Cards Grid */}
+     
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {data.machines.map((m: any, i: number) => {
           const totalTime = m.runtime + m.downtime + m.idle_time;
