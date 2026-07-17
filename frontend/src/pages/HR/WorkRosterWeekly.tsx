@@ -34,6 +34,11 @@ interface Machine {
   code: string;
 }
 
+interface WeeklyPlanItem {
+  machine_id: number | null;
+  machine_name: string | null;
+  product_name: string | null;
+}
 interface Assignment {
   id?: number;
   employee_id: number;
@@ -151,8 +156,9 @@ export default function WorkRosterWeekly() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [machineProducts, setMachineProducts] = useState<{ [machineId: number]: string }>({});
-  
+const [weeklyPlanMachineIds, setWeeklyPlanMachineIds] = useState<Set<number> | null>(null);
+const [weeklyPlanProducts, setWeeklyPlanProducts] = useState<{ [machineId: number]: string }>({});  
+
   // Form state for each shift
   const [leaderIds, setLeaderIds] = useState<{ shift_1: number | null; shift_2: number | null; shift_3: number | null }>({
     shift_1: null,
@@ -192,32 +198,53 @@ export default function WorkRosterWeekly() {
   const weekStart = getMonday(currentDate);
   const weekEnd = getSunday(currentDate);
 
-  // Fetch machines and weekly production schedule
-  useEffect(() => {
-    const fetchMachines = async () => {
-      try {
-        const response = await axiosInstance.get('/api/production/machines');
-        if (response.data.machines) {
-          setMachines(response.data.machines.filter((m: Machine & { is_active: boolean }) => m.is_active !== false));
-        }
-      } catch (error) {
-        console.error('Error fetching machines:', error);
+// Fetch weekly production plan for current week to filter machines/products
+useEffect(() => {
+  const fetchWeeklyPlan = async () => {
+    try {
+      const listResponse = await axiosInstance.get('/api/production/weekly-plans', {
+        params: { year, week }
+      });
+      const plans = listResponse.data.weekly_plans || [];
+      if (plans.length === 0) {
+        setWeeklyPlanMachineIds(new Set());
+        setWeeklyPlanProducts({});
+        return;
       }
-    };
-    fetchMachines();
-  }, []);
+      const planId = plans[0].id;
+      const detailResponse = await axiosInstance.get(`/api/production/weekly-plans/${planId}`);
+      const items: WeeklyPlanItem[] = detailResponse.data.items || [];
 
-  // Update machine product (manual input)
-  const updateMachineProduct = (machineId: number, product: string) => {
-    setMachineProducts(prev => ({
-      ...prev,
-      [machineId]: product
-    }));
+      const machineIds = new Set<number>();
+      const products: { [machineId: number]: string } = {};
+      items.forEach(item => {
+        if (item.machine_id) {
+          machineIds.add(item.machine_id);
+          if (item.product_name) {
+            products[item.machine_id] = products[item.machine_id]
+              ? `${products[item.machine_id]}, ${item.product_name}`
+              : item.product_name;
+          }
+        }
+      });
+
+      setWeeklyPlanMachineIds(machineIds);
+      setWeeklyPlanProducts(products);
+    } catch (error) {
+      console.error('Error fetching weekly production plan:', error);
+      setWeeklyPlanMachineIds(new Set());
+      setWeeklyPlanProducts({});
+    }
   };
+  fetchWeeklyPlan();
+}, [year, week]);
 
   // Get all machines including special machines (Bag Maker, Inkjet, Fliptop)
-  const allMachines = [...machines, ...SPECIAL_MACHINES];
-  
+  // Get all machines including special machines (Bag Maker, Inkjet, Fliptop),
+// filtered to only those scheduled in this week's production plan
+const allMachines = weeklyPlanMachineIds === null
+  ? []
+  : [...machines, ...SPECIAL_MACHINES].filter(m => weeklyPlanMachineIds.has(m.id));   
   // Get all used employee names across the current shift roster
   const getAllUsedNames = (): Set<string> => {
     const names = new Set<string>();
@@ -269,11 +296,11 @@ export default function WorkRosterWeekly() {
           }
         });
       }
-    });
-    return count > 0;
-  };
+      });
+      return count === 0;
+    };
 
-  // Fetch roster data
+    // Fetch roster data
   const fetchRoster = useCallback(async () => {
     setLoading(true);
     try {
@@ -673,22 +700,18 @@ export default function WorkRosterWeekly() {
                       const numB = parseInt(b.name.replace(/\D/g, '')) || 0;
                       return numA - numB;
                     }).map(machine => {
-                      const productValue = machineProducts[machine.id] || '';
-                      return (
-                        <tr key={machine.id} className={`hover:bg-gray-50 ${machine.id < 0 ? 'bg-blue-50' : ''}`}>
-                          <td className="px-4 py-3 font-medium text-gray-900 dark:text-white border-r bg-gray-50 dark:bg-gray-900">
-                            <div className="font-semibold">{machine.name}</div>
-                            <div className="text-xs text-gray-500">{machine.code}</div>
-                          </td>
-                          <td className="px-3 py-3 border-r">
-                            <input
-                              type="text"
-                              value={productValue}
-                              onChange={(e) => updateMachineProduct(machine.id, e.target.value)}
-                              placeholder="Input produk..."
-                              className="w-full text-sm border rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                            />
-                          </td>
+                      const productValue = weeklyPlanProducts[machine.id] || 'Tidak ada jadwal';
+		      return (
+  			<tr key={machine.id} className={`hover:bg-gray-50 ${machine.id < 0 ? 'bg-blue-50' : ''}`}>
+    			   <td className="px-4 py-3 font-medium text-gray-900 dark:text-white border-r bg-gray-50 dark:bg-gray-900">
+      			      <div className="font-semibold">{machine.name}</div>
+      			      <div className="text-xs text-gray-500">{machine.code}</div>
+    			   </td>
+                           <td className="px-3 py-3 border-r">
+                              <div className={`w-full text-sm px-2 py-1 rounded ${weeklyPlanProducts[machine.id] ? 'text-gray-900 dark:text-white font-medium' : 'text-gray-400 italic'}`}>
+                                {productValue}
+                              </div>
+                           </td>
                           {MACHINE_ROLES.map(role => {
                             const key = `${selectedShift}_${machine.id}_${role}`;
                             const rawValue = manualRoster[key];
