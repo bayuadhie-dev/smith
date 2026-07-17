@@ -53,11 +53,111 @@ const getOEEColor = (oee: number | null) => {
   return 'text-red-600'
 }
 
+interface MachineDetail {
+  machine: { id: number; code: string; name: string; status: string }
+  work_order: { id: number; wo_number: string; product_name: string | null; status: string; is_current: boolean } | null
+  oee_history: { date: string; oee_score: number | null }[]
+  current_operator: { operator_name: string | null; shift: string; production_date: string } | null
+}
+
+function MachineDetailModal({ machineId, onClose }: { machineId: number; onClose: () => void }) {
+  const [detail, setDetail] = useState<MachineDetail | null>(null)
+  const [detailLoading, setDetailLoading] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+    setDetailLoading(true)
+    axiosInstance.get(`/api/production/machines/${machineId}/detail`)
+      .then(res => { if (!cancelled) setDetail(res.data) })
+      .catch(() => { if (!cancelled) setDetail(null) })
+      .finally(() => { if (!cancelled) setDetailLoading(false) })
+    return () => { cancelled = true }
+  }, [machineId])
+
+  const maxOEE = detail ? Math.max(...detail.oee_history.map(d => d.oee_score ?? 0), 1) : 1
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={onClose}>
+      <div
+        className="bg-white dark:bg-gray-900 rounded-xl shadow-xl max-w-lg w-full max-h-[85vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-5 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+            {detail?.machine.name ?? 'Detail Mesin'}
+          </h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl leading-none">
+            &times;
+          </button>
+        </div>
+
+        <div className="p-5 space-y-6">
+          {detailLoading && <div className="text-center py-8 text-sm text-gray-500">Memuat detail...</div>}
+
+          {!detailLoading && !detail && (
+            <div className="text-center py-8 text-sm text-red-500">Gagal memuat detail mesin.</div>
+          )}
+
+          {!detailLoading && detail && (
+            <>
+              <div>
+                <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
+                  {detail.work_order?.is_current ? 'Work Order Sedang Berjalan' : 'Work Order Terakhir'}
+                </div>
+                {detail.work_order ? (
+                  <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="text-sm font-semibold text-gray-900 dark:text-white">{detail.work_order.wo_number}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{detail.work_order.product_name ?? '-'}</div>
+                  </div>
+                ) : (
+                  <div className="text-sm text-gray-400">Belum ada Work Order tercatat.</div>
+                )}
+              </div>
+
+              <div>
+                <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Operator & Shift Hari Ini</div>
+                {detail.current_operator ? (
+                  <div className="text-sm text-gray-900 dark:text-white">
+                    {detail.current_operator.operator_name ?? 'Operator tidak tercatat'}
+                    <span className="text-gray-400"> · Shift {detail.current_operator.shift}</span>
+                  </div>
+                ) : (
+                  <div className="text-sm text-gray-400">Belum ada data shift hari ini.</div>
+                )}
+              </div>
+
+              <div>
+                <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-3">Riwayat OEE 7 Hari</div>
+                <div className="flex items-end gap-2 h-24">
+                  {detail.oee_history.map((d) => (
+                    <div key={d.date} className="flex-1 flex flex-col items-center justify-end h-full">
+                      <div
+                        className={`w-full rounded-t ${d.oee_score === null ? 'bg-gray-100 dark:bg-gray-800' : d.oee_score >= 70 ? 'bg-green-400' : d.oee_score >= 40 ? 'bg-yellow-400' : 'bg-red-400'}`}
+                        style={{ height: d.oee_score !== null ? `${Math.max((d.oee_score / maxOEE) * 100, 4)}%` : '4%' }}
+                        title={d.oee_score !== null ? `${d.oee_score.toFixed(1)}%` : 'Tidak ada data'}
+                      />
+                      <div className="text-[10px] text-gray-400 mt-1">
+                        {new Date(d.date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+
 export default function WorkCenterDashboard() {
   const { t } = useLanguage();
   const [summary, setSummary] = useState<WorkCenterSummary | null>(null)
   const [loading, setLoading] = useState(true)
   const [expandedId, setExpandedId] = useState<number | null>(null)
+  const [selectedMachineId, setSelectedMachineId] = useState<number | null>(null)
   const [selectedDate, setSelectedDate] = useState<string>(
     new Date().toISOString().split('T')[0]
   )
@@ -170,7 +270,12 @@ export default function WorkCenterDashboard() {
                     <div className="flex items-center gap-3">
                       <CogIcon className="h-5 w-5 text-gray-400" />
                       <div>
-                        <div className="font-medium text-gray-900 dark:text-white">{m.name}</div>
+                      <div
+                          className="font-medium text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                          onClick={(e) => { e.stopPropagation(); setSelectedMachineId(m.id) }}
+                        >
+                          {m.name}
+                        </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">
                           {m.code}{m.department ? ` · ${m.department}` : ''}
                         </div>
@@ -257,6 +362,9 @@ export default function WorkCenterDashboard() {
         )}
       </div>
 
+      {selectedMachineId !== null && (
+        <MachineDetailModal machineId={selectedMachineId} onClose={() => setSelectedMachineId(null)} />
+      )}
       {breakdownCount > 0 && (
         <div className="flex items-center gap-3 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-300">
           <ExclamationTriangleIcon className="h-5 w-5 flex-shrink-0" />

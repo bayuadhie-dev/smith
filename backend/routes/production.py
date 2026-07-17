@@ -515,6 +515,105 @@ def get_machine_efficiency(id):
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@production_bp.route('/machines/<int:machine_id>/detail', methods=['GET'])
+@jwt_required()
+def get_machine_detail(machine_id):
+    """
+    Get detailed info for a single machine: current/last work order,
+    7-day OEE history, and current operator/shift info.
+    ---
+    tags:
+      - Production
+    summary: Machine detail (for Work Center modal)
+    security:
+      - BearerAuth: []
+    responses:
+      200:
+        description: Machine detail retrieved successfully
+      404:
+        description: Machine not found
+      500:
+        description: Server error
+    """
+    try:
+        from models.production import ShiftProduction
+
+        machine = db.session.get(Machine, machine_id)
+        if not machine:
+            return jsonify({'error': 'Machine not found'}), 404
+
+        # 1. Current or last work order on this machine
+        current_wo = WorkOrder.query.filter_by(
+            machine_id=machine_id, status='in_progress'
+        ).order_by(WorkOrder.id.desc()).first()
+
+        last_wo = None
+        if not current_wo:
+            last_wo = WorkOrder.query.filter_by(machine_id=machine_id).filter(
+                WorkOrder.status.in_(['completed', 'in_progress'])
+            ).order_by(WorkOrder.id.desc()).first()
+
+        wo_to_show = current_wo or last_wo
+        work_order_info = None
+        if wo_to_show:
+            work_order_info = {
+                'id': wo_to_show.id,
+                'wo_number': wo_to_show.wo_number,
+                'product_name': wo_to_show.product.name if wo_to_show.product else None,
+                'status': wo_to_show.status,
+                'is_current': wo_to_show.status == 'in_progress',
+            }
+
+        # 2. 7-day OEE history (aggregate per day)
+        today = get_local_now().date()
+        week_ago = today - __import__('datetime').timedelta(days=6)
+        daily_rows = db.session.query(
+            ShiftProduction.production_date,
+            func.avg(ShiftProduction.oee_score).label('avg_oee')
+        ).filter(
+            ShiftProduction.machine_id == machine_id,
+            ShiftProduction.production_date >= week_ago,
+            ShiftProduction.production_date <= today,
+        ).group_by(ShiftProduction.production_date).order_by(ShiftProduction.production_date).all()
+
+        oee_by_date = {row.production_date.isoformat(): round(float(row.avg_oee), 2) if row.avg_oee is not None else None
+                       for row in daily_rows}
+        oee_history = []
+        for i in range(7):
+            d = (week_ago + __import__('datetime').timedelta(days=i)).isoformat()
+            oee_history.append({'date': d, 'oee_score': oee_by_date.get(d)})
+
+        # 3. Current operator + shift info (most recent shift record today)
+        latest_shift = ShiftProduction.query.filter_by(
+            machine_id=machine_id, production_date=today
+        ).order_by(ShiftProduction.id.desc()).first()
+
+        operator_info = None
+        if latest_shift:
+            operator = db.session.get(Employee, latest_shift.operator_id) if latest_shift.operator_id else None
+            operator_info = {
+                'operator_name': operator.full_name if operator else None,
+                'shift': latest_shift.shift,
+                'production_date': latest_shift.production_date.isoformat(),
+            }
+
+        return jsonify({
+            'machine': {
+                'id': machine.id,
+                'code': machine.code,
+                'name': machine.name,
+                'status': machine.status,
+            },
+            'work_order': work_order_info,
+            'oee_history': oee_history,
+            'current_operator': operator_info,
+        }), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @production_bp.route('/work-center-summary', methods=['GET'])
 @jwt_required()
 def get_work_center_summary():
@@ -1711,7 +1810,8 @@ def create_work_order_production_record(id):
                 ).filter(
                     WarehouseZone.material_type.in_(['finished_goods', 'all'])
                 ).first()
-                
+                print(f"[DEBUG BUFFER STOCK] fg_location found: {fg_location}")
+     
                 if fg_location:
                     inventory = Inventory(
                         product_id=wo.product_id,
@@ -1725,7 +1825,7 @@ def create_work_order_production_record(id):
                     )
                     db.session.add(inventory)
                     db.session.flush()
-            
+                    print(f"[DEBUG BUFFER STOCK] inventory created with id: {inventory.id}, product_id: {inventory.product_id}, stock_status: {inventory.stock_status}")          
             if inventory:
                 # Add buffer stock to inventory - convert to float to avoid Decimal conflicts
                 inventory.quantity_on_hand = float(inventory.quantity_on_hand or 0) + float(buffer_stock_qty)
@@ -1744,7 +1844,9 @@ def create_work_order_production_record(id):
                     created_by=user_id
                 )
                 db.session.add(buffer_movement)
-        
+            # Flush buffer stock changes now, in a controlled manner,
+            # before any later query (e.g. Machine lookup) triggers autoflush
+            db.session.flush()
         # Auto-complete if target reached
         if wo.quantity_produced >= wo.quantity:
             wo.status = 'completed'
@@ -1929,9 +2031,13 @@ def create_work_order_production_record(id):
                     created_by=user_id
                 )
                 db.session.add(wip_movement)
-        
+        # capture IDs before commit to avoid expired-object reload issues
+        record_id = record.id
+        shift_production_id = shift_production.id
         db.session.commit()
-        
+        from models.warehouse import Inventory as _Inv
+        print(f"[DEBUG BUFFER STOCK] after commit - checking inventory count: {_Inv.query.filter_by(product_id=wo.product_id, stock_status='released').count()}")
+
         # ============= NOTIFICATIONS =============
         try:
             supervisor_ids = get_supervisor_user_ids()
@@ -1981,8 +2087,8 @@ def create_work_order_production_record(id):
 
         return jsonify({
             'message': 'Production record created',
-            'record_id': record.id,
-            'shift_production_id': shift_production.id,
+            'record_id': record_id,
+            'shift_production_id': shift_production_id,
             'work_order_progress': {
                 'quantity_produced': float(wo.quantity_produced),
                 'quantity_good': float(wo.quantity_good),
