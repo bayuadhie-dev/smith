@@ -351,6 +351,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
   const tabs = [
     { id: 'overview', label: 'Overview', icon: ChartBarIcon },
     { id: 'daily', label: 'Detail Harian', icon: ClockIcon },
+    { id: 'machineDaily', label: 'Mesin & Shift Harian', icon: DocumentTextIcon },
     { id: 'dailySwiper', label: 'Controller', icon: CalendarDaysIcon },
     { id: 'converting', label: 'mc converting', icon: CogIcon },
     { id: 'products', label: 'Per Produk', icon: CubeIcon },
@@ -549,6 +550,11 @@ const ProductionMonitoringDashboard: React.FC = () => {
           convertingDailyRecords={convertingMonthlyData?.daily_records}
         />
       )}
+      {activeTab === 'machineDaily' && (
+        <MachineDailyTab
+          data={data}
+        />
+      )}
       {activeTab === 'dailySwiper' && (
         <div className="mt-6">
           <DailyControllerSwiper
@@ -585,6 +591,283 @@ const ProductionMonitoringDashboard: React.FC = () => {
           month={month}
         />
       )}
+    </div>
+  );
+};
+
+// ==================== MACHINE DAILY TAB ====================
+const MachineDailyTab: React.FC<{ data: any }> = ({ data }) => {
+  const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
+  const [filterMachine, setFilterMachine] = useState('');
+
+  const toggleDay = (d: string) => {
+    setExpandedDays(prev => {
+      const next = new Set(prev);
+      if (next.has(d)) next.delete(d);
+      else next.add(d);
+      return next;
+    });
+  };
+
+  const dayNames: Record<string, string> = {
+    Monday: 'Senin', Tuesday: 'Selasa', Wednesday: 'Rabu', Thursday: 'Kamis',
+    Friday: 'Jumat', Saturday: 'Sabtu', Sunday: 'Minggu'
+  };
+
+  // Build grouped data: date → machines → shifts, with karton calculation
+  const dailyMachineData = useMemo(() => {
+    if (!data || !data.daily_table) return [];
+
+    const result: {
+      date: string;
+      day_name: string;
+      machines: {
+        machine_name: string;
+        shift_data: Record<number, {
+          grade_a: number; grade_b: number; grade_c: number;
+          total_pcs: number; karton: number;
+          runtime: number; downtime: number; idle_time: number;
+          products: string[]; wo_numbers: string[];
+        }>;
+        total_grade_a: number; total_grade_b: number; total_grade_c: number;
+        total_pcs: number; total_karton: number;
+        total_runtime: number; total_downtime: number; total_idle: number;
+      }[];
+      day_total_pcs: number; day_total_a: number; day_total_b: number; day_total_c: number;
+      day_total_karton: number;
+      day_runtime: number; day_downtime: number; day_idle: number;
+    }[] = [];
+
+    data.daily_table.forEach((day: any) => {
+      const machineMap: Record<string, any> = {};
+
+      day.products.forEach((prod: any) => {
+        const packPerCtn = prod.pack_per_ctn || 0;
+        prod.shifts.forEach((s: any) => {
+          const mName = s.machine || 'N/A';
+          const shiftNum = s.shift || 1;
+
+          if (filterMachine && mName !== filterMachine) return;
+
+          if (!machineMap[mName]) {
+            machineMap[mName] = {
+              machine_name: mName,
+              shift_data: {},
+              total_grade_a: 0, total_grade_b: 0, total_grade_c: 0,
+              total_pcs: 0, total_karton: 0,
+              total_runtime: 0, total_downtime: 0, total_idle: 0
+            };
+          }
+
+          if (!machineMap[mName].shift_data[shiftNum]) {
+            machineMap[mName].shift_data[shiftNum] = {
+              grade_a: 0, grade_b: 0, grade_c: 0,
+              total_pcs: 0, karton: 0,
+              runtime: 0, downtime: 0, idle_time: 0,
+              products: [], wo_numbers: []
+            };
+          }
+
+          const sd = machineMap[mName].shift_data[shiftNum];
+          const ga = s.grade_a || 0;
+          const gb = s.grade_b || 0;
+          const gc = s.grade_c || 0;
+          sd.grade_a += ga;
+          sd.grade_b += gb;
+          sd.grade_c += gc;
+          sd.total_pcs += s.total || 0;
+          sd.karton += packPerCtn > 0 ? ga / packPerCtn : 0;
+          sd.runtime += s.runtime || 0;
+          sd.downtime += s.downtime || 0;
+          sd.idle_time += s.idle_time || 0;
+
+          if (s.wo_number && s.wo_number !== 'N/A' && !sd.wo_numbers.includes(s.wo_number)) {
+            sd.wo_numbers.push(s.wo_number);
+          }
+          const cleanedProd = stripPackagingSuffix(prod.product_name);
+          if (cleanedProd && !sd.products.includes(cleanedProd)) {
+            sd.products.push(cleanedProd);
+          }
+
+          machineMap[mName].total_grade_a += ga;
+          machineMap[mName].total_grade_b += gb;
+          machineMap[mName].total_grade_c += gc;
+          machineMap[mName].total_pcs += s.total || 0;
+          machineMap[mName].total_karton += packPerCtn > 0 ? ga / packPerCtn : 0;
+          machineMap[mName].total_runtime += s.runtime || 0;
+          machineMap[mName].total_downtime += s.downtime || 0;
+          machineMap[mName].total_idle += s.idle_time || 0;
+        });
+      });
+
+      const machinesList = Object.values(machineMap).sort((a: any, b: any) => a.machine_name.localeCompare(b.machine_name));
+      if (machinesList.length > 0) {
+        result.push({
+          date: day.date,
+          day_name: day.day_name,
+          machines: machinesList as any,
+          day_total_pcs: machinesList.reduce((s: number, m: any) => s + m.total_pcs, 0),
+          day_total_a: machinesList.reduce((s: number, m: any) => s + m.total_grade_a, 0),
+          day_total_b: machinesList.reduce((s: number, m: any) => s + m.total_grade_b, 0),
+          day_total_c: machinesList.reduce((s: number, m: any) => s + m.total_grade_c, 0),
+          day_total_karton: machinesList.reduce((s: number, m: any) => s + m.total_karton, 0),
+          day_runtime: machinesList.reduce((s: number, m: any) => s + m.total_runtime, 0),
+          day_downtime: machinesList.reduce((s: number, m: any) => s + m.total_downtime, 0),
+          day_idle: machinesList.reduce((s: number, m: any) => s + m.total_idle, 0),
+        });
+      }
+    });
+
+    return result;
+  }, [data, filterMachine]);
+
+  const uniqueMachines = useMemo(() => {
+    if (!data || !data.daily_table) return [];
+    const machines = new Set<string>();
+    data.daily_table.forEach((day: any) => {
+      day.products.forEach((prod: any) => {
+        prod.shifts.forEach((s: any) => {
+          if (s.machine) machines.add(s.machine);
+        });
+      });
+    });
+    return Array.from(machines).sort();
+  }, [data]);
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow border overflow-hidden">
+        <div className="p-4 border-b bg-gray-50 dark:bg-gray-900 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">📋 Data Mesin Harian — Hasil per Shift</h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Klik tanggal untuk melihat rincian output setiap mesin per shift</p>
+          </div>
+          <select
+            value={filterMachine}
+            onChange={(e) => setFilterMachine(e.target.value)}
+            className="px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white dark:bg-gray-800 dark:text-white w-full sm:w-44"
+          >
+            <option value="">Semua Mesin</option>
+            {uniqueMachines.map(m => (
+              <option key={m} value={m}>{m}</option>
+            ))}
+          </select>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs border-collapse">
+            <thead>
+              <tr className="bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300 border-b">
+                <th className="px-3 py-2 text-left">Tanggal</th>
+                <th className="px-3 py-2 text-left">Mesin</th>
+                <th className="px-3 py-2 text-center">Shift</th>
+                <th className="px-3 py-2 text-right">Grade A</th>
+                <th className="px-3 py-2 text-right">Grade B</th>
+                <th className="px-3 py-2 text-right">Grade C</th>
+                <th className="px-3 py-2 text-right">Total (pcs)</th>
+                <th className="px-3 py-2 text-right">Karton</th>
+                <th className="px-3 py-2 text-left">Produk</th>
+                <th className="px-3 py-2 text-right">Runtime</th>
+                <th className="px-3 py-2 text-right">Downtime</th>
+                <th className="px-3 py-2 text-right">Idle</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y dark:divide-gray-700">
+              {dailyMachineData.length === 0 ? (
+                <tr>
+                  <td colSpan={12} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                    Tidak ada data produksi mesin pada periode ini
+                  </td>
+                </tr>
+              ) : (
+                dailyMachineData.map((day) => {
+                  const isExpanded = expandedDays.has(day.date);
+                  const dateLabel = day.date.split('-').reverse().join('/');
+                  const dayLabel = dayNames[day.day_name] || day.day_name;
+
+                  return (
+                    <React.Fragment key={day.date}>
+                      {/* Day summary row — prominent dark header */}
+                      <tr className="bg-slate-700 dark:bg-slate-800 hover:bg-slate-600 dark:hover:bg-slate-700 cursor-pointer border-t-2 border-slate-500 dark:border-slate-600 text-white" onClick={() => toggleDay(day.date)}>
+                        <td className="px-3 py-2.5">
+                          <div className="flex items-center gap-2">
+                            {isExpanded ? <ChevronUpIcon className="h-4 w-4 text-blue-300" /> : <ChevronDownIcon className="h-4 w-4 text-blue-300" />}
+                            <span className="font-bold text-white text-sm">{dateLabel}</span>
+                            <span className="text-slate-300 text-[10px] font-medium">({dayLabel})</span>
+                          </div>
+                        </td>
+                        <td className="px-3 py-2.5 font-semibold text-blue-200">{day.machines.length} mesin</td>
+                        <td className="px-3 py-2.5"></td>
+                        <td className="px-3 py-2.5 text-right font-bold text-green-300">{fmtNum(day.day_total_a)}</td>
+                        <td className="px-3 py-2.5 text-right font-bold text-yellow-300">{fmtNum(day.day_total_b)}</td>
+                        <td className="px-3 py-2.5 text-right font-bold text-red-300">{fmtNum(day.day_total_c)}</td>
+                        <td className="px-3 py-2.5 text-right font-bold text-white">{fmtNum(day.day_total_pcs)}</td>
+                        <td className="px-3 py-2.5 text-right font-bold text-teal-300">{fmtNum(Math.round(day.day_total_karton))}</td>
+                        <td className="px-3 py-2.5"></td>
+                        <td className="px-3 py-2.5 text-right text-green-300 font-medium">{fmtMin(day.day_runtime)}</td>
+                        <td className="px-3 py-2.5 text-right text-red-300 font-medium">{fmtMin(day.day_downtime)}</td>
+                        <td className="px-3 py-2.5 text-right text-yellow-300 font-medium">{fmtMin(day.day_idle)}</td>
+                      </tr>
+
+                      {/* Expanded: machine rows for this day */}
+                      {isExpanded && day.machines.map((m: any) => (
+                        <React.Fragment key={`${day.date}-${m.machine_name}`}>
+                          {/* Machine sub-total row */}
+                          <tr className="bg-indigo-50/50 dark:bg-indigo-900/10 border-t border-indigo-100 dark:border-indigo-900/30">
+                            <td className="px-3 py-1.5 pl-8"></td>
+                            <td className="px-3 py-1.5 font-bold text-indigo-700 dark:text-indigo-400">{m.machine_name}</td>
+                            <td className="px-3 py-1.5 text-center text-gray-400 text-[10px]">total</td>
+                            <td className="px-3 py-1.5 text-right font-semibold text-green-600">{fmtNum(m.total_grade_a)}</td>
+                            <td className="px-3 py-1.5 text-right text-yellow-500">{fmtNum(m.total_grade_b)}</td>
+                            <td className="px-3 py-1.5 text-right text-red-500">{fmtNum(m.total_grade_c)}</td>
+                            <td className="px-3 py-1.5 text-right font-semibold">{fmtNum(m.total_pcs)}</td>
+                            <td className="px-3 py-1.5 text-right font-semibold text-teal-600 dark:text-teal-400">{fmtNum(Math.round(m.total_karton))}</td>
+                            <td className="px-3 py-1.5"></td>
+                            <td className="px-3 py-1.5 text-right text-green-600">{fmtMin(m.total_runtime)}</td>
+                            <td className="px-3 py-1.5 text-right text-red-500">{fmtMin(m.total_downtime)}</td>
+                            <td className="px-3 py-1.5 text-right text-yellow-500">{fmtMin(m.total_idle)}</td>
+                          </tr>
+                          {/* Shift detail rows */}
+                          {[1, 2, 3].map(shiftNum => {
+                            const sd = m.shift_data[shiftNum];
+                            if (!sd || sd.total_pcs === 0) return null;
+                            return (
+                              <tr key={`${day.date}-${m.machine_name}-s${shiftNum}`} className="hover:bg-gray-50 dark:hover:bg-gray-700 border-t border-gray-100 dark:border-gray-700">
+                                <td className="px-3 py-1.5 pl-12"></td>
+                                <td className="px-3 py-1.5"></td>
+                                <td className="px-3 py-1.5 text-center">
+                                  <span className="px-1.5 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded font-bold text-[10px]">
+                                    S{shiftNum}
+                                  </span>
+                                </td>
+                                <td className="px-3 py-1.5 text-right text-green-600">{fmtNum(sd.grade_a)}</td>
+                                <td className="px-3 py-1.5 text-right text-yellow-500">{fmtNum(sd.grade_b)}</td>
+                                <td className="px-3 py-1.5 text-right text-red-500">{fmtNum(sd.grade_c)}</td>
+                                <td className="px-3 py-1.5 text-right">{fmtNum(sd.total_pcs)}</td>
+                                <td className="px-3 py-1.5 text-right text-teal-600 dark:text-teal-400">{fmtNum(Math.round(sd.karton))}</td>
+                                <td className="px-3 py-1.5">
+                                  <span className="text-gray-700 dark:text-gray-200 font-medium truncate block max-w-[200px]" title={sd.products.join(', ')}>
+                                    {sd.products.join(', ') || '-'}
+                                  </span>
+                                  {sd.wo_numbers.length > 0 && (
+                                    <span className="text-[10px] text-gray-400 block">WO: {sd.wo_numbers.join(', ')}</span>
+                                  )}
+                                </td>
+                                <td className="px-3 py-1.5 text-right text-green-600">{fmtMin(sd.runtime)}</td>
+                                <td className="px-3 py-1.5 text-right text-red-500">{sd.downtime > 0 ? fmtMin(sd.downtime) : '-'}</td>
+                                <td className="px-3 py-1.5 text-right text-yellow-500">{sd.idle_time > 0 ? fmtMin(sd.idle_time) : '-'}</td>
+                              </tr>
+                            );
+                          })}
+                        </React.Fragment>
+                      ))}
+                    </React.Fragment>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 };
