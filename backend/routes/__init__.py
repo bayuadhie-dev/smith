@@ -28,6 +28,7 @@ def register_routes(app):
     from .dashboard import dashboard_bp
     from .reports import reports_bp
     from .tv_display import tv_display_bp
+    from .machine_health import machine_health_bp
     from .mrp import mrp_bp
     from .warehouse_enhanced import warehouse_enhanced_bp
     from .attendance import attendance_bp
@@ -69,6 +70,7 @@ def register_routes(app):
     app.register_blueprint(integration_bp, url_prefix='/api/integration')
     app.register_blueprint(analytics_bp, url_prefix='/api/analytics')
     app.register_blueprint(settings_bp, url_prefix='/api/settings')
+    app.register_blueprint(machine_health_bp)
     app.register_blueprint(dashboard_bp, url_prefix='/api/dashboard')
     app.register_blueprint(reports_bp, url_prefix='/api/reports')
     app.register_blueprint(tv_display_bp, url_prefix='/api/tv-display')
