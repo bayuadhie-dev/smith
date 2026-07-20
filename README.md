@@ -1360,11 +1360,11 @@ Untuk dukungan teknis, permintaan fitur, atau laporan bug, silakan email kami di
 
 ## 📝 Lisensi
 
-**PROPRIETARY SOFTWARE**
+**GNU Affero General Public License v3.0 (AGPL-3.0)**
 
 Copyright (c) 2025-2026 **Mochammad Bayu Adhie Nugroho**. All Rights Reserved.
 
-This software is proprietary and confidential. Unauthorized copying, distribution, modification, public display, or public performance of this software is strictly prohibited.
+
 
 See [LICENSE](LICENSE) for full terms.
 
