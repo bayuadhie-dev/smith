@@ -778,15 +778,14 @@ def get_inventory_by_qc_status():
 def get_incoming_materials_for_qc():
     """Get received materials that need QC inspection"""
     try:
-        from models.purchasing import PurchaseOrder, PurchaseOrderItem
-        from models.warehouse import GoodsReceipt, GoodsReceiptItem
+        from models.purchasing import PurchaseOrder, PurchaseOrderItem, GoodsReceivedNote, GRNItem
         
         status = request.args.get('status', 'pending')
         
         # Get goods receipts that need QC
-        query = GoodsReceipt.query.filter(
-            GoodsReceipt.status == 'received'
-        ).order_by(GoodsReceipt.received_date.desc())
+        query = GoodsReceivedNote.query.filter(
+            GoodsReceivedNote.status == 'pending'
+        ).order_by(GoodsReceivedNote.receipt_date.desc())
         
         materials = []
         for gr in query.all():
@@ -814,7 +813,7 @@ def get_incoming_materials_for_qc():
                 
                 materials.append({
                     'id': item.id,
-                    'gr_number': gr.gr_number,
+                    'gr_number': gr.grn_number,
                     'po_number': gr.purchase_order.po_number if gr.purchase_order else None,
                     'supplier_name': gr.purchase_order.supplier.name if gr.purchase_order and gr.purchase_order.supplier else 'Unknown',
                     'material_id': item.material_id,
@@ -823,7 +822,7 @@ def get_incoming_materials_for_qc():
                     'batch_number': item.batch_number,
                     'quantity': float(item.quantity_received or 0),
                     'uom': item.uom or 'pcs',
-                    'received_date': gr.received_date.isoformat() if gr.received_date else None,
+                    'received_date': gr.receipt_date.isoformat() if gr.receipt_date else None,
                     'qc_status': qc_status,
                     'inspection_id': existing_inspection.id if existing_inspection else None,
                     'inspector_name': existing_inspection.inspector.username if existing_inspection and existing_inspection.inspector else None,
@@ -846,13 +845,13 @@ def get_incoming_materials_for_qc():
 def inspect_incoming_material(item_id):
     """Create QC inspection for incoming material"""
     try:
-        from models.warehouse import GoodsReceiptItem
+        from models.purchasing import GRNItem
         
         data = request.get_json()
         user_id = int(get_jwt_identity())
         
         # Get goods receipt item
-        gr_item = db.session.get(GoodsReceiptItem, item_id) or abort(404)
+        gr_item = db.session.get(GRNItem, item_id) or abort(404)
         
         # Check if inspection already exists
         existing = QualityInspection.query.filter(
@@ -910,6 +909,7 @@ def inspect_incoming_material(item_id):
         import traceback
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500
+
 
 
 # ============ QC DALAM PROSES (IN-PROCESS QC / IPQC) ============
