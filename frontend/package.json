@@ -50,7 +50,7 @@
     "remark-gfm": "^4.0.1",
     "socket.io-client": "^4.8.3",
     "swiper": "^12.1.4",
-    "xlsx": "^0.18.5"
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
