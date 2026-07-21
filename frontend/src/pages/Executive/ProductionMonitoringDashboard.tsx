@@ -4,8 +4,9 @@ import {
   ClockIcon, CubeIcon, CogIcon, ChevronDownIcon, ChevronUpIcon,
   PresentationChartLineIcon, CalendarDaysIcon, ArrowsRightLeftIcon,
   BoltIcon, BeakerIcon, ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon,
-  DocumentTextIcon
+  DocumentTextIcon, ArrowDownTrayIcon
 } from '@heroicons/react/24/outline';
+import * as XLSX from 'xlsx';
 import axiosInstance from '../../utils/axiosConfig';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import DowntimeActionItems from '../../components/Production/DowntimeActionItems';
@@ -614,6 +615,184 @@ const MachineDailyTab: React.FC<{ data: any }> = ({ data }) => {
     Friday: 'Jumat', Saturday: 'Sabtu', Sunday: 'Minggu'
   };
 
+  const exportToExcel = () => {
+    if (!data || !data.daily_table) return;
+
+    // ── Sheet 1: Detail per Shift ──────────────────────────────────────
+    const detailRows: any[] = [];
+    const headerDetail = [
+      'Tanggal', 'Hari', 'Mesin', 'Shift', 'Produk', 'No. WO',
+      'Grade A (pcs)', 'Grade B (pcs)', 'Grade C (pcs)', 'Total (pcs)', 'Karton',
+      'Runtime (mnt)', 'Downtime (mnt)', 'Idle (mnt)'
+    ];
+    detailRows.push(headerDetail);
+
+    // ── Sheet 2: Rekap Harian ─────────────────────────────────────────
+    const rekapRows: any[] = [];
+    const headerRekap = [
+      'Tanggal', 'Hari', 'Jumlah Mesin',
+      'Grade A (pcs)', 'Grade B (pcs)', 'Grade C (pcs)', 'Total (pcs)', 'Karton',
+      'Runtime (mnt)', 'Downtime (mnt)', 'Idle (mnt)'
+    ];
+    rekapRows.push(headerRekap);
+
+    data.daily_table.forEach((day: any) => {
+      const machineMap: Record<string, any> = {};
+
+      day.products.forEach((prod: any) => {
+        const packPerCtn = prod.pack_per_ctn || 0;
+        prod.shifts.forEach((s: any) => {
+          const mName = s.machine || 'N/A';
+          if (filterMachine && mName !== filterMachine) return;
+          const shiftNum = s.shift || 1;
+
+          if (!machineMap[mName]) {
+            machineMap[mName] = {
+              machine_name: mName,
+              raw_shifts: [],
+              total_grade_a: 0, total_grade_b: 0, total_grade_c: 0,
+              total_pcs: 0, total_karton: 0,
+              total_runtime: 0, total_downtime: 0, total_idle: 0
+            };
+          }
+
+          const ga = s.grade_a || 0;
+          const gb = s.grade_b || 0;
+          const gc = s.grade_c || 0;
+          const total = s.total || 0;
+          const karton = packPerCtn > 0 ? ga / packPerCtn : 0;
+          const cleanedProd = stripPackagingSuffix(prod.product_name) || '-';
+
+          machineMap[mName].raw_shifts.push({
+            shift: shiftNum,
+            product_name: cleanedProd,
+            wo_number: s.wo_number && s.wo_number !== 'N/A' ? s.wo_number : '',
+            grade_a: ga,
+            grade_b: gb,
+            grade_c: gc,
+            total_pcs: total,
+            karton: karton,
+            runtime: s.runtime || 0,
+            downtime: s.downtime || 0,
+            idle_time: s.idle_time || 0
+          });
+
+          machineMap[mName].total_grade_a += ga;
+          machineMap[mName].total_grade_b += gb;
+          machineMap[mName].total_grade_c += gc;
+          machineMap[mName].total_pcs += total;
+          machineMap[mName].total_karton += karton;
+          machineMap[mName].total_runtime += s.runtime || 0;
+          machineMap[mName].total_downtime += s.downtime || 0;
+          machineMap[mName].total_idle += s.idle_time || 0;
+        });
+      });
+
+      const machinesList = Object.values(machineMap).sort((a: any, b: any) => a.machine_name.localeCompare(b.machine_name));
+      const dateFormatted = day.date.split('-').reverse().join('/');
+      const dayLabel = dayNames[day.day_name] || day.day_name;
+
+      let dayTotA = 0, dayTotB = 0, dayTotC = 0, dayTotPcs = 0, dayTotKarton = 0;
+      let dayRuntime = 0, dayDowntime = 0, dayIdle = 0;
+
+      machinesList.forEach((m: any) => {
+        // Sort raw shifts by shift number
+        m.raw_shifts.sort((a: any, b: any) => a.shift - b.shift);
+
+        // Group by shift number to determine suffix (a, b, c...)
+        const shiftCounts: Record<number, number> = {};
+        m.raw_shifts.forEach((rs: any) => {
+          shiftCounts[rs.shift] = (shiftCounts[rs.shift] || 0) + 1;
+        });
+
+        const shiftIndices: Record<number, number> = {};
+        m.shifts = m.raw_shifts.map((rs: any) => {
+          let label = `S${rs.shift}`;
+          if (shiftCounts[rs.shift] > 1) {
+            const idx = shiftIndices[rs.shift] || 0;
+            const suffix = String.fromCharCode(97 + idx); // 97 is 'a'
+            label = `S${rs.shift}${suffix}`;
+            shiftIndices[rs.shift] = idx + 1;
+          }
+
+          return {
+            ...rs,
+            shift_label: label
+          };
+        });
+
+        m.shifts.forEach((sRow: any) => {
+          detailRows.push([
+            dateFormatted,
+            dayLabel,
+            m.machine_name,
+            sRow.shift_label,
+            sRow.product_name,
+            sRow.wo_number || '-',
+            sRow.grade_a,
+            sRow.grade_b,
+            sRow.grade_c,
+            sRow.total_pcs,
+            Math.round(sRow.karton),
+            sRow.runtime,
+            sRow.downtime,
+            sRow.idle_time
+          ]);
+        });
+
+        dayTotA += m.total_grade_a;
+        dayTotB += m.total_grade_b;
+        dayTotC += m.total_grade_c;
+        dayTotPcs += m.total_pcs;
+        dayTotKarton += m.total_karton;
+        dayRuntime += m.total_runtime;
+        dayDowntime += m.total_downtime;
+        dayIdle += m.total_idle;
+      });
+
+      if (machinesList.length > 0) {
+        rekapRows.push([
+          dateFormatted, dayLabel, machinesList.length,
+          dayTotA, dayTotB, dayTotC, dayTotPcs, Math.round(dayTotKarton),
+          dayRuntime, dayDowntime, dayIdle
+        ]);
+      }
+    });
+
+    // ── Build Workbook ─────────────────────────────────────────────────
+    const wb = XLSX.utils.book_new();
+
+    // Sheet 1 – Detail
+    const wsDetail = XLSX.utils.aoa_to_sheet(detailRows);
+    // Column widths
+    wsDetail['!cols'] = [
+      { wch: 12 }, { wch: 10 }, { wch: 18 }, { wch: 10 }, { wch: 35 }, { wch: 20 },
+      { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 10 },
+      { wch: 14 }, { wch: 15 }, { wch: 12 }
+    ];
+    XLSX.utils.book_append_sheet(wb, wsDetail, 'Detail per Shift');
+
+    // Sheet 2 – Rekap
+    const wsRekap = XLSX.utils.aoa_to_sheet(rekapRows);
+    wsRekap['!cols'] = [
+      { wch: 12 }, { wch: 10 }, { wch: 14 },
+      { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 10 },
+      { wch: 14 }, { wch: 15 }, { wch: 12 }
+    ];
+    XLSX.utils.book_append_sheet(wb, wsRekap, 'Rekap Harian');
+
+    // ── Filename ───────────────────────────────────────────────────────
+    const period = data?.summary?.period || data?.period || {};
+    const monthName = period.month_name || 'Data';
+    const yearVal = period.year || new Date().getFullYear();
+    const suffix = filterMachine ? `_${filterMachine.replace(/\s+/g, '_')}` : '';
+    const filename = `Mesin_Harian_${monthName}_${yearVal}${suffix}.xlsx`;
+
+    XLSX.writeFile(wb, filename);
+  };
+
+  // dayNames sudah dideklarasikan di atas
+
   // Build grouped data: date → machines → shifts, with karton calculation
   const dailyMachineData = useMemo(() => {
     if (!data || !data.daily_table) return [];
@@ -623,12 +802,15 @@ const MachineDailyTab: React.FC<{ data: any }> = ({ data }) => {
       day_name: string;
       machines: {
         machine_name: string;
-        shift_data: Record<number, {
+        shifts: {
+          shift: number;
+          shift_label: string;
+          product_name: string;
+          wo_number: string;
           grade_a: number; grade_b: number; grade_c: number;
           total_pcs: number; karton: number;
           runtime: number; downtime: number; idle_time: number;
-          products: string[]; wo_numbers: string[];
-        }>;
+        }[];
         total_grade_a: number; total_grade_b: number; total_grade_c: number;
         total_pcs: number; total_karton: number;
         total_runtime: number; total_downtime: number; total_idle: number;
@@ -652,48 +834,39 @@ const MachineDailyTab: React.FC<{ data: any }> = ({ data }) => {
           if (!machineMap[mName]) {
             machineMap[mName] = {
               machine_name: mName,
-              shift_data: {},
+              raw_shifts: [],
               total_grade_a: 0, total_grade_b: 0, total_grade_c: 0,
               total_pcs: 0, total_karton: 0,
               total_runtime: 0, total_downtime: 0, total_idle: 0
             };
           }
 
-          if (!machineMap[mName].shift_data[shiftNum]) {
-            machineMap[mName].shift_data[shiftNum] = {
-              grade_a: 0, grade_b: 0, grade_c: 0,
-              total_pcs: 0, karton: 0,
-              runtime: 0, downtime: 0, idle_time: 0,
-              products: [], wo_numbers: []
-            };
-          }
-
-          const sd = machineMap[mName].shift_data[shiftNum];
           const ga = s.grade_a || 0;
           const gb = s.grade_b || 0;
           const gc = s.grade_c || 0;
-          sd.grade_a += ga;
-          sd.grade_b += gb;
-          sd.grade_c += gc;
-          sd.total_pcs += s.total || 0;
-          sd.karton += packPerCtn > 0 ? ga / packPerCtn : 0;
-          sd.runtime += s.runtime || 0;
-          sd.downtime += s.downtime || 0;
-          sd.idle_time += s.idle_time || 0;
+          const total = s.total || 0;
+          const karton = packPerCtn > 0 ? ga / packPerCtn : 0;
+          const cleanedProd = stripPackagingSuffix(prod.product_name) || '-';
 
-          if (s.wo_number && s.wo_number !== 'N/A' && !sd.wo_numbers.includes(s.wo_number)) {
-            sd.wo_numbers.push(s.wo_number);
-          }
-          const cleanedProd = stripPackagingSuffix(prod.product_name);
-          if (cleanedProd && !sd.products.includes(cleanedProd)) {
-            sd.products.push(cleanedProd);
-          }
+          machineMap[mName].raw_shifts.push({
+            shift: shiftNum,
+            product_name: cleanedProd,
+            wo_number: s.wo_number && s.wo_number !== 'N/A' ? s.wo_number : '',
+            grade_a: ga,
+            grade_b: gb,
+            grade_c: gc,
+            total_pcs: total,
+            karton: karton,
+            runtime: s.runtime || 0,
+            downtime: s.downtime || 0,
+            idle_time: s.idle_time || 0
+          });
 
           machineMap[mName].total_grade_a += ga;
           machineMap[mName].total_grade_b += gb;
           machineMap[mName].total_grade_c += gc;
-          machineMap[mName].total_pcs += s.total || 0;
-          machineMap[mName].total_karton += packPerCtn > 0 ? ga / packPerCtn : 0;
+          machineMap[mName].total_pcs += total;
+          machineMap[mName].total_karton += karton;
           machineMap[mName].total_runtime += s.runtime || 0;
           machineMap[mName].total_downtime += s.downtime || 0;
           machineMap[mName].total_idle += s.idle_time || 0;
@@ -701,19 +874,47 @@ const MachineDailyTab: React.FC<{ data: any }> = ({ data }) => {
       });
 
       const machinesList = Object.values(machineMap).sort((a: any, b: any) => a.machine_name.localeCompare(b.machine_name));
+      
+      machinesList.forEach((m: any) => {
+        // Sort raw shifts by shift number
+        m.raw_shifts.sort((a: any, b: any) => a.shift - b.shift);
+
+        // Group by shift number to determine suffix (a, b, c...)
+        const shiftCounts: Record<number, number> = {};
+        m.raw_shifts.forEach((rs: any) => {
+          shiftCounts[rs.shift] = (shiftCounts[rs.shift] || 0) + 1;
+        });
+
+        const shiftIndices: Record<number, number> = {};
+        m.shifts = m.raw_shifts.map((rs: any) => {
+          let label = `S${rs.shift}`;
+          if (shiftCounts[rs.shift] > 1) {
+            const idx = shiftIndices[rs.shift] || 0;
+            const suffix = String.fromCharCode(97 + idx); // 97 is 'a'
+            label = `S${rs.shift}${suffix}`;
+            shiftIndices[rs.shift] = idx + 1;
+          }
+
+          return {
+            ...rs,
+            shift_label: label
+          };
+        });
+      });
+
       if (machinesList.length > 0) {
         result.push({
           date: day.date,
           day_name: day.day_name,
           machines: machinesList as any,
-          day_total_pcs: machinesList.reduce((s: number, m: any) => s + m.total_pcs, 0),
-          day_total_a: machinesList.reduce((s: number, m: any) => s + m.total_grade_a, 0),
-          day_total_b: machinesList.reduce((s: number, m: any) => s + m.total_grade_b, 0),
-          day_total_c: machinesList.reduce((s: number, m: any) => s + m.total_grade_c, 0),
-          day_total_karton: machinesList.reduce((s: number, m: any) => s + m.total_karton, 0),
-          day_runtime: machinesList.reduce((s: number, m: any) => s + m.total_runtime, 0),
-          day_downtime: machinesList.reduce((s: number, m: any) => s + m.total_downtime, 0),
-          day_idle: machinesList.reduce((s: number, m: any) => s + m.total_idle, 0),
+          day_total_pcs: machinesList.reduce((sum: number, m: any) => sum + m.total_pcs, 0),
+          day_total_a: machinesList.reduce((sum: number, m: any) => sum + m.total_grade_a, 0),
+          day_total_b: machinesList.reduce((sum: number, m: any) => sum + m.total_grade_b, 0),
+          day_total_c: machinesList.reduce((sum: number, m: any) => sum + m.total_grade_c, 0),
+          day_total_karton: machinesList.reduce((sum: number, m: any) => sum + m.total_karton, 0),
+          day_runtime: machinesList.reduce((sum: number, m: any) => sum + m.total_runtime, 0),
+          day_downtime: machinesList.reduce((sum: number, m: any) => sum + m.total_downtime, 0),
+          day_idle: machinesList.reduce((sum: number, m: any) => sum + m.total_idle, 0),
         });
       }
     });
@@ -742,16 +943,26 @@ const MachineDailyTab: React.FC<{ data: any }> = ({ data }) => {
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white">📋 Data Mesin Harian — Hasil per Shift</h3>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Klik tanggal untuk melihat rincian output setiap mesin per shift</p>
           </div>
-          <select
-            value={filterMachine}
-            onChange={(e) => setFilterMachine(e.target.value)}
-            className="px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white dark:bg-gray-800 dark:text-white w-full sm:w-44"
-          >
-            <option value="">Semua Mesin</option>
-            {uniqueMachines.map(m => (
-              <option key={m} value={m}>{m}</option>
-            ))}
-          </select>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <select
+              value={filterMachine}
+              onChange={(e) => setFilterMachine(e.target.value)}
+              className="px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white dark:bg-gray-800 dark:text-white w-full sm:w-44"
+            >
+              <option value="">Semua Mesin</option>
+              {uniqueMachines.map(m => (
+                <option key={m} value={m}>{m}</option>
+              ))}
+            </select>
+            <button
+              onClick={exportToExcel}
+              className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition shadow-sm whitespace-nowrap"
+              title="Export ke Excel (.xlsx)"
+            >
+              <ArrowDownTrayIcon className="h-3.5 w-3.5" />
+              Export Excel
+            </button>
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs border-collapse">
@@ -827,37 +1038,33 @@ const MachineDailyTab: React.FC<{ data: any }> = ({ data }) => {
                             <td className="px-3 py-1.5 text-right text-yellow-500">{fmtMin(m.total_idle)}</td>
                           </tr>
                           {/* Shift detail rows */}
-                          {[1, 2, 3].map(shiftNum => {
-                            const sd = m.shift_data[shiftNum];
-                            if (!sd || sd.total_pcs === 0) return null;
-                            return (
-                              <tr key={`${day.date}-${m.machine_name}-s${shiftNum}`} className="hover:bg-gray-50 dark:hover:bg-gray-700 border-t border-gray-100 dark:border-gray-700">
-                                <td className="px-3 py-1.5 pl-12"></td>
-                                <td className="px-3 py-1.5"></td>
-                                <td className="px-3 py-1.5 text-center">
-                                  <span className="px-1.5 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded font-bold text-[10px]">
-                                    S{shiftNum}
-                                  </span>
-                                </td>
-                                <td className="px-3 py-1.5 text-right text-green-600">{fmtNum(sd.grade_a)}</td>
-                                <td className="px-3 py-1.5 text-right text-yellow-500">{fmtNum(sd.grade_b)}</td>
-                                <td className="px-3 py-1.5 text-right text-red-500">{fmtNum(sd.grade_c)}</td>
-                                <td className="px-3 py-1.5 text-right">{fmtNum(sd.total_pcs)}</td>
-                                <td className="px-3 py-1.5 text-right text-teal-600 dark:text-teal-400">{fmtNum(Math.round(sd.karton))}</td>
-                                <td className="px-3 py-1.5">
-                                  <span className="text-gray-700 dark:text-gray-200 font-medium truncate block max-w-[200px]" title={sd.products.join(', ')}>
-                                    {sd.products.join(', ') || '-'}
-                                  </span>
-                                  {sd.wo_numbers.length > 0 && (
-                                    <span className="text-[10px] text-gray-400 block">WO: {sd.wo_numbers.join(', ')}</span>
-                                  )}
-                                </td>
-                                <td className="px-3 py-1.5 text-right text-green-600">{fmtMin(sd.runtime)}</td>
-                                <td className="px-3 py-1.5 text-right text-red-500">{sd.downtime > 0 ? fmtMin(sd.downtime) : '-'}</td>
-                                <td className="px-3 py-1.5 text-right text-yellow-500">{sd.idle_time > 0 ? fmtMin(sd.idle_time) : '-'}</td>
-                              </tr>
-                            );
-                          })}
+                          {m.shifts.map((sRow: any) => (
+                            <tr key={`${day.date}-${m.machine_name}-${sRow.shift_label}`} className="hover:bg-gray-50 dark:hover:bg-gray-700 border-t border-gray-100 dark:border-gray-700">
+                              <td className="px-3 py-1.5 pl-12"></td>
+                              <td className="px-3 py-1.5"></td>
+                              <td className="px-3 py-1.5 text-center">
+                                <span className="px-1.5 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded font-bold text-[10px]">
+                                  {sRow.shift_label}
+                                </span>
+                              </td>
+                              <td className="px-3 py-1.5 text-right text-green-600">{fmtNum(sRow.grade_a)}</td>
+                              <td className="px-3 py-1.5 text-right text-yellow-500">{fmtNum(sRow.grade_b)}</td>
+                              <td className="px-3 py-1.5 text-right text-red-500">{fmtNum(sRow.grade_c)}</td>
+                              <td className="px-3 py-1.5 text-right">{fmtNum(sRow.total_pcs)}</td>
+                              <td className="px-3 py-1.5 text-right text-teal-600 dark:text-teal-400">{fmtNum(Math.round(sRow.karton))}</td>
+                              <td className="px-3 py-1.5">
+                                <span className="text-gray-700 dark:text-gray-200 font-medium block" title={sRow.product_name}>
+                                  {sRow.product_name || '-'}
+                                </span>
+                                {sRow.wo_number && (
+                                  <span className="text-[10px] text-gray-400 block">WO: {sRow.wo_number}</span>
+                                )}
+                              </td>
+                              <td className="px-3 py-1.5 text-right text-green-600">{fmtMin(sRow.runtime)}</td>
+                              <td className="px-3 py-1.5 text-right text-red-500">{sRow.downtime > 0 ? fmtMin(sRow.downtime) : '-'}</td>
+                              <td className="px-3 py-1.5 text-right text-yellow-500">{sRow.idle_time > 0 ? fmtMin(sRow.idle_time) : '-'}</td>
+                            </tr>
+                          ))}
                         </React.Fragment>
                       ))}
                     </React.Fragment>
