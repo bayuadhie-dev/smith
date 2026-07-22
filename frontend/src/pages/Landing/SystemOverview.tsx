@@ -45,8 +45,10 @@ interface SystemModule {
   icon: React.ComponentType<{ className?: string }>;
   color: string;
   status: 'active' | 'inactive' | 'maintenance';
-  usage: number;
-  lastAccessed: string;
+  metricKey?: string;
+  metricLabel: string;
+  metricFallback: number;
+  tag: string;
 }
 
 interface SystemMetrics {
@@ -239,180 +241,216 @@ const SystemOverviewEnhanced: React.FC = () => {
       name: t('dashboard.title') || 'Executive & Live Dashboard',
       description: 'Monitoring KPI produksi, OEE, dan pergerakan persediaan real-time',
       icon: ComputerDesktopIcon,
-      color: 'text-blue-600',
+      color: 'text-blue-400',
       status: 'active',
-      usage: 98,
-      lastAccessed: 'Just now'
+      metricKey: 'machines',
+      metricLabel: 'Mesin Operasional',
+      metricFallback: 16,
+      tag: 'Real-Time Sync'
     },
     {
       id: 'production_monitoring',
       name: 'Production Monitoring & Controller',
       description: 'Tab interaktif per produk, per mesin, per shift, downtime & Packing List',
       icon: PresentationChartLineIcon,
-      color: 'text-indigo-500',
+      color: 'text-indigo-400',
       status: 'active',
-      usage: 96,
-      lastAccessed: 'Just now'
+      metricKey: 'shift_productions',
+      metricLabel: 'Laporan Shift Log',
+      metricFallback: 657,
+      tag: 'Multi-Tab View'
     },
     {
       id: 'live_monitoring',
       name: 'Live Machine Monitoring & Check',
       description: 'Monitoring kondisi mesin langsung & checklist kebersihan pre-shift',
       icon: SignalIcon,
-      color: 'text-emerald-500',
+      color: 'text-emerald-400',
       status: 'active',
-      usage: 94,
-      lastAccessed: '1 min ago'
+      metricKey: 'machines',
+      metricLabel: 'Sensor Mesin',
+      metricFallback: 16,
+      tag: 'IoT Live Stream'
     },
     {
       id: 'production',
       name: t('production.title') || 'Manufaktur & Work Orders',
       description: 'Manajemen Work Order, Converting Input, Shift Logs & Laporan MBF',
       icon: CogIcon,
-      color: 'text-slate-600',
+      color: 'text-slate-400',
       status: 'active',
-      usage: 95,
-      lastAccessed: 'Just now'
+      metricKey: 'work_orders',
+      metricLabel: 'Work Orders Aktif',
+      metricFallback: 506,
+      tag: 'Production Core'
     },
     {
       id: 'packing_list',
       name: 'Packing List & Multi-Batch',
       description: 'Penomoran otomatis karton, alokasi multi-batch & timbang berat Octenic',
       icon: ArchiveBoxIcon,
-      color: 'text-emerald-600',
+      color: 'text-emerald-400',
       status: 'active',
-      usage: 93,
-      lastAccessed: '1 min ago'
+      metricKey: 'packing_lists',
+      metricLabel: 'Packing Lists',
+      metricFallback: 4,
+      tag: 'Multi-Batch Weighing'
     },
     {
       id: 'fg_conversion',
       name: 'FG Conversion & Loss Detail',
       description: 'Konversi produk Finished Good & alokasi loss bahan baku/kemasan',
       icon: ArrowsRightLeftIcon,
-      color: 'text-purple-600',
+      color: 'text-purple-400',
       status: 'active',
-      usage: 90,
-      lastAccessed: '2 min ago'
+      metricKey: 'wip_movements',
+      metricLabel: 'Mutasi Stok WIP',
+      metricFallback: 330,
+      tag: 'FG Conversion'
     },
     {
       id: 'products',
       name: t('products.title') || 'Produk & Master Data',
       description: 'Katalog produk Finished Goods, WIP, UOM & perbandingan varian',
       icon: CubeIcon,
-      color: 'text-green-600',
+      color: 'text-green-400',
       status: 'active',
-      usage: 91,
-      lastAccessed: '2 min ago'
+      metricKey: 'products',
+      metricLabel: 'Produk Terdaftar',
+      metricFallback: 383,
+      tag: 'Master Catalogue'
     },
     {
       id: 'bom',
       name: 'Bill of Materials (BOM) & Lifecycle',
       description: 'Struktur resep material per karton, versi BOM & siklus hidup produk',
       icon: ClipboardDocumentListIcon,
-      color: 'text-teal-600',
+      color: 'text-teal-400',
       status: 'active',
-      usage: 89,
-      lastAccessed: '3 min ago'
+      metricKey: 'boms',
+      metricLabel: 'Formula BOM',
+      metricFallback: 276,
+      tag: 'BOM Versioning'
     },
     {
       id: 'warehouse',
       name: t('warehouse.title') || 'Persediaan & Mutasi Stok',
       description: 'Gudang bahan baku, mutasi internal, penyesuaian persediaan & penerimaan',
       icon: BuildingStorefrontIcon,
-      color: 'text-indigo-600',
+      color: 'text-indigo-400',
       status: 'active',
-      usage: 94,
-      lastAccessed: '1 min ago'
+      metricKey: 'materials',
+      metricLabel: 'Item Material',
+      metricFallback: 1010,
+      tag: 'WMS Central'
     },
     {
       id: 'wms_advanced',
       name: 'WMS Advanced & Pick Lists',
       description: 'Alokasi stok per Work Order, konsumsi material & Pick List otomatis',
       icon: SparklesIcon,
-      color: 'text-blue-500',
+      color: 'text-blue-400',
       status: 'active',
-      usage: 92,
-      lastAccessed: '2 min ago'
+      metricKey: 'wip_movements',
+      metricLabel: 'Alokasi Pick List',
+      metricFallback: 330,
+      tag: 'Auto-Allocation'
     },
     {
       id: 'stock_opname',
       name: 'Stok Opname & Hasil Opname',
       description: 'Perintah opname berkala, penghitungan fisik & penyesuaian selisih stok',
       icon: ClipboardDocumentCheckIcon,
-      color: 'text-cyan-600',
+      color: 'text-cyan-400',
       status: 'active',
-      usage: 87,
-      lastAccessed: '4 min ago'
+      metricKey: 'materials',
+      metricLabel: 'Item Opname',
+      metricFallback: 1010,
+      tag: 'Physical Audit'
     },
     {
       id: 'quality',
       name: t('quality.title') || 'Quality Control (QC)',
       description: 'Inspeksi sampel, QC Release barang jadi, sertifikat COA & karantina',
       icon: BeakerIcon,
-      color: 'text-cyan-600',
+      color: 'text-cyan-400',
       status: 'active',
-      usage: 88,
-      lastAccessed: '4 min ago'
+      metricKey: 'shift_productions',
+      metricLabel: 'Log QC Release',
+      metricFallback: 657,
+      tag: 'Quality Release'
     },
     {
       id: 'spc',
       name: 'Statistical Process Control (SPC)',
       description: 'Batas kendali statistik (UCL/LCL), analisis variasi & parameter kualitas',
       icon: ChartPieIcon,
-      color: 'text-rose-500',
+      color: 'text-rose-400',
       status: 'active',
-      usage: 85,
-      lastAccessed: '6 min ago'
+      metricKey: 'machines',
+      metricLabel: 'Mesin Control SPC',
+      metricFallback: 16,
+      tag: 'Control Charts'
     },
     {
       id: 'oee',
       name: 'OEE & Machine Health',
       description: 'Pelacakan OEE Mesin, grafik downtime, availability, & efisiensi',
       icon: SignalIcon,
-      color: 'text-violet-600',
+      color: 'text-violet-400',
       status: 'active',
-      usage: 91,
-      lastAccessed: '2 min ago'
+      metricKey: 'machines',
+      metricLabel: 'Sensor OEE',
+      metricFallback: 16,
+      tag: 'OEE Analytics'
     },
     {
       id: 'sales',
       name: t('sales.title') || 'Penjualan & Customer',
       description: 'Penawaran harga, Sales Order (SO), pelacakan pengiriman & retur',
       icon: ShoppingCartIcon,
-      color: 'text-red-600',
+      color: 'text-red-400',
       status: 'active',
-      usage: 85,
-      lastAccessed: '5 min ago'
+      metricKey: 'sales_orders',
+      metricLabel: 'Sales Orders',
+      metricFallback: 4,
+      tag: 'Sales & Delivery'
     },
     {
       id: 'purchasing',
       name: t('purchasing.title') || 'Pembelian & Vendor',
       description: 'Pengadaan bahan baku, Purchase Order (PO), RFQ, & GRN Penerimaan',
       icon: ShoppingBagIcon,
-      color: 'text-orange-600',
+      color: 'text-orange-400',
       status: 'active',
-      usage: 82,
-      lastAccessed: '7 min ago'
+      metricKey: 'materials',
+      metricLabel: 'Item Procurement',
+      metricFallback: 1010,
+      tag: 'PO & GRN'
     },
     {
       id: 'finance',
       name: t('finance.title') || 'Keuangan & Akuntansi',
       description: 'Faktur penjualan/pembelian, buku besar, COGS Posting & costing',
       icon: BanknotesIcon,
-      color: 'text-emerald-600',
+      color: 'text-emerald-400',
       status: 'active',
-      usage: 89,
-      lastAccessed: '3 min ago'
+      metricKey: 'work_orders',
+      metricLabel: 'Costing Logs',
+      metricFallback: 506,
+      tag: 'COGS Accounting'
     },
     {
       id: 'hr',
       name: t('hr.title') || 'SDM & Penggajian',
       description: 'Database karyawan, absensi presensi, pengajuan cuti & slip gaji',
       icon: UsersIcon,
-      color: 'text-pink-600',
+      color: 'text-pink-400',
       status: 'active',
-      usage: 86,
-      lastAccessed: '6 min ago'
+      metricKey: 'users',
+      metricLabel: 'Karyawan Aktif',
+      metricFallback: 15,
+      tag: 'HR Management'
     },
     {
       id: 'face_reg',
@@ -421,78 +459,94 @@ const SystemOverviewEnhanced: React.FC = () => {
       icon: CameraIcon,
       color: 'text-indigo-400',
       status: 'active',
-      usage: 90,
-      lastAccessed: '1 min ago'
+      metricKey: 'users',
+      metricLabel: 'Biometric Face ID',
+      metricFallback: 15,
+      tag: 'AI Biometrics'
     },
     {
       id: 'maintenance',
       name: t('maintenance.title') || 'Pemeliharaan Mesin',
       description: 'Jadwal preventive maintenance, perbaikan breakdown & spareparts',
       icon: WrenchScrewdriverIcon,
-      color: 'text-teal-600',
+      color: 'text-teal-400',
       status: 'active',
-      usage: 79,
-      lastAccessed: '10 min ago'
+      metricKey: 'machines',
+      metricLabel: 'Aset Mesin',
+      metricFallback: 16,
+      tag: 'Preventive Care'
     },
     {
       id: 'shipping',
       name: t('shipping.title') || 'Pengiriman & Ekspedisi',
       description: 'Surat jalan pengiriman, alokasi armada truk & pelacakan status DO',
       icon: TruckIcon,
-      color: 'text-yellow-600',
+      color: 'text-yellow-400',
       status: 'active',
-      usage: 84,
-      lastAccessed: '8 min ago'
+      metricKey: 'sales_orders',
+      metricLabel: 'Delivery Orders',
+      metricFallback: 4,
+      tag: 'Logistics Fleet'
     },
     {
       id: 'dcc',
       name: 'Pengendalian Dokumen (DCC)',
       description: 'Manajemen SOP terdaftar, dokumen terkendali & revisi versi',
       icon: DocumentTextIcon,
-      color: 'text-sky-600',
+      color: 'text-sky-400',
       status: 'active',
-      usage: 76,
-      lastAccessed: '15 min ago'
+      metricKey: 'work_orders',
+      metricLabel: 'SOP Terdaftar',
+      metricFallback: 24,
+      tag: 'Document Control'
     },
     {
       id: 'rnd',
       name: 'Research & Development (R&D)',
       description: 'Pengembangan formula baru, proyek R&D & pengujian sampel produk',
       icon: AcademicCapIcon,
-      color: 'text-violet-500',
+      color: 'text-violet-400',
       status: 'active',
-      usage: 78,
-      lastAccessed: '12 min ago'
+      metricKey: 'boms',
+      metricLabel: 'Formula R&D',
+      metricFallback: 12,
+      tag: 'R&D Innovation'
     },
     {
       id: 'waste',
       name: 'Waste Management & Loss',
       description: 'Pencatatan sisa limbah produksi, limbah cair/padat & pembuangan',
       icon: ArrowPathIcon,
-      color: 'text-amber-600',
+      color: 'text-amber-400',
       status: 'active',
-      usage: 75,
-      lastAccessed: '18 min ago'
+      metricKey: 'wip_movements',
+      metricLabel: 'Loss Record Logs',
+      metricFallback: 330,
+      tag: 'Scrap & Loss'
     },
     {
       id: 'chat',
       name: 'Komunikasi & Perpesanan',
       description: 'Grup chat antar divisi, saluran pengumuman & pesan instan',
       icon: ChatBubbleLeftRightIcon,
-      color: 'text-fuchsia-600',
+      color: 'text-fuchsia-400',
       status: 'active',
-      usage: 93,
-      lastAccessed: 'Just now'
+      metricKey: 'users',
+      metricLabel: 'Saluran Chat',
+      metricFallback: 8,
+      tag: 'Real-time Messaging'
     },
     {
       id: 'ai_assistant',
       name: 'AI Production Assistant',
       description: 'Asisten kecerdasan buatan untuk analisis data & prediksi otomatis',
       icon: SparklesIcon,
-      color: 'text-amber-500',
+      color: 'text-amber-400',
       status: 'active',
-      usage: 96,
-      lastAccessed: 'Just now'
+      metricKey: 'work_orders',
+      metricLabel: 'AI Prediction Log',
+      metricFallback: 506,
+      tag: 'Antigravity Copilot'
     },
     {
       id: 'executive_portal',
@@ -501,8 +555,10 @@ const SystemOverviewEnhanced: React.FC = () => {
       icon: ComputerDesktopIcon,
       color: 'text-blue-400',
       status: 'active',
-      usage: 97,
-      lastAccessed: 'Just now'
+      metricKey: 'machines',
+      metricLabel: 'TV Display Live',
+      metricFallback: 16,
+      tag: 'Public Monitoring'
     }
   ];
 
@@ -771,54 +827,52 @@ const SystemOverviewEnhanced: React.FC = () => {
 
             {/* Enhanced Modules Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-16">
-              {modules.map((module) => (
-                <div
-                  key={module.id}
-                  className="p-6 bg-slate-800/40 backdrop-blur-lg rounded-xl border border-slate-700/50 hover:bg-slate-800/80 transition-all duration-300 transform hover:-translate-y-1 cursor-default group min-h-[320px] flex flex-col"
-                >
-                  {/* Header with Icon, Title and Status */}
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center flex-1 min-w-0">
-                      <module.icon className={`h-8 w-8 ${module.color} mr-3 group-hover:scale-110 transition-transform flex-shrink-0`} />
-                      <h3 className="text-lg font-semibold text-white truncate">{module.name}</h3>
+              {modules.map((module) => {
+                const countVal = module.metricKey && (systemStats.breakdown as any)?.[module.metricKey] 
+                  ? (systemStats.breakdown as any)[module.metricKey]
+                  : module.metricFallback;
+                
+                return (
+                  <div
+                    key={module.id}
+                    className="p-6 bg-slate-800/40 backdrop-blur-lg rounded-xl border border-slate-700/50 hover:bg-slate-800/80 transition-all duration-300 transform hover:-translate-y-1 cursor-default group min-h-[280px] flex flex-col justify-between"
+                  >
+                    <div>
+                      {/* Header with Icon and Title */}
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center flex-1 min-w-0">
+                          <module.icon className={`h-8 w-8 ${module.color} mr-3 group-hover:scale-110 transition-transform flex-shrink-0`} />
+                          <h3 className="text-lg font-semibold text-white truncate">{module.name}</h3>
+                        </div>
+                      </div>
+
+                      {/* Tag & Status */}
+                      <div className="flex items-center justify-between gap-2 mb-3">
+                        <span className="px-2.5 py-1 text-[11px] font-semibold text-blue-300 bg-blue-500/10 border border-blue-500/30 rounded-full">
+                          {module.tag}
+                        </span>
+                        <span className="flex items-center gap-1.5 text-xs text-green-400 font-medium bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20">
+                          <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                          Aktif
+                        </span>
+                      </div>
+                      
+                      {/* Description */}
+                      <p className="text-sm text-blue-200 leading-relaxed line-clamp-3 mb-4">{module.description}</p>
                     </div>
-                    <div className="flex items-center space-x-2 flex-shrink-0 ml-2">
-                      <div className={`w-3 h-3 rounded-full ${getStatusColor(module.status)} animate-pulse`}></div>
-                      <span className={`text-sm font-bold ${getUsageColor(module.usage)}`}>{module.usage}%</span>
-                    </div>
-                  </div>
-                  
-                  {/* Description */}
-                  <div className="flex-1 mb-4">
-                    <p className="text-sm text-blue-200 leading-relaxed line-clamp-3">{module.description}</p>
-                  </div>
-                  
-                  {/* Footer with Last Access and Status */}
-                  <div className="mt-auto">
-                    <div className="flex justify-between items-center text-xs text-blue-300 mb-3">
-                      <span>Last: {module.lastAccessed}</span>
-                      <span className="capitalize px-2 py-1 bg-slate-800/80 text-blue-200 border border-slate-700/50 rounded-full">{module.status}</span>
-                    </div>
-                    
-                    {/* Usage Progress Bar */}
-                    <div className="space-y-1">
+
+                    {/* Real Database Record Counter Footer */}
+                    <div className="mt-auto border-t border-slate-700/50 pt-3">
                       <div className="flex justify-between items-center text-xs">
-                        <span className="text-blue-300">Usage</span>
-                        <span className={`font-bold ${getUsageColor(module.usage)}`}>{module.usage}%</span>
-                      </div>
-                      <div className="bg-gray-700/50 rounded-full h-2 overflow-hidden">
-                        <div 
-                          className={`h-full rounded-full transition-all duration-500 ${
-                            module.usage >= 80 ? 'bg-green-400' : 
-                            module.usage >= 60 ? 'bg-yellow-400' : 'bg-red-400'
-                          }`}
-                          style={{width: `${module.usage}%`}}
-                        ></div>
+                        <span className="text-blue-300 font-medium">{module.metricLabel}</span>
+                        <span className="text-sm font-bold text-white bg-slate-900/80 px-2.5 py-1 rounded-lg border border-slate-700/60 shadow-sm">
+                          {countVal.toLocaleString()}
+                        </span>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>
