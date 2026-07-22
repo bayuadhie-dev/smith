@@ -34,7 +34,13 @@ import {
   CameraIcon,
   ArrowPathIcon,
   PresentationChartLineIcon,
-  ClipboardDocumentListIcon
+  ClipboardDocumentListIcon,
+  MagnifyingGlassIcon,
+  BoltIcon,
+  ShieldCheckIcon,
+  TvIcon,
+  UserCheckIcon,
+  DocumentCheckIcon
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
@@ -49,6 +55,7 @@ interface SystemModule {
   metricLabel: string;
   metricFallback: number;
   tag: string;
+  category: 'production' | 'wms' | 'quality' | 'hr' | 'finance' | 'rnd';
 }
 
 interface SystemMetrics {
@@ -94,6 +101,17 @@ const SystemOverviewEnhanced: React.FC = () => {
 
   const [selectedView, setSelectedView] = useState<'overview' | 'performance' | 'modules'>('overview');
   const [userIP, setUserIP] = useState<string>('Loading...');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+
+  const filteredModules = modules.filter(m => {
+    const matchesSearch = searchQuery === '' || 
+      m.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      m.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      m.tag.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || m.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   useEffect(() => {
     const initializeData = async () => {
@@ -265,7 +283,8 @@ const SystemOverviewEnhanced: React.FC = () => {
       metricKey: 'machines',
       metricLabel: 'Mesin Operasional',
       metricFallback: 16,
-      tag: 'Real-Time Sync'
+      tag: 'Real-Time Sync',
+      category: 'production'
     },
     {
       id: 'production_monitoring',
@@ -277,7 +296,8 @@ const SystemOverviewEnhanced: React.FC = () => {
       metricKey: 'shift_productions',
       metricLabel: 'Laporan Shift Log',
       metricFallback: 657,
-      tag: 'Multi-Tab View'
+      tag: 'Multi-Tab View',
+      category: 'production'
     },
     {
       id: 'live_monitoring',
@@ -289,7 +309,8 @@ const SystemOverviewEnhanced: React.FC = () => {
       metricKey: 'machines',
       metricLabel: 'Sensor Mesin',
       metricFallback: 16,
-      tag: 'IoT Live Stream'
+      tag: 'IoT Live Stream',
+      category: 'production'
     },
     {
       id: 'production',
@@ -301,7 +322,8 @@ const SystemOverviewEnhanced: React.FC = () => {
       metricKey: 'work_orders',
       metricLabel: 'Work Orders Aktif',
       metricFallback: 506,
-      tag: 'Production Core'
+      tag: 'Production Core',
+      category: 'production'
     },
     {
       id: 'packing_list',
@@ -313,7 +335,8 @@ const SystemOverviewEnhanced: React.FC = () => {
       metricKey: 'packing_lists',
       metricLabel: 'Packing Lists',
       metricFallback: 4,
-      tag: 'Multi-Batch Weighing'
+      tag: 'Multi-Batch Weighing',
+      category: 'production'
     },
     {
       id: 'fg_conversion',
@@ -325,7 +348,8 @@ const SystemOverviewEnhanced: React.FC = () => {
       metricKey: 'wip_movements',
       metricLabel: 'Mutasi Stok WIP',
       metricFallback: 330,
-      tag: 'FG Conversion'
+      tag: 'FG Conversion',
+      category: 'production'
     },
     {
       id: 'products',
@@ -337,7 +361,8 @@ const SystemOverviewEnhanced: React.FC = () => {
       metricKey: 'products',
       metricLabel: 'Produk Terdaftar',
       metricFallback: 383,
-      tag: 'Master Catalogue'
+      tag: 'Master Catalogue',
+      category: 'wms'
     },
     {
       id: 'bom',
@@ -349,7 +374,8 @@ const SystemOverviewEnhanced: React.FC = () => {
       metricKey: 'boms',
       metricLabel: 'Formula BOM',
       metricFallback: 276,
-      tag: 'BOM Versioning'
+      tag: 'BOM Versioning',
+      category: 'wms'
     },
     {
       id: 'warehouse',
@@ -361,7 +387,8 @@ const SystemOverviewEnhanced: React.FC = () => {
       metricKey: 'materials',
       metricLabel: 'Item Material',
       metricFallback: 1010,
-      tag: 'WMS Central'
+      tag: 'WMS Central',
+      category: 'wms'
     },
     {
       id: 'wms_advanced',
@@ -373,7 +400,8 @@ const SystemOverviewEnhanced: React.FC = () => {
       metricKey: 'wip_movements',
       metricLabel: 'Alokasi Pick List',
       metricFallback: 330,
-      tag: 'Auto-Allocation'
+      tag: 'Auto-Allocation',
+      category: 'wms'
     },
     {
       id: 'stock_opname',
@@ -385,7 +413,8 @@ const SystemOverviewEnhanced: React.FC = () => {
       metricKey: 'materials',
       metricLabel: 'Item Opname',
       metricFallback: 1010,
-      tag: 'Physical Audit'
+      tag: 'Physical Audit',
+      category: 'wms'
     },
     {
       id: 'quality',
@@ -397,7 +426,8 @@ const SystemOverviewEnhanced: React.FC = () => {
       metricKey: 'shift_productions',
       metricLabel: 'Log QC Release',
       metricFallback: 657,
-      tag: 'Quality Release'
+      tag: 'Quality Release',
+      category: 'quality'
     },
     {
       id: 'spc',
@@ -409,7 +439,8 @@ const SystemOverviewEnhanced: React.FC = () => {
       metricKey: 'machines',
       metricLabel: 'Mesin Control SPC',
       metricFallback: 16,
-      tag: 'Control Charts'
+      tag: 'Control Charts',
+      category: 'quality'
     },
     {
       id: 'oee',
@@ -421,7 +452,8 @@ const SystemOverviewEnhanced: React.FC = () => {
       metricKey: 'machines',
       metricLabel: 'Sensor OEE',
       metricFallback: 16,
-      tag: 'OEE Analytics'
+      tag: 'OEE Analytics',
+      category: 'production'
     },
     {
       id: 'sales',
@@ -433,7 +465,8 @@ const SystemOverviewEnhanced: React.FC = () => {
       metricKey: 'sales_orders',
       metricLabel: 'Sales Orders',
       metricFallback: 4,
-      tag: 'Sales & Delivery'
+      tag: 'Sales & Delivery',
+      category: 'finance'
     },
     {
       id: 'purchasing',
@@ -445,7 +478,8 @@ const SystemOverviewEnhanced: React.FC = () => {
       metricKey: 'materials',
       metricLabel: 'Item Procurement',
       metricFallback: 1010,
-      tag: 'PO & GRN'
+      tag: 'PO & GRN',
+      category: 'finance'
     },
     {
       id: 'finance',
@@ -457,7 +491,8 @@ const SystemOverviewEnhanced: React.FC = () => {
       metricKey: 'work_orders',
       metricLabel: 'Costing Logs',
       metricFallback: 506,
-      tag: 'COGS Accounting'
+      tag: 'COGS Accounting',
+      category: 'finance'
     },
     {
       id: 'hr',
@@ -469,7 +504,8 @@ const SystemOverviewEnhanced: React.FC = () => {
       metricKey: 'users',
       metricLabel: 'Karyawan Aktif',
       metricFallback: 15,
-      tag: 'HR Management'
+      tag: 'HR Management',
+      category: 'hr'
     },
     {
       id: 'face_reg',
@@ -481,7 +517,8 @@ const SystemOverviewEnhanced: React.FC = () => {
       metricKey: 'users',
       metricLabel: 'Biometric Face ID',
       metricFallback: 15,
-      tag: 'AI Biometrics'
+      tag: 'AI Biometrics',
+      category: 'hr'
     },
     {
       id: 'maintenance',
@@ -493,7 +530,8 @@ const SystemOverviewEnhanced: React.FC = () => {
       metricKey: 'machines',
       metricLabel: 'Aset Mesin',
       metricFallback: 16,
-      tag: 'Preventive Care'
+      tag: 'Preventive Care',
+      category: 'production'
     },
     {
       id: 'shipping',
@@ -505,7 +543,8 @@ const SystemOverviewEnhanced: React.FC = () => {
       metricKey: 'sales_orders',
       metricLabel: 'Delivery Orders',
       metricFallback: 4,
-      tag: 'Logistics Fleet'
+      tag: 'Logistics Fleet',
+      category: 'wms'
     },
     {
       id: 'dcc',
@@ -517,7 +556,8 @@ const SystemOverviewEnhanced: React.FC = () => {
       metricKey: 'work_orders',
       metricLabel: 'SOP Terdaftar',
       metricFallback: 24,
-      tag: 'Document Control'
+      tag: 'Document Control',
+      category: 'rnd'
     },
     {
       id: 'rnd',
@@ -529,7 +569,8 @@ const SystemOverviewEnhanced: React.FC = () => {
       metricKey: 'boms',
       metricLabel: 'Formula R&D',
       metricFallback: 12,
-      tag: 'R&D Innovation'
+      tag: 'R&D Innovation',
+      category: 'rnd'
     },
     {
       id: 'waste',
@@ -541,7 +582,8 @@ const SystemOverviewEnhanced: React.FC = () => {
       metricKey: 'wip_movements',
       metricLabel: 'Loss Record Logs',
       metricFallback: 330,
-      tag: 'Scrap & Loss'
+      tag: 'Scrap & Loss',
+      category: 'wms'
     },
     {
       id: 'chat',
@@ -553,7 +595,8 @@ const SystemOverviewEnhanced: React.FC = () => {
       metricKey: 'users',
       metricLabel: 'Saluran Chat',
       metricFallback: 8,
-      tag: 'Real-time Messaging'
+      tag: 'Real-time Messaging',
+      category: 'hr'
     },
     {
       id: 'ai_assistant',
@@ -565,7 +608,8 @@ const SystemOverviewEnhanced: React.FC = () => {
       metricKey: 'work_orders',
       metricLabel: 'AI Prediction Log',
       metricFallback: 506,
-      tag: 'Antigravity Copilot'
+      tag: 'Antigravity Copilot',
+      category: 'rnd'
     },
     {
       id: 'executive_portal',
@@ -577,7 +621,8 @@ const SystemOverviewEnhanced: React.FC = () => {
       metricKey: 'machines',
       metricLabel: 'TV Display Live',
       metricFallback: 16,
-      tag: 'Public Monitoring'
+      tag: 'Public Monitoring',
+      category: 'production'
     }
   ];
 
@@ -597,85 +642,110 @@ const SystemOverviewEnhanced: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 overflow-hidden">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-2000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-pulse animation-delay-4000"></div>
+    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-blue-950 to-slate-950 text-white overflow-hidden selection:bg-blue-500 selection:text-white">
+      {/* Live System Activity Ticker Bar */}
+      <div className="bg-gradient-to-r from-blue-900/80 via-indigo-900/80 to-slate-900/80 border-b border-blue-500/20 py-2 px-4 text-xs backdrop-blur-md relative z-50">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center space-x-3 overflow-hidden">
+            <span className="flex items-center gap-1.5 bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider text-[10px] border border-emerald-500/30 flex-shrink-0">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              Live Sync
+            </span>
+            <div className="flex items-center space-x-6 animate-marquee whitespace-nowrap text-blue-200">
+              <span>⚡ Mesin 8 Shift 2: 77 Karton (8.316 pcs) Indomaret Wipes Output</span>
+              <span className="text-slate-600">•</span>
+              <span>📦 Packing List #PL-2026-004 Released with Octenic Weighing Batch Summary</span>
+              <span className="text-slate-600">•</span>
+              <span>🟢 OEE Real-time Monitoring: 94.8% Nominal Performance</span>
+              <span className="text-slate-600">•</span>
+              <span>📷 Biometric Face Recognition Attendance Engine Active</span>
+            </div>
+          </div>
+          <div className="hidden md:flex items-center space-x-4 text-slate-400 text-[11px] flex-shrink-0">
+            <span className="flex items-center gap-1"><ShieldCheckIcon className="w-3.5 h-3.5 text-emerald-400" /> Enterprise Secure</span>
+            <span>Latency: {systemStats.responseTime || 12}ms</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Animated Background Mesh Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-[600px] h-[600px] bg-blue-600/15 rounded-full mix-blend-screen filter blur-[120px] animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-[600px] h-[600px] bg-purple-600/15 rounded-full mix-blend-screen filter blur-[120px] animate-pulse animation-delay-2000"></div>
+        <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 w-[700px] h-[700px] bg-indigo-600/10 rounded-full mix-blend-screen filter blur-[140px]"></div>
       </div>
 
       <div className="relative z-10">
         {/* Enhanced Header with Navigation */}
-        <nav className="absolute top-0 w-full z-40 bg-slate-900/80 backdrop-blur-md border-b border-slate-700/50">
+        <nav className="sticky top-0 w-full z-40 bg-slate-900/80 backdrop-blur-xl border-b border-slate-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center py-3 md:py-6">
-              <div className="flex items-center space-x-2 md:space-x-4">
-                {/* IP Address Display - Hidden on mobile */}
-                <div className="hidden lg:flex items-center space-x-2 bg-slate-800/60 rounded-lg px-3 py-2 border border-slate-700/50">
-                  <SignalIcon className="h-4 w-4 text-green-400 animate-pulse" />
+            <div className="flex justify-between items-center py-4">
+              <div className="flex items-center space-x-4">
+                {/* IP Address Display */}
+                <div className="hidden lg:flex items-center space-x-2 bg-slate-800/80 rounded-lg px-3 py-1.5 border border-slate-700/60 shadow-inner">
+                  <SignalIcon className="h-4 w-4 text-emerald-400 animate-pulse" />
                   <div className="flex flex-col">
-                    <span className="text-[9px] text-blue-200 uppercase tracking-wider leading-tight">IP</span>
+                    <span className="text-[9px] text-slate-400 uppercase tracking-wider leading-tight">IP Client</span>
                     <span className="text-xs text-white font-mono font-semibold leading-tight">{userIP}</span>
                   </div>
                 </div>
 
                 {/* Company Logo & Name */}
-                <div className="flex items-center space-x-2 md:space-x-3">
-                  <div className="h-8 w-8 md:h-10 md:w-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                    <SparklesIcon className="h-5 w-5 md:h-6 md:w-6 text-white" />
+                <div className="flex items-center space-x-3">
+                  <div className="h-10 w-10 bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 border border-blue-400/30">
+                    <SparklesIcon className="h-6 w-6 text-white" />
                   </div>
                   <div>
-                    <h1 className="text-sm md:text-xl font-bold text-white">{companyName}</h1>
-                    <p className="text-xs md:text-sm text-blue-200 hidden sm:block">{t('system.erp_system')}</p>
+                    <h1 className="text-base md:text-xl font-extrabold text-white tracking-tight">{companyName}</h1>
+                    <p className="text-xs text-blue-300 font-medium hidden sm:block">{t('system.erp_system')}</p>
                   </div>
                 </div>
               </div>
               
-              <div className="flex items-center space-x-2 md:space-x-6">
-                {/* View Selector - Hidden on mobile */}
-                <div className="hidden lg:flex items-center space-x-2 bg-slate-800/60 rounded-lg p-1 border border-slate-700/50">
+              <div className="flex items-center space-x-3 md:space-x-4">
+                {/* View Selector Buttons */}
+                <div className="hidden lg:flex items-center space-x-1 bg-slate-800/80 rounded-lg p-1 border border-slate-700/60">
                   {[
                     {id: 'overview', icon: EyeIcon, label: 'Overview'}, 
-                    {id: 'performance', icon: ChartBarIcon, label: 'Performance'}, 
-                    {id: 'modules', icon: ComputerDesktopIcon, label: 'Modules'}
+                    {id: 'performance', icon: ChartBarIcon, label: 'Metrics'}, 
+                    {id: 'modules', icon: ComputerDesktopIcon, label: 'Modul'}
                   ].map((view) => (
                     <button
                       key={view.id}
                       onClick={() => setSelectedView(view.id as any)}
-                      className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                      className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 ${
                         selectedView === view.id
-                          ? 'bg-white/20 text-white'
-                          : 'text-blue-200 hover:text-white hover:bg-white/10'
+                          ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
+                          : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
                       }`}
-                      title={view.label}
                     >
-                      <view.icon className="h-4 w-4" />
+                      <view.icon className="h-3.5 w-3.5" />
+                      <span>{view.label}</span>
                     </button>
                   ))}
                 </div>
                 
-                {/* Language Switcher - Hidden on small mobile */}
+                {/* Language Switcher */}
                 <div className="hidden sm:block">
                   <LanguageSwitcher showLabel={false} className="text-white" />
                 </div>
                 
-                {/* Attendance Button - Compact on mobile */}
+                {/* Public Absensi Link */}
                 <Link
                   to="/absensi"
-                  className="px-3 py-2 md:px-6 md:py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-1 md:gap-2 text-sm md:text-base"
+                  className="px-3 py-2 md:px-4 md:py-2 bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-emerald-500/30 rounded-xl transition-all duration-300 flex items-center gap-2 text-xs md:text-sm font-semibold shadow-md"
                 >
-                  <ClockIcon className="w-4 h-4 md:w-5 md:h-5" />
+                  <ClockIcon className="w-4 h-4 text-emerald-400" />
                   <span className="hidden sm:inline">Absensi</span>
                 </Link>
                 
-                {/* Login Button - Always visible, compact on mobile */}
+                {/* Login Button */}
                 <Link
                   to="/login"
-                  className="px-3 py-2 md:px-6 md:py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl text-sm md:text-base whitespace-nowrap"
+                  className="px-4 py-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold rounded-xl transition-all duration-300 shadow-lg shadow-blue-600/30 hover:shadow-blue-500/50 text-xs md:text-sm whitespace-nowrap border border-blue-400/30 flex items-center gap-2"
                 >
-                  <span className="sm:hidden">Login</span>
-                  <span className="hidden sm:inline">{t('auth.login_to_access')}</span>
+                  <BoltIcon className="w-4 h-4" />
+                  <span>{t('auth.login_to_access')}</span>
                 </Link>
               </div>
             </div>
@@ -683,306 +753,318 @@ const SystemOverviewEnhanced: React.FC = () => {
         </nav>
 
         {/* Hero Section */}
-        <section className="pt-32 pb-16 px-4 sm:px-6 lg:px-8">
+        <section className="pt-16 pb-12 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-              <span className="text-white block mb-2">
+            {/* Top Pill Badge */}
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-300 text-xs font-semibold mb-6 shadow-inner">
+              <SparklesIcon className="w-4 h-4 text-blue-400 animate-spin" />
+              <span>Sistem ERP Manufaktur Terintegrasi Real-Time</span>
+            </div>
+
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-6 leading-tight tracking-tight">
+              <span className="text-white block mb-2 drop-shadow-md">
                 {companyName}
               </span>
-              <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-blue-300 bg-clip-text text-transparent">
-                Sistem ERP
+              <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent drop-shadow-sm">
+                Sistem ERP Enterprise
               </span>
             </h1>
             
-            <p className="text-lg md:text-xl text-blue-100 mb-12 max-w-3xl mx-auto">
-              Solusi ERP Lengkap untuk Manufaktur Nonwoven & Produksi Wet Wipes
+            <p className="text-base sm:text-lg md:text-xl text-slate-300 mb-10 max-w-3xl mx-auto leading-relaxed">
+              Solusi ERP Manufaktur Terlengkap untuk Produksi Wet Wipes, Pengolahan Nonwoven, Kontrol Persediaan WMS, Inspeksi Quality SPC, & Presensi Biometrik.
             </p>
 
-            {/* View Content Based on Selection */}
-            {selectedView === 'overview' && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-5xl mx-auto mb-12">
-              {/* Pengguna Sistem */}
-              <div className="bg-slate-800/40 backdrop-blur-lg rounded-2xl border border-slate-700/50 p-6 hover:bg-slate-800/80 transition-all duration-300">
+            {/* Quick Action Buttons */}
+            <div className="flex flex-wrap justify-center items-center gap-4 mb-12">
+              <Link
+                to="/login"
+                className="px-8 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-2xl shadow-xl shadow-blue-600/30 hover:shadow-blue-500/50 transition-all duration-300 flex items-center gap-2 text-base border border-blue-400/30"
+              >
+                <span>Masuk untuk Mengakses</span>
+                <ArrowRightIcon className="w-5 h-5" />
+              </Link>
+              <Link
+                to="/public/production-monitoring"
+                className="px-8 py-3.5 bg-slate-800/80 hover:bg-slate-700/80 text-blue-300 font-bold rounded-2xl border border-slate-700/80 hover:border-blue-500/50 transition-all duration-300 flex items-center gap-2 text-base backdrop-blur-md shadow-lg"
+              >
+                <TvIcon className="w-5 h-5 text-blue-400" />
+                <span>Portal TV Display Live</span>
+              </Link>
+            </div>
+
+            {/* Hero Key Metrics Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-5xl mx-auto mb-16">
+              <div className="bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-slate-800 p-6 hover:border-blue-500/50 transition-all duration-300 shadow-xl group">
                 <div className="flex items-center justify-center mb-3">
-                  <UsersIcon className="h-10 w-10 text-blue-400" />
+                  <div className="p-3 bg-blue-500/10 rounded-xl group-hover:scale-110 transition-transform">
+                    <UsersIcon className="h-7 w-7 text-blue-400" />
+                  </div>
                 </div>
-                <p className="text-4xl font-bold text-blue-400 mb-2">{systemStats.totalUsers}</p>
-                <p className="text-sm text-blue-200 font-medium">Pengguna Sistem</p>
-                <div className="mt-3 bg-blue-500/30 rounded-full h-1.5">
-                  <div className="bg-blue-400 h-1.5 rounded-full transition-all duration-500" style={{width: `${Math.min(systemStats.totalUsers * 10, 100)}%`}}></div>
-                </div>
+                <p className="text-3xl md:text-4xl font-extrabold text-white mb-1 tracking-tight">{systemStats.totalUsers}</p>
+                <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Pengguna Sistem</p>
               </div>
 
-              {/* Modul Aktif */}
-              <div className="bg-slate-800/40 backdrop-blur-lg rounded-2xl border border-slate-700/50 p-6 hover:bg-slate-800/80 transition-all duration-300">
+              <div className="bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-slate-800 p-6 hover:border-emerald-500/50 transition-all duration-300 shadow-xl group">
                 <div className="flex items-center justify-center mb-3">
-                  <CogIcon className="h-10 w-10 text-green-400" />
+                  <div className="p-3 bg-emerald-500/10 rounded-xl group-hover:scale-110 transition-transform">
+                    <CogIcon className="h-7 w-7 text-emerald-400" />
+                  </div>
                 </div>
-                <p className="text-4xl font-bold text-green-400 mb-2">{systemStats.activeModules}</p>
-                <p className="text-sm text-blue-200 font-medium">Modul Aktif</p>
-                <div className="mt-3 bg-green-500/30 rounded-full h-1.5">
-                  <div className="bg-green-400 h-1.5 rounded-full transition-all duration-500" style={{width: `${Math.min((systemStats.activeModules / modules.length) * 100, 100)}%`}}></div>
-                </div>
+                <p className="text-3xl md:text-4xl font-extrabold text-white mb-1 tracking-tight">{systemStats.activeModules}</p>
+                <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Modul Aktif</p>
               </div>
 
-              {/* Total Data */}
-              <div className="bg-slate-800/40 backdrop-blur-lg rounded-2xl border border-slate-700/50 p-6 hover:bg-slate-800/80 transition-all duration-300">
+              <div className="bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-slate-800 p-6 hover:border-purple-500/50 transition-all duration-300 shadow-xl group">
                 <div className="flex items-center justify-center mb-3">
-                  <ChartBarIcon className="h-10 w-10 text-purple-400" />
+                  <div className="p-3 bg-purple-500/10 rounded-xl group-hover:scale-110 transition-transform">
+                    <ChartBarIcon className="h-7 w-7 text-purple-400" />
+                  </div>
                 </div>
-                <p className="text-4xl font-bold text-purple-400 mb-2">{systemStats.totalRecords.toLocaleString()}</p>
-                <p className="text-sm text-blue-200 font-medium">Total Data</p>
-                <div className="mt-3 bg-purple-500/30 rounded-full h-1.5">
-                  <div className="bg-purple-400 h-1.5 rounded-full transition-all duration-500" style={{width: '85%'}}></div>
-                </div>
+                <p className="text-3xl md:text-4xl font-extrabold text-white mb-1 tracking-tight">{systemStats.totalRecords.toLocaleString()}</p>
+                <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Total Record Data</p>
               </div>
 
-              {/* Waktu Aktif Sistem */}
-              <div className="bg-slate-800/40 backdrop-blur-lg rounded-2xl border border-slate-700/50 p-6 hover:bg-slate-800/80 transition-all duration-300">
+              <div className="bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-slate-800 p-6 hover:border-cyan-500/50 transition-all duration-300 shadow-xl group">
                 <div className="flex items-center justify-center mb-3">
-                  <CheckCircleIcon className="h-10 w-10 text-emerald-400" />
+                  <div className="p-3 bg-cyan-500/10 rounded-xl group-hover:scale-110 transition-transform">
+                    <CheckCircleIcon className="h-7 w-7 text-cyan-400" />
+                  </div>
                 </div>
-                <p className="text-4xl font-bold text-emerald-400 mb-2">{systemStats.systemUptime}</p>
-                <p className="text-sm text-blue-200 font-medium">Waktu Aktif Sistem</p>
-                <div className="mt-3 bg-emerald-500/30 rounded-full h-1.5">
-                  <div className="bg-emerald-400 h-1.5 rounded-full transition-all duration-500" style={{width: '99%'}}></div>
-                </div>
+                <p className="text-3xl md:text-4xl font-extrabold text-white mb-1 tracking-tight">{systemStats.systemUptime}</p>
+                <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Waktu Aktif System</p>
               </div>
             </div>
-            )}
+          </div>
+        </section>
 
-            {/* Performance View */}
-            {selectedView === 'performance' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 max-w-5xl mx-auto mb-12">
-              {/* CPU Usage */}
-              <div className="bg-slate-800/40 backdrop-blur-lg rounded-2xl border border-slate-700/50 p-6 hover:bg-slate-800/80 transition-all duration-300">
-                <div className="flex items-center justify-center mb-3">
-                  <CpuChipIcon className="h-10 w-10 text-cyan-400" />
+        {/* Public Access Portal Hub Section */}
+        <section className="py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto mb-12">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl md:text-3xl font-extrabold text-white mb-2">Portal Akses Publik Cepat</h2>
+            <p className="text-slate-400 text-sm">Akses langsung tanpa perlu login untuk keperluan monitor eksekutif dan presensi staff</p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Link
+              to="/public/production-monitoring"
+              className="p-5 bg-gradient-to-br from-slate-900/90 to-blue-950/60 rounded-2xl border border-blue-500/30 hover:border-blue-400 transition-all duration-300 shadow-lg group hover:-translate-y-1"
+            >
+              <div className="flex items-center space-x-3 mb-3">
+                <div className="p-2.5 bg-blue-500/20 rounded-xl text-blue-400 group-hover:scale-110 transition-transform">
+                  <TvIcon className="w-6 h-6" />
                 </div>
-                <p className="text-4xl font-bold text-cyan-400 mb-2">{systemMetrics.cpu}%</p>
-                <p className="text-sm text-blue-200 font-medium">CPU Usage</p>
-                <div className="mt-3 bg-cyan-500/30 rounded-full h-1.5">
-                  <div className="bg-cyan-400 h-1.5 rounded-full transition-all duration-500" style={{width: `${systemMetrics.cpu}%`}}></div>
+                <div>
+                  <h3 className="font-bold text-white text-sm group-hover:text-blue-300 transition-colors">TV Display Monitor</h3>
+                  <span className="text-[10px] text-emerald-400 font-medium">Bebas Login</span>
                 </div>
               </div>
+              <p className="text-xs text-slate-400 leading-relaxed">Dashboard TV display publik untuk jajaran manajemen & supervisor</p>
+            </Link>
 
-              {/* Memory Usage */}
-              <div className="bg-slate-800/40 backdrop-blur-lg rounded-2xl border border-slate-700/50 p-6 hover:bg-slate-800/80 transition-all duration-300">
-                <div className="flex items-center justify-center mb-3">
-                  <ChartBarIcon className="h-10 w-10 text-orange-400" />
+            <Link
+              to="/public/face-registration"
+              className="p-5 bg-gradient-to-br from-slate-900/90 to-indigo-950/60 rounded-2xl border border-indigo-500/30 hover:border-indigo-400 transition-all duration-300 shadow-lg group hover:-translate-y-1"
+            >
+              <div className="flex items-center space-x-3 mb-3">
+                <div className="p-2.5 bg-indigo-500/20 rounded-xl text-indigo-400 group-hover:scale-110 transition-transform">
+                  <CameraIcon className="w-6 h-6" />
                 </div>
-                <p className="text-4xl font-bold text-orange-400 mb-2">{systemMetrics.memory}%</p>
-                <p className="text-sm text-blue-200 font-medium">Memory Usage</p>
-                <div className="mt-3 bg-orange-500/30 rounded-full h-1.5">
-                  <div className="bg-orange-400 h-1.5 rounded-full transition-all duration-500" style={{width: `${systemMetrics.memory}%`}}></div>
+                <div>
+                  <h3 className="font-bold text-white text-sm group-hover:text-indigo-300 transition-colors">Kios Biometrik Wajah</h3>
+                  <span className="text-[10px] text-emerald-400 font-medium">Face ID Registration</span>
                 </div>
               </div>
+              <p className="text-xs text-slate-400 leading-relaxed">Pendaftaran biometrik wajah karyawan untuk sistem presensi AI</p>
+            </Link>
 
-              {/* Disk Usage */}
-              <div className="bg-slate-800/40 backdrop-blur-lg rounded-2xl border border-slate-700/50 p-6 hover:bg-slate-800/80 transition-all duration-300">
-                <div className="flex items-center justify-center mb-3">
-                  <ChartBarIcon className="h-10 w-10 text-pink-400" />
+            <Link
+              to="/absensi"
+              className="p-5 bg-gradient-to-br from-slate-900/90 to-emerald-950/60 rounded-2xl border border-emerald-500/30 hover:border-emerald-400 transition-all duration-300 shadow-lg group hover:-translate-y-1"
+            >
+              <div className="flex items-center space-x-3 mb-3">
+                <div className="p-2.5 bg-emerald-500/20 rounded-xl text-emerald-400 group-hover:scale-110 transition-transform">
+                  <ClockIcon className="w-6 h-6" />
                 </div>
-                <p className="text-4xl font-bold text-pink-400 mb-2">{systemMetrics.disk}%</p>
-                <p className="text-sm text-blue-200 font-medium">Disk Usage</p>
-                <div className="mt-3 bg-pink-500/30 rounded-full h-1.5">
-                  <div className="bg-pink-400 h-1.5 rounded-full transition-all duration-500" style={{width: `${systemMetrics.disk}%`}}></div>
+                <div>
+                  <h3 className="font-bold text-white text-sm group-hover:text-emerald-300 transition-colors">Kios Presensi Harian</h3>
+                  <span className="text-[10px] text-emerald-400 font-medium">Jam Masuk / Keluar</span>
                 </div>
               </div>
+              <p className="text-xs text-slate-400 leading-relaxed">Pencatatan presensi kehadiran kerja harian seluruh staff pabrik</p>
+            </Link>
 
-              {/* Network */}
-              <div className="bg-slate-800/40 backdrop-blur-lg rounded-2xl border border-slate-700/50 p-6 hover:bg-slate-800/80 transition-all duration-300">
-                <div className="flex items-center justify-center mb-3">
-                  <SignalIcon className="h-10 w-10 text-yellow-400" />
+            <Link
+              to="/public/leave-request"
+              className="p-5 bg-gradient-to-br from-slate-900/90 to-purple-950/60 rounded-2xl border border-purple-500/30 hover:border-purple-400 transition-all duration-300 shadow-lg group hover:-translate-y-1"
+            >
+              <div className="flex items-center space-x-3 mb-3">
+                <div className="p-2.5 bg-purple-500/20 rounded-xl text-purple-400 group-hover:scale-110 transition-transform">
+                  <UserCheckIcon className="w-6 h-6" />
                 </div>
-                <p className="text-4xl font-bold text-yellow-400 mb-2">{systemMetrics.network}%</p>
-                <p className="text-sm text-blue-200 font-medium">Network</p>
-                <div className="mt-3 bg-yellow-500/30 rounded-full h-1.5">
-                  <div className="bg-yellow-400 h-1.5 rounded-full transition-all duration-500" style={{width: `${systemMetrics.network}%`}}></div>
+                <div>
+                  <h3 className="font-bold text-white text-sm group-hover:text-purple-300 transition-colors">Form Cuti & Izin Staff</h3>
+                  <span className="text-[10px] text-emerald-400 font-medium">Pengajuan Online</span>
                 </div>
               </div>
+              <p className="text-xs text-slate-400 leading-relaxed">Formulir pengajuan izin, sakit, dan cuti karyawan secara digital</p>
+            </Link>
+          </div>
+        </section>
+
+        {/* Enhanced System Modules Section */}
+        <section className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4 tracking-tight">
+              Katalog 27 Modul ERP Enterprise
+            </h2>
+            <p className="text-base sm:text-lg text-slate-300 max-w-3xl mx-auto">
+              Ekosistem sistem terintegrasi penuh untuk seluruh lini manufaktur, gudang, kualitas, SDM, & keuangan
+            </p>
+          </div>
+
+          {/* Category Filter Pills & Instant Search */}
+          <div className="mb-8 flex flex-col md:flex-row gap-4 items-center justify-between">
+            {/* Search Input Box */}
+            <div className="relative w-full md:w-80">
+              <MagnifyingGlassIcon className="w-5 h-5 absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Cari modul atau fitur..."
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-900/90 border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-inner"
+              />
             </div>
-            )}
 
-            {/* Modules View */}
-            {selectedView === 'modules' && (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-6xl mx-auto mb-12">
-              {modules.slice(0, 12).map((module) => (
-                <div key={module.id} className="bg-slate-800/40 backdrop-blur-lg rounded-xl border border-slate-700/50 p-4 hover:bg-slate-800/80 transition-all duration-300">
-                  <div className="flex items-center space-x-3 mb-2">
-                    <module.icon className={`h-6 w-6 ${module.color}`} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-white truncate">{module.name}</p>
+            {/* Category Filter Pills */}
+            <div className="flex flex-wrap gap-2 justify-center">
+              {[
+                { id: 'all', label: `Semua (${modules.length})` },
+                { id: 'production', label: 'Produksi' },
+                { id: 'wms', label: 'Gudang & WMS' },
+                { id: 'quality', label: 'Quality SPC' },
+                { id: 'hr', label: 'SDM & Presensi' },
+                { id: 'finance', label: 'Keuangan & Sales' },
+                { id: 'rnd', label: 'R&D & DCC' }
+              ].map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+                    selectedCategory === cat.id
+                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
+                      : 'bg-slate-900/80 text-slate-300 border border-slate-800 hover:border-slate-700 hover:text-white'
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Modules Grid Rendering */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-16">
+            {filteredModules.map((module) => {
+              const countVal = module.metricKey && (systemStats.breakdown as any)?.[module.metricKey] 
+                ? (systemStats.breakdown as any)[module.metricKey]
+                : module.metricFallback;
+              
+              return (
+                <div
+                  key={module.id}
+                  className="p-6 bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-slate-800 hover:border-blue-500/50 hover:shadow-[0_0_25px_rgba(59,130,246,0.15)] transition-all duration-300 transform hover:-translate-y-1 cursor-default group min-h-[280px] flex flex-col justify-between"
+                >
+                  <div>
+                    {/* Header with Icon and Title */}
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center flex-1 min-w-0">
+                        <module.icon className={`h-8 w-8 ${module.color} mr-3 group-hover:scale-110 transition-transform flex-shrink-0`} />
+                        <h3 className="text-lg font-bold text-white truncate">{module.name}</h3>
+                      </div>
+                    </div>
+
+                    {/* Tag & Status */}
+                    <div className="flex items-center justify-between gap-2 mb-3">
+                      <span className="px-2.5 py-1 text-[11px] font-semibold text-blue-300 bg-blue-500/10 border border-blue-500/30 rounded-full">
+                        {module.tag}
+                      </span>
+                      <span className="flex items-center gap-1.5 text-xs text-green-400 font-medium bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20">
+                        <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                        Aktif
+                      </span>
+                    </div>
+                    
+                    {/* Description */}
+                    <p className="text-xs text-slate-300 leading-relaxed line-clamp-3 mb-4">{module.description}</p>
+                  </div>
+
+                  {/* Real Database Record Counter Footer */}
+                  <div className="mt-auto border-t border-slate-800 pt-3">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-slate-400 font-medium">{module.metricLabel}</span>
+                      <span className="text-sm font-extrabold text-white bg-slate-950 px-3 py-1 rounded-lg border border-slate-800 shadow-sm">
+                        {countVal.toLocaleString()}
+                      </span>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className={`px-2 py-1 rounded-full ${
-                      module.status === 'active' ? 'bg-green-500/20 text-green-300' :
-                      module.status === 'maintenance' ? 'bg-yellow-500/20 text-yellow-300' :
-                      'bg-gray-500/20 text-gray-300'
-                    }`}>
-                      {module.status}
-                    </span>
-                    <span className="text-blue-200">{module.tag}</span>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* Real-time System Metrics Monitor Section */}
+        <section className="py-12 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto mb-16">
+          <div className="bg-slate-900/80 backdrop-blur-2xl rounded-3xl border border-slate-800 p-8 shadow-2xl">
+            <div className="flex flex-col sm:flex-row items-center justify-between mb-8 pb-6 border-b border-slate-800 gap-4">
+              <div className="flex items-center space-x-3">
+                <div className="p-3 bg-blue-500/10 rounded-2xl border border-blue-500/30">
+                  <CpuChipIcon className="h-8 w-8 text-blue-400" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-extrabold text-white">Status Infrastruktur Server</h3>
+                  <p className="text-xs text-slate-400">Monitoring beban CPU, Memory, Disk, & Jaringan secara langsung</p>
+                </div>
+              </div>
+              <span className="px-3 py-1.5 bg-emerald-500/20 text-emerald-300 text-xs font-bold rounded-full border border-emerald-500/30 flex items-center gap-1.5 animate-pulse">
+                <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                Server Online & Connected
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                { label: 'CPU Usage', value: systemMetrics.cpu, icon: CpuChipIcon, color: 'text-blue-400' },
+                { label: 'Memory Usage', value: systemMetrics.memory, icon: ComputerDesktopIcon, color: 'text-emerald-400' },
+                { label: 'Disk Storage', value: systemMetrics.disk, icon: ComputerDesktopIcon, color: 'text-amber-400' },
+                { label: 'Network I/O', value: systemMetrics.network, icon: SignalIcon, color: 'text-purple-400' }
+              ].map((metric, index) => (
+                <div key={index} className="bg-slate-950/80 rounded-2xl p-5 border border-slate-800/80 flex flex-col justify-between">
+                  <div className="flex items-center justify-between mb-3">
+                    <metric.icon className={`h-6 w-6 ${metric.color}`} />
+                    <span className={`text-xl font-black ${metric.color}`}>{metric.value}%</span>
+                  </div>
+                  <p className="text-xs font-bold text-white mb-3">{metric.label}</p>
+                  <div className="bg-slate-800 rounded-full h-2 overflow-hidden">
+                    <div 
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        metric.value >= 80 ? 'bg-red-400' : 
+                        metric.value >= 60 ? 'bg-amber-400' : 'bg-emerald-400'
+                      }`}
+                      style={{width: `${metric.value}%`}}
+                    ></div>
                   </div>
                 </div>
               ))}
-            </div>
-            )}
-          </div>
-        </section>
-
-        {/* Enhanced System Modules */}
-        <section className="py-16 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-                {t('system.modules_features')}
-              </h2>
-              <p className="text-xl text-blue-200 max-w-3xl mx-auto">
-                {t('system.modules_description')}
-              </p>
-            </div>
-
-            {/* Enhanced Modules Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-16">
-              {modules.map((module) => {
-                const countVal = module.metricKey && (systemStats.breakdown as any)?.[module.metricKey] 
-                  ? (systemStats.breakdown as any)[module.metricKey]
-                  : module.metricFallback;
-                
-                return (
-                  <div
-                    key={module.id}
-                    className="p-6 bg-slate-800/40 backdrop-blur-lg rounded-xl border border-slate-700/50 hover:bg-slate-800/80 transition-all duration-300 transform hover:-translate-y-1 cursor-default group min-h-[280px] flex flex-col justify-between"
-                  >
-                    <div>
-                      {/* Header with Icon and Title */}
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center flex-1 min-w-0">
-                          <module.icon className={`h-8 w-8 ${module.color} mr-3 group-hover:scale-110 transition-transform flex-shrink-0`} />
-                          <h3 className="text-lg font-semibold text-white truncate">{module.name}</h3>
-                        </div>
-                      </div>
-
-                      {/* Tag & Status */}
-                      <div className="flex items-center justify-between gap-2 mb-3">
-                        <span className="px-2.5 py-1 text-[11px] font-semibold text-blue-300 bg-blue-500/10 border border-blue-500/30 rounded-full">
-                          {module.tag}
-                        </span>
-                        <span className="flex items-center gap-1.5 text-xs text-green-400 font-medium bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20">
-                          <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-                          Aktif
-                        </span>
-                      </div>
-                      
-                      {/* Description */}
-                      <p className="text-sm text-blue-200 leading-relaxed line-clamp-3 mb-4">{module.description}</p>
-                    </div>
-
-                    {/* Real Database Record Counter Footer */}
-                    <div className="mt-auto border-t border-slate-700/50 pt-3">
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="text-blue-300 font-medium">{module.metricLabel}</span>
-                        <span className="text-sm font-bold text-white bg-slate-900/80 px-2.5 py-1 rounded-lg border border-slate-700/60 shadow-sm">
-                          {countVal.toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        {/* System Status & Metrics */}
-        <section className="py-16 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Real-time System Metrics */}
-              <div className="bg-slate-900/60 backdrop-blur-lg rounded-xl border border-slate-700/50 p-6">
-                <h3 className="text-xl font-bold text-white mb-6 flex items-center">
-                  <CpuChipIcon className="h-6 w-6 text-blue-400 mr-2" />
-                  System Metrics
-                  <span className="ml-2 px-2 py-1 bg-green-500/20 text-green-300 text-xs rounded-full animate-pulse">
-                    Live
-                  </span>
-                </h3>
-                <div className="grid grid-cols-2 gap-4">
-                  {[
-                    { label: 'CPU Usage', value: systemMetrics.cpu, icon: CpuChipIcon, color: 'text-blue-400' },
-                    { label: 'Memory', value: systemMetrics.memory, icon: ComputerDesktopIcon, color: 'text-green-400' },
-                    { label: 'Disk Usage', value: systemMetrics.disk, icon: ComputerDesktopIcon, color: 'text-yellow-400' },
-                    { label: 'Network', value: systemMetrics.network, icon: SignalIcon, color: 'text-purple-400' }
-                  ].map((metric, index) => (
-                    <div key={index} className="bg-slate-800/60 rounded-lg p-4 min-h-[120px] flex flex-col border border-slate-700/40">
-                      <div className="flex items-center justify-between mb-2">
-                        <metric.icon className={`h-5 w-5 ${metric.color} flex-shrink-0`} />
-                        <span className={`text-lg font-bold ${metric.color}`}>{metric.value}%</span>
-                      </div>
-                      <p className="text-sm text-white mb-3 flex-1">{metric.label}</p>
-                      <div className="mt-auto">
-                        <div className="bg-gray-700/50 rounded-full h-2 overflow-hidden">
-                          <div 
-                            className={`h-full rounded-full transition-all duration-500 ${
-                              metric.value >= 80 ? 'bg-red-400' : 
-                              metric.value >= 60 ? 'bg-yellow-400' : 'bg-green-400'
-                            }`}
-                            style={{width: `${metric.value}%`}}
-                          ></div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* System Status */}
-              <div className="bg-slate-900/60 backdrop-blur-lg rounded-xl border border-slate-700/50 p-6">
-                <div className="text-center">
-                  {systemStats.backendStatus === 'online' && systemStats.databaseStatus === 'connected' ? (
-                    <CheckCircleIcon className="h-16 w-16 text-green-400 mx-auto mb-4" />
-                  ) : systemStats.backendStatus === 'offline' ? (
-                    <ExclamationTriangleIcon className="h-16 w-16 text-red-400 mx-auto mb-4" />
-                  ) : (
-                    <ClockIcon className="h-16 w-16 text-yellow-400 mx-auto mb-4" />
-                  )}
-                  
-                  <h3 className="text-2xl font-bold text-white mb-2">
-                    {systemStats.backendStatus === 'online' && systemStats.databaseStatus === 'connected' 
-                      ? [t('system.all_systems_operational')]
-                      : systemStats.backendStatus === 'offline' 
-                      ? [t('system.system_offline')]
-                      : t('system.status_checking')}
-                  </h3>
-                  <p className="text-blue-200 mb-6">
-                    {t('system.backend')}: {systemStats.backendStatus} | {t('system.database')}: {systemStats.databaseStatus}
-                  </p>
-                  
-                  <div className="text-center">
-                    <p className="text-blue-200 mb-4">
-                      {t('system.ready_to_access')}
-                    </p>
-                    <Link
-                      to="/login"
-                      className="inline-flex items-center space-x-2 px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-0.5"
-                    >
-                      <span className="text-lg font-semibold">{t('system.access_system')}</span>
-                      <ArrowRightIcon className="h-5 w-5" />
-                    </Link>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </section>
 
         {/* Footer */}
-        <footer className="py-8 px-4 sm:px-6 lg:px-8 border-t border-white/10">
+        <footer className="py-8 px-4 sm:px-6 lg:px-8 border-t border-slate-800">
           <div className="max-w-7xl mx-auto">
-            <div className="text-center text-blue-300 text-sm">
-              © 2024 {companyName} {t('system.erp_system')}. {t('system.all_rights_reserved')}.
+            <div className="text-center text-slate-400 text-sm">
+              © 2026 {companyName} ERP System. Integrated Manufacturing Platform.
             </div>
           </div>
         </footer>
