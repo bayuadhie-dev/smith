@@ -4,7 +4,7 @@ import {
   ClockIcon, CubeIcon, CogIcon, ChevronDownIcon, ChevronUpIcon,
   PresentationChartLineIcon, CalendarDaysIcon, ArrowsRightLeftIcon,
   BoltIcon, BeakerIcon, ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon,
-  DocumentTextIcon, ArrowDownTrayIcon
+  DocumentTextIcon, ArrowDownTrayIcon, ArchiveBoxIcon, MagnifyingGlassIcon
 } from '@heroicons/react/24/outline';
 import * as XLSX from 'xlsx';
 import axiosInstance from '../../utils/axiosConfig';
@@ -51,7 +51,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
   const [viewMode, setViewMode] = useState<'monthly' | 'weekly'>('monthly');
   const [weekNumber, setWeekNumber] = useState(0);
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
-  const [activeTab, setActiveTab] = useState<'overview' | 'daily' | 'dailySwiper' | 'converting' | 'products' | 'machines' | 'downtime' | 'graph' | 'fg' | 'shift' | 'analytics'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'daily' | 'machineDaily' | 'dailySwiper' | 'converting' | 'products' | 'machines' | 'downtime' | 'graph' | 'fg' | 'shift' | 'analytics' | 'packing_list'>('overview');
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [refreshInterval, setRefreshInterval] = useState(5); // minutes
   const [fgData, setFgData] = useState<any>(null);
@@ -592,6 +592,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
           month={month}
         />
       )}
+      {activeTab === 'packing_list' && <PackingListTab />}
     </div>
   );
 };
@@ -4517,6 +4518,241 @@ const ConvertingTab: React.FC = () => {
           ))}
         </div>
       )}
+    </div>
+  );
+};
+
+// ==================== PACKING LIST TAB ====================
+const PackingListTab: React.FC = () => {
+  const [packingLists, setPackingLists] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
+
+  useEffect(() => {
+    fetchPackingLists();
+  }, [search, statusFilter]);
+
+  const fetchPackingLists = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams({
+        page: '1',
+        per_page: '50',
+        ...(search && { search }),
+        ...(statusFilter && { status: statusFilter })
+      });
+      const response = await axiosInstance.get(`/api/packing-list?${params}`);
+      setPackingLists(response.data.packing_lists || []);
+    } catch (error) {
+      console.error('Error fetching packing lists for dashboard:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleExpand = (id: number) => {
+    setExpandedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const totalCartons = packingLists.reduce((sum, pl) => sum + (pl.total_carton || 0), 0);
+  const totalPcs = packingLists.reduce((sum, pl) => sum + (pl.total_pcs || 0), 0);
+  const releasedCount = packingLists.filter(pl => pl.status === 'released').length;
+
+  return (
+    <div className="space-y-6 mt-4">
+      {/* Stat Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow border border-slate-200 dark:border-gray-700">
+          <p className="text-xs font-semibold text-slate-500">Total Packing List</p>
+          <p className="text-2xl font-black text-slate-800 dark:text-white mt-1">{packingLists.length}</p>
+        </div>
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow border border-slate-200 dark:border-gray-700">
+          <p className="text-xs font-semibold text-slate-500">Total Output Karton</p>
+          <p className="text-2xl font-black text-blue-600 dark:text-blue-400 mt-1">{totalCartons.toLocaleString('id-ID')} <span className="text-xs font-medium text-slate-500">Karton</span></p>
+        </div>
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow border border-slate-200 dark:border-gray-700">
+          <p className="text-xs font-semibold text-slate-500">Total Finished Goods (Pcs)</p>
+          <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400 mt-1">{totalPcs.toLocaleString('id-ID')} <span className="text-xs font-medium text-slate-500">Pcs</span></p>
+        </div>
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow border border-slate-200 dark:border-gray-700">
+          <p className="text-xs font-semibold text-slate-500">QC Released (Masuk Gudang)</p>
+          <p className="text-2xl font-black text-green-600 dark:text-green-400 mt-1">{releasedCount} <span className="text-xs font-medium text-slate-500">Dokumen</span></p>
+        </div>
+      </div>
+
+      {/* Filter Bar */}
+      <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow border border-slate-200 dark:border-gray-700 flex flex-wrap gap-4 items-center justify-between">
+        <div className="flex gap-3 flex-1 min-w-[250px]">
+          <div className="relative flex-1">
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Cari No. PL, Produk, Customer..."
+              className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+            />
+            <MagnifyingGlassIcon className="h-4 w-4 text-slate-400 absolute left-3 top-3" />
+          </div>
+          <select
+            value={statusFilter}
+            onChange={e => setStatusFilter(e.target.value)}
+            className="px-3 py-2 text-sm border border-slate-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+          >
+            <option value="">Semua Status</option>
+            <option value="draft">Draft</option>
+            <option value="in_progress">Dalam Proses</option>
+            <option value="completed">Selesai Timbang</option>
+            <option value="released">QC Released</option>
+            <option value="rejected">QC Rejected</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow border border-slate-200 dark:border-gray-700 overflow-hidden">
+        {loading ? (
+          <div className="p-8 text-center"><LoadingSpinner /></div>
+        ) : packingLists.length === 0 ? (
+          <div className="p-8 text-center text-slate-500">Tidak ada data Packing List</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm text-left">
+              <thead className="bg-slate-100 dark:bg-gray-900 text-slate-700 dark:text-gray-300 border-b">
+                <tr>
+                  <th className="px-4 py-3 w-10"></th>
+                  <th className="px-4 py-3 font-bold">No. Packing List</th>
+                  <th className="px-4 py-3 font-bold">Produk</th>
+                  <th className="px-4 py-3 font-bold text-center">Total Karton</th>
+                  <th className="px-4 py-3 font-bold text-center">Total Pcs</th>
+                  <th className="px-4 py-3 font-bold">Tanggal</th>
+                  <th className="px-4 py-3 font-bold">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-gray-700">
+                {packingLists.map((pl) => {
+                  const isExpanded = expandedIds.has(pl.id);
+                  const isOctenic = pl.weight_stats?.is_octenic || pl.product_name?.toLowerCase().includes('octenic');
+                  return (
+                    <React.Fragment key={pl.id}>
+                      <tr
+                        onClick={() => toggleExpand(pl.id)}
+                        className={`cursor-pointer hover:bg-slate-50 dark:hover:bg-gray-700/50 transition ${isExpanded ? 'bg-blue-50/50 dark:bg-gray-700/30' : ''}`}
+                      >
+                        <td className="px-4 py-3 text-slate-400">
+                          {isExpanded ? <ChevronDownIcon className="h-5 w-5 text-blue-600" /> : <ChevronRightIcon className="h-5 w-5" />}
+                        </td>
+                        <td className="px-4 py-3 font-bold text-blue-600 dark:text-blue-400">
+                          {pl.packing_number}
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                            {pl.product_name || '-'}
+                            {isOctenic && (
+                              <span className="px-2 py-0.5 text-[10px] font-extrabold bg-pink-100 text-pink-800 rounded border border-pink-300">
+                                OCTENIC
+                              </span>
+                            )}
+                          </p>
+                          <p className="text-xs text-slate-400">{pl.product_code}</p>
+                        </td>
+                        <td className="px-4 py-3 text-center font-bold text-slate-800 dark:text-white">
+                          {pl.total_carton?.toLocaleString('id-ID')}
+                        </td>
+                        <td className="px-4 py-3 text-center font-semibold text-indigo-600 dark:text-indigo-400">
+                          {pl.total_pcs?.toLocaleString('id-ID')}
+                        </td>
+                        <td className="px-4 py-3 text-slate-600 dark:text-gray-300 text-xs">
+                          {pl.packing_date ? new Date(pl.packing_date).toLocaleDateString('id-ID') : '-'}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
+                            pl.status === 'released' ? 'bg-green-100 text-green-800 border border-green-300' :
+                            pl.status === 'completed' ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' :
+                            pl.status === 'rejected' ? 'bg-red-100 text-red-800 border border-red-300' :
+                            'bg-slate-100 text-slate-700'
+                          }`}>
+                            {pl.status?.toUpperCase()}
+                          </span>
+                        </td>
+                      </tr>
+
+                      {/* Expandable Detail Section */}
+                      {isExpanded && (
+                        <tr className="bg-slate-50/80 dark:bg-gray-900/40">
+                          <td colSpan={7} className="px-6 py-4 border-t border-b border-blue-100 dark:border-gray-700">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                              {/* Batch Breakdown Table */}
+                              <div className="bg-white dark:bg-gray-800 p-3.5 rounded-lg shadow-sm border border-slate-200 dark:border-gray-700 space-y-2">
+                                <h4 className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5 border-b pb-2">
+                                  <span>🏷️ Breakdown Batch Mixing ({pl.batch_summary?.length || 0} Batch)</span>
+                                </h4>
+                                {(!pl.batch_summary || pl.batch_summary.length === 0) ? (
+                                  <p className="text-slate-400 italic">Belum ada data batch</p>
+                                ) : (
+                                  <table className="w-full text-left">
+                                    <thead>
+                                      <tr className="text-slate-500 border-b">
+                                        <th className="pb-1">Nama Batch</th>
+                                        <th className="pb-1 text-center">Rentang Karton</th>
+                                        <th className="pb-1 text-right">Jumlah Karton</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100 dark:divide-gray-700">
+                                      {pl.batch_summary.map((b: any, idx: number) => (
+                                        <tr key={idx}>
+                                          <td className="py-1.5 font-bold text-slate-800 dark:text-slate-200">{b.batch_mixing}</td>
+                                          <td className="py-1.5 text-center text-blue-600 font-semibold">#{b.start_carton} - #{b.end_carton}</td>
+                                          <td className="py-1.5 text-right font-bold">{b.total_carton} krt</td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                )}
+                              </div>
+
+                              {/* Octenic & Additional Details */}
+                              <div className="space-y-3">
+                                {isOctenic && (
+                                  <div className="bg-pink-50 dark:bg-pink-950/30 p-3.5 rounded-lg border border-pink-200 dark:border-pink-900 space-y-1.5">
+                                    <h4 className="font-bold text-pink-900 dark:text-pink-300 flex items-center gap-1">
+                                      <span>⚖️ Stats Berat Karton (Octenic)</span>
+                                    </h4>
+                                    <div className="grid grid-cols-2 gap-2 text-slate-700 dark:text-slate-300 pt-1">
+                                      <div>Rata-rata: <strong className="text-pink-700 dark:text-pink-400">{pl.weight_stats?.avg_weight || '-'} kg</strong></div>
+                                      <div>Total Berat: <strong className="text-pink-700 dark:text-pink-400">{pl.weight_stats?.total_weight || '-'} kg</strong></div>
+                                      <div>Min: <strong>{pl.weight_stats?.min_weight || '-'} kg</strong></div>
+                                      <div>Max: <strong>{pl.weight_stats?.max_weight || '-'} kg</strong></div>
+                                    </div>
+                                  </div>
+                                )}
+
+                                <div className="bg-white dark:bg-gray-800 p-3.5 rounded-lg shadow-sm border border-slate-200 dark:border-gray-700 space-y-1 text-slate-600 dark:text-gray-300">
+                                  <p><strong>Customer:</strong> {pl.customer_name || '-'}</p>
+                                  <p><strong>Nomor SO:</strong> {pl.so_number || '-'}</p>
+                                  <p><strong>Dibuat oleh:</strong> {pl.created_by || '-'}</p>
+                                  {pl.qc_by && <p><strong>QC Reviewer:</strong> {pl.qc_by}</p>}
+                                  {pl.notes && <p className="italic text-slate-500 mt-1">Catatan: {pl.notes}</p>}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
