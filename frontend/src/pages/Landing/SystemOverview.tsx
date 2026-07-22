@@ -532,12 +532,12 @@ const SystemOverviewEnhanced: React.FC = () => {
 
       <div className="relative z-10">
         {/* Enhanced Header with Navigation */}
-        <nav className="absolute top-0 w-full z-40 bg-white dark:bg-gray-800/10 backdrop-blur-md border-b border-white/20">
+        <nav className="absolute top-0 w-full z-40 bg-slate-900/80 backdrop-blur-md border-b border-slate-700/50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-3 md:py-6">
               <div className="flex items-center space-x-2 md:space-x-4">
                 {/* IP Address Display - Hidden on mobile */}
-                <div className="hidden lg:flex items-center space-x-2 bg-white dark:bg-gray-800/10 rounded-lg px-3 py-2 border border-white/20">
+                <div className="hidden lg:flex items-center space-x-2 bg-slate-800/60 rounded-lg px-3 py-2 border border-slate-700/50">
                   <SignalIcon className="h-4 w-4 text-green-400 animate-pulse" />
                   <div className="flex flex-col">
                     <span className="text-[9px] text-blue-200 uppercase tracking-wider leading-tight">IP</span>
@@ -559,7 +559,7 @@ const SystemOverviewEnhanced: React.FC = () => {
               
               <div className="flex items-center space-x-2 md:space-x-6">
                 {/* View Selector - Hidden on mobile */}
-                <div className="hidden lg:flex items-center space-x-2 bg-white dark:bg-gray-800/10 rounded-lg p-1">
+                <div className="hidden lg:flex items-center space-x-2 bg-slate-800/60 rounded-lg p-1 border border-slate-700/50">
                   {[
                     {id: 'overview', icon: EyeIcon, label: 'Overview'}, 
                     {id: 'performance', icon: ChartBarIcon, label: 'Performance'}, 
@@ -627,7 +627,7 @@ const SystemOverviewEnhanced: React.FC = () => {
             {selectedView === 'overview' && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-5xl mx-auto mb-12">
               {/* Pengguna Sistem */}
-              <div className="bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 p-6 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/15 transition-all duration-300">
+              <div className="bg-slate-800/40 backdrop-blur-lg rounded-2xl border border-slate-700/50 p-6 hover:bg-slate-800/80 transition-all duration-300">
                 <div className="flex items-center justify-center mb-3">
                   <UsersIcon className="h-10 w-10 text-blue-400" />
                 </div>
@@ -639,7 +639,7 @@ const SystemOverviewEnhanced: React.FC = () => {
               </div>
 
               {/* Modul Aktif */}
-              <div className="bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 p-6 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/15 transition-all duration-300">
+              <div className="bg-slate-800/40 backdrop-blur-lg rounded-2xl border border-slate-700/50 p-6 hover:bg-slate-800/80 transition-all duration-300">
                 <div className="flex items-center justify-center mb-3">
                   <CogIcon className="h-10 w-10 text-green-400" />
                 </div>
@@ -651,7 +651,7 @@ const SystemOverviewEnhanced: React.FC = () => {
               </div>
 
               {/* Total Data */}
-              <div className="bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 p-6 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/15 transition-all duration-300">
+              <div className="bg-slate-800/40 backdrop-blur-lg rounded-2xl border border-slate-700/50 p-6 hover:bg-slate-800/80 transition-all duration-300">
                 <div className="flex items-center justify-center mb-3">
                   <ChartBarIcon className="h-10 w-10 text-purple-400" />
                 </div>
@@ -663,7 +663,7 @@ const SystemOverviewEnhanced: React.FC = () => {
               </div>
 
               {/* Waktu Aktif Sistem */}
-              <div className="bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 p-6 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/15 transition-all duration-300">
+              <div className="bg-slate-800/40 backdrop-blur-lg rounded-2xl border border-slate-700/50 p-6 hover:bg-slate-800/80 transition-all duration-300">
                 <div className="flex items-center justify-center mb-3">
                   <CheckCircleIcon className="h-10 w-10 text-emerald-400" />
                 </div>
@@ -680,7 +680,7 @@ const SystemOverviewEnhanced: React.FC = () => {
             {selectedView === 'performance' && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 max-w-5xl mx-auto mb-12">
               {/* CPU Usage */}
-              <div className="bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 p-6 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/15 transition-all duration-300">
+              <div className="bg-slate-800/40 backdrop-blur-lg rounded-2xl border border-slate-700/50 p-6 hover:bg-slate-800/80 transition-all duration-300">
                 <div className="flex items-center justify-center mb-3">
                   <CpuChipIcon className="h-10 w-10 text-cyan-400" />
                 </div>
@@ -692,7 +692,7 @@ const SystemOverviewEnhanced: React.FC = () => {
               </div>
 
               {/* Memory Usage */}
-              <div className="bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 p-6 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/15 transition-all duration-300">
+              <div className="bg-slate-800/40 backdrop-blur-lg rounded-2xl border border-slate-700/50 p-6 hover:bg-slate-800/80 transition-all duration-300">
                 <div className="flex items-center justify-center mb-3">
                   <ChartBarIcon className="h-10 w-10 text-orange-400" />
                 </div>
@@ -704,7 +704,7 @@ const SystemOverviewEnhanced: React.FC = () => {
               </div>
 
               {/* Disk Usage */}
-              <div className="bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 p-6 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/15 transition-all duration-300">
+              <div className="bg-slate-800/40 backdrop-blur-lg rounded-2xl border border-slate-700/50 p-6 hover:bg-slate-800/80 transition-all duration-300">
                 <div className="flex items-center justify-center mb-3">
                   <ChartBarIcon className="h-10 w-10 text-pink-400" />
                 </div>
@@ -716,7 +716,7 @@ const SystemOverviewEnhanced: React.FC = () => {
               </div>
 
               {/* Network */}
-              <div className="bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 p-6 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/15 transition-all duration-300">
+              <div className="bg-slate-800/40 backdrop-blur-lg rounded-2xl border border-slate-700/50 p-6 hover:bg-slate-800/80 transition-all duration-300">
                 <div className="flex items-center justify-center mb-3">
                   <SignalIcon className="h-10 w-10 text-yellow-400" />
                 </div>
@@ -733,7 +733,7 @@ const SystemOverviewEnhanced: React.FC = () => {
             {selectedView === 'modules' && (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-6xl mx-auto mb-12">
               {modules.slice(0, 12).map((module) => (
-                <div key={module.id} className="bg-white/10 backdrop-blur-lg rounded-xl border border-white/20 p-4 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/15 transition-all duration-300">
+                <div key={module.id} className="bg-slate-800/40 backdrop-blur-lg rounded-xl border border-slate-700/50 p-4 hover:bg-slate-800/80 transition-all duration-300">
                   <div className="flex items-center space-x-3 mb-2">
                     <module.icon className={`h-6 w-6 ${module.color}`} />
                     <div className="flex-1 min-w-0">
@@ -774,7 +774,7 @@ const SystemOverviewEnhanced: React.FC = () => {
               {modules.map((module) => (
                 <div
                   key={module.id}
-                  className="p-6 bg-white/5 backdrop-blur-lg rounded-xl border border-white/10 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/10 transition-all duration-300 transform hover:-translate-y-1 cursor-default group min-h-[320px] flex flex-col"
+                  className="p-6 bg-slate-800/40 backdrop-blur-lg rounded-xl border border-slate-700/50 hover:bg-slate-800/80 transition-all duration-300 transform hover:-translate-y-1 cursor-default group min-h-[320px] flex flex-col"
                 >
                   {/* Header with Icon, Title and Status */}
                   <div className="flex items-start justify-between mb-4">
@@ -797,7 +797,7 @@ const SystemOverviewEnhanced: React.FC = () => {
                   <div className="mt-auto">
                     <div className="flex justify-between items-center text-xs text-blue-300 mb-3">
                       <span>Last: {module.lastAccessed}</span>
-                      <span className="capitalize px-2 py-1 bg-white dark:bg-gray-800/10 rounded-full">{module.status}</span>
+                      <span className="capitalize px-2 py-1 bg-slate-800/80 text-blue-200 border border-slate-700/50 rounded-full">{module.status}</span>
                     </div>
                     
                     {/* Usage Progress Bar */}
@@ -828,7 +828,7 @@ const SystemOverviewEnhanced: React.FC = () => {
           <div className="max-w-6xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Real-time System Metrics */}
-              <div className="bg-white dark:bg-gray-800/5 backdrop-blur-lg rounded-xl border border-white/10 p-6">
+              <div className="bg-slate-900/60 backdrop-blur-lg rounded-xl border border-slate-700/50 p-6">
                 <h3 className="text-xl font-bold text-white mb-6 flex items-center">
                   <CpuChipIcon className="h-6 w-6 text-blue-400 mr-2" />
                   System Metrics
@@ -843,7 +843,7 @@ const SystemOverviewEnhanced: React.FC = () => {
                     { label: 'Disk Usage', value: systemMetrics.disk, icon: ComputerDesktopIcon, color: 'text-yellow-400' },
                     { label: 'Network', value: systemMetrics.network, icon: SignalIcon, color: 'text-purple-400' }
                   ].map((metric, index) => (
-                    <div key={index} className="bg-white dark:bg-gray-800/5 rounded-lg p-4 min-h-[120px] flex flex-col">
+                    <div key={index} className="bg-slate-800/60 rounded-lg p-4 min-h-[120px] flex flex-col border border-slate-700/40">
                       <div className="flex items-center justify-between mb-2">
                         <metric.icon className={`h-5 w-5 ${metric.color} flex-shrink-0`} />
                         <span className={`text-lg font-bold ${metric.color}`}>{metric.value}%</span>
@@ -866,7 +866,7 @@ const SystemOverviewEnhanced: React.FC = () => {
               </div>
 
               {/* System Status */}
-              <div className="bg-white dark:bg-gray-800/5 backdrop-blur-lg rounded-xl border border-white/10 p-6">
+              <div className="bg-slate-900/60 backdrop-blur-lg rounded-xl border border-slate-700/50 p-6">
                 <div className="text-center">
                   {systemStats.backendStatus === 'online' && systemStats.databaseStatus === 'connected' ? (
                     <CheckCircleIcon className="h-16 w-16 text-green-400 mx-auto mb-4" />
