@@ -4,6 +4,7 @@ import { useAppDispatch } from '../../hooks/redux'
 import { login } from '../../store/slices/authSlice'
 import axiosInstance from '../../utils/axiosConfig'
 import toast from 'react-hot-toast'
+import { getDynamicLoginGreeting } from '../../utils/greetingHelper'
 import {
   EyeIcon,
   EyeSlashIcon,
@@ -114,11 +115,14 @@ export default function Login() {
     setAccountLocked(false)
 
     try {
-      await dispatch(login({ username, password })).unwrap()
+      const loginResult = await dispatch(login({ username, password })).unwrap()
       // Reset session tracking for new login
       localStorage.setItem('session_start_time', Date.now().toString())
       localStorage.setItem('last_activity_time', Date.now().toString())
-      toast.success('Login successful!')
+      
+      const isFirstLogin = loginResult?.user?.is_first_login || loginResult?.user?.login_count === 1;
+      const greetingMsg = getDynamicLoginGreeting(loginResult?.user?.full_name || username, isFirstLogin);
+      toast.success(greetingMsg, { duration: 5000 });
       // Use RoleBasedRedirect logic - navigate will be handled by App.tsx
       window.location.href = '/'
     } catch (error: any) {

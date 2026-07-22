@@ -4,6 +4,7 @@ import { useAppDispatch } from '../../hooks/redux';
 import { setCredentials } from '../../store/slices/authSlice';
 import axiosInstance from '../../utils/axiosConfig';
 import toast from 'react-hot-toast';
+import { getDynamicLoginGreeting } from '../../utils/greetingHelper';
 
 export default function OAuthCallback() {
   const [searchParams] = useSearchParams();
@@ -58,7 +59,8 @@ export default function OAuthCallback() {
           window.dispatchEvent(new Event('auth-change'));
 
           setStatus('success');
-          toast.success(`Selamat datang, ${user.full_name}!`);
+          const greetingMsg = getDynamicLoginGreeting(user.full_name, user.is_first_login);
+          toast.success(greetingMsg, { duration: 5000 });
           setTimeout(() => navigate('/'), 1000);
           return;
         } catch (err: any) {
