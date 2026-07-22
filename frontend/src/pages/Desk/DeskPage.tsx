@@ -4,6 +4,7 @@ import { useAppSelector } from '../../hooks/redux'
 import { useLanguage } from '../../contexts/LanguageContext'
 import { usePermissions } from '../../contexts/PermissionContext'
 import { useGetDeskOverviewQuery } from '../../services/api'
+import { getDynamicLoginGreeting } from '../../utils/greetingHelper'
 import clsx from 'clsx'
 import ModuleCard from '../../components/Desk/ModuleCard'
 import {
@@ -103,6 +104,14 @@ export default function DeskPage() {
   const { hasPermission, isAdmin, isSuperAdmin, isLoading: permsLoading } = usePermissions()
   const { user } = useAppSelector((state) => state.auth)
   const [searchQuery, setSearchQuery] = useState('')
+  const [dailyGreeting, setDailyGreeting] = useState('')
+
+  useEffect(() => {
+    const userAny = user as any;
+    const isFirstTime = userAny?.is_first_login || userAny?.login_count === 1;
+    const msg = getDynamicLoginGreeting(user?.full_name || user?.username, isFirstTime);
+    setDailyGreeting(msg);
+  }, [user]);
   const [navMode, setNavMode] = useState<'desk' | 'classic'>(
     () => (localStorage.getItem('erp_nav_mode') as 'desk' | 'classic') || 'desk'
   )
@@ -467,10 +476,10 @@ export default function DeskPage() {
         <div className="relative">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">
-                Welcome back, {user?.full_name || 'User'}! 👋
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-white mb-2 tracking-tight leading-tight">
+                {dailyGreeting || `Welcome back, ${user?.full_name || 'User'}! 👋`}
               </h1>
-              <p className="text-blue-100 text-lg">
+              <p className="text-blue-100 text-sm md:text-base font-medium opacity-90">
                 Here's what's happening across your business today.
               </p>
             </div>
