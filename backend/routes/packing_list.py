@@ -654,6 +654,38 @@ def create_packing_list():
         return jsonify({'error': str(e)}), 500
 
 
+@packing_list_bp.route('/<int:id>', methods=['DELETE'])
+@jwt_required()
+def delete_packing_list(id):
+    """Delete packing list and restore WIP stock if not released."""
+    try:
+        pl = db.session.get(PackingListNew, id) or abort(404)
+        
+        if pl.status == 'released':
+            return jsonify({
+                'error': 'Packing list yang sudah Released/masuk gudang tidak dapat dihapus. Hubungi Supervisor.'
+            }), 400
+        
+        user_id = get_jwt_identity()
+        
+        # Return WIP stock if allocated
+        if pl.total_carton > 0:
+            _return_wip_stock(pl, user_id)
+        
+        packing_number = pl.packing_number
+        db.session.delete(pl)
+        db.session.commit()
+        
+        return jsonify({
+            'message': f'Packing list {packing_number} berhasil dihapus dan stok WIP telah dikembalikan'
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+
 @packing_list_bp.route('/<int:id>', methods=['PUT'])
 @jwt_required()
 def update_packing_list(id):

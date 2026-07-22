@@ -7,7 +7,8 @@ import {
   EyeIcon,
   XMarkIcon,
   ScaleIcon,
-  ArchiveBoxIcon
+  ArchiveBoxIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
@@ -133,8 +134,20 @@ export default function PackingListNew() {
     setBatchRows([{ batch_mixing: '', total_carton: '1' }]);
     setProductSearch('');
     setIsDropdownOpen(false);
-    setCreationMode('draft');
     setShowCreateModal(true);
+  };
+
+  const handleDelete = async (pl: PackingList) => {
+    if (!window.confirm(`Yakin ingin menghapus Packing List ${pl.packing_number}? Seluruh stok WIP yang dialokasikan akan dikembalikan.`)) {
+      return;
+    }
+    try {
+      await axiosInstance.delete(`/api/packing-list/${pl.id}`);
+      toast.success(`Packing list ${pl.packing_number} berhasil dihapus dan stok dikembalikan`);
+      fetchPackingLists();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Gagal menghapus packing list');
+    }
   };
 
   const handleCreatePackingList = async () => {
@@ -373,13 +386,25 @@ export default function PackingListNew() {
                     {getStatusBadge(pl.status)}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-center">
-                    <Link
-                      to={`/app/production/packing-list/${pl.id}`}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 text-sm"
-                    >
-                      <EyeIcon className="h-4 w-4" />
-                      Detail
-                    </Link>
+                    <div className="flex items-center justify-center gap-2">
+                      <Link
+                        to={`/app/production/packing-list/${pl.id}`}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 text-xs font-medium"
+                      >
+                        <EyeIcon className="h-4 w-4" />
+                        Detail
+                      </Link>
+                      {pl.status !== 'released' && (
+                        <button
+                          onClick={() => handleDelete(pl)}
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 text-xs font-medium"
+                          title="Hapus Packing List & kembalikan stok WIP"
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                          Hapus
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
