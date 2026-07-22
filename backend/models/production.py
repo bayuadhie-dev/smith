@@ -1150,6 +1150,39 @@ class PackingListNew(db.Model):
             'items_count': self.items.count(),
             'weighed_count': self.items.filter(PackingListNewItem.weight_kg.isnot(None)).count()
         }
+        
+        # Calculate batch summary & weight stats
+        batch_summary = []
+        weight_list = []
+        if self.items.count() > 0:
+            all_items = self.items.order_by(PackingListNewItem.carton_number).all()
+            batch_map = {}
+            for item in all_items:
+                bname = item.batch_mixing or 'UNASSIGNED'
+                if bname not in batch_map:
+                    batch_map[bname] = {
+                        'batch_mixing': bname,
+                        'total_carton': 0,
+                        'start_carton': item.carton_number,
+                        'end_carton': item.carton_number,
+                        'weighed_count': 0
+                    }
+                batch_map[bname]['total_carton'] += 1
+                batch_map[bname]['end_carton'] = item.carton_number
+                if item.weight_kg is not None:
+                    batch_map[bname]['weighed_count'] += 1
+                    weight_list.append(float(item.weight_kg))
+            batch_summary = list(batch_map.values())
+            
+        result['batch_summary'] = batch_summary
+        result['weight_stats'] = {
+            'min_weight': min(weight_list) if weight_list else None,
+            'max_weight': max(weight_list) if weight_list else None,
+            'avg_weight': round(sum(weight_list) / len(weight_list), 3) if weight_list else None,
+            'total_weight': round(sum(weight_list), 3) if weight_list else None,
+            'is_octenic': 'octenic' in (self.product.name.lower() if self.product and self.product.name else '')
+        }
+        
         if include_items:
             result['items'] = [item.to_dict() for item in self.items.order_by(PackingListNewItem.carton_number).all()]
         return result
