@@ -981,7 +981,7 @@ def create_app(config_class=Config):
                     'total_shift_productions': total_shift_productions,
                     'total_packing_lists': total_packing_lists,
                     'total_records': total_records,
-                    'active_modules': 16,
+                    'active_modules': 27,
                     'breakdown': {
                         'users': total_users,
                         'products': total_products,

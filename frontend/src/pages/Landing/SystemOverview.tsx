@@ -26,7 +26,15 @@ import {
   WrenchScrewdriverIcon,
   DocumentTextIcon,
   ArchiveBoxIcon,
-  ChatBubbleLeftRightIcon
+  ChatBubbleLeftRightIcon,
+  ClipboardDocumentCheckIcon,
+  ArrowsRightLeftIcon,
+  ChartPieIcon,
+  AcademicCapIcon,
+  CameraIcon,
+  ArrowPathIcon,
+  PresentationChartLineIcon,
+  ClipboardDocumentListIcon
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
@@ -236,9 +244,29 @@ const SystemOverviewEnhanced: React.FC = () => {
       lastAccessed: 'Just now'
     },
     {
+      id: 'production_monitoring',
+      name: 'Production Monitoring & Controller',
+      description: 'Tab interaktif per produk, per mesin, per shift, downtime & Packing List',
+      icon: PresentationChartLineIcon,
+      color: 'text-indigo-500',
+      status: 'active',
+      usage: 96,
+      lastAccessed: 'Just now'
+    },
+    {
+      id: 'live_monitoring',
+      name: 'Live Machine Monitoring & Check',
+      description: 'Monitoring kondisi mesin langsung & checklist kebersihan pre-shift',
+      icon: SignalIcon,
+      color: 'text-emerald-500',
+      status: 'active',
+      usage: 94,
+      lastAccessed: '1 min ago'
+    },
+    {
       id: 'production',
-      name: t('production.title') || 'Manufaktur & Produksi',
-      description: 'Manajemen Work Order, Converting Input, Pre-Shift Checklist & Shift Logs',
+      name: t('production.title') || 'Manufaktur & Work Orders',
+      description: 'Manajemen Work Order, Converting Input, Shift Logs & Laporan MBF',
       icon: CogIcon,
       color: 'text-slate-600',
       status: 'active',
@@ -252,23 +280,43 @@ const SystemOverviewEnhanced: React.FC = () => {
       icon: ArchiveBoxIcon,
       color: 'text-emerald-600',
       status: 'active',
-      usage: 92,
+      usage: 93,
       lastAccessed: '1 min ago'
     },
     {
-      id: 'products',
-      name: t('products.title') || 'Produk & Master Data',
-      description: 'Katalog produk Finished Goods, WIP, UOM & Bill of Materials (BOM)',
-      icon: CubeIcon,
-      color: 'text-green-600',
+      id: 'fg_conversion',
+      name: 'FG Conversion & Loss Detail',
+      description: 'Konversi produk Finished Good & alokasi loss bahan baku/kemasan',
+      icon: ArrowsRightLeftIcon,
+      color: 'text-purple-600',
       status: 'active',
       usage: 90,
       lastAccessed: '2 min ago'
     },
     {
+      id: 'products',
+      name: t('products.title') || 'Produk & Master Data',
+      description: 'Katalog produk Finished Goods, WIP, UOM & perbandingan varian',
+      icon: CubeIcon,
+      color: 'text-green-600',
+      status: 'active',
+      usage: 91,
+      lastAccessed: '2 min ago'
+    },
+    {
+      id: 'bom',
+      name: 'Bill of Materials (BOM) & Lifecycle',
+      description: 'Struktur resep material per karton, versi BOM & siklus hidup produk',
+      icon: ClipboardDocumentListIcon,
+      color: 'text-teal-600',
+      status: 'active',
+      usage: 89,
+      lastAccessed: '3 min ago'
+    },
+    {
       id: 'warehouse',
-      name: t('warehouse.title') || 'Persediaan & WMS',
-      description: 'Gudang bahan baku, mutasi stok, stok opname & alokasi material',
+      name: t('warehouse.title') || 'Persediaan & Mutasi Stok',
+      description: 'Gudang bahan baku, mutasi internal, penyesuaian persediaan & penerimaan',
       icon: BuildingStorefrontIcon,
       color: 'text-indigo-600',
       status: 'active',
@@ -276,14 +324,44 @@ const SystemOverviewEnhanced: React.FC = () => {
       lastAccessed: '1 min ago'
     },
     {
+      id: 'wms_advanced',
+      name: 'WMS Advanced & Pick Lists',
+      description: 'Alokasi stok per Work Order, konsumsi material & Pick List otomatis',
+      icon: SparklesIcon,
+      color: 'text-blue-500',
+      status: 'active',
+      usage: 92,
+      lastAccessed: '2 min ago'
+    },
+    {
+      id: 'stock_opname',
+      name: 'Stok Opname & Hasil Opname',
+      description: 'Perintah opname berkala, penghitungan fisik & penyesuaian selisih stok',
+      icon: ClipboardDocumentCheckIcon,
+      color: 'text-cyan-600',
+      status: 'active',
+      usage: 87,
+      lastAccessed: '4 min ago'
+    },
+    {
       id: 'quality',
-      name: t('quality.title') || 'Quality Control & SPC',
-      description: 'Inspeksi kualitas, sertifikat analisis, QC Release & Statistical Process Control',
+      name: t('quality.title') || 'Quality Control (QC)',
+      description: 'Inspeksi sampel, QC Release barang jadi, sertifikat COA & karantina',
       icon: BeakerIcon,
       color: 'text-cyan-600',
       status: 'active',
       usage: 88,
       lastAccessed: '4 min ago'
+    },
+    {
+      id: 'spc',
+      name: 'Statistical Process Control (SPC)',
+      description: 'Batas kendali statistik (UCL/LCL), analisis variasi & parameter kualitas',
+      icon: ChartPieIcon,
+      color: 'text-rose-500',
+      status: 'active',
+      usage: 85,
+      lastAccessed: '6 min ago'
     },
     {
       id: 'oee',
@@ -328,12 +406,22 @@ const SystemOverviewEnhanced: React.FC = () => {
     {
       id: 'hr',
       name: t('hr.title') || 'SDM & Penggajian',
-      description: 'Karyawan, absensi presensi, pengajuan cuti, payroll & Face Recognition',
+      description: 'Database karyawan, absensi presensi, pengajuan cuti & slip gaji',
       icon: UsersIcon,
       color: 'text-pink-600',
       status: 'active',
       usage: 86,
       lastAccessed: '6 min ago'
+    },
+    {
+      id: 'face_reg',
+      name: 'Absensi Face Recognition',
+      description: 'Presensi otomatis biometrik wajah publik & pendaftaran karyawan',
+      icon: CameraIcon,
+      color: 'text-indigo-400',
+      status: 'active',
+      usage: 90,
+      lastAccessed: '1 min ago'
     },
     {
       id: 'maintenance',
@@ -366,6 +454,26 @@ const SystemOverviewEnhanced: React.FC = () => {
       lastAccessed: '15 min ago'
     },
     {
+      id: 'rnd',
+      name: 'Research & Development (R&D)',
+      description: 'Pengembangan formula baru, proyek R&D & pengujian sampel produk',
+      icon: AcademicCapIcon,
+      color: 'text-violet-500',
+      status: 'active',
+      usage: 78,
+      lastAccessed: '12 min ago'
+    },
+    {
+      id: 'waste',
+      name: 'Waste Management & Loss',
+      description: 'Pencatatan sisa limbah produksi, limbah cair/padat & pembuangan',
+      icon: ArrowPathIcon,
+      color: 'text-amber-600',
+      status: 'active',
+      usage: 75,
+      lastAccessed: '18 min ago'
+    },
+    {
       id: 'chat',
       name: 'Komunikasi & Perpesanan',
       description: 'Grup chat antar divisi, saluran pengumuman & pesan instan',
@@ -383,6 +491,16 @@ const SystemOverviewEnhanced: React.FC = () => {
       color: 'text-amber-500',
       status: 'active',
       usage: 96,
+      lastAccessed: 'Just now'
+    },
+    {
+      id: 'executive_portal',
+      name: 'Executive Portal & TV Display',
+      description: 'Dashboard TV Display publik & portal pemantauan manajemen puncak',
+      icon: ComputerDesktopIcon,
+      color: 'text-blue-400',
+      status: 'active',
+      usage: 97,
       lastAccessed: 'Just now'
     }
   ];
