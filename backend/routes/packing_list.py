@@ -1390,11 +1390,36 @@ def _get_fg_availability():
             'bom_number': bom.bom_number,
             'pack_per_carton': bom.pack_per_carton or 1,
             'source': 'bom_components',
-            'available_kartons': max_fg_kartons,
-            'available_pcs': max_fg_kartons * (bom.pack_per_carton or 1),
+            'available_kartons': max_fg_kartons if max_fg_kartons != float('inf') else 0,
+            'available_pcs': (max_fg_kartons if max_fg_kartons != float('inf') else 0) * (bom.pack_per_carton or 1),
             'wip_components': wip_components
         })
     
+    # === Source 3: All remaining FG products (even if stock is 0) ===
+    other_fg_products = Product.query.filter(
+        Product.is_active == True,
+        Product.material_type.notin_(['wip']),
+        ~Product.name.like('WIP %'),
+        ~Product.id.in_(seen_product_ids) if seen_product_ids else True
+    ).all()
+    
+    for p in other_fg_products:
+        bom = BillOfMaterials.query.filter_by(product_id=p.id, is_active=True).first()
+        results.append({
+            'id': p.id,
+            'code': p.code,
+            'name': p.name,
+            'bom_id': bom.id if bom else None,
+            'bom_number': bom.bom_number if bom else None,
+            'pack_per_carton': (bom.pack_per_carton if bom else None) or getattr(p, 'pack_per_karton', None) or 1,
+            'source': 'direct',
+            'available_kartons': 0,
+            'available_pcs': 0,
+            'wip_components': []
+        })
+    
+    # Prioritize products with available stock > 0 at the top
+    results.sort(key=lambda x: (x['available_kartons'] > 0, x['available_kartons'], x['name']), reverse=True)
     return results
 
 
@@ -1408,19 +1433,11 @@ def get_products_with_wip():
     """Get Finished Good products available for packing.
     
     Calculates FG availability based on WIP component stock via BOM.
-    Example: ALFAMART WET WIPES 20S @27X3 needs 27 Kuromi + 27 Cinamoroll + 27 Hellokitty per karton.
-    Available FG kartons = MIN(available WIP pcs / qty per karton) across all WIP components.
+    Products with available stock > 0 are prioritized at the top of the list.
     """
     try:
         fg_products = _get_fg_availability()
-        
-        # Filter: only show products with available stock > 0 (unless show_all=true)
-        show_all = request.args.get('show_all', 'false').lower() == 'true'
-        if not show_all:
-            fg_products = [p for p in fg_products if p['available_kartons'] > 0]
-        
         return jsonify({'products': fg_products}), 200
     except Exception as e:
         import traceback
-        traceback.print_exc()
         return jsonify({'error': str(e)}), 500

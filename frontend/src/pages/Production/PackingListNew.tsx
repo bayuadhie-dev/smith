@@ -82,6 +82,8 @@ export default function PackingListNew() {
   const [batchRows, setBatchRows] = useState<Array<{ batch_mixing: string; total_carton: string }>>([
     { batch_mixing: '', total_carton: '1' }
   ]);
+  const [productSearch, setProductSearch] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   useEffect(() => {
     fetchPackingLists();
@@ -129,6 +131,8 @@ export default function PackingListNew() {
       notes: ''
     });
     setBatchRows([{ batch_mixing: '', total_carton: '1' }]);
+    setProductSearch('');
+    setIsDropdownOpen(false);
     setCreationMode('draft');
     setShowCreateModal(true);
   };
@@ -461,35 +465,95 @@ export default function PackingListNew() {
                 </p>
               </div>
 
-              {/* Product Selection */}
-              <div>
+              {/* Searchable Product Combobox */}
+              <div className="relative">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                  Pilih Produk Finished Good *
+                  Pilih Produk Finished Good * (Diprioritaskan yang Ada Stok Mesin)
                 </label>
-                <select
-                  value={formData.product_id}
-                  onChange={(e) => {
-                    const pid = e.target.value;
-                    const prod = wipProducts.find(p => p.id === parseInt(pid));
-                    setFormData({ 
-                      ...formData, 
-                      product_id: pid,
-                      pack_per_carton: prod ? prod.pack_per_carton.toString() : ''
-                    });
-                  }}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">-- Pilih Produk --</option>
-                  {wipProducts.map(p => (
-                    <option key={p.id} value={p.id}>
-                      {p.name} ({p.code})
-                    </option>
-                  ))}
-                </select>
-                {wipProducts.length === 0 && (
-                  <p className="text-sm text-orange-600 mt-1">
-                    Tidak ada produk Finished Good dengan stok WIP tersedia. Selesaikan Work Order WIP terlebih dahulu.
-                  </p>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={productSearch}
+                    onChange={(e) => {
+                      setProductSearch(e.target.value);
+                      setIsDropdownOpen(true);
+                      if (!e.target.value) {
+                        setFormData({ ...formData, product_id: '', pack_per_carton: '' });
+                      }
+                    }}
+                    onFocus={() => setIsDropdownOpen(true)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 pr-8 text-sm font-medium dark:bg-slate-700 dark:text-white"
+                    placeholder="🔍 Ketik untuk cari nama / kode produk..."
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="absolute right-2 top-2.5 text-gray-400 hover:text-gray-600"
+                  >
+                    <MagnifyingGlassIcon className="h-4 w-4" />
+                  </button>
+                </div>
+
+                {/* Dropdown Options */}
+                {isDropdownOpen && (
+                  <div className="absolute z-50 mt-1 w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                    {(() => {
+                      const filtered = wipProducts.filter(p =>
+                        (p.name || '').toLowerCase().includes(productSearch.toLowerCase()) ||
+                        (p.code || '').toLowerCase().includes(productSearch.toLowerCase())
+                      );
+
+                      if (filtered.length === 0) {
+                        return (
+                          <div className="p-3 text-xs text-slate-500 text-center">
+                            Tidak ditemukan produk dengan kata kunci "{productSearch}"
+                          </div>
+                        );
+                      }
+
+                      return filtered.map((p) => {
+                        const hasStock = p.available_kartons > 0;
+                        const isSelected = formData.product_id === p.id.toString();
+                        return (
+                          <div
+                            key={p.id}
+                            onClick={() => {
+                              setFormData({
+                                ...formData,
+                                product_id: p.id.toString(),
+                                pack_per_carton: p.pack_per_carton ? p.pack_per_carton.toString() : ''
+                              });
+                              setProductSearch(`${p.name} (${p.code})`);
+                              setIsDropdownOpen(false);
+                            }}
+                            className={`p-2.5 cursor-pointer hover:bg-blue-50 dark:hover:bg-slate-700/70 border-b border-slate-100 dark:border-slate-700/50 flex items-center justify-between transition ${
+                              isSelected ? 'bg-blue-100/70 dark:bg-blue-900/40 font-bold' : ''
+                            }`}
+                          >
+                            <div className="pr-2">
+                              <p className="text-xs font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
+                                {p.name}
+                                {p.name?.toLowerCase().includes('octenic') && (
+                                  <span className="px-1.5 py-0.5 text-[9px] font-bold bg-pink-100 text-pink-800 rounded">OCTENIC</span>
+                                )}
+                              </p>
+                              <p className="text-[11px] text-slate-400">Kode: {p.code}</p>
+                            </div>
+
+                            {hasStock ? (
+                              <span className="px-2 py-1 text-[11px] font-extrabold bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300 rounded-md whitespace-nowrap flex items-center gap-1 border border-green-300">
+                                🟢 STOK: {p.available_kartons.toLocaleString()} KRT
+                              </span>
+                            ) : (
+                              <span className="px-2 py-0.5 text-[10px] font-medium bg-slate-100 text-slate-500 rounded whitespace-nowrap">
+                                Stok: 0
+                              </span>
+                            )}
+                          </div>
+                        );
+                      });
+                    })()}
+                  </div>
                 )}
               </div>
 
