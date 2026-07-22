@@ -1,55 +1,42 @@
-// Helper for Sundanese & Indonesian dynamic daily login greetings
+// Helper for Sundanese & Indonesian dynamic office-hours login greetings (08:00 - 17:00 WIB)
 
-export interface GreetingConfig {
+export interface TimeSlotGreetings {
+  morning: string[];   // 06:00 - 10:59 (Awal kerja & Jam 8 Masuk)
+  midday: string[];    // 11:00 - 13:59 (Siang & ISHOMA)
+  afternoon: string[]; // 14:00 - 17:00 (Sore & Menjelang Jam 5 Pulang)
+  night: string[];     // 17:01 - 05:59 (Lembur / Luar Jam Kerja Kantor)
   firstLogin: string[];
-  monday: string[];
-  tuesday: string[];
-  wednesday: string[];
-  thursday: string[];
-  friday: string[];
-  weekend: string[];
 }
 
-export const DAILY_GREETINGS: GreetingConfig = {
+export const OFFICE_GREETINGS: TimeSlotGreetings = {
   firstLogin: [
-    "Wilujeng sumping dulur! Hari pertama kerja, gaskeun ulah kendor nya!",
+    "Wilujeng sumping dulur! Hari pertama kerja di kantor, gaskeun ulah kendor nya!",
     "Selamat datang karyawan baru! Tetep kalem, ulah spaneng di hari pertama.",
     "Hore anggota anyar! Wilujeng gabung, ngopi heula ben semangat!"
   ],
-  monday: [
-    "Wilujeng dinten Senen! Ulah males, gaskeun ngarah boga tabungan!",
-    "Semangat hari Senin! Hayu urang gawe deui ngarah tiasa jajan enak.",
-    "Senen teuleum ku semangat! Login deui euy, gaskeun laporanna!",
-    "Senin ceria! Semangat nyambut awal minggu, ulah lemes nya!"
+  morning: [
+    "Wilujeng enjing! Jam 8 pas masuk kantor, ngopi heula ben semangat kerja dinten ayeuna!",
+    "Semangat pagi! Absen wis beres? Hayu gaskeun tugas kantor dinten ayeuna!",
+    "Sugeng enjing dulur! Awali jam kerja pagi ku senyuman jeung niat baik!",
+    "Wilujeng enjing! Pagi-pagi ulah lemes nya, gaskeun ngarah boga tabungan!"
   ],
-  tuesday: [
-    "Wilujeng dinten Salasa! Pekerjaan tos mulai mengalir lancar euy.",
-    "Selasa ceria! Login kesepuluh hari ini? Tetep semangat urang Sunda mah!",
-    "Halow! Salasa kie mah kedah tetep produktif tapi tetep santuy nya.",
-    "Salasa berkah! Hayu tuntaskan tugas dinten ayeuna!"
+  midday: [
+    "Wilujeng siang! Tos waktosna ISHOMA/rehat saeutik, ulah hilap tuang siang nya!",
+    "Siang ceria! Lanjutkeun semangatna, satengah hari kerja tos dilalui euy!",
+    "Wilujeng tengah dinten! Isi tenaga heula ben uteukna teu spaneng nggarap data!",
+    "Jam siang kie mah tetep produktif tapi ulah telat maam nya dulur!"
   ],
-  wednesday: [
-    "Wilujeng dinten Rebo! Satengah jalan deui menuju akhir pekan, gaskeun!",
-    "Rabu ceria! Jangan lupa ngopi heula ngarah uteukna teu spaneng.",
-    "Rebo sore siap-siap, login deui euy! Hayu tuntaskan tugasna.",
-    "Rabu manis! Tetep fokus, minggu iki tos satengah jalan!"
+  afternoon: [
+    "Wilujeng sore! Sakedap deui teng jam 5 sore, bereskeun tugas ngarah tiasa pulang tenang!",
+    "Jam 4 sore siap-siap! Tuntaskan sisa laporan kantor, siap-siap mulang dulur!",
+    "Menjelang jam 5 sore tetep fokus! Jam 5 pas teng langsung gaskeun pulang nya!",
+    "Sore manis! Gawean kantor tos tuntas durung? Hayu gaskeun saeutik deui!"
   ],
-  thursday: [
-    "Wilujeng dinten Kemis! Enjing tos Jumaah, ulah kendor semangatna!",
-    "Kamis manis! Nyantai saeutik tapi target tetep kahontal nya.",
-    "Kemis malam jumat heulaan, hayu urang bereskeun gawean ayeuna!",
-    "Kamis produktif! Sakedap deui akhir pekan euy!"
-  ],
-  friday: [
-    "Wilujeng dinten Jumaah! Jumaah berkah, siap-siap nampi akhir pekan!",
-    "Jumat Ceria! Gawean tos tuntas durung? Hayu urang gaskeun heula!",
-    "TGIF euy! Login jumat kie mah aura akhir pekan tos berasa pisan!",
-    "Jumat penuh berkah! Bereskeun tugas ngarah akhir pekan tenang!"
-  ],
-  weekend: [
-    "Wilujeng akhir pekan! Ngalembur euy? Mantap pisan dedikasina!",
-    "Sabtu/Minggu tetep login? Tetep semangat dulur, rezeki moal kaliru!",
-    "Akhir pekan tetep produktif! Ulah hilap istirahat nya!"
+  night: [
+    "Wilujeng wengi! Masih lembur euy di atas jam 5 sore? Mantap pisan dedikasina!",
+    "Di luar jam kerja kantor tetep login? Tetep jaga kesehatan jeung istirahat nya dulur!",
+    "Overtime mode ON! Tetep semangat ngalembur, rezeki moal kaliru nya!",
+    "Wengi-wengi masih nggarap tugas? Kalem saeutik, ulah hilap nginum cai bodas!"
   ]
 };
 
@@ -57,37 +44,24 @@ export const getDynamicLoginGreeting = (fullName?: string, isFirstTime: boolean 
   const name = fullName ? fullName.split(' ')[0] : 'Dulur';
   
   if (isFirstTime) {
-    const list = DAILY_GREETINGS.firstLogin;
+    const list = OFFICE_GREETINGS.firstLogin;
     const msg = list[Math.floor(Math.random() * list.length)];
     return `${msg} (Selamat Datang, ${name}!)`;
   }
   
-  const day = new Date().getDay(); // 0 = Sun, 1 = Mon, ..., 6 = Sat
-  let dayList: string[] = [];
+  const currentHour = new Date().getHours();
+  let timeList: string[] = [];
   
-  switch (day) {
-    case 1:
-      dayList = DAILY_GREETINGS.monday;
-      break;
-    case 2:
-      dayList = DAILY_GREETINGS.tuesday;
-      break;
-    case 3:
-      dayList = DAILY_GREETINGS.wednesday;
-      break;
-    case 4:
-      dayList = DAILY_GREETINGS.thursday;
-      break;
-    case 5:
-      dayList = DAILY_GREETINGS.friday;
-      break;
-    case 0:
-    case 6:
-    default:
-      dayList = DAILY_GREETINGS.weekend;
-      break;
+  if (currentHour >= 6 && currentHour < 11) {
+    timeList = OFFICE_GREETINGS.morning;
+  } else if (currentHour >= 11 && currentHour < 14) {
+    timeList = OFFICE_GREETINGS.midday;
+  } else if (currentHour >= 14 && currentHour <= 17) {
+    timeList = OFFICE_GREETINGS.afternoon;
+  } else {
+    timeList = OFFICE_GREETINGS.night;
   }
   
-  const randomMsg = dayList[Math.floor(Math.random() * dayList.length)];
+  const randomMsg = timeList[Math.floor(Math.random() * timeList.length)];
   return `${randomMsg} (Wilujeng Sumping, ${name}!)`;
 };
