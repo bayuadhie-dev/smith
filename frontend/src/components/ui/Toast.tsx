@@ -29,8 +29,23 @@ export const ToastProvider = () => (
   />
 );
 
+export const FUNNY_SUCCESS_TITLES = [
+  "Mantul! Data wis kesimpen",
+  "Beres euy, tos kasimpen",
+  "Sukses, gaskeun lanjut"
+];
+
+export const FUNNY_ERROR_TITLES = [
+  "Waduh gagal, coba maneh yo",
+  "Hampura, teu tiasa disimpen",
+  "Aduh error, dicoba ulang nggih"
+];
+
+const getRandomTitle = (titles: string[]) => titles[Math.floor(Math.random() * titles.length)];
+
 // Success toast
 export const showSuccess = (message: string, options?: { duration?: number }) => {
+  const headerTitle = getRandomTitle(FUNNY_SUCCESS_TITLES);
   toast.custom(
     (t) => (
       <div
@@ -44,8 +59,8 @@ export const showSuccess = (message: string, options?: { duration?: number }) =>
               <CheckCircleIcon className="h-6 w-6 text-green-500" />
             </div>
             <div className="ml-3 flex-1">
-              <p className="text-sm font-medium text-slate-900 dark:text-white">
-                Berhasil
+              <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                {headerTitle}
               </p>
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                 {message}
@@ -69,6 +84,7 @@ export const showSuccess = (message: string, options?: { duration?: number }) =>
 
 // Error toast
 export const showError = (message: string, options?: { duration?: number }) => {
+  const headerTitle = getRandomTitle(FUNNY_ERROR_TITLES);
   toast.custom(
     (t) => (
       <div
@@ -82,8 +98,8 @@ export const showError = (message: string, options?: { duration?: number }) => {
               <XCircleIcon className="h-6 w-6 text-red-500" />
             </div>
             <div className="ml-3 flex-1">
-              <p className="text-sm font-medium text-slate-900 dark:text-white">
-                Error
+              <p className="text-sm font-bold text-red-600 dark:text-red-400">
+                {headerTitle}
               </p>
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                 {message}

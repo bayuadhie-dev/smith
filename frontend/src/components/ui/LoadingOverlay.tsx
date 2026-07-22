@@ -7,13 +7,27 @@ interface LoadingOverlayProps {
   blur?: boolean;
 }
 
+export const FUNNY_LOADING_MESSAGES = [
+  "Sabar ya, lagi ngitung stok kaya lagi itung recehan...",
+  "Bentar, server-e lagi mikir dhisik...",
+  "Antosan sakedap, keur ngitung...",
+  "Lagi proses, kaya nunggu Ovaltine anget...",
+  "Nembe diitung, mangke rampung..."
+];
+
+export const getRandomFunnyLoadingMessage = () => {
+  return FUNNY_LOADING_MESSAGES[Math.floor(Math.random() * FUNNY_LOADING_MESSAGES.length)];
+};
+
 const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
   isLoading,
-  message = 'Memuat...',
+  message,
   fullScreen = false,
   blur = true
 }) => {
   if (!isLoading) return null;
+
+  const displayMessage = message || getRandomFunnyLoadingMessage();
 
   const containerClass = fullScreen
     ? 'fixed inset-0 z-50'
@@ -36,11 +50,9 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
         </div>
         
         {/* Message */}
-        {message && (
-          <p className="mt-4 text-sm font-medium text-slate-600 dark:text-slate-400">
-            {message}
-          </p>
-        )}
+        <p className="mt-4 text-sm font-medium text-slate-600 dark:text-slate-400 text-center px-4">
+          {displayMessage}
+        </p>
       </div>
     </div>
   );
@@ -71,17 +83,20 @@ export const ButtonSpinner: React.FC<{ className?: string }> = ({ className = ''
 );
 
 // Page loading
-export const PageLoading: React.FC<{ message?: string }> = ({ message = 'Memuat halaman...' }) => (
-  <div className="min-h-[60vh] flex items-center justify-center">
-    <div className="text-center">
-      <div className="relative inline-block">
-        <div className="w-16 h-16 rounded-full border-4 border-slate-200 dark:border-slate-700" />
-        <div className="absolute top-0 left-0 w-16 h-16 rounded-full border-4 border-transparent border-t-blue-600 animate-spin" />
+export const PageLoading: React.FC<{ message?: string }> = ({ message }) => {
+  const displayMsg = message || getRandomFunnyLoadingMessage();
+  return (
+    <div className="min-h-[60vh] flex items-center justify-center">
+      <div className="text-center px-4">
+        <div className="relative inline-block">
+          <div className="w-16 h-16 rounded-full border-4 border-slate-200 dark:border-slate-700" />
+          <div className="absolute top-0 left-0 w-16 h-16 rounded-full border-4 border-transparent border-t-blue-600 animate-spin" />
+        </div>
+        <p className="mt-4 text-slate-600 dark:text-slate-400 font-medium text-sm sm:text-base">{displayMsg}</p>
       </div>
-      <p className="mt-4 text-slate-600 dark:text-slate-400">{message}</p>
     </div>
-  </div>
-);
+  );
+};
 
 // Inline loading for buttons/inputs
 export const InlineLoading: React.FC = () => (

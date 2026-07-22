@@ -822,6 +822,9 @@ const SystemOverviewEnhanced: React.FC = () => {
                 </div>
                 <p className="text-3xl md:text-4xl font-extrabold text-white mb-1 tracking-tight">{systemStats.totalRecords.toLocaleString()}</p>
                 <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Total Record Data</p>
+                <p className="text-[10px] text-purple-300 font-medium mt-1.5 italic">
+                  {systemStats.totalRecords >= 10000 ? "10K rekord, mangan sate sik ben semangat 🍡" : "Wah menuju 10.000 record, mantap pisan! 🚀"}
+                </p>
               </div>
 
               <div className="bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-slate-800 p-6 hover:border-cyan-500/50 transition-all duration-300 shadow-xl group">

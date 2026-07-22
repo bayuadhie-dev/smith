@@ -53,50 +53,57 @@ const iconMap: Record<EmptyStateType, React.ComponentType<{ className?: string }
   reports: ChartBarIcon,
 };
 
+export const FUNNY_EMPTY_MESSAGES = [
+  "Kosong kaya kaleng krupuk pas lebaran",
+  "Suwung, durung ono data",
+  "Euweuh eusina, cobi input heula",
+  "Belum ada data, sepi kayak gudang abis stock opname"
+];
+
 const defaultMessages: Record<EmptyStateType, { title: string; description: string }> = {
   default: {
     title: 'Tidak ada data',
-    description: 'Belum ada data yang tersedia saat ini.'
+    description: 'Kosong kaya kaleng krupuk pas lebaran. Belum ada data yang tersedia saat ini.'
   },
   search: {
     title: 'Tidak ditemukan',
-    description: 'Tidak ada hasil yang cocok dengan pencarian Anda. Coba kata kunci lain.'
+    description: 'Suwung, durung ono data. Tidak ada hasil yang cocok dengan pencarian Anda.'
   },
   filter: {
     title: 'Tidak ada hasil',
-    description: 'Tidak ada data yang sesuai dengan filter yang dipilih.'
+    description: 'Euweuh eusina, cobi input heula atau ubah opsi filter.'
   },
   error: {
     title: 'Terjadi kesalahan',
-    description: 'Gagal memuat data. Silakan coba lagi.'
+    description: 'Hampura, teu tiasa dimuat. Silakan coba lagi.'
   },
   products: {
     title: 'Belum ada produk',
-    description: 'Mulai dengan menambahkan produk pertama Anda.'
+    description: 'Euweuh eusina, cobi input heula produk pertama Anda.'
   },
   orders: {
     title: 'Belum ada pesanan',
-    description: 'Pesanan akan muncul di sini setelah dibuat.'
+    description: 'Suwung, durung ono data pesanan saat ini.'
   },
   customers: {
     title: 'Belum ada pelanggan',
-    description: 'Tambahkan pelanggan untuk memulai.'
+    description: 'Belum ada data, sepi kayak gudang abis stock opname.'
   },
   inventory: {
     title: 'Inventori kosong',
-    description: 'Belum ada item dalam inventori.'
+    description: 'Kosong kaya kaleng krupuk pas lebaran. Belum ada item di gudang.'
   },
   production: {
     title: 'Tidak ada work order',
-    description: 'Buat work order untuk memulai produksi.'
+    description: 'Suwung, durung ono data. Buat work order untuk memulai produksi.'
   },
   delivery: {
     title: 'Tidak ada pengiriman',
-    description: 'Belum ada pengiriman yang dijadwalkan.'
+    description: 'Euweuh eusina, cobi buat pengiriman baru.'
   },
   reports: {
     title: 'Tidak ada laporan',
-    description: 'Laporan akan tersedia setelah ada data.'
+    description: 'Belum ada data, sepi kayak gudang abis stock opname.'
   },
 };
 

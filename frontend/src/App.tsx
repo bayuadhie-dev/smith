@@ -128,6 +128,7 @@ import FGConversionList from './pages/Production/FGConversionList'
 import FGConversionDetail from './pages/Production/FGConversionDetail'
 import ProductChangeover from './pages/Production/ProductChangeover'
 import ChangeoverList from './pages/Production/ChangeoverList'
+import NotFound from './pages/NotFound'
 import WeeklyProductionPlan from './pages/Production/WeeklyProductionPlan'
 import WeeklyPlanDetail from './pages/Production/WeeklyPlanDetail'
 import MonthlyProductionPlan from './pages/Production/MonthlyProductionPlan'
@@ -1102,7 +1103,9 @@ function App() {
                 <Route path="reports/custom" element={<CustomReportBuilder />} />
                 <Route path="reports/scheduler" element={<ReportScheduler />} />
                 <Route path="reports/production-by-product" element={<ProductionByProductReport />} />
+                <Route path="*" element={<NotFound />} />
               </Route>
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </PermissionProvider>
         </ThemeProvider>
