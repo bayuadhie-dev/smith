@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useAppSelector } from '../../hooks/redux';
 import { useGetDashboardOverviewQuery, useGetExecutiveDashboardQuery } from '../../services/api'
 import { formatRupiah } from '../../utils/currencyUtils';
 import axiosInstance from '../../utils/axiosConfig';
 import WelcomeBanner from '../../components/ui/WelcomeBanner';
+import { getDynamicLoginGreeting } from '../../utils/greetingHelper';
 import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import {
   ArrowUpIcon,
@@ -86,7 +88,16 @@ export default function Dashboard() {
   const { data: overview, isLoading } = useGetDashboardOverviewQuery({})
   const { data: executiveData, isLoading: executiveLoading, refetch: refetchExecutive } = useGetExecutiveDashboardQuery({})
   const { t } = useLanguage();
+  const { user } = useAppSelector((state) => state.auth);
   const [companyName, setCompanyName] = useState(t('company.name'))
+  const [dailyGreeting, setDailyGreeting] = useState('')
+
+  useEffect(() => {
+    const userAny = user as any;
+    const isFirstTime = userAny?.is_first_login || userAny?.login_count === 1;
+    const msg = getDynamicLoginGreeting(user?.full_name || user?.username, isFirstTime);
+    setDailyGreeting(msg);
+  }, [user]);
 
   useEffect(() => {
     loadCompanySettings()
@@ -157,8 +168,9 @@ export default function Dashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('dashboard.title')}</h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            {t('dashboard.welcome')} {companyName} - {t('analytics.business_intelligence')}
+          <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 mt-1 flex items-center gap-1.5">
+            <span>✨</span>
+            <span>{dailyGreeting || `${t('dashboard.welcome')} ${companyName}`}</span>
           </p>
         </div>
         <div className="flex items-center gap-4">
