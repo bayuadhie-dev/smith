@@ -79,6 +79,10 @@ export default function PackingListNew() {
     notes: ''
   });
 
+  const [batchRows, setBatchRows] = useState<Array<{ batch_mixing: string; total_carton: string }>>([
+    { batch_mixing: '', total_carton: '1' }
+  ]);
+
   useEffect(() => {
     fetchPackingLists();
   }, [page, search, statusFilter]);
@@ -124,6 +128,7 @@ export default function PackingListNew() {
       batch_mixing: '',
       notes: ''
     });
+    setBatchRows([{ batch_mixing: '', total_carton: '1' }]);
     setCreationMode('draft');
     setShowCreateModal(true);
   };
@@ -134,11 +139,11 @@ export default function PackingListNew() {
       return;
     }
 
-    const totalCarton = creationMode === 'draft' ? 0 : parseInt(formData.total_carton) || 0;
+    const calculatedTotalCarton = creationMode === 'draft' ? 0 : batchRows.reduce((sum, r) => sum + (parseInt(r.total_carton) || 0), 0);
     
     if (creationMode === 'immediate') {
-      if (totalCarton <= 0) {
-        toast.error('Jumlah karton harus lebih besar dari 0');
+      if (calculatedTotalCarton <= 0) {
+        toast.error('Jumlah total karton dari seluruh batch harus lebih besar dari 0');
         return;
       }
       
@@ -149,7 +154,7 @@ export default function PackingListNew() {
         : (selectedProduct && ppc > 0 && selectedProduct.wip_components && selectedProduct.wip_components.length > 0
             ? Math.min(...selectedProduct.wip_components.map((c: any) => Math.floor(c.wip_stock_pcs / ppc)))
             : 0);
-      if (selectedProduct && totalCarton > maxK) {
+      if (selectedProduct && calculatedTotalCarton > maxK) {
         toast.error(`Stok WIP tidak cukup. Maksimal: ${maxK} karton`);
         return;
       }
@@ -158,13 +163,20 @@ export default function PackingListNew() {
     try {
       setCreating(true);
       const startNumber = creationMode === 'draft' ? 1 : parseInt(formData.start_carton_number) || 1;
+      
+      const batchesPayload = creationMode === 'draft' ? [] : batchRows.map((r, idx) => ({
+        batch_mixing: r.batch_mixing || `BATCH-${idx + 1}`,
+        total_carton: parseInt(r.total_carton) || 0
+      }));
+
       await axiosInstance.post('/api/packing-list', {
         product_id: parseInt(formData.product_id),
-        total_carton: totalCarton,
+        total_carton: calculatedTotalCarton,
         pack_per_carton: parseInt(formData.pack_per_carton) || undefined,
         start_carton_number: startNumber,
         customer_name: formData.customer_name || null,
-        batch_mixing: creationMode === 'draft' ? null : (formData.batch_mixing || null),
+        batch_mixing: batchesPayload.length > 0 ? batchesPayload[0].batch_mixing : null,
+        batches: batchesPayload,
         notes: formData.notes || null
       });
       
@@ -534,25 +546,78 @@ export default function PackingListNew() {
                     </div>
                   )}
 
-                  {/* Total Carton */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                      Jumlah Karton *
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      max={recalcMaxKartons || 999999}
-                      value={formData.total_carton}
-                      onChange={(e) => setFormData({ ...formData, total_carton: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
-                      placeholder="Masukkan jumlah karton"
-                    />
-                    {formData.total_carton && formData.pack_per_carton && (
-                      <p className="text-xs text-green-600 mt-1 font-medium">
-                        Total: {(parseInt(formData.total_carton) * parseInt(formData.pack_per_carton)).toLocaleString()} pcs
-                      </p>
-                    )}
+                  {/* Multi-Batch Input Breakdown */}
+                  <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-3 bg-slate-50 dark:bg-slate-800/50 space-y-3">
+                    <div className="flex justify-between items-center">
+                      <label className="block text-sm font-semibold text-slate-800 dark:text-slate-200">
+                        🏷️ Rincian Batch & Karton Produk
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setBatchRows(rows => [...rows, { batch_mixing: '', total_carton: '1' }])}
+                        className="px-2.5 py-1 text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white rounded flex items-center gap-1"
+                      >
+                        <PlusIcon className="h-3.5 w-3.5" />
+                        Tambah Batch
+                      </button>
+                    </div>
+
+                    <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                      {batchRows.map((row, idx) => (
+                        <div key={idx} className="flex gap-2 items-center bg-white dark:bg-slate-800 p-2 rounded border border-slate-200 dark:border-slate-700">
+                          <span className="text-xs font-bold text-slate-500 w-5 text-center">{idx + 1}.</span>
+                          <div className="flex-1">
+                            <input
+                              type="text"
+                              value={row.batch_mixing}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setBatchRows(rs => rs.map((r, i) => i === idx ? { ...r, batch_mixing: val } : r));
+                              }}
+                              className="w-full text-xs px-2.5 py-1.5 border border-slate-300 dark:border-slate-600 rounded focus:ring-1 focus:ring-blue-500 dark:bg-slate-700 dark:text-white"
+                              placeholder={`No. Batch (contoh: BAT-00${idx + 1})`}
+                            />
+                          </div>
+                          <div className="w-28">
+                            <input
+                              type="number"
+                              min="1"
+                              value={row.total_carton}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setBatchRows(rs => rs.map((r, i) => i === idx ? { ...r, total_carton: val } : r));
+                              }}
+                              className="w-full text-xs px-2.5 py-1.5 border border-slate-300 dark:border-slate-600 rounded focus:ring-1 focus:ring-blue-500 text-right dark:bg-slate-700 dark:text-white"
+                              placeholder="Qty Karton"
+                            />
+                          </div>
+                          <span className="text-xs text-slate-500">krt</span>
+                          {batchRows.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => setBatchRows(rs => rs.filter((_, i) => i !== idx))}
+                              className="p-1 text-red-500 hover:text-red-700"
+                            >
+                              <XMarkIcon className="h-4 w-4" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Total Summary */}
+                    {(() => {
+                      const grandTotalCarton = batchRows.reduce((sum, r) => sum + (parseInt(r.total_carton) || 0), 0);
+                      const userPPC = parseInt(formData.pack_per_carton) || 0;
+                      return (
+                        <div className="flex justify-between items-center pt-2 border-t border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300">
+                          <span>Total Karton ({batchRows.length} Batch):</span>
+                          <span className="text-sm text-blue-600 dark:text-blue-400">
+                            {grandTotalCarton.toLocaleString()} Karton {userPPC > 0 && `(${(grandTotalCarton * userPPC).toLocaleString()} pcs)`}
+                          </span>
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   {/* Auto Numbering */}
@@ -578,47 +643,18 @@ export default function PackingListNew() {
                         <input
                           type="text"
                           readOnly
-                          value={formData.total_carton && formData.start_carton_number 
-                            ? (() => {
-                                const start = parseInt(formData.start_carton_number);
-                                const total = parseInt(formData.total_carton);
-                                let end = start + total - 1;
-                                if (end > 10000) end = ((end - 1) % 10000) + 1;
-                                return end.toString();
-                              })()
-                            : '-'}
+                          value={(() => {
+                            const grandTotalCarton = batchRows.reduce((sum, r) => sum + (parseInt(r.total_carton) || 0), 0);
+                            if (!grandTotalCarton || !formData.start_carton_number) return '-';
+                            const start = parseInt(formData.start_carton_number);
+                            let end = start + grandTotalCarton - 1;
+                            if (end > 10000) end = ((end - 1) % 10000) + 1;
+                            return end.toString();
+                          })()}
                           className="w-full px-3 py-2 border border-blue-200 rounded-lg bg-blue-100 text-blue-800 font-bold"
                         />
                       </div>
                     </div>
-                    {formData.total_carton && formData.start_carton_number && (
-                      <p className="text-xs text-blue-600 mt-2">
-                        {(() => {
-                          const start = parseInt(formData.start_carton_number);
-                          const total = parseInt(formData.total_carton);
-                          let end = start + total - 1;
-                          const willWrap = end > 10000;
-                          if (willWrap) end = ((end - 1) % 10000) + 1;
-                          return willWrap 
-                            ? <>Karton: <strong>{start}</strong> → <strong>10000</strong> → <strong>1</strong> → <strong>{end}</strong> (reset setelah 10000)</>
-                            : <>Karton akan dinomori dari <strong>{start}</strong> sampai <strong>{end}</strong></>;
-                        })()}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Batch Mixing */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                      Batch Mixing (opsional)
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.batch_mixing}
-                      onChange={(e) => setFormData({ ...formData, batch_mixing: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
-                      placeholder="Contoh: BATCH-001"
-                    />
                   </div>
                 </>
               )}
