@@ -23,7 +23,10 @@ import {
   SparklesIcon,
   TruckIcon,
   UsersIcon,
-  WrenchScrewdriverIcon
+  WrenchScrewdriverIcon,
+  DocumentTextIcon,
+  ArchiveBoxIcon,
+  ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
@@ -224,123 +227,163 @@ const SystemOverviewEnhanced: React.FC = () => {
   const modules: SystemModule[] = [
     {
       id: 'dashboard',
-      name: t('dashboard.title'),
-      description: t('dashboard.description'),
+      name: t('dashboard.title') || 'Executive & Live Dashboard',
+      description: 'Monitoring KPI produksi, OEE, dan pergerakan persediaan real-time',
       icon: ComputerDesktopIcon,
       color: 'text-blue-600',
       status: 'active',
+      usage: 98,
+      lastAccessed: 'Just now'
+    },
+    {
+      id: 'production',
+      name: t('production.title') || 'Manufaktur & Produksi',
+      description: 'Manajemen Work Order, Converting Input, Pre-Shift Checklist & Shift Logs',
+      icon: CogIcon,
+      color: 'text-slate-600',
+      status: 'active',
       usage: 95,
-      lastAccessed: '2 min ago'
+      lastAccessed: 'Just now'
+    },
+    {
+      id: 'packing_list',
+      name: 'Packing List & Multi-Batch',
+      description: 'Penomoran otomatis karton, alokasi multi-batch & timbang berat Octenic',
+      icon: ArchiveBoxIcon,
+      color: 'text-emerald-600',
+      status: 'active',
+      usage: 92,
+      lastAccessed: '1 min ago'
     },
     {
       id: 'products',
-      name: t('products.title'),
-      description: t('products.description'),
+      name: t('products.title') || 'Produk & Master Data',
+      description: 'Katalog produk Finished Goods, WIP, UOM & Bill of Materials (BOM)',
       icon: CubeIcon,
       color: 'text-green-600',
       status: 'active',
-      usage: 87,
-      lastAccessed: '5 min ago'
-    },
-    {
-      id: 'mrp',
-      name: t('mrp.title'),
-      description: t('mrp.description'),
-      icon: ChartBarIcon,
-      color: 'text-purple-600',
-      status: 'active',
-      usage: 73,
-      lastAccessed: '12 min ago'
+      usage: 90,
+      lastAccessed: '2 min ago'
     },
     {
       id: 'warehouse',
-      name: t('warehouse.title'),
-      description: t('warehouse.description'),
+      name: t('warehouse.title') || 'Persediaan & WMS',
+      description: 'Gudang bahan baku, mutasi stok, stok opname & alokasi material',
       icon: BuildingStorefrontIcon,
       color: 'text-indigo-600',
       status: 'active',
+      usage: 94,
+      lastAccessed: '1 min ago'
+    },
+    {
+      id: 'quality',
+      name: t('quality.title') || 'Quality Control & SPC',
+      description: 'Inspeksi kualitas, sertifikat analisis, QC Release & Statistical Process Control',
+      icon: BeakerIcon,
+      color: 'text-cyan-600',
+      status: 'active',
+      usage: 88,
+      lastAccessed: '4 min ago'
+    },
+    {
+      id: 'oee',
+      name: 'OEE & Machine Health',
+      description: 'Pelacakan OEE Mesin, grafik downtime, availability, & efisiensi',
+      icon: SignalIcon,
+      color: 'text-violet-600',
+      status: 'active',
       usage: 91,
-      lastAccessed: '3 min ago'
+      lastAccessed: '2 min ago'
     },
     {
       id: 'sales',
-      name: t('sales.title'),
-      description: t('sales.description'),
+      name: t('sales.title') || 'Penjualan & Customer',
+      description: 'Penawaran harga, Sales Order (SO), pelacakan pengiriman & retur',
       icon: ShoppingCartIcon,
       color: 'text-red-600',
       status: 'active',
-      usage: 82,
-      lastAccessed: '8 min ago'
+      usage: 85,
+      lastAccessed: '5 min ago'
     },
     {
       id: 'purchasing',
-      name: t('purchasing.title'),
-      description: t('purchasing.description'),
+      name: t('purchasing.title') || 'Pembelian & Vendor',
+      description: 'Pengadaan bahan baku, Purchase Order (PO), RFQ, & GRN Penerimaan',
       icon: ShoppingBagIcon,
       color: 'text-orange-600',
+      status: 'active',
+      usage: 82,
+      lastAccessed: '7 min ago'
+    },
+    {
+      id: 'finance',
+      name: t('finance.title') || 'Keuangan & Akuntansi',
+      description: 'Faktur penjualan/pembelian, buku besar, COGS Posting & costing',
+      icon: BanknotesIcon,
+      color: 'text-emerald-600',
+      status: 'active',
+      usage: 89,
+      lastAccessed: '3 min ago'
+    },
+    {
+      id: 'hr',
+      name: t('hr.title') || 'SDM & Penggajian',
+      description: 'Karyawan, absensi presensi, pengajuan cuti, payroll & Face Recognition',
+      icon: UsersIcon,
+      color: 'text-pink-600',
+      status: 'active',
+      usage: 86,
+      lastAccessed: '6 min ago'
+    },
+    {
+      id: 'maintenance',
+      name: t('maintenance.title') || 'Pemeliharaan Mesin',
+      description: 'Jadwal preventive maintenance, perbaikan breakdown & spareparts',
+      icon: WrenchScrewdriverIcon,
+      color: 'text-teal-600',
+      status: 'active',
+      usage: 79,
+      lastAccessed: '10 min ago'
+    },
+    {
+      id: 'shipping',
+      name: t('shipping.title') || 'Pengiriman & Ekspedisi',
+      description: 'Surat jalan pengiriman, alokasi armada truk & pelacakan status DO',
+      icon: TruckIcon,
+      color: 'text-yellow-600',
+      status: 'active',
+      usage: 84,
+      lastAccessed: '8 min ago'
+    },
+    {
+      id: 'dcc',
+      name: 'Pengendalian Dokumen (DCC)',
+      description: 'Manajemen SOP terdaftar, dokumen terkendali & revisi versi',
+      icon: DocumentTextIcon,
+      color: 'text-sky-600',
       status: 'active',
       usage: 76,
       lastAccessed: '15 min ago'
     },
     {
-      id: 'production',
-      name: t('production.title'),
-      description: t('production.description'),
-      icon: CogIcon,
-      color: 'text-gray-600',
-      status: 'active',
-      usage: 89,
-      lastAccessed: '1 min ago'
-    },
-    {
-      id: 'quality',
-      name: t('quality.title'),
-      description: t('quality.description'),
-      icon: BeakerIcon,
-      color: 'text-cyan-600',
-      status: 'active',
-      usage: 68,
-      lastAccessed: '22 min ago'
-    },
-    {
-      id: 'shipping',
-      name: t('shipping.title'),
-      description: t('shipping.description'),
-      icon: TruckIcon,
-      color: 'text-yellow-600',
-      status: 'maintenance',
-      usage: 45,
-      lastAccessed: '1 hour ago'
-    },
-    {
-      id: 'finance',
-      name: t('finance.title'),
-      description: t('finance.description'),
-      icon: BanknotesIcon,
-      color: 'text-emerald-600',
+      id: 'chat',
+      name: 'Komunikasi & Perpesanan',
+      description: 'Grup chat antar divisi, saluran pengumuman & pesan instan',
+      icon: ChatBubbleLeftRightIcon,
+      color: 'text-fuchsia-600',
       status: 'active',
       usage: 93,
-      lastAccessed: '4 min ago'
+      lastAccessed: 'Just now'
     },
     {
-      id: 'hr',
-      name: t('hr.title'),
-      description: t('hr.description'),
-      icon: UsersIcon,
-      color: 'text-pink-600',
+      id: 'ai_assistant',
+      name: 'AI Production Assistant',
+      description: 'Asisten kecerdasan buatan untuk analisis data & prediksi otomatis',
+      icon: SparklesIcon,
+      color: 'text-amber-500',
       status: 'active',
-      usage: 78,
-      lastAccessed: '18 min ago'
-    },
-    {
-      id: 'maintenance',
-      name: t('maintenance.title'),
-      description: t('maintenance.description'),
-      icon: WrenchScrewdriverIcon,
-      color: 'text-teal-600',
-      status: 'active',
-      usage: 65,
-      lastAccessed: '35 min ago'
+      usage: 96,
+      lastAccessed: 'Just now'
     }
   ];
 

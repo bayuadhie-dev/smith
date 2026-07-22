@@ -932,96 +932,71 @@ def create_app(config_class=Config):
     # System status and statistics endpoint for showcase page
 
     @app.route('/api/status', methods=['GET'])
-
     def system_status():
-
         try:
-
             from models import User, Product, Customer, Supplier, WorkOrder, SalesOrder
-
-            
-
-            # Get real counts from database
+            from models.production import ShiftProduction, PackingListNew, Machine, BillOfMaterials, WIPStock, WIPStockMovement
+            from models.product import Material
+            from models.purchasing import PurchaseOrder
 
             total_users = User.query.count()
-
             total_products = Product.query.count()
-
+            total_materials = Material.query.count()
             total_customers = Customer.query.count()
-
             total_suppliers = Supplier.query.count()
-
             total_work_orders = WorkOrder.query.count()
-
             total_sales_orders = SalesOrder.query.count()
+            total_purchase_orders = PurchaseOrder.query.count()
+            total_shift_productions = ShiftProduction.query.count()
+            total_packing_lists = PackingListNew.query.count()
+            total_machines = Machine.query.count()
+            total_boms = BillOfMaterials.query.count()
+            total_wip_stocks = WIPStock.query.count()
+            total_wip_movements = WIPStockMovement.query.count()
 
-            
-
-            # Calculate total records
-
-            total_records = (total_users + total_products + total_customers + 
-
-                           total_suppliers + total_work_orders + total_sales_orders)
-
-            
-
-            # Get company profile
+            total_records = (
+                total_users + total_products + total_materials + total_customers +
+                total_suppliers + total_work_orders + total_sales_orders +
+                total_purchase_orders + total_shift_productions + total_packing_lists +
+                total_machines + total_boms + total_wip_stocks + total_wip_movements
+            )
 
             from models import CompanyProfile
-
-            from company_config.company import COMPANY_NAME
             company_profile = CompanyProfile.query.first()
-
             company_name = company_profile.company_name if company_profile else 'PT. Gratia Makmur Sentosa'
 
-            
-
             return {
-
                 'status': 'online',
-
                 'message': 'ERP System is running',
-
                 'version': '1.0.0',
-
                 'company': company_name,
-
                 'statistics': {
-
                     'total_users': total_users,
-
                     'total_products': total_products,
-
+                    'total_materials': total_materials,
                     'total_customers': total_customers,
-
                     'total_suppliers': total_suppliers,
-
                     'total_work_orders': total_work_orders,
-
                     'total_sales_orders': total_sales_orders,
-
+                    'total_shift_productions': total_shift_productions,
+                    'total_packing_lists': total_packing_lists,
                     'total_records': total_records,
-
-                    'active_modules': 16,  # Count of available modules
-
+                    'active_modules': 16,
                     'breakdown': {
-
                         'users': total_users,
-
                         'products': total_products,
-
+                        'materials': total_materials,
                         'customers': total_customers,
-
                         'suppliers': total_suppliers,
-
                         'work_orders': total_work_orders,
-
-                        'sales_orders': total_sales_orders
-
+                        'sales_orders': total_sales_orders,
+                        'shift_productions': total_shift_productions,
+                        'packing_lists': total_packing_lists,
+                        'machines': total_machines,
+                        'boms': total_boms,
+                        'wip_movements': total_wip_movements
                     }
-
                 }
-
             }, 200
 
         except Exception as e:
