@@ -430,7 +430,7 @@ def generate_packing_number():
 
 
 @packing_list_bp.route('', methods=['GET'])
-@jwt_required()
+@jwt_required(optional=True)
 def get_packing_lists():
     """Get all packing lists with filtering"""
     try:
@@ -475,7 +475,7 @@ def get_packing_lists():
 
 
 @packing_list_bp.route('/<int:id>', methods=['GET'])
-@jwt_required()
+@jwt_required(optional=True)
 def get_packing_list(id):
     """Get single packing list with items"""
     try:
@@ -494,8 +494,12 @@ def create_packing_list():
     """
     try:
         data = request.get_json()
-        product_id = data.get('product_id')
-        total_carton = data.get('total_carton', 0)
+        batches_input = data.get('batches') or []
+        if batches_input:
+            total_carton = sum(int(b.get('total_carton', 0)) for b in batches_input if int(b.get('total_carton', 0)) > 0)
+        else:
+            total_carton = int(data.get('total_carton', 0))
+            
         if not product_id:
             return jsonify({'error': 'Product ID is required'}), 400
         
@@ -517,6 +521,8 @@ def create_packing_list():
         
         user_id = get_jwt_identity()
         
+        initial_batch_name = batches_input[0].get('batch_mixing') if batches_input else data.get('batch_mixing')
+        
         pl = PackingListNew(
             packing_number=generate_packing_number(),
             product_id=product_id,
@@ -526,7 +532,7 @@ def create_packing_list():
             pack_per_carton=pack_per_carton,
             total_carton=0,  # initialized to 0
             total_pcs=0,     # initialized to 0
-            current_batch_mixing=data.get('batch_mixing'),
+            current_batch_mixing=initial_batch_name,
             status='draft',
             packing_date=get_local_today(),
             notes=data.get('notes'),
@@ -562,18 +568,66 @@ def create_packing_list():
             if end_carton > 10000:
                 end_carton = ((end_carton - 1) % 10000) + 1
             
-            # Deduct stock using extracted helper (raises ValueError if fails)
-            cartons_per_pallet = data.get('cartons_per_pallet') or total_carton
-            batch_mixing = data.get('batch_mixing') or 'BATCH-01'
+            curr_carton_num = start_carton
             
-            deduction_details = _deduct_wip_stock(
-                pl=pl,
-                product_id=product_id,
-                total_carton=total_carton,
-                batch_mixing=batch_mixing,
-                pack_per_carton=pack_per_carton,
-                user_id=user_id
-            )
+            if batches_input:
+                for b_idx, b_item in enumerate(batches_input):
+                    b_name = b_item.get('batch_mixing') or f'BATCH-{b_idx+1}'
+                    b_cartons = int(b_item.get('total_carton', 0))
+                    if b_cartons <= 0:
+                        continue
+                    b_cpp = b_item.get('cartons_per_pallet') or b_cartons
+                    
+                    b_deductions = _deduct_wip_stock(
+                        pl=pl,
+                        product_id=product_id,
+                        total_carton=b_cartons,
+                        batch_mixing=b_name,
+                        pack_per_carton=pack_per_carton,
+                        user_id=user_id
+                    )
+                    deduction_details.extend(b_deductions)
+                    
+                    for i in range(b_cartons):
+                        c_num = curr_carton_num
+                        if c_num > 10000:
+                            c_num = ((c_num - 1) % 10000) + 1
+                        
+                        item = PackingListNewItem(
+                            packing_list_id=pl.id,
+                            carton_number=c_num,
+                            batch_mixing=b_name,
+                            cartons_per_pallet=b_cpp,
+                            is_batch_start=(i == 0)
+                        )
+                        db.session.add(item)
+                        curr_carton_num += 1
+            else:
+                cartons_per_pallet = data.get('cartons_per_pallet') or total_carton
+                batch_mixing = data.get('batch_mixing') or 'BATCH-01'
+                
+                deduction_details = _deduct_wip_stock(
+                    pl=pl,
+                    product_id=product_id,
+                    total_carton=total_carton,
+                    batch_mixing=batch_mixing,
+                    pack_per_carton=pack_per_carton,
+                    user_id=user_id
+                )
+                
+                for i in range(total_carton):
+                    carton_num = start_carton + i
+                    if carton_num > 10000:
+                        carton_num = ((carton_num - 1) % 10000) + 1
+                    
+                    item = PackingListNewItem(
+                        packing_list_id=pl.id,
+                        carton_number=carton_num,
+                        batch_mixing=batch_mixing,
+                        cartons_per_pallet=cartons_per_pallet,
+                        is_batch_start=(i == 0)
+                    )
+                    db.session.add(item)
             
             # Update PL details
             pl.total_carton = total_carton
@@ -581,22 +635,6 @@ def create_packing_list():
             pl.start_carton_number = start_carton
             pl.end_carton_number = end_carton
             pl.highest_carton_number_used = end_carton
-            pl.current_batch_mixing = batch_mixing
-            
-            # Create carton items
-            for i in range(total_carton):
-                carton_num = start_carton + i
-                if carton_num > 10000:
-                    carton_num = carton_num - 10000
-                
-                item = PackingListNewItem(
-                    packing_list_id=pl.id,
-                    carton_number=carton_num,
-                    batch_mixing=batch_mixing,
-                    cartons_per_pallet=cartons_per_pallet,
-                    is_batch_start=(i == 0)
-                )
-                db.session.add(item)
         
         db.session.commit()
         
@@ -1175,6 +1213,15 @@ def qc_packing_list(id):
         pl.status = action  # status follows QC action
         
         if action == 'released':
+            if pl.product and 'octenic' in (pl.product.name or '').lower():
+                unweighed_items = PackingListNewItem.query.filter(
+                    PackingListNewItem.packing_list_id == pl.id,
+                    or_(PackingListNewItem.weight_kg.is_(None), PackingListNewItem.weight_kg <= 0)
+                ).count()
+                if unweighed_items > 0:
+                    return jsonify({
+                        'error': f'Produk Octenic mewajibkan pengisian berat per karton (weight_kg). Masih ada {unweighed_items} karton yang belum ditimbang.'
+                    }), 400
             pl.released_at = now
             # Auto stock_in to FG warehouse
             _receive_fg_to_warehouse(pl, user_id)
