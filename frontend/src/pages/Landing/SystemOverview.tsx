@@ -81,15 +81,15 @@ const SystemOverviewEnhanced: React.FC = () => {
     
     initializeData();
     
-    // Auto-refresh every 5 seconds (always enabled)
+    // Auto-refresh every 3 seconds (real-time live update)
     const realTimeInterval = setInterval(() => {
       loadSystemStats();
       loadSystemMetrics();
-    }, 30000);
+    }, 3000);
     
     const statusInterval = setInterval(() => {
       loadSystemStats();
-    }, 30000);
+    }, 3000);
     
     const handleCompanyUpdate = () => {
       loadCompanySettings();
