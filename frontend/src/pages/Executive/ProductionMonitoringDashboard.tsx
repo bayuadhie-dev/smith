@@ -362,6 +362,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
     { id: 'fg', label: 'FG Conversion', icon: ArrowsRightLeftIcon },
     { id: 'shift', label: 'Per Shift', icon: BoltIcon },
     { id: 'analytics', label: 'Analytics', icon: BeakerIcon },
+    { id: 'packing_list', label: 'Packing List', icon: ArchiveBoxIcon },
   ];
 
   return (
