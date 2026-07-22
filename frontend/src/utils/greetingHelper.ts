@@ -118,17 +118,35 @@ export const GREETINGS_MATRIX: Record<DayOfWeek, Record<TimeSlot, string[]>> = {
   }
 };
 
-export const FIRST_LOGIN_GREETINGS = [
-  "Wilujeng sumping dulur {name}! Hari pertama kerja di kantor, gaskeun ulah kendor nya!",
-  "Selamat datang karyawan baru {name}! Tetep kalem, ulah spaneng di hari pertama.",
-  "Hore anggota anyar {name}! Wilujeng gabung, ngopi heula ben semangat!"
+// Greetings specifically for the FIRST LOGIN OF THE DAY (Login Pertama Hari Ini)
+export const FIRST_LOGIN_OF_DAY_GREETINGS = [
+  "Wilujeng enjing {name}! Login pertama dinten ayeuna, ngopi heula ben semangat kerja kantor!",
+  "Selamat pagi {name}! Login pertama hari ini, hayu awali hari ku niat baik jeung senyuman!",
+  "Sugeng enjing {name}! Awal jam kerja dinten ayeuna, gaskeun absen jeung nggarap target!",
+  "Halo {name}! Semangat login pertama hari ini, tetep fokus jeung ulah spaneng nya!"
 ];
+
+export const checkIsFirstLoginToday = (): boolean => {
+  try {
+    const todayStr = new Date().toISOString().split('T')[0];
+    const lastLoginDate = localStorage.getItem('last_login_date_str');
+    if (lastLoginDate !== todayStr) {
+      localStorage.setItem('last_login_date_str', todayStr);
+      return true;
+    }
+    return false;
+  } catch (e) {
+    return false;
+  }
+};
 
 export const getDynamicLoginGreeting = (fullName?: string, isFirstTime: boolean = false): string => {
   const name = fullName ? fullName.split(' ')[0] : 'Dulur';
   
-  if (isFirstTime) {
-    const template = FIRST_LOGIN_GREETINGS[Math.floor(Math.random() * FIRST_LOGIN_GREETINGS.length)];
+  const isFirstLoginToday = isFirstTime || checkIsFirstLoginToday();
+  
+  if (isFirstLoginToday) {
+    const template = FIRST_LOGIN_OF_DAY_GREETINGS[Math.floor(Math.random() * FIRST_LOGIN_OF_DAY_GREETINGS.length)];
     return template.replace('{name}', name);
   }
   
