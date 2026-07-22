@@ -39,7 +39,7 @@ import {
   BoltIcon,
   ShieldCheckIcon,
   TvIcon,
-  UserCheckIcon,
+  UserPlusIcon,
   DocumentCheckIcon
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
@@ -103,15 +103,6 @@ const SystemOverviewEnhanced: React.FC = () => {
   const [userIP, setUserIP] = useState<string>('Loading...');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-
-  const filteredModules = modules.filter(m => {
-    const matchesSearch = searchQuery === '' || 
-      m.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      m.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.tag.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || m.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
 
   useEffect(() => {
     const initializeData = async () => {
@@ -626,6 +617,15 @@ const SystemOverviewEnhanced: React.FC = () => {
     }
   ];
 
+  const filteredModules = modules.filter(m => {
+    const matchesSearch = searchQuery === '' || 
+      m.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      m.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      m.tag.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || m.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'bg-green-500';
@@ -899,7 +899,7 @@ const SystemOverviewEnhanced: React.FC = () => {
             >
               <div className="flex items-center space-x-3 mb-3">
                 <div className="p-2.5 bg-purple-500/20 rounded-xl text-purple-400 group-hover:scale-110 transition-transform">
-                  <UserCheckIcon className="w-6 h-6" />
+                  <UserPlusIcon className="w-6 h-6" />
                 </div>
                 <div>
                   <h3 className="font-bold text-white text-sm group-hover:text-purple-300 transition-colors">Form Cuti & Izin Staff</h3>
