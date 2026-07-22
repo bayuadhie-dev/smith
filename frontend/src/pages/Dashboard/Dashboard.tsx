@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useGetDashboardOverviewQuery, useGetExecutiveDashboardQuery } from '../../services/api'
 import { formatRupiah } from '../../utils/currencyUtils';
-import axiosInstance from '../../utils/axiosConfig'
+import axiosInstance from '../../utils/axiosConfig';
+import WelcomeBanner from '../../components/ui/WelcomeBanner';
 import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import {
   ArrowUpIcon,
@@ -149,6 +150,9 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Dynamic Daily Welcome Banner */}
+      <WelcomeBanner />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
