@@ -188,6 +188,9 @@ export default function ConvertingInput() {
   const [specification, setSpecification] = useState('')
   const [operatorName, setOperatorName] = useState('')
   const [notes, setNotes] = useState('')
+  const [filmType, setFilmType] = useState('')
+  const [nonwovenType, setNonwovenType] = useState('')
+  const [lemType, setLemType] = useState('')
   const [gradeA, setGradeA] = useState(0)
   const [gradeB, setGradeB] = useState(0)
   const [lossKg, setLossKg] = useState(0)
@@ -276,7 +279,25 @@ export default function ConvertingInput() {
       else if (mtype === 'perforating') { machine_data = { rows: perfRows } }
       else if (mtype === 'folding') { machine_data = { rows: foldRows } }
       else if (mtype === 'cutting') { machine_data = { rows: cutRows } }
-      else if (mtype === 'laminasi') { machine_data = { film_axis: filmAxis, nonwoven_axis: nwAxis, rows: lamRows }; fA = 0; fB = 0; fL = 0 }
+      else if (mtype === 'laminasi') { 
+        const processedLamRows = lamRows.map(r => ({
+          ...r,
+          date: productionDate,
+          product_name: productName,
+          film_type: filmType,
+          nonwoven_type: nonwovenType,
+          lem_type: lemType
+        }))
+        machine_data = { 
+          film_type: filmType, 
+          nonwoven_type: nonwovenType, 
+          lem_type: lemType, 
+          film_axis: filmAxis, 
+          nonwoven_axis: nwAxis, 
+          rows: processedLamRows 
+        }; 
+        fA = 0; fB = 0; fL = 0 
+      }
       else if (mtype === 'bagmaker') {
         const tA = bagRows.reduce((s, r) => s + N(r.output_grade_a), 0)
         const tC = bagRows.reduce((s, r) => s + N(r.output_grade_c), 0)
@@ -383,6 +404,13 @@ export default function ConvertingInput() {
           <div><label className={lc}>Spesifikasi</label><input value={specification} onChange={e => setSpecification(e.target.value)} className={ic} placeholder="Spesifikasi" /></div>
           <div><label className={lc}>Operator</label><input value={operatorName} onChange={e => setOperatorName(e.target.value)} className={ic} placeholder="Nama operator" /></div>
           <div><label className={lc}>Catatan</label><input value={notes} onChange={e => setNotes(e.target.value)} className={ic} placeholder="Catatan" /></div>
+          {mtype === 'laminasi' && (
+            <>
+              <div><label className={lc}>Tipe Film</label><input value={filmType} onChange={e => setFilmType(e.target.value)} className={ic} placeholder="Tipe Film" /></div>
+              <div><label className={lc}>Tipe Kain Nonwoven</label><input value={nonwovenType} onChange={e => setNonwovenType(e.target.value)} className={ic} placeholder="Tipe Kain" /></div>
+              <div><label className={lc}>Tipe Lem</label><input value={lemType} onChange={e => setLemType(e.target.value)} className={ic} placeholder="Tipe Lem" /></div>
+            </>
+          )}
         </div>
       </div>
 
@@ -709,12 +737,10 @@ export default function ConvertingInput() {
                 <tr>
                   <th className={thc}>No</th>
                   <th className={`${thc} bg-blue-50`} colSpan={3}>Time</th>
-                  <th className={thc}>Date</th>
-                  <th className={thc}>Product</th>
-                  <th className={`${thc} bg-green-50`} colSpan={2}>Film Axis</th>
-                  <th className={`${thc} bg-purple-50`} colSpan={2}>Non Woven</th>
+                  <th className={`${thc} bg-green-50`}>Film GSM</th>
+                  <th className={`${thc} bg-purple-50`}>NW GSM</th>
                   <th className={`${thc} bg-amber-50`} colSpan={4}>Winding</th>
-                  <th className={`${thc} bg-pink-50`} colSpan={2}>Lem</th>
+                  <th className={`${thc} bg-pink-50`}>Lem Usage</th>
                   <th className={thc}></th>
                 </tr>
                 <tr>
@@ -722,18 +748,13 @@ export default function ConvertingInput() {
                   <th className={`${thc} bg-blue-50`}>Mulai</th>
                   <th className={`${thc} bg-blue-50`}>Akhir</th>
                   <th className={`${thc} bg-blue-50`}>Menit</th>
-                  <th className={thc}></th>
-                  <th className={thc}></th>
-                  <th className={`${thc} bg-green-50`}>Type</th>
                   <th className={`${thc} bg-green-50`}>GSM</th>
-                  <th className={`${thc} bg-purple-50`}>Type Kain</th>
                   <th className={`${thc} bg-purple-50`}>GSM</th>
                   <th className={`${thc} bg-amber-50`}>Width (cm)</th>
                   <th className={`${thc} bg-amber-50`}>Length (m)</th>
                   <th className={`${thc} bg-amber-50`}>GSM Total</th>
                   <th className={`${thc} bg-amber-50`}>Speed</th>
-                  <th className={`${thc} bg-pink-50`}>Type</th>
-                  <th className={`${thc} bg-pink-50`}>Usage</th>
+                  <th className={`${thc} bg-pink-50`}>Usage (kg)</th>
                   <th className={thc}></th>
                 </tr>
               </thead>
@@ -744,22 +765,28 @@ export default function ConvertingInput() {
                     <td className={`${tdc} bg-blue-50/20`}><input type="time" value={row.time_start} onChange={e => setLamRows(rs => rs.map((r, i) => i === idx ? { ...r, time_start: e.target.value } : r))} className={`${ic} w-24`} /></td>
                     <td className={`${tdc} bg-blue-50/20`}><input type="time" value={row.time_end} onChange={e => setLamRows(rs => rs.map((r, i) => i === idx ? { ...r, time_end: e.target.value } : r))} className={`${ic} w-24`} /></td>
                     <td className={`${tdc} bg-blue-50/20`}><input type="number" value={row.total_minutes || ''} onChange={e => setLamRows(rs => rs.map((r, i) => i === idx ? { ...r, total_minutes: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
-                    <td className={tdc}><input type="date" value={row.date} onChange={e => setLamRows(rs => rs.map((r, i) => i === idx ? { ...r, date: e.target.value } : r))} className={`${ic} w-32`} /></td>
-                    <td className={tdc}><input value={row.product_name} onChange={e => setLamRows(rs => rs.map((r, i) => i === idx ? { ...r, product_name: e.target.value } : r))} className={`${ic} w-28`} /></td>
-                    <td className={`${tdc} bg-green-50/20`}><input value={row.film_type} onChange={e => setLamRows(rs => rs.map((r, i) => i === idx ? { ...r, film_type: e.target.value } : r))} className={`${ic} w-24`} /></td>
                     <td className={`${tdc} bg-green-50/20`}><input type="number" step="0.1" value={row.film_gsm || ''} onChange={e => setLamRows(rs => rs.map((r, i) => i === idx ? { ...r, film_gsm: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
-                    <td className={`${tdc} bg-purple-50/20`}><input value={row.nonwoven_type} onChange={e => setLamRows(rs => rs.map((r, i) => i === idx ? { ...r, nonwoven_type: e.target.value } : r))} className={`${ic} w-24`} /></td>
                     <td className={`${tdc} bg-purple-50/20`}><input type="number" step="0.1" value={row.nonwoven_gsm || ''} onChange={e => setLamRows(rs => rs.map((r, i) => i === idx ? { ...r, nonwoven_gsm: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
                     <td className={`${tdc} bg-amber-50/20`}><input type="number" step="0.1" value={row.winding_width || ''} onChange={e => setLamRows(rs => rs.map((r, i) => i === idx ? { ...r, winding_width: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
                     <td className={`${tdc} bg-amber-50/20`}><input type="number" step="0.1" value={row.winding_length || ''} onChange={e => setLamRows(rs => rs.map((r, i) => i === idx ? { ...r, winding_length: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
                     <td className={`${tdc} bg-amber-50/20`}><input type="number" step="0.1" value={row.gsm_total || ''} onChange={e => setLamRows(rs => rs.map((r, i) => i === idx ? { ...r, gsm_total: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
                     <td className={`${tdc} bg-amber-50/20`}><input type="number" step="0.1" value={row.speed || ''} onChange={e => setLamRows(rs => rs.map((r, i) => i === idx ? { ...r, speed: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
-                    <td className={`${tdc} bg-pink-50/20`}><input value={row.lem_type} onChange={e => setLamRows(rs => rs.map((r, i) => i === idx ? { ...r, lem_type: e.target.value } : r))} className={`${ic} w-24`} /></td>
                     <td className={`${tdc} bg-pink-50/20`}><input type="number" step="0.01" value={row.lem_usage || ''} onChange={e => setLamRows(rs => rs.map((r, i) => i === idx ? { ...r, lem_usage: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
                     <td className={tdc}>{lamRows.length > 1 && <button onClick={() => setLamRows(rs => rs.filter((_, i) => i !== idx).map((r, i) => ({ ...r, no: i + 1 })))} className="p-1 text-red-400 hover:text-red-600"><TrashIcon className="h-4 w-4" /></button>}</td>
                   </tr>
                 ))}
               </tbody>
+              <tfoot>
+                <tr className="bg-slate-100 dark:bg-slate-800 font-bold text-xs">
+                  <td colSpan={3} className="px-2 py-2 text-right text-slate-700 dark:text-slate-200">TOTAL:</td>
+                  <td className="px-2 py-2 text-blue-700 dark:text-blue-400">{lamRows.reduce((s, r) => s + N(r.total_minutes), 0).toLocaleString()} mnt</td>
+                  <td colSpan={3}></td>
+                  <td className="px-2 py-2 text-indigo-700 dark:text-indigo-400">{lamRows.reduce((s, r) => s + N(r.winding_length), 0).toLocaleString()} m</td>
+                  <td colSpan={2}></td>
+                  <td className="px-2 py-2 text-pink-700 dark:text-pink-400">{lamRows.reduce((s, r) => s + N(r.lem_usage), 0).toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kg</td>
+                  <td></td>
+                </tr>
+              </tfoot>
             </table>
           </div>
         </div>
