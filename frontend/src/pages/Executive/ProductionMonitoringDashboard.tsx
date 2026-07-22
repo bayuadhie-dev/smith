@@ -353,6 +353,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
     { id: 'overview', label: 'Overview', icon: ChartBarIcon },
     { id: 'daily', label: 'Detail Harian', icon: ClockIcon },
     { id: 'machineDaily', label: 'Mesin & Shift Harian', icon: DocumentTextIcon },
+    { id: 'packing_list', label: 'Packing List', icon: ArchiveBoxIcon },
     { id: 'dailySwiper', label: 'Controller', icon: CalendarDaysIcon },
     { id: 'converting', label: 'mc converting', icon: CogIcon },
     { id: 'products', label: 'Per Produk', icon: CubeIcon },
@@ -362,7 +363,6 @@ const ProductionMonitoringDashboard: React.FC = () => {
     { id: 'fg', label: 'FG Conversion', icon: ArrowsRightLeftIcon },
     { id: 'shift', label: 'Per Shift', icon: BoltIcon },
     { id: 'analytics', label: 'Analytics', icon: BeakerIcon },
-    { id: 'packing_list', label: 'Packing List', icon: ArchiveBoxIcon },
   ];
 
   return (
