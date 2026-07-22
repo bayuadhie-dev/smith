@@ -341,6 +341,14 @@ def update_shift_production(production_id):
         shift_production = db.session.get(ShiftProduction, production_id) or abort(404)
         
         # Update fields
+        if 'production_date' in data and data['production_date']:
+            if isinstance(data['production_date'], str):
+                from datetime import datetime
+                shift_production.production_date = datetime.strptime(data['production_date'], '%Y-%m-%d').date()
+            else:
+                shift_production.production_date = data['production_date']
+        if 'shift' in data and data['shift']:
+            shift_production.shift = data['shift']
         if 'actual_quantity' in data:
             shift_production.actual_quantity = float(data['actual_quantity'])
         if 'good_quantity' in data:
