@@ -6,7 +6,8 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   PrinterIcon,
-  CalendarDaysIcon
+  CalendarDaysIcon,
+  PlusIcon
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
@@ -77,6 +78,10 @@ export default function PackingListDetail() {
 
   // Accordion open/close states per batch mixing
   const [expandedBatches, setExpandedBatches] = useState<Record<string, boolean>>({});
+
+  const toggleBatch = (bName: string) => {
+    setExpandedBatches(prev => ({ ...prev, [bName]: !prev[bName] }));
+  };
 
   useEffect(() => {
     if (id) {
@@ -361,7 +366,14 @@ export default function PackingListDetail() {
           <ArrowLeftIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
         </Link>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{packingList.packing_number}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{packingList.packing_number}</h1>
+            {packingList.product_name?.toLowerCase().includes('octenic') && (
+              <span className="px-2.5 py-0.5 text-xs font-bold bg-pink-100 text-pink-800 rounded-full border border-pink-300">
+                ⭐ OCTENIC (Wajib Berat per Karton)
+              </span>
+            )}
+          </div>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             {packingList.product_name} ({packingList.product_code})
           </p>
@@ -370,6 +382,22 @@ export default function PackingListDetail() {
           {statusLabels[packingList.status] || packingList.status}
         </span>
       </div>
+
+      {/* Octenic mandatory weight warning */}
+      {packingList.product_name?.toLowerCase().includes('octenic') && (
+        <div className="bg-pink-50 border border-pink-200 rounded-lg p-3.5 mb-6 flex items-center justify-between text-xs text-pink-900">
+          <div className="flex items-center gap-2">
+            <span className="text-base">⚖️</span>
+            <div>
+              <p className="font-bold">Ketentuan Khusus Octenic:</p>
+              <p>Seluruh karton ({packingList.total_carton} karton) wajib diisi beratnya (`weight_kg`) sebelum QC dapat meloloskan (Release) Packing List ini ke gudang.</p>
+            </div>
+          </div>
+          <span className="font-bold text-pink-700 bg-pink-100 px-2 py-1 rounded">
+            Terkirim: {packingList.weighed_count} / {packingList.total_carton} karton
+          </span>
+        </div>
+      )}
 
       {/* QC Status Info Banner */}
       {(packingList.status === 'completed' || packingList.status === 'quarantine') && (
