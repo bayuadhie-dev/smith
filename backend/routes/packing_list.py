@@ -1256,151 +1256,101 @@ def qc_packing_list(id):
 def _get_fg_availability():
     """Get all FG products available for packing.
     
-    Two sources of availability:
-    1. FG has direct WIP Stock (legacy data / FG WO output) -> 'direct' mode
-    2. FG has WIP components in BOM -> 'bom_components' mode
+    Combines:
+    1. Direct FG stocks with quantity > 0
+    2. WIP product stocks matched to FG products via BOM material or product name matching
+    3. All remaining active FG products
     
-    Both sources are combined. If FG has both direct stock AND BOM components,
-    both are reported and the frontend/create logic will handle accordingly.
+    Results are sorted with products having available_kartons > 0 placed at the very top.
     """
     results = []
-    seen_product_ids = set()
+    seen_fg_ids = set()
     
-    # === Source 1: FG products with direct WIP Stock ===
+    # 1. Direct FG stocks
     direct_fg_stocks = WIPStock.query.join(Product).filter(
-        WIPStock.quantity_carton > 0,
+        (WIPStock.quantity_carton > 0) | (WIPStock.quantity_pcs > 0),
         ~Product.name.like('WIP %'),
         Product.material_type.notin_(['wip'])
     ).all()
-    
-    for wip_stock in direct_fg_stocks:
-        product = wip_stock.product
-        if not product:
+    for ws in direct_fg_stocks:
+        p = ws.product
+        if not p:
             continue
-        
-        seen_product_ids.add(product.id)
-        
-        # Check if also has BOM with WIP components
-        bom = BillOfMaterials.query.filter_by(
-            product_id=product.id, is_active=True
-        ).first()
-        
-        bom_wip_components = []
-        if bom:
-            bom_items = BOMItem.query.filter_by(bom_id=bom.id).all()
-            for item in bom_items:
-                if not item.material_id:
-                    continue
-                material = db.session.get(Material, item.material_id)
-                if not material or not (material.name or '').startswith('WIP '):
-                    continue
-                wip_prod = Product.query.filter_by(code=material.code).first()
-                ws = WIPStock.query.filter_by(product_id=wip_prod.id).first() if wip_prod else None
-                bom_wip_components.append({
-                    'material_code': material.code,
-                    'material_name': material.name,
-                    'wip_product_id': wip_prod.id if wip_prod else None,
-                    'qty_per_karton': float(item.quantity) if item.quantity else 0,
-                    'uom': item.uom,
-                    'wip_stock_pcs': (ws.quantity_pcs or 0) if ws else 0,
-                    'wip_stock_karton': (ws.quantity_carton or 0) if ws else 0,
-                    'possible_fg_kartons': 0
-                })
-        
+        seen_fg_ids.add(p.id)
+        bom = BillOfMaterials.query.filter_by(product_id=p.id, is_active=True).first()
         results.append({
-            'id': product.id,
-            'code': product.code,
-            'name': product.name,
+            'id': p.id,
+            'code': p.code,
+            'name': p.name,
             'bom_id': bom.id if bom else None,
             'bom_number': bom.bom_number if bom else None,
-            'pack_per_carton': wip_stock.pack_per_carton or 1,
+            'pack_per_carton': ws.pack_per_carton or (bom.pack_per_carton if bom else None) or 1,
             'source': 'direct',
-            'available_kartons': wip_stock.quantity_carton or 0,
-            'available_pcs': wip_stock.quantity_pcs or 0,
-            'wip_components': bom_wip_components
+            'available_kartons': ws.quantity_carton or 0,
+            'available_pcs': ws.quantity_pcs or 0,
+            'wip_components': []
         })
-    
-    # === Source 2: FG products with WIP components in BOM (no direct stock) ===
-    fg_boms = db.session.query(BillOfMaterials, Product).join(
-        Product, BillOfMaterials.product_id == Product.id
-    ).filter(
-        BillOfMaterials.is_active == True,
-        Product.material_type.notin_(['wip']),
-        ~Product.name.like('WIP %'),
-        ~Product.id.in_(seen_product_ids) if seen_product_ids else True
+
+    # 2. WIP product stocks (starts with WIP or material_type='wip')
+    wip_product_stocks = WIPStock.query.join(Product).filter(
+        (WIPStock.quantity_carton > 0) | (WIPStock.quantity_pcs > 0),
+        (Product.name.like('WIP %') | (Product.material_type == 'wip'))
     ).all()
-    
-    for bom, product in fg_boms:
-        bom_items = BOMItem.query.filter_by(bom_id=bom.id).all()
+
+    for ws in wip_product_stocks:
+        wip_p = ws.product
+        if not wip_p:
+            continue
         
-        wip_components = []
-        max_fg_kartons = float('inf')
-        has_wip = False
+        matched_fgs = []
+        mat = Material.query.filter_by(code=wip_p.code).first()
+        if mat:
+            bitems = BOMItem.query.filter_by(material_id=mat.id).all()
+            for bi in bitems:
+                b = db.session.get(BillOfMaterials, bi.bom_id)
+                if b and b.is_active:
+                    fg = db.session.get(Product, b.product_id)
+                    if fg and fg.id not in seen_fg_ids:
+                        ppc = b.pack_per_carton or 1
+                        qty_per_krt = float(bi.quantity) if bi.quantity else 1
+                        avail_krt = int((ws.quantity_pcs or 0) / qty_per_krt) if qty_per_krt > 0 else (ws.quantity_carton or 0)
+                        matched_fgs.append((fg, avail_krt, ppc, b))
         
-        for item in bom_items:
-            material = None
-            if item.material_id:
-                material = db.session.get(Material, item.material_id)
-            if not material or not (material.name or '').startswith('WIP '):
-                continue
-            
-            has_wip = True
-            qty_per_karton = float(item.quantity) if item.quantity else 0
-            if qty_per_karton <= 0:
-                continue
-            
-            wip_product = Product.query.filter_by(code=material.code).first()
-            wip_stock_pcs = 0
-            wip_stock_karton = 0
-            
-            if wip_product:
-                ws = WIPStock.query.filter_by(product_id=wip_product.id).first()
-                if ws:
-                    wip_stock_pcs = ws.quantity_pcs or 0
-                    wip_stock_karton = ws.quantity_carton or 0
-            
-            possible_kartons = int(wip_stock_pcs / qty_per_karton) if qty_per_karton > 0 else 0
-            max_fg_kartons = min(max_fg_kartons, possible_kartons)
-            
-            wip_components.append({
-                'material_code': material.code,
-                'material_name': material.name,
-                'wip_product_id': wip_product.id if wip_product else None,
-                'qty_per_karton': qty_per_karton,
-                'uom': item.uom,
-                'wip_stock_pcs': wip_stock_pcs,
-                'wip_stock_karton': wip_stock_karton,
-                'possible_fg_kartons': possible_kartons
+        # Fallback: match FG by name (strip 'WIP ')
+        if not matched_fgs:
+            clean_name = wip_p.name.replace('WIP ', '').strip()
+            name_fgs = Product.query.filter(
+                Product.name.ilike(f'%{clean_name}%'),
+                Product.material_type != 'wip',
+                ~Product.name.like('WIP %')
+            ).all()
+            for fg in name_fgs:
+                if fg.id not in seen_fg_ids:
+                    bom = BillOfMaterials.query.filter_by(product_id=fg.id, is_active=True).first()
+                    ppc = (bom.pack_per_carton if bom else None) or getattr(fg, 'pack_per_karton', None) or 1
+                    matched_fgs.append((fg, ws.quantity_carton or 0, ppc, bom))
+        
+        for fg, avail_krt, ppc, bom in matched_fgs:
+            seen_fg_ids.add(fg.id)
+            results.append({
+                'id': fg.id,
+                'code': fg.code,
+                'name': fg.name,
+                'bom_id': bom.id if bom else None,
+                'bom_number': bom.bom_number if bom else None,
+                'pack_per_carton': ppc,
+                'source': f'wip_stock ({wip_p.name.strip()})',
+                'available_kartons': avail_krt,
+                'available_pcs': avail_krt * ppc,
+                'wip_components': []
             })
-        
-        if not has_wip:
-            continue
-        
-        if max_fg_kartons == float('inf'):
-            max_fg_kartons = 0
-        
-        if max_fg_kartons <= 0:
-            continue
-        
-        results.append({
-            'id': product.id,
-            'code': product.code,
-            'name': product.name,
-            'bom_id': bom.id,
-            'bom_number': bom.bom_number,
-            'pack_per_carton': bom.pack_per_carton or 1,
-            'source': 'bom_components',
-            'available_kartons': max_fg_kartons if max_fg_kartons != float('inf') else 0,
-            'available_pcs': (max_fg_kartons if max_fg_kartons != float('inf') else 0) * (bom.pack_per_carton or 1),
-            'wip_components': wip_components
-        })
-    
-    # === Source 3: All remaining FG products (even if stock is 0) ===
+
+    # 3. All remaining active FG products (stock = 0)
     other_fg_products = Product.query.filter(
         Product.is_active == True,
         Product.material_type.notin_(['wip']),
         ~Product.name.like('WIP %'),
-        ~Product.id.in_(seen_product_ids) if seen_product_ids else True
+        ~Product.id.in_(seen_fg_ids) if seen_fg_ids else True
     ).all()
     
     for p in other_fg_products:
@@ -1412,13 +1362,13 @@ def _get_fg_availability():
             'bom_id': bom.id if bom else None,
             'bom_number': bom.bom_number if bom else None,
             'pack_per_carton': (bom.pack_per_carton if bom else None) or getattr(p, 'pack_per_karton', None) or 1,
-            'source': 'direct',
+            'source': 'none',
             'available_kartons': 0,
             'available_pcs': 0,
             'wip_components': []
         })
-    
-    # Prioritize products with available stock > 0 at the top
+
+    # Sort: products with available_kartons > 0 at the top, sorted by karton count desc, then name asc
     results.sort(key=lambda x: (x['available_kartons'] > 0, x['available_kartons'], x['name']), reverse=True)
     return results
 
