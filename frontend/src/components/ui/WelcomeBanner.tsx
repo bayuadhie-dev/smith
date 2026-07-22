@@ -9,12 +9,16 @@ export const WelcomeBanner: React.FC = () => {
   const [greetingMsg, setGreetingMsg] = useState('');
 
   useEffect(() => {
-    const isFirstTime = user?.is_first_login || user?.login_count === 1;
+    const userAny = user as any;
+    const isFirstTime = userAny?.is_first_login || userAny?.login_count === 1;
     const msg = getDynamicLoginGreeting(user?.full_name || user?.username, isFirstTime);
     setGreetingMsg(msg);
   }, [user]);
 
   if (!isVisible) return null;
+
+  const userAny = user as any;
+  const userRole = userAny?.role || (Array.isArray(userAny?.roles) ? userAny.roles[0] : '');
 
   const todayStr = new Date().toLocaleDateString('id-ID', {
     weekday: 'long',
@@ -39,9 +43,9 @@ export const WelcomeBanner: React.FC = () => {
               <span className="px-2.5 py-0.5 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-[11px] font-bold tracking-wide uppercase">
                 📅 {todayStr}
               </span>
-              {user?.role && (
+              {userRole && (
                 <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-[11px] font-bold uppercase">
-                  {user.role}
+                  {userRole}
                 </span>
               )}
             </div>
