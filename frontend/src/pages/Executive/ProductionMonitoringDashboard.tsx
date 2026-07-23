@@ -52,7 +52,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
   const [weekNumber, setWeekNumber] = useState(0);
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState<'overview' | 'daily' | 'machineDaily' | 'dailySwiper' | 'converting' | 'products' | 'machines' | 'downtime' | 'graph' | 'fg' | 'shift' | 'analytics' | 'packing_list'>('overview');
-  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [autoRefresh, setAutoRefresh] = useState(false);
   const [refreshInterval, setRefreshInterval] = useState(1); // 1 minute default
   const [fgData, setFgData] = useState<any>(null);
   const [fgLoading, setFgLoading] = useState(false);
