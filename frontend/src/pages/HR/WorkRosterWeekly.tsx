@@ -868,6 +868,11 @@ useEffect(() => {
     return (shiftAssignments[role] || []).filter(a => !a.machine_id);
   };
 
+  const formatDateRange = () => {
+    const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
+    return `${weekStart.toLocaleDateString('id-ID', options)} - ${weekEnd.toLocaleDateString('id-ID', options)}`;
+  };
+
   // Export weekly roster to Excel in a single sheet
   const exportToExcel = () => {
     try {
