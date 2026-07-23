@@ -13,6 +13,7 @@ from flask_bcrypt import Bcrypt
 
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from utils.rate_limiter import get_client_ip
 from flask_talisman import Talisman
 from flasgger import Swagger
 import sentry_sdk
@@ -122,16 +123,11 @@ def create_app(config_class=Config):
 
     limiter = Limiter(
 
-        key_func=get_remote_address,
-
-        default_limits=["5000 per hour"],
-
+        key_func=get_client_ip,
+        default_limits=["20000 per hour"],
         storage_uri="memory://"  # In-memory storage (no Redis needed)
 
     )
-
-    
-
     # Exempt notifications from rate limiting to allow legitimate polling
 
     @limiter.request_filter

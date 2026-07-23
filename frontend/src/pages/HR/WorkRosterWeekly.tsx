@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { 
-  CalendarIcon, 
-  UserGroupIcon, 
-  CogIcon, 
+import {
+  CalendarIcon,
+  UserGroupIcon,
+  CogIcon,
   CheckCircleIcon,
   PlusIcon,
   TrashIcon,
@@ -187,19 +187,19 @@ const SearchableLeaderSelect: React.FC<SearchableLeaderSelectProps> = ({
   const searchLower = searchQuery.toLowerCase().trim();
 
   // Filter employees
-  const filteredEmployees = employees.filter(emp => 
-    emp.full_name.toLowerCase().includes(searchLower) || 
+  const filteredEmployees = employees.filter(emp =>
+    emp.full_name.toLowerCase().includes(searchLower) ||
     (emp.employee_number && emp.employee_number.toLowerCase().includes(searchLower))
   );
 
   // Filter saved custom leaders (exclude those already in employees to avoid duplicate display)
   const employeeNamesSet = new Set(employees.map(e => e.full_name.toLowerCase()));
-  const filteredCustomLeaders = customLeaders.filter(cName => 
+  const filteredCustomLeaders = customLeaders.filter(cName =>
     !employeeNamesSet.has(cName.toLowerCase()) &&
     cName.toLowerCase().includes(searchLower)
   );
 
-  const exactMatchExists = 
+  const exactMatchExists =
     filteredEmployees.some(e => e.full_name.toLowerCase() === searchLower) ||
     filteredCustomLeaders.some(c => c.toLowerCase() === searchLower);
 
@@ -208,7 +208,7 @@ const SearchableLeaderSelect: React.FC<SearchableLeaderSelectProps> = ({
       <label className="block text-xs font-semibold text-purple-900 mb-1.5">
         Cari atau Ketik Nama Leader Baru (Free Text):
       </label>
-      <div 
+      <div
         onClick={() => setIsOpen(!isOpen)}
         className="w-full bg-white border border-purple-300 hover:border-purple-500 rounded-xl px-3.5 py-2.5 text-sm text-gray-800 flex items-center justify-between cursor-pointer shadow-sm transition-all"
       >
@@ -280,9 +280,8 @@ const SearchableLeaderSelect: React.FC<SearchableLeaderSelectProps> = ({
                       setSearchQuery('');
                       setIsOpen(false);
                     }}
-                    className={`px-3 py-2 rounded-xl cursor-pointer flex items-center justify-between transition-colors ${
-                      currentLeaderId === emp.id ? 'bg-purple-600 text-white font-bold' : 'hover:bg-purple-50 text-gray-800'
-                    }`}
+                    className={`px-3 py-2 rounded-xl cursor-pointer flex items-center justify-between transition-colors ${currentLeaderId === emp.id ? 'bg-purple-600 text-white font-bold' : 'hover:bg-purple-50 text-gray-800'
+                      }`}
                   >
                     <span>{emp.full_name}</span>
                     <span className={`text-xs ${currentLeaderId === emp.id ? 'text-purple-200' : 'text-gray-400'}`}>
@@ -305,9 +304,8 @@ const SearchableLeaderSelect: React.FC<SearchableLeaderSelectProps> = ({
                       setSearchQuery('');
                       setIsOpen(false);
                     }}
-                    className={`px-3 py-2 rounded-xl cursor-pointer flex items-center justify-between transition-colors ${
-                      currentLeaderName === cName ? 'bg-purple-600 text-white font-bold' : 'hover:bg-purple-50 text-gray-800'
-                    }`}
+                    className={`px-3 py-2 rounded-xl cursor-pointer flex items-center justify-between transition-colors ${currentLeaderName === cName ? 'bg-purple-600 text-white font-bold' : 'hover:bg-purple-50 text-gray-800'
+                      }`}
                   >
                     <span className="flex items-center gap-1.5">
                       <span>⭐</span>
@@ -346,11 +344,11 @@ export default function WorkRosterWeekly() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-interface ScheduledProductInfo {
-  product_name: string;
-  shifts: number[];
-  shiftsLabel: string;
-}
+  interface ScheduledProductInfo {
+    product_name: string;
+    shifts: number[];
+    shiftsLabel: string;
+  }
 
   const [shiftMachineProducts, setShiftMachineProducts] = useState<{
     [shiftKey: string]: { [machineId: number]: ScheduledProductInfo[] }
@@ -427,7 +425,7 @@ interface ScheduledProductInfo {
   const [notes, setNotes] = useState('');
   const [rosterName, setRosterName] = useState('');
   const [manualRoster, setManualRoster] = useState<{ [key: string]: string }>({});
-  
+
   // Packing line products (product name per line)
   const [packingLineProducts, setPackingLineProducts] = useState<{ [line: string]: string }>({
     packing_line_1: '',
@@ -436,7 +434,7 @@ interface ScheduledProductInfo {
     packing_line_4: '',
     packing_line_5: '',
   });
-  
+
   // Modal states
   const [showEmployeeModal, setShowEmployeeModal] = useState(false);
   const [currentRole, setCurrentRole] = useState<string>('');
@@ -468,143 +466,155 @@ interface ScheduledProductInfo {
     fetchMachines();
   }, []);
 
-// Fetch weekly production plan & schedule grid for current week to filter machines/products by shift
-useEffect(() => {
-  const fetchWeeklyPlan = async () => {
-    try {
-      const perShiftProducts: {
-        shift_1: { [machineId: number]: ScheduledProductInfo[] };
-        shift_2: { [machineId: number]: ScheduledProductInfo[] };
-        shift_3: { [machineId: number]: ScheduledProductInfo[] };
-      } = { shift_1: {}, shift_2: {}, shift_3: {} };
+  // Fetch weekly production plan & schedule grid for current week to filter machines/products by shift
+  useEffect(() => {
+    const fetchWeeklyPlan = async () => {
+      try {
+        const perShiftProducts: {
+          shift_1: { [machineId: number]: ScheduledProductInfo[] };
+          shift_2: { [machineId: number]: ScheduledProductInfo[] };
+          shift_3: { [machineId: number]: ScheduledProductInfo[] };
+        } = { shift_1: {}, shift_2: {}, shift_3: {} };
 
-      const perShiftMachineIds: {
-        shift_1: Set<number>;
-        shift_2: Set<number>;
-        shift_3: Set<number>;
-      } = { shift_1: new Set(), shift_2: new Set(), shift_3: new Set() };
+        const perShiftMachineIds: {
+          shift_1: Set<number>;
+          shift_2: Set<number>;
+          shift_3: Set<number>;
+        } = { shift_1: new Set(), shift_2: new Set(), shift_3: new Set() };
 
-      const y = weekStart.getFullYear();
-      const m = String(weekStart.getMonth() + 1).padStart(2, '0');
-      const d = String(weekStart.getDate()).padStart(2, '0');
-      const weekStartStr = `${y}-${m}-${d}`;
+        const wStart = getMonday(currentDate);
+        const y = wStart.getFullYear();
+        const m = String(wStart.getMonth() + 1).padStart(2, '0');
+        const d = String(wStart.getDate()).padStart(2, '0');
+        const weekStartStr = `${y}-${m}-${d}`;
 
-      const registerProductToShift = (mId: number | string, pName: string, activeShifts: number[]) => {
-        const numId = Number(mId);
-        const shiftsLabel = activeShifts.map(s => `Shift ${s}`).join(', ');
-        const prodInfo: ScheduledProductInfo = {
-          product_name: pName,
-          shifts: activeShifts,
-          shiftsLabel
+        const registerProductToShift = (mId: number | string, pName: string, activeShifts: number[]) => {
+          const numId = Number(mId);
+          const strId = String(mId);
+          const shiftsLabel = activeShifts.map(s => `Shift ${s}`).join(', ');
+          const prodInfo: ScheduledProductInfo = {
+            product_name: pName,
+            shifts: activeShifts,
+            shiftsLabel
+          };
+
+          const shiftKeyMap: { [sNum: number]: 'shift_1' | 'shift_2' | 'shift_3' } = {
+            1: 'shift_1',
+            2: 'shift_2',
+            3: 'shift_3'
+          };
+
+          activeShifts.forEach(sNum => {
+            const sKey = shiftKeyMap[sNum];
+            if (sKey) {
+              perShiftMachineIds[sKey].add(numId);
+              if (!perShiftProducts[sKey][numId]) perShiftProducts[sKey][numId] = [];
+              if (!perShiftProducts[sKey][strId]) perShiftProducts[sKey][strId] = perShiftProducts[sKey][numId];
+
+              if (!perShiftProducts[sKey][numId].some(p => p.product_name === pName)) {
+                perShiftProducts[sKey][numId].push(prodInfo);
+              }
+            }
+          });
         };
 
-        const shiftKeyMap: { [sNum: number]: 'shift_1' | 'shift_2' | 'shift_3' } = {
-          1: 'shift_1',
-          2: 'shift_2',
-          3: 'shift_3'
-        };
+        // 1. Fetch from schedule-grid (Jadwal Produksi Minggu Ini)
+        try {
+          let scheduleGridRes = await axiosInstance.get(`/api/production/schedule-grid?week_start=${weekStartStr}`);
+          let gridItems = scheduleGridRes.data.schedules || scheduleGridRes.data.items || scheduleGridRes.data || [];
 
-        activeShifts.forEach(sNum => {
-          const sKey = shiftKeyMap[sNum];
-          if (sKey) {
-            perShiftMachineIds[sKey].add(numId);
-            if (!perShiftProducts[sKey][numId]) {
-              perShiftProducts[sKey][numId] = [];
-            }
-            if (!perShiftProducts[sKey][numId].some(p => p.product_name === pName)) {
-              perShiftProducts[sKey][numId].push(prodInfo);
-            }
+          if (!Array.isArray(gridItems) || gridItems.length === 0) {
+            scheduleGridRes = await axiosInstance.get('/api/production/schedule-grid');
+            gridItems = scheduleGridRes.data.schedules || scheduleGridRes.data.items || scheduleGridRes.data || [];
           }
-        });
-      };
 
-      // 1. Fetch from schedule-grid (Jadwal Produksi Minggu Ini)
-      try {
-        const scheduleGridRes = await axiosInstance.get(`/api/production/schedule-grid?week_start=${weekStartStr}`);
-        const gridItems = scheduleGridRes.data.schedules || scheduleGridRes.data.items || scheduleGridRes.data || [];
-        if (Array.isArray(gridItems)) {
-          gridItems.forEach((item: any) => {
-            const mId = Number(item.machine_id);
-            const pName = item.product_name;
-            if (!mId || !pName) return;
+          if (Array.isArray(gridItems)) {
+            gridItems.forEach((item: any) => {
+              const mId = item.machine_id;
+              const pName = item.product_name || item.product?.name || item.product_code || (item.product_id ? `Produk #${item.product_id}` : '');
+              if (!mId || !pName) return;
 
-            let daysObj = item.schedule_days;
-            if (typeof daysObj === 'string') {
-              try { daysObj = JSON.parse(daysObj); } catch(e) {}
-            }
+              let daysObj = item.schedule_days;
+              if (typeof daysObj === 'string') {
+                try { daysObj = JSON.parse(daysObj); } catch (e) { }
+              }
 
-            const activeShiftsSet = new Set<number>();
-            if (daysObj && typeof daysObj === 'object') {
-              Object.values(daysObj).forEach((sArr: any) => {
-                if (Array.isArray(sArr)) {
-                  sArr.forEach((sNum: number) => activeShiftsSet.add(Number(sNum)));
-                }
-              });
-            }
-            const activeShifts = activeShiftsSet.size > 0 ? Array.from(activeShiftsSet).sort() : [1, 2, 3];
-            registerProductToShift(mId, pName, activeShifts);
-          });
+              const activeShiftsSet = new Set<number>();
+              if (daysObj && typeof daysObj === 'object') {
+                Object.values(daysObj).forEach((sArr: any) => {
+                  if (Array.isArray(sArr)) {
+                    sArr.forEach((sNum: number) => activeShiftsSet.add(Number(sNum)));
+                  }
+                });
+              }
+              const activeShifts = activeShiftsSet.size > 0 ? Array.from(activeShiftsSet).sort() : [1, 2, 3];
+              registerProductToShift(mId, pName, activeShifts);
+            });
+          }
+        } catch (err) {
+          console.error('Error fetching schedule-grid:', err);
         }
-      } catch (err) {
-        console.error('Error fetching schedule-grid:', err);
-      }
 
-      // 2. Fetch from weekly-plans (Rencana Produksi Mingguan)
-      try {
-        const listResponse = await axiosInstance.get('/api/production/weekly-plans', {
-          params: { year, week }
-        });
-        const plans = listResponse.data.weekly_plans || [];
-        if (plans.length > 0) {
-          const planId = plans[0].id;
-          const detailResponse = await axiosInstance.get(`/api/production/weekly-plans/${planId}`);
-          const planData = detailResponse.data.weekly_plan || detailResponse.data || {};
-          const items: WeeklyPlanItem[] = planData.items || [];
-          items.forEach(item => {
-            if (item.machine_id && item.product_name) {
-              registerProductToShift(Number(item.machine_id), item.product_name, [1, 2, 3]);
-            }
+        // 2. Fetch from weekly-plans (Rencana Produksi Mingguan)
+        try {
+          const listResponse = await axiosInstance.get('/api/production/weekly-plans', {
+            params: { year, week }
           });
+          const plans = listResponse.data.weekly_plans || [];
+          if (plans.length > 0) {
+            const planId = plans[0].id;
+            const detailResponse = await axiosInstance.get(`/api/production/weekly-plans/${planId}`);
+            const planData = detailResponse.data.weekly_plan || detailResponse.data || {};
+            const items: WeeklyPlanItem[] = planData.items || [];
+            items.forEach(item => {
+              const pName = item.product_name || (item as any).product_code || (item as any).product?.name || '';
+              if (item.machine_id && pName) {
+                registerProductToShift(item.machine_id, pName, [1, 2, 3]);
+              }
+            });
+          }
+        } catch (err) {
+          console.error('Error fetching weekly-plans:', err);
         }
-      } catch (err) {
-        console.error('Error fetching weekly-plans:', err);
+
+        setShiftMachineProducts(perShiftProducts);
+        setShiftMachineIds(perShiftMachineIds);
+      } catch (error) {
+        console.error('Error fetching production schedules:', error);
+        setShiftMachineProducts({ shift_1: {}, shift_2: {}, shift_3: {} });
+        setShiftMachineIds({ shift_1: new Set(), shift_2: new Set(), shift_3: new Set() });
       }
+    };
+    fetchWeeklyPlan();
+  }, [year, week]);
 
-      setShiftMachineProducts(perShiftProducts);
-      setShiftMachineIds(perShiftMachineIds);
-    } catch (error) {
-      console.error('Error fetching production schedules:', error);
-      setShiftMachineProducts({ shift_1: {}, shift_2: {}, shift_3: {} });
-      setShiftMachineIds({ shift_1: new Set(), shift_2: new Set(), shift_3: new Set() });
-    }
-  };
-  fetchWeeklyPlan();
-}, [year, week, weekStart]);
-
-  // Get machine IDs for the current selected shift
-  const currentShiftMachineIds = shiftMachineIds[selectedShift as keyof typeof shiftMachineIds] || new Set();
-
-  // Combine machine IDs across ALL shifts for the current week
-  const allWeeklyMachineIds = new Set<number>();
-  Object.values(shiftMachineIds).forEach(setObj => {
-    if (setObj && setObj instanceof Set) {
-      setObj.forEach(mId => allWeeklyMachineIds.add(Number(mId)));
+  // Combine all machine IDs that have actual production schedules in the current week
+  const scheduledMachineIdsInWeek = new Set<number>();
+  Object.values(shiftMachineProducts).forEach(shiftObj => {
+    if (shiftObj && typeof shiftObj === 'object') {
+      Object.entries(shiftObj).forEach(([mId, prodArr]) => {
+        if (Array.isArray(prodArr) && prodArr.length > 0) {
+          scheduledMachineIdsInWeek.add(Number(mId));
+        }
+      });
     }
   });
 
-  // Filter machines to ONLY show those that are scheduled in the current shift (or all weekly scheduled machines if none specifically in current shift)
-  const allMachines = (currentShiftMachineIds.size > 0)
-    ? [...machines, ...SPECIAL_MACHINES].filter(m => currentShiftMachineIds.has(Number(m.id)) || m.id < 0)
-    : (allWeeklyMachineIds.size > 0)
-      ? [...machines, ...SPECIAL_MACHINES].filter(m => allWeeklyMachineIds.has(Number(m.id)) || m.id < 0)
-      : [...machines, ...SPECIAL_MACHINES].filter(m => m.id < 0);   
+  // ONLY show machines that are scheduled in the weekly production plan (+ special machines)
+  const allMachines = [...machines, ...SPECIAL_MACHINES].filter(m => {
+    if (m.id < 0) return true;
+    if (scheduledMachineIdsInWeek.size > 0) {
+      return scheduledMachineIdsInWeek.has(Number(m.id));
+    }
+    return true;
+  });
   // Get all used employee names across the current shift roster
   const getAllUsedNames = (): Set<string> => {
     const names = new Set<string>();
     Object.entries(manualRoster).forEach(([key, value]) => {
       if (!key.startsWith(selectedShift)) return;
       if (!value) return;
-      
+
       // Handle distribusi format (machineId:name)
       if (key.includes('distribusi') && !key.includes('_machine')) {
         value.split('\n').forEach(entry => {
@@ -624,17 +634,17 @@ useEffect(() => {
     });
     return names;
   };
-  
+
   // Check if a name is duplicate (excluding current position)
   const isNameDuplicate = (name: string, currentKey: string, currentIdx: number): boolean => {
     if (!name.trim()) return false;
     const nameLower = name.trim().toLowerCase();
-    
+
     let count = 0;
     Object.entries(manualRoster).forEach(([key, value]) => {
       if (!key.startsWith(selectedShift)) return;
       if (!value) return;
-      
+
       if (key.includes('distribusi') && !key.includes('_machine')) {
         value.split('\n').forEach((entry, idx) => {
           const parts = entry.split(':');
@@ -649,21 +659,21 @@ useEffect(() => {
           }
         });
       }
-      });
-      return count === 0;
-    };
+    });
+    return count === 0;
+  };
 
-    // Fetch roster data
+  // Fetch roster data
   const fetchRoster = useCallback(async () => {
     setLoading(true);
     try {
       const response = await axiosInstance.get('/api/hr/work-roster/rosters/by-week', {
         params: { year, week }
       });
-      
+
       if (response.data.success) {
         setRoleDefinitions(response.data.role_definitions || {});
-        
+
         if (response.data.roster) {
           setRoster(response.data.roster);
           setLeaderIds({
@@ -740,18 +750,18 @@ useEffect(() => {
   const addEmployee = (employee: Employee) => {
     const shiftAssignments = { ...assignments[selectedShift as keyof typeof assignments] };
     const roleAssignments = [...(shiftAssignments[currentRole] || [])];
-    
+
     // Check if already assigned
-    const exists = roleAssignments.some(a => 
-      a.employee_id === employee.id && 
+    const exists = roleAssignments.some(a =>
+      a.employee_id === employee.id &&
       a.machine_id === currentMachineId
     );
-    
+
     if (exists) {
       toast.error('Karyawan sudah di-assign ke posisi ini');
       return;
     }
-    
+
     roleAssignments.push({
       employee_id: employee.id,
       employee_name: employee.full_name,
@@ -762,14 +772,14 @@ useEffect(() => {
       is_backup: false,
       status: 'assigned'
     });
-    
+
     shiftAssignments[currentRole] = roleAssignments;
-    
+
     setAssignments(prev => ({
       ...prev,
       [selectedShift]: shiftAssignments
     }));
-    
+
     setShowEmployeeModal(false);
     toast.success(`${employee.full_name} ditambahkan ke ${roleDefinitions[currentRole]?.name || currentRole}`);
   };
@@ -793,13 +803,13 @@ useEffect(() => {
     const shiftAssignments = { ...assignments[selectedShift as keyof typeof assignments] };
     const roleAssignments = [...(shiftAssignments[role] || [])];
     roleAssignments.splice(index, 1);
-    
+
     roleAssignments.forEach((a, i) => {
       a.position = i + 1;
     });
-    
+
     shiftAssignments[role] = roleAssignments;
-    
+
     setAssignments(prev => ({
       ...prev,
       [selectedShift]: shiftAssignments
@@ -823,14 +833,14 @@ useEffect(() => {
         notes,
         status: 'draft'
       };
-      
+
       let response;
       if (roster?.id) {
         response = await axiosInstance.put(`/api/hr/work-roster/rosters/${roster.id}`, payload);
       } else {
         response = await axiosInstance.post('/api/hr/work-roster/rosters', payload);
       }
-      
+
       if (response.data.success) {
         toast.success('Roster berhasil disimpan');
         fetchRoster();
@@ -851,12 +861,12 @@ useEffect(() => {
       toast.error('Simpan roster terlebih dahulu');
       return;
     }
-    
+
     try {
       const response = await axiosInstance.put(`/api/hr/work-roster/rosters/${roster.id}`, {
         status: 'published'
       });
-      
+
       if (response.data.success) {
         toast.success('Roster berhasil dipublish');
         fetchRoster();
@@ -911,7 +921,8 @@ useEffect(() => {
         'Helper',
         'Checker',
         'Infeeding',
-        'Timbang Box'
+        'Timbang Box',
+        'Packing (MC 8)'
       ]);
 
       const shiftList = [
@@ -923,8 +934,8 @@ useEffect(() => {
       shiftList.forEach(sItem => {
         const sKey = sItem.key;
         const leaderName = (sKey === 'shift_1' ? (leaderNames.shift_1 || roster?.leader_shift_1_name) :
-                            sKey === 'shift_2' ? (leaderNames.shift_2 || roster?.leader_shift_2_name) :
-                            (leaderNames.shift_3 || roster?.leader_shift_3_name)) || '-';
+          sKey === 'shift_2' ? (leaderNames.shift_2 || roster?.leader_shift_2_name) :
+            (leaderNames.shift_3 || roster?.leader_shift_3_name)) || '-';
 
         const sMachineIds = shiftMachineIds[sKey] || new Set();
         const sMachines = (sMachineIds.size > 0)
@@ -952,7 +963,7 @@ useEffect(() => {
 
           itemsToRender.forEach((prodInfo, pIdx) => {
             const keySuffix = prods.length > 1 ? `_p${pIdx}` : '';
-            
+
             const roleValues: { [role: string]: string } = {};
             MACHINE_ROLES.forEach(r => {
               const k = `${sKey}_${m.id}${keySuffix}_${r}`;
@@ -960,6 +971,11 @@ useEffect(() => {
               const cleanNames = val ? val.split('\n').map(s => s.trim()).filter(Boolean) : [];
               roleValues[r] = cleanNames.length > 0 ? cleanNames.join('\n') : '-';
             });
+
+            const packingKey = `${sKey}_${m.id}${keySuffix}_packing`;
+            const packingVal = manualRoster[packingKey];
+            const cleanPackingNames = packingVal ? packingVal.split('\n').map(s => s.trim()).filter(Boolean) : [];
+            const packingValue = m.code === 'MC 8' && cleanPackingNames.length > 0 ? cleanPackingNames.join('\n') : '-';
 
             rows.push([
               sItem.label,
@@ -970,7 +986,8 @@ useEffect(() => {
               roleValues['helper'] || '-',
               roleValues['checker'] || '-',
               roleValues['infeeding'] || '-',
-              roleValues['timbang_box'] || '-'
+              roleValues['timbang_box'] || '-',
+              packingValue
             ]);
           });
         });
@@ -989,6 +1006,7 @@ useEffect(() => {
             `Packing Line ${lIdx + 1}`,
             pName,
             workers,
+            '-',
             '-',
             '-',
             '-',
@@ -1011,6 +1029,7 @@ useEffect(() => {
             rName,
             '-',
             workers,
+            '-',
             '-',
             '-',
             '-',
@@ -1039,6 +1058,7 @@ useEffect(() => {
         { wch: 22 },
         { wch: 24 },
         { wch: 38 },
+        { wch: 28 },
         { wch: 28 },
         { wch: 28 },
         { wch: 28 },
@@ -1123,25 +1143,24 @@ useEffect(() => {
               <ChevronRightIcon className="h-5 w-5" />
             </button>
           </div>
-          
+
           <div className="text-lg font-medium text-gray-700 dark:text-gray-200">
             {formatDateRange()}
           </div>
 
           {/* Status Badge */}
           {roster && (
-            <span className={`ml-auto px-3 py-1 rounded-full text-sm font-medium ${
-              roster.status === 'published' 
+            <span className={`ml-auto px-3 py-1 rounded-full text-sm font-medium ${roster.status === 'published'
                 ? 'bg-green-100 text-green-800'
                 : roster.status === 'completed'
-                ? 'bg-blue-100 text-blue-800'
-                : 'bg-yellow-100 text-yellow-800'
-            }`}>
+                  ? 'bg-blue-100 text-blue-800'
+                  : 'bg-yellow-100 text-yellow-800'
+              }`}>
               {roster.status === 'published' ? 'Published' : roster.status === 'completed' ? 'Completed' : 'Draft'}
             </span>
           )}
         </div>
-        
+
       </div>
 
       {/* Shift Tabs */}
@@ -1152,21 +1171,20 @@ useEffect(() => {
               <button
                 key={shift.value}
                 onClick={() => setSelectedShift(shift.value)}
-                className={`flex-1 px-6 py-4 text-center font-medium transition border-b-2 ${
-                  selectedShift === shift.value
+                className={`flex-1 px-6 py-4 text-center font-medium transition border-b-2 ${selectedShift === shift.value
                     ? 'border-blue-600 text-blue-600 bg-blue-50'
                     : 'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                }`}
+                  }`}
               >
                 <div className="flex items-center justify-center gap-2">
                   <UserGroupIcon className="h-5 w-5" />
                   {shift.shortLabel}
                 </div>
                 <div className="text-xs text-gray-500 mt-1">
-                  Leader: {leaderIds[shift.value as keyof typeof leaderIds] 
-                    ? (shift.value === 'shift_1' ? roster?.leader_shift_1_name : 
-                       shift.value === 'shift_2' ? roster?.leader_shift_2_name : 
-                       roster?.leader_shift_3_name) || 'Assigned'
+                  Leader: {leaderIds[shift.value as keyof typeof leaderIds]
+                    ? (shift.value === 'shift_1' ? roster?.leader_shift_1_name :
+                      shift.value === 'shift_2' ? roster?.leader_shift_2_name :
+                        roster?.leader_shift_3_name) || 'Assigned'
                     : 'Belum ditentukan'}
                 </div>
               </button>
@@ -1207,7 +1225,7 @@ useEffect(() => {
                 <CogIcon className="h-5 w-5 text-blue-600" />
                 Assignment per Mesin Produksi - {SHIFTS.find(s => s.value === selectedShift)?.shortLabel}
               </h3>
-              
+
               <div className="overflow-x-auto">
                 <table className="min-w-full border rounded-lg">
                   <thead>
@@ -1226,6 +1244,11 @@ useEffect(() => {
                           </th>
                         );
                       })}
+                      {allMachines.some(m => m.code === 'MC 8') && (
+                        <th className="px-4 py-3 text-center text-sm font-semibold border-r last:border-r-0 text-gray-700 dark:text-gray-200">
+                          Packing
+                        </th>
+                      )}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -1238,7 +1261,7 @@ useEffect(() => {
                       const numB = parseInt(b.name.replace(/\D/g, '')) || 0;
                       return numA - numB;
                     }).flatMap(machine => {
-                      const prods = shiftMachineProducts[selectedShift]?.[machine.id] || [];
+                      const prods = shiftMachineProducts[selectedShift]?.[Number(machine.id)] || shiftMachineProducts[selectedShift]?.[String(machine.id)] || shiftMachineProducts[selectedShift]?.[machine.id] || [];
                       const itemsToRender = prods.length > 0 ? prods : [null];
                       const rowSpanCount = itemsToRender.length;
 
@@ -1249,7 +1272,7 @@ useEffect(() => {
                         return (
                           <tr key={`${machine.id}_${pIdx}`} className={`hover:bg-gray-50 ${machine.id < 0 ? 'bg-blue-50' : ''}`}>
                             {isFirstRow && (
-                              <td 
+                              <td
                                 rowSpan={rowSpanCount}
                                 className="px-4 py-3 font-medium text-gray-900 dark:text-white border-r bg-gray-50 dark:bg-gray-900 align-top"
                               >
@@ -1278,7 +1301,7 @@ useEffect(() => {
                               const key = `${selectedShift}_${machine.id}${keyProductSuffix}_${role}`;
                               const rawValue = manualRoster[key];
                               const names = rawValue !== undefined ? rawValue.split('\n') : [];
-                              
+
                               const addName = () => {
                                 setManualRoster(prev => {
                                   const current = prev[key];
@@ -1288,18 +1311,18 @@ useEffect(() => {
                                   return { ...prev, [key]: current + '\n' };
                                 });
                               };
-                              
+
                               const removeName = (idx: number) => {
                                 const newNames = names.filter((_, i) => i !== idx);
                                 setManualRoster(prev => ({ ...prev, [key]: newNames.length > 0 ? newNames.join('\n') : undefined }));
                               };
-                              
+
                               const updateName = (idx: number, value: string) => {
                                 const newNames = [...names];
                                 newNames[idx] = value;
                                 setManualRoster(prev => ({ ...prev, [key]: newNames.join('\n') }));
                               };
-                              
+
                               return (
                                 <td key={role} className="px-1 py-1 border-r last:border-r-0 min-w-[100px] align-top">
                                   <div className="space-y-1">
@@ -1322,7 +1345,7 @@ useEffect(() => {
                                         </div>
                                       );
                                     })}
-                                    <span 
+                                    <span
                                       onClick={addName}
                                       className="text-xs text-blue-600 hover:text-blue-800 hover:underline cursor-pointer inline-block py-1"
                                     >+ Tambah</span>
@@ -1330,6 +1353,66 @@ useEffect(() => {
                                 </td>
                               );
                             })}
+                            {allMachines.some(m => m.code === 'MC 8') && (
+                              machine.code === 'MC 8' ? (() => {
+                                const key = `${selectedShift}_${machine.id}${keyProductSuffix}_packing`;
+                                const rawValue = manualRoster[key];
+                                const names = rawValue !== undefined ? rawValue.split('\n') : [];
+
+                                const addName = () => {
+                                  setManualRoster(prev => {
+                                    const current = prev[key];
+                                    if (current === undefined || current === '') {
+                                      return { ...prev, [key]: '' };
+                                    }
+                                    return { ...prev, [key]: current + '\n' };
+                                  });
+                                };
+
+                                const removeName = (idx: number) => {
+                                  const newNames = names.filter((_, i) => i !== idx);
+                                  setManualRoster(prev => ({ ...prev, [key]: newNames.length > 0 ? newNames.join('\n') : undefined }));
+                                };
+
+                                const updateName = (idx: number, value: string) => {
+                                  const newNames = [...names];
+                                  newNames[idx] = value;
+                                  setManualRoster(prev => ({ ...prev, [key]: newNames.join('\n') }));
+                                };
+
+                                return (
+                                  <td className="px-1 py-1 border-r last:border-r-0 min-w-[100px] align-top">
+                                    <div className="space-y-1">
+                                      {names.map((name, idx) => {
+                                        const isDup = isNameDuplicate(name, key, idx);
+                                        return (
+                                          <div key={idx} className="flex items-center gap-1">
+                                            <input
+                                              type="text"
+                                              value={name}
+                                              onChange={(e) => updateName(idx, e.target.value)}
+                                              placeholder="Nama..."
+                                              className={`flex-1 text-xs border rounded px-1 py-0.5 w-16 focus:ring-1 ${isDup ? 'border-red-500 bg-red-50 focus:ring-red-500' : 'focus:ring-blue-500'}`}
+                                              title={isDup ? 'Nama sudah digunakan!' : ''}
+                                            />
+                                            <span
+                                              onClick={() => removeName(idx)}
+                                              className="text-red-500 hover:text-red-700 text-xs cursor-pointer font-bold"
+                                            >×</span>
+                                          </div>
+                                        );
+                                      })}
+                                      <span
+                                        onClick={addName}
+                                        className="text-xs text-blue-600 hover:text-blue-800 hover:underline cursor-pointer inline-block py-1"
+                                      >+ Tambah</span>
+                                    </div>
+                                  </td>
+                                );
+                              })() : (
+                                <td className="px-1 py-1 border-r last:border-r-0 min-w-[100px] bg-gray-50 dark:bg-gray-900" />
+                              )
+                            )}
                           </tr>
                         );
                       });
@@ -1349,14 +1432,14 @@ useEffect(() => {
                   const def = roleDefinitions[line];
                   const lineAssignments = getGeneralAssignments(line);
                   const RoleIcon = ROLE_ICONS[line] || CubeIcon;
-                  
+
                   return (
                     <div key={line} className="border rounded-lg p-4 bg-white dark:bg-gray-800 shadow-sm">
                       <h4 className="font-semibold mb-2 flex items-center gap-2" style={{ color: def?.color || '#EC4899' }}>
                         <RoleIcon className="h-5 w-5" />
                         Line {lineIndex + 1}
                       </h4>
-                      
+
                       {/* Product input per line */}
                       <div className="mb-3">
                         <input
@@ -1367,7 +1450,7 @@ useEffect(() => {
                           className="w-full text-sm border rounded px-2 py-1 focus:ring-1 focus:ring-pink-500 focus:border-pink-500"
                         />
                       </div>
-                      
+
                       {/* Manual input for packing line workers */}
                       <div className="mb-3">
                         <label className="block text-xs text-gray-500 mb-1">Petugas</label>
@@ -1375,7 +1458,7 @@ useEffect(() => {
                           const key = `${selectedShift}_${line}`;
                           const rawValue = manualRoster[key];
                           const names = rawValue !== undefined ? rawValue.split('\n') : [];
-                          
+
                           const addName = () => {
                             setManualRoster(prev => {
                               const current = prev[key];
@@ -1385,7 +1468,7 @@ useEffect(() => {
                               return { ...prev, [key]: current + '\n' };
                             });
                           };
-                          
+
                           return (
                             <div className="space-y-1">
                               {names.map((name, idx) => {
@@ -1422,7 +1505,7 @@ useEffect(() => {
                           );
                         })()}
                       </div>
-                      
+
                       {/* Timbang Box */}
                       <div>
                         <label className="block text-xs text-gray-500 mb-1">Timbang Box</label>
@@ -1430,7 +1513,7 @@ useEffect(() => {
                           const key = `${selectedShift}_${line}_timbang`;
                           const rawValue = manualRoster[key];
                           const names = rawValue !== undefined ? rawValue.split('\n') : [];
-                          
+
                           const addName = () => {
                             setManualRoster(prev => {
                               const current = prev[key];
@@ -1440,7 +1523,7 @@ useEffect(() => {
                               return { ...prev, [key]: current + '\n' };
                             });
                           };
-                          
+
                           return (
                             <div className="space-y-1">
                               {names.map((name, idx) => {
@@ -1493,14 +1576,14 @@ useEffect(() => {
                   const def = roleDefinitions[role];
                   if (!def) return null;
                   const RoleIcon = ROLE_ICONS[role] || UserIcon;
-                    
+
                   return (
                     <div key={role} className="border rounded-lg p-4 bg-white dark:bg-gray-800 shadow-sm">
                       <h4 className="font-semibold mb-3 flex items-center gap-2" style={{ color: def.color }}>
                         <RoleIcon className="h-5 w-5" />
                         {def.name}
                       </h4>
-                      
+
                       {/* Distribusi - per mesin per employee */}
                       {role === 'distribusi' ? (
                         <div>
@@ -1510,7 +1593,7 @@ useEffect(() => {
                             const rawValue = manualRoster[key];
                             // Format: "machineId:name" per line
                             const entries = rawValue !== undefined ? rawValue.split('\n') : [];
-                            
+
                             const addEntry = () => {
                               setManualRoster(prev => {
                                 const current = prev[key];
@@ -1520,18 +1603,18 @@ useEffect(() => {
                                 return { ...prev, [key]: current + '\n:' };
                               });
                             };
-                            
+
                             const updateEntry = (idx: number, machineId: string, name: string) => {
                               const newEntries = [...entries];
                               newEntries[idx] = `${machineId}:${name}`;
                               setManualRoster(prev => ({ ...prev, [key]: newEntries.join('\n') }));
                             };
-                            
+
                             const removeEntry = (idx: number) => {
                               const newEntries = entries.filter((_, i) => i !== idx);
                               setManualRoster(prev => ({ ...prev, [key]: newEntries.length > 0 ? newEntries.join('\n') : undefined }));
                             };
-                            
+
                             return (
                               <div className="space-y-2">
                                 {entries.map((entry, idx) => {
@@ -1584,7 +1667,7 @@ useEffect(() => {
                             const key = `${selectedShift}_${role}`;
                             const rawValue = manualRoster[key];
                             const names = rawValue !== undefined ? rawValue.split('\n') : [];
-                            
+
                             const addName = () => {
                               setManualRoster(prev => {
                                 const current = prev[key];
@@ -1594,7 +1677,7 @@ useEffect(() => {
                                 return { ...prev, [key]: current + '\n' };
                               });
                             };
-                            
+
                             return (
                               <div className="space-y-1">
                                 {names.map((name, idx) => {
@@ -1668,7 +1751,7 @@ useEffect(() => {
                 ×
               </button>
             </div>
-            
+
             <div className="p-4 border-b">
               <input
                 type="text"
@@ -1681,7 +1764,7 @@ useEffect(() => {
                 className="w-full border rounded-lg px-3 py-2"
               />
             </div>
-            
+
             <div className="overflow-y-auto max-h-96">
               {employees.length === 0 ? (
                 <div className="p-8 text-center text-gray-500">
