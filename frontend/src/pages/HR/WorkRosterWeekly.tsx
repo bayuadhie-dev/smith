@@ -468,11 +468,10 @@ useEffect(() => {
   fetchWeeklyPlan();
 }, [year, week]);
 
-  // Get all machines including special machines (Bag Maker, Inkjet, Fliptop)
-  // Get all machines including special machines (Bag Maker, Inkjet, Fliptop),
-// filtered to only those scheduled in this week's production plan
-const allMachines = weeklyPlanMachineIds === null
-  ? []
+// Get all machines including special machines (Bag Maker, Inkjet, Fliptop).
+// If a weekly production plan exists, filter to scheduled machines; otherwise, show all machines.
+const allMachines = (weeklyPlanMachineIds === null || weeklyPlanMachineIds.size === 0)
+  ? [...machines, ...SPECIAL_MACHINES]
   : [...machines, ...SPECIAL_MACHINES].filter(m => weeklyPlanMachineIds.has(m.id));   
   // Get all used employee names across the current shift roster
   const getAllUsedNames = (): Set<string> => {
