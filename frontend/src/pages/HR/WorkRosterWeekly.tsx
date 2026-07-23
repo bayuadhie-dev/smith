@@ -344,8 +344,27 @@ export default function WorkRosterWeekly() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-const [weeklyPlanMachineIds, setWeeklyPlanMachineIds] = useState<Set<number> | null>(null);
-const [weeklyPlanProducts, setWeeklyPlanProducts] = useState<{ [machineId: number]: string }>({});  
+interface ScheduledProductInfo {
+  product_name: string;
+  shifts: number[];
+  shiftsLabel: string;
+}
+
+  const [shiftMachineProducts, setShiftMachineProducts] = useState<{
+    [shiftKey: string]: { [machineId: number]: ScheduledProductInfo[] }
+  }>({
+    shift_1: {},
+    shift_2: {},
+    shift_3: {}
+  });
+
+  const [shiftMachineIds, setShiftMachineIds] = useState<{
+    [shiftKey: string]: Set<number>
+  }>({
+    shift_1: new Set(),
+    shift_2: new Set(),
+    shift_3: new Set()
+  });
 
   // Form state for each shift
   const [leaderIds, setLeaderIds] = useState<{ shift_1: number | null; shift_2: number | null; shift_3: number | null }>({
@@ -447,17 +466,54 @@ const [weeklyPlanProducts, setWeeklyPlanProducts] = useState<{ [machineId: numbe
     fetchMachines();
   }, []);
 
-// Fetch weekly production plan & schedule grid for current week to filter machines/products
+// Fetch weekly production plan & schedule grid for current week to filter machines/products by shift
 useEffect(() => {
   const fetchWeeklyPlan = async () => {
     try {
-      const machineIds = new Set<number>();
-      const products: { [machineId: number]: string } = {};
+      const perShiftProducts: {
+        shift_1: { [machineId: number]: ScheduledProductInfo[] };
+        shift_2: { [machineId: number]: ScheduledProductInfo[] };
+        shift_3: { [machineId: number]: ScheduledProductInfo[] };
+      } = { shift_1: {}, shift_2: {}, shift_3: {} };
+
+      const perShiftMachineIds: {
+        shift_1: Set<number>;
+        shift_2: Set<number>;
+        shift_3: Set<number>;
+      } = { shift_1: new Set(), shift_2: new Set(), shift_3: new Set() };
 
       const y = weekStart.getFullYear();
       const m = String(weekStart.getMonth() + 1).padStart(2, '0');
       const d = String(weekStart.getDate()).padStart(2, '0');
       const weekStartStr = `${y}-${m}-${d}`;
+
+      const registerProductToShift = (mId: number, pName: string, activeShifts: number[]) => {
+        const shiftsLabel = activeShifts.map(s => `Shift ${s}`).join(', ');
+        const prodInfo: ScheduledProductInfo = {
+          product_name: pName,
+          shifts: activeShifts,
+          shiftsLabel
+        };
+
+        const shiftKeyMap: { [sNum: number]: 'shift_1' | 'shift_2' | 'shift_3' } = {
+          1: 'shift_1',
+          2: 'shift_2',
+          3: 'shift_3'
+        };
+
+        activeShifts.forEach(sNum => {
+          const sKey = shiftKeyMap[sNum];
+          if (sKey) {
+            perShiftMachineIds[sKey].add(mId);
+            if (!perShiftProducts[sKey][mId]) {
+              perShiftProducts[sKey][mId] = [];
+            }
+            if (!perShiftProducts[sKey][mId].some(p => p.product_name === pName)) {
+              perShiftProducts[sKey][mId].push(prodInfo);
+            }
+          }
+        });
+      };
 
       // 1. Fetch from schedule-grid (Jadwal Produksi Minggu Ini)
       try {
@@ -466,14 +522,19 @@ useEffect(() => {
         if (Array.isArray(gridItems)) {
           gridItems.forEach((item: any) => {
             const mId = item.machine_id;
-            if (mId) {
-              machineIds.add(mId);
-              if (item.product_name) {
-                products[mId] = products[mId]
-                  ? (products[mId].includes(item.product_name) ? products[mId] : `${products[mId]}, ${item.product_name}`)
-                  : item.product_name;
-              }
+            const pName = item.product_name;
+            if (!mId || !pName) return;
+
+            const activeShiftsSet = new Set<number>();
+            if (item.schedule_days && typeof item.schedule_days === 'object') {
+              Object.values(item.schedule_days).forEach((sArr: any) => {
+                if (Array.isArray(sArr)) {
+                  sArr.forEach((sNum: number) => activeShiftsSet.add(sNum));
+                }
+              });
             }
+            const activeShifts = activeShiftsSet.size > 0 ? Array.from(activeShiftsSet).sort() : [1, 2, 3];
+            registerProductToShift(mId, pName, activeShifts);
           });
         }
       } catch (err) {
@@ -492,13 +553,8 @@ useEffect(() => {
           const planData = detailResponse.data.weekly_plan || detailResponse.data || {};
           const items: WeeklyPlanItem[] = planData.items || [];
           items.forEach(item => {
-            if (item.machine_id) {
-              machineIds.add(item.machine_id);
-              if (item.product_name) {
-                products[item.machine_id] = products[item.machine_id]
-                  ? (products[item.machine_id].includes(item.product_name) ? products[item.machine_id] : `${products[item.machine_id]}, ${item.product_name}`)
-                  : item.product_name;
-              }
+            if (item.machine_id && item.product_name) {
+              registerProductToShift(item.machine_id, item.product_name, [1, 2, 3]);
             }
           });
         }
@@ -506,20 +562,22 @@ useEffect(() => {
         console.error('Error fetching weekly-plans:', err);
       }
 
-      setWeeklyPlanMachineIds(machineIds);
-      setWeeklyPlanProducts(products);
+      setShiftMachineProducts(perShiftProducts);
+      setShiftMachineIds(perShiftMachineIds);
     } catch (error) {
       console.error('Error fetching production schedules:', error);
-      setWeeklyPlanMachineIds(new Set());
-      setWeeklyPlanProducts({});
+      setShiftMachineProducts({ shift_1: {}, shift_2: {}, shift_3: {} });
+      setShiftMachineIds({ shift_1: new Set(), shift_2: new Set(), shift_3: new Set() });
     }
   };
   fetchWeeklyPlan();
 }, [year, week, weekStart]);
 
-  // Get all machines: Filter to scheduled machines if plan/grid exists and has machineIds, or fallback if empty
-  const allMachines = (weeklyPlanMachineIds !== null && weeklyPlanMachineIds.size > 0)
-    ? [...machines, ...SPECIAL_MACHINES].filter(m => weeklyPlanMachineIds.has(m.id) || m.id < 0)
+  // Get machines for current selected shift
+  const currentShiftMachineIds = shiftMachineIds[selectedShift as keyof typeof shiftMachineIds] || new Set();
+
+  const allMachines = (currentShiftMachineIds.size > 0)
+    ? [...machines, ...SPECIAL_MACHINES].filter(m => currentShiftMachineIds.has(m.id) || m.id < 0)
     : [...machines, ...SPECIAL_MACHINES];   
   // Get all used employee names across the current shift roster
   const getAllUsedNames = (): Set<string> => {
@@ -992,22 +1050,27 @@ useEffect(() => {
       			      <div className="font-semibold">{machine.name}</div>
       			      <div className="text-xs text-gray-500">{machine.code}</div>
     			   </td>
-                           <td className="px-3 py-3 border-r min-w-[220px]">
-                              {weeklyPlanProducts[machine.id] ? (
+                           <td className="px-3 py-3 border-r min-w-[240px]">
+                              {shiftMachineProducts[selectedShift]?.[machine.id]?.length > 0 ? (
                                 <div className="flex flex-col gap-1.5">
-                                  {weeklyPlanProducts[machine.id].split(', ').map((prodName, pIdx) => (
+                                  {shiftMachineProducts[selectedShift][machine.id].map((prodInfo, pIdx) => (
                                     <div 
                                       key={pIdx}
-                                      className="inline-flex items-start gap-1.5 px-2.5 py-1.5 bg-indigo-50/90 dark:bg-indigo-900/40 border border-indigo-200/80 dark:border-indigo-700/60 rounded-lg text-xs font-bold text-indigo-950 dark:text-indigo-200 shadow-2xs leading-snug"
+                                      className="inline-flex items-center justify-between gap-2 px-2.5 py-1.5 bg-indigo-50/90 dark:bg-indigo-900/40 border border-indigo-200/80 dark:border-indigo-700/60 rounded-lg text-xs font-bold text-indigo-950 dark:text-indigo-200 shadow-2xs leading-snug"
                                     >
-                                      <span className="text-indigo-500 font-black shrink-0 mt-0.5">•</span>
-                                      <span>{prodName}</span>
+                                      <div className="flex items-start gap-1.5 min-w-0">
+                                        <span className="text-indigo-500 font-black shrink-0 mt-0.5">•</span>
+                                        <span className="truncate">{prodInfo.product_name}</span>
+                                      </div>
+                                      <span className="bg-indigo-600 text-white dark:bg-indigo-500 text-[10px] font-black px-1.5 py-0.5 rounded-md shrink-0 shadow-2xs">
+                                        {prodInfo.shiftsLabel}
+                                      </span>
                                     </div>
                                   ))}
                                 </div>
                               ) : (
                                 <div className="text-xs text-gray-400 italic px-1 py-1">
-                                  Tidak ada jadwal
+                                  Tidak ada jadwal shift ini
                                 </div>
                               )}
                            </td>
