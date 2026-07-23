@@ -528,11 +528,16 @@ useEffect(() => {
             const pName = item.product_name;
             if (!mId || !pName) return;
 
+            let daysObj = item.schedule_days;
+            if (typeof daysObj === 'string') {
+              try { daysObj = JSON.parse(daysObj); } catch(e) {}
+            }
+
             const activeShiftsSet = new Set<number>();
-            if (item.schedule_days && typeof item.schedule_days === 'object') {
-              Object.values(item.schedule_days).forEach((sArr: any) => {
+            if (daysObj && typeof daysObj === 'object') {
+              Object.values(daysObj).forEach((sArr: any) => {
                 if (Array.isArray(sArr)) {
-                  sArr.forEach((sNum: number) => activeShiftsSet.add(sNum));
+                  sArr.forEach((sNum: number) => activeShiftsSet.add(Number(sNum)));
                 }
               });
             }
@@ -557,7 +562,7 @@ useEffect(() => {
           const items: WeeklyPlanItem[] = planData.items || [];
           items.forEach(item => {
             if (item.machine_id && item.product_name) {
-              registerProductToShift(item.machine_id, item.product_name, [1, 2, 3]);
+              registerProductToShift(Number(item.machine_id), item.product_name, [1, 2, 3]);
             }
           });
         }
@@ -576,12 +581,23 @@ useEffect(() => {
   fetchWeeklyPlan();
 }, [year, week, weekStart]);
 
-  // Get machines for current selected shift
+  // Get machine IDs for the current selected shift
   const currentShiftMachineIds = shiftMachineIds[selectedShift as keyof typeof shiftMachineIds] || new Set();
 
+  // Combine machine IDs across ALL shifts for the current week
+  const allWeeklyMachineIds = new Set<number>();
+  Object.values(shiftMachineIds).forEach(setObj => {
+    if (setObj && setObj instanceof Set) {
+      setObj.forEach(mId => allWeeklyMachineIds.add(Number(mId)));
+    }
+  });
+
+  // Filter machines to ONLY show those that are scheduled in the current shift (or all weekly scheduled machines if none specifically in current shift)
   const allMachines = (currentShiftMachineIds.size > 0)
-    ? [...machines, ...SPECIAL_MACHINES].filter(m => currentShiftMachineIds.has(m.id) || m.id < 0)
-    : [...machines, ...SPECIAL_MACHINES];   
+    ? [...machines, ...SPECIAL_MACHINES].filter(m => currentShiftMachineIds.has(Number(m.id)) || m.id < 0)
+    : (allWeeklyMachineIds.size > 0)
+      ? [...machines, ...SPECIAL_MACHINES].filter(m => allWeeklyMachineIds.has(Number(m.id)) || m.id < 0)
+      : [...machines, ...SPECIAL_MACHINES].filter(m => m.id < 0);   
   // Get all used employee names across the current shift roster
   const getAllUsedNames = (): Set<string> => {
     const names = new Set<string>();
