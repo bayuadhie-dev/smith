@@ -986,17 +986,30 @@ useEffect(() => {
                       const numB = parseInt(b.name.replace(/\D/g, '')) || 0;
                       return numA - numB;
                     }).map(machine => {
-                      const productValue = weeklyPlanProducts[machine.id] || 'Tidak ada jadwal';
 		      return (
   			<tr key={machine.id} className={`hover:bg-gray-50 ${machine.id < 0 ? 'bg-blue-50' : ''}`}>
     			   <td className="px-4 py-3 font-medium text-gray-900 dark:text-white border-r bg-gray-50 dark:bg-gray-900">
       			      <div className="font-semibold">{machine.name}</div>
       			      <div className="text-xs text-gray-500">{machine.code}</div>
     			   </td>
-                           <td className="px-3 py-3 border-r">
-                              <div className={`w-full text-sm px-2 py-1 rounded ${weeklyPlanProducts[machine.id] ? 'text-gray-900 dark:text-white font-medium' : 'text-gray-400 italic'}`}>
-                                {productValue}
-                              </div>
+                           <td className="px-3 py-3 border-r min-w-[220px]">
+                              {weeklyPlanProducts[machine.id] ? (
+                                <div className="flex flex-col gap-1.5">
+                                  {weeklyPlanProducts[machine.id].split(', ').map((prodName, pIdx) => (
+                                    <div 
+                                      key={pIdx}
+                                      className="inline-flex items-start gap-1.5 px-2.5 py-1.5 bg-indigo-50/90 dark:bg-indigo-900/40 border border-indigo-200/80 dark:border-indigo-700/60 rounded-lg text-xs font-bold text-indigo-950 dark:text-indigo-200 shadow-2xs leading-snug"
+                                    >
+                                      <span className="text-indigo-500 font-black shrink-0 mt-0.5">•</span>
+                                      <span>{prodName}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div className="text-xs text-gray-400 italic px-1 py-1">
+                                  Tidak ada jadwal
+                                </div>
+                              )}
                            </td>
                           {MACHINE_ROLES.map(role => {
                             const key = `${selectedShift}_${machine.id}_${role}`;
