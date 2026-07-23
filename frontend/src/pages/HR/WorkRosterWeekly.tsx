@@ -931,7 +931,7 @@ useEffect(() => {
             MACHINE_ROLES.forEach(r => {
               const k = `${sKey}_${m.id}${keySuffix}_${r}`;
               const val = manualRoster[k];
-              roleValues[r] = val ? val.split('\n').filter(Boolean).join(', ') : '-';
+              roleValues[r] = val ? val.split('\n').filter(Boolean).join('\n') : '-';
             });
 
             rows.push([
@@ -953,7 +953,7 @@ useEffect(() => {
           const pName = packingLineProducts[lineKey] || '-';
           const k = `${sKey}_${lineKey}`;
           const val = manualRoster[k];
-          const workers = val ? val.split('\n').filter(Boolean).join(', ') : '-';
+          const workers = val ? val.split('\n').filter(Boolean).join('\n') : '-';
 
           rows.push([
             sItem.label,
@@ -974,7 +974,7 @@ useEffect(() => {
           const rName = roleDef?.name || gRole.toUpperCase();
           const k = `${sKey}_${gRole}`;
           const val = manualRoster[k];
-          const workers = val ? val.split('\n').filter(Boolean).join(', ') : '-';
+          const workers = val ? val.split('\n').filter(Boolean).join('\n') : '-';
 
           rows.push([
             sItem.label,
