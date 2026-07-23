@@ -941,7 +941,8 @@ useEffect(() => {
             MACHINE_ROLES.forEach(r => {
               const k = `${sKey}_${m.id}${keySuffix}_${r}`;
               const val = manualRoster[k];
-              roleValues[r] = val ? val.split('\n').filter(Boolean).join('\n') : '-';
+              const cleanNames = val ? val.split('\n').map(s => s.trim()).filter(Boolean) : [];
+              roleValues[r] = cleanNames.length > 0 ? cleanNames.join('\n') : '-';
             });
 
             rows.push([
@@ -963,7 +964,8 @@ useEffect(() => {
           const pName = packingLineProducts[lineKey] || '-';
           const k = `${sKey}_${lineKey}`;
           const val = manualRoster[k];
-          const workers = val ? val.split('\n').filter(Boolean).join('\n') : '-';
+          const cleanWorkers = val ? val.split('\n').map(s => s.trim()).filter(Boolean) : [];
+          const workers = cleanWorkers.length > 0 ? cleanWorkers.join('\n') : '-';
 
           rows.push([
             sItem.label,
@@ -984,7 +986,8 @@ useEffect(() => {
           const rName = roleDef?.name || gRole.toUpperCase();
           const k = `${sKey}_${gRole}`;
           const val = manualRoster[k];
-          const workers = val ? val.split('\n').filter(Boolean).join('\n') : '-';
+          const cleanWorkers = val ? val.split('\n').map(s => s.trim()).filter(Boolean) : [];
+          const workers = cleanWorkers.length > 0 ? cleanWorkers.join('\n') : '-';
 
           rows.push([
             sItem.label,
@@ -1002,16 +1005,29 @@ useEffect(() => {
 
       // Build Sheet & Auto Column Widths
       const ws = XLSX.utils.aoa_to_sheet(rows);
+
+      // Apply wrapText and top vertical alignment to all cells for clean multiline display
+      for (const cellAddress in ws) {
+        if (cellAddress.startsWith('!')) continue;
+        if (!ws[cellAddress]) continue;
+        ws[cellAddress].s = {
+          alignment: {
+            wrapText: true,
+            vertical: 'top'
+          }
+        };
+      }
+
       ws['!cols'] = [
         { wch: 24 },
         { wch: 22 },
         { wch: 24 },
         { wch: 38 },
-        { wch: 25 },
-        { wch: 25 },
-        { wch: 25 },
-        { wch: 25 },
-        { wch: 25 }
+        { wch: 28 },
+        { wch: 28 },
+        { wch: 28 },
+        { wch: 28 },
+        { wch: 28 }
       ];
 
       const wb = XLSX.utils.book_new();
