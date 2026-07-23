@@ -462,7 +462,8 @@ useEffect(() => {
       }
       const planId = plans[0].id;
       const detailResponse = await axiosInstance.get(`/api/production/weekly-plans/${planId}`);
-      const items: WeeklyPlanItem[] = detailResponse.data.items || [];
+      const planData = detailResponse.data.weekly_plan || detailResponse.data || {};
+      const items: WeeklyPlanItem[] = planData.items || [];
 
       const machineIds = new Set<number>();
       const products: { [machineId: number]: string } = {};
