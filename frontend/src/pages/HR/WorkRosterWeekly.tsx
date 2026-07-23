@@ -427,6 +427,26 @@ const [weeklyPlanProducts, setWeeklyPlanProducts] = useState<{ [machineId: numbe
   const weekStart = getMonday(currentDate);
   const weekEnd = getSunday(currentDate);
 
+  // Fetch all production machines from API
+  useEffect(() => {
+    const fetchMachines = async () => {
+      try {
+        const response = await axiosInstance.get('/api/production/machines');
+        const list = response.data.machines || response.data || [];
+        if (Array.isArray(list)) {
+          setMachines(list.map((m: any) => ({
+            id: m.id,
+            name: m.name || m.machine_name || `Mesin ${m.id}`,
+            code: m.code || m.machine_code || `M${m.id}`
+          })));
+        }
+      } catch (error) {
+        console.error('Error fetching production machines:', error);
+      }
+    };
+    fetchMachines();
+  }, []);
+
 // Fetch weekly production plan for current week to filter machines/products
 useEffect(() => {
   const fetchWeeklyPlan = async () => {
@@ -468,11 +488,10 @@ useEffect(() => {
   fetchWeeklyPlan();
 }, [year, week]);
 
-// Get all machines including special machines (Bag Maker, Inkjet, Fliptop).
-// If a weekly production plan exists, filter to scheduled machines; otherwise, show all machines.
-const allMachines = (weeklyPlanMachineIds === null || weeklyPlanMachineIds.size === 0)
-  ? [...machines, ...SPECIAL_MACHINES]
-  : [...machines, ...SPECIAL_MACHINES].filter(m => weeklyPlanMachineIds.has(m.id));   
+  // Get all machines: Filter to scheduled machines if plan exists, or show all master machines + special machines
+  const allMachines = (weeklyPlanMachineIds === null || weeklyPlanMachineIds.size === 0)
+    ? [...machines, ...SPECIAL_MACHINES]
+    : [...machines, ...SPECIAL_MACHINES].filter(m => weeklyPlanMachineIds.has(m.id) || m.id < 0);   
   // Get all used employee names across the current shift roster
   const getAllUsedNames = (): Set<string> => {
     const names = new Set<string>();
