@@ -489,7 +489,8 @@ useEffect(() => {
       const d = String(weekStart.getDate()).padStart(2, '0');
       const weekStartStr = `${y}-${m}-${d}`;
 
-      const registerProductToShift = (mId: number, pName: string, activeShifts: number[]) => {
+      const registerProductToShift = (mId: number | string, pName: string, activeShifts: number[]) => {
+        const numId = Number(mId);
         const shiftsLabel = activeShifts.map(s => `Shift ${s}`).join(', ');
         const prodInfo: ScheduledProductInfo = {
           product_name: pName,
@@ -506,12 +507,12 @@ useEffect(() => {
         activeShifts.forEach(sNum => {
           const sKey = shiftKeyMap[sNum];
           if (sKey) {
-            perShiftMachineIds[sKey].add(mId);
-            if (!perShiftProducts[sKey][mId]) {
-              perShiftProducts[sKey][mId] = [];
+            perShiftMachineIds[sKey].add(numId);
+            if (!perShiftProducts[sKey][numId]) {
+              perShiftProducts[sKey][numId] = [];
             }
-            if (!perShiftProducts[sKey][mId].some(p => p.product_name === pName)) {
-              perShiftProducts[sKey][mId].push(prodInfo);
+            if (!perShiftProducts[sKey][numId].some(p => p.product_name === pName)) {
+              perShiftProducts[sKey][numId].push(prodInfo);
             }
           }
         });
@@ -523,7 +524,7 @@ useEffect(() => {
         const gridItems = scheduleGridRes.data.schedules || scheduleGridRes.data.items || scheduleGridRes.data || [];
         if (Array.isArray(gridItems)) {
           gridItems.forEach((item: any) => {
-            const mId = item.machine_id;
+            const mId = Number(item.machine_id);
             const pName = item.product_name;
             if (!mId || !pName) return;
 
@@ -911,17 +912,26 @@ useEffect(() => {
 
         const sMachineIds = shiftMachineIds[sKey] || new Set();
         const sMachines = (sMachineIds.size > 0)
-          ? [...machines, ...SPECIAL_MACHINES].filter(m => sMachineIds.has(m.id) || m.id < 0)
+          ? [...machines, ...SPECIAL_MACHINES].filter(m => sMachineIds.has(Number(m.id)) || m.id < 0)
           : [...machines, ...SPECIAL_MACHINES];
 
-        sMachines.sort((a, b) => {
+        // Filter machines to only those with products scheduled in this shift or special machines
+        const activeMachines = sMachines.filter(m => {
+          if (m.id < 0) return true; // Special machines
+          const prods = shiftMachineProducts[sKey]?.[Number(m.id)] || [];
+          return prods.length > 0;
+        });
+
+        const machinesToExport = activeMachines.length > 0 ? activeMachines : sMachines;
+
+        machinesToExport.sort((a, b) => {
           if (a.id < 0 && b.id >= 0) return 1;
           if (a.id >= 0 && b.id < 0) return -1;
           const numA = parseInt(a.name.replace(/\D/g, '')) || 0;
           const numB = parseInt(b.name.replace(/\D/g, '')) || 0;
           return numA - numB;
         }).forEach(m => {
-          const prods = shiftMachineProducts[sKey]?.[m.id] || [];
+          const prods = shiftMachineProducts[sKey]?.[Number(m.id)] || [];
           const itemsToRender = prods.length > 0 ? prods : [null];
 
           itemsToRender.forEach((prodInfo, pIdx) => {
