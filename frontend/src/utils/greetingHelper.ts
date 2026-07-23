@@ -3,6 +3,26 @@
 export type TimeSlot = 'morning' | 'midday' | 'afternoon' | 'night';
 export type DayOfWeek = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'weekend';
 
+export const FIRST_LOGIN_TODAY_MATRIX: Record<TimeSlot, string[]> = {
+  morning: [
+    "Wilujeng enjing {name}! Login pertama dinten ayeuna, ngopi heula ben semangat kerja kantor!",
+    "Selamat pagi {name}! Login pertama hari ini, hayu awali hari ku niat baik jeung senyuman!",
+    "Sugeng enjing {name}! Awal jam kerja dinten ayeuna, gaskeun absen jeung nggarap target!"
+  ],
+  midday: [
+    "Wilujeng siang {name}! Login pertama hari ini di jam siang, dahar siang heula ben boga tenaga!",
+    "Selamat siang {name}! Barus login pertama dinten ayeuna, lanjutkeun semangat produktifna!"
+  ],
+  afternoon: [
+    "Wilujeng sore {name}! Baru login pertama hari ini menjelang jam 5 sore, bereskeun laporan ngarah bisa pulang tenang!",
+    "Sore {name}! Baru sempet login pertama dinten ayeuna? Jam 5 sore teng sakedap deui, gaskeun tugasna!"
+  ],
+  night: [
+    "Wilujeng wengi {name}! Baru login pertama malam ini? Tetep semangat ngalembur, rezeki moal kaliru!",
+    "Selamat malam {name}! Login pertama malam hari euy, tetep jaga kesehatan jeung istirahat nya!"
+  ]
+};
+
 export const GREETINGS_MATRIX: Record<DayOfWeek, Record<TimeSlot, string[]>> = {
   monday: {
     morning: [
@@ -118,14 +138,6 @@ export const GREETINGS_MATRIX: Record<DayOfWeek, Record<TimeSlot, string[]>> = {
   }
 };
 
-// Greetings specifically for the FIRST LOGIN OF THE DAY (Login Pertama Hari Ini)
-export const FIRST_LOGIN_OF_DAY_GREETINGS = [
-  "Wilujeng enjing {name}! Login pertama dinten ayeuna, ngopi heula ben semangat kerja kantor!",
-  "Selamat pagi {name}! Login pertama hari ini, hayu awali hari ku niat baik jeung senyuman!",
-  "Sugeng enjing {name}! Awal jam kerja dinten ayeuna, gaskeun absen jeung nggarap target!",
-  "Halo {name}! Semangat login pertama hari ini, tetep fokus jeung ulah spaneng nya!"
-];
-
 export const checkIsFirstLoginToday = (): boolean => {
   try {
     const todayStr = new Date().toISOString().split('T')[0];
@@ -142,18 +154,29 @@ export const checkIsFirstLoginToday = (): boolean => {
 
 export const getDynamicLoginGreeting = (fullName?: string, isFirstTime: boolean = false): string => {
   const name = fullName ? fullName.split(' ')[0] : 'Dulur';
-  
+  const now = new Date();
+  const currentHour = now.getHours();
+
+  let slotKey: TimeSlot = 'morning';
+  if (currentHour >= 6 && currentHour < 11) {
+    slotKey = 'morning';
+  } else if (currentHour >= 11 && currentHour < 14) {
+    slotKey = 'midday';
+  } else if (currentHour >= 14 && currentHour <= 17) {
+    slotKey = 'afternoon';
+  } else {
+    slotKey = 'night';
+  }
+
   const isFirstLoginToday = isFirstTime || checkIsFirstLoginToday();
   
   if (isFirstLoginToday) {
-    const template = FIRST_LOGIN_OF_DAY_GREETINGS[Math.floor(Math.random() * FIRST_LOGIN_OF_DAY_GREETINGS.length)];
+    const options = FIRST_LOGIN_TODAY_MATRIX[slotKey];
+    const template = options[Math.floor(Math.random() * options.length)];
     return template.replace('{name}', name);
   }
   
-  const now = new Date();
   const dayNum = now.getDay(); // 0 = Sun, 1 = Mon, ..., 6 = Sat
-  const currentHour = now.getHours();
-  
   let dayKey: DayOfWeek = 'monday';
   switch (dayNum) {
     case 1: dayKey = 'monday'; break;
@@ -164,17 +187,6 @@ export const getDynamicLoginGreeting = (fullName?: string, isFirstTime: boolean 
     case 0:
     case 6:
     default: dayKey = 'weekend'; break;
-  }
-  
-  let slotKey: TimeSlot = 'morning';
-  if (currentHour >= 6 && currentHour < 11) {
-    slotKey = 'morning';
-  } else if (currentHour >= 11 && currentHour < 14) {
-    slotKey = 'midday';
-  } else if (currentHour >= 14 && currentHour <= 17) {
-    slotKey = 'afternoon';
-  } else {
-    slotKey = 'night';
   }
   
   const options = GREETINGS_MATRIX[dayKey][slotKey];
