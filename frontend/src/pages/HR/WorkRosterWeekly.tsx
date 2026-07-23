@@ -16,8 +16,10 @@ import {
   ClipboardDocumentCheckIcon,
   MagnifyingGlassIcon,
   XMarkIcon,
-  ChevronDownIcon
+  ChevronDownIcon,
+  ArrowDownTrayIcon
 } from '@heroicons/react/24/outline';
+import * as XLSX from 'xlsx';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
 
@@ -866,9 +868,146 @@ useEffect(() => {
     return (shiftAssignments[role] || []).filter(a => !a.machine_id);
   };
 
-  const formatDateRange = () => {
-    const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
-    return `${weekStart.toLocaleDateString('id-ID', options)} - ${weekEnd.toLocaleDateString('id-ID', options)}`;
+  // Export weekly roster to Excel in a single sheet
+  const exportToExcel = () => {
+    try {
+      const rows: any[] = [];
+
+      // Title & Header Info
+      rows.push(['PT. FALMACO NONWOVEN INDUSTRI, Tbk']);
+      rows.push(['JADWAL ROSTER KERJA MINGGUAN PRODUKSI']);
+      rows.push([`Periode: Minggu ke-${week} / ${year} (${formatDateRange()})`]);
+      rows.push([]); // Empty row separator
+
+      // Table Headers
+      rows.push([
+        'Shift / Bagian',
+        'Leader Shift',
+        'Mesin / Jalur',
+        'Produk',
+        'Operator',
+        'Helper',
+        'Checker',
+        'Infeeding',
+        'Timbang Box'
+      ]);
+
+      const shiftList = [
+        { key: 'shift_1', label: 'Shift 1 (06:30 - 15:00)' },
+        { key: 'shift_2', label: 'Shift 2 (15:00 - 23:00)' },
+        { key: 'shift_3', label: 'Shift 3 (23:00 - 06:30)' }
+      ];
+
+      shiftList.forEach(sItem => {
+        const sKey = sItem.key;
+        const leaderName = (sKey === 'shift_1' ? (leaderNames.shift_1 || roster?.leader_shift_1_name) :
+                            sKey === 'shift_2' ? (leaderNames.shift_2 || roster?.leader_shift_2_name) :
+                            (leaderNames.shift_3 || roster?.leader_shift_3_name)) || '-';
+
+        const sMachineIds = shiftMachineIds[sKey] || new Set();
+        const sMachines = (sMachineIds.size > 0)
+          ? [...machines, ...SPECIAL_MACHINES].filter(m => sMachineIds.has(m.id) || m.id < 0)
+          : [...machines, ...SPECIAL_MACHINES];
+
+        sMachines.sort((a, b) => {
+          if (a.id < 0 && b.id >= 0) return 1;
+          if (a.id >= 0 && b.id < 0) return -1;
+          const numA = parseInt(a.name.replace(/\D/g, '')) || 0;
+          const numB = parseInt(b.name.replace(/\D/g, '')) || 0;
+          return numA - numB;
+        }).forEach(m => {
+          const prods = shiftMachineProducts[sKey]?.[m.id] || [];
+          const itemsToRender = prods.length > 0 ? prods : [null];
+
+          itemsToRender.forEach((prodInfo, pIdx) => {
+            const keySuffix = prods.length > 1 ? `_p${pIdx}` : '';
+            
+            const roleValues: { [role: string]: string } = {};
+            MACHINE_ROLES.forEach(r => {
+              const k = `${sKey}_${m.id}${keySuffix}_${r}`;
+              const val = manualRoster[k];
+              roleValues[r] = val ? val.split('\n').filter(Boolean).join(', ') : '-';
+            });
+
+            rows.push([
+              sItem.label,
+              leaderName,
+              `${m.name} (${m.code})`,
+              prodInfo ? prodInfo.product_name : 'Tidak ada jadwal',
+              roleValues['operator'] || '-',
+              roleValues['helper'] || '-',
+              roleValues['checker'] || '-',
+              roleValues['infeeding'] || '-',
+              roleValues['timbang_box'] || '-'
+            ]);
+          });
+        });
+
+        // Packing Lines
+        PACKING_LINES.forEach((lineKey, lIdx) => {
+          const pName = packingLineProducts[lineKey] || '-';
+          const k = `${sKey}_${lineKey}`;
+          const val = manualRoster[k];
+          const workers = val ? val.split('\n').filter(Boolean).join(', ') : '-';
+
+          rows.push([
+            sItem.label,
+            leaderName,
+            `Packing Line ${lIdx + 1}`,
+            pName,
+            workers,
+            '-',
+            '-',
+            '-',
+            '-'
+          ]);
+        });
+
+        // General Roles (QC & Distribusi)
+        GENERAL_ROLES.forEach(gRole => {
+          const roleDef = roleDefinitions[gRole];
+          const rName = roleDef?.name || gRole.toUpperCase();
+          const k = `${sKey}_${gRole}`;
+          const val = manualRoster[k];
+          const workers = val ? val.split('\n').filter(Boolean).join(', ') : '-';
+
+          rows.push([
+            sItem.label,
+            leaderName,
+            rName,
+            '-',
+            workers,
+            '-',
+            '-',
+            '-',
+            '-'
+          ]);
+        });
+      });
+
+      // Build Sheet & Auto Column Widths
+      const ws = XLSX.utils.aoa_to_sheet(rows);
+      ws['!cols'] = [
+        { wch: 24 },
+        { wch: 22 },
+        { wch: 24 },
+        { wch: 38 },
+        { wch: 25 },
+        { wch: 25 },
+        { wch: 25 },
+        { wch: 25 },
+        { wch: 25 }
+      ];
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, `Roster Minggu ${week}`);
+
+      XLSX.writeFile(wb, `Roster_Kerja_Minggu_${week}_${year}.xlsx`);
+      toast.success('Roster berhasil di-export ke Excel!');
+    } catch (error) {
+      console.error('Error exporting to Excel:', error);
+      toast.error('Gagal memproses export Excel');
+    }
   };
 
   return (
@@ -880,6 +1019,14 @@ useEffect(() => {
           <p className="text-gray-600 dark:text-gray-300">Pengaturan jadwal kerja produksi per minggu</p>
         </div>
         <div className="flex gap-2">
+          <button
+            onClick={exportToExcel}
+            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold flex items-center gap-1.5 shadow-sm transition-all"
+            title="Export Roster ke Excel (1 Sheet)"
+          >
+            <ArrowDownTrayIcon className="h-5 w-5" />
+            Export Excel
+          </button>
           <button
             onClick={() => fetchRoster()}
             className="px-3 py-2 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
