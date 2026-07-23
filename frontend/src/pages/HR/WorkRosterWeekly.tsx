@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   CalendarIcon, 
   UserGroupIcon, 
@@ -13,7 +13,10 @@ import {
   WrenchScrewdriverIcon,
   CubeIcon,
   ScaleIcon,
-  ClipboardDocumentCheckIcon
+  ClipboardDocumentCheckIcon,
+  MagnifyingGlassIcon,
+  XMarkIcon,
+  ChevronDownIcon
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
@@ -146,6 +149,191 @@ function getSunday(date: Date): Date {
   return new Date(monday.getTime() + 6 * 24 * 60 * 60 * 1000);
 }
 
+interface SearchableLeaderSelectProps {
+  currentLeaderName: string;
+  currentLeaderId: number | null;
+  employees: Employee[];
+  customLeaders: string[];
+  onSelectLeader: (id: number | null, name: string) => void;
+  onSaveCustomLeader: (name: string) => void;
+  onRemoveCustomLeader: (name: string, e: React.MouseEvent) => void;
+}
+
+const SearchableLeaderSelect: React.FC<SearchableLeaderSelectProps> = ({
+  currentLeaderName,
+  currentLeaderId,
+  employees,
+  customLeaders,
+  onSelectLeader,
+  onSaveCustomLeader,
+  onRemoveCustomLeader
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const searchLower = searchQuery.toLowerCase().trim();
+
+  // Filter employees
+  const filteredEmployees = employees.filter(emp => 
+    emp.full_name.toLowerCase().includes(searchLower) || 
+    (emp.employee_number && emp.employee_number.toLowerCase().includes(searchLower))
+  );
+
+  // Filter saved custom leaders (exclude those already in employees to avoid duplicate display)
+  const employeeNamesSet = new Set(employees.map(e => e.full_name.toLowerCase()));
+  const filteredCustomLeaders = customLeaders.filter(cName => 
+    !employeeNamesSet.has(cName.toLowerCase()) &&
+    cName.toLowerCase().includes(searchLower)
+  );
+
+  const exactMatchExists = 
+    filteredEmployees.some(e => e.full_name.toLowerCase() === searchLower) ||
+    filteredCustomLeaders.some(c => c.toLowerCase() === searchLower);
+
+  return (
+    <div className="relative w-full max-w-md" ref={dropdownRef}>
+      <label className="block text-xs font-semibold text-purple-900 mb-1.5">
+        Cari atau Ketik Nama Leader Baru (Free Text):
+      </label>
+      <div 
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full bg-white border border-purple-300 hover:border-purple-500 rounded-xl px-3.5 py-2.5 text-sm text-gray-800 flex items-center justify-between cursor-pointer shadow-sm transition-all"
+      >
+        <span className={currentLeaderName ? "font-bold text-purple-950 flex items-center gap-1.5" : "text-gray-400"}>
+          {currentLeaderName ? `👤 ${currentLeaderName}` : "-- Cari atau ketik nama leader --"}
+        </span>
+        <div className="flex items-center gap-1">
+          {currentLeaderName && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelectLeader(null, '');
+              }}
+              className="p-1 text-gray-400 hover:text-red-500 rounded-full transition-colors"
+              title="Hapus Leader"
+            >
+              <XMarkIcon className="h-4 w-4" />
+            </button>
+          )}
+          <ChevronDownIcon className="h-4 w-4 text-purple-600" />
+        </div>
+      </div>
+
+      {isOpen && (
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-2xl shadow-2xl border border-purple-200 z-50 p-2 text-sm space-y-2 animate-fadeIn">
+          {/* Search Input Box */}
+          <div className="relative">
+            <MagnifyingGlassIcon className="h-4 w-4 text-gray-400 absolute left-3 top-3" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Ketik nama pencarian atau leader baru..."
+              className="w-full pl-9 pr-3 py-2 bg-purple-50/50 border border-purple-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              autoFocus
+            />
+          </div>
+
+          <div className="max-h-60 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
+            {/* Create & Save New Free Text Leader Option */}
+            {searchQuery.trim().length > 0 && !exactMatchExists && (
+              <button
+                type="button"
+                onClick={() => {
+                  const newName = searchQuery.trim();
+                  onSaveCustomLeader(newName);
+                  onSelectLeader(null, newName);
+                  setSearchQuery('');
+                  setIsOpen(false);
+                }}
+                className="w-full text-left px-3 py-2 bg-purple-100/90 hover:bg-purple-200 text-purple-950 rounded-xl font-bold flex items-center justify-between text-xs transition-colors"
+              >
+                <span>✨ Simpan & Pilih "{searchQuery.trim()}"</span>
+                <span className="bg-purple-600 text-white px-2 py-0.5 rounded-md text-[10px]">Simpan ke Dropdown</span>
+              </button>
+            )}
+
+            {/* Employee Options from System */}
+            {filteredEmployees.length > 0 && (
+              <div>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-2 py-1">Karyawan Sistem</p>
+                {filteredEmployees.map(emp => (
+                  <div
+                    key={emp.id}
+                    onClick={() => {
+                      onSelectLeader(emp.id, emp.full_name);
+                      onSaveCustomLeader(emp.full_name);
+                      setSearchQuery('');
+                      setIsOpen(false);
+                    }}
+                    className={`px-3 py-2 rounded-xl cursor-pointer flex items-center justify-between transition-colors ${
+                      currentLeaderId === emp.id ? 'bg-purple-600 text-white font-bold' : 'hover:bg-purple-50 text-gray-800'
+                    }`}
+                  >
+                    <span>{emp.full_name}</span>
+                    <span className={`text-xs ${currentLeaderId === emp.id ? 'text-purple-200' : 'text-gray-400'}`}>
+                      {emp.employee_number || emp.position || 'Karyawan'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Saved Custom Leaders Options */}
+            {filteredCustomLeaders.length > 0 && (
+              <div>
+                <p className="text-[10px] font-bold text-purple-600 uppercase tracking-wider px-2 py-1 mt-1">Leader Tersimpan (Custom)</p>
+                {filteredCustomLeaders.map(cName => (
+                  <div
+                    key={cName}
+                    onClick={() => {
+                      onSelectLeader(null, cName);
+                      setSearchQuery('');
+                      setIsOpen(false);
+                    }}
+                    className={`px-3 py-2 rounded-xl cursor-pointer flex items-center justify-between transition-colors ${
+                      currentLeaderName === cName ? 'bg-purple-600 text-white font-bold' : 'hover:bg-purple-50 text-gray-800'
+                    }`}
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <span>⭐</span>
+                      <span>{cName}</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => onRemoveCustomLeader(cName, e)}
+                      className="p-1 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50"
+                      title="Hapus dari daftar tersimpan"
+                    >
+                      <TrashIcon className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {filteredEmployees.length === 0 && filteredCustomLeaders.length === 0 && searchQuery.trim().length === 0 && (
+              <p className="text-xs text-gray-400 text-center py-3">Ketik nama di kotak pencarian...</p>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 export default function WorkRosterWeekly() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedShift, setSelectedShift] = useState('shift_1');
@@ -165,6 +353,47 @@ const [weeklyPlanProducts, setWeeklyPlanProducts] = useState<{ [machineId: numbe
     shift_2: null,
     shift_3: null
   });
+  const [leaderNames, setLeaderNames] = useState<{ shift_1: string; shift_2: string; shift_3: string }>({
+    shift_1: '',
+    shift_2: '',
+    shift_3: ''
+  });
+  const [customLeaders, setCustomLeaders] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('saved_custom_leaders');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+
+  const saveCustomLeaderName = (name: string) => {
+    if (!name || !name.trim()) return;
+    const cleanName = name.trim();
+    setCustomLeaders(prev => {
+      if (prev.includes(cleanName)) return prev;
+      const updated = [...prev, cleanName];
+      try {
+        localStorage.setItem('saved_custom_leaders', JSON.stringify(updated));
+      } catch (e) {
+        console.error('Error saving custom leaders to localStorage:', e);
+      }
+      return updated;
+    });
+  };
+
+  const removeCustomLeaderName = (nameToRemove: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCustomLeaders(prev => {
+      const updated = prev.filter(n => n !== nameToRemove);
+      try {
+        localStorage.setItem('saved_custom_leaders', JSON.stringify(updated));
+      } catch (e) {
+        console.error('Error removing custom leader from localStorage:', e);
+      }
+      return updated;
+    });
+  };
   const [assignments, setAssignments] = useState<{
     shift_1: { [role: string]: Assignment[] };
     shift_2: { [role: string]: Assignment[] };
@@ -318,6 +547,15 @@ const allMachines = weeklyPlanMachineIds === null
             shift_2: response.data.roster.leader_shift_2_id,
             shift_3: response.data.roster.leader_shift_3_id
           });
+          setLeaderNames({
+            shift_1: response.data.roster.leader_shift_1_name || '',
+            shift_2: response.data.roster.leader_shift_2_name || '',
+            shift_3: response.data.roster.leader_shift_3_name || ''
+          });
+          // Preserve any leader names loaded from backend API into customLeaders
+          [response.data.roster.leader_shift_1_name, response.data.roster.leader_shift_2_name, response.data.roster.leader_shift_3_name].forEach(name => {
+            if (name && name.trim()) saveCustomLeaderName(name);
+          });
           setAssignments(response.data.roster.assignments || {
             shift_1: {},
             shift_2: {},
@@ -329,6 +567,7 @@ const allMachines = weeklyPlanMachineIds === null
           setRoster(null);
           setWeekInfo(response.data.week_info);
           setLeaderIds({ shift_1: null, shift_2: null, shift_3: null });
+          setLeaderNames({ shift_1: '', shift_2: '', shift_3: '' });
           const emptyAssignments: any = { shift_1: {}, shift_2: {}, shift_3: {} };
           Object.keys(response.data.role_definitions || {}).forEach(role => {
             emptyAssignments.shift_1[role] = [];
@@ -451,8 +690,11 @@ const allMachines = weeklyPlanMachineIds === null
         year,
         week_number: week,
         leader_shift_1_id: leaderIds.shift_1,
+        leader_shift_1_name: leaderNames.shift_1,
         leader_shift_2_id: leaderIds.shift_2,
+        leader_shift_2_name: leaderNames.shift_2,
         leader_shift_3_id: leaderIds.shift_3,
+        leader_shift_3_name: leaderNames.shift_3,
         assignments,
         notes,
         status: 'draft'
@@ -646,21 +888,18 @@ const allMachines = weeklyPlanMachineIds === null
                 <UserGroupIcon className="h-5 w-5" />
                 Leader {SHIFTS.find(s => s.value === selectedShift)?.shortLabel}
               </h3>
-              <select
-                value={leaderIds[selectedShift as keyof typeof leaderIds] || ''}
-                onChange={(e) => setLeaderIds(prev => ({
-                  ...prev,
-                  [selectedShift]: e.target.value ? parseInt(e.target.value) : null
-                }))}
-                className="border rounded-lg px-3 py-2 w-64"
-              >
-                <option value="">-- Pilih Leader --</option>
-                {employees.map(emp => (
-                  <option key={emp.id} value={emp.id}>
-                    {emp.full_name} ({emp.employee_number})
-                  </option>
-                ))}
-              </select>
+              <SearchableLeaderSelect
+                currentLeaderName={leaderNames[selectedShift as keyof typeof leaderNames] || ''}
+                currentLeaderId={leaderIds[selectedShift as keyof typeof leaderIds] || null}
+                employees={employees}
+                customLeaders={customLeaders}
+                onSelectLeader={(id, name) => {
+                  setLeaderIds(prev => ({ ...prev, [selectedShift]: id }));
+                  setLeaderNames(prev => ({ ...prev, [selectedShift]: name }));
+                }}
+                onSaveCustomLeader={saveCustomLeaderName}
+                onRemoveCustomLeader={removeCustomLeaderName}
+              />
             </div>
 
             {/* Machine-based Assignments: Operator - Helper - Checker */}
