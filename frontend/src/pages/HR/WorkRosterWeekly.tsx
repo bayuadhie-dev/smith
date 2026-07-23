@@ -447,52 +447,80 @@ const [weeklyPlanProducts, setWeeklyPlanProducts] = useState<{ [machineId: numbe
     fetchMachines();
   }, []);
 
-// Fetch weekly production plan for current week to filter machines/products
+// Fetch weekly production plan & schedule grid for current week to filter machines/products
 useEffect(() => {
   const fetchWeeklyPlan = async () => {
     try {
-      const listResponse = await axiosInstance.get('/api/production/weekly-plans', {
-        params: { year, week }
-      });
-      const plans = listResponse.data.weekly_plans || [];
-      if (plans.length === 0) {
-        setWeeklyPlanMachineIds(new Set());
-        setWeeklyPlanProducts({});
-        return;
-      }
-      const planId = plans[0].id;
-      const detailResponse = await axiosInstance.get(`/api/production/weekly-plans/${planId}`);
-      const planData = detailResponse.data.weekly_plan || detailResponse.data || {};
-      const items: WeeklyPlanItem[] = planData.items || [];
-
       const machineIds = new Set<number>();
       const products: { [machineId: number]: string } = {};
-      items.forEach(item => {
-        if (item.machine_id) {
-          machineIds.add(item.machine_id);
-          if (item.product_name) {
-            products[item.machine_id] = products[item.machine_id]
-              ? `${products[item.machine_id]}, ${item.product_name}`
-              : item.product_name;
-          }
+
+      const y = weekStart.getFullYear();
+      const m = String(weekStart.getMonth() + 1).padStart(2, '0');
+      const d = String(weekStart.getDate()).padStart(2, '0');
+      const weekStartStr = `${y}-${m}-${d}`;
+
+      // 1. Fetch from schedule-grid (Jadwal Produksi Minggu Ini)
+      try {
+        const scheduleGridRes = await axiosInstance.get(`/api/production/schedule-grid?week_start=${weekStartStr}`);
+        const gridItems = scheduleGridRes.data.schedules || scheduleGridRes.data.items || scheduleGridRes.data || [];
+        if (Array.isArray(gridItems)) {
+          gridItems.forEach((item: any) => {
+            const mId = item.machine_id;
+            if (mId) {
+              machineIds.add(mId);
+              if (item.product_name) {
+                products[mId] = products[mId]
+                  ? (products[mId].includes(item.product_name) ? products[mId] : `${products[mId]}, ${item.product_name}`)
+                  : item.product_name;
+              }
+            }
+          });
         }
-      });
+      } catch (err) {
+        console.error('Error fetching schedule-grid:', err);
+      }
+
+      // 2. Fetch from weekly-plans (Rencana Produksi Mingguan)
+      try {
+        const listResponse = await axiosInstance.get('/api/production/weekly-plans', {
+          params: { year, week }
+        });
+        const plans = listResponse.data.weekly_plans || [];
+        if (plans.length > 0) {
+          const planId = plans[0].id;
+          const detailResponse = await axiosInstance.get(`/api/production/weekly-plans/${planId}`);
+          const planData = detailResponse.data.weekly_plan || detailResponse.data || {};
+          const items: WeeklyPlanItem[] = planData.items || [];
+          items.forEach(item => {
+            if (item.machine_id) {
+              machineIds.add(item.machine_id);
+              if (item.product_name) {
+                products[item.machine_id] = products[item.machine_id]
+                  ? (products[item.machine_id].includes(item.product_name) ? products[item.machine_id] : `${products[item.machine_id]}, ${item.product_name}`)
+                  : item.product_name;
+              }
+            }
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching weekly-plans:', err);
+      }
 
       setWeeklyPlanMachineIds(machineIds);
       setWeeklyPlanProducts(products);
     } catch (error) {
-      console.error('Error fetching weekly production plan:', error);
+      console.error('Error fetching production schedules:', error);
       setWeeklyPlanMachineIds(new Set());
       setWeeklyPlanProducts({});
     }
   };
   fetchWeeklyPlan();
-}, [year, week]);
+}, [year, week, weekStart]);
 
-  // Get all machines: Filter to scheduled machines if plan exists, or show all master machines + special machines
-  const allMachines = (weeklyPlanMachineIds === null || weeklyPlanMachineIds.size === 0)
-    ? [...machines, ...SPECIAL_MACHINES]
-    : [...machines, ...SPECIAL_MACHINES].filter(m => weeklyPlanMachineIds.has(m.id) || m.id < 0);   
+  // Get all machines: Filter to scheduled machines if plan/grid exists and has machineIds, or fallback if empty
+  const allMachines = (weeklyPlanMachineIds !== null && weeklyPlanMachineIds.size > 0)
+    ? [...machines, ...SPECIAL_MACHINES].filter(m => weeklyPlanMachineIds.has(m.id) || m.id < 0)
+    : [...machines, ...SPECIAL_MACHINES];   
   // Get all used employee names across the current shift roster
   const getAllUsedNames = (): Set<string> => {
     const names = new Set<string>();
