@@ -259,7 +259,9 @@ export default function Header({ toggleSidebar }: HeaderProps) {
                     <span>USER OPERATOR</span>
                   </div>
                   <p className="text-sm font-bold text-white truncate">{user?.full_name || user?.username || 'Operator'}</p>
-                  <p className="text-[10px] text-emerald-400 font-semibold uppercase">{user?.role || 'Active Session'}</p>
+                  <p className="text-[10px] text-emerald-400 font-semibold uppercase">
+                    {(user as any)?.role || (Array.isArray((user as any)?.roles) ? (user as any).roles[0] : 'Active Session')}
+                  </p>
                 </div>
               </div>
 
