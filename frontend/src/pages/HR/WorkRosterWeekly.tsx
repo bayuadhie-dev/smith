@@ -1043,95 +1043,102 @@ useEffect(() => {
                       const numA = parseInt(a.name.replace(/\D/g, '')) || 0;
                       const numB = parseInt(b.name.replace(/\D/g, '')) || 0;
                       return numA - numB;
-                    }).map(machine => {
-		      return (
-  			<tr key={machine.id} className={`hover:bg-gray-50 ${machine.id < 0 ? 'bg-blue-50' : ''}`}>
-    			   <td className="px-4 py-3 font-medium text-gray-900 dark:text-white border-r bg-gray-50 dark:bg-gray-900">
-      			      <div className="font-semibold">{machine.name}</div>
-      			      <div className="text-xs text-gray-500">{machine.code}</div>
-    			   </td>
-                           <td className="px-3 py-3 border-r min-w-[240px]">
-                              {shiftMachineProducts[selectedShift]?.[machine.id]?.length > 0 ? (
-                                <div className="flex flex-col gap-1.5">
-                                  {shiftMachineProducts[selectedShift][machine.id].map((prodInfo, pIdx) => (
-                                    <div 
-                                      key={pIdx}
-                                      className="inline-flex items-center justify-between gap-2 px-2.5 py-1.5 bg-indigo-50/90 dark:bg-indigo-900/40 border border-indigo-200/80 dark:border-indigo-700/60 rounded-lg text-xs font-bold text-indigo-950 dark:text-indigo-200 shadow-2xs leading-snug"
-                                    >
-                                      <div className="flex items-start gap-1.5 min-w-0">
-                                        <span className="text-indigo-500 font-black shrink-0 mt-0.5">•</span>
-                                        <span className="truncate">{prodInfo.product_name}</span>
-                                      </div>
-                                      <span className="bg-indigo-600 text-white dark:bg-indigo-500 text-[10px] font-black px-1.5 py-0.5 rounded-md shrink-0 shadow-2xs">
-                                        {prodInfo.shiftsLabel}
-                                      </span>
-                                    </div>
-                                  ))}
+                    }).flatMap(machine => {
+                      const prods = shiftMachineProducts[selectedShift]?.[machine.id] || [];
+                      const itemsToRender = prods.length > 0 ? prods : [null];
+                      const rowSpanCount = itemsToRender.length;
+
+                      return itemsToRender.map((prodInfo, pIdx) => {
+                        const isFirstRow = pIdx === 0;
+                        const keyProductSuffix = prods.length > 1 ? `_p${pIdx}` : '';
+
+                        return (
+                          <tr key={`${machine.id}_${pIdx}`} className={`hover:bg-gray-50 ${machine.id < 0 ? 'bg-blue-50' : ''}`}>
+                            {isFirstRow && (
+                              <td 
+                                rowSpan={rowSpanCount}
+                                className="px-4 py-3 font-medium text-gray-900 dark:text-white border-r bg-gray-50 dark:bg-gray-900 align-top"
+                              >
+                                <div className="font-semibold">{machine.name}</div>
+                                <div className="text-xs text-gray-500">{machine.code}</div>
+                              </td>
+                            )}
+                            <td className="px-3 py-3 border-r min-w-[220px] align-top">
+                              {prodInfo ? (
+                                <div className="inline-flex items-center justify-between gap-2 px-2.5 py-1.5 bg-indigo-50/90 dark:bg-indigo-900/40 border border-indigo-200/80 dark:border-indigo-700/60 rounded-lg text-xs font-bold text-indigo-950 dark:text-indigo-200 shadow-2xs leading-snug w-full">
+                                  <div className="flex items-start gap-1.5 min-w-0">
+                                    <span className="text-indigo-500 font-black shrink-0 mt-0.5">•</span>
+                                    <span className="truncate">{prodInfo.product_name}</span>
+                                  </div>
+                                  <span className="bg-indigo-600 text-white dark:bg-indigo-500 text-[10px] font-black px-1.5 py-0.5 rounded-md shrink-0 shadow-2xs">
+                                    {prodInfo.shiftsLabel}
+                                  </span>
                                 </div>
                               ) : (
                                 <div className="text-xs text-gray-400 italic px-1 py-1">
                                   Tidak ada jadwal shift ini
                                 </div>
                               )}
-                           </td>
-                          {MACHINE_ROLES.map(role => {
-                            const key = `${selectedShift}_${machine.id}_${role}`;
-                            const rawValue = manualRoster[key];
-                            const names = rawValue !== undefined ? rawValue.split('\n') : [];
-                            
-                            const addName = () => {
-                              setManualRoster(prev => {
-                                const current = prev[key];
-                                if (current === undefined || current === '') {
-                                  return { ...prev, [key]: '' };
-                                }
-                                return { ...prev, [key]: current + '\n' };
-                              });
-                            };
-                            
-                            const removeName = (idx: number) => {
-                              const newNames = names.filter((_, i) => i !== idx);
-                              setManualRoster(prev => ({ ...prev, [key]: newNames.length > 0 ? newNames.join('\n') : undefined }));
-                            };
-                            
-                            const updateName = (idx: number, value: string) => {
-                              const newNames = [...names];
-                              newNames[idx] = value;
-                              setManualRoster(prev => ({ ...prev, [key]: newNames.join('\n') }));
-                            };
-                            
-                            return (
-                              <td key={role} className="px-1 py-1 border-r last:border-r-0 min-w-[100px] align-top">
-                                <div className="space-y-1">
-                                  {names.map((name, idx) => {
-                                    const isDup = isNameDuplicate(name, key, idx);
-                                    return (
-                                      <div key={idx} className="flex items-center gap-1">
-                                        <input
-                                          type="text"
-                                          value={name}
-                                          onChange={(e) => updateName(idx, e.target.value)}
-                                          placeholder="Nama..."
-                                          className={`flex-1 text-xs border rounded px-1 py-0.5 w-16 focus:ring-1 ${isDup ? 'border-red-500 bg-red-50 focus:ring-red-500' : 'focus:ring-blue-500'}`}
-                                          title={isDup ? 'Nama sudah digunakan!' : ''}
-                                        />
-                                        <span
-                                          onClick={() => removeName(idx)}
-                                          className="text-red-500 hover:text-red-700 text-xs cursor-pointer font-bold"
-                                        >×</span>
-                                      </div>
-                                    );
-                                  })}
-                                  <span 
-                                    onClick={addName}
-                                    className="text-xs text-blue-600 hover:text-blue-800 hover:underline cursor-pointer inline-block py-1"
-                                  >+ Tambah</span>
-                                </div>
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      );
+                            </td>
+                            {MACHINE_ROLES.map(role => {
+                              const key = `${selectedShift}_${machine.id}${keyProductSuffix}_${role}`;
+                              const rawValue = manualRoster[key];
+                              const names = rawValue !== undefined ? rawValue.split('\n') : [];
+                              
+                              const addName = () => {
+                                setManualRoster(prev => {
+                                  const current = prev[key];
+                                  if (current === undefined || current === '') {
+                                    return { ...prev, [key]: '' };
+                                  }
+                                  return { ...prev, [key]: current + '\n' };
+                                });
+                              };
+                              
+                              const removeName = (idx: number) => {
+                                const newNames = names.filter((_, i) => i !== idx);
+                                setManualRoster(prev => ({ ...prev, [key]: newNames.length > 0 ? newNames.join('\n') : undefined }));
+                              };
+                              
+                              const updateName = (idx: number, value: string) => {
+                                const newNames = [...names];
+                                newNames[idx] = value;
+                                setManualRoster(prev => ({ ...prev, [key]: newNames.join('\n') }));
+                              };
+                              
+                              return (
+                                <td key={role} className="px-1 py-1 border-r last:border-r-0 min-w-[100px] align-top">
+                                  <div className="space-y-1">
+                                    {names.map((name, idx) => {
+                                      const isDup = isNameDuplicate(name, key, idx);
+                                      return (
+                                        <div key={idx} className="flex items-center gap-1">
+                                          <input
+                                            type="text"
+                                            value={name}
+                                            onChange={(e) => updateName(idx, e.target.value)}
+                                            placeholder="Nama..."
+                                            className={`flex-1 text-xs border rounded px-1 py-0.5 w-16 focus:ring-1 ${isDup ? 'border-red-500 bg-red-50 focus:ring-red-500' : 'focus:ring-blue-500'}`}
+                                            title={isDup ? 'Nama sudah digunakan!' : ''}
+                                          />
+                                          <span
+                                            onClick={() => removeName(idx)}
+                                            className="text-red-500 hover:text-red-700 text-xs cursor-pointer font-bold"
+                                          >×</span>
+                                        </div>
+                                      );
+                                    })}
+                                    <span 
+                                      onClick={addName}
+                                      className="text-xs text-blue-600 hover:text-blue-800 hover:underline cursor-pointer inline-block py-1"
+                                    >+ Tambah</span>
+                                  </div>
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        );
+                      });
                     })}
                   </tbody>
                 </table>
