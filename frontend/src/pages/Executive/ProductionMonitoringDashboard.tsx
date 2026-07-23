@@ -53,7 +53,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState<'overview' | 'daily' | 'machineDaily' | 'dailySwiper' | 'converting' | 'products' | 'machines' | 'downtime' | 'graph' | 'fg' | 'shift' | 'analytics' | 'packing_list'>('overview');
   const [autoRefresh, setAutoRefresh] = useState(true);
-  const [refreshInterval, setRefreshInterval] = useState(0.25); // 15 seconds real-time
+  const [refreshInterval, setRefreshInterval] = useState(1); // 1 minute default
   const [fgData, setFgData] = useState<any>(null);
   const [fgLoading, setFgLoading] = useState(false);
   const [fgFetched, setFgFetched] = useState(false);
@@ -190,42 +190,42 @@ const ProductionMonitoringDashboard: React.FC = () => {
     setWeekNumber(0);
   }, [year, month]);
 
-  // Auto-refresh functionality
+  // Auto-refresh functionality (silent refresh in background without screen flicker)
   useEffect(() => {
     if (!autoRefresh) return;
     
     const intervalId = setInterval(() => {
-      fetchData();
-      fetchConvertingMonthlyData();
+      fetchData(true);
+      fetchConvertingMonthlyData(true);
     }, refreshInterval * 60 * 1000); // Convert minutes to milliseconds
     
     return () => clearInterval(intervalId);
   }, [autoRefresh, refreshInterval, year, month, viewMode, weekNumber]);
 
-  const fetchFgData = async () => {
+  const fetchFgData = async (isSilent = false) => {
     try {
-      setFgLoading(true);
+      if (!isSilent) setFgLoading(true);
       const params = new URLSearchParams({ year: String(year), month: String(month) });
       const res = await axiosInstance.get(`/api/executive/fg-conversion-summary?${params}`);
       if (res.data.success) setFgData(res.data.data);
-    } catch (e) { console.error(e); } finally { setFgLoading(false); setFgFetched(true); }
+    } catch (e) { console.error(e); } finally { if (!isSilent) setFgLoading(false); setFgFetched(true); }
   };
 
-  const fetchData = async () => {
+  const fetchData = async (isSilent = false) => {
     try {
-      setLoading(true);
+      if (!isSilent && !data) setLoading(true);
       const params = new URLSearchParams({ year: String(year), month: String(month), view: viewMode });
       if (viewMode === 'weekly' && weekNumber > 0) params.set('week', String(weekNumber));
       const res = await axiosInstance.get(`/api/executive/production-monitoring?${params}`);
       if (res.data.success) {
         setData(res.data.data);
       }
-    } catch (e) { console.error(e); } finally { setLoading(false); }
+    } catch (e) { console.error(e); } finally { if (!isSilent) setLoading(false); }
   };
 
-  const fetchConvertingMonthlyData = async () => {
+  const fetchConvertingMonthlyData = async (isSilent = false) => {
     try {
-      setConvertingMonthlyLoading(true);
+      if (!isSilent && !convertingMonthlyData) setConvertingMonthlyLoading(true);
       const params = new URLSearchParams({ year: String(year), month: String(month), view: viewMode });
       if (viewMode === 'weekly' && weekNumber > 0) params.set('week', String(weekNumber));
       const res = await axiosInstance.get(`/api/converting/monthly-summary?${params}`);
@@ -235,7 +235,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
     } catch (e) {
       console.error('Error fetching converting monthly summary:', e);
     } finally {
-      setConvertingMonthlyLoading(false);
+      if (!isSilent) setConvertingMonthlyLoading(false);
     }
   };
 
