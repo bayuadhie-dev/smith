@@ -323,7 +323,7 @@ export default function Register() {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
               <div>
                 <label htmlFor="department" className="block text-sm font-medium text-blue-200">
                   Department
@@ -336,21 +336,6 @@ export default function Register() {
                   onChange={handleChange}
                   className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-600 placeholder-gray-400 dark:placeholder-gray-500 dark:placeholder-gray-400 text-white bg-gray-800 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                   placeholder="Your department"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="position" className="block text-sm font-medium text-blue-200">
-                  Position
-                </label>
-                <input
-                  id="position"
-                  name="position"
-                  type="text"
-                  value={formData.position}
-                  onChange={handleChange}
-                  className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-600 placeholder-gray-400 dark:placeholder-gray-500 dark:placeholder-gray-400 text-white bg-gray-800 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                  placeholder="Your job position"
                 />
               </div>
             </div>
