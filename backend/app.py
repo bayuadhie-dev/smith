@@ -562,7 +562,7 @@ def create_app(config_class=Config):
     app.register_blueprint(mrp_bp, url_prefix='/api/mrp')
 
     app.register_blueprint(keyword_manager_bp, url_prefix="/keywordedit")
-    app.register_blueprint(config_manager_bp, url_prefix="/configedit")
+    app.register_blueprint(config_manager_bp, url_prefix="/api/config")
     app.register_blueprint(quality_bp, url_prefix='/api/quality')
 
     app.register_blueprint(quality_enhanced_bp, url_prefix='/api/quality-enhanced')
