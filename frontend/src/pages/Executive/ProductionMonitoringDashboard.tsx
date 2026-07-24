@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   ChartBarIcon, ExclamationTriangleIcon,
   ClockIcon, CubeIcon, CogIcon, ChevronDownIcon, ChevronUpIcon,
@@ -4566,6 +4566,8 @@ const PackingListTab: React.FC = () => {
   const totalPcs = packingLists.reduce((sum, pl) => sum + (pl.total_pcs || 0), 0);
   const releasedCount = packingLists.filter(pl => pl.status === 'released').length;
 
+
+
   return (
     <div className="space-y-6 mt-4">
       {/* Stat Cards */}
@@ -4588,7 +4590,7 @@ const PackingListTab: React.FC = () => {
         </div>
       </div>
 
-      {/* Filter Bar */}
+      {/* Filter & Action Bar */}
       <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow border border-slate-200 dark:border-gray-700 flex flex-wrap gap-4 items-center justify-between">
         <div className="flex gap-3 flex-1 min-w-[250px]">
           <div className="relative flex-1">
@@ -4759,3 +4761,4 @@ const PackingListTab: React.FC = () => {
 };
 
 export default ProductionMonitoringDashboard;
+

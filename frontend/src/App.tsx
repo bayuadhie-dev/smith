@@ -321,6 +321,7 @@ import BackupRestore from './pages/Settings/BackupRestore'
 import EmailSettings from './pages/Settings/EmailSettings'
 import KPITargetSettings from './pages/Settings/KPITargetSettings'
 import SystemHealth from './pages/Settings/SystemHealth'
+import NettoDeductionRulesManager from './pages/Settings/NettoDeductionRulesManager'
 import UserProfile from './pages/Profile/UserProfile'
 import UserManual from './pages/Manual/UserManual'
 import FAQPage from './pages/Manual/FAQPage'
@@ -1073,6 +1074,7 @@ function App() {
                 <Route path="settings/email" element={<AdminRoute><EmailSettings /></AdminRoute>} />
                 <Route path="settings/kpi-targets" element={<AdminRoute><KPITargetSettings /></AdminRoute>} />
                 <Route path="settings/system-health" element={<AdminRoute><SystemHealth /></AdminRoute>} />
+                <Route path="settings/netto-deductions" element={<AdminRoute><NettoDeductionRulesManager /></AdminRoute>} />
 
                 {/* Profile */}
                 <Route path="profile" element={<UserProfile />} />

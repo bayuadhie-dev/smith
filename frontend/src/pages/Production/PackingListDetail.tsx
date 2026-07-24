@@ -7,10 +7,16 @@ import {
   XCircleIcon,
   PrinterIcon,
   CalendarDaysIcon,
-  PlusIcon
+  PlusIcon,
+  CameraIcon,
+  SparklesIcon,
+  ExclamationTriangleIcon,
+  ArrowPathIcon,
+  PhotoIcon
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
+import OcrPackingListModal from '../../components/Production/OcrPackingListModal';
 
 interface PackingListItem {
   id: number;
@@ -75,6 +81,9 @@ export default function PackingListDetail() {
   const [addBatchName, setAddBatchName] = useState('');
   const [addBatchTotalCarton, setAddBatchTotalCarton] = useState('');
   const [addBatchCartonsPerPallet, setAddBatchCartonsPerPallet] = useState('');
+
+  // OCR Scan Modal State
+  const [showOcrModal, setShowOcrModal] = useState(false);
 
   // Accordion open/close states per batch mixing
   const [expandedBatches, setExpandedBatches] = useState<Record<string, boolean>>({});
@@ -475,19 +484,26 @@ export default function PackingListDetail() {
               />
             </div>
             <div className="flex-1" />
-            <button
-              onClick={() => setShowAddBatchModal(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-1.5 font-medium"
-            >
-              <PlusIcon className="h-5 w-5" />
-              Tambah Batch
-            </button>
-            <button
-              onClick={() => openBatchModal()}
-              className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
-            >
-              Ganti Batch Mixing
-            </button>
+              <button
+                onClick={() => setShowAddBatchModal(true)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-1.5 font-medium"
+              >
+                <PlusIcon className="h-5 w-5" />
+                Tambah Batch
+              </button>
+              <button
+                onClick={() => setShowOcrModal(true)}
+                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-lg flex items-center gap-2 font-bold text-sm shadow transition"
+              >
+                <CameraIcon className="h-5 w-5" />
+                <span>📷 Scan Timbangan OCR</span>
+              </button>
+              <button
+                onClick={() => openBatchModal()}
+                className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
+              >
+                Ganti Batch Mixing
+              </button>
             {packingList.total_carton > 0 && (
               <button
                 onClick={handleComplete}
@@ -773,6 +789,18 @@ export default function PackingListDetail() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* OCR Scan & Verification Modal */}
+      {packingList && (
+        <OcrPackingListModal
+          isOpen={showOcrModal}
+          onClose={() => setShowOcrModal(false)}
+          onSuccess={fetchPackingList}
+          packingListId={packingList.id}
+          productInfo={{ id: packingList.product_id, name: packingList.product_name, code: packingList.product_code }}
+          existingItems={items}
+        />
       )}
     </div>
   );

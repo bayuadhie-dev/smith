@@ -12,6 +12,7 @@ import {
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
+import OcrPackingListModal from '../../components/Production/OcrPackingListModal';
 
 interface PackingList {
   id: number;
@@ -64,6 +65,7 @@ export default function PackingListNew() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showOcrModal, setShowOcrModal] = useState(false);
   const [wipProducts, setWipProducts] = useState<FGProduct[]>([]);
   const [creating, setCreating] = useState(false);
 
@@ -263,14 +265,21 @@ export default function PackingListNew() {
         <div className="flex gap-3">
           <Link
             to="/app/production/wip-stock"
-            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2"
+            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2 font-medium text-sm"
           >
             <ArchiveBoxIcon className="h-5 w-5" />
             Lihat WIP Stock
           </Link>
           <button
+            onClick={() => setShowOcrModal(true)}
+            className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-lg flex items-center gap-2 shadow text-sm transition"
+          >
+            <span className="text-base">📷</span>
+            Input OCR Packing List
+          </button>
+          <button
             onClick={handleOpenCreate}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 font-medium text-sm"
           >
             <PlusIcon className="h-5 w-5" />
             Buat Packing List
@@ -795,6 +804,13 @@ export default function PackingListNew() {
           </div>
         </div>
       )}
+
+      {/* OCR Packing List Modal */}
+      <OcrPackingListModal
+        isOpen={showOcrModal}
+        onClose={() => setShowOcrModal(false)}
+        onSuccess={fetchPackingLists}
+      />
     </div>
   );
 }

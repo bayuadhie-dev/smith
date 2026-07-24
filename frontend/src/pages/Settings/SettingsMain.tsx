@@ -11,6 +11,7 @@ import {
   GlobeAltIcon,
   KeyIcon,
   LinkIcon,
+  ScaleIcon,
   ShieldCheckIcon,
   UsersIcon
 } from '@heroicons/react/24/outline';
@@ -28,6 +29,15 @@ const SettingsMain: React.FC = () => {
 
   const settingsCards: SettingsCard[] = [
     // System Settings
+    {
+      id: 'netto-deductions',
+      title: 'Netto Deduction Rules (Packing List)',
+      description: 'Super Admin CRUD rules untuk potongan berat flat desimal (Netto Deduction) per SKU / pattern',
+      icon: ScaleIcon,
+      path: '/app/settings/netto-deductions',
+      category: 'system',
+      isNew: true
+    },
     {
       id: 'configedit',
       title: 'Centralized Config Editor',
