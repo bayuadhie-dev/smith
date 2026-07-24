@@ -22,6 +22,7 @@ interface PackingListItem {
   id: number;
   carton_number: number;
   weight_kg: number | null;
+  weight_gross_kg: number | null;
   weigh_date: string | null;
   weigh_time: string | null;
   batch_mixing: string | null;
@@ -346,6 +347,7 @@ export default function PackingListDetail() {
       
       const weighed = sorted.filter(i => i.weight_kg !== null);
       const totalWeight = weighed.reduce((sum, i) => sum + (i.weight_kg || 0), 0);
+      const totalGrossWeight = weighed.reduce((sum, i) => sum + (i.weight_gross_kg || 0), 0);
       const cartonsPerPallet = sorted[0]?.cartons_per_pallet || 0;
       const estimatedPallets = cartonsPerPallet > 0 
         ? Math.ceil(sorted.length / cartonsPerPallet) 
@@ -357,6 +359,7 @@ export default function PackingListDetail() {
         totalCartons: sorted.length,
         weighedCount: weighed.length,
         totalWeight,
+        totalGrossWeight,
         cartonRange: minCarton && maxCarton ? `#${minCarton} - #${maxCarton}` : '-',
         cartonsPerPallet,
         estimatedPallets
@@ -578,13 +581,16 @@ export default function PackingListDetail() {
                     
                     <div className="flex items-center gap-6 text-sm">
                       <div className="text-gray-600 dark:text-gray-300">
-                        Progress: <strong className="text-gray-900 dark:text-white">{batch.weighedCount}</strong> / {batch.totalCartons} krt
+                        Progress: <strong className="text-gray-900 dark:text-white">{batch.weighedCount}</strong> / {batch.totalCartons} ctn
                       </div>
                       <div className="text-gray-600 dark:text-gray-300">
-                        Berat: <strong className="text-gray-900 dark:text-white">{batch.totalWeight.toFixed(3)} kg</strong>
+                        Berat Netto: <strong className="text-gray-900 dark:text-white">{batch.totalWeight.toFixed(3)} kg</strong>
+                      </div>
+                      <div className="text-gray-600 dark:text-gray-300">
+                        Berat Kotor: <strong className="text-gray-900 dark:text-white">{batch.totalGrossWeight.toFixed(3)} kg</strong>
                       </div>
                       <div className="text-gray-600 dark:text-gray-300 hidden sm:block">
-                        Pallet: <strong>{batch.estimatedPallets} pallet</strong> ({batch.cartonsPerPallet} krt/plt)
+                        Pallet: <strong>{batch.estimatedPallets} pallet</strong> ({batch.cartonsPerPallet} ctn/pallet)
                       </div>
                       
                       {isEditable && batch.weighedCount === 0 && (
@@ -605,7 +611,8 @@ export default function PackingListDetail() {
                         <thead className="bg-gray-100/50 dark:bg-gray-900/30">
                           <tr>
                             <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">No. Karton</th>
-                            <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Berat (kg)</th>
+                            <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Berat Netto (kg)</th>
+                            <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Berat Kotor (kg)</th>
                             <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Tgl Timbang</th>
                             <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Ditimbang Oleh</th>
                             <th className="px-4 py-2.5 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
@@ -639,6 +646,9 @@ export default function PackingListDetail() {
                                     placeholder="0.000"
                                   />
                                 )}
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap">
+                                <span className="text-sm text-gray-500 dark:text-gray-400">{item.weight_gross_kg ? `${item.weight_gross_kg} kg` : '-'}</span>
                               </td>
                               <td className="px-4 py-3 whitespace-nowrap">
                                 {!isEditable ? (

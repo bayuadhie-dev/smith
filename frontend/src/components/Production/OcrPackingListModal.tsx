@@ -208,6 +208,32 @@ export const OcrPackingListModal: React.FC<OcrPackingListModalProps> = ({
 
       // MODE 2: Standalone Create New Packing List (POST /api/packing-list)
       const selectedProd = productsList.find((p) => p.id === parseInt(selectedProductId));
+      const primaryBatchCheck = ocrResult.batch_numbers_detected?.[0];
+      if (selectedProd?.id && primaryBatchCheck) {
+        try {
+          const checkRes = await axiosInstance.get('/api/packing-list/check-existing-batch', {
+            params: { product_id: selectedProd.id, batch_mixing: primaryBatchCheck }
+          });
+          if (checkRes.data?.match) {
+            const existingPl = checkRes.data.packing_list;
+            const confirmMerge = window.confirm(
+              `📋 Batch "${primaryBatchCheck}" sudah ada di Packing List ${existingPl.packing_number} (${existingPl.total_carton} karton, carton #${existingPl.start_carton_number}-#${existingPl.end_carton_number}).\n\nApakah Anda ingin MENAMBAHKAN ${previewRows.length} karton baru dari scan ini ke Packing List yang sudah ada tersebut (nomor karton akan lanjut otomatis)?\n\nKlik "Batal" untuk membuat Packing List baru secara terpisah.`
+            );
+            if (confirmMerge) {
+              await axiosInstance.post(
+                `/api/packing-list/${existingPl.id}/batches/${encodeURIComponent(primaryBatchCheck)}/append-cartons`,
+                { total_carton: previewRows.length }
+              );
+              alert(`✅ ${previewRows.length} karton berhasil digabungkan ke Packing List ${existingPl.packing_number}!`);
+              onSuccess();
+              onClose();
+              return;
+            }
+          }
+        } catch (checkErr) {
+          console.error('Error checking existing batch:', checkErr);
+        }
+      }
       const totalCarton = previewRows.length;
       const packPerCarton = selectedProd?.pack_per_carton || 1;
       const primaryBatch = ocrResult.batch_numbers_detected?.[0] || 'BATCH-OCR';
@@ -235,6 +261,7 @@ export const OcrPackingListModal: React.FC<OcrPackingListModalProps> = ({
           items: previewRows.map((r) => ({
             carton_number: r.carton_number_full,
             netto_kg: parseFloat(r.netto_kg) || 0,
+            gross_weight: parseFloat(r.gross_kg) || 0,
             weight_kg: parseFloat(r.netto_kg) || 0,
             batch_mixing: r.batch_number || primaryBatch,
           })),

@@ -485,6 +485,103 @@ def get_packing_list(id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@packing_list_bp.route('/check-existing-batch', methods=['GET'])
+@jwt_required()
+def check_existing_batch():
+    """Check if an open PL exists for the same product + batch_mixing (for OCR auto-merge suggestion)"""
+    try:
+        product_id = request.args.get('product_id', type=int)
+        batch_mixing = request.args.get('batch_mixing', type=str)
+
+        if not product_id or not batch_mixing:
+            return jsonify({'error': 'product_id dan batch_mixing harus diisi'}), 400
+
+        closed_statuses = ('completed', 'released', 'rejected', 'cancelled')
+
+        pl = PackingListNew.query.filter(
+            PackingListNew.product_id == product_id,
+            ~PackingListNew.status.in_(closed_statuses)
+        ).join(PackingListNewItem, PackingListNewItem.packing_list_id == PackingListNew.id).filter(
+            PackingListNewItem.batch_mixing == batch_mixing
+        ).first()
+
+        if not pl:
+            return jsonify({'match': False}), 200
+
+        return jsonify({
+            'match': True,
+            'packing_list': pl.to_dict()
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@packing_list_bp.route('/<int:id>/batches/<string:batch_name>/append-cartons', methods=['POST'])
+@jwt_required()
+def append_cartons_to_batch(id, batch_name):
+    """Append additional cartons to an EXISTING batch on this PL (continuation, not a new batch).
+    Used when OCR detects a batch_mixing that already exists on an open PL for the same product.
+    """
+    try:
+        pl = db.session.get(PackingListNew, id) or abort(404)
+        if pl.status in ('completed', 'released', 'rejected', 'cancelled'):
+            return jsonify({'error': f'Tidak dapat menambah karton pada packing list berstatus {pl.status}'}), 400
+        existing_item = pl.items.filter_by(batch_mixing=batch_name).first()
+        if not existing_item:
+            return jsonify({'error': f'Batch "{batch_name}" tidak ditemukan pada packing list ini'}), 404
+        data = request.get_json()
+        total_carton = data.get('total_carton')
+        if not total_carton or int(total_carton) <= 0:
+            return jsonify({'error': 'Jumlah karton harus lebih besar dari 0'}), 400
+        total_carton = int(total_carton)
+        cartons_per_pallet = existing_item.cartons_per_pallet
+        user_id = get_jwt_identity()
+        if pl.highest_carton_number_used is not None:
+            start_carton = pl.highest_carton_number_used + 1
+        else:
+            start_carton = pl.start_carton_number or 1
+        if start_carton > 10000:
+            start_carton = ((start_carton - 1) % 10000) + 1
+        end_carton = start_carton + total_carton - 1
+        if end_carton > 10000:
+            end_carton = ((end_carton - 1) % 10000) + 1
+        deduction_details = _deduct_wip_stock(
+            pl=pl,
+            product_id=pl.product_id,
+            total_carton=total_carton,
+            batch_mixing=batch_name,
+            pack_per_carton=pl.pack_per_carton,
+            user_id=user_id
+        )
+        for i in range(total_carton):
+            carton_num = start_carton + i
+            if carton_num > 10000:
+                carton_num = carton_num - 10000
+            item = PackingListNewItem(
+                packing_list_id=pl.id,
+                carton_number=carton_num,
+                batch_mixing=batch_name,
+                cartons_per_pallet=cartons_per_pallet,
+                is_batch_start=False
+            )
+            db.session.add(item)
+        pl.total_carton = (pl.total_carton or 0) + total_carton
+        pl.total_pcs = (pl.total_pcs or 0) + (total_carton * pl.pack_per_carton)
+        pl.highest_carton_number_used = end_carton
+        pl.end_carton_number = end_carton
+        pl.status = 'in_progress'
+        db.session.commit()
+        return jsonify({
+            'message': f'{total_carton} karton berhasil ditambahkan ke batch {batch_name}',
+            'packing_list': pl.to_dict(),
+            'wip_deductions': deduction_details
+        }), 201
+    except ValueError as ve:
+        db.session.rollback()
+        return jsonify({'error': str(ve)}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
 
 @packing_list_bp.route('', methods=['POST'])
 @jwt_required()
@@ -982,6 +1079,7 @@ def weigh_cartons(id):
             carton_number = item_data.get('carton_number') or item_data.get('carton_number_full')
             weight_kg = item_data.get('netto_kg') if item_data.get('netto_kg') is not None else item_data.get('weight_kg')
             weigh_date = item_data.get('weigh_date')
+            gross_weight = item_data.get('gross_weight')
             batch_mixing = item_data.get('batch_mixing')
             
             item = None
@@ -1009,6 +1107,8 @@ def weigh_cartons(id):
                     item.weigh_date = parsed_date or today
                     
                     item.weigh_time = now_time
+                    if gross_weight is not None:
+                        item.weight_gross_kg = gross_weight
 
                 if batch_mixing:
                     item.batch_mixing = batch_mixing

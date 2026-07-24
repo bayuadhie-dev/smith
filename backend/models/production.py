@@ -1232,6 +1232,7 @@ class PackingListNewItem(db.Model):
             'packing_list_id': self.packing_list_id,
             'carton_number': self.carton_number,
             'weight_kg': float(self.weight_kg) if self.weight_kg else None,
+            'weight_gross_kg': float(self.weight_gross_kg) if self.weight_gross_kg else None,
             'weigh_date': self.weigh_date.isoformat() if self.weigh_date else None,
             'weigh_time': self.weigh_time.isoformat() if self.weigh_time else None,
             'batch_mixing': self.batch_mixing,
