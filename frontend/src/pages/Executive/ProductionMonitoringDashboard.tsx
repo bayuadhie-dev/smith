@@ -61,6 +61,10 @@ const ProductionMonitoringDashboard: React.FC = () => {
   const [convertingMonthlyLoading, setConvertingMonthlyLoading] = useState(false);
   const [allTimeDowntime, setAllTimeDowntime] = useState<any[]>([]);
   const [allTimeDowntimeLoading, setAllTimeDowntimeLoading] = useState(false);
+  // UI Enhancement states
+  const [clockTime, setClockTime] = useState(new Date());
+  const [refreshCountdown, setRefreshCountdown] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Prevent search engine indexing
   useEffect(() => {
@@ -180,27 +184,39 @@ const ProductionMonitoringDashboard: React.FC = () => {
     };
   }, []);
 
-  useEffect(() => {
-    fetchData();
-    fetchConvertingMonthlyData();
-  }, [year, month, viewMode, weekNumber]);
 
   // When month/year changes, reset weekNumber to 0 (show all weeks)
   useEffect(() => {
     setWeekNumber(0);
   }, [year, month]);
 
+
+  // Live clock — update every second
+  useEffect(() => {
+    const clockId = setInterval(() => setClockTime(new Date()), 1000);
+    return () => clearInterval(clockId);
+  }, []);
+
   // Auto-refresh functionality (silent refresh in background without screen flicker)
   useEffect(() => {
     if (!autoRefresh) return;
-    
-    const intervalId = setInterval(() => {
-      fetchData(true);
-      fetchConvertingMonthlyData(true);
-    }, refreshInterval * 60 * 1000); // Convert minutes to milliseconds
-    
+    const totalSeconds = refreshInterval * 60;
+    setRefreshCountdown(totalSeconds);
+    const intervalId = setInterval(async () => {
+      setIsRefreshing(true);
+      await Promise.all([fetchData(true), fetchConvertingMonthlyData(true)]);
+      setIsRefreshing(false);
+      setRefreshCountdown(totalSeconds);
+    }, totalSeconds * 1000);
     return () => clearInterval(intervalId);
   }, [autoRefresh, refreshInterval, year, month, viewMode, weekNumber]);
+
+  // Countdown ticker
+  useEffect(() => {
+    if (!autoRefresh || refreshCountdown <= 0) return;
+    const tickId = setInterval(() => setRefreshCountdown(prev => (prev > 0 ? prev - 1 : 0)), 1000);
+    return () => clearInterval(tickId);
+  }, [autoRefresh, refreshCountdown]);
 
   const fetchFgData = async (isSilent = false) => {
     try {
@@ -238,6 +254,15 @@ const ProductionMonitoringDashboard: React.FC = () => {
       if (!isSilent) setConvertingMonthlyLoading(false);
     }
   };
+
+  // Trigger data fetch whenever year/month/viewMode/weekNumber changes
+  // Placed AFTER fetchData & fetchConvertingMonthlyData declarations to avoid stale closure
+  useEffect(() => {
+    fetchData();
+    fetchConvertingMonthlyData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [year, month, viewMode, weekNumber]);
+
 
   const fetchAllTimeDowntime = async () => {
     try {
@@ -352,181 +377,360 @@ const ProductionMonitoringDashboard: React.FC = () => {
   const tabs = [
     { id: 'overview', label: 'Overview', icon: ChartBarIcon },
     { id: 'daily', label: 'Detail Harian', icon: ClockIcon },
-    { id: 'machineDaily', label: 'Mesin & Shift Harian', icon: DocumentTextIcon },
+    { id: 'machineDaily', label: 'Mesin & Shift', icon: DocumentTextIcon },
     { id: 'packing_list', label: 'Packing List', icon: ArchiveBoxIcon },
     { id: 'dailySwiper', label: 'Controller', icon: CalendarDaysIcon },
-    { id: 'converting', label: 'mc converting', icon: CogIcon },
+    { id: 'converting', label: 'Converting', icon: CogIcon },
     { id: 'products', label: 'Per Produk', icon: CubeIcon },
     { id: 'machines', label: 'Per Mesin', icon: CogIcon },
     { id: 'downtime', label: 'Downtime', icon: ExclamationTriangleIcon },
-    { id: 'graph', label: 'Graph', icon: PresentationChartLineIcon },
+    { id: 'graph', label: 'Grafik', icon: PresentationChartLineIcon },
     { id: 'fg', label: 'FG Conversion', icon: ArrowsRightLeftIcon },
     { id: 'shift', label: 'Per Shift', icon: BoltIcon },
     { id: 'analytics', label: 'Analytics', icon: BeakerIcon },
   ];
 
+  const statusColor = isCritical ? 'bg-red-500' : isOnTrack ? 'bg-green-500' : 'bg-yellow-500';
+  const statusLabel = isCritical ? 'Kritis' : isOnTrack ? 'On Track' : 'Perlu Perhatian';
+  const fmtClock = (d: Date) => d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const fmtDate = (d: Date) => d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
   return (
-    <div className="p-4 md:p-6 space-y-5 bg-gray-50 min-h-screen">
-      {/* HEADER */}
-      <div className="bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 rounded-2xl p-5 text-white shadow-xl">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+    <div className="p-4 md:p-6 space-y-4 bg-gray-50 min-h-screen">
+
+      {/* ═══════════════════════════════════════════════════════════
+          HEADER — Premium Executive Style
+      ═══════════════════════════════════════════════════════════ */}
+      <div className="relative bg-gradient-to-r from-indigo-700 via-blue-600 to-cyan-500 rounded-2xl p-5 text-white shadow-2xl overflow-hidden">
+        {/* Background decorative circles */}
+        <div className="absolute -top-8 -right-8 w-40 h-40 bg-white/10 rounded-full" />
+        <div className="absolute -bottom-10 -left-10 w-56 h-56 bg-white/5 rounded-full" />
+        <div className="relative flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+          {/* Left: Title + Period */}
           <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <ChartBarIcon className="h-7 w-7" /> Production Monitoring Dashboard
-            </h1>
-            <p className="text-blue-100 text-sm mt-1">
-              Target vs Aktual &bull; {period.month_name} {period.year}
-              {viewMode === 'weekly' && weekNumber > 0 && ` - Week ${weekNumber}`}
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex bg-white dark:bg-gray-800/20 rounded-lg p-0.5">
-              <button onClick={() => { setViewMode('monthly'); setWeekNumber(0); }}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${viewMode === 'monthly' ? 'bg-white text-blue-700' : 'text-white hover:bg-white/10'}`}>Monthly</button>
-              <button onClick={() => { setViewMode('weekly'); setWeekNumber(0); }}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${viewMode === 'weekly' ? 'bg-white text-blue-700' : 'text-white hover:bg-white/10'}`}>Weekly</button>
+            <div className="flex items-center gap-3 mb-1">
+              <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
+                <ChartBarIcon className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-black tracking-tight">Production Monitoring</h1>
+                <p className="text-blue-100 text-xs font-medium">Executive Dashboard &bull; Real-time Factory Intelligence</p>
+              </div>
             </div>
-            {viewMode === 'weekly' && period.weeks && (
-              <select value={weekNumber} onChange={e => setWeekNumber(+e.target.value)}
-                className="px-3 py-1.5 bg-white dark:bg-gray-800/20 border border-white/30 rounded-lg text-white text-sm focus:outline-none">
-                <option value={0} className="text-gray-900 dark:text-white">Semua Week</option>
-                {period.weeks.map((w: any) => <option key={w.week} value={w.week} className="text-gray-900 dark:text-white">{w.label}</option>)}
+            <div className="flex items-center gap-2 mt-3 flex-wrap">
+              {/* Status Badge */}
+              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
+                isCritical ? 'bg-red-500/30 border border-red-300 text-red-100' :
+                isOnTrack ? 'bg-green-500/30 border border-green-300 text-green-100' :
+                'bg-yellow-500/30 border border-yellow-300 text-yellow-100'
+              }`}>
+                <span className={`w-2 h-2 rounded-full animate-pulse ${isCritical ? 'bg-red-300' : isOnTrack ? 'bg-green-300' : 'bg-yellow-300'}`} />
+                {statusLabel}
+              </span>
+              <span className="text-blue-200 text-xs">
+                {period.month_name} {period.year}
+                {viewMode === 'weekly' && weekNumber > 0 && ` · Week ${weekNumber}`}
+                {' '}&bull; Hari ke-{displaySummary.working_days}/{displaySummary.total_working_days || 22}
+              </span>
+            </div>
+          </div>
+
+          {/* Right: Clock + Controls */}
+          <div className="flex flex-col items-end gap-3">
+            {/* Live Clock */}
+            <div className="text-right">
+              <div className="text-3xl font-black tracking-widest font-mono">{fmtClock(clockTime)}</div>
+              <div className="text-blue-200 text-xs mt-0.5">{fmtDate(clockTime)}</div>
+            </div>
+            {/* Period Controls */}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex bg-white/20 backdrop-blur-sm rounded-lg p-0.5 border border-white/30">
+                <button onClick={() => { setViewMode('monthly'); setWeekNumber(0); }}
+                  className={`px-3 py-1.5 rounded-md text-sm font-semibold transition-all duration-200 ${
+                    viewMode === 'monthly' ? 'bg-white text-blue-700 shadow-md' : 'text-white hover:bg-white/10'
+                  }`}>Monthly</button>
+                <button onClick={() => { setViewMode('weekly'); setWeekNumber(0); }}
+                  className={`px-3 py-1.5 rounded-md text-sm font-semibold transition-all duration-200 ${
+                    viewMode === 'weekly' ? 'bg-white text-blue-700 shadow-md' : 'text-white hover:bg-white/10'
+                  }`}>Weekly</button>
+              </div>
+              {viewMode === 'weekly' && period.weeks && (
+                <select value={weekNumber} onChange={e => setWeekNumber(+e.target.value)}
+                  className="px-3 py-1.5 bg-white/20 border border-white/30 backdrop-blur-sm rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/50">
+                  <option value={0} className="text-gray-900">Semua Week</option>
+                  {period.weeks.map((w: any) => <option key={w.week} value={w.week} className="text-gray-900">{w.label}</option>)}
+                </select>
+              )}
+              <select value={month} onChange={e => setMonth(+e.target.value)}
+                className="px-3 py-1.5 bg-white/20 border border-white/30 backdrop-blur-sm rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/50">
+                {MONTHS.map(m => <option key={m.value} value={m.value} className="text-gray-900">{m.label}</option>)}
               </select>
-            )}
-            <select value={month} onChange={e => setMonth(+e.target.value)}
-              className="px-3 py-1.5 bg-white dark:bg-gray-800/20 border border-white/30 rounded-lg text-white text-sm focus:outline-none">
-              {MONTHS.map(m => <option key={m.value} value={m.value} className="text-gray-900 dark:text-white">{m.label}</option>)}
-            </select>
-            <select value={year} onChange={e => setYear(+e.target.value)}
-              className="px-3 py-1.5 bg-white dark:bg-gray-800/20 border border-white/30 rounded-lg text-white text-sm focus:outline-none">
-              {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y} className="text-gray-900 dark:text-white">{y}</option>)}
-            </select>
+              <select value={year} onChange={e => setYear(+e.target.value)}
+                className="px-3 py-1.5 bg-white/20 border border-white/30 backdrop-blur-sm rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/50">
+                {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y} className="text-gray-900">{y}</option>)}
+              </select>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* KPI CARDS */}
+      {/* ═══════════════════════════════════════════════════════════
+          STATUS BANNER — Live Factory Intelligence
+      ═══════════════════════════════════════════════════════════ */}
+      <div className={`rounded-xl px-4 py-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm font-medium shadow-sm border ${
+        isCritical ? 'bg-red-50 border-red-200 text-red-800' :
+        isOnTrack ? 'bg-green-50 border-green-200 text-green-800' :
+        'bg-yellow-50 border-yellow-200 text-yellow-800'
+      }`}>
+        <span className="flex items-center gap-2">
+          <span className={`w-2.5 h-2.5 rounded-full animate-pulse ${isCritical ? 'bg-red-500' : isOnTrack ? 'bg-green-500' : 'bg-yellow-500'}`} />
+          <strong>Status: {statusLabel}</strong>
+        </span>
+        <span className="text-gray-500">|</span>
+        <span>WO: <strong>{data.work_orders.completed}/{data.work_orders.total}</strong> selesai</span>
+        <span className="text-gray-500">|</span>
+        <span>Achievement: <strong className={displaySummary.achievement_pct >= 80 ? 'text-green-700' : displaySummary.achievement_pct >= 50 ? 'text-yellow-700' : 'text-red-700'}>{displaySummary.achievement_pct}%</strong> dari target</span>
+        <span className="text-gray-500">|</span>
+        <span>Grade A: <strong className="text-green-700">{displaySummary.total_pcs > 0 ? (((displaySummary.total_pcs - displaySummary.total_grade_b - displaySummary.total_grade_c) / displaySummary.total_pcs) * 100).toFixed(1) : 0}%</strong></span>
+        <span className="text-gray-500">|</span>
+        <span>Downtime: <strong className="text-red-700">{displaySummary.downtime_hours}j</strong></span>
+        {displaySummary.is_behind && (
+          <span className="ml-auto flex items-center gap-1.5 bg-red-600 text-white text-xs px-3 py-1 rounded-full font-bold animate-pulse">
+            <ExclamationTriangleIcon className="h-3.5 w-3.5" />
+            BEHIND TARGET {displaySummary.behind_pct}%
+          </span>
+        )}
+      </div>
+
+      {/* ═══════════════════════════════════════════════════════════
+          KPI CARDS — Premium Redesign
+      ═══════════════════════════════════════════════════════════ */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+
         {/* 1. TARGET */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg border">
-          <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Target {displayLabel}</p>
-          <p className="text-xl font-bold text-blue-600">{fmtNum(displaySummary.target_ctn)} ctn</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            Per hari: <span className="font-semibold text-blue-500">{fmtNum(displaySummary.daily_target_ctn || 0)} ctn</span>
-          </p>
-          <p className="text-[10px] text-gray-400">({displaySummary.total_working_days || 22} hari kerja/{viewMode === 'weekly' ? 'minggu' : 'bulan'})</p>
-        </div>
-        {/* 2. GAP + Achievement % */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg border">
-          <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Gap dari Target</p>
-          <p className={`text-xl font-bold ${displaySummary.gap_ctn > 0 ? 'text-red-600' : 'text-green-600'}`}>
-            {displaySummary.gap_ctn > 0 ? '-' : '+'}{fmtNum(Math.abs(Math.round(displaySummary.gap_ctn)))} ctn
-          </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            Tercapai: <span className={`font-semibold ${displaySummary.achievement_pct >= 80 ? 'text-green-600' : displaySummary.achievement_pct >= 50 ? 'text-yellow-600' : 'text-red-600'}`}>{displaySummary.achievement_pct}%</span> dari target
-          </p>
-          <p className="text-[10px] text-gray-400">Aktual {fmtNum(Math.round(displaySummary.actual_ctn))} ctn &bull; Hari {displaySummary.working_days}/{displaySummary.total_working_days || 22}</p>
-        </div>
-        {/* 3. ACHIEVEMENT + WARNING */}
-        <div className={`rounded-xl p-4 shadow-lg text-white relative overflow-hidden ${isCritical ? 'bg-gradient-to-br from-red-500 to-red-600' : isOnTrack ? 'bg-gradient-to-br from-green-500 to-green-600' : 'bg-gradient-to-br from-yellow-500 to-yellow-600'}`}>
-          <p className="text-xs opacity-80 font-medium">Achievement</p>
-          <p className="text-2xl font-bold">{fmtNum(Math.round(displaySummary.actual_ctn))} ctn</p>
-          <p className="text-[10px] opacity-80">
-            dari {fmtNum(Math.round(displaySummary.target_ctn))} ctn ({displaySummary.achievement_pct}%)
-          </p>
-          <p className="text-[10px] opacity-80 mt-0.5">
-            Seharusnya: {fmtNum(Math.round(displaySummary.daily_target_ctn * displaySummary.working_days))} ctn (hari ke-{displaySummary.working_days})
-          </p>
-          {displaySummary.is_behind && (
-            <div className="mt-1 bg-white dark:bg-gray-800/20 rounded px-1.5 py-0.5 inline-flex items-center gap-1">
-              <ExclamationTriangleIcon className="h-3 w-3" />
-              <span className="text-[10px] font-bold">BEHIND {displaySummary.behind_pct}%</span>
+        <div className="group bg-white rounded-2xl p-4 shadow-md border border-gray-100 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-blue-50 rounded-full -translate-y-1/2 translate-x-1/2" />
+          <div className="relative">
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 bg-blue-100 rounded-xl">
+                <CalendarDaysIcon className="h-5 w-5 text-blue-600" />
+              </div>
+              <span className="text-xs font-semibold text-blue-500 bg-blue-50 px-2 py-0.5 rounded-full">Target</span>
             </div>
-          )}
+            <p className="text-3xl font-black text-gray-900 leading-none">{fmtNum(displaySummary.target_ctn)}</p>
+            <p className="text-xs text-gray-400 mt-0.5 font-medium">Karton {displayLabel}</p>
+            <div className="mt-3 pt-2 border-t border-gray-50">
+              <p className="text-xs text-gray-500">Per hari: <span className="font-bold text-blue-600">{fmtNum(displaySummary.daily_target_ctn || 0)} ctn</span></p>
+              <p className="text-[10px] text-gray-400 mt-0.5">{displaySummary.total_working_days || 22} hari kerja/{viewMode === 'weekly' ? 'minggu' : 'bulan'}</p>
+            </div>
+          </div>
         </div>
+
+        {/* 2. AKTUAL + GAP */}
+        <div className="group bg-white rounded-2xl p-4 shadow-md border border-gray-100 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 relative overflow-hidden">
+          <div className={`absolute top-0 right-0 w-20 h-20 rounded-full -translate-y-1/2 translate-x-1/2 ${
+            displaySummary.gap_ctn > 0 ? 'bg-red-50' : 'bg-green-50'
+          }`} />
+          <div className="relative">
+            <div className="flex items-center justify-between mb-2">
+              <div className={`p-2 rounded-xl ${displaySummary.gap_ctn > 0 ? 'bg-red-100' : 'bg-green-100'}`}>
+                <MagnifyingGlassIcon className={`h-5 w-5 ${displaySummary.gap_ctn > 0 ? 'text-red-600' : 'text-green-600'}`} />
+              </div>
+              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                displaySummary.gap_ctn > 0 ? 'text-red-600 bg-red-50' : 'text-green-600 bg-green-50'
+              }`}>
+                {displaySummary.gap_ctn > 0 ? `▼ -${Math.abs(Math.round(displaySummary.gap_ctn))}` : `▲ +${Math.abs(Math.round(displaySummary.gap_ctn))}`}
+              </span>
+            </div>
+            <p className={`text-3xl font-black leading-none ${displaySummary.gap_ctn > 0 ? 'text-red-600' : 'text-green-600'}`}>
+              {displaySummary.achievement_pct}%
+            </p>
+            <p className="text-xs text-gray-400 mt-0.5 font-medium">Pencapaian Target</p>
+            <div className="mt-2">
+              <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                <div
+                  className={`h-1.5 rounded-full transition-all duration-700 ${
+                    displaySummary.achievement_pct >= 80 ? 'bg-green-500' :
+                    displaySummary.achievement_pct >= 50 ? 'bg-yellow-500' : 'bg-red-500'
+                  }`}
+                  style={{ width: `${Math.min(displaySummary.achievement_pct, 100)}%` }}
+                />
+              </div>
+            </div>
+            <p className="text-[10px] text-gray-400 mt-1">{fmtNum(Math.round(displaySummary.actual_ctn))} / {fmtNum(Math.round(displaySummary.target_ctn))} ctn</p>
+          </div>
+        </div>
+
+        {/* 3. ACHIEVEMENT CARD (colored) */}
+        <div className={`rounded-2xl p-4 text-white shadow-md relative overflow-hidden hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 ${
+          isCritical ? 'bg-gradient-to-br from-red-500 to-rose-600' :
+          isOnTrack ? 'bg-gradient-to-br from-emerald-500 to-green-600' :
+          'bg-gradient-to-br from-amber-500 to-yellow-600'
+        }`}>
+          <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-white/10 rounded-full" />
+          <div className="absolute -top-4 -left-4 w-16 h-16 bg-white/10 rounded-full" />
+          <div className="relative">
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 bg-white/20 rounded-xl">
+                <BoltIcon className="h-5 w-5" />
+              </div>
+              <span className="text-xs font-bold bg-white/20 px-2 py-0.5 rounded-full">Aktual</span>
+            </div>
+            <p className="text-3xl font-black leading-none">{fmtNum(Math.round(displaySummary.actual_ctn))}</p>
+            <p className="text-xs text-white/80 mt-0.5 font-medium">Karton Diproduksi</p>
+            <div className="mt-3 pt-2 border-t border-white/20 space-y-1">
+              <p className="text-[11px] text-white/80">
+                Harus: {fmtNum(Math.round(displaySummary.daily_target_ctn * displaySummary.working_days))} ctn (hari ke-{displaySummary.working_days})
+              </p>
+              {displaySummary.is_behind && (
+                <div className="inline-flex items-center gap-1 bg-white/20 rounded-full px-2 py-0.5">
+                  <ExclamationTriangleIcon className="h-3 w-3" />
+                  <span className="text-[10px] font-bold">BEHIND {displaySummary.behind_pct}%</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
         {/* 4. GRADE A/B/C */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg border">
-          <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Grade A / B / C</p>
-          <div className="flex items-baseline gap-1 mt-1">
-            <span className="text-lg font-bold text-green-600">{fmtNum(displaySummary.total_grade_a)}</span>
-            <span className="text-gray-400">/</span>
-            <span className="text-sm font-semibold text-yellow-500">{fmtNum(displaySummary.total_grade_b)}</span>
-            <span className="text-gray-400">/</span>
-            <span className="text-sm font-semibold text-red-500">{fmtNum(displaySummary.total_grade_c)}</span>
+        <div className="group bg-white rounded-2xl p-4 shadow-md border border-gray-100 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-green-50 rounded-full -translate-y-1/2 translate-x-1/2" />
+          <div className="relative">
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 bg-green-100 rounded-xl">
+                <BeakerIcon className="h-5 w-5 text-green-600" />
+              </div>
+              <span className="text-xs font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                QR: {displaySummary.quality_rate}%
+              </span>
+            </div>
+            <div className="flex items-end gap-1.5">
+              <span className="text-3xl font-black text-green-600 leading-none">{fmtNum(displaySummary.total_grade_a)}</span>
+              <span className="text-lg font-bold text-gray-300 pb-0.5">/</span>
+              <span className="text-xl font-black text-amber-500 pb-0.5">{fmtNum(displaySummary.total_grade_b)}</span>
+              <span className="text-lg font-bold text-gray-300 pb-0.5">/</span>
+              <span className="text-xl font-black text-red-500 pb-0.5">{fmtNum(displaySummary.total_grade_c)}</span>
+            </div>
+            <p className="text-xs text-gray-400 mt-0.5 font-medium">Grade A / B / C</p>
+            <div className="flex gap-1 mt-2">
+              <div className="h-1.5 bg-green-500 rounded-full flex-1" style={{ flex: displaySummary.total_grade_a || 1 }} />
+              <div className="h-1.5 bg-amber-500 rounded-full" style={{ flex: displaySummary.total_grade_b || 0 }} />
+              <div className="h-1.5 bg-red-500 rounded-full" style={{ flex: displaySummary.total_grade_c || 0 }} />
+            </div>
+            <p className="text-[10px] text-gray-400 mt-1">Reject: <span className="text-red-500 font-bold">{displaySummary.total_pcs > 0 ? ((displaySummary.total_grade_c / displaySummary.total_pcs) * 100).toFixed(2) : 0}%</span></p>
           </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Quality: {displaySummary.quality_rate}% &bull; Reject: <span className="text-red-500 font-semibold">{displaySummary.total_pcs > 0 ? ((displaySummary.total_grade_c / displaySummary.total_pcs) * 100).toFixed(2) : 0}%</span></p>
         </div>
-        {/* 5. WAKTU (RT / DT / IDLE gabungan) */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg border">
-          <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Waktu Produksi <span className="text-gray-400">(Planned: {displaySummary.planned_runtime_minutes > 0 ? (displaySummary.planned_runtime_minutes / 60).toFixed(1) : 0}j)</span></p>
-          {/* Stacked bar */}
-          <div className="flex rounded-full h-3 overflow-hidden mt-2 mb-2">
-            {displaySummary.planned_runtime_minutes > 0 ? (<>
-              <div className="bg-green-500" style={{ width: `${(displaySummary.runtime_minutes / displaySummary.planned_runtime_minutes * 100)}%` }} />
-              <div className="bg-red-500" style={{ width: `${(displaySummary.downtime_minutes / displaySummary.planned_runtime_minutes * 100)}%` }} />
-              <div className="bg-yellow-400" style={{ width: `${(displaySummary.idle_time_minutes / displaySummary.planned_runtime_minutes * 100)}%` }} />
-            </>) : <div className="bg-gray-300 w-full" />}
+
+        {/* 5. WAKTU PRODUKSI */}
+        <div className="group bg-white rounded-2xl p-4 shadow-md border border-gray-100 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-indigo-50 rounded-full -translate-y-1/2 translate-x-1/2" />
+          <div className="relative">
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 bg-indigo-100 rounded-xl">
+                <ClockIcon className="h-5 w-5 text-indigo-600" />
+              </div>
+              <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
+                WO {data.work_orders.completed}/{data.work_orders.total}
+              </span>
+            </div>
+            <p className="text-3xl font-black text-gray-900 leading-none">{displaySummary.runtime_hours}<span className="text-lg text-gray-400 font-semibold">j</span></p>
+            <p className="text-xs text-gray-400 mt-0.5 font-medium">Runtime (Planned: {displaySummary.planned_runtime_minutes > 0 ? (displaySummary.planned_runtime_minutes / 60).toFixed(1) : 0}j)</p>
+            {/* Stacked progress bar */}
+            <div className="flex rounded-full h-2 overflow-hidden mt-2 mb-2 bg-gray-100">
+              {displaySummary.planned_runtime_minutes > 0 ? (<>
+                <div className="bg-emerald-500 transition-all duration-700" style={{ width: `${Math.min((displaySummary.runtime_minutes / displaySummary.planned_runtime_minutes * 100), 100)}%` }} />
+                <div className="bg-red-500 transition-all duration-700" style={{ width: `${Math.min((displaySummary.downtime_minutes / displaySummary.planned_runtime_minutes * 100), 100)}%` }} />
+                <div className="bg-amber-400 transition-all duration-700" style={{ width: `${Math.min((displaySummary.idle_time_minutes / displaySummary.planned_runtime_minutes * 100), 100)}%` }} />
+              </>) : <div className="bg-gray-300 w-full" />}
+            </div>
+            <div className="space-y-0.5 text-[11px]">
+              <div className="flex justify-between">
+                <span className="text-emerald-600 font-semibold">● Runtime</span>
+                <span className="text-gray-600 font-semibold">{displaySummary.runtime_hours}j ({displaySummary.planned_runtime_minutes > 0 ? (displaySummary.runtime_minutes / displaySummary.planned_runtime_minutes * 100).toFixed(1) : 0}%)</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-red-500 font-semibold">● Downtime</span>
+                <span className="text-gray-600 font-semibold">{displaySummary.downtime_hours}j ({displaySummary.planned_runtime_minutes > 0 ? (displaySummary.downtime_minutes / displaySummary.planned_runtime_minutes * 100).toFixed(1) : 0}%)</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-amber-500 font-semibold">● Idle</span>
+                <span className="text-gray-600 font-semibold">{displaySummary.idle_hours}j ({displaySummary.planned_runtime_minutes > 0 ? (displaySummary.idle_time_minutes / displaySummary.planned_runtime_minutes * 100).toFixed(1) : 0}%)</span>
+              </div>
+            </div>
           </div>
-          <div className="space-y-0.5 text-[11px]">
-            <div className="flex justify-between">
-              <span className="text-green-600 font-medium">Runtime</span>
-              <span className="text-gray-700 dark:text-gray-200">{displaySummary.runtime_hours}j <span className="text-green-600 font-semibold">({displaySummary.planned_runtime_minutes > 0 ? (displaySummary.runtime_minutes / displaySummary.planned_runtime_minutes * 100).toFixed(1) : 0}%)</span></span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-red-500 font-medium">Downtime</span>
-              <span className="text-gray-700 dark:text-gray-200">{displaySummary.downtime_hours}j <span className="text-red-500 font-semibold">({displaySummary.planned_runtime_minutes > 0 ? (displaySummary.downtime_minutes / displaySummary.planned_runtime_minutes * 100).toFixed(1) : 0}%)</span></span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-yellow-500 font-medium">Idle</span>
-              <span className="text-gray-700 dark:text-gray-200">{displaySummary.idle_hours}j <span className="text-yellow-500 font-semibold">({displaySummary.planned_runtime_minutes > 0 ? (displaySummary.idle_time_minutes / displaySummary.planned_runtime_minutes * 100).toFixed(1) : 0}%)</span></span>
-            </div>
-          </div>
-          <p className="text-[10px] text-gray-400 mt-1">WO: {data.work_orders.completed}/{data.work_orders.total} selesai</p>
         </div>
       </div>
 
-      {/* AUTO-REFRESH CONTROL */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow border flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={autoRefresh}
-              onChange={(e) => setAutoRefresh(e.target.checked)}
-              className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-            />
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Auto-refresh</span>
+      {/* ═══════════════════════════════════════════════════════════
+          AUTO-REFRESH CONTROL — Modern Toggle + Countdown
+      ═══════════════════════════════════════════════════════════ */}
+      <div className="bg-white rounded-xl px-4 py-3 shadow-sm border border-gray-100 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-4">
+          {/* Modern Toggle Switch */}
+          <label className="flex items-center gap-2.5 cursor-pointer select-none">
+            <div
+              onClick={() => setAutoRefresh(prev => !prev)}
+              className={`relative w-11 h-6 rounded-full transition-colors duration-300 cursor-pointer ${
+                autoRefresh ? 'bg-blue-600' : 'bg-gray-300'
+              }`}
+            >
+              <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-300 ${
+                autoRefresh ? 'translate-x-5' : 'translate-x-0'
+              }`} />
+            </div>
+            <span className="text-sm font-semibold text-gray-700">Auto-Refresh</span>
           </label>
           {autoRefresh && (
-            <select
-              value={refreshInterval}
-              onChange={(e) => setRefreshInterval(+e.target.value)}
-              className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500"
-            >
-              <option value={1}>1 menit</option>
-              <option value={2}>2 menit</option>
-              <option value={5}>5 menit</option>
-              <option value={10}>10 menit</option>
-              <option value={15}>15 menit</option>
-            </select>
+            <>
+              <select
+                value={refreshInterval}
+                onChange={(e) => setRefreshInterval(+e.target.value)}
+                className="px-2 py-1 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 bg-gray-50 text-gray-700"
+              >
+                <option value={1}>1 menit</option>
+                <option value={2}>2 menit</option>
+                <option value={5}>5 menit</option>
+                <option value={10}>10 menit</option>
+                <option value={15}>15 menit</option>
+              </select>
+              {/* Live Countdown */}
+              <div className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full">
+                <ClockIcon className="h-3.5 w-3.5" />
+                Refresh dalam <span className="font-black tabular-nums">{refreshCountdown}d</span>
+              </div>
+            </>
           )}
         </div>
         <button
-          onClick={() => fetchData()}
-          className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+          onClick={async () => { setIsRefreshing(true); await fetchData(); setIsRefreshing(false); }}
+          disabled={isRefreshing}
+          className="flex items-center gap-2 px-4 py-1.5 text-sm font-semibold bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-lg transition-all duration-150 shadow-sm disabled:opacity-60"
         >
-          🔄 Refresh Now
+          <ArrowDownTrayIcon className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          {isRefreshing ? 'Memuat...' : 'Refresh Sekarang'}
         </button>
       </div>
 
-      {/* TAB NAVIGATION */}
-      <div className="flex gap-1 bg-white dark:bg-gray-800 rounded-xl p-1 shadow border overflow-x-auto">
-        {tabs.map(t => (
-          <button key={t.id} onClick={() => setActiveTab(t.id as any)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition ${activeTab === t.id ? 'bg-blue-600 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}`}>
-            <t.icon className="h-4 w-4" /> {t.label}
-          </button>
-        ))}
+      {/* ═══════════════════════════════════════════════════════════
+          TAB NAVIGATION — Premium Pill Style
+      ═══════════════════════════════════════════════════════════ */}
+      <div className="bg-white rounded-2xl p-1.5 shadow-sm border border-gray-100">
+        <div className="flex gap-1 overflow-x-auto pb-0.5 scrollbar-none">
+          {tabs.map(t => (
+            <button
+              key={t.id}
+              onClick={() => setActiveTab(t.id as any)}
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 ${
+                activeTab === t.id
+                  ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-md shadow-blue-200 scale-[1.02]'
+                  : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+              }`}
+            >
+              <t.icon className="h-3.5 w-3.5 shrink-0" />
+              <span>{t.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* TAB CONTENT */}
