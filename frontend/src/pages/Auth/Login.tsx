@@ -34,6 +34,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [rememberMe, setRememberMe] = useState(false)
   const [companyName, setCompanyName] = useState('ERP System')
   const [googleEnabled, setGoogleEnabled] = useState(false)
   const [sessionMessage, setSessionMessage] = useState<string | null>(null)
@@ -57,6 +58,12 @@ export default function Login() {
   useEffect(() => {
     loadCompanySettings()
     checkGoogleOAuth()
+    // Load saved username if Remember Me was checked previously
+    const savedUsername = localStorage.getItem('remembered_username')
+    if (savedUsername) {
+      setUsername(savedUsername)
+      setRememberMe(true)
+    }
   }, [])
 
   const loadCompanySettings = async () => {
@@ -116,6 +123,12 @@ export default function Login() {
 
     try {
       const loginResult = await dispatch(login({ username, password })).unwrap()
+      // Handle Remember Me
+      if (rememberMe) {
+        localStorage.setItem('remembered_username', username)
+      } else {
+        localStorage.removeItem('remembered_username')
+      }
       // Reset session tracking for new login
       localStorage.setItem('session_start_time', Date.now().toString())
       localStorage.setItem('last_activity_time', Date.now().toString())
@@ -201,9 +214,9 @@ export default function Login() {
             {features.map((feature, idx) => (
               <div 
                 key={idx}
-                className="flex items-center gap-3 p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/10 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/20 transition-all duration-300"
+                className="flex items-center gap-3 p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/10 hover:bg-white/20 transition-all duration-300"
               >
-                <div className="p-2 bg-white dark:bg-gray-800/20 rounded-lg">
+                <div className="p-2 bg-white/20 rounded-lg">
                   <feature.icon className="w-5 h-5 text-white" />
                 </div>
                 <span className="text-white font-medium">{feature.text}</span>
@@ -322,7 +335,7 @@ export default function Login() {
                   name="username"
                   type="text"
                   required
-                  className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-gray-800 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   placeholder="Enter your username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
@@ -344,7 +357,7 @@ export default function Login() {
                   name="password"
                   type={showPassword ? 'text' : 'password'}
                   required
-                  className="w-full pl-11 pr-12 py-3.5 bg-white dark:bg-gray-800 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className="w-full pl-11 pr-12 py-3.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -365,9 +378,15 @@ export default function Login() {
 
             {/* Remember & Forgot */}
             <div className="flex items-center justify-between">
-              <label className="flex items-center">
-                <input type="checkbox" className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
-                <span className="ml-2 text-sm text-slate-600 dark:text-slate-400">Remember me</span>
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  id="remember-me"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                />
+                <span className="text-sm text-slate-600 dark:text-slate-400">Remember me</span>
               </label>
               <Link to="/forgot-password" className="text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors">
                 Forgot password?
