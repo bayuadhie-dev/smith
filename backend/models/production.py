@@ -1200,6 +1200,7 @@ class PackingListNewItem(db.Model):
     
     # Berat karton dalam kg
     weight_kg = db.Column(db.Numeric(10, 3), nullable=True)
+    weight_gross_kg = db.Column(db.Numeric(10, 3), nullable=True)  # Berat kotor dari OCR/input manual
     
     # Tanggal timbang (weighing date) - IMPORTANT NEW FIELD
     weigh_date = db.Column(db.Date, nullable=True)

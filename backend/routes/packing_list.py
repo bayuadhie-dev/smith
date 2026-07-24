@@ -17,6 +17,7 @@ from models.user import User
 from sqlalchemy import func, and_, or_
 from datetime import datetime, date, time
 from utils.timezone import get_local_now, get_local_today
+from utils.ocr_packing_list import process_packing_list_photo
 
 packing_list_bp = Blueprint('packing_list', __name__)
 
@@ -494,6 +495,7 @@ def create_packing_list():
     """
     try:
         data = request.get_json()
+        product_id = data.get('product_id')
         batches_input = data.get('batches') or []
         if batches_input:
             total_carton = sum(int(b.get('total_carton', 0)) for b in batches_input if int(b.get('total_carton', 0)) > 0)
@@ -666,11 +668,27 @@ def delete_packing_list(id):
                 'error': 'Packing list yang sudah Released/masuk gudang tidak dapat dihapus. Hubungi Supervisor.'
             }), 400
         
-        user_id = get_jwt_identity()
+        user_identity = get_jwt_identity()
+        user_id = None
+        if user_identity:
+            if isinstance(user_identity, int):
+                user_id = user_identity
+            elif str(user_identity).isdigit():
+                user_id = int(user_identity)
+            else:
+                user = User.query.filter_by(username=str(user_identity)).first()
+                if user:
+                    user_id = user.id
         
         # Return WIP stock if allocated
         if pl.total_carton > 0:
-            _return_wip_stock(pl, user_id)
+            try:
+                _return_wip_stock(pl, user_id)
+            except Exception as stock_err:
+                print(f"Warning: Stock return error during delete PL {pl.id}: {stock_err}")
+        
+        # Explicitly delete child items first
+        PackingListNewItem.query.filter_by(packing_list_id=pl.id).delete()
         
         packing_number = pl.packing_number
         db.session.delete(pl)
@@ -946,7 +964,7 @@ def get_packing_list_items(id):
 @packing_list_bp.route('/<int:id>/items/weigh', methods=['PUT'])
 @jwt_required()
 def weigh_cartons(id):
-    """Update weight and weigh date for cartons"""
+    """Update weight, weigh date, and batch mixing for cartons (supports manual & OCR final submission)"""
     try:
         pl = db.session.get(PackingListNew, id) or abort(404)
         data = request.get_json()
@@ -961,24 +979,41 @@ def weigh_cartons(id):
         
         for item_data in items:
             item_id = item_data.get('id')
-            weight_kg = item_data.get('weight_kg')
+            carton_number = item_data.get('carton_number') or item_data.get('carton_number_full')
+            weight_kg = item_data.get('netto_kg') if item_data.get('netto_kg') is not None else item_data.get('weight_kg')
             weigh_date = item_data.get('weigh_date')
+            batch_mixing = item_data.get('batch_mixing')
             
-            item = db.session.get(PackingListNewItem, item_id)
+            item = None
+            if item_id:
+                item = db.session.get(PackingListNewItem, item_id)
+            elif carton_number:
+                item = PackingListNewItem.query.filter_by(
+                    packing_list_id=pl.id,
+                    carton_number=carton_number
+                ).first()
+                
             if item and item.packing_list_id == pl.id:
                 if weight_kg is not None:
                     item.weight_kg = weight_kg
                     item.weighed_by = user_id
                     
-                    # Set weigh date - use provided or today
-                    if weigh_date:
-                        item.weigh_date = datetime.strptime(weigh_date, '%Y-%m-%d').date()
-                    else:
-                        item.weigh_date = today
+                    # Set weigh date - use provided valid date string or fallback to today
+                    parsed_date = None
+                    if weigh_date and isinstance(weigh_date, str):
+                        try:
+                            parsed_date = datetime.strptime(weigh_date, '%Y-%m-%d').date()
+                        except (ValueError, TypeError):
+                            parsed_date = None
+                    
+                    item.weigh_date = parsed_date or today
                     
                     item.weigh_time = now_time
+
+                if batch_mixing:
+                    item.batch_mixing = batch_mixing
         
-        # Update packing list status to in_progress if items are weighed (Point 9 - Completion manual)
+        # Update packing list status to in_progress if items are weighed
         weighed_count = pl.items.filter(PackingListNewItem.weight_kg.isnot(None)).count()
         if weighed_count > 0 and pl.status == 'draft':
             pl.status = 'in_progress'
@@ -993,6 +1028,106 @@ def weigh_cartons(id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+
+@packing_list_bp.route('/<int:id>/ocr-weigh-preview', methods=['POST'])
+@jwt_required()
+def ocr_preview_packing_list(id):
+    """Process handwritten packing list photo using Gemini OCR, match carton_number_full to existing item_id, and calculate Netto weights for preview."""
+    try:
+        pl = db.session.get(PackingListNew, id) or abort(404)
+        
+        photo = request.files.get('photo') or request.files.get('image')
+        if not photo or not photo.filename:
+            return jsonify({'success': False, 'message': 'File photo wajib diunggah (field: photo atau image)', 'error': 'File photo wajib diunggah'}), 400
+        
+        image_bytes = photo.read()
+        if not image_bytes:
+            return jsonify({'success': False, 'message': 'File photo kosong (0 bytes)', 'error': 'File photo kosong (0 bytes)'}), 400
+        
+        product_name = pl.product.name if pl.product else ''
+        product_id = pl.product_id
+        
+        result = process_packing_list_photo(
+            image_bytes=image_bytes,
+            product_name=product_name,
+            product_id=product_id,
+            packing_list_id=pl.id,
+            mime_type=photo.mimetype or 'image/jpeg'
+        )
+        
+        # Match carton_number_full to existing PackingListNewItem.id
+        existing_items = {item.carton_number: item.id for item in pl.items.all()}
+        for row in result.get('rows', []):
+            full_num = row.get('carton_number_full')
+            if full_num and full_num in existing_items:
+                row['item_id'] = existing_items[full_num]
+            else:
+                row['item_id'] = None
+        
+        return jsonify({
+            'success': True,
+            **result
+        }), 200
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'message': f'Gagal memproses OCR Packing List: {str(e)}', 'error': str(e)}), 500
+
+
+@packing_list_bp.route('/ocr-standalone-preview', methods=['POST'])
+@jwt_required()
+def ocr_standalone_preview():
+    """Process handwritten packing list photo using Gemini OCR by selecting Product ID first.
+    Calculates Netto weight automatically based on the selected product's deduction rule.
+    """
+    try:
+        product_id = request.form.get('product_id') or request.args.get('product_id')
+        if not product_id:
+            return jsonify({'success': False, 'message': 'Wajib memilih Produk terlebih dahulu sebelum memproses OCR', 'error': 'product_id required'}), 400
+        
+        try:
+            product_id = int(product_id)
+        except ValueError:
+            return jsonify({'success': False, 'message': 'ID produk tidak valid', 'error': 'invalid product_id'}), 400
+            
+        product = db.session.get(Product, product_id)
+        if not product:
+            return jsonify({'success': False, 'message': 'Produk yang dipilih tidak ditemukan di database', 'error': 'product not found'}), 404
+        
+        photo = request.files.get('photo') or request.files.get('image')
+        if not photo or not photo.filename:
+            return jsonify({'success': False, 'message': 'File foto kertas fisik wajib diunggah (field: photo atau image)', 'error': 'File photo wajib diunggah'}), 400
+        
+        image_bytes = photo.read()
+        if not image_bytes:
+            return jsonify({'success': False, 'message': 'File photo kosong (0 bytes)', 'error': 'File photo kosong (0 bytes)'}), 400
+        
+        result = process_packing_list_photo(
+            image_bytes=image_bytes,
+            product_name=product.name,
+            product_id=product.id,
+            packing_list_id=0,
+            mime_type=photo.mimetype or 'image/jpeg'
+        )
+        
+        return jsonify({
+            'success': True,
+            'product': {
+                'id': product.id,
+                'name': product.name,
+                'code': product.code,
+                'pack_per_carton': getattr(product, 'pack_per_carton', 1) or 1
+            },
+            **result
+        }), 200
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'message': f'Gagal memproses OCR Packing List: {str(e)}', 'error': str(e)}), 500
+
 
 
 @packing_list_bp.route('/<int:id>/items/batch', methods=['PUT'])

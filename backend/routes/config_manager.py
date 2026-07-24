@@ -1,10 +1,12 @@
 import os
+import csv
 import json
 from functools import wraps
 from flask import Blueprint, request, jsonify, render_template, send_file
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db
 from models.user import User
+from models.product import Product
 from models.settings import SystemSetting
 from models.settings_extended import AuditLog
 from sqlalchemy import text
@@ -504,6 +506,466 @@ def update_configs():
         return jsonify({
             'success': True,
             'message': f'Berhasil memperbarui {updated_count} pengaturan.'
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+# ============================================================
+# NETTO DEDUCTION RULES MANAGER (SUPER ADMIN CRUD)
+# ============================================================
+
+def _get_netto_rules_csv_path():
+    return os.path.join(get_project_root(), 'product_netto_deduction.csv')
+
+
+def _read_netto_rules_csv():
+    csv_path = _get_netto_rules_csv_path()
+    rules = []
+    if not os.path.exists(csv_path):
+        return rules
+    
+    with open(csv_path, mode='r', encoding='utf-8', newline='') as f:
+        reader = csv.DictReader(f)
+        for idx, row in enumerate(reader):
+            rule_type = (row.get('rule_type') or '').strip()
+            match_value = (row.get('match_value') or '').strip()
+            deduction_str = (row.get('deduction_kg') or '').strip()
+            
+            if not rule_type or not match_value or not deduction_str:
+                continue
+            
+            try:
+                deduction_kg = float(deduction_str)
+            except ValueError:
+                continue
+                
+            rules.append({
+                'index': len(rules),
+                'rule_type': rule_type,
+                'match_value': match_value,
+                'deduction_kg': deduction_kg
+            })
+    return rules
+
+
+def _write_netto_rules_csv_atomic(rules):
+    csv_path = _get_netto_rules_csv_path()
+    tmp_path = csv_path + '.tmp'
+    
+    os.makedirs(os.path.dirname(csv_path), exist_ok=True)
+    with open(tmp_path, mode='w', encoding='utf-8', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(['rule_type', 'match_value', 'deduction_kg'])
+        for r in rules:
+            writer.writerow([r['rule_type'], r['match_value'], r['deduction_kg']])
+        f.flush()
+        os.fsync(f.fileno())
+    
+    os.replace(tmp_path, csv_path)
+
+
+@config_manager_bp.route('/netto-deductions', methods=['GET'])
+@require_super_admin
+def get_netto_deduction_rules():
+    """
+    Get all Netto deduction rules & product options
+    ---
+    tags:
+      - Netto Deduction Rules
+    summary: Get all Netto deduction rules
+    description: Membaca seluruh aturan potongan Netto dari CSV dan menyertakan daftar produk aktif dari database untuk opsi UI.
+    security:
+      - BearerAuth: []
+    responses:
+      200:
+        description: Berhasil mengambil daftar aturan & produk
+      403:
+        description: Forbidden - Akses khusus Super Admin
+    """
+    try:
+        rules = _read_netto_rules_csv()
+        products = Product.query.filter_by(is_active=True).order_by(Product.name.asc()).all()
+        product_options = [{'id': p.id, 'name': p.name, 'code': p.code} for p in products]
+        
+        return jsonify({
+            'success': True,
+            'rules': rules,
+            'products': product_options
+        }), 200
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@config_manager_bp.route('/netto-deductions', methods=['POST'])
+@require_super_admin
+def add_netto_deduction_rule():
+    """
+    Add new Netto deduction rule
+    ---
+    tags:
+      - Netto Deduction Rules
+    summary: Add new Netto deduction rule
+    description: Menambahkan aturan potongan Netto baru ke CSV dengan penulisan atomik, validasi produk DB, pencegahan duplikat (409), dan AuditLog.
+    security:
+      - BearerAuth: []
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          required:
+            - rule_type
+            - match_value
+            - deduction_kg
+          properties:
+            rule_type:
+              type: string
+              enum: [pattern, product_id]
+            match_value:
+              type: string
+            deduction_kg:
+              type: number
+              format: float
+    responses:
+      201:
+        description: Aturan berhasil ditambahkan
+      400:
+        description: Input tidak valid
+      403:
+        description: Forbidden - Akses khusus Super Admin
+      404:
+        description: ID Produk tidak ditemukan di database
+      409:
+        description: Conflict - Aturan dengan rule_type dan match_value tersebut sudah ada
+    """
+    try:
+        user_id = get_jwt_identity()
+        data = request.get_json() or {}
+        
+        rule_type = (data.get('rule_type') or '').strip().lower()
+        match_value = str(data.get('match_value') or '').strip()
+        deduction_kg = data.get('deduction_kg')
+        
+        if rule_type not in ['pattern', 'product_id']:
+            return jsonify({'success': False, 'message': 'rule_type harus "pattern" atau "product_id"'}), 400
+        
+        if not match_value:
+            return jsonify({'success': False, 'message': 'match_value tidak boleh kosong'}), 400
+        
+        try:
+            deduction_kg = float(deduction_kg)
+            if deduction_kg <= 0:
+                raise ValueError()
+        except (ValueError, TypeError):
+            return jsonify({'success': False, 'message': 'deduction_kg harus berupa angka desimal positif'}), 400
+        
+        if rule_type == 'product_id':
+            try:
+                pid = int(match_value)
+                prod = db.session.get(Product, pid)
+                if not prod:
+                    return jsonify({'success': False, 'message': f'Produk dengan ID {pid} tidak ditemukan di database'}), 404
+                match_value = str(pid)
+            except ValueError:
+                return jsonify({'success': False, 'message': 'match_value untuk product_id harus berupa angka integer ID produk'}), 400
+
+        rules = _read_netto_rules_csv()
+        
+        # Prevent duplicate rule_type + match_value
+        is_duplicate = any(
+            r['rule_type'].lower() == rule_type and r['match_value'].lower() == match_value.lower()
+            for r in rules
+        )
+        if is_duplicate:
+            return jsonify({'success': False, 'message': f'Aturan untuk {rule_type} "{match_value}" sudah ada'}), 409
+
+        new_rule = {
+            'rule_type': rule_type,
+            'match_value': match_value,
+            'deduction_kg': deduction_kg
+        }
+        rules.append(new_rule)
+        
+        _write_netto_rules_csv_atomic(rules)
+        
+        # Log to AuditLog
+        log_entry = AuditLog(
+            user_id=int(user_id),
+            action='create',
+            resource_type='netto_deduction_rule',
+            resource_id=match_value,
+            resource_name='netto_deduction_rules',
+            old_values=None,
+            new_values=json.dumps(new_rule),
+            ip_address=request.remote_addr,
+            user_agent=request.headers.get('User-Agent', '')[:500],
+            request_method=request.method,
+            request_url=request.url,
+            status='success',
+            timestamp=get_local_now()
+        )
+        db.session.add(log_entry)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Aturan potongan Netto berhasil ditambahkan',
+            'rules': _read_netto_rules_csv()
+        }), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@config_manager_bp.route('/netto-deductions', methods=['PUT'])
+@require_super_admin
+def update_netto_deduction_rule():
+    """
+    Update Netto deduction rule by composite key
+    ---
+    tags:
+      - Netto Deduction Rules
+    summary: Update Netto deduction rule
+    description: Memperbarui aturan potongan Netto berdasarkan composite key target (target_rule_type & target_match_value). Indeks numerik telah dihapus sepenuhnya.
+    security:
+      - BearerAuth: []
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          required:
+            - target_rule_type
+            - target_match_value
+            - rule_type
+            - match_value
+            - deduction_kg
+          properties:
+            target_rule_type:
+              type: string
+            target_match_value:
+              type: string
+            rule_type:
+              type: string
+            match_value:
+              type: string
+            deduction_kg:
+              type: number
+    responses:
+      200:
+        description: Aturan berhasil diperbarui
+      400:
+        description: Target composite key atau input tidak valid
+      403:
+        description: Forbidden - Akses khusus Super Admin
+      404:
+        description: Aturan target tidak ditemukan
+      409:
+        description: Conflict - Aturan baru sudah ada
+    """
+    try:
+        user_id = get_jwt_identity()
+        data = request.get_json() or {}
+        
+        target_rule_type = (data.get('target_rule_type') or data.get('old_rule_type') or '').strip().lower()
+        target_match_value = str(data.get('target_match_value') or data.get('old_match_value') or '').strip()
+        
+        if not target_rule_type or not target_match_value:
+            return jsonify({
+                'success': False,
+                'message': 'Composite key (target_rule_type & target_match_value) wajib disertakan'
+            }), 400
+            
+        rules = _read_netto_rules_csv()
+        target_idx = None
+        
+        for idx, r in enumerate(rules):
+            if r['rule_type'].lower() == target_rule_type and r['match_value'].lower() == target_match_value.lower():
+                target_idx = idx
+                break
+
+        if target_idx is None:
+            return jsonify({
+                'success': False,
+                'message': f'Aturan {target_rule_type} "{target_match_value}" tidak ditemukan'
+            }), 404
+        
+        old_rule = {
+            'rule_type': rules[target_idx]['rule_type'],
+            'match_value': rules[target_idx]['match_value'],
+            'deduction_kg': rules[target_idx]['deduction_kg']
+        }
+        
+        rule_type = (data.get('rule_type') or '').strip().lower()
+        match_value = str(data.get('match_value') or '').strip()
+        deduction_kg = data.get('deduction_kg')
+        
+        if rule_type not in ['pattern', 'product_id']:
+            return jsonify({'success': False, 'message': 'rule_type harus "pattern" atau "product_id"'}), 400
+        
+        if not match_value:
+            return jsonify({'success': False, 'message': 'match_value tidak boleh kosong'}), 400
+        
+        try:
+            deduction_kg = float(deduction_kg)
+            if deduction_kg <= 0:
+                raise ValueError()
+        except (ValueError, TypeError):
+            return jsonify({'success': False, 'message': 'deduction_kg harus berupa angka desimal positif'}), 400
+        
+        if rule_type == 'product_id':
+            try:
+                pid = int(match_value)
+                prod = db.session.get(Product, pid)
+                if not prod:
+                    return jsonify({'success': False, 'message': f'Produk dengan ID {pid} tidak ditemukan di database'}), 404
+                match_value = str(pid)
+            except ValueError:
+                return jsonify({'success': False, 'message': 'match_value untuk product_id harus berupa angka integer ID produk'}), 400
+
+        # Check duplicate if key changed
+        if (rule_type != old_rule['rule_type'].lower() or match_value.lower() != old_rule['match_value'].lower()):
+            if any(r['rule_type'].lower() == rule_type and r['match_value'].lower() == match_value.lower() for i, r in enumerate(rules) if i != target_idx):
+                return jsonify({'success': False, 'message': f'Aturan untuk {rule_type} "{match_value}" sudah ada'}), 409
+
+        updated_rule = {
+            'rule_type': rule_type,
+            'match_value': match_value,
+            'deduction_kg': deduction_kg
+        }
+        rules[target_idx] = updated_rule
+        
+        _write_netto_rules_csv_atomic(rules)
+        
+        # Log to AuditLog
+        log_entry = AuditLog(
+            user_id=int(user_id),
+            action='update',
+            resource_type='netto_deduction_rule',
+            resource_id=match_value,
+            resource_name='netto_deduction_rules',
+            old_values=json.dumps(old_rule),
+            new_values=json.dumps(updated_rule),
+            ip_address=request.remote_addr,
+            user_agent=request.headers.get('User-Agent', '')[:500],
+            request_method=request.method,
+            request_url=request.url,
+            status='success',
+            timestamp=get_local_now()
+        )
+        db.session.add(log_entry)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Aturan potongan Netto berhasil diperbarui',
+            'rules': _read_netto_rules_csv()
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@config_manager_bp.route('/netto-deductions', methods=['DELETE'])
+@require_super_admin
+def delete_netto_deduction_rule():
+    """
+    Delete Netto deduction rule by composite key
+    ---
+    tags:
+      - Netto Deduction Rules
+    summary: Delete Netto deduction rule
+    description: Hapus aturan potongan Netto berdasarkan composite key (rule_type + match_value) melalui JSON Body request.
+    security:
+      - BearerAuth: []
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          required:
+            - rule_type
+            - match_value
+          properties:
+            rule_type:
+              type: string
+              enum: [pattern, product_id]
+            match_value:
+              type: string
+    responses:
+      200:
+        description: Aturan berhasil dihapus
+      400:
+        description: Parameter composite key tidak lengkap
+      403:
+        description: Forbidden - Akses khusus Super Admin
+      404:
+        description: Aturan tidak ditemukan
+    """
+    try:
+        user_id = get_jwt_identity()
+        data = request.get_json() or {}
+        
+        target_rule_type = str(data.get('rule_type') or '').strip().lower()
+        target_match_value = str(data.get('match_value') or '').strip()
+        
+        if not target_rule_type or not target_match_value:
+            return jsonify({
+                'success': False,
+                'message': 'Composite key (rule_type & match_value) wajib disertakan'
+            }), 400
+            
+        rules = _read_netto_rules_csv()
+        target_idx = None
+        
+        for idx, r in enumerate(rules):
+            if r['rule_type'].lower() == target_rule_type and r['match_value'].lower() == target_match_value.lower():
+                target_idx = idx
+                break
+
+        if target_idx is None:
+            return jsonify({
+                'success': False,
+                'message': f'Aturan {target_rule_type} "{target_match_value}" tidak ditemukan'
+            }), 404
+        
+        removed_rule = {
+            'rule_type': rules[target_idx]['rule_type'],
+            'match_value': rules[target_idx]['match_value'],
+            'deduction_kg': rules[target_idx]['deduction_kg']
+        }
+        
+        rules.pop(target_idx)
+        _write_netto_rules_csv_atomic(rules)
+        
+        # Log to AuditLog
+        log_entry = AuditLog(
+            user_id=int(user_id),
+            action='delete',
+            resource_type='netto_deduction_rule',
+            resource_id=removed_rule['match_value'],
+            resource_name='netto_deduction_rules',
+            old_values=json.dumps(removed_rule),
+            new_values=None,
+            ip_address=request.remote_addr,
+            user_agent=request.headers.get('User-Agent', '')[:500],
+            request_method=request.method,
+            request_url=request.url,
+            status='success',
+            timestamp=get_local_now()
+        )
+        db.session.add(log_entry)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Aturan potongan Netto berhasil dihapus',
+            'rules': _read_netto_rules_csv()
         }), 200
     except Exception as e:
         db.session.rollback()
