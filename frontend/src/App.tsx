@@ -21,7 +21,6 @@ import Dashboard from './pages/Dashboard/Dashboard'
 import DashboardEnhanced from './pages/Dashboard/DashboardEnhanced'
 import DeskPage from './pages/Desk/DeskPage'
 import ModuleOverviewPage from './pages/Desk/ModuleOverviewPage'
-import WorkspacePage from './pages/Workspace/WorkspacePage'
 import GlobalSearchPage from './pages/Search/GlobalSearchPage'
 import ProductList from './pages/Products/ProductList'
 import NonwovenCalculator from './pages/Products/NonwovenCalculator'
@@ -462,10 +461,8 @@ function App() {
                 <Route index element={<GlobalSearchPage />} />
               </Route>
 
-              {/* Workspace Routes */}
-              <Route path="/workspace/:module" element={isAuthenticated ? <Layout /> : <Navigate to="/login" />}>
-                <Route index element={<WorkspacePage />} />
-              </Route>
+              {/* Redirect old /workspace/:module requests to desk */}
+              <Route path="/workspace/:module" element={<Navigate to="/desk" replace />} />
 
               {/* Redirect specific old URLs to correct app structure */}
               <Route path="/sales/opportunities" element={<Navigate to="/app/sales/opportunities" replace />} />

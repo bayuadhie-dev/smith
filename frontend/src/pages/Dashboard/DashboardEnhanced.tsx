@@ -683,7 +683,7 @@ export default function DashboardEnhanced() {
       {/* Module Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {/* Production */}
-        <Link to="/workspace/production" className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border-l-4 border-blue-500">
+        <Link to="/app/production" className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border-l-4 border-blue-500">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
               <CogIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -695,7 +695,7 @@ export default function DashboardEnhanced() {
         </Link>
 
         {/* Sales */}
-        <Link to="/workspace/sales" className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border-l-4 border-green-500">
+        <Link to="/app/sales" className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border-l-4 border-green-500">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
               <ShoppingCartIcon className="w-6 h-6 text-green-600 dark:text-green-400" />
@@ -707,7 +707,7 @@ export default function DashboardEnhanced() {
         </Link>
 
         {/* Purchasing */}
-        <Link to="/workspace/purchasing" className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border-l-4 border-orange-500">
+        <Link to="/app/purchasing" className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border-l-4 border-orange-500">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
               <BuildingStorefrontIcon className="w-6 h-6 text-orange-600 dark:text-orange-400" />
@@ -719,7 +719,7 @@ export default function DashboardEnhanced() {
         </Link>
 
         {/* Warehouse */}
-        <Link to="/workspace/inventory" className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border-l-4 border-purple-500">
+        <Link to="/app/warehouse" className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border-l-4 border-purple-500">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
               <CubeIcon className="w-6 h-6 text-purple-600 dark:text-purple-400" />
@@ -731,7 +731,7 @@ export default function DashboardEnhanced() {
         </Link>
 
         {/* Quality */}
-        <Link to="/workspace/quality" className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border-l-4 border-teal-500">
+        <Link to="/app/quality" className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border-l-4 border-teal-500">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-teal-100 dark:bg-teal-900/30 rounded-lg">
               <CheckCircleIcon className="w-6 h-6 text-teal-600 dark:text-teal-400" />
@@ -743,7 +743,7 @@ export default function DashboardEnhanced() {
         </Link>
 
         {/* Maintenance */}
-        <Link to="/workspace/maintenance" className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border-l-4 border-red-500">
+        <Link to="/app/maintenance" className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border-l-4 border-red-500">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
               <WrenchScrewdriverIcon className="w-6 h-6 text-red-600 dark:text-red-400" />
@@ -755,7 +755,7 @@ export default function DashboardEnhanced() {
         </Link>
 
         {/* HR */}
-        <Link to="/workspace/hr" className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border-l-4 border-indigo-500">
+        <Link to="/app/hr" className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border-l-4 border-indigo-500">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
               <UsersIcon className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
@@ -767,7 +767,7 @@ export default function DashboardEnhanced() {
         </Link>
 
         {/* Documents */}
-        <Link to="/workspace/dcc" className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border-l-4 border-pink-500">
+        <Link to="/app/dcc" className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border-l-4 border-pink-500">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-pink-100 dark:bg-pink-900/30 rounded-lg">
               <DocumentTextIcon className="w-6 h-6 text-pink-600 dark:text-pink-400" />

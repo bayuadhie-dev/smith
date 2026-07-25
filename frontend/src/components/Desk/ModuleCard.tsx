@@ -119,35 +119,35 @@ export default function ModuleCard({
     return null
   }
 
-  // Convert module name to workspace key
-  const getWorkspaceKey = (moduleName: string) => {
-    const moduleMap: Record<string, string> = {
-      'Production': 'production',
-      'Sales': 'sales',
-      'Purchasing': 'purchasing',
-      'Warehouse': 'inventory',
-      'Quality Control': 'quality',
-      'Quality': 'quality',
-      'Maintenance': 'maintenance',
-      'Human Resources': 'hr',
-      'Finance': 'finance',
-      'Accounting': 'finance',
-      'Document Control': 'dcc',
-      'Products': 'products',
-      'OEE Monitoring': 'oee',
-      'Shipping': 'shipping',
-      'R&D': 'rd',
-      'Waste Management': 'waste'
+  // Direct route mapping for modules (bypassing workspace)
+  const getModuleDirectPath = (moduleName: string) => {
+    const routeMap: Record<string, string> = {
+      'Production': '/app/production',
+      'Sales': '/app/sales',
+      'Purchasing': '/app/purchasing',
+      'Warehouse': '/app/warehouse',
+      'Quality Control': '/app/quality',
+      'Quality': '/app/quality',
+      'Maintenance': '/app/maintenance',
+      'Human Resources': '/app/hr',
+      'Finance': '/app/finance',
+      'Accounting': '/app/finance',
+      'Document Control': '/app/dcc',
+      'Products': '/app/products',
+      'OEE Monitoring': '/app/oee',
+      'Shipping': '/app/warehouse',
+      'R&D': '/app/dcc',
+      'Waste Management': '/app/production'
     }
-    return moduleMap[moduleName] || moduleName.toLowerCase().replace(/\s+/g, '-')
+    return routeMap[moduleName] || (href && href !== '#' ? href : `/app/${moduleName.toLowerCase().replace(/\s+/g, '-')}`)
   }
 
   const handleCardClick = () => {
-    if (directLink) {
+    if (directLink && href && href !== '#') {
       navigate(href)
     } else {
-      const workspaceKey = getWorkspaceKey(name)
-      navigate(`/desk/${workspaceKey}`)
+      const targetPath = getModuleDirectPath(name)
+      navigate(targetPath)
     }
   }
 
