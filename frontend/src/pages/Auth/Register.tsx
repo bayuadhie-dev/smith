@@ -214,8 +214,8 @@ export default function Register() {
         captcha_token: captchaCode // Send CAPTCHA for server verification
       }
 
-      await publicApi.post('/api/auth/register', registrationData)
-      toast.success('Registration successful! You can now login.')
+      const res = await publicApi.post('/api/auth/register', registrationData)
+      toast.success(res.data?.message || 'Registrasi berhasil! Akun Anda sedang menunggu persetujuan admin sebelum dapat digunakan.', { duration: 6000 })
       navigate('/login')
     } catch (error: any) {
       const errorMessage = error.response?.data?.error || error.response?.data?.message || 'Registration failed'

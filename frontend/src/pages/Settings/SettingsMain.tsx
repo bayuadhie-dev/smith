@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import axiosInstance from '../../utils/axiosConfig';
 import {
   ArrowPathIcon,
   BoltIcon,
@@ -26,6 +27,21 @@ interface SettingsCard {
 }
 
 const SettingsMain: React.FC = () => {
+  const [pendingUserCount, setPendingUserCount] = useState<number>(0);
+
+  useEffect(() => {
+    const checkPending = async () => {
+      try {
+        const res = await axiosInstance.get('/api/auth/pending-users');
+        if (res.data?.success) {
+          setPendingUserCount(res.data.count || 0);
+        }
+      } catch (err) {
+        // Non-critical background check
+      }
+    };
+    checkPending();
+  }, []);
 
   const settingsCards: SettingsCard[] = [
     // System Settings
@@ -200,7 +216,11 @@ const SettingsMain: React.FC = () => {
                   <div className="p-3 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
                     <IconComponent className="h-6 w-6 text-blue-600" />
                   </div>
-                  {setting.isNew && (
+                  {setting.id === 'user-roles' && pendingUserCount > 0 ? (
+                    <span className="inline-flex items-center px-2.5 py-1 text-xs font-black rounded-full bg-amber-500 text-white animate-pulse shadow-sm">
+                      {pendingUserCount} Pending
+                    </span>
+                  ) : setting.isNew && (
                     <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
                       New
                     </span>

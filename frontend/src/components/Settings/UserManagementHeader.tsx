@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  ClockIcon,
   FunnelIcon,
   KeyIcon,
   MagnifyingGlassIcon,
@@ -8,8 +9,8 @@ import {
   UsersIcon
 } from '@heroicons/react/24/outline';
 interface UserManagementHeaderProps {
-  activeTab: 'users' | 'roles' | 'permissions';
-  setActiveTab: (tab: 'users' | 'roles' | 'permissions') => void;
+  activeTab: 'pending' | 'users' | 'roles' | 'permissions';
+  setActiveTab: (tab: 'pending' | 'users' | 'roles' | 'permissions') => void;
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   filterStatus: 'all' | 'active' | 'inactive';
@@ -20,6 +21,7 @@ interface UserManagementHeaderProps {
   userCount: number;
   roleCount: number;
   permissionCount: number;
+  pendingCount?: number;
 }
 
 const UserManagementHeader: React.FC<UserManagementHeaderProps> = ({
@@ -34,9 +36,18 @@ const UserManagementHeader: React.FC<UserManagementHeaderProps> = ({
   onCreatePermission,
   userCount,
   roleCount,
-  permissionCount
+  permissionCount,
+  pendingCount = 0
 }) => {
   const tabs = [
+    { 
+      id: 'pending' as const, 
+      label: 'Pending Approval', 
+      icon: ClockIcon, 
+      count: pendingCount,
+      isPending: true,
+      description: 'Verifikasi pendaftaran pengguna baru'
+    },
     { 
       id: 'users' as const, 
       label: 'Users', 
@@ -129,8 +140,10 @@ const UserManagementHeader: React.FC<UserManagementHeaderProps> = ({
                   activeTab === tab.id ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'
                 }`} />
                 {tab.label}
-                <span className={`ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium ${
-                  activeTab === tab.id 
+                <span className={`ml-2 py-0.5 px-2.5 rounded-full text-xs font-bold ${
+                  tab.isPending && tab.count > 0
+                    ? 'bg-amber-500 text-white animate-pulse'
+                    : activeTab === tab.id 
                     ? 'bg-blue-100 text-blue-600' 
                     : 'bg-gray-100 text-gray-900'
                 }`}>

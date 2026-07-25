@@ -30,8 +30,12 @@ import logging
 from decimal import Decimal, ROUND_HALF_UP
 from datetime import datetime
 
-from google import genai
-from google.genai import types
+try:
+    from google import genai
+    from google.genai import types
+except ImportError:
+    genai = None
+    types = None
 
 
 # =============================================================================

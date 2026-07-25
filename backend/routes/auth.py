@@ -257,7 +257,11 @@ def register():
             email=data['email'],
             password_hash='',  # Will be set below
             full_name=data['full_name'],
-            is_active=True,
+            phone=data.get('phone', ''),
+            employee_number=data.get('employee_number', ''),
+            department=data.get('department', ''),
+            position=data.get('position', ''),
+            is_active=False,  # Requires Admin Approval before login
             is_admin=False
         )
         new_user.set_password(data['password'])
@@ -303,7 +307,7 @@ def register():
             assigned_roles = [{'id': ur.role.id, 'name': ur.role.name} for ur in new_user.roles if ur.role]
         
         return jsonify({
-            'message': 'User registered successfully',
+            'message': 'Registrasi berhasil! Akun Anda sedang menunggu persetujuan admin.',
             'user': {
                 'id': new_user.id,
                 'username': new_user.username,
@@ -935,3 +939,70 @@ def google_callback():
     except Exception as e:
         print(f"Google OAuth error: {e}")
         return jsonify({'error': str(e)}), 500
+
+
+# ==================== PENDING USER APPROVAL ====================
+
+@auth_bp.route('/pending-users', methods=['GET'])
+@jwt_required()
+def get_pending_users():
+    """Get all users with is_active=False waiting for admin approval"""
+    try:
+        user_id = get_jwt_identity()
+        current_user = db.session.get(User, int(user_id))
+        if not current_user or not (getattr(current_user, 'is_super_admin', False) or current_user.is_admin):
+            return jsonify({'error': 'Unauthorized: Admin access required'}), 403
+            
+        pending_users = User.query.filter_by(is_active=False).order_by(User.created_at.desc()).all()
+        result = []
+        for u in pending_users:
+            assigned_roles = [ur.role.name for ur in u.roles if ur.role] if hasattr(u, 'roles') else []
+            result.append({
+                'id': u.id,
+                'username': u.username,
+                'email': u.email,
+                'full_name': u.full_name,
+                'phone': u.phone,
+                'employee_number': getattr(u, 'employee_number', ''),
+                'department': u.department,
+                'position': u.position,
+                'created_at': utc_to_local(u.created_at).isoformat() if u.created_at else None,
+                'requested_role': assigned_roles[0] if assigned_roles else 'Staff'
+            })
+        return jsonify({'success': True, 'count': len(result), 'users': result}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@auth_bp.route('/approve-user/<int:target_user_id>', methods=['POST'])
+@jwt_required()
+def approve_or_decline_user(target_user_id):
+    """Approve or decline a pending user registration"""
+    try:
+        user_id = get_jwt_identity()
+        current_user = db.session.get(User, int(user_id))
+        if not current_user or not (getattr(current_user, 'is_super_admin', False) or current_user.is_admin):
+            return jsonify({'error': 'Unauthorized: Admin access required'}), 403
+
+        target_user = db.session.get(User, target_user_id)
+        if not target_user:
+            return jsonify({'error': 'User not found'}), 404
+
+        data = request.get_json() or {}
+        action = data.get('action')  # 'approve' or 'decline'
+
+        if action == 'approve':
+            target_user.is_active = True
+            db.session.commit()
+            return jsonify({'success': True, 'message': f'Pengguna {target_user.username} berhasil disetujui'}), 200
+        elif action == 'decline':
+            username = target_user.username
+            db.session.delete(target_user)
+            db.session.commit()
+            return jsonify({'success': True, 'message': f'Pendaftaran {username} ditolak dan dihapus'}), 200
+        else:
+            return jsonify({'error': 'Action tidak valid. Harus approve atau decline'}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+

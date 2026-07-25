@@ -24,6 +24,8 @@ import PermissionTable from '../../components/Settings/PermissionTable';
 import UserModal from '../../components/Settings/UserModal';
 import RoleModal from '../../components/Settings/RoleModal';
 import PermissionModal from '../../components/Settings/PermissionModal';
+import PendingUserTable, { PendingUser } from '../../components/Settings/PendingUserTable';
+import axiosInstance from '../../utils/axiosConfig';
 
 // Components
 const UserRoleManagementNew: React.FC = () => {
@@ -40,9 +42,29 @@ const UserRoleManagementNew: React.FC = () => {
   const [createPermission] = useCreatePermissionMutation();
   
   // Local state
-  const [activeTab, setActiveTab] = useState<'users' | 'roles' | 'permissions'>('users');
+  const [activeTab, setActiveTab] = useState<'pending' | 'users' | 'roles' | 'permissions'>('pending');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
+  const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
+  const [pendingLoading, setPendingLoading] = useState(false);
+  
+  const fetchPendingUsers = async () => {
+    try {
+      setPendingLoading(true);
+      const res = await axiosInstance.get('/api/auth/pending-users');
+      if (res.data?.success) {
+        setPendingUsers(res.data.users || []);
+      }
+    } catch (err) {
+      console.error('Error fetching pending users:', err);
+    } finally {
+      setPendingLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchPendingUsers();
+  }, []);
   
   // Modal states
   const [showUserModal, setShowUserModal] = useState(false);
@@ -193,10 +215,21 @@ const UserRoleManagementNew: React.FC = () => {
         userCount={users.length}
         roleCount={roles.length}
         permissionCount={permissions.length}
+        pendingCount={pendingUsers.length}
       />
 
       {/* Content based on active tab */}
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        {activeTab === 'pending' && (
+          <PendingUserTable
+            pendingUsers={pendingUsers}
+            onRefresh={() => {
+              fetchPendingUsers();
+              refetchUsers();
+            }}
+          />
+        )}
+
         {activeTab === 'users' && (
           <UserTable
             users={filteredUsers}
