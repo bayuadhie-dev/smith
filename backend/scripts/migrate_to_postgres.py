@@ -4,10 +4,11 @@
      SKRIP MIGRASI PRODUCTION-GRADE: SQLITE TO POSTGRESQL (ERP)
 =============================================================================
 Skrip ini mengonversi & memindahkan data dari SQLite ke PostgreSQL dengan fitur:
-- Fallback row-by-row jika batch insert gagal (mencegah seluruh tabel di-rollback)
-- Pembersihan & Sanitasi Tipe Data (Boolean 0/1 -> True/False, Datetime ISO 8601)
-- Verifikasi Otomatis Jumlah Baris Data (SQLite vs PostgreSQL Mismatch Check)
-- Pengaturan Ulang Sequence Auto-Increment ID PostgreSQL
+- Fix Syntax & Attribute Name Error (args.dry_run)
+- Multi-format Datetime Sanitizer (termasuk %d/%m/%Y, ISO 8601, Unix Timestamp)
+- Fallback Batch Row-by-Row jika batch insert memicu error
+- Toleransi Superuser Privileges (session_replication_role fallback)
+- Verifikasi Otomatis Jumlah Baris Data khusus mode Eksekusi (Skip pada Dry-Run)
 =============================================================================
 """
 
@@ -18,17 +19,32 @@ import argparse
 from datetime import datetime
 
 def parse_datetime(val):
-    """Sanitasi string tanggal/jam agar sesuai dengan PostgreSQL TIMESTAMP/DATE."""
+    """Sanitasi & Konversi String Tanggal/Jam ke ISO 8601 Timestamp PostgreSQL."""
     if val is None or val == '' or str(val).strip() == '':
         return None
     val_str = str(val).strip()
-    # Jika angka integer murni (misal Unix timestamp)
+
+    # 1. Jika angka murni (Unix Timestamp)
     if val_str.isdigit():
         try:
             return datetime.fromtimestamp(int(val_str)).isoformat()
         except Exception:
             return None
-    # Bersihkan spasi berlebih atau format khusus
+
+    # 2. Coba pustaka dateutil jika terinstall
+    try:
+        from dateutil import parser as date_parser
+        return date_parser.parse(val_str).isoformat()
+    except Exception:
+        pass
+
+    # 3. Fallback pencarian format datetime umum
+    for fmt in ('%Y-%m-%d %H:%M:%S.%f', '%Y-%m-%d %H:%M:%S', '%Y-%m-%d', '%d/%m/%Y %H:%M:%S', '%d/%m/%Y', '%Y/%m/%d'):
+        try:
+            return datetime.strptime(val_str, fmt).isoformat()
+        except Exception:
+            pass
+
     return val_str
 
 def main():
@@ -69,8 +85,8 @@ def main():
     print(f"\n==================================================")
     print(f"📦 Source SQLite DB : {sqlite_path}")
     print(f"🐘 Target Postgres  : {pg_uri}")
-    if args.dry-run:
-        print(f"🔍 MODE DRY-RUN     : AKTIF (Tanpa modifikasi DB)")
+    if args.dry_run:
+        print(f"🔍 MODE DRY-RUN     : AKTIF (Tanpa modifikasi DB target)")
     print(f"==================================================\n")
 
     try:
@@ -95,7 +111,7 @@ def main():
             sys.exit(1)
 
     # Step 2: Transfer Data
-    print("\n📦 [2/4] Memindahkan data dari SQLite ke PostgreSQL...")
+    print("\n📦 [2/4] Membaca data dari SQLite...")
     sqlite_conn = sqlite3.connect(sqlite_path)
     sqlite_conn.row_factory = sqlite3.Row
     sqlite_cur = sqlite_conn.cursor()
@@ -123,12 +139,19 @@ def main():
     priority = ['users', 'roles', 'user_roles', 'permissions', 'role_permissions', 'products', 'customers', 'suppliers', 'machines', 'work_orders']
     ordered_tables = [t for t in priority if t in sqlite_tables] + [t for t in sqlite_tables if t not in priority]
 
+    # Cobalah disable FK constraint jika user memiliki superuser privilege
     if not args.dry_run:
-        pg_cur.execute("SET session_replication_role = 'replica';")
+        try:
+            pg_cur.execute("SET session_replication_role = 'replica';")
+            pg_conn.commit()
+        except Exception:
+            pg_conn.rollback()
+            print("  ℹ️ Info: User PostgreSQL bukan Superuser, migrasi berlanjut dengan urutan tabel standar.")
 
     sqlite_counts = {}
     pg_counts = {}
     warnings_list = []
+    total_sqlite_rows = 0
 
     for table in ordered_tables:
         if table not in pg_col_types:
@@ -137,6 +160,7 @@ def main():
         sqlite_cur.execute(f"SELECT COUNT(*) FROM \"{table}\";")
         sqlite_row_count = sqlite_cur.fetchone()[0]
         sqlite_counts[table] = sqlite_row_count
+        total_sqlite_rows += sqlite_row_count
 
         if sqlite_row_count == 0:
             continue
@@ -148,7 +172,7 @@ def main():
             continue
 
         if args.dry_run:
-            print(f"  🔍 Dry-run check '{table}': {sqlite_row_count} baris di SQLite")
+            print(f"  🔍 Dry-run: Tabel '{table}' siap migrasi ({sqlite_row_count} baris)")
             continue
 
         cols_str = ', '.join([f'"{c}"' for c in valid_cols])
@@ -204,18 +228,24 @@ def main():
             for r_idx, single_row in enumerate(data_values):
                 try:
                     pg_cur.execute(insert_sql, single_row)
-                    pg_conn.commit()
                     success_rows += 1
+                    # Commit per 100 baris agar performa fallback tetap tinggi
+                    if success_rows % 100 == 0:
+                        pg_conn.commit()
                 except Exception as single_err:
                     pg_conn.rollback()
                     fail_rows += 1
                     warn_msg = f"Tabel '{table}' baris #{r_idx + 1} ID={single_row[0] if single_row else '?'}: {single_err}"
                     warnings_list.append(warn_msg)
+            pg_conn.commit()
             print(f"  ✓ Tabel '{table}': {success_rows} sukses, {fail_rows} gagal dikonversi")
 
     if not args.dry_run:
-        pg_cur.execute("SET session_replication_role = 'origin';")
-        pg_conn.commit()
+        try:
+            pg_cur.execute("SET session_replication_role = 'origin';")
+            pg_conn.commit()
+        except Exception:
+            pg_conn.rollback()
 
         # Step 3: Reset Auto-increment Sequences
         print("\n🔄 [3/4] Mereset urutan ID auto-increment PostgreSQL...")
@@ -229,43 +259,51 @@ def main():
                 except Exception:
                     pg_conn.rollback()
 
-    # Step 4: Verification & Row-Count Comparison
-    print("\n🔍 [4/4] Verifikasi Hasil Migrasi (Row Count Check)...")
-    mismatches = 0
-    matched = 0
+    # Step 4: Verification & Row-Count Comparison (Hanya pada Mode Eksekusi)
+    if args.dry_run:
+        print(f"\n==================================================")
+        print(f"🔍 SIMULASI DRY-RUN SELESAI:")
+        print(f"   • Total Tabel Ditemukan  : {len(sqlite_tables)} tabel")
+        print(f"   • Total Baris Siap Migrasi: {total_sqlite_rows} baris")
+        print(f"   • Tidak ada data diubah di PostgreSQL (Dry-Run)")
+        print(f"==================================================\n")
+    else:
+        print("\n🔍 [4/4] Verifikasi Hasil Migrasi (Row Count Check)...")
+        mismatches = 0
+        matched = 0
 
-    for table in ordered_tables:
-        if table not in pg_col_types:
-            continue
-        try:
-            pg_cur.execute(f"SELECT COUNT(*) FROM \"{table}\";")
-            pg_cnt = pg_cur.fetchone()[0]
-            pg_counts[table] = pg_cnt
-            sq_cnt = sqlite_counts.get(table, 0)
+        for table in ordered_tables:
+            if table not in pg_col_types:
+                continue
+            try:
+                pg_cur.execute(f"SELECT COUNT(*) FROM \"{table}\";")
+                pg_cnt = pg_cur.fetchone()[0]
+                pg_counts[table] = pg_cnt
+                sq_cnt = sqlite_counts.get(table, 0)
 
-            if sq_cnt == pg_cnt:
-                matched += 1
-            else:
-                mismatches += 1
-                print(f"  ⚠️ Mismatch '{table}': SQLite={sq_cnt} baris ➔ Postgres={pg_cnt} baris (Selisih {pg_cnt - sq_cnt})")
-        except Exception:
-            pass
+                if sq_cnt == pg_cnt:
+                    matched += 1
+                else:
+                    mismatches += 1
+                    print(f"  ⚠️ Mismatch '{table}': SQLite={sq_cnt} baris ➔ Postgres={pg_cnt} baris (Selisih {pg_cnt - sq_cnt})")
+            except Exception:
+                pass
+
+        print(f"\n==================================================")
+        print(f"📊 VERIFIKASI MIGRATION SELESAI:")
+        print(f"   • Tabel Cocok (Exact Match): {matched} tabel")
+        if mismatches > 0:
+            print(f"   • Tabel Mismatch (Selisih): {mismatches} tabel")
+        if warnings_list:
+            print(f"\n⚠️ RINGKASAN BARIS GAGAL ({len(warnings_list)} baris):")
+            for w in warnings_list[:15]:
+                print(f"   - {w}")
+            if len(warnings_list) > 15:
+                print(f"   - ... dan {len(warnings_list) - 15} baris lainnya.")
+        print(f"==================================================\n")
 
     sqlite_conn.close()
     pg_conn.close()
-
-    print(f"\n==================================================")
-    print(f"📊 VERIFIKASI SELESAI:")
-    print(f"   • Tabel Cocok (Exact Match): {matched} tabel")
-    if mismatches > 0:
-        print(f"   • Tabel Mismatch (Selisih): {mismatches} tabel")
-    if warnings_list:
-        print(f"\n⚠️ RINGKASAN BARIS GAGAL ({len(warnings_list)} baris):")
-        for w in warnings_list[:15]:
-            print(f"   - {w}")
-        if len(warnings_list) > 15:
-            print(f"   - ... dan {len(warnings_list) - 15} baris lainnya.")
-    print(f"==================================================\n")
 
 if __name__ == '__main__':
     main()
