@@ -1,6 +1,6 @@
-# 🐘 Panduan Migrasi SQLite ke PostgreSQL (PC Server)
+# 🐘 Panduan Migrasi Production: SQLite ke PostgreSQL (PC Server)
 
-Dokumen ini berisi panduan langkah demi langkah untuk menjalankan migrasi data dari SQLite (`erp_database.db`) ke PostgreSQL di PC Server kantor kapan saja Anda siap.
+Dokumen ini berisi panduan langkah demi langkah yang aman (*safe execution workflow*) untuk migrasi data dari SQLite (`erp_database.db`) ke PostgreSQL di PC Server kantor.
 
 ---
 
@@ -18,23 +18,48 @@ Dokumen ini berisi panduan langkah demi langkah untuk menjalankan migrasi data d
 
 ---
 
-## 🚀 Langkah Migrasi (Hanya 2 Langkah)
+## 🚀 Rencana Eksekusi 5 Langkah (Rekomendasi Keamanan Tinggi)
 
-### Langkah 1: Jalankan Skrip Migrasi Otomatis
-Masuk ke folder `backend` di server dan jalankan:
+### Langkah 1: Uji Coba Mode Dry-Run
+Lakukan tes simulasi awal untuk memastikan seluruh tabel & baris SQLite terbaca dengan benar tanpa mengubah database:
+```bash
+python3 scripts/migrate_to_postgres.py --dry-run
+```
+
+---
+
+### Langkah 2: Backup Manual File SQLite (Safety Net)
+Buat salinan cadangan manual file SQLite sebelum migrasi dijalankan:
+```bash
+cp instance/erp_database.db instance/erp_database.db.pre-pg-migration
+```
+
+---
+
+### Langkah 3: Jalankan Migrasi Otomatis ke PostgreSQL
+Eksekusi migrasi penuh dengan menyertakan URI koneksi PostgreSQL:
 ```bash
 python3 scripts/migrate_to_postgres.py --pg-uri "postgresql://postgres:PASSWORD_ANDA@localhost:5432/erp_db"
 ```
 
 *Skrip ini otomatis:*
 - Membuat seluruh struktur tabel & skema PostgreSQL secara otomatis
-- Memindahkan 100.000+ baris data dari SQLite tanpa data yang hilang
-- Menyesuaikan tipe data (Boolean, Datetime, String, JSON)
-- Mereset urutan ID *Auto-Increment* PostgreSQL
+- Memindahkan data dengan sanitasi tanggal (ISO 8601 & Indonesia `DD/MM/YYYY`) & Boolean
+- Mode **Fallback Row-by-Row** jika ada baris data yang bermasalah (mencegah rollback tabel)
+- Reset urutan ID *Auto-Increment* PostgreSQL
+- Verifikasi perbandingan jumlah baris data SQLite vs PostgreSQL di akhir proses
 
 ---
 
-### Langkah 2: Aktifkan PostgreSQL di File `.env`
+### Langkah 4: Spot-Check Manual Tabel Kritis
+Lakukan verifikasi acak untuk beberapa tabel penting (misal `packing_lists_new`, `work_orders`, `sales_orders`) menggunakan `psql`:
+```bash
+sudo -u postgres psql -d erp_db -c "SELECT id, created_at FROM packing_lists_new ORDER BY id DESC LIMIT 5;"
+```
+
+---
+
+### Langkah 5: Aktifkan PostgreSQL di File `.env`
 Buka file `backend/.env` dan ubah nilai `DATABASE_URL`:
 ```env
 DATABASE_URL=postgresql://postgres:PASSWORD_ANDA@localhost:5432/erp_db

@@ -31,15 +31,22 @@ def parse_datetime(val):
         except Exception:
             return None
 
-    # 2. Coba pustaka dateutil jika terinstall
+    # 2. Utamakan format standar ISO 8601 (YYYY-MM-DD) terlebih dahulu agar tidak ambigu
+    for fmt in ('%Y-%m-%d %H:%M:%S.%f', '%Y-%m-%d %H:%M:%S', '%Y-%m-%d', '%Y-%m-%dT%H:%M:%S', '%Y-%m-%dT%H:%M:%S.%f'):
+        try:
+            return datetime.strptime(val_str, fmt).isoformat()
+        except Exception:
+            pass
+
+    # 3. Coba dateutil parser dengan dayfirst=True (prioritas format Indonesia DD/MM/YYYY)
     try:
         from dateutil import parser as date_parser
-        return date_parser.parse(val_str).isoformat()
+        return date_parser.parse(val_str, dayfirst=True).isoformat()
     except Exception:
         pass
 
-    # 3. Fallback pencarian format datetime umum
-    for fmt in ('%Y-%m-%d %H:%M:%S.%f', '%Y-%m-%d %H:%M:%S', '%Y-%m-%d', '%d/%m/%Y %H:%M:%S', '%d/%m/%Y', '%Y/%m/%d'):
+    # 4. Fallback format manual lainnya
+    for fmt in ('%d/%m/%Y %H:%M:%S', '%d/%m/%Y', '%Y/%m/%d'):
         try:
             return datetime.strptime(val_str, fmt).isoformat()
         except Exception:
