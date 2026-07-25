@@ -33,7 +33,7 @@ const UserRoleManagementNew: React.FC = () => {
   const [deleteRole] = useDeleteRoleMutation();
   
   // Local state
-  const [activeTab, setActiveTab] = useState<'users' | 'roles' | 'permissions'>('users');
+  const [activeTab, setActiveTab] = useState<'pending' | 'users' | 'roles' | 'permissions'>('users');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
   
