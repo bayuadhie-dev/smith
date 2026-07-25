@@ -5,12 +5,18 @@ Dokumen ini berisi panduan langkah demi langkah (*Complete Production Migration 
 ---
 
 ## 📌 Langkah 0: Pre-Check Koneksi Jaringan & Port (Dari Laptop)
-Sebelum memulai migrasi di PC Server, pastikan koneksi port PostgreSQL (5432) dari laptop ke PC Server via Tailscale sudah terbuka:
+Sebelum memulai migrasi di PC Server, pastikan koneksi port PostgreSQL (5432) dari laptop ke PC Server via Tailscale sudah terbuka.
 
 ```bash
 # Jalankan dari terminal laptop:
 psql -h 100.91.124.96 -U postgres -d postgres -c "SELECT version();"
 ```
+> [!NOTE]
+> Jika perintah `psql` belum terinstall di laptop:
+> - **Arch Linux**: `sudo pacman -S postgresql-libs`
+> - **Ubuntu/Debian**: `sudo apt install postgresql-client`
+> - **macOS**: `brew install libpq`
+
 *Jika tersambung dan menampilkan versi PostgreSQL, maka jalur jaringan Tailscale sudah 100% siap.*
 
 ---
@@ -57,15 +63,17 @@ Lakukan verifikasi integritas data & cek apakah ada data child yang "yatim" (orp
 
 ---
 
-### Langkah 5: Switch `.env` & Restart Seluruh Service
+### Langkah 5: Switch `.env` & Restart Service via PM2
 1. Buka file `backend/.env` (di PC Server dan di Laptop) lalu sesuaikan `DATABASE_URL`:
    - **Di PC Server**: `DATABASE_URL=postgresql://postgres:PASSWORD_ANDA@localhost:5432/erp_db`
    - **Di Laptop**: `DATABASE_URL=postgresql://postgres:PASSWORD_ANDA@100.91.124.96:5432/erp_db`
 
-2. Restart seluruh service yang berkaitan di PC Server:
+2. Restart seluruh process PM2 yang berkaitan di PC Server:
    ```bash
-   sudo systemctl restart erp-backend
-   sudo systemctl restart erp-whatsapp-gateway   # Jika ada service pendukung
+   pm2 restart smith-backend --update-env
+   pm2 restart openwa --update-env
+   # Atau restart seluruh service PM2:
+   pm2 restart all --update-env
    ```
 
 ---
@@ -96,4 +104,4 @@ Setelah migrasi sukses dan aplikasi sudah berjalan di PostgreSQL:
    ```bash
    mv instance/erp_database.db.DEPRECATED instance/erp_database.db
    ```
-4. Restart service backend: `sudo systemctl restart erp-backend`.
+4. Restart service PM2: `pm2 restart smith-backend --update-env`.
