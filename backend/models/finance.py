@@ -73,7 +73,7 @@ class InvoiceItem(db.Model):
     product = db.relationship('Product')
     
     __table_args__ = (
-        db.UniqueConstraint('invoice_id', 'line_number', name='unique_invoice_line'),
+        db.UniqueConstraint('invoice_id', 'line_number', name='unique_fin_invoice_line'),
     )
 
 class Payment(db.Model):

@@ -43,7 +43,7 @@ class AdvancedRolePermission(db.Model):
     granted_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     
     # Unique constraint
-    __table_args__ = (db.UniqueConstraint('role_id', 'permission_id', name='unique_role_permission'),)
+    __table_args__ = (db.UniqueConstraint('role_id', 'permission_id', name='unique_adv_role_permission'),)
     
     # Relationships
     role = db.relationship('AdvancedUserRole', back_populates='permissions')
@@ -61,7 +61,7 @@ class AdvancedUserRoleAssignment(db.Model):
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     
     # Unique constraint
-    __table_args__ = (db.UniqueConstraint('user_id', 'role_id', name='unique_user_role'),)
+    __table_args__ = (db.UniqueConstraint('user_id', 'role_id', name='unique_adv_user_role'),)
     
     # Relationships
     user = db.relationship('User', foreign_keys=[user_id])
