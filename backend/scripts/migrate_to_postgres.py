@@ -1,20 +1,13 @@
 #!/usr/bin/env python3
 """
 =============================================================================
-           SCRIPT MIGRASI AUTOMATIS: SQLITE TO POSTGRESQL (ERP)
+     SKRIP MIGRASI PRODUCTION-GRADE: SQLITE TO POSTGRESQL (ERP)
 =============================================================================
-Skrip ini digunakan untuk mengonversi & memindahkan seluruh data dari SQLite 
-(erp_database.db) ke PostgreSQL secara aman dan loss-free.
-
-Cara Penggunaan di PC Server:
-1. Pastikan PostgreSQL sudah aktif dan database target sudah dibuat:
-   sudo -u postgres psql -c "CREATE DATABASE erp_db;"
-
-2. Jalankan skrip ini dari folder backend:
-   python3 scripts/migrate_to_postgres.py
-
-3. Setelah sukses, ubah file .env backend:
-   DATABASE_URL=postgresql://postgres:PASSWORD@localhost:5432/erp_db
+Skrip ini mengonversi & memindahkan data dari SQLite ke PostgreSQL dengan fitur:
+- Fallback row-by-row jika batch insert gagal (mencegah seluruh tabel di-rollback)
+- Pembersihan & Sanitasi Tipe Data (Boolean 0/1 -> True/False, Datetime ISO 8601)
+- Verifikasi Otomatis Jumlah Baris Data (SQLite vs PostgreSQL Mismatch Check)
+- Pengaturan Ulang Sequence Auto-Increment ID PostgreSQL
 =============================================================================
 """
 
@@ -22,11 +15,27 @@ import os
 import sys
 import sqlite3
 import argparse
+from datetime import datetime
+
+def parse_datetime(val):
+    """Sanitasi string tanggal/jam agar sesuai dengan PostgreSQL TIMESTAMP/DATE."""
+    if val is None or val == '' or str(val).strip() == '':
+        return None
+    val_str = str(val).strip()
+    # Jika angka integer murni (misal Unix timestamp)
+    if val_str.isdigit():
+        try:
+            return datetime.fromtimestamp(int(val_str)).isoformat()
+        except Exception:
+            return None
+    # Bersihkan spasi berlebih atau format khusus
+    return val_str
 
 def main():
-    parser = argparse.ArgumentParser(description="ERP SQLite to PostgreSQL Migration Tool")
-    parser.add_argument("--sqlite", type=str, default="", help="Path file SQLite (default: auto-detect di folder instance/)")
-    parser.add_argument("--pg-uri", type=str, default="", help="PostgreSQL connection URI (default: dari DATABASE_URL di .env)")
+    parser = argparse.ArgumentParser(description="ERP Production-Grade SQLite to PostgreSQL Migration Tool")
+    parser.add_argument("--sqlite", type=str, default="", help="Path file SQLite")
+    parser.add_argument("--pg-uri", type=str, default="", help="PostgreSQL connection URI")
+    parser.add_argument("--dry-run", action="store_true", help="Cek & verifikasi tanpa eksekusi insert")
     args = parser.parse_args()
 
     backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -52,43 +61,41 @@ def main():
     # 2. Detect PostgreSQL URI
     pg_uri = args.pg_uri or os.getenv('TARGET_POSTGRES_URL') or os.getenv('DATABASE_URL')
     if not pg_uri or not pg_uri.startswith('postgresql'):
-        # Prompt user if not specified
         print("\n🐘 Masukkan URI PostgreSQL Target:")
         print("Contoh: postgresql://postgres:password_anda@localhost:5432/erp_db")
         input_uri = input("URI PostgreSQL: ").strip()
-        if input_uri:
-            pg_uri = input_uri
-        else:
-            pg_uri = 'postgresql://postgres:postgres@localhost:5432/erp_db'
+        pg_uri = input_uri if input_uri else 'postgresql://postgres:postgres@localhost:5432/erp_db'
 
     print(f"\n==================================================")
     print(f"📦 Source SQLite DB : {sqlite_path}")
     print(f"🐘 Target Postgres  : {pg_uri}")
+    if args.dry-run:
+        print(f"🔍 MODE DRY-RUN     : AKTIF (Tanpa modifikasi DB)")
     print(f"==================================================\n")
 
-    # Check psycopg2
     try:
         import psycopg2
     except ImportError:
-        print("⚠️ Module 'psycopg2' belum terinstall. Menginstall psycopg2-binary...")
+        print("⚠️ Installing psycopg2-binary...")
         os.system(f"{sys.executable} -m pip install psycopg2-binary")
         import psycopg2
 
     # Step 1: Create Schema via Flask SQLAlchemy
-    print("🔨 [1/3] Membuat struktur tabel & skema di PostgreSQL...")
-    os.environ['DATABASE_URL'] = pg_uri
-    try:
-        from app import create_app, db
-        app = create_app()
-        with app.app_context():
-            db.create_all()
-        print("   ✅ Skema tabel berhasil dibuat di PostgreSQL!")
-    except Exception as e:
-        print(f"   ❌ Gagal membuat skema di PostgreSQL: {e}")
-        sys.exit(1)
+    if not args.dry_run:
+        print("🔨 [1/4] Membuat struktur tabel & skema di PostgreSQL...")
+        os.environ['DATABASE_URL'] = pg_uri
+        try:
+            from app import create_app, db
+            app = create_app()
+            with app.app_context():
+                db.create_all()
+            print("   ✅ Skema tabel berhasil dibuat di PostgreSQL!")
+        except Exception as e:
+            print(f"   ❌ Gagal membuat skema di PostgreSQL: {e}")
+            sys.exit(1)
 
     # Step 2: Transfer Data
-    print("\n📦 [2/3] Memindahkan data dari SQLite ke PostgreSQL...")
+    print("\n📦 [2/4] Memindahkan data dari SQLite ke PostgreSQL...")
     sqlite_conn = sqlite3.connect(sqlite_path)
     sqlite_conn.row_factory = sqlite3.Row
     sqlite_cur = sqlite_conn.cursor()
@@ -96,7 +103,7 @@ def main():
     pg_conn = psycopg2.connect(pg_uri)
     pg_cur = pg_conn.cursor()
 
-    # Get Postgres Column Types
+    # Metadata tipe kolom Postgres
     pg_cur.execute("""
         SELECT table_name, column_name, data_type
         FROM information_schema.columns
@@ -108,91 +115,156 @@ def main():
             pg_col_types[t_name] = {}
         pg_col_types[t_name][c_name] = d_type.lower()
 
-    # SQLite Tables
+    # SQLite Tables list
     sqlite_cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'alembic_%';")
     sqlite_tables = [row[0] for row in sqlite_cur.fetchall()]
 
-    # Priority order (parent tables first)
+    # Priority table order
     priority = ['users', 'roles', 'user_roles', 'permissions', 'role_permissions', 'products', 'customers', 'suppliers', 'machines', 'work_orders']
     ordered_tables = [t for t in priority if t in sqlite_tables] + [t for t in sqlite_tables if t not in priority]
 
-    # Disable FK constraints during bulk copy
-    pg_cur.execute("SET session_replication_role = 'replica';")
+    if not args.dry_run:
+        pg_cur.execute("SET session_replication_role = 'replica';")
 
-    migrated_count = 0
-    total_rows = 0
+    sqlite_counts = {}
+    pg_counts = {}
+    warnings_list = []
 
     for table in ordered_tables:
         if table not in pg_col_types:
             continue
 
-        try:
-            sqlite_cur.execute(f"SELECT * FROM \"{table}\";")
-            rows = sqlite_cur.fetchall()
-            if not rows:
-                continue
+        sqlite_cur.execute(f"SELECT COUNT(*) FROM \"{table}\";")
+        sqlite_row_count = sqlite_cur.fetchone()[0]
+        sqlite_counts[table] = sqlite_row_count
 
-            valid_cols = [c for c in list(rows[0].keys()) if c in pg_col_types[table]]
-            if not valid_cols:
-                continue
+        if sqlite_row_count == 0:
+            continue
 
-            cols_str = ', '.join([f'"{c}"' for c in valid_cols])
-            placeholders = ', '.join(['%s'] * len(valid_cols))
+        sqlite_cur.execute(f"SELECT * FROM \"{table}\";")
+        rows = sqlite_cur.fetchall()
+        valid_cols = [c for c in list(rows[0].keys()) if c in pg_col_types[table]]
+        if not valid_cols:
+            continue
 
-            data_values = []
-            for r in rows:
-                r_dict = dict(r)
-                row_vals = []
-                for col in valid_cols:
-                    val = r_dict[col]
-                    target_type = pg_col_types[table].get(col, '')
+        if args.dry_run:
+            print(f"  🔍 Dry-run check '{table}': {sqlite_row_count} baris di SQLite")
+            continue
 
-                    # Convert SQLite integers 1/0 to Postgres boolean
-                    if 'bool' in target_type:
-                        if val in (1, '1', True):
-                            val = True
-                        elif val in (0, '0', False):
-                            val = False
-                        else:
+        cols_str = ', '.join([f'"{c}"' for c in valid_cols])
+        placeholders = ', '.join(['%s'] * len(valid_cols))
+
+        data_values = []
+        for r in rows:
+            r_dict = dict(r)
+            row_vals = []
+            for col in valid_cols:
+                val = r_dict[col]
+                target_type = pg_col_types[table].get(col, '')
+
+                # 1. Handling Boolean
+                if 'bool' in target_type:
+                    if val in (1, '1', True, 'true', 'TRUE'):
+                        val = True
+                    elif val in (0, '0', False, 'false', 'FALSE'):
+                        val = False
+                    else:
+                        val = None
+                # 2. Handling Timestamp / Date
+                elif any(t in target_type for t in ['timestamp', 'date', 'time']):
+                    val = parse_datetime(val)
+                # 3. Handling Integer / Bigint
+                elif any(t in target_type for t in ['integer', 'bigint', 'smallint']):
+                    if val == '' or val is None:
+                        val = None
+                    else:
+                        try:
+                            val = int(val)
+                        except Exception:
                             val = None
-                    elif isinstance(val, bytes):
-                        val = val.decode('utf-8', errors='ignore')
+                # 4. Handling Bytes
+                elif isinstance(val, bytes):
+                    val = val.decode('utf-8', errors='ignore')
 
-                    row_vals.append(val)
-                data_values.append(tuple(row_vals))
+                row_vals.append(val)
+            data_values.append(tuple(row_vals))
 
-            insert_sql = f"INSERT INTO \"{table}\" ({cols_str}) VALUES ({placeholders}) ON CONFLICT DO NOTHING;"
+        insert_sql = f"INSERT INTO \"{table}\" ({cols_str}) VALUES ({placeholders}) ON CONFLICT DO NOTHING;"
+
+        # Batch Insert dengan Fallback Row-by-Row jika batch bermasalah
+        try:
             pg_cur.executemany(insert_sql, data_values)
             pg_conn.commit()
-
-            print(f"   ✓ Tabel '{table}': {len(data_values)} baris berhasil dipindahkan")
-            migrated_count += 1
-            total_rows += len(data_values)
-        except Exception as err:
+            print(f"  ✓ Tabel '{table}': {len(data_values)} baris berhasil dipindahkan (Batch)")
+        except Exception as batch_err:
             pg_conn.rollback()
-            print(f"   ⚠️ Skip tabel '{table}': {err}")
+            print(f"  ⚠️ Batch insert gagal pada '{table}': {batch_err}. Menggunakan fallback row-by-row...")
+            success_rows = 0
+            fail_rows = 0
+            for r_idx, single_row in enumerate(data_values):
+                try:
+                    pg_cur.execute(insert_sql, single_row)
+                    pg_conn.commit()
+                    success_rows += 1
+                except Exception as single_err:
+                    pg_conn.rollback()
+                    fail_rows += 1
+                    warn_msg = f"Tabel '{table}' baris #{r_idx + 1} ID={single_row[0] if single_row else '?'}: {single_err}"
+                    warnings_list.append(warn_msg)
+            print(f"  ✓ Tabel '{table}': {success_rows} sukses, {fail_rows} gagal dikonversi")
 
-    # Re-enable FK constraints
-    pg_cur.execute("SET session_replication_role = 'origin';")
-    pg_conn.commit()
+    if not args.dry_run:
+        pg_cur.execute("SET session_replication_role = 'origin';")
+        pg_conn.commit()
 
-    # Step 3: Reset Sequences
-    print("\n🔄 [3/3] Mereset urutan ID auto-increment PostgreSQL...")
+        # Step 3: Reset Auto-increment Sequences
+        print("\n🔄 [3/4] Mereset urutan ID auto-increment PostgreSQL...")
+        for table in ordered_tables:
+            if table in pg_col_types and 'id' in pg_col_types[table]:
+                try:
+                    pg_cur.execute(f"""
+                        SELECT setval(pg_get_serial_sequence('"{table}"', 'id'), COALESCE(MAX(id), 1)) FROM "{table}";
+                    """)
+                    pg_conn.commit()
+                except Exception:
+                    pg_conn.rollback()
+
+    # Step 4: Verification & Row-Count Comparison
+    print("\n🔍 [4/4] Verifikasi Hasil Migrasi (Row Count Check)...")
+    mismatches = 0
+    matched = 0
+
     for table in ordered_tables:
-        if table in pg_col_types and 'id' in pg_col_types[table]:
-            try:
-                pg_cur.execute(f"""
-                    SELECT setval(pg_get_serial_sequence('"{table}"', 'id'), COALESCE(MAX(id), 1)) FROM "{table}";
-                """)
-                pg_conn.commit()
-            except Exception:
-                pg_conn.rollback()
+        if table not in pg_col_types:
+            continue
+        try:
+            pg_cur.execute(f"SELECT COUNT(*) FROM \"{table}\";")
+            pg_cnt = pg_cur.fetchone()[0]
+            pg_counts[table] = pg_cnt
+            sq_cnt = sqlite_counts.get(table, 0)
+
+            if sq_cnt == pg_cnt:
+                matched += 1
+            else:
+                mismatches += 1
+                print(f"  ⚠️ Mismatch '{table}': SQLite={sq_cnt} baris ➔ Postgres={pg_cnt} baris (Selisih {pg_cnt - sq_cnt})")
+        except Exception:
+            pass
 
     sqlite_conn.close()
     pg_conn.close()
 
     print(f"\n==================================================")
-    print(f"🎉 MIGRASI SUKSES! Total {migrated_count} tabel & {total_rows} baris data berhasil dipindahkan ke PostgreSQL.")
+    print(f"📊 VERIFIKASI SELESAI:")
+    print(f"   • Tabel Cocok (Exact Match): {matched} tabel")
+    if mismatches > 0:
+        print(f"   • Tabel Mismatch (Selisih): {mismatches} tabel")
+    if warnings_list:
+        print(f"\n⚠️ RINGKASAN BARIS GAGAL ({len(warnings_list)} baris):")
+        for w in warnings_list[:15]:
+            print(f"   - {w}")
+        if len(warnings_list) > 15:
+            print(f"   - ... dan {len(warnings_list) - 15} baris lainnya.")
     print(f"==================================================\n")
 
 if __name__ == '__main__':
