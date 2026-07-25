@@ -476,12 +476,9 @@ export default function DeskPage() {
         <div className="relative">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-white mb-2 tracking-tight leading-tight">
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight">
                 {dailyGreeting || `Welcome back, ${user?.full_name || 'User'}! 👋`}
               </h1>
-              <p className="text-blue-100 text-sm md:text-base font-medium opacity-90">
-                Here's what's happening across your business today.
-              </p>
             </div>
             <div className="hidden lg:block">
               <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/20">
