@@ -446,7 +446,7 @@ def get_executive_overview():
             'revenue_growth': round(float(revenue_growth), 2),
             'cash_collected': float(cash_collected),
             'outstanding_ar': float(outstanding_ar),
-            'collection_rate': round((cash_collected / current_revenue * 100) if current_revenue > 0 else 0, 2)
+            'collection_rate': round((float(cash_collected) / float(current_revenue) * 100) if current_revenue > 0 else 0, 2)
 
             },
             'sales': {
@@ -2250,7 +2250,7 @@ def get_production_monitoring():
                     'machine_name': machine_name,
                     'target_ctn': target_ctn
                 })
-                total_target_ctn += ms.target_ctn if ms.target_ctn else 0
+                total_target_ctn += target_ctn
         
         # ===== 1B. GET WEEKLY TARGETS (for current week or specified week) =====
         from models.production import WeeklyProductionPlan, WeeklyProductionPlanItem
