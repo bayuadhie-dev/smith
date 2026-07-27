@@ -124,7 +124,7 @@
                             ↕ ORM (SQLAlchemy)
 ┌─────────────────────────────────────────────────────────────┐
 │                   Lapisan Database                            │
-│  SQLite (Development) / PostgreSQL (Production)             │
+│  PostgreSQL (Production - Active) · Migrated Jul 2026       │
 │  308 Tabel · Alembic Migrations · Database Indexing         │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -859,7 +859,7 @@ Halaman monitoring real-time untuk kesehatan infrastruktur sistem, dapat diakses
 **Menampilkan:**
 - **Status Komponen** — API server, database, WhatsApp gateway, frontend (healthy/warning/error)
 - **Resource Usage** — CPU, memory, disk usage server
-- **Info Database** — Jumlah tabel, ukuran database, waktu backup terakhir, engine (SQLite/PostgreSQL)
+- **Info Database** — Jumlah tabel, ukuran database, waktu backup terakhir, engine (PostgreSQL)
 - **WhatsApp Gateway** — Status koneksi, nomor aktif, push name, aktivitas terakhir, tombol reconnect
 - **PM2 Processes** — Uptime, jumlah restart, penggunaan memory per proses (backend, frontend, WhatsApp gateway)
 - **Auto-refresh** — Update otomatis berkala tanpa perlu reload manual
@@ -1233,6 +1233,18 @@ Asisten AI adalah fitur chatbot terintegrasi yang memungkinkan pengguna untuk me
 
 ## 📈 Pembaruan Terbaru
 
+### ✨ v3.6 — Juli 2026 (Migrasi PostgreSQL, Berat Kotor OCR, Auto-Merge Batch)
+
+- **Migrasi Database SQLite → PostgreSQL** — Database production kini berjalan di PostgreSQL (sebelumnya SQLite):
+  - Script migrasi otomatis (`migrate_to_postgres.py`) dengan dry-run, sanitasi datetime multi-format, fallback row-by-row, dan verifikasi integritas FK
+  - 305/306 tabel bermigrasi dengan kecocokan baris 100%, 0 orphan record
+  - Koneksi laptop ↔ server via Tailscale, PostgreSQL dikonfigurasi menerima koneksi remote (firewall & listen_addresses)
+- **Berat Kotor (Gross Weight) pada Packing List OCR** — Pelacakan berat kotor selain berat netto:
+  - Kolom `weight_gross_kg` baru di `packing_list_new_items`, tersimpan otomatis dari hasil scan OCR
+  - Ditampilkan di halaman detail Packing List (per karton & ringkasan per batch)
+- **Auto-Merge Batch pada OCR Packing List** — Saat scan OCR mendeteksi batch number yang sudah ada di Packing List terbuka untuk produk yang sama, sistem menawarkan penggabungan otomatis (nomor karton lanjut berurutan, bukan bikin Packing List baru):
+  - Endpoint baru: `check-existing-batch` (deteksi PL yang cocok) dan `append-cartons` (tambah karton ke batch yang sudah ada)
+- **Restyling Glassmorphism** — `ProductionMonitoringDashboard.tsx` diperbarui ke gaya glassmorphism
 ### ✨ v3.5 — Juli 2026 (Work Center Dashboard)
 
 - **Work Center Dashboard** — Halaman ringkasan status mesin real-time (`/app/production/work-center`):

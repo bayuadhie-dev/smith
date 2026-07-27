@@ -54,6 +54,18 @@ def parse_datetime(val):
 
     return val_str
 
+def parse_time_only(val):
+    """Ekstrak bagian jam (HH:MM:SS[.ffffff]) dari string time atau datetime lengkap."""
+    if val is None or val == '' or str(val).strip() == '':
+        return None
+    val_str = str(val).strip()
+    # Kalau ada 'T' (format ISO datetime), ambil bagian setelah 'T'
+    if 'T' in val_str:
+        val_str = val_str.split('T', 1)[1]
+    # Kalau ada spasi (format "YYYY-MM-DD HH:MM:SS"), ambil bagian setelah spasi
+    elif ' ' in val_str and '-' in val_str.split(' ')[0]:
+        val_str = val_str.split(' ', 1)[1]
+    return val_str
 def main():
     parser = argparse.ArgumentParser(description="ERP Production-Grade SQLite to PostgreSQL Migration Tool")
     parser.add_argument("--sqlite", type=str, default="", help="Path file SQLite")
@@ -159,9 +171,8 @@ def main():
     pg_counts = {}
     warnings_list = []
     total_sqlite_rows = 0
-
     for table in ordered_tables:
-        if table not in pg_col_types:
+        if not args.dry_run and table not in pg_col_types:
             continue
 
         sqlite_cur.execute(f"SELECT COUNT(*) FROM \"{table}\";")
@@ -174,7 +185,7 @@ def main():
 
         sqlite_cur.execute(f"SELECT * FROM \"{table}\";")
         rows = sqlite_cur.fetchall()
-        valid_cols = [c for c in list(rows[0].keys()) if c in pg_col_types[table]]
+        valid_cols = [c for c in list(rows[0].keys()) if c in pg_col_types.get(table, {})]
         if not valid_cols:
             continue
 
@@ -202,8 +213,10 @@ def main():
                     else:
                         val = None
                 # 2. Handling Timestamp / Date
-                elif any(t in target_type for t in ['timestamp', 'date', 'time']):
+                elif any(t in target_type for t in ['timestamp', 'date']):
                     val = parse_datetime(val)
+                elif 'time' in target_type:
+                    val = parse_time_only(val)
                 # 3. Handling Integer / Bigint
                 elif any(t in target_type for t in ['integer', 'bigint', 'smallint']):
                     if val == '' or val is None:
