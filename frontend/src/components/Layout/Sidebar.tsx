@@ -588,19 +588,25 @@ function SidebarContent() {
   }
 
   return (
-    <div className="flex grow flex-col gap-y-3 overflow-y-auto bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 px-4 pb-4">
-      {/* User Header with Enhanced Design */}
-      <div className="flex h-20 shrink-0 items-center border-b border-slate-700/50 mb-3">
+    <div className="sidebar-scroll flex grow flex-col gap-y-3 overflow-y-auto bg-slate-900 px-4 pb-4">
+      <style>{`
+        .sidebar-scroll::-webkit-scrollbar { width: 5px; }
+        .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.2); border-radius: 999px; }
+        .sidebar-scroll::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.35); }
+      `}</style>
+      {/* User Header */}
+      <div className="flex h-20 shrink-0 items-center border-b border-white/10 mb-1">
         <div className="flex items-center gap-3 w-full group">
           <div className="relative">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 flex items-center justify-center shadow-lg group-hover:shadow-blue-500/50 transition-all duration-300 group-hover:scale-105">
-              <UserCircleIcon className="w-7 h-7 text-white" />
+            <div className="w-10 h-10 rounded-full bg-blue-500/15 border border-blue-400/20 flex items-center justify-center">
+              <UserCircleIcon className="w-6 h-6 text-blue-400" />
             </div>
-            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-slate-900 animate-pulse"></div>
+            <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-slate-900"></div>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-white text-sm font-bold tracking-tight truncate group-hover:text-blue-300 transition-colors">{user?.full_name || 'User'}</p>
-            <p className="text-[10px] text-slate-400 truncate">{user?.email || ''}</p>
+            <p className="text-white text-sm font-semibold tracking-tight truncate">{user?.full_name || 'User'}</p>
+            <p className="text-xs text-slate-500 truncate">{user?.email || ''}</p>
           </div>
         </div>
       </div>
@@ -610,18 +616,16 @@ function SidebarContent() {
         {navMode !== 'classic' && (isDashboardPage || isProductionMonitoringPage) && (
           <button
             onClick={() => navigate('/desk')}
-            className="flex items-center gap-3 px-4 py-3 mb-4 text-slate-300 dark:text-slate-300 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-xl transition-all duration-200 group"
+            className="flex items-center gap-3 px-3.5 py-2.5 mb-4 text-slate-300 bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 rounded-lg transition-colors duration-150 group"
           >
-            <div className="p-1.5 bg-white/10 rounded-lg group-hover:bg-white/20 group-hover:scale-110 transition-all">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
-            </div>
+            <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
             <div className="flex-1 text-left">
-              <p className="text-xs text-slate-500 leading-none mb-0.5">Navigasi</p>
-              <p className="font-semibold text-sm leading-none">Buka Desk</p>
+              <p className="text-[11px] text-slate-500 leading-none mb-0.5">Navigasi</p>
+              <p className="font-medium text-sm leading-none text-slate-200">Buka Desk</p>
             </div>
-            <svg className="w-3.5 h-3.5 text-slate-500 group-hover:text-slate-300 group-hover:translate-x-0.5 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-3.5 h-3.5 text-slate-500 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
@@ -631,18 +635,16 @@ function SidebarContent() {
         {navMode !== 'classic' && (isInWorkspace || isUtilityPage) && (
           <button
             onClick={() => navigate('/desk')}
-            className="flex items-center gap-3 px-4 py-3 mb-4 text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:-translate-y-0.5 group"
+            className="flex items-center gap-3 px-3.5 py-2.5 mb-4 text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors duration-150 group"
           >
-            <div className="p-1 bg-white/20 rounded-lg group-hover:scale-110 transition-transform">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-            </div>
-            <span className="font-semibold">Kembali ke Desk</span>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            <span className="font-medium text-sm">Kembali ke Desk</span>
           </button>
         )}
         
-        <div className="space-y-6">
+        <div className="space-y-5">
           {menuGroups
             .filter((group: any) => group.show === undefined || group.show)
             .map((group: any) => {
@@ -658,14 +660,12 @@ function SidebarContent() {
 
               return (
                 <div key={group.groupName}>
-                  {/* Group Label with Enhanced Styling */}
+                  {/* Group Label */}
                   {group.groupName !== 'MAIN' && (
-                    <div className="px-2 mb-3 flex items-center gap-2">
-                      <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-600 to-transparent"></div>
-                      <span className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+                    <div className="px-3 mb-2 mt-1">
+                      <span className="text-[10px] font-semibold tracking-widest text-slate-600 uppercase">
                         {group.groupName}
                       </span>
-                      <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-600 to-transparent"></div>
                     </div>
                   )}
 
@@ -679,39 +679,37 @@ function SidebarContent() {
                               onClick={() => toggleExpanded(item.name.toLowerCase())}
                               className={clsx(
                                 expandedItems.includes(item.name.toLowerCase())
-                                  ? 'bg-gradient-to-r from-slate-700/80 to-slate-700/50 text-white shadow-lg'
-                                  : 'text-slate-300 hover:text-white hover:bg-slate-700/40',
-                                'group flex w-full items-center gap-x-3 rounded-xl px-3 py-3 text-sm font-semibold transition-all duration-200 hover:shadow-md'
+                                  ? 'bg-blue-500/15 text-blue-300'
+                                  : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]',
+                                'group flex w-full items-center gap-x-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-150'
                               )}
                             >
-                              <div className={clsx(
-                                'p-1.5 rounded-lg transition-all duration-200',
-                                expandedItems.includes(item.name.toLowerCase()) 
-                                  ? 'bg-blue-500/20 shadow-lg shadow-blue-500/20' 
-                                  : 'bg-slate-600/30 group-hover:bg-slate-600/50'
-                              )}>
-                                <item.icon className={clsx(
-                                  'h-5 w-5 shrink-0 transition-all duration-200',
-                                  expandedItems.includes(item.name.toLowerCase()) 
-                                    ? 'text-blue-400 scale-110' 
-                                    : 'text-slate-400 group-hover:text-slate-200 group-hover:scale-105'
-                                )} aria-hidden="true" />
-                              </div>
-                              <span className="flex-1 text-left">{item.name}</span>
-                              <ChevronDownIcon className={clsx(
-                                'h-4 w-4 transition-all duration-300',
-                                expandedItems.includes(item.name.toLowerCase()) 
-                                  ? 'rotate-180 text-blue-400' 
+                              <item.icon className={clsx(
+                                'h-5 w-5 shrink-0 transition-colors duration-150',
+                                expandedItems.includes(item.name.toLowerCase())
+                                  ? 'text-blue-400'
                                   : 'text-slate-500 group-hover:text-slate-300'
+                              )} aria-hidden="true" strokeWidth={expandedItems.includes(item.name.toLowerCase()) ? 2 : 1.5} />
+                              <span className={clsx(
+                                'flex-1 text-left',
+                                expandedItems.includes(item.name.toLowerCase())
+                                  ? 'text-blue-300'
+                                  : 'text-slate-300'
+                              )}>{item.name}</span>
+                              <ChevronDownIcon className={clsx(
+                                'h-4 w-4 shrink-0 transition-transform duration-200',
+                                expandedItems.includes(item.name.toLowerCase())
+                                  ? 'rotate-180 text-blue-400'
+                                  : 'text-slate-600 group-hover:text-slate-400'
                               )} />
                             </button>
 
-                            {/* Submenu with enhanced animation */}
+                            {/* Submenu */}
                             <div className={clsx(
-                              'overflow-hidden transition-all duration-300',
+                              'overflow-hidden transition-all duration-200',
                               expandedItems.includes(item.name.toLowerCase()) ? 'max-h-[800px] opacity-100 mt-1' : 'max-h-0 opacity-0'
                             )}>
-                              <ul className="ml-4 border-l-2 border-slate-700/50 pl-3 space-y-0.5">
+                              <ul className="ml-4 border-l border-slate-700/60 pl-3 space-y-0.5">
                                 {item.children
                                   .filter((child: any) => !child.permission || canView(child.permission))
                                   .map((child: any) => (
@@ -723,23 +721,23 @@ function SidebarContent() {
                                             onClick={() => toggleExpanded(`${item.name}-${child.name}`.toLowerCase())}
                                             className={clsx(
                                               expandedItems.includes(`${item.name}-${child.name}`.toLowerCase())
-                                                ? 'bg-slate-700/30 text-white'
-                                                : 'text-slate-400 hover:text-white hover:bg-slate-700/30',
-                                              'group flex w-full items-center gap-x-2.5 rounded-md py-2 px-2.5 text-sm transition-all duration-150'
+                                                ? 'bg-blue-500/15 text-blue-300'
+                                                : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.04]',
+                                              'group flex w-full items-center gap-x-2.5 rounded-lg py-2 px-2.5 text-sm transition-colors duration-150'
                                             )}
                                           >
                                             {child.icon && <child.icon className="h-4 w-4 shrink-0" />}
                                             <span className="flex-1 text-left">{child.name}</span>
                                             <ChevronDownIcon className={clsx(
-                                              'h-3 w-3 transition-transform duration-200',
+                                              'h-3.5 w-3.5 shrink-0 transition-transform duration-200',
                                               expandedItems.includes(`${item.name}-${child.name}`.toLowerCase()) ? 'rotate-180 text-blue-400' : 'text-slate-500'
                                             )} />
                                           </button>
                                           <div className={clsx(
                                             'overflow-hidden transition-all duration-200',
-                                            expandedItems.includes(`${item.name}-${child.name}`.toLowerCase()) ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'
+                                            expandedItems.includes(`${item.name}-${child.name}`.toLowerCase()) ? 'max-h-64 opacity-100 mt-0.5' : 'max-h-0 opacity-0'
                                           )}>
-                                            <ul className="mt-1 ml-3 border-l border-slate-600/50 pl-2 space-y-0.5">
+                                            <ul className="ml-4 border-l border-slate-700/60 pl-3 space-y-0.5">
                                               {child.subChildren?.map((subChild: any) => (
                                                 <li key={subChild.name}>
                                                   <NavLink
@@ -747,9 +745,9 @@ function SidebarContent() {
                                                     className={({ isActive }) =>
                                                       clsx(
                                                         isActive
-                                                          ? 'bg-blue-600/20 text-blue-400'
-                                                          : 'text-slate-400 hover:text-white hover:bg-slate-700/30',
-                                                        'group flex items-center gap-x-2 rounded-md py-1.5 px-2 text-xs transition-all duration-150'
+                                                          ? 'bg-blue-500/15 text-blue-300'
+                                                          : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.04]',
+                                                        'group flex items-center gap-x-2 rounded-lg py-1.5 px-2.5 text-sm transition-colors duration-150'
                                                       )
                                                     }
                                                   >
@@ -767,9 +765,9 @@ function SidebarContent() {
                                             onClick={() => navigate(child.href)}
                                             className={clsx(
                                               isActiveHref(child.href)
-                                                ? 'bg-blue-600/20 text-blue-400 border-l-2 border-blue-400 -ml-[13px] pl-[11px]'
-                                                : 'text-slate-400 hover:text-white hover:bg-slate-700/30',
-                                              'group flex items-center gap-x-2.5 rounded-md py-2 px-2.5 text-sm transition-all duration-150 w-full text-left'
+                                                ? 'bg-blue-500/15 text-blue-300'
+                                                : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.04]',
+                                              'group flex items-center gap-x-2.5 rounded-lg py-2 px-2.5 text-sm transition-colors duration-150 w-full text-left'
                                             )}
                                           >
                                             {child.icon && <child.icon className="h-4 w-4 shrink-0" />}
@@ -781,9 +779,9 @@ function SidebarContent() {
                                             className={({ isActive }) =>
                                               clsx(
                                                 isActive
-                                                  ? 'bg-blue-600/20 text-blue-400 border-l-2 border-blue-400 -ml-[13px] pl-[11px]'
-                                                  : 'text-slate-400 hover:text-white hover:bg-slate-700/30',
-                                                'group flex items-center gap-x-2.5 rounded-md py-2 px-2.5 text-sm transition-all duration-150'
+                                                  ? 'bg-blue-500/15 text-blue-300'
+                                                  : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.04]',
+                                                'group flex items-center gap-x-2.5 rounded-lg py-2 px-2.5 text-sm transition-colors duration-150'
                                               )
                                             }
                                           >
@@ -801,20 +799,22 @@ function SidebarContent() {
                           // Regular menu item
                           <NavLink
                             to={item.href}
-                            end={item.href === '/app'}
+                            end
                             className={({ isActive }) =>
                               clsx(
                                 isActive
-                                  ? 'bg-gradient-to-r from-blue-600/20 to-transparent text-white border-l-2 border-blue-500'
-                                  : 'text-slate-300 hover:text-white hover:bg-slate-700/30 border-l-2 border-transparent',
-                                'group flex items-center gap-x-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150'
+                                  ? 'bg-blue-500/15 text-blue-300'
+                                  : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]',
+                                'group flex items-center gap-x-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-150'
                               )
                             }
                           >
-                            <item.icon className={clsx(
-                              'h-5 w-5 shrink-0 transition-colors'
-                            )} aria-hidden="true" />
-                            {item.name}
+                            {({ isActive }) => (
+                              <>
+                                <item.icon className="h-5 w-5 shrink-0 transition-colors duration-150" strokeWidth={isActive ? 2 : 1.5} aria-hidden="true" />
+                                {item.name}
+                              </>
+                            )}
                           </NavLink>
                         )}
                       </li>
@@ -827,10 +827,10 @@ function SidebarContent() {
       </nav>
 
       {/* Footer with Theme Toggle, Profile & Logout */}
-      <div className="mt-auto pt-4 border-t border-slate-700/50 space-y-3">
+      <div className="mt-auto pt-4 border-t border-white/10 space-y-3">
         {/* Theme Toggle */}
         <div className="px-2 flex items-center justify-between">
-          <span className="text-xs font-medium text-slate-400">Theme</span>
+          <span className="text-xs font-medium text-slate-500">Theme</span>
           <ThemeToggle />
         </div>
         
@@ -838,7 +838,7 @@ function SidebarContent() {
         <div className="flex gap-2 px-2">
           <button
             onClick={() => navigate('/app/profile')}
-            className="flex-1 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-700/50 rounded-lg transition-colors"
+            className="flex-1 px-3 py-2 text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-white/[0.04] rounded-lg transition-colors"
           >
             Profil
           </button>
