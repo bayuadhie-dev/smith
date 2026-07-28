@@ -20,6 +20,7 @@ def register_routes(app):
     from .rd import rd_bp
     from .waste import waste_bp
     from .oee import oee_bp
+    from .ews import ews_bp
     from .notifications import notifications_bp
     from .backup import backup_bp
     from .integration import integration_bp
@@ -57,6 +58,7 @@ def register_routes(app):
     app.register_blueprint(sales_bp, url_prefix='/api/sales')
     app.register_blueprint(purchasing_bp, url_prefix='/api/purchasing')
     app.register_blueprint(production_bp, url_prefix='/api/production')
+    app.register_blueprint(ews_bp, url_prefix='/api/ews')
     app.register_blueprint(quality_bp, url_prefix='/api/quality')
     app.register_blueprint(shipping_bp, url_prefix='/api/shipping')
     app.register_blueprint(finance_bp, url_prefix='/api/finance')
