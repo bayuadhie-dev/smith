@@ -413,6 +413,7 @@ def create_app(config_class=Config):
     from routes.waste import waste_bp
 
     from routes.oee import oee_bp
+    from routes.ews import ews_bp
     from routes.machine_health import machine_health_bp
     from routes.import_data import import_bp
 
@@ -519,6 +520,7 @@ def create_app(config_class=Config):
     app.register_blueprint(purchase_invoice_bp, url_prefix='/api/purchasing')
 
     app.register_blueprint(production_bp, url_prefix='/api/production')
+    app.register_blueprint(ews_bp, url_prefix='/api/ews')
 
     
 
@@ -1040,22 +1042,19 @@ def create_app(config_class=Config):
 
     os.makedirs(app.config['BACKUP_FOLDER'], exist_ok=True)
 
-    
-
     # Register production event listeners
-
     try:
-
         from utils.production_events import register_production_events
-
         register_production_events(app)
-
     except Exception as e:
-
         print(f"Warning: Could not register production events: {str(e)}")
 
-    
-
+    # Register EWS event listeners
+    try:
+        from utils.ews_events import register_ews_events
+        register_ews_events(app)
+    except Exception as e:
+        print(f"Warning: Could not register EWS events: {str(e)}")
     # Register quality event listeners
 
     try:
