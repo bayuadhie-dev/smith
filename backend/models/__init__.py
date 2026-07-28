@@ -10,6 +10,7 @@ from .product_excel_schema import ProductNew, ProductVersion
 from .warehouse import WarehouseZone, WarehouseLocation, Inventory, InventoryMovement
 from .sales import Customer, SalesOrder, SalesOrderItem, SalesForecast
 from .purchasing import Supplier, PurchaseOrder, PurchaseOrderItem, GoodsReceivedNote, GRNItem, PurchaseInvoice, PurchaseInvoiceItem, PurchaseReturn, PurchaseReturnItem, PurchaseRequisition, PRItem
+from .ews import EWSPrediction
 from .production import (
     Machine, WorkOrder, ProductionRecord, BillOfMaterials, BOMItem, 
     ProductionSchedule, ShiftProduction, DowntimeRecord, WeeklyProductionPlan, 
