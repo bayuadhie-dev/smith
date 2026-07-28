@@ -325,3 +325,7 @@ uploads/
 scripts/.wwebjs_auth/
 scripts/.wwebjs_cache/
 scripts/.baileys_auth/
+
+# EWS model artifacts — jangan commit, sync manual (scp/Syncthing)
+ml_models/
+ml_data/
