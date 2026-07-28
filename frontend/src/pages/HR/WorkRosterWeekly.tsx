@@ -17,7 +17,8 @@ import {
   MagnifyingGlassIcon,
   XMarkIcon,
   ChevronDownIcon,
-  ArrowDownTrayIcon
+  ArrowDownTrayIcon,
+  BeakerIcon
 } from '@heroicons/react/24/outline';
 import * as XLSX from 'xlsx';
 import axiosInstance from '../../utils/axiosConfig';
@@ -106,6 +107,8 @@ const ROLE_ICONS: { [key: string]: React.ElementType } = {
   packing_line_4: CubeIcon,
   packing_line_5: CubeIcon,
   distribusi: CubeIcon,
+  maintenance: WrenchScrewdriverIcon,
+  chemical_mixing: BeakerIcon,
   bag_maker: CogIcon,
   inkjet: CogIcon,
   fliptop: CogIcon,
@@ -118,7 +121,7 @@ const MACHINE_ROLES = ['operator', 'helper', 'checker', 'infeeding', 'timbang_bo
 const PACKING_LINES = ['packing_line_1', 'packing_line_2', 'packing_line_3', 'packing_line_4', 'packing_line_5'];
 
 // General roles (manual input) - excluding packing lines which have separate UI
-const GENERAL_ROLES = ['qc_ipc', 'qc_fg', 'distribusi'];
+const GENERAL_ROLES = ['qc_ipc', 'qc_fg', 'distribusi', 'maintenance', 'chemical_mixing'];
 
 // Special machines (Bag Maker, Inkjet, Fliptop) - these go in the machine table
 const SPECIAL_MACHINES: Machine[] = [
@@ -1566,15 +1569,21 @@ export default function WorkRosterWeekly() {
               </div>
             </div>
 
-            {/* General Assignments: QC IPC, QC FG, Distribusi */}
+            {/* General Assignments: QC IPC, QC FG, Distribusi, Maintenance, Chemical Mixing */}
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                 Assignment Lainnya - {SHIFTS.find(s => s.value === selectedShift)?.shortLabel}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {GENERAL_ROLES.map(role => {
-                  const def = roleDefinitions[role];
-                  if (!def) return null;
+                  const fallbackDefs: { [key: string]: { name: string; color: string } } = {
+                    qc_ipc: { name: 'QC IPC', color: '#10B981' },
+                    qc_fg: { name: 'QC Finish Goods', color: '#059669' },
+                    distribusi: { name: 'Distribusi', color: '#6366F1' },
+                    maintenance: { name: 'Maintenance', color: '#EF4444' },
+                    chemical_mixing: { name: 'Chemical Mixing', color: '#06B6D4' },
+                  };
+                  const def = roleDefinitions[role] || fallbackDefs[role] || { name: role, color: '#6B7280' };
                   const RoleIcon = ROLE_ICONS[role] || UserIcon;
 
                   return (

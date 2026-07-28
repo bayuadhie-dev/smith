@@ -14,7 +14,8 @@ import {
   WrenchScrewdriverIcon,
   CubeIcon,
   ScaleIcon,
-  ClipboardDocumentCheckIcon
+  ClipboardDocumentCheckIcon,
+  BeakerIcon
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
@@ -75,6 +76,7 @@ const ROLE_ICONS: { [key: string]: React.ElementType } = {
   operator: CogIcon,
   qc: ClipboardDocumentCheckIcon,
   maintenance: WrenchScrewdriverIcon,
+  chemical_mixing: BeakerIcon,
   packing_machine: CubeIcon,
   packing_manual: CubeIcon,
   timbang_box: ScaleIcon,

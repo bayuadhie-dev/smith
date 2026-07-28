@@ -64,6 +64,8 @@ ROSTER_ROLES_GENERAL = {
     'qc_ipc': {'name': 'QC IPC', 'requires_machine': False, 'color': '#10B981', 'order': 6},
     'qc_fg': {'name': 'QC Finish Goods', 'requires_machine': False, 'color': '#059669', 'order': 7},
     'distribusi': {'name': 'Distribusi', 'requires_machine': False, 'color': '#6366F1', 'order': 8, 'has_machine_ref': True},
+    'maintenance': {'name': 'Maintenance', 'requires_machine': False, 'color': '#EF4444', 'order': 9},
+    'chemical_mixing': {'name': 'Chemical Mixing', 'requires_machine': False, 'color': '#06B6D4', 'order': 10},
 }
 
 # Special machines that appear in roster (Bag Maker, Inkjet, Fliptop)
