@@ -750,14 +750,37 @@ const WeeklyProductionPlan: React.FC = () => {
                               <Cog6ToothIcon className="h-4 w-4" />
                               {machineCode}
                             </div>
-                            {machineRiskMap[item.machine_id]?.bahaya > 0 && (
-                              <div
-                                className="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200 text-[10px] font-semibold"
-                                title={`${machineRiskMap[item.machine_id].bahaya} shift berisiko tinggi dalam 7 hari terakhir (EWS)`}
-                              >
-                                ⚠ Risiko Tinggi ({machineRiskMap[item.machine_id].bahaya})
-                              </div>
-                            )}
+                            {(() => {
+                              const risk = machineRiskMap[item.machine_id];
+                              if (!risk) {
+                                return (
+                                  <div
+                                    className="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
+                                    title="Tidak ada data EWS untuk mesin ini dalam 7 hari terakhir"
+                                  >
+                                    No Data
+                                  </div>
+                                );
+                              }
+                              if (risk.bahaya > 0) {
+                                return (
+                                  <div
+                                    className="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200"
+                                    title={`${risk.bahaya} shift berisiko tinggi dalam 7 hari terakhir (EWS)`}
+                                  >
+                                    {`⚠ Risiko Tinggi (${risk.bahaya})`}
+                                  </div>
+                                );
+                              }
+                              return (
+                                <div
+                                  className="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200"
+                                  title="Tidak ada shift berisiko tinggi dalam 7 hari terakhir (EWS)"
+                                >
+                                  ✓ Aman
+                                </div>
+                              );
+                            })()}
                           </td>
                         )}
                         <td className="px-3 py-2">

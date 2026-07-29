@@ -205,6 +205,7 @@ GET/POST   /api/returns
 - **FG Conversion** — Konversi produk Finish Good
 - **WIP Batch Management** — Manajemen batch WIP
 - **Work Center Dashboard** — Ringkasan status & OEE seluruh mesin per hari, dengan breakdown downtime per kategori (mesin, operator, material, design, others) dan navigasi tanggal historis
+- **Early Warning System (EWS)** — Prediksi risiko downtime shift produksi berbasis Machine Learning (Random Forest) dengan fitur lag, rolling average, auto-scoring background thread, dan rescoring manual
 
 **Input Produksi Per Shift:**
 - Entry data per shift (Shift 1, 2, 3) dengan sub-shift a/b/c
@@ -233,6 +234,10 @@ GET/POST   /api/weekly-production-plan
 GET        /api/work-order-monitoring
 GET/POST   /api/production/mbf-report
 GET/POST   /api/production/fg-conversion
+GET        /api/ews/predictions
+GET        /api/ews/predictions/:id
+GET        /api/ews/summary
+POST       /api/ews/rescore/:id
 ```
 
 ---
@@ -809,6 +814,7 @@ GET/POST   /api/converting/productions
 | **Purchase Invoice** | Invoice pembelian & pembayaran | `/api/purchase-invoice` |
 | **Purchase Requisition** | Permintaan pembelian | `/api/purchasing` |
 | **Staff Leave (Public)** | Form izin staf tanpa login | `/api/staff-leave` |
+| **Early Warning System (EWS)** | Prediksi risiko downtime shift (Random Forest ML) | `/api/ews` |
 
 
 ### 📱 **Modul WhatsApp Notification Gateway** 🆕
@@ -1233,6 +1239,14 @@ Asisten AI adalah fitur chatbot terintegrasi yang memungkinkan pengguna untuk me
 
 ## 📈 Pembaruan Terbaru
 
+### ✨ v3.7 — Juli 2026 (Modul EWS - Early Warning System Machine Learning)
+
+- **Modul EWS (Early Warning System)** — Sistem prediksi risiko downtime shift produksi berbasis Machine Learning:
+  - **Random Forest Model** — Menggunakan model ML `rich_p75_v1` dengan feature engineering lanjutan (lag metrics, 3-shift rolling averages, downtime breakdown)
+  - **Asynchronous Auto-Scoring** — Event listener SQLAlchemy `after_insert` yang menghitung probabilitas risiko secara otomatis di background thread
+  - **EWS Dashboard** — UI frontend terintegrasi dengan indikator status AMAN/BAHAYA, probabilitas bahaya, per-machine risk breakdown, dan detail modal
+  - **Manual Re-scoring & Backfill** — Endpoint `/api/ews/rescore/:id` dan script CLI `ews_backfill.py` untuk pemrosesan ulang/historis
+
 ### ✨ v3.6 — Juli 2026 (Migrasi PostgreSQL, Berat Kotor OCR, Auto-Merge Batch)
 
 - **Migrasi Database SQLite → PostgreSQL** — Database production kini berjalan di PostgreSQL (sebelumnya SQLite):
@@ -1393,6 +1407,7 @@ See [LICENSE](LICENSE) for full terms.
 - Asisten AI terintegrasi dengan grafik
 - Dashboard Eksekutif dengan KPI real-time
 - **SPC (Statistical Process Control)** — X-bar R Chart, Western Electric Rules, Cp/Cpk
+- **Early Warning System (EWS)** — Prediksi risiko downtime shift produksi dengan Random Forest ML
 - Modul DCC & CAPA (ISO 9001:2015) — 13 tabel
 - Modul Asset Management (EAM) — 6 tabel
 - Modul Stok WIP & Daftar Packing
@@ -1424,6 +1439,7 @@ See [LICENSE](LICENSE) for full terms.
 - ✅ **40+ Peran** | **200+ Izin** | RBAC Penuh
 - ✅ **DCC & CAPA** Sesuai ISO 9001:2015
 - ✅ **SPC** X-bar R Chart + Western Electric Rules + Cp/Cpk
+- ✅ **EWS (Early Warning System)** Prediksi Risiko Downtime (Random Forest ML)
 - ✅ **Asset Management (EAM)** Siklus Hidup Lengkap
 - ✅ **15+ Alur Kerja Otomatis** End-to-End
 - ✅ **Asisten AI** Query Bahasa Alami + Grafik
