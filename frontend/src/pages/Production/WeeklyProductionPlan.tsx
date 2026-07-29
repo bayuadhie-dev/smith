@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import SearchableSelect from '../../components/SearchableSelect';
+import { useGetEWSSummaryQuery } from '../../services/api';
 import {
   PlusIcon,
   ChevronLeftIcon,
@@ -94,6 +95,17 @@ const WeeklyProductionPlan: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [scheduleItems, setScheduleItems] = useState<ScheduleItem[]>([]);
   const [machines, setMachines] = useState<Machine[]>([]);
+
+  // EWS: ringkasan risiko downtime 7 hari terakhir, untuk badge peringatan per mesin
+  const { data: ewsSummary } = useGetEWSSummaryQuery({ days: 7 });
+  
+  const machineRiskMap = React.useMemo(() => {
+    const map: Record<number, { bahaya: number; aman: number }> = {};
+    (ewsSummary?.data?.per_machine || []).forEach((m: any) => {
+      map[m.machine_id] = { bahaya: m.bahaya, aman: m.aman };
+    });
+    return map;
+  }, [ewsSummary]);
   const [products, setProducts] = useState<Product[]>([]);
   const [companyName, setCompanyName] = useState('Company');
   
@@ -738,6 +750,14 @@ const WeeklyProductionPlan: React.FC = () => {
                               <Cog6ToothIcon className="h-4 w-4" />
                               {machineCode}
                             </div>
+                            {machineRiskMap[item.machine_id]?.bahaya > 0 && (
+                              <div
+                                className="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200 text-[10px] font-semibold"
+                                title={`${machineRiskMap[item.machine_id].bahaya} shift berisiko tinggi dalam 7 hari terakhir (EWS)`}
+                              >
+                                ⚠ Risiko Tinggi ({machineRiskMap[item.machine_id].bahaya})
+                              </div>
+                            )}
                           </td>
                         )}
                         <td className="px-3 py-2">
