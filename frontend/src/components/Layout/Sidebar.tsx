@@ -495,6 +495,7 @@ function SidebarContent() {
         },
         { name: 'Waste Management', href: '/app/waste', icon: TrashIcon, permission: 'waste' },
         { name: 'OEE Monitoring', href: '/app/oee', icon: ChartBarIcon, permission: 'oee' },
+        { name: 'Early Warning System', href: '/app/ews', icon: ExclamationTriangleIcon, permission: 'oee' },
       ]
     },
     {

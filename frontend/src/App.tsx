@@ -264,6 +264,7 @@ import ReturnsDashboard from './pages/Returns/ReturnsDashboard'
 import ReturnDetails from './pages/Returns/ReturnDetails'
 import CreateReturnForm from './pages/Returns/CreateReturnForm'
 import OEEDashboard from './pages/OEE/OEEDashboard'
+import EWSDashboard from './pages/EWS/EWSDashboard'
 import OEEDashboardEnhanced from './pages/OEE/OEEDashboardEnhanced'
 import OEERecordForm from './pages/OEE/OEERecordForm'
 import MachineAnalytics from './pages/OEE/MachineAnalytics'
@@ -1022,6 +1023,7 @@ function App() {
 
                 {/* OEE */}
                 <Route path="oee" element={<OEEDashboardEnhanced />} />
+                <Route path="ews" element={<EWSDashboard />} />
                 <Route path="oee/monitoring" element={<OEEDashboardEnhanced />} />
                 <Route path="oee/dashboard" element={<OEEDashboardEnhanced />} />
                 <Route path="oee/records" element={<OEEDashboardEnhanced />} />
