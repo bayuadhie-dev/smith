@@ -72,6 +72,7 @@ export const api = createApi({
     'Projects',
     'MRP',
     'OEE',
+    'EWS',
     'Waste',
     'Notifications',
     'Dashboard',
