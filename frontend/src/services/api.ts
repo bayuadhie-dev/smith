@@ -2239,3 +2239,35 @@ export const {
   useGetSPCDashboardQuery,
   useRecalculateSPCLimitsMutation,
 } = spcApi;
+
+// EWS (Early Warning System) API
+export const ewsApi = api.injectEndpoints({
+  endpoints: (builder) => ({
+    getEWSPredictions: builder.query<any, { machine_id?: number; status?: string; date_from?: string; date_to?: string; limit?: number }>({
+      query: (params) => ({ url: '/ews/predictions', params }),
+      providesTags: ['EWS'],
+    }),
+    getEWSPredictionDetail: builder.query<any, number>({
+      query: (shiftProductionId) => `/ews/predictions/${shiftProductionId}`,
+      providesTags: ['EWS'],
+    }),
+    getEWSSummary: builder.query<any, { days?: number }>({
+      query: (params) => ({ url: '/ews/summary', params }),
+      providesTags: ['EWS'],
+    }),
+    rescoreEWSShift: builder.mutation<any, number>({
+      query: (shiftProductionId) => ({
+        url: `/ews/rescore/${shiftProductionId}`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['EWS'],
+    }),
+  }),
+});
+
+export const {
+  useGetEWSPredictionsQuery,
+  useGetEWSPredictionDetailQuery,
+  useGetEWSSummaryQuery,
+  useRescoreEWSShiftMutation,
+} = ewsApi;
