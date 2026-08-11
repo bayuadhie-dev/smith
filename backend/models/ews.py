@@ -13,8 +13,7 @@ class EWSPrediction(db.Model):
         db.Integer,
         db.ForeignKey('shift_productions.id'),
         nullable=False,
-        unique=True,  # satu shift cuma boleh punya satu prediksi (re-score = update, bukan duplikat)
-        index=True
+        unique=True,  # satu shift cuma boleh punya satu prediksi (re-score = update, bukan duplikat); unique=True already creates an index, so index=True was redundant and caused recurring Alembic diff noise
     )
     prob_bahaya = db.Column(db.Numeric(5, 4), nullable=False)  # 0.0000 - 1.0000
     status_ews = db.Column(db.String(20), nullable=False)  # 'AMAN' atau 'BAHAYA'
