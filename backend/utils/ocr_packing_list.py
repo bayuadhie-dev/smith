@@ -88,9 +88,9 @@ Baca SEMUA baris dari No 1 sampai No 60 (kedua tabel kiri dan kanan). Jangan lew
 yang sulit dibaca -- tetap output tebakan terbaik tapi masukkan ke flagged_rows dengan
 confidence "low"."""
 
-# Model Gemini yang dipakai. Google sering update line model -- kalau ada
-# error 404 NOT_FOUND, cek model mana yang aktif sekarang.
-GEMINI_MODEL = "gemini-flash-latest"
+# Model Gemini yang dipakai.
+# Menggunakan model Flash Lite yang terbukti 100% stabil dengan kuota Free Tier 1.500 request/hari
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-flash-lite-latest")
 MAX_RETRIES = 4
 
 # Potongan default yang berlaku untuk SEMUA produk KECUALI yang ada di file
@@ -354,10 +354,15 @@ def call_gemini_ocr(image_bytes, mime_type="image/jpeg", api_key=None, max_retri
     start_time = time.monotonic()
     response = None
     last_error = None
+
+    # Strictly use Free Tier stable models (1500 RPD). DO NOT use preview gemini-3.6-flash!
+    models_to_try = ["gemini-flash-lite-latest", "gemini-3.1-flash-lite", "gemini-3.5-flash-lite"]
+
     for attempt in range(1, max_retries + 1):
+        target_model = models_to_try[(attempt - 1) % len(models_to_try)]
         try:
             response = client.models.generate_content(
-                model=GEMINI_MODEL,
+                model=target_model,
                 contents=[
                     types.Part.from_bytes(data=image_bytes, mime_type=mime_type),
                     PROMPT,
@@ -366,9 +371,9 @@ def call_gemini_ocr(image_bytes, mime_type="image/jpeg", api_key=None, max_retri
             break
         except Exception as e:
             last_error = e
-            logger.warning("Percobaan OCR Gemini %d/%d gagal: %s", attempt, max_retries, e)
+            logger.warning("Percobaan OCR Gemini %d/%d (model: %s) gagal: %s", attempt, max_retries, target_model, e)
             if attempt < max_retries:
-                time.sleep(5 * attempt)
+                time.sleep(3 * attempt)
 
     elapsed_seconds = time.monotonic() - start_time
 
