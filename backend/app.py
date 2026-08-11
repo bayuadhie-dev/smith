@@ -470,9 +470,11 @@ def create_app(config_class=Config):
     from routes.desk import desk_bp
     from routes.workspace import workspace_bp
     from routes.search import search_bp
+    from routes.accurate_integration import accurate_bp
     
 
     app.register_blueprint(health_bp, url_prefix='/api')
+    app.register_blueprint(accurate_bp, url_prefix='/api/integrations/accurate')
 
     app.register_blueprint(face_bp)  # Face Recognition - /api/face
 

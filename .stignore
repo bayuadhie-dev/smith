@@ -19,7 +19,8 @@ coverage/
 *.swp
 
 
-
+__pycache__
+*.pyc
 
 # Env files (sensitive!)
 .env

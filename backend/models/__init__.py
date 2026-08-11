@@ -96,6 +96,8 @@ from .wms_advanced import (
 )
 from .expense import Expense, Reimbursement
 from .spc import SPCParameter, SPCProductSpec, SPCSample, SPCMeasurement, SPCControlLimitHistory
+from .accurate import AccurateConfig, AccurateItemMapping, AccurateSyncLog
+from .machine_layout import MachineLayoutWing, MachineLayoutNode, MachineAlias
 # Import to ensure models are registered
 from . import product_new_schema
 
@@ -195,4 +197,8 @@ __all__ = [
     'StockTransferOrder', 'StockTransferItem', 'CycleCountSchedule',
     # Expense models
     'Expense', 'Reimbursement',
+    # Accurate models
+    'AccurateConfig', 'AccurateItemMapping', 'AccurateSyncLog',
+    # Machine Layout Visualization models
+    'MachineLayoutWing', 'MachineLayoutNode', 'MachineAlias',
 ]
