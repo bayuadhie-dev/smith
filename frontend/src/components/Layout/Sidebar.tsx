@@ -547,6 +547,7 @@ function SidebarContent() {
             { name: 'Kelola Manual', href: '/app/manual/admin', icon: Cog6ToothIcon, superAdminOnly: true },
           ]
         },
+        { name: 'Accurate Integration', href: '/app/integration/accurate', icon: ArrowPathIcon, superAdminOnly: true },
         { name: 'Settings', href: '/app/settings', icon: Cog6ToothIcon, permission: 'settings', superAdminOnly: true },
       ]
     }

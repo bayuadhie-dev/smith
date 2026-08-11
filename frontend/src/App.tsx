@@ -291,6 +291,7 @@ import ExecutiveDashboard from './pages/Reports/ExecutiveDashboard'
 import ProductionByProductReport from './pages/Reports/ProductionByProductReport'
 import ProductionExecutiveDashboard from './pages/Executive/ProductionExecutiveDashboard'
 import ProductionMonitoringDashboard from './pages/Executive/ProductionMonitoringDashboard'
+import FactoryLayoutDashboard from './pages/Executive/FactoryLayoutDashboard'
 import LiveMonitoringDashboard from './pages/Production/LiveMonitoringDashboard'
 import LiveMonitoringWeekly from './pages/Production/LiveMonitoringWeekly'
 import LiveMonitoringView from './pages/Production/LiveMonitoringView'
@@ -322,6 +323,7 @@ import EmailSettings from './pages/Settings/EmailSettings'
 import KPITargetSettings from './pages/Settings/KPITargetSettings'
 import SystemHealth from './pages/Settings/SystemHealth'
 import NettoDeductionRulesManager from './pages/Settings/NettoDeductionRulesManager'
+import FactoryLayoutAdmin from './pages/Settings/FactoryLayoutAdmin'
 import UserProfile from './pages/Profile/UserProfile'
 import UserManual from './pages/Manual/UserManual'
 import FAQPage from './pages/Manual/FAQPage'
@@ -333,6 +335,7 @@ import ExternalConnectors from './pages/Integration/ExternalConnectors'
 import APIGateway from './pages/Integration/APIGateway'
 import DataSynchronization from './pages/Integration/DataSynchronization'
 import WebhookManagement from './pages/Integration/WebhookManagement'
+import AccurateIntegration from './pages/Integration/AccurateIntegration'
 import TVDisplayProduction from './pages/TVDisplay/TVDisplayProduction'
 import TVDisplayShipping from './pages/TVDisplay/TVDisplayShipping'
 import TVDisplaySelector from './pages/TVDisplay/TVDisplaySelector'
@@ -443,6 +446,7 @@ function App() {
               <Route path="/public/face-registration" element={<FaceRegistration />} />
               {/* Public Production Monitoring - No login required */}
               <Route path="/public/production-monitoring" element={<ProductionMonitoringDashboard />} />
+              <Route path="/public/factory-layout" element={<FactoryLayoutDashboard />} />
               <Route path="/login" element={!isAuthenticated ? <Login /> : <RoleBasedRedirect />} />
               <Route path="/forgot-password" element={!isAuthenticated ? <ForgotPassword /> : <RoleBasedRedirect />} />
               <Route path="/reset-password" element={!isAuthenticated ? <ResetPassword /> : <RoleBasedRedirect />} />
@@ -571,6 +575,7 @@ function App() {
 
                 {/* Production Monitoring */}
                 <Route path="executive/production-monitoring" element={<ProductionMonitoringDashboard />} />
+                <Route path="executive/factory-layout" element={<FactoryLayoutDashboard />} />
                 <Route path="production/live-monitoring" element={<LiveMonitoringDashboard />} />
                 <Route path="production/live-monitoring/weekly" element={<LiveMonitoringWeekly />} />
                 <Route path="production/live-monitoring/view/:id" element={<LiveMonitoringView />} />
@@ -1074,6 +1079,7 @@ function App() {
                 <Route path="settings/kpi-targets" element={<AdminRoute><KPITargetSettings /></AdminRoute>} />
                 <Route path="settings/system-health" element={<AdminRoute><SystemHealth /></AdminRoute>} />
                 <Route path="settings/netto-deductions" element={<AdminRoute><NettoDeductionRulesManager /></AdminRoute>} />
+                <Route path="settings/factory-layout" element={<AdminRoute><FactoryLayoutAdmin /></AdminRoute>} />
 
                 {/* Profile */}
                 <Route path="profile" element={<UserProfile />} />
@@ -1092,6 +1098,7 @@ function App() {
                 <Route path="chat/server/:serverId/settings" element={<ServerSettings />} />
 
                 {/* Integration - Admin Only */}
+                <Route path="integration/accurate" element={<AccurateIntegration />} />
                 <Route path="integration/connectors" element={<AdminRoute><ExternalConnectors /></AdminRoute>} />
                 <Route path="integration/api-gateway" element={<AdminRoute><APIGateway /></AdminRoute>} />
                 <Route path="integration/data-sync" element={<AdminRoute><DataSynchronization /></AdminRoute>} />

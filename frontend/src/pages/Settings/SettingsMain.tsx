@@ -52,6 +52,14 @@ const SettingsMain: React.FC = () => {
       icon: ScaleIcon,
       path: '/app/settings/netto-deductions',
       category: 'system',
+    },
+    {
+      id: 'factory-layout',
+      title: 'Factory Layout — Denah Produksi',
+      description: 'Kelola sayap (wing), penempatan mesin, icon, dan alias nama untuk halaman Denah Produksi',
+      icon: CogIcon,
+      path: '/app/settings/factory-layout',
+      category: 'system',
       isNew: true
     },
     {
