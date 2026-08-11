@@ -372,16 +372,24 @@ def system_health():
     # PM2 processes
     try:
         import subprocess, json as _json
+        PM2_DISPLAY_ALIAS = {
+            'smith-backend': 'Backend Server',
+            'smith-frontend': 'Antarmuka',
+            'openwa': 'WA Gateway',
+        }
+        PM2_HIDDEN_PREFIXES = ('porto-',)
+
         pm2 = subprocess.run(['pm2', 'jlist'], capture_output=True, text=True, timeout=5)
         procs = _json.loads(pm2.stdout) if pm2.returncode == 0 else []
+        visible_procs = [p for p in procs if not str(p.get('name', '')).startswith(PM2_HIDDEN_PREFIXES)]
         result['pm2'] = {'processes': [{
-            'name': p.get('name'),
+            'name': PM2_DISPLAY_ALIAS.get(p.get('name'), p.get('name')),
             'status': p.get('pm2_env', {}).get('status'),
             'restarts': p.get('pm2_env', {}).get('restart_time', 0),
             'uptime_ms': p.get('pm2_env', {}).get('pm_uptime'),
             'memory_mb': round(p.get('monit', {}).get('memory', 0) / 1024 / 1024, 1),
             'cpu': p.get('monit', {}).get('cpu', 0),
-        } for p in procs]}
+        } for p in visible_procs]}
     except Exception as e:
         result['pm2'] = {'processes': [], 'error': str(e)}
 
