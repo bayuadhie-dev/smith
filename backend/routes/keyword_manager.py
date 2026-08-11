@@ -24,14 +24,18 @@ def ensure_table_exists():
     """Create downtime_keywords table if it doesn't exist"""
     db.session.execute(text('''
         CREATE TABLE IF NOT EXISTS downtime_keywords (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            keyword TEXT NOT NULL UNIQUE COLLATE NOCASE,
+            id SERIAL PRIMARY KEY,
+            keyword TEXT NOT NULL,
             category TEXT NOT NULL,
             priority INTEGER DEFAULT 0,
             notes TEXT DEFAULT '',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
+    '''))
+    db.session.execute(text('''
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_downtime_keywords_keyword_lower
+        ON downtime_keywords (LOWER(keyword))
     '''))
     db.session.commit()
 
@@ -246,7 +250,7 @@ def import_keywords_to_db():
             try:
                 # Check if already exists
                 existing = db.session.execute(text(
-                    'SELECT id FROM downtime_keywords WHERE keyword = :kw COLLATE NOCASE'
+                    'SELECT id FROM downtime_keywords WHERE LOWER(keyword) = LOWER(:kw)'
                 ), {'kw': kw}).fetchone()
                 
                 if existing:
@@ -819,7 +823,7 @@ def api_create_keyword():
     
     # Check duplicate
     existing = db.session.execute(text(
-        'SELECT id FROM downtime_keywords WHERE keyword = :kw COLLATE NOCASE'
+        'SELECT id FROM downtime_keywords WHERE LOWER(keyword) = LOWER(:kw)'
     ), {'kw': keyword}).fetchone()
     
     if existing:
@@ -859,7 +863,7 @@ def api_update_keyword(id):
     
     # Check duplicate (different id, same keyword)
     dup = db.session.execute(text(
-        'SELECT id FROM downtime_keywords WHERE keyword = :kw COLLATE NOCASE AND id != :id'
+        'SELECT id FROM downtime_keywords WHERE LOWER(keyword) = LOWER(:kw) AND id != :id'
     ), {'kw': keyword, 'id': id}).fetchone()
     
     if dup:
@@ -1009,7 +1013,7 @@ def api_bulk_create():
 
     for kw in kw_list:
         existing = db.session.execute(text(
-            'SELECT id, category FROM downtime_keywords WHERE keyword = :kw COLLATE NOCASE'
+            'SELECT id, category FROM downtime_keywords WHERE LOWER(keyword) = LOWER(:kw)'
         ), {'kw': kw}).fetchone()
 
         if existing:
