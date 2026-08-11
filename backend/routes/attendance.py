@@ -59,6 +59,30 @@ def cors_preflight_response():
     return response
 
 
+@attendance_bp.route('/detect-face', methods=['POST', 'OPTIONS'])
+def detect_face():
+    """Endpoint to run OpenCV face detection on photo and return detection results & confidence score"""
+    if request.method == 'OPTIONS':
+        return cors_preflight_response()
+    try:
+        data = request.get_json() or {}
+        photo_base64 = data.get('photo_base64', '')
+        if not photo_base64:
+            return jsonify({'success': False, 'error': 'Foto tidak ditemukan'}), 400
+
+        from utils.face_detector import detect_face_in_image
+        res = detect_face_in_image(photo_base64)
+        return jsonify({
+            'success': True,
+            'detected': res['detected'],
+            'confidence': res['confidence'],
+            'count': res['count'],
+            'error': res['error']
+        }), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 def get_client_ip():
     """Get client IP address"""
     if request.headers.get('X-Forwarded-For'):
@@ -175,16 +199,19 @@ def public_clock_in():
         except Exception as e:
             return jsonify({'error': f'Invalid photo data: {str(e)}'}), 400
         
-        # Face detection results
-        face_detected = data.get('face_detected', False)
-        face_confidence = data.get('face_confidence', 0)
-        face_count = data.get('face_count', 0)
+        # Real face detection using OpenCV
+        from utils.face_detector import detect_face_in_image
+        detection = detect_face_in_image(photo_base64)
         
-        if not face_detected:
-            return jsonify({'error': 'Wajah tidak terdeteksi. Pastikan wajah terlihat jelas.'}), 400
+        face_detected = data.get('face_detected', detection['detected'])
+        face_confidence = data.get('face_confidence', detection['confidence'])
+        face_count = data.get('face_count', detection['count'])
         
-        if face_count > 1:
-            return jsonify({'error': 'Terdeteksi lebih dari satu wajah.'}), 400
+        if not face_detected or not detection['detected']:
+            return jsonify({'error': detection['error'] or 'Wajah tidak terdeteksi. Pastikan wajah terlihat jelas di kamera.'}), 400
+        
+        if face_count > 1 or detection['count'] > 1:
+            return jsonify({'error': f'Terdeteksi {max(face_count, detection["count"])} wajah. Pastikan hanya ada 1 wajah.'}), 400
         
         # GPS/Location validation
         latitude = data.get('latitude')
@@ -383,20 +410,22 @@ def clock_in():
         except Exception as e:
             return jsonify({'error': f'Invalid photo data: {str(e)}'}), 400
         
-        # Face detection results from frontend
-        face_detected = data.get('face_detected', False)
-        face_confidence = data.get('face_confidence', 0)
-        face_count = data.get('face_count', 0)
+        # Real face detection using OpenCV
+        from utils.face_detector import detect_face_in_image
+        detection = detect_face_in_image(photo_base64)
         
-        # Validate face detection
-        if not face_detected:
-            return jsonify({'error': 'Wajah tidak terdeteksi. Pastikan wajah terlihat jelas di kamera.'}), 400
+        face_detected = data.get('face_detected', detection['detected'])
+        face_confidence = data.get('face_confidence', detection['confidence'])
+        face_count = data.get('face_count', detection['count'])
         
-        if face_count > 1:
-            return jsonify({'error': 'Terdeteksi lebih dari satu wajah. Pastikan hanya Anda yang ada di foto.'}), 400
+        if not face_detected or not detection['detected']:
+            return jsonify({'error': detection['error'] or 'Wajah tidak terdeteksi. Pastikan wajah terlihat jelas di kamera.'}), 400
         
-        if face_confidence < 70:
-            return jsonify({'error': f'Confidence wajah terlalu rendah ({face_confidence:.1f}%). Pastikan pencahayaan cukup.'}), 400
+        if face_count > 1 or detection['count'] > 1:
+            return jsonify({'error': f'Terdeteksi {max(face_count, detection["count"])} wajah. Pastikan hanya ada 1 wajah di foto.'}), 400
+        
+        if face_confidence < 60 and detection['confidence'] < 60:
+            return jsonify({'error': f'Confidence wajah terlalu rendah ({detection["confidence"]:.1f}%). Pastikan pencahayaan cukup.'}), 400
         
         # Create attendance record
         attendance = Attendance(
@@ -487,16 +516,19 @@ def clock_out():
         except Exception as e:
             return jsonify({'error': f'Invalid photo data: {str(e)}'}), 400
         
-        # Face detection results
-        face_detected = data.get('face_detected', False)
-        face_confidence = data.get('face_confidence', 0)
-        face_count = data.get('face_count', 0)
+        # Real face detection using OpenCV
+        from utils.face_detector import detect_face_in_image
+        detection = detect_face_in_image(photo_base64)
         
-        if not face_detected:
-            return jsonify({'error': 'Wajah tidak terdeteksi. Pastikan wajah terlihat jelas di kamera.'}), 400
+        face_detected = data.get('face_detected', detection['detected'])
+        face_confidence = data.get('face_confidence', detection['confidence'])
+        face_count = data.get('face_count', detection['count'])
         
-        if face_count > 1:
-            return jsonify({'error': 'Terdeteksi lebih dari satu wajah. Pastikan hanya Anda yang ada di foto.'}), 400
+        if not face_detected or not detection['detected']:
+            return jsonify({'error': detection['error'] or 'Wajah tidak terdeteksi. Pastikan wajah terlihat jelas di kamera.'}), 400
+        
+        if face_count > 1 or detection['count'] > 1:
+            return jsonify({'error': f'Terdeteksi {max(face_count, detection["count"])} wajah. Pastikan hanya ada 1 wajah di foto.'}), 400
         
         # Update attendance record
         attendance.clock_out = now
