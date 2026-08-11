@@ -2271,3 +2271,252 @@ export const {
   useGetEWSSummaryQuery,
   useRescoreEWSShiftMutation,
 } = ewsApi;
+
+// Accurate Online Integration API
+export const accurateApi = api.injectEndpoints({
+  endpoints: (builder) => ({
+    getAccurateConfig: builder.query<any, void>({
+      query: () => '/integrations/accurate/config',
+      providesTags: ['Accurate'],
+    }),
+    updateAccurateConfig: builder.mutation<any, any>({
+      query: (body) => ({
+        url: '/integrations/accurate/config',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Accurate'],
+    }),
+    getAccurateItems: builder.query<any, void>({
+      query: () => '/integrations/accurate/accurate-items',
+      providesTags: ['Accurate'],
+    }),
+    getAccurateMappings: builder.query<any, void>({
+      query: () => '/integrations/accurate/mappings',
+      providesTags: ['Accurate'],
+    }),
+    getAccurateSalesInvoices: builder.query<any, void>({
+      query: () => '/integrations/accurate/sales-invoices',
+      providesTags: ['Accurate'],
+    }),
+    getAccurateSalesOrders: builder.query<any, void>({
+      query: () => '/integrations/accurate/sales-orders',
+      providesTags: ['Accurate'],
+    }),
+    getAccurateCustomers: builder.query<any, void>({
+      query: () => '/integrations/accurate/customers',
+      providesTags: ['Accurate'],
+    }),
+    getAccuratePurchaseInvoices: builder.query<any, void>({
+      query: () => '/integrations/accurate/purchase-invoices',
+      providesTags: ['Accurate'],
+    }),
+    getAccuratePurchaseOrders: builder.query<any, void>({
+      query: () => '/integrations/accurate/purchase-orders',
+      providesTags: ['Accurate'],
+    }),
+    getAccurateVendors: builder.query<any, void>({
+      query: () => '/integrations/accurate/vendors',
+      providesTags: ['Accurate'],
+    }),
+    getAccurateBankTransfers: builder.query<any, void>({
+      query: () => '/integrations/accurate/bank-transfers',
+      providesTags: ['Accurate'],
+    }),
+    getAccurateExpenses: builder.query<any, void>({
+      query: () => '/integrations/accurate/expenses',
+      providesTags: ['Accurate'],
+    }),
+    getAccurateGlAccounts: builder.query<any, void>({
+      query: () => '/integrations/accurate/gl-accounts',
+      providesTags: ['Accurate'],
+    }),
+    getAccurateJournalVouchers: builder.query<any, void>({
+      query: () => '/integrations/accurate/journal-vouchers',
+      providesTags: ['Accurate'],
+    }),
+    getAccurateBillsOfMaterial: builder.query<any, void>({
+      query: () => '/integrations/accurate/bills-of-material',
+      providesTags: ['Accurate'],
+    }),
+    getAccurateItemDetail: builder.query<any, string>({
+      query: (no) => `/integrations/accurate/item-detail/${encodeURIComponent(no)}`,
+    }),
+    getAccurateVendorDetail: builder.query<any, string>({
+      query: (no) => `/integrations/accurate/vendor-detail/${encodeURIComponent(no)}`,
+    }),
+    getAccurateCustomerDetail: builder.query<any, string>({
+      query: (no) => `/integrations/accurate/customer-detail/${encodeURIComponent(no)}`,
+    }),
+    getAccurateGlAccountDetail: builder.query<any, string>({
+      query: (no) => `/integrations/accurate/gl-account-detail/${encodeURIComponent(no)}`,
+    }),
+    getAccurateSalesInvoiceDetail: builder.query<any, string>({
+      query: (number) => `/integrations/accurate/sales-invoice-detail/${encodeURIComponent(number)}`,
+    }),
+    getAccurateSalesOrderDetail: builder.query<any, string>({
+      query: (number) => `/integrations/accurate/sales-order-detail/${encodeURIComponent(number)}`,
+    }),
+    getAccuratePurchaseInvoiceDetail: builder.query<any, string>({
+      query: (number) => `/integrations/accurate/purchase-invoice-detail/${encodeURIComponent(number)}`,
+    }),
+    getAccuratePurchaseOrderDetail: builder.query<any, string>({
+      query: (number) => `/integrations/accurate/purchase-order-detail/${encodeURIComponent(number)}`,
+    }),
+    getAccurateBankTransferDetail: builder.query<any, string>({
+      query: (number) => `/integrations/accurate/bank-transfer-detail/${encodeURIComponent(number)}`,
+    }),
+    getAccurateJournalVoucherDetail: builder.query<any, string>({
+      query: (number) => `/integrations/accurate/journal-voucher-detail/${encodeURIComponent(number)}`,
+    }),
+    getAccurateBillOfMaterialDetail: builder.query<any, string>({
+      query: (number) => `/integrations/accurate/bill-of-material-detail/${encodeURIComponent(number)}`,
+    }),
+    saveAccurateMapping: builder.mutation<any, any>({
+      query: (body) => ({
+        url: '/integrations/accurate/mappings',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Accurate'],
+    }),
+    runAccurateDryRun: builder.mutation<any, void>({
+      query: () => ({
+        url: '/integrations/accurate/sync/dry-run',
+        method: 'POST',
+      }),
+      invalidatesTags: ['Accurate'],
+    }),
+    checkAccurateEjo: builder.mutation<any, { ejo_number: string; accurate_id?: number }>({
+      query: (body) => ({
+        url: '/integrations/accurate/ejo-check',
+        method: 'POST',
+        body,
+      }),
+    }),
+    scanAccurateBomItemIndex: builder.mutation<any, void>({
+      query: () => ({
+        url: '/integrations/accurate/bom-item-index-scan',
+        method: 'POST',
+      }),
+    }),
+    getAccurateWorkOrderCache: builder.query<any, void>({
+      query: () => ({ url: '/integrations/accurate/work-order-cache' }),
+      providesTags: ['Accurate'],
+    }),
+    scanAccurateWorkOrderCache: builder.mutation<any, void>({
+      query: () => ({
+        url: '/integrations/accurate/work-order-cache-scan',
+        method: 'POST',
+      }),
+      invalidatesTags: ['Accurate'],
+    }),
+    getSmithWorkOrdersByProduct: builder.query<any, { product_id: number; reference_date?: string }>({
+      query: (params) => ({ url: '/integrations/accurate/smith-work-orders-by-product', params }),
+    }),
+    ejoManualMatch: builder.mutation<any, { accurate_id: number; smith_work_order_id: number }>({
+      query: (body) => ({
+        url: '/integrations/accurate/ejo-manual-match',
+        method: 'POST',
+        body,
+      }),
+    }),
+    getWarehouseStockSummary: builder.query<any, void>({
+      query: () => ({ url: '/integrations/accurate/warehouse-stock-summary' }),
+      providesTags: ['Accurate'],
+    }),
+    syncEjoWarehouseStock: builder.mutation<any, void>({
+      query: () => ({
+        url: '/integrations/accurate/ejo-warehouse-sync',
+        method: 'POST',
+      }),
+      invalidatesTags: ['Accurate'],
+    }),
+    getWarehouseStockDetail: builder.query<any, { product_id: number; location: 'epd' | 'fg' }>({
+      query: (params) => ({ url: '/integrations/accurate/warehouse-stock-detail', params }),
+    }),
+    getWarehouseUnmatchedSuggestions: builder.query<any, { item_name: string }>({
+      query: (params) => ({ url: '/integrations/accurate/warehouse-unmatched-suggestions', params }),
+    }),
+    getWarehouseSnapshotSummary: builder.query<any, void>({
+      query: () => ({ url: '/integrations/accurate/warehouse-snapshot-summary' }),
+      providesTags: ['Accurate'],
+    }),
+    getWarehouseSnapshotDetail: builder.query<any, { ref_id: number; kind: 'product' | 'material'; location: 'pm' | 'epd' | 'fg' }>({
+      query: (params) => ({ url: '/integrations/accurate/warehouse-snapshot-detail', params }),
+    }),
+    syncWarehouseStockFull: builder.mutation<any, void>({
+      query: () => ({
+        url: '/integrations/accurate/warehouse-stock-full-sync',
+        method: 'POST',
+      }),
+      invalidatesTags: ['Accurate'],
+    }),
+    getAccurateSyncLogs: builder.query<any, { status?: string }>({
+      query: (params) => ({ url: '/integrations/accurate/sync-logs', params }),
+      providesTags: ['Accurate'],
+    }),
+    approveAccurateSyncLog: builder.mutation<any, number>({
+      query: (logId) => ({
+        url: `/integrations/accurate/sync-logs/${logId}/approve`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['Accurate', 'Inventory', 'Material'],
+    }),
+    rejectAccurateSyncLog: builder.mutation<any, number>({
+      query: (logId) => ({
+        url: `/integrations/accurate/sync-logs/${logId}/reject`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['Accurate'],
+    }),
+  }),
+});
+
+export const {
+  useGetAccurateConfigQuery,
+  useUpdateAccurateConfigMutation,
+  useGetAccurateItemsQuery,
+  useGetAccurateMappingsQuery,
+  useGetAccurateSalesInvoicesQuery,
+  useGetAccurateSalesOrdersQuery,
+  useGetAccurateCustomersQuery,
+  useGetAccuratePurchaseInvoicesQuery,
+  useGetAccuratePurchaseOrdersQuery,
+  useGetAccurateVendorsQuery,
+  useGetAccurateBankTransfersQuery,
+  useGetAccurateExpensesQuery,
+  useGetAccurateGlAccountsQuery,
+  useGetAccurateJournalVouchersQuery,
+  useGetAccurateBillsOfMaterialQuery,
+  useGetAccurateItemDetailQuery,
+  useGetAccurateVendorDetailQuery,
+  useGetAccurateCustomerDetailQuery,
+  useGetAccurateGlAccountDetailQuery,
+  useGetAccurateSalesInvoiceDetailQuery,
+  useGetAccurateSalesOrderDetailQuery,
+  useGetAccuratePurchaseInvoiceDetailQuery,
+  useGetAccuratePurchaseOrderDetailQuery,
+  useGetAccurateBankTransferDetailQuery,
+  useGetAccurateJournalVoucherDetailQuery,
+  useGetAccurateBillOfMaterialDetailQuery,
+  useSaveAccurateMappingMutation,
+  useRunAccurateDryRunMutation,
+  useCheckAccurateEjoMutation,
+  useScanAccurateBomItemIndexMutation,
+  useGetAccurateWorkOrderCacheQuery,
+  useScanAccurateWorkOrderCacheMutation,
+  useGetSmithWorkOrdersByProductQuery,
+  useEjoManualMatchMutation,
+  useGetWarehouseStockSummaryQuery,
+  useSyncEjoWarehouseStockMutation,
+  useGetWarehouseStockDetailQuery,
+  useGetWarehouseUnmatchedSuggestionsQuery,
+  useGetWarehouseSnapshotSummaryQuery,
+  useGetWarehouseSnapshotDetailQuery,
+  useSyncWarehouseStockFullMutation,
+  useGetAccurateSyncLogsQuery,
+  useApproveAccurateSyncLogMutation,
+  useRejectAccurateSyncLogMutation,
+} = accurateApi;
+

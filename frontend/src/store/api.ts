@@ -50,6 +50,8 @@ export const api = createApi({
   baseQuery,
   tagTypes: [
     'Products',
+    'Material',
+    'Accurate',
     'Materials',
     'Suppliers',
     'Customers',
