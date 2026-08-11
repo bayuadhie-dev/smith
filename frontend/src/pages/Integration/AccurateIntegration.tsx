@@ -44,6 +44,9 @@ import {
   useGetWarehouseSnapshotSummaryQuery,
   useGetWarehouseSnapshotDetailQuery,
   useSyncWarehouseStockFullMutation,
+  useGetWarehouseTransferListQuery,
+  useGetWarehouseTransferDetailQuery,
+  useSyncWarehouseTransferMutation,
   useSyncEjoWarehouseStockMutation,
   useScanAccurateWorkOrderCacheMutation,
 } from '../../services/api'
@@ -63,7 +66,7 @@ import {
 } from '@heroicons/react/24/outline'
 
 export default function AccurateIntegration() {
-  const [activeTab, setActiveTab] = useState<'config' | 'mapping' | 'dryrun' | 'approval' | 'modules' | 'ejo' | 'warehouse'>('config')
+  const [activeTab, setActiveTab] = useState<'config' | 'mapping' | 'dryrun' | 'approval' | 'modules' | 'ejo' | 'warehouse' | 'transfer'>('config')
   const [ejoNumber, setEjoNumber] = useState('')
   const [ejoResult, setEjoResult] = useState<any>(null)
   const [ejoModalAccurateId, setEjoModalAccurateId] = useState<number | null>(null)
@@ -160,6 +163,58 @@ export default function AccurateIntegration() {
       refetchSnapshotSummary()
     } catch (err: any) {
       alert(err?.data?.message || 'Gagal menyinkronkan snapshot stok gudang.')
+    }
+  }
+
+  const [transferPrefixFilter, setTransferPrefixFilter] = useState<string>('')
+  const { data: transferListResp, isFetching: fetchingTransferList, refetch: refetchTransferList } = useGetWarehouseTransferListQuery(
+    { doc_prefix: transferPrefixFilter || undefined }
+  )
+  const [syncTransfer, { isLoading: isSyncingTransfer }] = useSyncWarehouseTransferMutation()
+  const [transferDetailId, setTransferDetailId] = useState<number | null>(null)
+  const { data: transferDetailResp, isFetching: fetchingTransferDetail } = useGetWarehouseTransferDetailQuery(
+    transferDetailId ?? 0,
+    { skip: !transferDetailId }
+  )
+
+  const handleSyncTransfer = async () => {
+    try {
+      const res = await syncTransfer().unwrap()
+      alert(`Sinkronisasi selesai: ${res.data.synced} transaksi baru tersinkron dari ${res.data.scanned} transaksi Accurate. Proses ini bisa butuh beberapa menit.`)
+      refetchTransferList()
+    } catch (err: any) {
+      alert(err?.data?.message || 'Gagal menyinkronkan histori transfer gudang.')
+    }
+  }
+
+  const [transferSortCol, setTransferSortCol] = useState<string>('trans_date')
+  const [transferSortAsc, setTransferSortAsc] = useState(false)
+
+  const parseAccurateDate = (s: string) => {
+    // format: "02 Oct 2024" -> Date object for real chronological sort
+    if (!s) return new Date(0)
+    const parsed = new Date(s)
+    return isNaN(parsed.getTime()) ? new Date(0) : parsed
+  }
+
+  const sortedTransferList = [...(transferListResp?.data || [])].sort((a, b) => {
+    let cmp = 0
+    if (transferSortCol === 'trans_date') {
+      cmp = parseAccurateDate(a.trans_date).getTime() - parseAccurateDate(b.trans_date).getTime()
+    } else {
+      const av = a[transferSortCol] ?? ''
+      const bv = b[transferSortCol] ?? ''
+      cmp = typeof av === 'number' ? av - bv : String(av).localeCompare(String(bv))
+    }
+    return transferSortAsc ? cmp : -cmp
+  })
+
+  const handleTransferSort = (col: string) => {
+    if (transferSortCol === col) {
+      setTransferSortAsc(!transferSortAsc)
+    } else {
+      setTransferSortCol(col)
+      setTransferSortAsc(false)
     }
   }
 
@@ -500,6 +555,16 @@ export default function AccurateIntegration() {
           }`}
         >
           7. Gudang EPD/FG
+        </button>
+        <button
+          onClick={() => setActiveTab('transfer')}
+          className={`pb-3 font-medium text-sm border-b-2 transition ${
+            activeTab === 'transfer'
+              ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'
+          }`}
+        >
+          8. Histori Transfer
         </button>
       </div>
 
@@ -2124,6 +2189,163 @@ export default function AccurateIntegration() {
                         ))}
                       </div>
                     </>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+      {/* TAB 8: Histori Transfer Gudang */}
+      {activeTab === 'transfer' && (
+        <div className="space-y-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h3 className="font-semibold text-gray-900 dark:text-white">Histori Transfer Gudang</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Transaksi resmi perpindahan barang antar gudang dari Accurate: IT- (PM &harr; EPD) dan
+                  PL- (EPD &harr; FG, otomatis dari Packing List). Klik baris untuk lihat rincian item dan
+                  nomor batch.
+                </p>
+              </div>
+              <button
+                onClick={handleSyncTransfer}
+                disabled={isSyncingTransfer}
+                className="shrink-0 px-3 py-2 text-sm rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition disabled:opacity-50"
+              >
+                {isSyncingTransfer ? 'Menyinkronkan...' : 'Sinkronkan Histori'}
+              </button>
+            </div>
+            <div className="flex gap-2">
+              {(['', 'PL', 'IT'] as const).map((prefix) => (
+                <button
+                  key={prefix}
+                  onClick={() => setTransferPrefixFilter(prefix)}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-lg transition ${
+                    transferPrefixFilter === prefix
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800'
+                  }`}
+                >
+                  {prefix === '' ? 'Semua' : prefix === 'PL' ? 'PL (EPD-FG)' : 'IT (PM-EPD)'}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+            {fetchingTransferList ? (
+              <p className="text-sm text-gray-500 dark:text-gray-400">Memuat...</p>
+            ) : (transferListResp?.data || []).length === 0 ? (
+              <p className="text-sm text-gray-500 dark:text-gray-400">Belum ada data. Klik "Sinkronkan Histori".</p>
+            ) : (
+              <div className="max-h-[32rem] overflow-y-auto">
+                <table className="w-full text-xs">
+                  <thead className="sticky top-0 bg-white dark:bg-gray-800">
+                    <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-gray-500 dark:text-gray-400">
+                      {([
+                        ['number', 'Nomor'],
+                        ['transfer_type', 'Tipe'],
+                        ['from_warehouse_name', 'Dari'],
+                        ['to_warehouse_name', 'Ke'],
+                        ['item_count', 'Item'],
+                        ['trans_date', 'Tanggal'],
+                      ] as const).map(([col, label]) => (
+                        <th
+                          key={col}
+                          onClick={() => handleTransferSort(col)}
+                          className="py-1.5 pr-2 cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200"
+                        >
+                          {label}{transferSortCol === col ? (transferSortAsc ? ' ▲' : ' ▼') : ''}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sortedTransferList.map((t: any) => (
+                      <tr
+                        key={t.id}
+                        onClick={() => setTransferDetailId(t.id)}
+                        className="border-b border-gray-100 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer"
+                      >
+                        <td className="py-1.5 pr-2 font-mono text-blue-600 dark:text-blue-400">{t.number}</td>
+                        <td className="py-1.5 pr-2">
+                          <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${
+                            t.transfer_type === 'TRANSFER_IN'
+                              ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
+                              : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
+                          }`}>
+                            {t.transfer_type === 'TRANSFER_IN' ? 'MASUK' : 'KELUAR'}
+                          </span>
+                        </td>
+                        <td className="py-1.5 pr-2 text-gray-600 dark:text-gray-400">{t.from_warehouse_name}</td>
+                        <td className="py-1.5 pr-2 text-gray-600 dark:text-gray-400">{t.to_warehouse_name}</td>
+                        <td className="py-1.5 pr-2 text-gray-500 dark:text-gray-400">{t.item_count}</td>
+                        <td className="py-1.5 pr-2 text-gray-400">{t.trans_date}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {/* Modal Detail Transfer */}
+          {transferDetailId && (
+            <div
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+              onClick={() => setTransferDetailId(null)}
+            >
+              <div
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[85vh] overflow-hidden flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+                    {transferDetailResp?.data?.number || 'Memuat...'}
+                  </h3>
+                  <button
+                    onClick={() => setTransferDetailId(null)}
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                  >
+                    <XMarkIcon className="w-5 h-5" />
+                  </button>
+                </div>
+                <div className="overflow-y-auto p-4">
+                  {fetchingTransferDetail ? (
+                    <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-8">Memuat rincian...</p>
+                  ) : !transferDetailResp?.data ? (
+                    <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-8">Data tidak ditemukan.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <SummaryField label="Dari Gudang" value={transferDetailResp.data.from_warehouse_name} />
+                        <SummaryField label="Ke Gudang" value={transferDetailResp.data.to_warehouse_name} />
+                        <SummaryField label="Tanggal" value={transferDetailResp.data.trans_date} />
+                        <SummaryField label="Catatan" value={transferDetailResp.data.description} />
+                      </div>
+                      <div className="space-y-1">
+                        {transferDetailResp.data.items.map((item: any, idx: number) => (
+                          <div
+                            key={idx}
+                            className={`text-xs p-2 rounded-lg ${
+                              item.matched
+                                ? 'bg-gray-50 dark:bg-gray-900'
+                                : 'bg-amber-50 dark:bg-amber-900/20'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-gray-700 dark:text-gray-300">{item.item_name}</span>
+                              <span className="font-medium text-gray-900 dark:text-white">{item.quantity?.toLocaleString()}</span>
+                            </div>
+                            <div className="text-gray-400">
+                              Batch: {item.serial_number || '-'} | Exp: {item.batch_expired_date || '-'}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>

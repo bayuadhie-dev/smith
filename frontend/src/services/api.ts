@@ -2452,6 +2452,20 @@ export const accurateApi = api.injectEndpoints({
       }),
       invalidatesTags: ['Accurate'],
     }),
+    getWarehouseTransferList: builder.query<any, { doc_prefix?: string }>({
+      query: (params) => ({ url: '/integrations/accurate/warehouse-transfer-list', params }),
+      providesTags: ['Accurate'],
+    }),
+    getWarehouseTransferDetail: builder.query<any, number>({
+      query: (id) => ({ url: `/integrations/accurate/warehouse-transfer-detail/${id}` }),
+    }),
+    syncWarehouseTransfer: builder.mutation<any, void>({
+      query: () => ({
+        url: '/integrations/accurate/warehouse-transfer-sync',
+        method: 'POST',
+      }),
+      invalidatesTags: ['Accurate'],
+    }),
     getAccurateSyncLogs: builder.query<any, { status?: string }>({
       query: (params) => ({ url: '/integrations/accurate/sync-logs', params }),
       providesTags: ['Accurate'],
@@ -2515,6 +2529,9 @@ export const {
   useGetWarehouseSnapshotSummaryQuery,
   useGetWarehouseSnapshotDetailQuery,
   useSyncWarehouseStockFullMutation,
+  useGetWarehouseTransferListQuery,
+  useGetWarehouseTransferDetailQuery,
+  useSyncWarehouseTransferMutation,
   useGetAccurateSyncLogsQuery,
   useApproveAccurateSyncLogMutation,
   useRejectAccurateSyncLogMutation,

@@ -245,3 +245,49 @@ class WarehouseStockSnapshotDetail(db.Model):
         db.UniqueConstraint('product_id', 'smith_location_id', name='uq_product_location_snapshot'),
         db.UniqueConstraint('material_id', 'smith_location_id', name='uq_material_location_snapshot'),
     )
+
+
+class AccurateWarehouseTransferLog(db.Model):
+    """
+    Official warehouse-to-warehouse transfer transactions from Accurate's
+    item-transfer.do, giving SMITH a real movement audit trail for PM<->EPD
+    (prefix IT-) and EPD<->FG (prefix PL-, auto-generated from Packing List
+    creation) - not just point-in-time stock snapshots. Each Accurate
+    transaction is one row here (paired TRANSFER_OUT/TRANSFER_IN rows both
+    get logged, linked via paired_transfer_id).
+    """
+    __tablename__ = 'accurate_warehouse_transfer_log'
+
+    id = db.Column(db.Integer, primary_key=True)
+    accurate_transfer_id = db.Column(db.Integer, nullable=False, unique=True, index=True)
+    number = db.Column(db.String(100), nullable=False, index=True)
+    transfer_type = db.Column(db.String(20), nullable=False)  # TRANSFER_IN or TRANSFER_OUT
+    doc_prefix = db.Column(db.String(30), nullable=True)  # PL or IT, parsed from number
+    trans_date = db.Column(db.String(30), nullable=True)
+    from_warehouse_id = db.Column(db.Integer, nullable=True)
+    from_warehouse_name = db.Column(db.String(100), nullable=True)
+    to_warehouse_id = db.Column(db.Integer, nullable=True)
+    to_warehouse_name = db.Column(db.String(100), nullable=True)
+    paired_transfer_id = db.Column(db.Integer, nullable=True)
+    description = db.Column(db.Text, nullable=True)
+    synced_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    items = db.relationship('AccurateWarehouseTransferItem', backref='transfer_log', cascade='all, delete-orphan')
+
+
+class AccurateWarehouseTransferItem(db.Model):
+    """
+    Per-item line within an AccurateWarehouseTransferLog transaction,
+    including serial number/batch and expiry when Accurate tracks it.
+    """
+    __tablename__ = 'accurate_warehouse_transfer_item'
+
+    id = db.Column(db.Integer, primary_key=True)
+    transfer_log_id = db.Column(db.Integer, db.ForeignKey('accurate_warehouse_transfer_log.id', ondelete='CASCADE'), nullable=False, index=True)
+    accurate_item_id = db.Column(db.Integer, nullable=True)
+    item_name = db.Column(db.String(255), nullable=True)
+    smith_product_id = db.Column(db.Integer, nullable=True, index=True)
+    smith_material_id = db.Column(db.Integer, nullable=True, index=True)
+    quantity = db.Column(db.Float, nullable=True)
+    serial_number = db.Column(db.String(100), nullable=True)
+    batch_expired_date = db.Column(db.String(30), nullable=True)

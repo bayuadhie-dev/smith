@@ -1110,3 +1110,162 @@ def get_warehouse_snapshot_detail(ref_id, location_id, kind='product'):
         ],
         'synced_at': snapshot.synced_at.strftime('%Y-%m-%d %H:%M') if snapshot.synced_at else None,
     }
+
+
+def sync_warehouse_transfer_log(client, max_pages=150, page_size=20):
+    """
+    Manual-trigger sync of official Accurate warehouse-to-warehouse
+    transfer transactions (item-transfer.do) - gives SMITH a real
+    movement audit trail for PM<->EPD (prefix IT-) and EPD<->FG (prefix
+    PL-, auto-generated from Packing List creation), not just point-in-
+    time stock snapshots.
+
+    Default max_pages=150 covers the full ~2933-row catalog (as of Aug
+    2026) in one run, per user decision to sync everything rather than
+    just recent activity. Skips transactions already present in
+    AccurateWarehouseTransferLog (by accurate_transfer_id), so repeat
+    runs only pick up new transfers.
+
+    Attempts to match each line item to a SMITH product or material via
+    find_smith_match (exact-name, no fuzzy matching, consistent with the
+    rest of this module) - unmatched lines are still stored (with
+    smith_product_id/smith_material_id left null) since the transfer
+    record itself has value even without a SMITH-side match.
+
+    Returns summary dict: {scanned, synced, skipped_already_synced}.
+    """
+    from models import db
+    from models.accurate import AccurateWarehouseTransferLog, AccurateWarehouseTransferItem
+    from utils.accurate_item_matcher import find_smith_match
+
+    summary = {'scanned': 0, 'synced': 0, 'skipped_already_synced': 0}
+
+    already_synced = {
+        row.accurate_transfer_id
+        for row in AccurateWarehouseTransferLog.query.with_entities(
+            AccurateWarehouseTransferLog.accurate_transfer_id
+        ).all()
+    }
+
+    for page in range(1, max_pages + 1):
+        data = _get(client, 'item-transfer/list.do', {'sp.page': page, 'sp.pageSize': page_size})
+        if not data.get('s'):
+            break
+        rows = data.get('d', [])
+        if not rows:
+            break
+
+        for row in rows:
+            transfer_id = row['id']
+            summary['scanned'] += 1
+            if transfer_id in already_synced:
+                summary['skipped_already_synced'] += 1
+                continue
+
+            detail = _get(client, 'item-transfer/detail.do', {'id': transfer_id})
+            if not detail.get('s'):
+                continue
+            d = detail.get('d', {})
+
+            number = d.get('number', '')
+            import re
+            prefix_match = re.match(r'^[A-Za-z]+', number)
+            doc_prefix = prefix_match.group(0) if prefix_match else None
+
+            log = AccurateWarehouseTransferLog(
+                accurate_transfer_id=transfer_id,
+                number=number,
+                transfer_type=d.get('itemTransferType'),
+                doc_prefix=doc_prefix,
+                trans_date=d.get('transDateView'),
+                from_warehouse_id=d.get('referenceWarehouseId'),
+                from_warehouse_name=d.get('referenceWarehouseName'),
+                to_warehouse_id=d.get('warehouseId'),
+                to_warehouse_name=d.get('warehouseName'),
+                paired_transfer_id=d.get('fromItemTransferId'),
+                description=d.get('description'),
+            )
+            db.session.add(log)
+            db.session.flush()
+
+            for item_row in d.get('detailItem', []):
+                item = item_row.get('item', {}) or {}
+                item_name = item.get('name')
+                match = find_smith_match(item_name) if item_name else None
+                smith_product_id = match['id'] if match and match.get('table') == 'products' else None
+                smith_material_id = match['id'] if match and match.get('table') == 'materials' else None
+
+                serials = item_row.get('detailSerialNumber', []) or [{}]
+                for sn in serials:
+                    sn_info = sn.get('serialNumber', {}) or {}
+                    db.session.add(AccurateWarehouseTransferItem(
+                        transfer_log_id=log.id,
+                        accurate_item_id=item.get('id'),
+                        item_name=item_name,
+                        smith_product_id=smith_product_id,
+                        smith_material_id=smith_material_id,
+                        quantity=sn.get('quantity'),
+                        serial_number=sn_info.get('number'),
+                        batch_expired_date=sn_info.get('expiredDateView'),
+                    ))
+
+            already_synced.add(transfer_id)
+            summary['synced'] += 1
+
+    db.session.commit()
+    return summary
+
+
+def get_warehouse_transfer_list(doc_prefix=None, limit=3000):
+    """
+    List of warehouse transfer transactions for the UI, optionally
+    filtered by doc_prefix (e.g. 'PL', 'IT'). Sorted most recent first
+    (by id, which correlates with recency since transfer_id is roughly
+    sequential per Accurate's insertion order).
+    """
+    from models.accurate import AccurateWarehouseTransferLog
+
+    query = AccurateWarehouseTransferLog.query
+    if doc_prefix:
+        query = query.filter_by(doc_prefix=doc_prefix)
+    rows = query.order_by(AccurateWarehouseTransferLog.id.desc()).limit(limit).all()
+
+    return [{
+        'id': r.id,
+        'number': r.number,
+        'transfer_type': r.transfer_type,
+        'doc_prefix': r.doc_prefix,
+        'trans_date': r.trans_date,
+        'from_warehouse_name': r.from_warehouse_name,
+        'to_warehouse_name': r.to_warehouse_name,
+        'item_count': len(r.items),
+    } for r in rows]
+
+
+def get_warehouse_transfer_detail(transfer_log_id):
+    """
+    Full detail of one warehouse transfer transaction, including all
+    line items with batch/serial number info.
+    """
+    from models.accurate import AccurateWarehouseTransferLog
+
+    log = AccurateWarehouseTransferLog.query.get(transfer_log_id)
+    if not log:
+        return None
+
+    return {
+        'number': log.number,
+        'transfer_type': log.transfer_type,
+        'doc_prefix': log.doc_prefix,
+        'trans_date': log.trans_date,
+        'from_warehouse_name': log.from_warehouse_name,
+        'to_warehouse_name': log.to_warehouse_name,
+        'description': log.description,
+        'items': [{
+            'item_name': i.item_name,
+            'quantity': i.quantity,
+            'serial_number': i.serial_number,
+            'batch_expired_date': i.batch_expired_date,
+            'matched': bool(i.smith_product_id or i.smith_material_id),
+        } for i in log.items],
+    }

@@ -438,6 +438,58 @@ def ejo_manual_match():
         return error_response('accurate.ejo_manual_match_error', details=str(e)), 500
 
 
+@accurate_bp.route('/warehouse-transfer-sync', methods=['POST'])
+@jwt_required()
+def trigger_warehouse_transfer_sync():
+    """
+    Sync histori transaksi resmi perpindahan barang antar gudang dari
+    Accurate (item-transfer.do) -- PM<->EPD (IT-) dan EPD<->FG (PL-,
+    otomatis dari Packing List). Full scan (~2933 transaksi), manual
+    trigger, bisa makan waktu cukup lama.
+    """
+    try:
+        from utils.accurate_ejo_check import sync_warehouse_transfer_log
+        client = AccurateClient()
+        result = sync_warehouse_transfer_log(client)
+        return success_response('accurate.warehouse_transfer_sync_done', data=result), 200
+    except Exception as e:
+        db.session.rollback()
+        return error_response('accurate.warehouse_transfer_sync_error', details=str(e)), 500
+
+
+@accurate_bp.route('/warehouse-transfer-list', methods=['GET'])
+@jwt_required()
+def get_warehouse_transfer_list_endpoint():
+    """
+    Daftar transaksi transfer gudang Accurate yang sudah disync. Query
+    param opsional: doc_prefix (mis. 'PL' atau 'IT').
+    """
+    try:
+        from utils.accurate_ejo_check import get_warehouse_transfer_list
+        doc_prefix = request.args.get('doc_prefix')
+        result = get_warehouse_transfer_list(doc_prefix=doc_prefix)
+        return success_response('accurate.warehouse_transfer_list_fetched', data=result), 200
+    except Exception as e:
+        return error_response('accurate.fetch_error', details=str(e)), 500
+
+
+@accurate_bp.route('/warehouse-transfer-detail/<int:transfer_log_id>', methods=['GET'])
+@jwt_required()
+def get_warehouse_transfer_detail_endpoint(transfer_log_id):
+    """
+    Detail lengkap satu transaksi transfer gudang, termasuk rincian item
+    dan batch/serial number.
+    """
+    try:
+        from utils.accurate_ejo_check import get_warehouse_transfer_detail
+        result = get_warehouse_transfer_detail(transfer_log_id)
+        if result is None:
+            return error_response('accurate.warehouse_transfer_not_found'), 404
+        return success_response('accurate.warehouse_transfer_detail_fetched', data=result), 200
+    except Exception as e:
+        return error_response('accurate.fetch_error', details=str(e)), 500
+
+
 @accurate_bp.route('/warehouse-snapshot-summary', methods=['GET'])
 @jwt_required()
 def get_warehouse_snapshot_summary_endpoint():
