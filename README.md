@@ -125,7 +125,7 @@
 ┌─────────────────────────────────────────────────────────────┐
 │                   Lapisan Database                            │
 │  PostgreSQL (Production - Active) · Migrated Jul 2026       │
-│  308 Tabel · Alembic Migrations · Database Indexing         │
+│  321 Tabel · Alembic Migrations · Database Indexing         │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -783,6 +783,58 @@ GET/POST   /api/converting/productions
 
 ---
 
+### 1️⃣8️⃣ **Modul Integrasi Accurate Online** 🆕
+
+**Fitur:**
+- **OAuth2 Integration** — Koneksi resmi ke Accurate Online dengan 175 scope API (item, BOM, work order, finished good slip, item transfer, dan seluruh modul yang didokumentasikan Accurate)
+- **Sinkronisasi Item Master** — `item_new`, `item_stock_change`, `item_price_change`, `item_deleted` dengan approval queue, exact-name matching (tanpa fuzzy matching by design — mencegah salah tebak diam-diam)
+- **Sinkronisasi BOM/Formula** — `bom_new`, `bom_line_changed`, `bom_deleted` dengan diff per-baris (added/removed/changed), blocking approval sampai semua ingredient ter-mapping
+- **BOM Multi-Level** — Dukungan formula bertingkat Barang Jadi → WIP → Mixing (BillOfMaterials kini bisa merujuk `product_id` ATAU `material_id`), terverifikasi dengan data real sampai 5 tingkat kedalaman
+- **Cek EJO (Perintah Kerja)** — Cari nomor EJO Accurate, lihat ringkasan, breakdown bahan bertingkat rekursif, histori tahap gudang (EPD→FG), Mesin/Operator/Shift dari Finished Good Slip, serta perbandingan otomatis dengan Work Order Internal ERP (dengan fallback pemilihan kandidat produk mirip saat exact-match gagal)
+- **Stok Gudang PM/EPD/FG** — Dua pendekatan pelengkap:
+  - Berbasis histori EJO (`processHistory`): kumulatif/historis, untuk produk jadi yang ter-match tepat
+  - Berbasis snapshot resmi Accurate (`item/detail.do`): mencakup seluruh katalog (~1.600 item) termasuk bahan baku/kimia/kemasan, sumber data paling lengkap dan akurat
+- **Jejak Audit Transfer Gudang** — Sinkronisasi transaksi resmi perpindahan barang antar gudang dari Accurate (`item-transfer`): prefix `IT-` untuk PM↔EPD, prefix `PL-` untuk EPD↔FG (otomatis dari Packing List), lengkap dengan nomor batch/serial number dan tanggal kedaluwarsa
+- **Pelacakan Produk Belum Tersinkron** — Daftar nama item Accurate yang gagal exact-match ke Internal ERP, dengan kandidat produk mirip (persentase kemiripan) untuk rekonsiliasi manual
+- **Browser Data Modul Live** — Jelajahi data langsung dari Accurate (Item, Vendor, Customer, GL Account, Faktur, Pesanan, BOM) tanpa perlu sinkronisasi permanen
+
+**Arsitektur:**
+```
+Accurate Online (OAuth2) →
+  AccurateClient (utils/accurate_client.py) →
+    Item/BOM Sync → Approval Queue → Internal ERP (Product/Material/BillOfMaterials)
+    EJO Cross-Check → Rekursif Material Tree + Diff vs WorkOrder
+    Warehouse Sync → Inventory (PM/EPD/FG) + Transfer Audit Trail
+```
+
+**Models:** `AccurateConfig`, `AccurateItemMapping`, `AccurateSyncLog`, `EjoWarehouseSyncLog`, `EjoWarehouseUnmatchedProduct`, `WarehouseStockSnapshotDetail`, `AccurateBomItemIndex`, `AccurateWorkOrderCache`, `AccurateWarehouseTransferLog`, `AccurateWarehouseTransferItem`
+
+**Endpoint API:**
+```bash
+GET/POST   /api/integrations/accurate/config
+GET        /api/integrations/accurate/sync-logs
+POST       /api/integrations/accurate/sync-logs/:id/approve
+POST       /api/integrations/accurate/bom-scan
+POST       /api/integrations/accurate/ejo-check
+POST       /api/integrations/accurate/ejo-manual-match
+GET        /api/integrations/accurate/smith-work-orders-by-product
+POST       /api/integrations/accurate/ejo-warehouse-sync
+POST       /api/integrations/accurate/warehouse-stock-full-sync
+GET        /api/integrations/accurate/warehouse-snapshot-summary
+GET        /api/integrations/accurate/warehouse-snapshot-detail
+GET        /api/integrations/accurate/warehouse-unmatched-suggestions
+POST       /api/integrations/accurate/warehouse-transfer-sync
+GET        /api/integrations/accurate/warehouse-transfer-list
+GET        /api/integrations/accurate/warehouse-transfer-detail/:id
+```
+
+**Catatan Teknis:**
+- Semua sinkronisasi bersifat manual-trigger (bukan cron otomatis) — cadence disesuaikan kebutuhan bisnis, bukan real-time
+- Cache lokal (`AccurateBomItemIndex`, `AccurateWorkOrderCache`) mempercepat lookup berulang dari ~1,5 menit menjadi <1 detik untuk data yang sering diakses
+- Exact-name matching (tanpa fuzzy) adalah keputusan desain sengaja — mencegah kesalahan pencocokan produk yang tidak terlihat, dengan trade-off sebagian item perlu direkonsiliasi manual (dibantu fitur kandidat produk mirip)
+
+---
+
 ### Modul Pendukung
 
 | Modul | Fitur Utama | API Prefix |
@@ -815,6 +867,7 @@ GET/POST   /api/converting/productions
 | **Purchase Requisition** | Permintaan pembelian | `/api/purchasing` |
 | **Staff Leave (Public)** | Form izin staf tanpa login | `/api/staff-leave` |
 | **Early Warning System (EWS)** | Prediksi risiko downtime shift (Random Forest ML) | `/api/ews` |
+| **Accurate Online Integration** | Sinkronisasi item/BOM, EJO cross-check, stok & transfer gudang PM/EPD/FG (detail: lihat Modul 18) | `/api/integrations/accurate` |
 
 
 ### 📱 **Modul WhatsApp Notification Gateway** 🆕
@@ -1112,12 +1165,12 @@ SourceCode/
 ├── backend/                    # 496 files (excl. pycache)
 │   ├── app.py                  # Main Flask application
 │   ├── config.py               # Konfigurasi aplikasi
-│   ├── models/                 # 53 model files · 308 DB tables
+│   ├── models/                 # 55 model files · 321 DB tables
 │   │   ├── spc.py              # SPC models (5 tabel)
 │   │   ├── dcc.py              # DCC & CAPA models (13 tabel)
 │   │   ├── production.py       # Production models (~15 tabel)
 │   │   └── ...
-│   ├── routes/                 # 110 route files
+│   ├── routes/                 # 112 route files
 │   │   ├── spc.py              # SPC API endpoints
 │   │   ├── oee.py              # OEE + Quality Objective
 │   │   ├── production.py       # Production endpoints
@@ -1132,7 +1185,7 @@ SourceCode/
 │   ├── seeds/                  # Seed data files
 ├── frontend/                   # 481 .tsx/.ts files
 │   └── src/
-│       ├── pages/              # 40 module directories · 371 page files
+│       ├── pages/              # 40 module directories · 377 page files
 │       │   ├── Quality/SPC/    # SPCDashboard, SPCSampleForm
 │       │   ├── Production/     # 63 production pages
 │       │   ├── Finance/        # 27 finance pages
@@ -1146,9 +1199,9 @@ SourceCode/
 ├── docker-compose.yml          # Docker configuration
 └── README.md
 
-Backend:  ~127,600 lines of code
-Frontend: ~204,400 lines of code
-Total:    ~332,000+ lines of code
+Backend:  ~137,900 lines of code
+Frontend: ~213,400 lines of code
+Total:    ~351,300+ lines of code
 ```
 
 ---
@@ -1238,6 +1291,16 @@ Asisten AI adalah fitur chatbot terintegrasi yang memungkinkan pengguna untuk me
 ---
 
 ## 📈 Pembaruan Terbaru
+
+### ✨ v3.8 — Agustus 2026 (Integrasi Accurate Online, BOM Multi-Level, Gudang PM/EPD/FG)
+
+- **Modul Integrasi Accurate Online** — Sinkronisasi dua arah antara Internal ERP dan Accurate Online, mencakup item master, BOM/formula, Work Order, dan pergerakan stok antar gudang (lihat Modul 18 untuk detail lengkap):
+  - **BOM Multi-Level** — `BillOfMaterials` kini mendukung formula bertingkat Barang Jadi → WIP → Mixing, terverifikasi dengan data produksi real sampai 5 tingkat
+  - **Cek EJO** — Pencarian dan breakdown lengkap Perintah Kerja Accurate: bahan bertingkat rekursif, histori tahap gudang, Mesin/Operator/Shift, dan perbandingan otomatis dengan Work Order Internal ERP
+  - **Stok Gudang PM/EPD/FG** — Sinkronisasi stok resmi dari Accurate (`item/detail.do`), mencakup seluruh katalog barang termasuk bahan baku/kimia/kemasan, bukan cuma barang jadi
+  - **Jejak Audit Transfer Gudang** — Sinkronisasi 2.900+ transaksi resmi perpindahan barang antar gudang (PM↔EPD↔FG) dari Accurate, lengkap dengan nomor batch dan tanggal kedaluwarsa
+  - **Rekonsiliasi Penamaan Produk** — Alat pencocokan kandidat nama produk mirip untuk item yang belum tersinkron otomatis antara kedua sistem
+  - OAuth2 dengan 175 scope API resmi Accurate — dari sinkronisasi item dasar hingga transfer stok dan Perintah Kerja
 
 ### ✨ v3.7 — Juli 2026 (Modul EWS - Early Warning System Machine Learning)
 
@@ -1400,8 +1463,8 @@ See [LICENSE](LICENSE) for full terms.
 
 ### Selesai ✅
 - 20+ modul utama, 100+ sub-modul
-- **53 model files**, **308 tabel database**, **110 route files**
-- **~332,000+ baris kode** (backend + frontend)
+- **55 model files**, **321 tabel database**, **112 route files**
+- **~351,000+ baris kode** (backend + frontend)
 - Autentikasi & otorisasi (JWT + OAuth + Face Recognition)
 - 15+ alur kerja otomatis end-to-end
 - Asisten AI terintegrasi dengan grafik
@@ -1415,6 +1478,7 @@ See [LICENSE](LICENSE) for full terms.
 - Modul R&D dengan alur kerja persetujuan
 - WMS Advanced dengan batch traceability
 - Finance lengkap: GL, AP, AR, WIP Accounting, Job Costing
+- **Integrasi Accurate Online** — Sinkronisasi item/BOM, EJO cross-check, stok & transfer gudang PM/EPD/FG
 
 ### Sedang Dikerjakan 🚧
 - Pelaporan lanjutan dengan ekspor (bulk)
@@ -1433,8 +1497,8 @@ See [LICENSE](LICENSE) for full terms.
 
 ## 🏆 Pencapaian
 
-- ✅ **308 Tabel DB** | **110. Route Files** | **53 Model Files**
-- ✅ **~332,000+ Baris Kode** (Backend + Frontend)
+- ✅ **321 Tabel DB** | **112 Route Files** | **55 Model Files**
+- ✅ **~351,000+ Baris Kode** (Backend + Frontend)
 - ✅ **20+ Modul Bisnis** dengan 100+ Sub-Modul
 - ✅ **40+ Peran** | **200+ Izin** | RBAC Penuh
 - ✅ **DCC & CAPA** Sesuai ISO 9001:2015
@@ -1445,6 +1509,7 @@ See [LICENSE](LICENSE) for full terms.
 - ✅ **Asisten AI** Query Bahasa Alami + Grafik
 - ✅ **Dashboard Real-time** 30+ KPI
 - ✅ **Face Recognition** Attendance System
+- ✅ **Integrasi Accurate Online** BOM Multi-Level + Gudang PM/EPD/FG + Audit Trail Transfer
 
 ⭐ Beri bintang repository ini jika bermanfaat!
 
