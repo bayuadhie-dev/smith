@@ -165,7 +165,8 @@ def get_company_public_info():
         }), 200
 
 @settings_bp.route('/company', methods=['GET'])
-@jwt_required()
+@settings_bp.route('/company-public', methods=['GET'])
+@jwt_required(optional=True)
 def get_company_profile():
     try:
         from company_config.company import COMPANY_NAME, COMPANY_ADDRESS_LINE1, COMPANY_PHONE, COMPANY_EMAIL, COMPANY_WEBSITE

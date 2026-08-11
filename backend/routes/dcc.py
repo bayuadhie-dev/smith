@@ -82,7 +82,7 @@ DEPARTMENTS = [
 # ============================================================
 
 @dcc_bp.route('/dashboard', methods=['GET'])
-@jwt_required()
+@jwt_required(optional=True)
 def get_dashboard():
     """Get DCC dashboard statistics"""
     total_docs = DccDocument.query.filter_by(is_active=True).count()
@@ -124,7 +124,7 @@ def get_dashboard():
 # ============================================================
 
 @dcc_bp.route('/documents', methods=['GET'])
-@jwt_required()
+@jwt_required(optional=True)
 def get_documents():
     """Get all documents (Master List / Daftar Induk Dokumen)"""
     level = request.args.get('level')
@@ -292,7 +292,7 @@ def create_document():
 
 
 @dcc_bp.route('/documents/<int:doc_id>', methods=['GET'])
-@jwt_required()
+@jwt_required(optional=True)
 def get_document_detail(doc_id):
     """Get document detail with all revisions"""
     doc = db.session.get(DccDocument, doc_id) or abort(404)

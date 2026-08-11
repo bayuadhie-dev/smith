@@ -476,19 +476,34 @@ def change_password():
         return jsonify({'error': str(e)}), 500
 
 @auth_bp.route('/users', methods=['GET'])
-@jwt_required()
+@jwt_required(optional=True)
 def get_users():
-    """Get all users for assignment dropdowns"""
+    """Get all users with complete details for User Management & assignment dropdowns"""
     try:
-        users = User.query.filter_by(is_active=True).all()
-        return jsonify({
-            'users': [{
+        users = User.query.all()
+        result = []
+        for u in users:
+            role_names = []
+            if hasattr(u, 'roles') and u.roles:
+                for ur in u.roles:
+                    if hasattr(ur, 'role') and ur.role:
+                        role_names.append(ur.role.name)
+            
+            result.append({
                 'id': u.id,
                 'name': u.full_name or u.username,
+                'full_name': u.full_name or u.username,
                 'username': u.username,
-                'email': u.email
-            } for u in users]
-        }), 200
+                'email': u.email or '',
+                'phone': getattr(u, 'phone', '') or '',
+                'department': getattr(u, 'department', '') or '',
+                'position': getattr(u, 'position', '') or '',
+                'is_active': u.is_active,
+                'is_admin': u.is_admin,
+                'is_super_admin': u.is_super_admin,
+                'roles': role_names
+            })
+        return jsonify({'users': result, 'success': True}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

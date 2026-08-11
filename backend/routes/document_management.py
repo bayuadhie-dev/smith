@@ -674,7 +674,7 @@ def generate_excel(id):
 
 
 @document_bp.route('', methods=['GET'])
-@jwt_required()
+@jwt_required(optional=True)
 def get_documents():
     """Get all documents with filters"""
     try:
@@ -989,7 +989,7 @@ def generate_from_work_order(work_order_id):
 
 
 @document_bp.route('/dashboard', methods=['GET'])
-@jwt_required()
+@jwt_required(optional=True)
 def get_dashboard():
     """Get document management dashboard stats"""
     try:
