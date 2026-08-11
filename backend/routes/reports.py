@@ -94,7 +94,7 @@ def inventory_report():
             Product.name,
             Product.primary_uom,
             func.sum(Inventory.quantity_on_hand).label('total_quantity'),
-            func.sum(Inventory.available_quantity).label('available_quantity')
+            func.sum(Inventory.quantity_available).label('available_quantity')
         ).join(Inventory).group_by(Product.id, Product.code, Product.name, Product.primary_uom).all()
         
         return jsonify({

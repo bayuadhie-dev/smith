@@ -375,7 +375,7 @@ def get_current_stock(material_id):
     try:
         # Sum all inventory quantities for this material/product
         total_stock = db.session.query(
-            db.func.sum(Inventory.available_quantity)
+            db.func.sum(Inventory.quantity_available)
         ).filter_by(product_id=material_id).scalar()
         
         return float(total_stock or 0.0)
