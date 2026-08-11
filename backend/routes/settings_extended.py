@@ -14,7 +14,7 @@ import os
 import subprocess
 import shutil
 from sqlalchemy import text
-from utils.timezone import get_local_now, get_local_today
+from utils.timezone import get_local_now, get_local_today, format_local_datetime
 
 settings_extended_bp = Blueprint('settings_extended', __name__)
 
@@ -282,7 +282,7 @@ def get_audit_logs():
                 'user_agent': log.user_agent,
                 'request_method': log.request_method,
                 'request_url': log.request_url,
-                'timestamp': log.timestamp.isoformat() if log.timestamp else None,
+                'timestamp': format_local_datetime(log.timestamp) if log.timestamp else None,
                 'status': log.status,
                 'error_message': log.error_message,
                 'duration_ms': log.duration_ms
