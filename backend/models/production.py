@@ -24,6 +24,7 @@ class Machine(db.Model):
     next_maintenance = db.Column(db.Date, nullable=True)
     installation_date = db.Column(db.Date, nullable=True)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
+    legacy_converting_machine_id = db.Column(db.Integer, nullable=True, index=True)  # bridge to converting_machines.id for machines migrated from that legacy table (audit trail only, no FK constraint since it's cross-table by design)
     specifications = db.Column(db.Text, nullable=True)
     maintenance_schedule = db.Column(db.String(50), nullable=True)
     notes = db.Column(db.Text, nullable=True)
@@ -47,7 +48,9 @@ class BillOfMaterials(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     bom_number = db.Column(db.String(100), unique=True, nullable=False, index=True)
-    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=True)
+    material_id = db.Column(db.Integer, db.ForeignKey('materials.id'), nullable=True)
+    bom_level = db.Column(db.String(20), nullable=False, default='finished_goods')  # mixing, wip, finished_goods
     version = db.Column(db.String(20), nullable=False, default='1.0')
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     effective_date = db.Column(db.Date, nullable=True)
@@ -64,6 +67,7 @@ class BillOfMaterials(db.Model):
     
     # Relationships
     product = db.relationship('Product', back_populates='boms')
+    output_material = db.relationship('Material', foreign_keys=[material_id])
     items = db.relationship('BOMItem', back_populates='bom', cascade='all, delete-orphan')
     created_by_user = db.relationship('User', foreign_keys=[created_by])
     approved_by_user = db.relationship('User', foreign_keys=[approved_by])
@@ -86,6 +90,24 @@ class BillOfMaterials(db.Model):
     def critical_materials(self):
         """Count critical materials in BOM"""
         return len([item for item in self.items if item.is_critical])
+
+    @property
+    def output_name(self):
+        """Get the name of the BOM's output (product or material, e.g. WIP/Mixing)"""
+        if self.output_material:
+            return self.output_material.name
+        elif self.product:
+            return self.product.name
+        return "Unknown Output"
+
+    @property
+    def output_code(self):
+        """Get the code of the BOM's output (product or material)"""
+        if self.output_material:
+            return self.output_material.code
+        elif self.product:
+            return self.product.code
+        return "Unknown Code"
 
 class BOMItem(db.Model):
     __tablename__ = 'bom_items'
