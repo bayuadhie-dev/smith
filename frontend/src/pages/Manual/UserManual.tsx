@@ -463,7 +463,7 @@ const UserManual: React.FC = () => {
               <BookOpenIcon className="h-10 w-10 text-white" />
             </div>
             <h1 className="text-4xl font-extrabold mb-4">
-              User Manual
+              Dokumentasi
             </h1>
             <p className="text-xl text-blue-100 max-w-2xl mx-auto">
               Dokumentasi lengkap untuk sistem ERP {companyName}

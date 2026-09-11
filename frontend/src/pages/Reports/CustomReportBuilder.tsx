@@ -60,10 +60,10 @@ const dataSources: DataSource[] = [
   },
   {
     id: 'production',
-    name: 'Work Orders',
+    name: 'SPK',
     table: 'work_orders',
     fields: [
-      { name: 'work_order_number', type: 'string', label: 'Work Order Number' },
+      { name: 'work_order_number', type: 'string', label: 'SPK Number' },
       { name: 'product_name', type: 'string', label: 'Product Name' },
       { name: 'quantity', type: 'number', label: 'Quantity' },
       { name: 'start_date', type: 'date', label: 'Start Date' },

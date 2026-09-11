@@ -9,6 +9,10 @@
  * - Development/LAN: http://{hostname}:5000
  */
 export const getBaseURL = (): string => {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL.replace(/\/api$/, '');
+  }
+
   const hostname = window.location.hostname;
   
   // Production domain - use HTTPS API subdomain

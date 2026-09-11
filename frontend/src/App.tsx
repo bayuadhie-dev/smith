@@ -19,8 +19,6 @@ import OAuthCallback from './pages/Auth/OAuthCallback'
 import CompleteProfile from './pages/Auth/CompleteProfile'
 import Dashboard from './pages/Dashboard/Dashboard'
 import DashboardEnhanced from './pages/Dashboard/DashboardEnhanced'
-import DeskPage from './pages/Desk/DeskPage'
-import ModuleOverviewPage from './pages/Desk/ModuleOverviewPage'
 import GlobalSearchPage from './pages/Search/GlobalSearchPage'
 import ProductList from './pages/Products/ProductList'
 import NonwovenCalculator from './pages/Products/NonwovenCalculator'
@@ -30,6 +28,7 @@ import ProductCategories from './pages/Products/ProductCategories'
 import BOMManagement from './pages/Products/BOMManagement'
 import ProductLifecycle from './pages/Products/ProductLifecycle'
 import ProductsNewPage from './pages/ProductsNewPage'
+import MasterDataPage from './pages/MasterData/MasterDataPage'
 import ProductFormNew from './components/ProductFormNew'
 import ProductVersionHistory from './components/ProductVersionHistory'
 import ProductCompare from './components/ProductCompare'
@@ -40,12 +39,15 @@ import ABCAnalysis from './pages/Warehouse/ABCAnalysis'
 import ReorderPoints from './pages/Warehouse/ReorderPoints'
 import InventoryList from './pages/Warehouse/InventoryList'
 import InventoryListEnhanced from './pages/Warehouse/InventoryListEnhanced'
+import RawMaterialStockPage from './pages/Warehouse/RawMaterialStockPage'
 import AddProductToInventory from './pages/Warehouse/AddProductToInventory'
 import InventoryForm from './pages/Warehouse/InventoryForm'
 import LocationForm from './pages/Warehouse/LocationForm'
 import MovementForm from './pages/Warehouse/MovementForm'
 import MovementDetail from './pages/Warehouse/MovementDetail'
 import AdjustmentForm from './pages/Warehouse/AdjustmentForm'
+import AdjustmentList from './pages/Warehouse/AdjustmentList'
+import AdjustmentDetail from './pages/Warehouse/AdjustmentDetail'
 import TransferForm from './pages/Warehouse/TransferForm'
 import LocationList from './pages/Warehouse/LocationList'
 import LocationDetail from './pages/Warehouse/LocationDetail'
@@ -60,6 +62,7 @@ import MaterialEdit from './pages/Warehouse/MaterialEdit'
 import MaterialCreate from './pages/Warehouse/MaterialCreate'
 import MaterialStockManagement from './pages/Warehouse/MaterialStockManagement'
 import StockOpnameList from './pages/Warehouse/StockOpnameList'
+import StockOpnameResultsPage from './pages/Warehouse/StockOpnameResultsPage'
 import StockOpnameForm from './pages/Warehouse/StockOpnameForm'
 import StockOpnameDetail from './pages/Warehouse/StockOpnameDetail'
 import UoMList from './pages/Warehouse/UoMList'
@@ -71,6 +74,7 @@ import WorkflowStatus from './pages/Sales/WorkflowStatus'
 import SalesOrderList from './pages/Sales/SalesOrderListUpgraded'
 import SalesOrderDetails from './pages/Sales/SalesOrderDetails'
 import SalesOrderForm from './pages/Sales/SalesOrderForm'
+import SalesOrderSourcePicker from './pages/Sales/SalesOrderSourcePicker'
 import LeadList from './pages/Sales/LeadListUpgraded'
 import LeadForm from './pages/Sales/LeadForm'
 import OpportunityList from './pages/Sales/OpportunityListUpgraded'
@@ -81,7 +85,7 @@ import ActivityList from './pages/Sales/ActivityList'
 import ActivityForm from './pages/Sales/ActivityForm'
 import SalesDashboard from './pages/Sales/SalesDashboard'
 import SalesForecastList from './pages/Sales/SalesForecastList'
-import SalesForecastForm from './pages/Sales/SalesForecastForm'
+import SalesForecastGrid from './pages/Sales/SalesForecastGrid'
 import SalesInvoiceForm from './pages/Sales/InvoiceForm'
 import SupplierList from './pages/Purchasing/SupplierList'
 import SupplierForm from './pages/Purchasing/SupplierForm'
@@ -90,6 +94,7 @@ import PurchaseOrderForm from './pages/Purchasing/PurchaseOrderForm'
 import Purchasing from './pages/Purchasing/Purchasing'
 import PriceComparison from './pages/Purchasing/PriceComparison'
 import ContractList from './pages/Purchasing/ContractList'
+import ContractForm from './pages/Purchasing/ContractForm'
 import RFQList from './pages/Purchasing/RFQList'
 import QuoteList from './pages/Purchasing/QuoteList'
 import RFQForm from './pages/Purchasing/RFQForm'
@@ -118,8 +123,12 @@ import MBFReportList from './pages/Production/MBFReportList'
 import ProductionPlanningList from './pages/Production/ProductionPlanningList'
 import ProductionPlanningForm from './pages/Production/ProductionPlanningForm'
 import ProductionPlanningDashboard from './pages/Production/ProductionPlanningDashboard'
+import BatchSchedulingMasterData from './pages/Production/BatchSchedulingMasterData'
+import BatchSchedulingSettings from './pages/Settings/BatchSchedulingSettings'
+import BatchPlanning from './pages/Production/BatchPlanning'
 import MaterialIssueList from './pages/Production/MaterialIssueList'
 import MaterialIssueDetail from './pages/Production/MaterialIssueDetail'
+import MaterialIssueShortages from './pages/Production/MaterialIssueShortages'
 import WIPBatchForm from './pages/Production/WIPBatchForm'
 import ProductionApprovalList from './pages/Production/ProductionApprovalList'
 import ProductionApprovalDetail from './pages/Production/ProductionApprovalDetail'
@@ -157,6 +166,7 @@ import InProcessQC from './pages/Quality/InProcessQC'
 import FinishGoodQC from './pages/Quality/FinishGoodQC'
 import FinishGoodDetail from './pages/Quality/FinishGoodDetail'
 import QCPackingList from './pages/Quality/QCPackingList'
+import BatchStatusChange from './pages/Quality/BatchStatusChange'
 import QualityObjectiveProduction from './pages/Quality/QualityObjectiveProduction'
 import DowntimeAnalysis from './pages/Quality/DowntimeAnalysis'
 import ShippingDashboard from './pages/Shipping/ShippingDashboard'
@@ -171,6 +181,7 @@ import ShippingCalculator from './pages/Shipping/ShippingCalculator'
 import LogisticsProviders from './pages/Shipping/LogisticsProviders'
 import FinanceDashboard from './pages/Finance/FinanceDashboard'
 import AccountingManagement from './pages/Finance/AccountingManagement'
+import JournalEntryPage from './pages/Finance/JournalEntryPage'
 import BudgetPlanning from './pages/Finance/BudgetPlanning'
 import CashFlowManagement from './pages/Finance/CashFlowManagement'
 import FinancialReports from './pages/Finance/FinancialReports'
@@ -180,16 +191,21 @@ import AccountsReceivable from './pages/Finance/AccountsReceivable'
 import AccountsPayable from './pages/Finance/AccountsPayable'
 import GeneralLedger from './pages/Finance/GeneralLedger'
 import ChartOfAccounts from './pages/Finance/ChartOfAccounts'
+import PeriodClose from './pages/Finance/PeriodClose'
+import RecurringPayment from './pages/Finance/RecurringPayment'
+import RecurringPaymentTransactionDetail from './pages/Finance/RecurringPaymentTransactionDetail'
+import RecurringPaymentTransactionRedirect from './pages/Finance/RecurringPaymentTransactionRedirect'
+import ReimbursementDetail from './pages/Finance/ReimbursementDetail'
+import ExpenseDetail from './pages/Finance/ExpenseDetail'
+import PurchaseInvoiceDetail from './pages/Finance/PurchaseInvoiceDetail'
+import SalesInvoiceDetail from './pages/Finance/SalesInvoiceDetail'
+import FixedAssetDetail from './pages/Finance/FixedAssetDetail'
 import CashBankManagement from './pages/Finance/CashBankManagement'
-import BudgetForecasting from './pages/Finance/BudgetForecasting'
 import FixedAssets from './pages/Finance/FixedAssets'
 import TaxManagement from './pages/Finance/TaxManagement'
 import CostingControlling from './pages/Finance/CostingControlling'
 import Consolidation from './pages/Finance/Consolidation'
 import PaymentForm from './pages/Finance/PaymentForm'
-import AccountForm from './pages/Finance/AccountForm'
-import BudgetForm from './pages/Finance/BudgetForm'
-import ExpenseForm from './pages/Finance/ExpenseForm'
 import ExpenseList from './pages/Finance/ExpenseList'
 import EmployeeExpenseForm from './pages/Finance/EmployeeExpenseForm'
 import ReimbursementList from './pages/Finance/ReimbursementList'
@@ -229,7 +245,6 @@ import AppraisalForm from './pages/HR/AppraisalForm'
 import Departments from './pages/HR/Departments'
 import HRReports from './pages/HR/Reports'
 import MaintenanceList from './pages/Maintenance/MaintenanceList'
-import MaintenanceDashboard from './pages/Maintenance/MaintenanceDashboard'
 import MaintenanceWorkOrderForm from './pages/Maintenance/MaintenanceWorkOrderForm'
 import MaintenancePartsForm from './pages/Maintenance/MaintenancePartsForm'
 import MaintenanceAnalyticsForm from './pages/Maintenance/MaintenanceAnalyticsForm'
@@ -274,6 +289,8 @@ import WorkOrderProductionInput from './pages/Production/WorkOrderProductionInpu
 import EditProductionRecord from './pages/Production/EditProductionRecord'
 import WorkOrderEdit from './pages/Production/WorkOrderEdit'
 import WorkOrderBOMEdit from './pages/Production/WorkOrderBOMEdit'
+import CloseWorkOrder from './pages/Production/CloseWorkOrder'
+import BatchClose from './pages/Production/BatchClose'
 import BOMForm from './pages/Products/BOMForm'
 import ProductionScheduleForm from './pages/Production/ProductionScheduleForm'
 import QualityCheckForm from './pages/Production/QualityCheckForm'
@@ -289,7 +306,6 @@ import AdvancedReportBuilder from './pages/Reports/AdvancedReportBuilder'
 import ScheduledReports from './pages/Reports/ScheduledReports'
 import ExecutiveDashboard from './pages/Reports/ExecutiveDashboard'
 import ProductionByProductReport from './pages/Reports/ProductionByProductReport'
-import ProductionExecutiveDashboard from './pages/Executive/ProductionExecutiveDashboard'
 import ProductionMonitoringDashboard from './pages/Executive/ProductionMonitoringDashboard'
 import FactoryLayoutDashboard from './pages/Executive/FactoryLayoutDashboard'
 import LiveMonitoringDashboard from './pages/Production/LiveMonitoringDashboard'
@@ -311,8 +327,7 @@ import WIPLedger from './pages/Finance/WIPLedger'
 import DocumentDashboard from './pages/Documents/DocumentDashboardUpgraded'
 import DocumentGenerator from './pages/Documents/DocumentGeneratorUpgraded'
 import TemplateList from './pages/Documents/TemplateList'
-import TemplateForm from './pages/Documents/TemplateForm'
-import TemplateDesigner from './pages/Documents/TemplateDesigner'
+import TemplateVersionEditor from './pages/Documents/TemplateVersionEditor'
 import WorkOrderDetail from './pages/Production/WorkOrderDetail'
 import Settings from './pages/Settings/Settings'
 import AdvancedSystemConfig from './pages/Settings/AdvancedSystemConfig'
@@ -321,6 +336,7 @@ import AuditTrail from './pages/Settings/AuditTrail'
 import BackupRestore from './pages/Settings/BackupRestore'
 import EmailSettings from './pages/Settings/EmailSettings'
 import KPITargetSettings from './pages/Settings/KPITargetSettings'
+import AccountPreferences from './pages/Settings/AccountPreferences'
 import SystemHealth from './pages/Settings/SystemHealth'
 import NettoDeductionRulesManager from './pages/Settings/NettoDeductionRulesManager'
 import FactoryLayoutAdmin from './pages/Settings/FactoryLayoutAdmin'
@@ -331,10 +347,7 @@ import ManualAdmin from './pages/Manual/ManualAdmin'
 import GroupChat from './pages/Chat/GroupChat'
 import ServerSettings from './pages/Chat/ServerSettings'
 import AdminRoute from './components/Auth/AdminRoute'
-import ExternalConnectors from './pages/Integration/ExternalConnectors'
-import APIGateway from './pages/Integration/APIGateway'
-import DataSynchronization from './pages/Integration/DataSynchronization'
-import WebhookManagement from './pages/Integration/WebhookManagement'
+import StaffAdminRoute from './components/Auth/StaffAdminRoute'
 import AccurateIntegration from './pages/Integration/AccurateIntegration'
 import TVDisplayProduction from './pages/TVDisplay/TVDisplayProduction'
 import TVDisplayShipping from './pages/TVDisplay/TVDisplayShipping'
@@ -455,19 +468,13 @@ function App() {
               <Route path="/complete-profile" element={<CompleteProfile />} />
               <Route path="/verify/:token" element={<DocumentVerifyPage />} />
 
-              {/* Desk Route - Outside /app structure */}
-              <Route path="/desk" element={isAuthenticated ? <Layout /> : <Navigate to="/login" />}>
-                <Route index element={<DeskPage />} />
-                <Route path=":module" element={<ModuleOverviewPage />} />
-              </Route>
-
               {/* Global Search Route */}
               <Route path="/app/search" element={isAuthenticated ? <Layout /> : <Navigate to="/login" />}>
                 <Route index element={<GlobalSearchPage />} />
               </Route>
 
-              {/* Redirect old /workspace/:module requests to desk */}
-              <Route path="/workspace/:module" element={<Navigate to="/desk" replace />} />
+              {/* Redirect old /workspace/:module requests to dashboard */}
+              <Route path="/workspace/:module" element={<Navigate to="/app" replace />} />
 
               {/* Redirect specific old URLs to correct app structure */}
               <Route path="/sales/opportunities" element={<Navigate to="/app/sales/opportunities" replace />} />
@@ -584,6 +591,9 @@ function App() {
                 <Route path="production/pre-shift-checklist/view/:id" element={<PreShiftChecklistView />} />
                 <Route path="production/pre-shift-checklist/weekly" element={<PreShiftChecklistWeekly />} />
 
+                {/* Master Data */}
+                <Route path="master-data" element={<MasterDataPage />} />
+
                 {/* Products */}
                 <Route path="products" element={<ProductsNewPage />} />
                 <Route path="products/dashboard" element={<ProductDashboard />} />
@@ -618,7 +628,7 @@ function App() {
                 <Route path="warehouse/locations/new" element={<LocationForm />} />
                 <Route path="warehouse/locations/:id" element={<LocationDetail />} />
                 <Route path="warehouse/locations/:id/edit" element={<LocationForm />} />
-                <Route path="warehouse/inventory" element={<InventoryListEnhanced />} />
+                <Route path="warehouse/inventory" element={<RawMaterialStockPage />} />
                 <Route path="warehouse/inventory/add-product" element={<AddProductToInventory />} />
                 <Route path="warehouse/inventory/new" element={<InventoryForm />} />
                 <Route path="warehouse/inventory/:id/edit" element={<InventoryForm />} />
@@ -631,8 +641,9 @@ function App() {
                 <Route path="warehouse/movements/new" element={<MovementForm />} />
                 <Route path="warehouse/movements/:id" element={<MovementDetail />} />
                 <Route path="warehouse/movements/:id/edit" element={<MovementForm />} />
+                <Route path="warehouse/adjustments" element={<AdjustmentList />} />
                 <Route path="warehouse/adjustments/new" element={<AdjustmentForm />} />
-                <Route path="warehouse/adjustments/:id/edit" element={<AdjustmentForm />} />
+                <Route path="warehouse/adjustments/:id" element={<AdjustmentDetail />} />
                 <Route path="warehouse/transfers/new" element={<TransferForm />} />
                 <Route path="warehouse/reorder-points" element={<ReorderList />} />
                 <Route path="warehouse/transfers/:id/edit" element={<TransferForm />} />
@@ -645,7 +656,7 @@ function App() {
                 <Route path="warehouse/materials/:id/edit" element={<MaterialEdit />} />
                 <Route path="warehouse/stock-opname" element={<StockOpnameList />} />
                 <Route path="warehouse/stock-opname/new" element={<StockOpnameForm />} />
-                <Route path="warehouse/stock-opname/results" element={<StockOpnameList />} />
+                <Route path="warehouse/stock-opname/results" element={<StockOpnameResultsPage />} />
                 <Route path="warehouse/stock-opname/:id" element={<StockOpnameDetail />} />
 
                 {/* Sales */}
@@ -669,16 +680,16 @@ function App() {
                 <Route path="sales/customers/:id" element={<CustomerDetails />} />
                 <Route path="sales/customers/:id/edit" element={<CustomerForm />} />
                 <Route path="sales/orders" element={<SalesOrderList />} />
-                <Route path="sales/orders/new" element={<SalesOrderForm />} />
+                <Route path="sales/orders/new" element={<SalesOrderSourcePicker />} />
+                <Route path="sales/orders/new/manual" element={<SalesOrderForm />} />
                 <Route path="sales/orders/:id/workflow" element={<WorkflowStatus />} />
                 <Route path="sales/orders/:id/edit" element={<SalesOrderForm />} />
                 <Route path="sales/orders/:id" element={<SalesOrderDetails />} />
                 <Route path="sales/forecasts" element={<SalesForecastList />} />
-                <Route path="sales/forecasts/new" element={<SalesForecastForm />} />
-                <Route path="sales/forecasts/:id" element={<SalesForecastForm />} />
-                <Route path="sales/forecasts/:id/edit" element={<SalesForecastForm />} />
+                <Route path="sales/forecasts/:id" element={<SalesForecastGrid />} />
                 <Route path="sales/invoices/new" element={<SalesInvoiceForm />} />
                 <Route path="sales/invoices/:id/edit" element={<SalesInvoiceForm />} />
+                <Route path="sales/invoices/:id" element={<SalesInvoiceDetail />} />
 
                 {/* Purchasing */}
                 <Route path="purchasing" element={<Purchasing />} />
@@ -708,12 +719,13 @@ function App() {
                 <Route path="purchasing/quotes/:id" element={<SupplierQuoteForm />} />
                 <Route path="purchasing/quotes/:id/edit" element={<SupplierQuoteForm />} />
                 <Route path="purchasing/contracts" element={<ContractList />} />
-                <Route path="purchasing/contracts/new" element={<SupplierForm />} />
-                <Route path="purchasing/contracts/:id" element={<SupplierForm />} />
-                <Route path="purchasing/contracts/:id/edit" element={<SupplierForm />} />
+                <Route path="purchasing/contracts/new" element={<ContractForm />} />
+                <Route path="purchasing/contracts/:id" element={<ContractForm />} />
+                <Route path="purchasing/contracts/:id/edit" element={<ContractForm />} />
                 <Route path="purchasing/price-comparison" element={<PriceComparison />} />
                 <Route path="purchasing/invoices" element={<PurchaseInvoiceList />} />
                 <Route path="purchasing/invoices/:id/match" element={<InvoiceMatching />} />
+                <Route path="purchasing/invoices/:id" element={<PurchaseInvoiceDetail />} />
                 <Route path="purchasing/requisitions" element={<PRList />} />
                 <Route path="purchasing/requisitions/new" element={<PRForm />} />
                 <Route path="purchasing/requisitions/:id" element={<PRForm />} />
@@ -748,6 +760,8 @@ function App() {
                 <Route path="production/work-order-status" element={<WorkOrderStatus />} />
                 <Route path="production/work-orders-kanban" element={<WorkOrderKanban />} />
                 <Route path="production/work-orders/:id/bom-edit" element={<WorkOrderBOMEdit />} />
+                <Route path="production/work-orders/:id/close" element={<CloseWorkOrder />} />
+                <Route path="production/batches/:id/close" element={<BatchClose />} />
                 <Route path="production/remaining-stock" element={<RemainingStock />} />
                 <Route path="production/scheduling" element={<WeeklyProductionPlan />} />
                 <Route path="production/monthly-schedule" element={<MonthlyProductionPlan />} />
@@ -760,6 +774,8 @@ function App() {
                 <Route path="production/quality-checks/new" element={<QualityCheckForm />} />
                 <Route path="production/quality-checks/:id/edit" element={<QualityCheckForm />} />
                 <Route path="production/material-issues" element={<MaterialIssueList />} />
+                <Route path="production/material-issues/shortages" element={<MaterialIssueShortages />} />
+                <Route path="production/material-issues/new" element={<MaterialIssueForm />} />
                 <Route path="production/material-issues/:id" element={<MaterialIssueDetail />} />
                 <Route path="production/efficiency" element={<EfficiencyTracking />} />
                 <Route path="production/traceability" element={<Traceability />} />
@@ -770,6 +786,8 @@ function App() {
                 <Route path="production/planning/create" element={<ProductionPlanningForm />} />
                 <Route path="production/planning/edit/:id" element={<ProductionPlanningForm />} />
                 <Route path="production/planning/dashboard" element={<ProductionPlanningDashboard />} />
+                <Route path="production/batch-scheduling" element={<BatchSchedulingMasterData />} />
+                <Route path="production/batch-planning" element={<BatchPlanning />} />
 
                 {/* FG Conversion - WIP to Finish Good */}
                 <Route path="production/fg-conversion" element={<FGConversionList />} />
@@ -801,6 +819,7 @@ function App() {
                 <Route path="quality/in-process" element={<InProcessQC />} />
                 <Route path="quality/finish-good" element={<FinishGoodQC />} />
                 <Route path="quality/packing-list" element={<QCPackingList />} />
+                <Route path="quality/batch-status" element={<BatchStatusChange />} />
                 <Route path="quality/finish-good/:woId/input" element={<WorkOrderQCForm />} />
                 <Route path="quality/finish-good/:woId/detail" element={<FinishGoodDetail />} />
                 <Route path="quality/finish-good/:woId/to-warehouse" element={<QCToWarehouse />} />
@@ -825,7 +844,7 @@ function App() {
 
                 {/* Shipping */}
                 <Route path="shipping" element={<ShippingDashboard />} />
-                <Route path="shipping/orders" element={<ShippingDashboard />} />
+                <Route path="shipping/orders" element={<ShippingOrderList />} />
                 <Route path="shipping/orders/new" element={<ShippingOrderForm />} />
                 <Route path="shipping/orders/from-qc" element={<CreateShippingFromQC />} />
                 <Route path="shipping/orders/:id/edit" element={<ShippingOrderForm />} />
@@ -843,47 +862,39 @@ function App() {
                 <Route path="finance/accounting" element={<AccountingManagement />} />
                 <Route path="finance/budget" element={<BudgetPlanning />} />
                 <Route path="finance/cash-flow" element={<CashFlowManagement />} />
-                <Route path="finance/reports" element={<FinancialReports />} />
                 <Route path="finance/invoices" element={<InvoiceList />} />
                 <Route path="finance/invoices/new" element={<FinanceInvoiceForm />} />
                 <Route path="finance/invoices/:id" element={<FinanceInvoiceForm />} />
                 <Route path="finance/invoices/:id/edit" element={<FinanceInvoiceForm />} />
-                <Route path="finance/payments" element={<FinanceDashboard />} />
                 <Route path="finance/payments/:id" element={<PaymentForm />} />
-                <Route path="finance/accounts-receivable" element={<AccountsReceivable />} />
-                <Route path="finance/accounts-payable" element={<AccountsPayable />} />
-                <Route path="finance/general-ledger" element={<GeneralLedger />} />
-                <Route path="finance/chart-of-accounts" element={<ChartOfAccounts />} />
                 <Route path="finance/cash-bank" element={<CashBankManagement />} />
-                <Route path="finance/budgeting" element={<BudgetForecasting />} />
-                <Route path="finance/fixed-assets" element={<FixedAssets />} />
-                <Route path="finance/tax-management" element={<TaxManagement />} />
                 <Route path="finance/costing" element={<CostingControlling />} />
                 <Route path="finance/consolidation" element={<Consolidation />} />
                 <Route path="finance/payments/new" element={<PaymentForm />} />
-                <Route path="finance/accounts/new" element={<AccountForm />} />
-                <Route path="finance/accounts/:id/edit" element={<AccountForm />} />
-                <Route path="finance/budgets/new" element={<BudgetForm />} />
-                <Route path="finance/budgets/:id/edit" element={<BudgetForm />} />
                 {/* Employee Expense Claims */}
                 <Route path="finance/expenses" element={<ExpenseList />} />
                 <Route path="finance/expenses/new" element={<EmployeeExpenseForm />} />
                 <Route path="finance/expenses/:id/edit" element={<EmployeeExpenseForm />} />
+                <Route path="finance/expenses/:id" element={<ExpenseDetail />} />
                 {/* Reimbursements */}
                 <Route path="finance/reimbursements" element={<ReimbursementList />} />
                 <Route path="finance/reimbursements/new" element={<ReimbursementForm />} />
+                <Route path="finance/reimbursements/:id" element={<ReimbursementDetail />} />
                 {/* Company Expenses (Supplier-based) */}
-                <Route path="finance/company-expenses/new" element={<ExpenseForm />} />
-                <Route path="finance/company-expenses/:id/edit" element={<ExpenseForm />} />
 
                 {/* Accounting - Separated module for accountants */}
                 <Route path="accounting" element={<AccountingManagement />} />
                 <Route path="accounting/chart-of-accounts" element={<ChartOfAccounts />} />
+                <Route path="accounting/period-close" element={<PeriodClose />} />
+                <Route path="finance/recurring-payments" element={<RecurringPayment />} />
+                <Route path="finance/recurring-payments/:masterId/transactions/:txId" element={<RecurringPaymentTransactionDetail />} />
+                <Route path="finance/recurring-payment-transactions/:txId" element={<RecurringPaymentTransactionRedirect />} />
                 <Route path="accounting/general-ledger" element={<GeneralLedger />} />
-                <Route path="accounting/journal" element={<AccountingManagement />} />
+                <Route path="accounting/journal" element={<JournalEntryPage />} />
                 <Route path="accounting/receivable" element={<AccountsReceivable />} />
                 <Route path="accounting/payable" element={<AccountsPayable />} />
                 <Route path="accounting/fixed-assets" element={<FixedAssets />} />
+                <Route path="accounting/fixed-assets/:id" element={<FixedAssetDetail />} />
                 <Route path="accounting/tax" element={<TaxManagement />} />
                 <Route path="accounting/reports" element={<FinancialReports />} />
 
@@ -898,8 +909,7 @@ function App() {
                 <Route path="documents" element={<DocumentDashboard />} />
                 <Route path="documents/generate" element={<DocumentGenerator />} />
                 <Route path="documents/templates" element={<TemplateList />} />
-                <Route path="documents/templates/new" element={<TemplateDesigner />} />
-                <Route path="documents/templates/:id/edit" element={<TemplateDesigner />} />
+                <Route path="documents/templates/:templateId/versions/:versionId/edit" element={<TemplateVersionEditor />} />
 
                 {/* HR */}
                 <Route path="hr" element={<HRDashboard />} />
@@ -1077,9 +1087,14 @@ function App() {
                 <Route path="settings/backup-restore" element={<AdminRoute><BackupRestore /></AdminRoute>} />
                 <Route path="settings/email" element={<AdminRoute><EmailSettings /></AdminRoute>} />
                 <Route path="settings/kpi-targets" element={<AdminRoute><KPITargetSettings /></AdminRoute>} />
+                <Route path="settings/account-preferences" element={<StaffAdminRoute><AccountPreferences /></StaffAdminRoute>} />
                 <Route path="settings/system-health" element={<AdminRoute><SystemHealth /></AdminRoute>} />
                 <Route path="settings/netto-deductions" element={<AdminRoute><NettoDeductionRulesManager /></AdminRoute>} />
                 <Route path="settings/factory-layout" element={<AdminRoute><FactoryLayoutAdmin /></AdminRoute>} />
+                {/* Not AdminRoute-gated: same access level as the old /production/batch-scheduling
+                    page it was split off from (Recipe/Kalender Global/Exception tabs moved here
+                    2026-08-24) - gating it would lock out PPIC/production staff who aren't Admin. */}
+                <Route path="settings/batch-scheduling" element={<BatchSchedulingSettings />} />
 
                 {/* Profile */}
                 <Route path="profile" element={<UserProfile />} />
@@ -1098,11 +1113,7 @@ function App() {
                 <Route path="chat/server/:serverId/settings" element={<ServerSettings />} />
 
                 {/* Integration - Admin Only */}
-                <Route path="integration/accurate" element={<AccurateIntegration />} />
-                <Route path="integration/connectors" element={<AdminRoute><ExternalConnectors /></AdminRoute>} />
-                <Route path="integration/api-gateway" element={<AdminRoute><APIGateway /></AdminRoute>} />
-                <Route path="integration/data-sync" element={<AdminRoute><DataSynchronization /></AdminRoute>} />
-                <Route path="integration/webhooks" element={<AdminRoute><WebhookManagement /></AdminRoute>} />
+                <Route path="integration/accurate" element={<StaffAdminRoute><AccurateIntegration /></StaffAdminRoute>} />
                 <Route path="reports" element={<Reports />} />
                 <Route path="reports/advanced-builder" element={<AdvancedReportBuilder />} />
                 <Route path="reports/scheduled" element={<ScheduledReports />} />

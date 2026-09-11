@@ -8,6 +8,7 @@ import {
   Trash2,
   X
 } from 'lucide-react';
+import AccountSlotSelector from './Finance/AccountSlotSelector';
 
 interface Machine {
   id: number;
@@ -63,6 +64,18 @@ interface ProductFormNewProps {
   onSave: (product: ProductNew) => void;
   onCancel: () => void;
 }
+
+const ACCOUNT_PREFERENCE_SLOTS: { key: string; label: string }[] = [
+  { key: 'akun_persediaan_id', label: 'Akun Persediaan' },
+  { key: 'akun_penjualan_id', label: 'Akun Penjualan' },
+  { key: 'akun_retur_penjualan_id', label: 'Akun Retur Penjualan' },
+  { key: 'akun_diskon_penjualan_id', label: 'Akun Diskon Penjualan' },
+  { key: 'akun_barang_terkirim_id', label: 'Akun Barang Terkirim' },
+  { key: 'akun_hpp_id', label: 'Akun HPP' },
+  { key: 'akun_retur_pembelian_id', label: 'Akun Retur Pembelian' },
+  { key: 'akun_beban_id', label: 'Akun Beban' },
+  { key: 'akun_pembelian_belum_tertagih_id', label: 'Akun Pembelian Belum Tertagih' },
+];
 
 const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCancel }) => {
   const { t } = useLanguage();
@@ -813,6 +826,27 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                   placeholder="Contoh: 900"
                 />
               </div>
+            </div>
+          </div>
+
+          {/* Account Preferences (9-slot GL account overrides for this item) */}
+          <div className="space-y-4 mt-8">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b pb-2">
+              Preferensi Akun
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Kosongkan untuk memakai default dari kategori atau pengaturan global.
+              Lihat Settings &gt; Preferensi Akun untuk pengaturan massal per kategori.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {ACCOUNT_PREFERENCE_SLOTS.map((slot) => (
+                <AccountSlotSelector
+                  key={slot.key}
+                  label={slot.label}
+                  value={(formData as any)[slot.key] ?? null}
+                  onChange={(accountId) => handleInputChange(slot.key, accountId ?? undefined)}
+                />
+              ))}
             </div>
           </div>
 

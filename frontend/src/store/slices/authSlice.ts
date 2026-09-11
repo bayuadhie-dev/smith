@@ -2,8 +2,12 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import axios from 'axios'
 // Auto-detect the correct API base URL
 const getApiBaseUrl = () => {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL.replace(/\/api$/, '');
+  }
+
   const hostname = window.location.hostname;
-  
+
   // Production domain - use HTTPS API subdomain
   if (hostname === 'erp.graterp.my.id' || hostname.endsWith('.graterp.my.id')) {
     return 'https://api.graterp.my.id';

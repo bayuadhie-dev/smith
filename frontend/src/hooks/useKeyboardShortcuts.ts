@@ -30,13 +30,6 @@ export function useKeyboardShortcuts() {
         description: 'Quick search'
       },
       {
-        key: 'd',
-        ctrlKey: true,
-        shiftKey: true,
-        action: () => navigate('/desk'),
-        description: 'Go to Desk'
-      },
-      {
         key: 'h',
         ctrlKey: true,
         shiftKey: true,
@@ -92,7 +85,6 @@ export function useKeyboardShortcuts() {
 // Keyboard shortcuts help modal data
 export const keyboardShortcuts = [
   { keys: ['Ctrl', 'K'], description: 'Quick search' },
-  { keys: ['Ctrl', 'Shift', 'D'], description: 'Go to Desk' },
   { keys: ['Ctrl', 'Shift', 'H'], description: 'Go to Dashboard' },
   { keys: ['/'], description: 'Focus search' },
   { keys: ['Esc'], description: 'Close modals' },

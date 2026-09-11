@@ -91,7 +91,7 @@ export const translations = {
     'dashboard.overview': 'Ringkasan Sistem',
     'dashboard.sales_today': 'Penjualan Hari Ini',
     'dashboard.sales_month': 'Penjualan Bulan Ini',
-    'dashboard.active_orders': 'Work Order Aktif',
+    'dashboard.active_orders': 'SPK Aktif',
     'dashboard.low_stock': 'Stok Menipis',
     
     // Settings
@@ -220,12 +220,12 @@ export const translations = {
     'production.description': 'Penjadwalan mesin, work order, catatan produksi, pelacakan efisiensi',
     'production.dashboard': 'Dashboard Produksi',
     'production.scheduling': 'Penjadwalan',
-    'production.work_orders': 'Work Order',
-    'production.work_order': 'Work Order',
+    'production.work_orders': 'SPK',
+    'production.work_order': 'SPK',
     'production.planning': 'Perencanaan',
     'production.capacity': 'Kapasitas',
     'production.efficiency': 'Efisiensi',
-    'production.new_work_order': 'Work Order Baru',
+    'production.new_work_order': 'SPK Baru',
     'production.traceability': 'Pelacakan Produksi',
 
     // Production Details
@@ -657,7 +657,7 @@ export const translations = {
     'hr.overtime_management': 'Manajemen Lembur',
     
     // Maintenance Extended
-    'maintenance.work_orders': 'Work Order Pemeliharaan',
+    'maintenance.work_orders': 'SPK Pemeliharaan',
     'maintenance.asset_register': 'Register Aset',
     'maintenance.spare_parts': 'Suku Cadang',
     'maintenance.maintenance_costs': 'Biaya Pemeliharaan',
@@ -797,7 +797,7 @@ export const translations = {
     'production.enter_actual_qty': 'Masukkan kuantitas aktual yang diproduksi:',
     'production.enter_rejection_reason': 'Masukkan alasan penolakan:',
     'production.quality_inspection_updated': 'Inspeksi kualitas berhasil diperbarui!',
-    'production.work_order_started': 'Work Order dimulai!',
+    'production.work_order_started': 'SPK dimulai!',
     'production.work_order_completed': 'Produksi berhasil diselesaikan!',
     
     // Error Messages
@@ -1501,12 +1501,12 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     document.documentElement.lang = newLanguage === 'id' ? 'id-ID' : 'en-US'
   }
 
-  // Initialize language - always use Indonesian
+  // Initialize language from localStorage (default to Indonesian)
   useEffect(() => {
-    // Force Indonesian language, ignore localStorage
-    setLanguageState('id')
-    localStorage.setItem('language', 'id')
-    document.documentElement.lang = 'id-ID'
+    const saved = localStorage.getItem('language')
+    const initial = saved === 'en' ? 'en' : 'id'
+    setLanguageState(initial)
+    document.documentElement.lang = initial === 'id' ? 'id-ID' : 'en-US'
   }, [])
 
   // Listen for language updates from settings

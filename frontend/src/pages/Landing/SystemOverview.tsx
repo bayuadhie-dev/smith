@@ -305,13 +305,13 @@ const SystemOverviewEnhanced: React.FC = () => {
     },
     {
       id: 'production',
-      name: t('production.title') || 'Manufaktur & Work Orders',
-      description: 'Manajemen Work Order, Converting Input, Shift Logs & Laporan MBF',
+      name: t('production.title') || 'Manufaktur & SPK',
+      description: 'Manajemen SPK, Converting Input, Shift Logs & Laporan MBF',
       icon: CogIcon,
       color: 'text-slate-400',
       status: 'active',
       metricKey: 'work_orders',
-      metricLabel: 'Work Orders Aktif',
+      metricLabel: 'SPK Aktif',
       metricFallback: 506,
       tag: 'Production Core',
       category: 'production'
@@ -384,7 +384,7 @@ const SystemOverviewEnhanced: React.FC = () => {
     {
       id: 'wms_advanced',
       name: 'WMS Advanced & Pick Lists',
-      description: 'Alokasi stok per Work Order, konsumsi material & Pick List otomatis',
+      description: 'Alokasi stok per SPK, konsumsi material & Pick List otomatis',
       icon: SparklesIcon,
       color: 'text-blue-400',
       status: 'active',

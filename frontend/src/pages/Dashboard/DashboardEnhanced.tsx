@@ -1,15 +1,14 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useLanguage } from '../../contexts/LanguageContext'
 import { useGetExecutiveDashboardQuery } from '../../services/api'
-import { useAppSelector } from '../../hooks/redux'
 import { formatRupiah } from '../../utils/currencyUtils'
 import axiosInstance from '../../utils/axiosConfig'
 import { useQuery } from '@tanstack/react-query'
 import { Zap, Package, TrendingUp as TrendUp } from 'lucide-react'
 import ProductionOutputModal from '../../components/Production/ProductionOutputModal'
+import WelcomeBanner from '../../components/ui/WelcomeBanner'
 import {
-  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, ComposedChart,
+  LineChart, Line, Bar, ComposedChart,
   ResponsiveContainer, CartesianGrid, XAxis, YAxis, Tooltip, Legend
 } from 'recharts'
 import {
@@ -19,8 +18,6 @@ import {
   CogIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
-  ClockIcon,
-  BellIcon,
   CubeIcon,
   BuildingStorefrontIcon,
   ShoppingCartIcon,
@@ -28,28 +25,13 @@ import {
   WrenchScrewdriverIcon,
   DocumentTextIcon,
   ArrowPathIcon,
-  SparklesIcon,
-  UserCircleIcon,
-  SignalIcon
+  SignalIcon,
+  BanknotesIcon,
+  BeakerIcon,
+  TruckIcon,
+  TrophyIcon,
+  ClockIcon
 } from '@heroicons/react/24/outline'
-
-const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899']
-
-interface SessionInfo {
-  user_id: number
-  username: string
-  full_name: string
-  email: string
-  role: string
-  last_login: string
-  session_duration_seconds: number
-  session_duration_formatted: string
-  idle_time_seconds: number
-  idle_time_formatted: string
-  is_idle: boolean
-  last_activity: string
-  last_activity_action: string
-}
 
 interface ActiveUsersData {
   active_users: Array<{
@@ -79,83 +61,57 @@ interface ActiveUsersData {
 
 export default function DashboardEnhanced() {
   const navigate = useNavigate()
-  const { t } = useLanguage()
-  const { user } = useAppSelector((state) => state.auth)
   const { data: executiveData, isLoading, refetch } = useGetExecutiveDashboardQuery({})
   const [currentTime, setCurrentTime] = useState(new Date())
-  const [sessionInfo, setSessionInfo] = useState<SessionInfo | null>(null)
-  const lastInteractionRef = useRef<number>(Date.now())
-  const IDLE_THRESHOLD_SECS = 5 * 60 // 5 minutes
   const [activeUsers, setActiveUsers] = useState<ActiveUsersData | null>(null)
   const [showProductionOutput, setShowProductionOutput] = useState(false)
-  const [dateRange, setDateRange] = useState('30')
+  const [dateRange] = useState('30')
 
   // Fetch trends data for production chart
   const { data: trends } = useQuery({
     queryKey: ['executive-trends', dateRange],
-    queryFn: () => axiosInstance.get(`/api/executive/trends?days=${dateRange}`).then(res => {
-      console.log('Trends data:', res.data.data)
-      return res.data.data
-    }),
+    queryFn: () => axiosInstance.get(`/api/executive/trends?days=${dateRange}`).then(res => res.data.data),
     enabled: true
   })
 
   // Fetch top performers (products)
   const { data: performers } = useQuery({
     queryKey: ['executive-performers', dateRange],
-    queryFn: () => axiosInstance.get(`/api/executive/top-performers?days=${dateRange}`).then(res => {
-      console.log('Performers data:', res.data.data)
-      return res.data.data
-    }),
+    queryFn: () => axiosInstance.get(`/api/executive/top-performers?days=${dateRange}`).then(res => res.data.data),
     enabled: true
   })
 
-  // Fetch session info (using current user data)
-  const fetchSessionInfo = useCallback(async () => {
-    try {
-      if (user?.last_login) {
-        const now = new Date()
-        const lastLogin = new Date(user.last_login)
-        const sessionSeconds = Math.max(0, Math.floor((now.getTime() - lastLogin.getTime()) / 1000))
+  // Fetch KPI performance scorecard (actual vs target, last 30 days)
+  const { data: scorecard } = useQuery({
+    queryKey: ['executive-scorecard'],
+    queryFn: () => axiosInstance.get('/api/executive/performance-scorecard').then(res => res.data.data),
+    enabled: true
+  })
 
-        const fmtSecs = (s: number) => {
-          const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60)
-          return s < 60 ? 'Just now' : h > 0 ? `${h}h ${m}m` : `${m}m`
-        }
+  // Fetch recent real activity (audit log)
+  const { data: activityLogs } = useQuery({
+    queryKey: ['executive-audit-logs'],
+    queryFn: () => axiosInstance.get('/api/executive/real-audit-logs').then(res => res.data.logs),
+    enabled: true,
+    refetchInterval: 60000
+  })
 
-        const idleSecs = Math.floor((Date.now() - lastInteractionRef.current) / 1000)
-        const isIdle = idleSecs >= IDLE_THRESHOLD_SECS
-
-        setSessionInfo({
-          user_id: user.id,
-          username: user.username,
-          full_name: user.full_name || user.username,
-          email: user.email,
-          role: user.roles?.[0] || 'User',
-          last_login: user.last_login,
-          session_duration_seconds: sessionSeconds,
-          session_duration_formatted: fmtSecs(sessionSeconds),
-          idle_time_seconds: idleSecs,
-          idle_time_formatted: idleSecs < 60 ? '0m' : fmtSecs(idleSecs),
-          is_idle: isIdle,
-          last_activity: new Date(lastInteractionRef.current).toISOString(),
-          last_activity_action: 'Dashboard View'
-        })
-      }
-    } catch (error) {
-      console.error('Error calculating session info:', error)
-    }
-  }, [user, IDLE_THRESHOLD_SECS])
+  // Fetch product margin (Omzet) - HPP material (dari BOM) vs harga jual
+  const { data: marginData } = useQuery({
+    queryKey: ['executive-product-margin'],
+    queryFn: () => axiosInstance.get('/api/executive/product-margin').then(res => res.data.data),
+    enabled: true
+  })
 
   // Fetch active users from executive dashboard
-  const fetchActiveUsers = async () => {
+  const fetchActiveUsers = useCallback(async () => {
     try {
       const response = await axiosInstance.get('/api/executive/active-users')
       if (response.data.success) {
         const users = response.data.data.users || []
         const onlineUsers = users.filter((u: any) => u.status === 'online')
         const offlineUsers = users.filter((u: any) => u.status === 'offline' || u.status === 'never' || u.status === 'recent')
-        
+
         setActiveUsers({
           active_users: onlineUsers.map((u: any) => ({
             id: u.id,
@@ -185,23 +141,15 @@ export default function DashboardEnhanced() {
     } catch (error) {
       console.error('Error fetching active users:', error)
     }
-  }
+  }, [])
 
   // Send heartbeat to chat system (for online status)
-  const sendHeartbeat = async () => {
+  const sendHeartbeat = useCallback(async () => {
     try {
       await axiosInstance.post('/api/chat/heartbeat')
     } catch (error) {
       console.error('Error sending heartbeat:', error)
     }
-  }
-
-  // Track user interactions to measure idle time
-  useEffect(() => {
-    const resetIdle = () => { lastInteractionRef.current = Date.now() }
-    const events = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click']
-    events.forEach(e => window.addEventListener(e, resetIdle, { passive: true }))
-    return () => events.forEach(e => window.removeEventListener(e, resetIdle))
   }, [])
 
   // Update time every second
@@ -210,23 +158,19 @@ export default function DashboardEnhanced() {
     return () => clearInterval(timer)
   }, [])
 
-  // Fetch session info on mount and every 30 seconds
+  // Fetch active users on mount and every 30 seconds
   useEffect(() => {
-    fetchSessionInfo()
     fetchActiveUsers()
-    const interval = setInterval(() => {
-      fetchSessionInfo()
-      fetchActiveUsers()
-    }, 30000)
+    const interval = setInterval(fetchActiveUsers, 30000)
     return () => clearInterval(interval)
-  }, [])
+  }, [fetchActiveUsers])
 
   // Send heartbeat every 2 minutes
   useEffect(() => {
     sendHeartbeat()
     const interval = setInterval(sendHeartbeat, 2 * 60 * 1000)
     return () => clearInterval(interval)
-  }, [])
+  }, [sendHeartbeat])
 
   // Auto-refresh dashboard every 5 minutes
   useEffect(() => {
@@ -245,143 +189,74 @@ export default function DashboardEnhanced() {
   const criticalIssues = executiveData?.critical_issues || []
   const salesTrend = executiveData?.trends?.sales || []
 
-  // Module status data for pie chart
-  const moduleStatusData = [
-    { name: 'Production', value: executiveData?.production?.active_work_orders || 0, color: '#3B82F6' },
-    { name: 'Sales', value: executiveData?.financial?.outstanding_invoices || 0, color: '#10B981' },
-    { name: 'Quality', value: executiveData?.quality?.inspections_today || 0, color: '#F59E0B' },
-    { name: 'Maintenance', value: executiveData?.maintenance?.overdue || 0, color: '#EF4444' },
-  ]
+  // Module shortcuts - covers the hub modules (Production/Warehouse/Sales/Finance/HR/Quality)
+  // plus other high-traffic modules. Cards without a reliable live-stat field intentionally
+  // show no number rather than a fabricated one.
+  const moduleCards = [
+    { name: 'Production', href: '/app/production', icon: CogIcon, color: 'blue', stat: executiveData?.production?.active_work_orders, label: 'Active SPK' },
+    { name: 'Sales', href: '/app/sales', icon: ShoppingCartIcon, color: 'green', stat: executiveData?.customers?.active_customers, label: 'Active customers' },
+    { name: 'Purchasing', href: '/app/purchasing', icon: BuildingStorefrontIcon, color: 'orange', stat: executiveData?.purchasing?.pending_orders, label: 'Pending orders' },
+    { name: 'Warehouse', href: '/app/warehouse', icon: CubeIcon, color: 'purple', stat: executiveData?.inventory?.low_stock_items, label: 'Low stock items' },
+    { name: 'Quality', href: '/app/quality', icon: CheckCircleIcon, color: 'teal', stat: executiveData?.quality?.pass_rate, statSuffix: '%', label: 'Pass rate' },
+    { name: 'Finance', href: '/app/finance', icon: BanknotesIcon, color: 'emerald', stat: executiveData?.financial?.outstanding_invoices, label: 'Outstanding invoices' },
+    { name: 'Human Resources', href: '/app/hr', icon: UsersIcon, color: 'indigo', stat: executiveData?.hr?.total_employees, label: 'Total employees' },
+    { name: 'Maintenance', href: '/app/maintenance', icon: WrenchScrewdriverIcon, color: 'red', stat: executiveData?.maintenance?.overdue, label: 'Overdue tasks' },
+    { name: 'OEE Monitoring', href: '/app/oee', icon: ChartBarIcon, color: 'amber', stat: executiveData?.oee?.average_oee, statSuffix: '%', label: 'Average OEE' },
+    { name: 'Shipping', href: '/app/shipping', icon: TruckIcon, color: 'sky', label: 'Delivery & logistics' },
+    { name: 'R&D', href: '/app/rnd', icon: BeakerIcon, color: 'violet', label: 'Research projects' },
+    { name: 'Document Control', href: '/app/dcc', icon: DocumentTextIcon, color: 'pink', label: 'Manage documents' },
+  ] as Array<{
+    name: string
+    href: string
+    icon: typeof CogIcon
+    color: string
+    stat?: number
+    statSuffix?: string
+    label: string
+  }>
+
+  const colorClasses: Record<string, { border: string; bg: string; text: string }> = {
+    blue: { border: 'border-blue-500', bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-600 dark:text-blue-400' },
+    green: { border: 'border-green-500', bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-600 dark:text-green-400' },
+    orange: { border: 'border-orange-500', bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-600 dark:text-orange-400' },
+    purple: { border: 'border-purple-500', bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-600 dark:text-purple-400' },
+    teal: { border: 'border-teal-500', bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-600 dark:text-teal-400' },
+    emerald: { border: 'border-emerald-500', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-600 dark:text-emerald-400' },
+    indigo: { border: 'border-indigo-500', bg: 'bg-indigo-100 dark:bg-indigo-900/30', text: 'text-indigo-600 dark:text-indigo-400' },
+    red: { border: 'border-red-500', bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-600 dark:text-red-400' },
+    amber: { border: 'border-amber-500', bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-600 dark:text-amber-400' },
+    sky: { border: 'border-sky-500', bg: 'bg-sky-100 dark:bg-sky-900/30', text: 'text-sky-600 dark:text-sky-400' },
+    violet: { border: 'border-violet-500', bg: 'bg-violet-100 dark:bg-violet-900/30', text: 'text-violet-600 dark:text-violet-400' },
+    pink: { border: 'border-pink-500', bg: 'bg-pink-100 dark:bg-pink-900/30', text: 'text-pink-600 dark:text-pink-400' },
+  }
 
   return (
     <div className="space-y-6 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
+      <WelcomeBanner />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            {currentTime.toLocaleDateString('id-ID', { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
+            {currentTime.toLocaleDateString('id-ID', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
             })} • {currentTime.toLocaleTimeString('id-ID')}
           </p>
         </div>
-        <div className="flex gap-3">
-          <button
-            onClick={() => refetch()}
-            className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 text-gray-900 dark:text-white"
-          >
-            <ArrowPathIcon className="w-5 h-5" />
-            Refresh
-          </button>
-          <button
-            onClick={() => navigate('/desk')}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
-          >
-            <SparklesIcon className="w-5 h-5" />
-            Go to Desk
-          </button>
-        </div>
+        <button
+          onClick={() => refetch()}
+          className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 text-gray-900 dark:text-white"
+        >
+          <ArrowPathIcon className="w-5 h-5" />
+          Refresh
+        </button>
       </div>
 
-      {/* User Session & Activity Info */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Current Session */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border-l-4 border-blue-500">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-              <UserCircleIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-900 dark:text-white">Your Session</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{user?.full_name || 'User'}</p>
-            </div>
-          </div>
-          {sessionInfo && (
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-400">Active for:</span>
-                <span className="font-semibold text-gray-900 dark:text-white">{sessionInfo.session_duration_formatted}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-400">Idle time:</span>
-                <span className={`font-semibold ${sessionInfo.is_idle ? 'text-orange-600 dark:text-orange-400' : 'text-green-600 dark:text-green-400'}`}>
-                  {sessionInfo.idle_time_formatted}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-400">Last login:</span>
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  {sessionInfo.last_login ? new Date(sessionInfo.last_login).toLocaleTimeString('id-ID', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                  }) : 'N/A'}
-                </span>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Active Users */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border-l-4 border-green-500">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
-              <SignalIcon className="w-6 h-6 text-green-600 dark:text-green-400" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-900 dark:text-white">Active Users</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Currently online</p>
-            </div>
-          </div>
-          {activeUsers && (
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-400">Online:</span>
-                <span className="font-semibold text-green-600 dark:text-green-400">{activeUsers.active_count} users</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-400">Offline:</span>
-                <span className="font-semibold text-gray-600 dark:text-gray-400">{activeUsers.offline_count} users</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-400">Total:</span>
-                <span className="font-semibold text-gray-900 dark:text-white">{activeUsers.total_users} users</span>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* System Status */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border-l-4 border-purple-500">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-              <ChartBarIcon className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-900 dark:text-white">System Status</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">All systems operational</p>
-            </div>
-          </div>
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600 dark:text-gray-400">Modules:</span>
-              <span className="font-semibold text-gray-900 dark:text-white">{executiveData?.summary?.total_modules || 0} active</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600 dark:text-gray-400">Alerts:</span>
-              <span className="font-semibold text-red-600 dark:text-red-400">{criticalIssues.length} critical</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600 dark:text-gray-400">Uptime:</span>
-              <span className="font-semibold text-green-600 dark:text-green-400">99.9%</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Critical Alerts */}
+      {/* Critical Alerts - most urgent, shown first */}
       {criticalIssues.length > 0 && (
         <div className="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 p-4 rounded-lg">
           <div className="flex items-start">
@@ -424,12 +299,9 @@ export default function DashboardEnhanced() {
         </div>
 
         {/* Production Output - Clickable */}
-        <div 
+        <div
           className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white shadow-lg cursor-pointer hover:shadow-2xl hover:scale-105 transition-all duration-300"
-          onClick={() => {
-            console.log('Production metric card clicked!')
-            setShowProductionOutput(true)
-          }}
+          onClick={() => setShowProductionOutput(true)}
           title="Klik untuk lihat detail per mesin & produk"
         >
           <div className="flex items-center justify-between mb-4">
@@ -482,6 +354,119 @@ export default function DashboardEnhanced() {
         </div>
       </div>
 
+      {/* Performance Scorecard - actual vs target per KPI, last 30 days */}
+      {scorecard && scorecard.kpis?.length > 0 && (
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl">
+                <TrophyIcon className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Performance Scorecard</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Actual vs target, last 30 days</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{scorecard.overall_score}%</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Overall score</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {scorecard.kpis.map((kpi: any) => {
+              const statusStyle = kpi.status === 'good'
+                ? { badge: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400', bar: 'bg-green-500' }
+                : kpi.status === 'warning'
+                  ? { badge: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400', bar: 'bg-amber-500' }
+                  : { badge: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400', bar: 'bg-red-500' }
+              const displayActual = kpi.unit === 'IDR' ? formatRupiah(kpi.actual) : `${kpi.actual}${kpi.unit}`
+              const displayTarget = kpi.unit === 'IDR' ? formatRupiah(kpi.target) : `${kpi.target}${kpi.unit}`
+              return (
+                <div key={kpi.kpi_code} className="p-4 rounded-xl border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${statusStyle.badge}`}>
+                      {kpi.status}
+                    </span>
+                    <span className="text-xs text-gray-400 dark:text-gray-500">{kpi.category}</span>
+                  </div>
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{kpi.kpi_name}</p>
+                  <p className="text-xl font-bold text-gray-900 dark:text-white mb-1">{displayActual}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Target: {displayTarget}</p>
+                  <div className="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${statusStyle.bar}`}
+                      style={{ width: `${Math.min(100, Math.max(0, kpi.achievement))}%` }}
+                    />
+                  </div>
+                  <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">{kpi.achievement}% of target</p>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Omzet & Margin Produk - HPP (material dari BOM) vs Harga Jual */}
+      {marginData && (
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl">
+                <BanknotesIcon className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Omzet &amp; Margin Produk</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">HPP material (dari BOM) vs harga jual</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{marginData.summary.produk_data_lengkap}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">dari {marginData.summary.total_produk_ada_bom} produk siap dihitung</p>
+            </div>
+          </div>
+
+          <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 mb-4">
+            <p className="text-xs text-amber-800 dark:text-amber-300">{marginData.summary.catatan}</p>
+          </div>
+
+          {marginData.summary.produk_data_lengkap === 0 ? (
+            <div className="text-center py-10">
+              <BanknotesIcon className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Belum ada produk dengan data harga jual &amp; HPP lengkap</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Tabel margin akan otomatis terisi begitu harga jual disinkronkan dari Accurate Online.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                    <th className="pb-2 pr-4">Produk</th>
+                    <th className="pb-2 pr-4 text-right">HPP Material</th>
+                    <th className="pb-2 pr-4 text-right">Harga Jual</th>
+                    <th className="pb-2 text-right">Margin</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                  {marginData.rows.filter((r: any) => r.status === 'lengkap').slice(0, 10).map((r: any) => (
+                    <tr key={r.product_id}>
+                      <td className="py-2 pr-4">
+                        <p className="font-medium text-gray-900 dark:text-white">{r.product_name}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{r.product_code}</p>
+                      </td>
+                      <td className="py-2 pr-4 text-right tabular-nums">{formatRupiah(r.hpp_material)}</td>
+                      <td className="py-2 pr-4 text-right tabular-nums">{formatRupiah(r.selling_price)}</td>
+                      <td className={`py-2 text-right tabular-nums font-semibold ${r.margin >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                        {formatRupiah(r.margin)} <span className="text-xs font-normal">({r.margin_percent}%)</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Production & OEE Trend */}
@@ -499,29 +484,75 @@ export default function DashboardEnhanced() {
               <XAxis dataKey="period" tick={{ fontSize: 12 }} stroke="#94a3b8" />
               <YAxis yAxisId="left" tick={{ fontSize: 12 }} stroke="#94a3b8" />
               <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12 }} stroke="#94a3b8" />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'rgba(31, 41, 55, 0.95)', 
-                  border: 'none', 
-                  borderRadius: '8px', 
-                  color: '#fff' 
-                }} 
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'rgba(31, 41, 55, 0.95)',
+                  border: 'none',
+                  borderRadius: '8px',
+                  color: '#fff'
+                }}
               />
               <Legend />
               <Bar yAxisId="left" dataKey="value" fill="#8b5cf6" radius={[4, 4, 0, 0]} name="Output" />
-              <Line 
-                yAxisId="right" 
-                type="monotone" 
-                dataKey={(d: any) => trends?.oee?.find((o: any) => o.period === d.period)?.value || 0} 
-                stroke="#10b981" 
-                strokeWidth={2} 
-                name="OEE %" 
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey={(d: any) => trends?.oee?.find((o: any) => o.period === d.period)?.value || 0}
+                stroke="#10b981"
+                strokeWidth={2}
+                name="OEE %"
                 dot={{ fill: '#10b981', r: 4 }}
               />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
 
+        {/* Sales Trend */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-lg p-6 border border-gray-200 dark:border-gray-700 transition-all duration-300">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Sales Trend</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Last 7 days</p>
+            </div>
+            <ShoppingCartIcon className="w-5 h-5 text-blue-500" />
+          </div>
+          <div className="h-[280px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={salesTrend}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis
+                  dataKey="date"
+                  tickFormatter={(value) => new Date(value).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}
+                  tick={{ fontSize: 12 }}
+                  stroke="#94a3b8"
+                />
+                <YAxis tickFormatter={(value) => `${(value / 1000000).toFixed(1)}M`} tick={{ fontSize: 12 }} stroke="#94a3b8" />
+                <Tooltip
+                  formatter={(value: number) => [formatRupiah(value), 'Sales']}
+                  labelFormatter={(label) => new Date(label).toLocaleDateString('id-ID')}
+                  contentStyle={{
+                    backgroundColor: 'rgba(31, 41, 55, 0.95)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: '#fff'
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#3B82F6"
+                  strokeWidth={3}
+                  dot={{ fill: '#3B82F6', r: 4 }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* Top Products & Recent Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top Products */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-300">
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
@@ -564,66 +595,82 @@ export default function DashboardEnhanced() {
             )}
           </div>
         </div>
+
+        {/* Recent Activity - real audit log, not simulated */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-300">
+          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-br from-slate-600 to-slate-800 rounded-lg">
+                <ClockIcon className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 dark:text-white">Recent Activity</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Live audit trail</p>
+              </div>
+            </div>
+          </div>
+          <div className="divide-y divide-gray-200 dark:divide-gray-700 max-h-[360px] overflow-y-auto">
+            {!activityLogs || activityLogs.length === 0 ? (
+              <div className="p-8 text-center">
+                <ClockIcon className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                <p className="text-sm text-gray-500 dark:text-gray-400">No recent activity</p>
+              </div>
+            ) : (
+              activityLogs.slice(0, 8).map((log: any) => {
+                const actionStyle: Record<string, string> = {
+                  CREATE: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+                  UPDATE: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+                  DELETE: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+                }
+                return (
+                  <div key={log.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${actionStyle[log.action] || 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'}`}>
+                            {log.action}
+                          </span>
+                          <span className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">{log.module}</span>
+                        </div>
+                        <p className="text-sm text-gray-900 dark:text-white truncate">{log.resource_name || log.description}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{log.user_name}</p>
+                      </div>
+                      <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap">{log.timestamp}</span>
+                    </div>
+                  </div>
+                )
+              })
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* Original Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Sales Trend */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Sales Trend (7 Days)</h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={salesTrend}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                <XAxis 
-                  dataKey="date" 
-                  tickFormatter={(value) => new Date(value).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}
-                  stroke="#6B7280"
-                />
-                <YAxis tickFormatter={(value) => `${(value / 1000000).toFixed(1)}M`} stroke="#6B7280" />
-                <Tooltip 
-                  formatter={(value: number) => [formatRupiah(value), 'Sales']}
-                  labelFormatter={(label) => new Date(label).toLocaleDateString('id-ID')}
-                  contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB' }}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="value" 
-                  stroke="#3B82F6" 
-                  strokeWidth={3}
-                  dot={{ fill: '#3B82F6', r: 4 }}
-                  activeDot={{ r: 6 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Module Status Distribution */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Module Activity</h3>
-          <div className="h-64 flex items-center justify-center">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={moduleStatusData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {moduleStatusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+      {/* Module Shortcuts */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {moduleCards.map((m) => {
+          const c = colorClasses[m.color]
+          const Icon = m.icon
+          return (
+            <Link
+              key={m.name}
+              to={m.href}
+              className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border-l-4 ${c.border}`}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className={`p-3 ${c.bg} rounded-lg`}>
+                  <Icon className={`w-6 h-6 ${c.text}`} />
+                </div>
+                {m.stat !== undefined && (
+                  <span className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {m.stat}{m.statSuffix || ''}
+                  </span>
+                )}
+              </div>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-1">{m.name}</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{m.label}</p>
+            </Link>
+          )
+        })}
       </div>
 
       {/* Quick Actions */}
@@ -635,9 +682,9 @@ export default function DashboardEnhanced() {
             className="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all group"
           >
             <CogIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 mx-auto mb-2" />
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400">New Work Order</p>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400">New SPK</p>
           </button>
-          
+
           <button
             onClick={() => navigate('/app/sales/orders/new')}
             className="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all group"
@@ -645,7 +692,7 @@ export default function DashboardEnhanced() {
             <ShoppingCartIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 group-hover:text-green-600 dark:group-hover:text-green-400 mx-auto mb-2" />
             <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-green-600 dark:group-hover:text-green-400">New Sales Order</p>
           </button>
-          
+
           <button
             onClick={() => navigate('/app/purchasing/orders/new')}
             className="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all group"
@@ -653,7 +700,7 @@ export default function DashboardEnhanced() {
             <BuildingStorefrontIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 group-hover:text-orange-600 dark:group-hover:text-orange-400 mx-auto mb-2" />
             <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-orange-600 dark:group-hover:text-orange-400">New PO</p>
           </button>
-          
+
           <button
             onClick={() => navigate('/app/quality/incoming')}
             className="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all group"
@@ -661,7 +708,7 @@ export default function DashboardEnhanced() {
             <CheckCircleIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 group-hover:text-purple-600 dark:group-hover:text-purple-400 mx-auto mb-2" />
             <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-purple-600 dark:group-hover:text-purple-400">QC Inspection</p>
           </button>
-          
+
           <button
             onClick={() => navigate('/app/warehouse/material-issues/new')}
             className="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-all group"
@@ -669,7 +716,7 @@ export default function DashboardEnhanced() {
             <CubeIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 group-hover:text-teal-600 dark:group-hover:text-teal-400 mx-auto mb-2" />
             <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-teal-600 dark:group-hover:text-teal-400">Issue Material</p>
           </button>
-          
+
           <button
             onClick={() => navigate('/app/reports')}
             className="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all group"
@@ -680,197 +727,59 @@ export default function DashboardEnhanced() {
         </div>
       </div>
 
-      {/* Module Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {/* Production */}
-        <Link to="/app/production" className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border-l-4 border-blue-500">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-              <CogIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+      {/* Team Activity - de-prioritized below the business data, single consolidated view (no duplicate counts) */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+              <SignalIcon className="w-5 h-5 text-green-600 dark:text-green-400" />
             </div>
-            <span className="text-2xl font-bold text-gray-900 dark:text-white">{executiveData?.production?.active_work_orders || 0}</span>
-          </div>
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Production</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Active work orders</p>
-        </Link>
-
-        {/* Sales */}
-        <Link to="/app/sales" className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border-l-4 border-green-500">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
-              <ShoppingCartIcon className="w-6 h-6 text-green-600 dark:text-green-400" />
-            </div>
-            <span className="text-2xl font-bold text-gray-900 dark:text-white">{executiveData?.customers?.active_customers || 0}</span>
-          </div>
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Sales</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Active customers</p>
-        </Link>
-
-        {/* Purchasing */}
-        <Link to="/app/purchasing" className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border-l-4 border-orange-500">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
-              <BuildingStorefrontIcon className="w-6 h-6 text-orange-600 dark:text-orange-400" />
-            </div>
-            <span className="text-2xl font-bold text-gray-900 dark:text-white">{executiveData?.purchasing?.pending_orders || 0}</span>
-          </div>
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Purchasing</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Pending orders</p>
-        </Link>
-
-        {/* Warehouse */}
-        <Link to="/app/warehouse" className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border-l-4 border-purple-500">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-              <CubeIcon className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-            </div>
-            <span className="text-2xl font-bold text-gray-900 dark:text-white">{executiveData?.inventory?.low_stock_items || 0}</span>
-          </div>
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Warehouse</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Low stock items</p>
-        </Link>
-
-        {/* Quality */}
-        <Link to="/app/quality" className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border-l-4 border-teal-500">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-teal-100 dark:bg-teal-900/30 rounded-lg">
-              <CheckCircleIcon className="w-6 h-6 text-teal-600 dark:text-teal-400" />
-            </div>
-            <span className="text-2xl font-bold text-gray-900 dark:text-white">{executiveData?.quality?.pass_rate || 0}%</span>
-          </div>
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Quality</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Pass rate</p>
-        </Link>
-
-        {/* Maintenance */}
-        <Link to="/app/maintenance" className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border-l-4 border-red-500">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
-              <WrenchScrewdriverIcon className="w-6 h-6 text-red-600 dark:text-red-400" />
-            </div>
-            <span className="text-2xl font-bold text-gray-900 dark:text-white">{executiveData?.maintenance?.overdue || 0}</span>
-          </div>
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Maintenance</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Overdue tasks</p>
-        </Link>
-
-        {/* HR */}
-        <Link to="/app/hr" className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border-l-4 border-indigo-500">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
-              <UsersIcon className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-            </div>
-            <span className="text-2xl font-bold text-gray-900 dark:text-white">{executiveData?.hr?.total_employees || 0}</span>
-          </div>
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Human Resources</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Total employees</p>
-        </Link>
-
-        {/* Documents */}
-        <Link to="/app/dcc" className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border-l-4 border-pink-500">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-pink-100 dark:bg-pink-900/30 rounded-lg">
-              <DocumentTextIcon className="w-6 h-6 text-pink-600 dark:text-pink-400" />
-            </div>
-            <span className="text-2xl font-bold text-gray-900 dark:text-white">DCC</span>
-          </div>
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Document Control</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Manage documents</p>
-        </Link>
-      </div>
-
-      {/* User Activity List - Moved to Bottom */}
-      {activeUsers && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Online Users */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Online Users ({activeUsers.active_count})
-              </h3>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-sm text-gray-600 dark:text-gray-400">Active</span>
-              </div>
-            </div>
-            <div className="space-y-2 max-h-64 overflow-y-auto">
-              {activeUsers.active_users.length > 0 ? (
-                activeUsers.active_users.map((u) => (
-                  <div key={u.id} className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-green-500 dark:bg-green-600 rounded-full flex items-center justify-center text-white font-semibold">
-                        {u.full_name?.charAt(0).toUpperCase() || u.username?.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900 dark:text-white">{u.full_name || u.username}</p>
-                        <p className="text-xs text-gray-600 dark:text-gray-400">{u.role}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <span className="text-xs font-medium text-green-700 dark:text-green-400">Online</span>
-                      </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{u.time_since_activity_formatted}</p>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                  <UsersIcon className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">No users currently online</p>
-                </div>
-              )}
+            <div>
+              <h3 className="font-semibold text-gray-900 dark:text-white">Team Activity</h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {activeUsers ? `${activeUsers.active_count} online • ${activeUsers.offline_count} offline • ${activeUsers.total_users} total` : 'Loading...'}
+              </p>
             </div>
           </div>
-
-          {/* Offline Users */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Offline Users ({activeUsers.offline_count})
-              </h3>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                <span className="text-sm text-gray-600 dark:text-gray-400">Inactive</span>
-              </div>
-            </div>
-            <div className="space-y-2 max-h-64 overflow-y-auto">
-              {activeUsers.offline_users && activeUsers.offline_users.length > 0 ? (
-                activeUsers.offline_users.map((u: any) => (
-                  <div key={u.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gray-400 dark:bg-gray-600 rounded-full flex items-center justify-center text-white font-semibold">
-                        {u.full_name?.charAt(0).toUpperCase() || u.username?.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900 dark:text-white">{u.full_name || u.username}</p>
-                        <p className="text-xs text-gray-600 dark:text-gray-400">{u.role}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                        <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Offline</span>
-                      </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{u.time_since_activity_formatted}</p>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                  <UsersIcon className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">All users are online</p>
-                </div>
-              )}
-            </div>
-          </div>
+          <span className="text-xs text-gray-500 dark:text-gray-400">
+            {(executiveData?.summary?.total_modules || 0)} modules active
+            {criticalIssues.length > 0 && <span className="text-red-500 dark:text-red-400"> • {criticalIssues.length} critical alert{criticalIssues.length > 1 ? 's' : ''}</span>}
+          </span>
         </div>
-      )}
+        {activeUsers && (activeUsers.active_users.length > 0 || activeUsers.offline_users.length > 0) ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 max-h-72 overflow-y-auto">
+            {[...activeUsers.active_users, ...activeUsers.offline_users].map((u) => (
+              <div
+                key={u.id}
+                className={`flex items-center gap-2 p-2.5 rounded-lg border ${
+                  activeUsers.active_users.some(a => a.id === u.id)
+                    ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                    : 'bg-gray-50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600'
+                }`}
+              >
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold flex-shrink-0 ${
+                  activeUsers.active_users.some(a => a.id === u.id) ? 'bg-green-500 dark:bg-green-600' : 'bg-gray-400 dark:bg-gray-600'
+                }`}>
+                  {u.full_name?.charAt(0).toUpperCase() || u.username?.charAt(0).toUpperCase()}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{u.full_name || u.username}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{u.time_since_activity_formatted}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+            <UsersIcon className="w-10 h-10 mx-auto mb-2 opacity-50" />
+            <p className="text-sm">No team activity data</p>
+          </div>
+        )}
+      </div>
 
       {/* Last Updated */}
       <div className="text-center text-sm text-gray-500 dark:text-gray-400">
-        Last updated: {executiveData?.summary?.last_updated 
+        Last updated: {executiveData?.summary?.last_updated
           ? new Date(executiveData.summary.last_updated).toLocaleString('id-ID')
           : 'Never'}
       </div>

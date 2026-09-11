@@ -19,6 +19,7 @@ import {
   Cog6ToothIcon,
   CogIcon,
   CubeIcon,
+  CircleStackIcon,
   DocumentChartBarIcon,
   DocumentTextIcon,
   HomeIcon,
@@ -56,9 +57,11 @@ import {
   CameraIcon,
   CheckCircleIcon,
   ArrowRightOnRectangleIcon,
-  UserCircleIcon,
   ExclamationTriangleIcon,
-  EnvelopeIcon
+  EnvelopeIcon,
+  MagnifyingGlassIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon
 } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import axiosInstance from '../../utils/axiosConfig'
@@ -69,22 +72,39 @@ interface SidebarProps {
   setOpen: (open: boolean) => void
 }
 
-function SidebarContent() {
+function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: boolean; onToggleCollapse?: () => void }) {
   const [expandedItems, setExpandedItems] = useState<string[]>([])
-  const [navMode, setNavMode] = useState<'desk' | 'classic'>(
-    () => (localStorage.getItem('erp_nav_mode') as 'desk' | 'classic') || 'desk'
-  )
+  const [menuSearch, setMenuSearch] = useState('')
+  // Kalau sidebar dilebarkan otomatis gara-gara user klik menu-bersubmenu waktu lagi
+  // collapsed, begitu user pilih 1 item di dalamnya (navigasi pindah halaman), otomatis
+  // ciut lagi balik - user tidak perlu klik panah manual tiap kali (masukan 2026-08-25).
+  // Kalau user melebarkan lewat tombol panah sendiri, ini TIDAK aktif (tetap lebar).
+  const [autoExpandedFromCollapse, setAutoExpandedFromCollapse] = useState(false)
+  // Nama perusahaan diambil dari Settings (bukan di-hardcode "SMITH ERP") - "SMITH ERP"
+  // itu cuma nama proyek development, bukan brand yang mau ditampilkan ke user PT.
+  // Falmaco. Sama pola dengan Header.tsx (loadCompanySettings + event companySettingsUpdated).
+  const [companyName, setCompanyName] = useState('')
+  useEffect(() => {
+    const loadCompanyName = async () => {
+      try {
+        const response = await axiosInstance.get('/api/settings/company')
+        if (response.data?.name) setCompanyName(response.data.name)
+      } catch (e) {
+        // biarkan fallback ke inisial generik di bawah
+      }
+    }
+    loadCompanyName()
+    window.addEventListener('companySettingsUpdated', loadCompanyName)
+    return () => window.removeEventListener('companySettingsUpdated', loadCompanyName)
+  }, [])
+  const companyInitials = companyName
+    ? companyName.replace(/^PT\.?\s*/i, '').replace(/,?\s*Tbk\.?$/i, '').trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase()
+    : 'ER'
   const { hasPermission, hasAnyPermission, isAdmin, isSuperAdmin, isLoading } = usePermissions()
   const { user } = useAppSelector((state) => state.auth)
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const location = useLocation()
-
-  useEffect(() => {
-    const handler = () => setNavMode((localStorage.getItem('erp_nav_mode') as 'desk' | 'classic') || 'desk')
-    window.addEventListener('erp-nav-mode-changed', handler)
-    return () => window.removeEventListener('erp-nav-mode-changed', handler)
-  }, [])
 
   // Check if a href (with query params) matches current location
   const isActiveHref = (href: string) => {
@@ -99,91 +119,38 @@ function SidebarContent() {
     navigate('/')
   }
 
+  // Begitu URL berubah (user pilih 1 menu) DAN sidebar lagi lebar gara-gara auto-expand
+  // dari collapsed, ciutkan lagi balik ke rail - lihat catatan di autoExpandedFromCollapse.
+  useEffect(() => {
+    if (autoExpandedFromCollapse) {
+      setAutoExpandedFromCollapse(false)
+      onToggleCollapse?.()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname])
+
+  // Saat lagi cari menu, semua level otomatis "terbuka" tanpa perlu klik manual -
+  // begitu search dikosongkan balik ke state expand/collapse yang user atur sendiri.
+  const isExpanded = (key: string) => menuSearch.trim() !== '' || expandedItems.includes(key)
+
+  const matchesQuery = (name: string, q: string) => name.toLowerCase().includes(q)
+
+  // Cocok kalau nama item sendiri, salah satu child, atau salah satu subChild cocok -
+  // dipakai buat nge-filter grup/menu pas search diisi, rekursif sampai level terdalam.
+  const itemMatchesSearch = (item: any, q: string): boolean => {
+    if (matchesQuery(item.name, q)) return true
+    if (item.children) {
+      return item.children.some((child: any) =>
+        matchesQuery(child.name, q) || (child.subChildren?.some((sc: any) => matchesQuery(sc.name, q)) ?? false)
+      )
+    }
+    return false
+  }
+
   // Permission-based menu visibility
   // If still loading or is admin/super admin, show all menus
   const canView = (module: string) => isLoading || isAdmin || isSuperAdmin || hasPermission(`${module}.view`)
   const canViewAny = (modules: string[]) => isLoading || isAdmin || isSuperAdmin || hasAnyPermission(modules.map(m => `${m}.view`))
-
-  // Mapping URL paths to workspace and related menu items
-  const workspacePathMap: Record<string, { workspace: string; menus: string[] }> = {
-    '/app/production': { workspace: 'production', menus: ['Production', 'Products', 'Warehouse', 'Quality Control'] },
-    '/app/products': { workspace: 'products', menus: ['Products', 'Warehouse'] },
-    '/app/warehouse': { workspace: 'inventory', menus: ['Warehouse', 'Products'] },
-    '/app/quality': { workspace: 'quality', menus: ['Quality Control', 'Document Control'] },
-    '/app/sales': { workspace: 'sales', menus: ['Sales', 'Shipping', 'Returns'] },
-    '/app/shipping': { workspace: 'sales', menus: ['Sales', 'Shipping', 'Returns'] },
-    '/app/purchasing': { workspace: 'purchasing', menus: ['Purchasing'] },
-    '/app/finance': { workspace: 'finance', menus: ['Finance', 'Accounting'] },
-    '/app/accounting': { workspace: 'finance', menus: ['Finance', 'Accounting'] },
-    '/app/hr': { workspace: 'hr', menus: ['Human Resources'] },
-    '/app/assets': { workspace: 'maintenance', menus: ['Asset Management', 'Maintenance', 'OEE Monitoring'] },
-    '/app/maintenance': { workspace: 'maintenance', menus: ['Asset Management', 'Maintenance', 'OEE Monitoring', 'Waste Management'] },
-    '/app/dcc': { workspace: 'dcc', menus: ['Document Control'] },
-    '/app/rnd': { workspace: 'rd', menus: ['R&D', 'R&D Legacy'] },
-    '/app/rd': { workspace: 'rd', menus: ['R&D', 'R&D Legacy'] },
-    // Workspace routes - include main module + related modules
-    '/workspace/production': { workspace: 'production', menus: ['Production', 'Products', 'Warehouse', 'Quality Control', 'Maintenance'] },
-    '/workspace/sales': { workspace: 'sales', menus: ['Sales', 'Products', 'Shipping', 'Finance', 'Warehouse'] },
-    '/workspace/purchasing': { workspace: 'purchasing', menus: ['Purchasing', 'Warehouse', 'Finance', 'Quality Control', 'Products'] },
-    '/workspace/inventory': { workspace: 'inventory', menus: ['Warehouse', 'Products', 'Production', 'Purchasing', 'Sales'] },
-    '/workspace/quality': { workspace: 'quality', menus: ['Quality Control', 'Production', 'Products', 'Purchasing', 'Document Control'] },
-    '/workspace/maintenance': { workspace: 'maintenance', menus: ['Maintenance', 'Production', 'OEE Monitoring', 'Warehouse'] },
-    '/workspace/hr': { workspace: 'hr', menus: ['Human Resources', 'Finance', 'Production'] },
-    '/workspace/finance': { workspace: 'finance', menus: ['Finance', 'Sales', 'Purchasing', 'Human Resources', 'Warehouse'] },
-    '/workspace/dcc': { workspace: 'dcc', menus: ['Document Control', 'Quality Control', 'Production'] },
-    '/workspace/products': { workspace: 'products', menus: ['Products', 'Production', 'Warehouse', 'Sales', 'Purchasing'] },
-    '/workspace/oee': { workspace: 'oee', menus: ['OEE Monitoring', 'Production', 'Maintenance'] },
-    '/workspace/shipping': { workspace: 'shipping', menus: ['Shipping', 'Sales', 'Warehouse', 'Quality Control'] },
-    '/workspace/rd': { workspace: 'rd', menus: ['R&D', 'Products', 'Production', 'Quality Control'] },
-    '/workspace/waste': { workspace: 'waste', menus: ['Waste Management', 'Production', 'Warehouse'] },
-    // Direct module paths (non-workspace routes yang perlu filter sidebar)
-    '/app/oee': { workspace: 'oee', menus: ['OEE Monitoring', 'Production', 'Maintenance'] },
-    '/app/waste': { workspace: 'waste', menus: ['Waste Management', 'Production', 'Warehouse'] },
-    '/app/returns': { workspace: 'returns', menus: ['Returns', 'Sales', 'Warehouse', 'Quality Control'] },
-    // Module overview pages under /desk/:module
-    '/desk/production': { workspace: 'production', menus: ['Production', 'Products', 'Warehouse', 'Quality Control'] },
-    '/desk/warehouse': { workspace: 'inventory', menus: ['Warehouse', 'Products'] },
-    '/desk/inventory': { workspace: 'inventory', menus: ['Warehouse', 'Products'] },
-    '/desk/sales': { workspace: 'sales', menus: ['Sales', 'Shipping', 'Returns'] },
-    '/desk/purchasing': { workspace: 'purchasing', menus: ['Purchasing', 'Warehouse', 'Finance'] },
-    '/desk/quality': { workspace: 'quality', menus: ['Quality Control', 'Production', 'Document Control'] },
-    '/desk/hr': { workspace: 'hr', menus: ['Human Resources', 'Finance'] },
-    '/desk/finance': { workspace: 'finance', menus: ['Finance', 'Accounting'] },
-    '/desk/accounting': { workspace: 'finance', menus: ['Finance', 'Accounting'] },
-    '/desk/assets': { workspace: 'maintenance', menus: ['Asset Management', 'Maintenance', 'OEE Monitoring'] },
-    '/desk/maintenance': { workspace: 'maintenance', menus: ['Asset Management', 'Maintenance', 'OEE Monitoring', 'Waste Management'] },
-    '/desk/rd': { workspace: 'rd', menus: ['R&D', 'R&D Legacy'] },
-    '/desk/rnd': { workspace: 'rd', menus: ['R&D', 'R&D Legacy'] },
-    '/desk/oee': { workspace: 'oee', menus: ['OEE Monitoring', 'Production', 'Maintenance'] },
-    '/desk/waste': { workspace: 'waste', menus: ['Waste Management', 'Production', 'Warehouse'] },
-    '/desk/returns': { workspace: 'returns', menus: ['Returns', 'Sales', 'Warehouse', 'Quality Control'] },
-    '/desk/shipping': { workspace: 'shipping', menus: ['Shipping', 'Sales', 'Warehouse'] },
-    '/desk/dcc': { workspace: 'dcc', menus: ['Document Control', 'Quality Control'] },
-    '/desk/products': { workspace: 'products', menus: ['Products', 'Production', 'Warehouse'] },
-  }
-
-  // Detect active workspace from URL path
-  const getActiveWorkspace = () => {
-    for (const [path, config] of Object.entries(workspacePathMap)) {
-      if (location.pathname.startsWith(path)) {
-        return config
-      }
-    }
-    return null
-  }
-
-  const activeWorkspaceConfig = getActiveWorkspace()
-  const isInWorkspace = activeWorkspaceConfig !== null && 
-    location.pathname !== '/app' && 
-    !location.pathname.startsWith('/app/executive') && 
-    location.pathname !== '/desk' &&
-    (location.pathname.startsWith('/workspace/') || location.pathname.startsWith('/app/') || location.pathname.startsWith('/desk/'))
-  const activeWorkspace = activeWorkspaceConfig?.workspace || null
-
-  // Mapping workspace to menu item names (for filtering)
-  const workspaceMenuMap: Record<string, string[]> = activeWorkspaceConfig 
-    ? { [activeWorkspaceConfig.workspace]: activeWorkspaceConfig.menus }
-    : {}
 
   // Menu Groups with proper labels and permissions
   const allMenuGroups = [
@@ -197,9 +164,54 @@ function SidebarContent() {
       ]
     },
     {
-      groupName: 'OPERATIONS',
+      groupName: 'Sales & Purchasing',
+      show: canViewAny(['sales', 'purchasing', 'returns']),
+      items: [
+        {
+          name: 'Sales',
+          href: '/app/sales',
+          icon: ShoppingCartIcon,
+          permission: 'sales',
+          children: [
+            { name: 'Dashboard', href: '/app/sales/dashboard', icon: PresentationChartLineIcon },
+            { name: 'Customers', href: '/app/sales/customers', icon: UserGroupIcon, permission: 'customers' },
+            { name: 'Leads', href: '/app/sales/leads', icon: UserGroupIcon, permission: 'leads' },
+            { name: 'Opportunities', href: '/app/sales/opportunities', icon: ChartBarIcon },
+            { name: 'Quotations', href: '/app/sales/quotations', icon: DocumentTextIcon, permission: 'quotations' },
+            { name: 'Sales Orders', href: '/app/sales/orders', icon: ClipboardDocumentListIcon, permission: 'sales_orders' },
+            { name: 'Forecasts', href: '/app/sales/forecasts', icon: ChartPieIcon },
+          ]
+        },
+        {
+          name: 'Purchasing',
+          href: '/app/purchasing',
+          icon: ShoppingBagIcon,
+          permission: 'purchasing',
+          children: [
+            { name: 'Dashboard', href: '/app/purchasing', icon: PresentationChartLineIcon },
+            { name: 'Suppliers', href: '/app/purchasing/suppliers', icon: UserGroupIcon, permission: 'suppliers' },
+            { name: 'Requisition (PR)', href: '/app/purchasing/requisitions', icon: ClipboardDocumentListIcon },
+            { name: 'RFQ', href: '/app/purchasing/rfq', icon: EnvelopeIcon },
+            { name: 'Purchase Orders', href: '/app/purchasing/orders', icon: ArchiveBoxIcon, permission: 'purchase_orders' },
+            { name: 'Goods Receipt (GRN)', href: '/app/purchasing/grn', icon: DocumentCheckIcon },
+            { name: 'Invoice & 3-Way Match', href: '/app/purchasing/invoices', icon: ScaleIcon },
+            { name: 'Contracts', href: '/app/purchasing/contracts', icon: BookOpenIcon },
+            { name: 'Price Comparison', href: '/app/purchasing/price-comparison', icon: ChartBarIcon },
+          ]
+        },
+        { name: 'Returns', href: '/app/returns', icon: ArrowPathIcon, permission: 'returns' },
+      ]
+    },
+    {
+      groupName: 'Operations',
       show: canViewAny(['products', 'inventory', 'warehouse', 'production', 'quality']),
       items: [
+        {
+          name: 'Master Data',
+          href: '/app/master-data',
+          icon: CircleStackIcon,
+          permission: 'products',
+        },
         {
           name: 'Products',
           href: '/app/products',
@@ -225,7 +237,7 @@ function SidebarContent() {
               name: 'Transaksi', icon: ArrowsRightLeftIcon, isSubMenu: true, subChildren: [
                 { name: 'Permintaan Barang', href: '/app/warehouse/material-issues' },
                 { name: 'Pemindahan Barang', href: '/app/warehouse/movements' },
-                { name: 'Penyesuaian Persediaan', href: '/app/warehouse/stock-input' },
+                { name: 'Input Stok Manual', href: '/app/warehouse/stock-input' },
                 { name: 'Penambahan Bahan Baku', href: '/app/warehouse/inventory' },
               ]
             },
@@ -254,11 +266,12 @@ function SidebarContent() {
             {
               name: 'WMS Advanced', icon: SparklesIcon, isSubMenu: true, subChildren: [
                 { name: 'Dashboard WMS', href: '/app/wms' },
-                { name: 'Stok per Work Order', href: '/app/wms/stock-by-wo' },
+                { name: 'Stok per SPK', href: '/app/wms/stock-by-wo' },
                 { name: 'Konsumsi Material', href: '/app/wms/material-consumption' },
                 { name: 'Transaksi Stok', href: '/app/wms/transactions' },
                 { name: 'Pick List', href: '/app/wms/pick-lists' },
                 { name: 'Transfer Stok', href: '/app/wms/transfers' },
+                { name: 'Penyesuaian Stok', href: '/app/warehouse/adjustments' },
                 { name: 'Cycle Count', href: '/app/wms/cycle-counts' },
                 { name: 'Batch Traceability', href: '/app/wms/batch-traceability' },
               ]
@@ -272,7 +285,7 @@ function SidebarContent() {
           permission: 'production',
           children: [
             { name: 'Dashboard', href: '/app/production', icon: PresentationChartLineIcon },
-            { name: 'Work Orders', href: '/app/production/work-orders', icon: ClipboardDocumentListIcon, permission: 'work_orders' },
+            { name: 'SPK', href: '/app/production/work-orders', icon: ClipboardDocumentListIcon, permission: 'work_orders' },
             { name: 'Status Pengerjaan', href: '/app/production/work-order-status', icon: ClipboardDocumentListIcon },
             { name: 'WO Monitoring', href: '/app/production/work-orders-monitoring', icon: ChartBarIcon },
             { name: 'Machine Data', href: '/app/production/machines', icon: CogIcon },
@@ -303,6 +316,8 @@ function SidebarContent() {
             { name: 'Changeover', href: '/app/production/changeovers', icon: ArrowsRightLeftIcon },
             { name: 'Approval', href: '/app/production/approvals', icon: ClipboardDocumentCheckIcon },
             { name: 'Quality Objective', href: '/app/quality/objective/production', icon: ChartBarIcon },
+            { name: 'Batch Scheduling', href: '/app/production/batch-scheduling', icon: CalendarDaysIcon },
+            { name: 'Batch Planning', href: '/app/production/batch-planning', icon: CalendarDaysIcon },
             { name: 'MRP', href: '/app/production/mrp', icon: CalculatorIcon, permission: 'mrp' },
             { name: 'Demand Planning', href: '/app/production/demand-planning', icon: ChartBarIcon, permission: 'mrp' },
             { name: 'Capacity', href: '/app/production/capacity-planning', icon: ScaleIcon, permission: 'mrp' },
@@ -322,6 +337,7 @@ function SidebarContent() {
             { name: 'QC Dalam Proses', href: '/app/quality/in-process', icon: CogIcon },
             { name: 'QC Barang Jadi', href: '/app/quality/finish-good', icon: ClipboardDocumentCheckIcon },
             { name: 'QC Packing List', href: '/app/quality/packing-list', icon: ArchiveBoxIcon },
+            { name: 'Ubah Status Batch', href: '/app/quality/batch-status', icon: ArrowPathIcon },
             { name: 'Analytics', href: '/app/quality/analytics', icon: ChartPieIcon },
             { name: 'SPC', href: '/app/quality/spc', icon: ChartBarIcon },
           ]
@@ -329,59 +345,7 @@ function SidebarContent() {
       ]
     },
     {
-      groupName: 'SUPPLY CHAIN',
-      show: canViewAny(['purchasing', 'sales', 'shipping', 'returns']),
-      items: [
-        {
-          name: 'Purchasing',
-          href: '/app/purchasing',
-          icon: ShoppingBagIcon,
-          permission: 'purchasing',
-          children: [
-            { name: 'Dashboard', href: '/app/purchasing', icon: PresentationChartLineIcon },
-            { name: 'Suppliers', href: '/app/purchasing/suppliers', icon: UserGroupIcon, permission: 'suppliers' },
-            { name: 'Requisition (PR)', href: '/app/purchasing/requisitions', icon: ClipboardDocumentListIcon },
-            { name: 'RFQ', href: '/app/purchasing/rfq', icon: EnvelopeIcon },
-            { name: 'Purchase Orders', href: '/app/purchasing/orders', icon: ArchiveBoxIcon, permission: 'purchase_orders' },
-            { name: 'Goods Receipt (GRN)', href: '/app/purchasing/grn', icon: DocumentCheckIcon },
-            { name: 'Invoice & 3-Way Match', href: '/app/purchasing/invoices', icon: ScaleIcon },
-            { name: 'Contracts', href: '/app/purchasing/contracts', icon: BookOpenIcon },
-            { name: 'Price Comparison', href: '/app/purchasing/price-comparison', icon: ChartBarIcon },
-          ]
-        },
-        {
-          name: 'Sales',
-          href: '/app/sales',
-          icon: ShoppingCartIcon,
-          permission: 'sales',
-          children: [
-            { name: 'Dashboard', href: '/app/sales/dashboard', icon: PresentationChartLineIcon },
-            { name: 'Customers', href: '/app/sales/customers', icon: UserGroupIcon, permission: 'customers' },
-            { name: 'Leads', href: '/app/sales/leads', icon: UserGroupIcon, permission: 'leads' },
-            { name: 'Opportunities', href: '/app/sales/opportunities', icon: ChartBarIcon },
-            { name: 'Quotations', href: '/app/sales/quotations', icon: DocumentTextIcon, permission: 'quotations' },
-            { name: 'Sales Orders', href: '/app/sales/orders', icon: ClipboardDocumentListIcon, permission: 'sales_orders' },
-            { name: 'Forecasts', href: '/app/sales/forecasts', icon: ChartPieIcon },
-          ]
-        },
-        {
-          name: 'Shipping',
-          href: '/app/shipping',
-          icon: TruckIcon,
-          permission: 'shipping',
-          children: [
-            { name: 'Dashboard', href: '/app/shipping', icon: PresentationChartLineIcon },
-            { name: 'Orders', href: '/app/shipping/orders', icon: ClipboardDocumentListIcon },
-            { name: 'Tracking', href: '/app/shipping/tracking', icon: MapPinIcon },
-            { name: 'Cost Calculator', href: '/app/shipping/calculator', icon: CalculatorIcon },
-            { name: 'Providers', href: '/app/shipping/providers', icon: TruckIcon },
-          ]
-        },
-        { name: 'Returns', href: '/app/returns', icon: ArrowPathIcon, permission: 'returns' },
-      ]
-    },
-    {
-      groupName: 'FINANCE & HR',
+      groupName: 'Finance & HR',
       show: canViewAny(['finance', 'accounting', 'hr', 'employees', 'payroll']),
       items: [
         {
@@ -395,6 +359,7 @@ function SidebarContent() {
             { name: 'Cash Flow', href: '/app/finance/cash-flow', icon: ArrowsRightLeftIcon },
             { name: 'Expenses', href: '/app/finance/expenses', icon: DocumentTextIcon, permission: 'expense' },
             { name: 'Reimbursements', href: '/app/finance/reimbursements', icon: CurrencyDollarIcon, permission: 'expense' },
+            { name: 'Tagihan Rutin', href: '/app/finance/recurring-payments', icon: CurrencyDollarIcon, permission: 'expense' },
             { name: 'Approvals', href: '/app/approval', icon: DocumentCheckIcon, permission: 'approval' },
           ]
         },
@@ -410,6 +375,7 @@ function SidebarContent() {
             { name: 'Accounts Receivable', href: '/app/accounting/receivable', icon: ArrowDownTrayIcon },
             { name: 'Accounts Payable', href: '/app/accounting/payable', icon: ArrowUpTrayIcon },
             { name: 'Fixed Assets', href: '/app/accounting/fixed-assets', icon: BuildingOfficeIcon },
+            { name: 'Proses Akhir Bulan', href: '/app/accounting/period-close', icon: CalculatorIcon },
             { name: 'Tax Management', href: '/app/accounting/tax', icon: ReceiptPercentIcon },
             { name: 'WIP Ledger', href: '/app/finance/wip-ledger', icon: CubeIcon },
             { name: 'Financial Reports', href: '/app/accounting/reports', icon: DocumentChartBarIcon },
@@ -438,7 +404,28 @@ function SidebarContent() {
       ]
     },
     {
-      groupName: 'MAINTENANCE & R&D',
+      // Ditaruh terpisah di luar alur inti Sales->...->Finance (masukan QA, 2026-08-25) -
+      // shipping itu fulfillment/pengiriman akhir, bukan bagian rantai utama.
+      groupName: 'Shipping',
+      show: canViewAny(['shipping']),
+      items: [
+        {
+          name: 'Shipping',
+          href: '/app/shipping',
+          icon: TruckIcon,
+          permission: 'shipping',
+          children: [
+            { name: 'Dashboard', href: '/app/shipping', icon: PresentationChartLineIcon },
+            { name: 'Orders', href: '/app/shipping/orders', icon: ClipboardDocumentListIcon },
+            { name: 'Tracking', href: '/app/shipping/tracking', icon: MapPinIcon },
+            { name: 'Cost Calculator', href: '/app/shipping/calculator', icon: CalculatorIcon },
+            { name: 'Providers', href: '/app/shipping/providers', icon: TruckIcon },
+          ]
+        },
+      ]
+    },
+    {
+      groupName: 'Maintenance & R&D',
       show: canViewAny(['maintenance', 'rd', 'waste', 'oee']),
       items: [
         {
@@ -461,7 +448,7 @@ function SidebarContent() {
           permission: 'maintenance',
           children: [
             { name: 'Dashboard', href: '/app/maintenance', icon: PresentationChartLineIcon },
-            { name: 'Work Orders', href: '/app/maintenance/records', icon: ClipboardDocumentListIcon },
+            { name: 'SPK', href: '/app/maintenance/records', icon: ClipboardDocumentListIcon },
             { name: 'Schedule', href: '/app/maintenance/schedules', icon: CalendarDaysIcon },
             { name: 'Checklist NG', href: '/app/maintenance/checklist-ng', icon: ExclamationTriangleIcon },
             { name: 'New Request', href: '/app/maintenance/request/new', icon: ClipboardDocumentCheckIcon },
@@ -499,7 +486,7 @@ function SidebarContent() {
       ]
     },
     {
-      groupName: 'QUALITY & DCC',
+      groupName: 'Quality & DCC',
       show: canViewAny(['dcc', 'quality']),
       items: [
         {
@@ -521,7 +508,7 @@ function SidebarContent() {
       ]
     },
     {
-      groupName: 'REPORTS & SETTINGS',
+      groupName: 'Reports & Settings',
       items: [
         { name: 'Reports', href: '/app/reports', icon: DocumentChartBarIcon, permission: 'reports' },
         {
@@ -547,39 +534,14 @@ function SidebarContent() {
             { name: 'Kelola Manual', href: '/app/manual/admin', icon: Cog6ToothIcon, superAdminOnly: true },
           ]
         },
-        { name: 'Accurate Integration', href: '/app/integration/accurate', icon: ArrowPathIcon, superAdminOnly: true },
+        { name: 'Preferensi Akun', href: '/app/settings/account-preferences', icon: Cog6ToothIcon, adminOnly: true },
+        { name: 'Accurate Integration', href: '/app/integration/accurate', icon: ArrowPathIcon, adminOnly: true },
         { name: 'Settings', href: '/app/settings', icon: Cog6ToothIcon, permission: 'settings', superAdminOnly: true },
       ]
     }
   ]
 
-  // Filter menu groups based on active workspace or current page
-  const isDeskPage = location.pathname === '/desk'
-  const isDashboardPage = location.pathname === '/app'
-  const isProductionMonitoringPage = location.pathname === '/app/executive/production-monitoring'
-  const utilityPaths = [
-    '/app/profile',
-    '/app/settings',
-    '/app/chat',
-    '/app/manual',
-    '/app/tv-display',
-    '/app/search',
-    '/app/integration',
-  ]
-  const isUtilityPage = utilityPaths.some(p => location.pathname.startsWith(p))
-
-  const menuGroups = navMode === 'classic'
-    ? allMenuGroups
-    : (isDeskPage || isDashboardPage || isProductionMonitoringPage || isUtilityPage)
-      ? allMenuGroups.filter(group => group.groupName === 'MAIN')
-      : isInWorkspace && activeWorkspaceConfig
-        ? allMenuGroups.map(group => ({
-            ...group,
-            items: group.items.filter((item: any) => 
-              activeWorkspaceConfig.menus.includes(item.name)
-            )
-          })).filter(group => group.items.length > 0)
-        : allMenuGroups
+  const menuGroups = allMenuGroups
 
   const toggleExpanded = (itemName: string) => {
     setExpandedItems(prev =>
@@ -597,65 +559,67 @@ function SidebarContent() {
         .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.2); border-radius: 999px; }
         .sidebar-scroll::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.35); }
       `}</style>
-      {/* User Header */}
-      <div className="flex h-20 shrink-0 items-center border-b border-white/10 mb-1">
-        <div className="flex items-center gap-3 w-full group">
-          <div className="relative">
-            <div className="w-10 h-10 rounded-full bg-blue-500/15 border border-blue-400/20 flex items-center justify-center">
-              <UserCircleIcon className="w-6 h-6 text-blue-400" />
+      {/* Brand */}
+      <div className={clsx('flex h-16 shrink-0 items-center border-b border-white/10 mb-1', collapsed ? 'justify-center' : 'justify-between')}>
+        <div className={clsx('flex items-center gap-2.5 min-w-0', collapsed && 'justify-center')}>
+          <div className="w-8 h-8 rounded-md bg-blue-600 flex items-center justify-center shrink-0">
+            <span className="text-white text-xs font-bold tracking-tight">{companyInitials}</span>
+          </div>
+          {!collapsed && (
+            <div className="min-w-0">
+              <p className="text-white text-sm font-semibold leading-none truncate" title={companyName || undefined}>{companyName || 'ERP System'}</p>
+              <p className="text-[11px] text-slate-500 truncate mt-1">{user?.full_name || 'User'}</p>
             </div>
-            <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-slate-900"></div>
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-white text-sm font-semibold tracking-tight truncate">{user?.full_name || 'User'}</p>
-            <p className="text-xs text-slate-500 truncate">{user?.email || ''}</p>
-          </div>
+          )}
         </div>
+        {onToggleCollapse && !collapsed && (
+          <button
+            onClick={() => { setAutoExpandedFromCollapse(false); onToggleCollapse?.() }}
+            className="w-6 h-6 flex items-center justify-center rounded-full text-slate-300 bg-white/[0.08] border border-white/10 hover:bg-white/[0.15] hover:text-white transition-colors shrink-0"
+            title="Ciutkan sidebar"
+          >
+            <ChevronLeftIcon className="w-3.5 h-3.5" />
+          </button>
+        )}
       </div>
+      {onToggleCollapse && collapsed && (
+        <button
+          onClick={() => { setAutoExpandedFromCollapse(false); onToggleCollapse?.() }}
+          className="mx-auto w-6 h-6 flex items-center justify-center rounded-full text-slate-300 bg-white/[0.08] border border-white/10 hover:bg-white/[0.15] hover:text-white transition-colors shrink-0 -mt-3 mb-1"
+          title="Lebarkan sidebar"
+        >
+          <ChevronRightIcon className="w-3.5 h-3.5" />
+        </button>
+      )}
+
+      {/* Search menu */}
+      {!collapsed && (
+        <div className="relative shrink-0">
+          <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+          <input
+            type="text"
+            value={menuSearch}
+            onChange={(e) => setMenuSearch(e.target.value)}
+            placeholder="Cari menu..."
+            className="w-full pl-8 pr-2 py-2 text-sm bg-white/[0.04] border border-white/10 rounded-lg text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-blue-500/50 focus:bg-white/[0.06]"
+          />
+        </div>
+      )}
 
       <nav className="flex flex-1 flex-col" role="navigation" aria-label="Menu utama">
-        {/* Back to Desk — varian untuk Dashboard & Production Monitoring */}
-        {navMode !== 'classic' && (isDashboardPage || isProductionMonitoringPage) && (
-          <button
-            onClick={() => navigate('/desk')}
-            className="flex items-center gap-3 px-3.5 py-2.5 mb-4 text-slate-300 bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 rounded-lg transition-colors duration-150 group"
-          >
-            <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-            </svg>
-            <div className="flex-1 text-left">
-              <p className="text-[11px] text-slate-500 leading-none mb-0.5">Navigasi</p>
-              <p className="font-medium text-sm leading-none text-slate-200">Buka Desk</p>
-            </div>
-            <svg className="w-3.5 h-3.5 text-slate-500 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        )}
-
-        {/* Back to Desk — varian standar untuk modul & utility */}
-        {navMode !== 'classic' && (isInWorkspace || isUtilityPage) && (
-          <button
-            onClick={() => navigate('/desk')}
-            className="flex items-center gap-3 px-3.5 py-2.5 mb-4 text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors duration-150 group"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            <span className="font-medium text-sm">Kembali ke Desk</span>
-          </button>
-        )}
-        
         <div className="space-y-5">
           {menuGroups
             .filter((group: any) => group.show === undefined || group.show)
             .map((group: any) => {
               // Filter items based on permission and admin status
+              const q = menuSearch.trim().toLowerCase()
               const visibleItems = group.items.filter((item: any) => {
                 // If item requires super admin, check isSuperAdmin
                 if (item.superAdminOnly && !isSuperAdmin) return false
+                if (item.adminOnly && !isAdmin && !isSuperAdmin) return false
                 // Check permission
-                return !item.permission || canView(item.permission)
+                if (item.permission && !canView(item.permission)) return false
+                return !q || itemMatchesSearch(item, q)
               })
 
               if (visibleItems.length === 0) return null
@@ -663,9 +627,9 @@ function SidebarContent() {
               return (
                 <div key={group.groupName}>
                   {/* Group Label */}
-                  {group.groupName !== 'MAIN' && (
-                    <div className="px-3 mb-2 mt-1">
-                      <span className="text-[10px] font-semibold tracking-widest text-slate-600 uppercase">
+                  {group.groupName !== 'MAIN' && !collapsed && (
+                    <div className="px-3 mb-1.5 mt-1">
+                      <span className="text-[11px] font-medium text-slate-500">
                         {group.groupName}
                       </span>
                     </div>
@@ -678,38 +642,50 @@ function SidebarContent() {
                           // Menu with submenu
                           <div>
                             <button
-                              onClick={() => toggleExpanded(item.name.toLowerCase())}
+                              onClick={() => {
+                                if (collapsed) {
+                                  onToggleCollapse?.()
+                                  setAutoExpandedFromCollapse(true)
+                                }
+                                toggleExpanded(item.name.toLowerCase())
+                              }}
+                              title={collapsed ? item.name : undefined}
                               className={clsx(
-                                expandedItems.includes(item.name.toLowerCase())
-                                  ? 'bg-blue-500/15 text-blue-300'
+                                isExpanded(item.name.toLowerCase()) && !collapsed
+                                  ? 'bg-blue-600 text-white shadow-sm'
                                   : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]',
-                                'group flex w-full items-center gap-x-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-150'
+                                'group flex w-full items-center gap-x-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-150',
+                                collapsed && 'justify-center px-0'
                               )}
                             >
                               <item.icon className={clsx(
                                 'h-5 w-5 shrink-0 transition-colors duration-150',
-                                expandedItems.includes(item.name.toLowerCase())
+                                isExpanded(item.name.toLowerCase()) && !collapsed
                                   ? 'text-blue-400'
                                   : 'text-slate-500 group-hover:text-slate-300'
-                              )} aria-hidden="true" strokeWidth={expandedItems.includes(item.name.toLowerCase()) ? 2 : 1.5} />
-                              <span className={clsx(
-                                'flex-1 text-left',
-                                expandedItems.includes(item.name.toLowerCase())
-                                  ? 'text-blue-300'
-                                  : 'text-slate-300'
-                              )}>{item.name}</span>
-                              <ChevronDownIcon className={clsx(
-                                'h-4 w-4 shrink-0 transition-transform duration-200',
-                                expandedItems.includes(item.name.toLowerCase())
-                                  ? 'rotate-180 text-blue-400'
-                                  : 'text-slate-600 group-hover:text-slate-400'
-                              )} />
+                              )} aria-hidden="true" strokeWidth={isExpanded(item.name.toLowerCase()) ? 2 : 1.5} />
+                              {!collapsed && (
+                                <>
+                                  <span className={clsx(
+                                    'flex-1 text-left',
+                                    isExpanded(item.name.toLowerCase())
+                                      ? 'text-blue-300'
+                                      : 'text-slate-300'
+                                  )}>{item.name}</span>
+                                  <ChevronDownIcon className={clsx(
+                                    'h-4 w-4 shrink-0 transition-transform duration-200',
+                                    isExpanded(item.name.toLowerCase())
+                                      ? 'rotate-180 text-blue-400'
+                                      : 'text-slate-600 group-hover:text-slate-400'
+                                  )} />
+                                </>
+                              )}
                             </button>
 
                             {/* Submenu */}
                             <div className={clsx(
                               'overflow-hidden transition-all duration-200',
-                              expandedItems.includes(item.name.toLowerCase()) ? 'max-h-[800px] opacity-100 mt-1' : 'max-h-0 opacity-0'
+                              !collapsed && isExpanded(item.name.toLowerCase()) ? 'max-h-[800px] opacity-100 mt-1' : 'max-h-0 opacity-0'
                             )}>
                               <ul className="ml-4 border-l border-slate-700/60 pl-3 space-y-0.5">
                                 {item.children
@@ -722,8 +698,8 @@ function SidebarContent() {
                                           <button
                                             onClick={() => toggleExpanded(`${item.name}-${child.name}`.toLowerCase())}
                                             className={clsx(
-                                              expandedItems.includes(`${item.name}-${child.name}`.toLowerCase())
-                                                ? 'bg-blue-500/15 text-blue-300'
+                                              isExpanded(`${item.name}-${child.name}`.toLowerCase())
+                                                ? 'bg-blue-600 text-white shadow-sm'
                                                 : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.04]',
                                               'group flex w-full items-center gap-x-2.5 rounded-lg py-2 px-2.5 text-sm transition-colors duration-150'
                                             )}
@@ -732,12 +708,12 @@ function SidebarContent() {
                                             <span className="flex-1 text-left">{child.name}</span>
                                             <ChevronDownIcon className={clsx(
                                               'h-3.5 w-3.5 shrink-0 transition-transform duration-200',
-                                              expandedItems.includes(`${item.name}-${child.name}`.toLowerCase()) ? 'rotate-180 text-blue-400' : 'text-slate-500'
+                                              isExpanded(`${item.name}-${child.name}`.toLowerCase()) ? 'rotate-180 text-blue-400' : 'text-slate-500'
                                             )} />
                                           </button>
                                           <div className={clsx(
                                             'overflow-hidden transition-all duration-200',
-                                            expandedItems.includes(`${item.name}-${child.name}`.toLowerCase()) ? 'max-h-64 opacity-100 mt-0.5' : 'max-h-0 opacity-0'
+                                            isExpanded(`${item.name}-${child.name}`.toLowerCase()) ? 'max-h-64 opacity-100 mt-0.5' : 'max-h-0 opacity-0'
                                           )}>
                                             <ul className="ml-4 border-l border-slate-700/60 pl-3 space-y-0.5">
                                               {child.subChildren?.map((subChild: any) => (
@@ -747,7 +723,7 @@ function SidebarContent() {
                                                     className={({ isActive }) =>
                                                       clsx(
                                                         isActive
-                                                          ? 'bg-blue-500/15 text-blue-300'
+                                                          ? 'bg-blue-600 text-white shadow-sm'
                                                           : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.04]',
                                                         'group flex items-center gap-x-2 rounded-lg py-1.5 px-2.5 text-sm transition-colors duration-150'
                                                       )
@@ -767,7 +743,7 @@ function SidebarContent() {
                                             onClick={() => navigate(child.href)}
                                             className={clsx(
                                               isActiveHref(child.href)
-                                                ? 'bg-blue-500/15 text-blue-300'
+                                                ? 'bg-blue-600 text-white shadow-sm'
                                                 : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.04]',
                                               'group flex items-center gap-x-2.5 rounded-lg py-2 px-2.5 text-sm transition-colors duration-150 w-full text-left'
                                             )}
@@ -781,7 +757,7 @@ function SidebarContent() {
                                             className={({ isActive }) =>
                                               clsx(
                                                 isActive
-                                                  ? 'bg-blue-500/15 text-blue-300'
+                                                  ? 'bg-blue-600 text-white shadow-sm'
                                                   : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.04]',
                                                 'group flex items-center gap-x-2.5 rounded-lg py-2 px-2.5 text-sm transition-colors duration-150'
                                               )
@@ -802,19 +778,21 @@ function SidebarContent() {
                           <NavLink
                             to={item.href}
                             end
+                            title={collapsed ? item.name : undefined}
                             className={({ isActive }) =>
                               clsx(
                                 isActive
-                                  ? 'bg-blue-500/15 text-blue-300'
+                                  ? 'bg-blue-600 text-white shadow-sm'
                                   : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]',
-                                'group flex items-center gap-x-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-150'
+                                'group flex items-center gap-x-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-150',
+                                collapsed && 'justify-center px-0'
                               )
                             }
                           >
                             {({ isActive }) => (
                               <>
                                 <item.icon className="h-5 w-5 shrink-0 transition-colors duration-150" strokeWidth={isActive ? 2 : 1.5} aria-hidden="true" />
-                                {item.name}
+                                {!collapsed && item.name}
                               </>
                             )}
                           </NavLink>
@@ -829,29 +807,43 @@ function SidebarContent() {
       </nav>
 
       {/* Footer with Theme Toggle, Profile & Logout */}
-      <div className="mt-auto pt-4 border-t border-white/10 space-y-3">
+      <div className={clsx('mt-auto pt-4 border-t border-white/10 space-y-3', collapsed && 'flex flex-col items-center')}>
         {/* Theme Toggle */}
-        <div className="px-2 flex items-center justify-between">
-          <span className="text-xs font-medium text-slate-500">Theme</span>
+        {collapsed ? (
           <ThemeToggle />
-        </div>
-        
+        ) : (
+          <div className="px-2 flex items-center justify-between">
+            <span className="text-xs font-medium text-slate-500">Theme</span>
+            <ThemeToggle />
+          </div>
+        )}
+
         {/* Profile & Logout Buttons */}
-        <div className="flex gap-2 px-2">
-          <button
-            onClick={() => navigate('/app/profile')}
-            className="flex-1 px-3 py-2 text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-white/[0.04] rounded-lg transition-colors"
-          >
-            Profil
-          </button>
+        {collapsed ? (
           <button
             onClick={handleLogout}
-            className="flex-1 px-3 py-2 text-xs font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors flex items-center justify-center gap-1"
+            title="Keluar"
+            className="w-8 h-8 flex items-center justify-center text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"
           >
             <ArrowRightOnRectangleIcon className="w-4 h-4" />
-            Keluar
           </button>
-        </div>
+        ) : (
+          <div className="flex gap-2 px-2">
+            <button
+              onClick={() => navigate('/app/profile')}
+              className="flex-1 px-3 py-2 text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-white/[0.04] rounded-lg transition-colors"
+            >
+              Profil
+            </button>
+            <button
+              onClick={handleLogout}
+              className="flex-1 px-3 py-2 text-xs font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors flex items-center justify-center gap-1"
+            >
+              <ArrowRightOnRectangleIcon className="w-4 h-4" />
+              Keluar
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )
@@ -859,6 +851,9 @@ function SidebarContent() {
 
 export default function Sidebar({ open, setOpen }: SidebarProps) {
   const [isMobile, setIsMobile] = useState(false);
+  // Icon-only rail mode (desktop only) - persist di localStorage + broadcast event supaya
+  // Layout.tsx bisa ikut nyesuain padding konten tanpa perlu di-lift lewat prop.
+  const [collapsed, setCollapsed] = useState(() => localStorage.getItem('erp_sidebar_collapsed') === 'true');
 
   useEffect(() => {
     const checkMobile = () => {
@@ -870,6 +865,27 @@ export default function Sidebar({ open, setOpen }: SidebarProps) {
 
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Header.tsx punya tombol hamburger sendiri (dipakai buka/tutup drawer di mobile) -
+  // di desktop, tombol yang sama dipakai Layout.tsx buat toggle collapse ini (lihat
+  // handleHeaderToggle di Layout.tsx) supaya tidak ada 2 kontrol beda yang bikin bingung
+  // (masukan user 2026-08-25: "tombol 3 baris itu penyebabnya"). Listener ini yang bikin
+  // Sidebar ikut sinkron kalau collapse di-toggle dari luar (Header), bukan cuma dari
+  // tombol panah di dalam sidebar sendiri.
+  useEffect(() => {
+    const syncCollapsed = () => setCollapsed(localStorage.getItem('erp_sidebar_collapsed') === 'true');
+    window.addEventListener('erp-sidebar-collapsed-changed', syncCollapsed);
+    return () => window.removeEventListener('erp-sidebar-collapsed-changed', syncCollapsed);
+  }, []);
+
+  const toggleCollapsed = () => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem('erp_sidebar_collapsed', String(next));
+      window.dispatchEvent(new Event('erp-sidebar-collapsed-changed'));
+      return next;
+    });
+  };
 
   const handleMobileClose = () => {
     // Only close if we're actually on mobile
@@ -932,9 +948,9 @@ export default function Sidebar({ open, setOpen }: SidebarProps) {
       )}
 
       {/* Desktop sidebar */}
-      <div className={`hidden lg:fixed lg:inset-y-0 lg:z-40 lg:w-64 lg:flex-col transition-all duration-300 ${open ? 'lg:flex' : 'lg:hidden'
+      <div className={`hidden lg:fixed lg:inset-y-0 lg:z-40 ${collapsed ? 'lg:w-[84px]' : 'lg:w-64'} lg:flex-col transition-all duration-300 ${open ? 'lg:flex' : 'lg:hidden'
         }`}>
-        <SidebarContent />
+        <SidebarContent collapsed={collapsed} onToggleCollapse={toggleCollapsed} />
       </div>
     </>
   )

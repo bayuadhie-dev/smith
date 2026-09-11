@@ -6,9 +6,81 @@ import {
   ExclamationTriangleIcon,
   ShieldCheckIcon,
   ServerIcon,
-  DocumentTextIcon
+  DocumentTextIcon,
+  CircleStackIcon,
+  ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
+import { usePermissions } from '../../contexts/PermissionContext';
+
+const DatabaseSwitchCard: React.FC = () => {
+  const { isSuperAdmin } = usePermissions();
+  const [status, setStatus] = useState<{ active: string; label: string; options: Record<string, string> } | null>(null);
+  const [switching, setSwitching] = useState(false);
+
+  const loadStatus = async () => {
+    try {
+      const res = await axiosInstance.get('/api/settings/database-switch/status');
+      setStatus(res.data?.data || null);
+    } catch (error) {
+      console.error('Failed to load database switch status:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (isSuperAdmin) loadStatus();
+  }, [isSuperAdmin]);
+
+  if (!isSuperAdmin) return null;
+
+  const handleSwitch = async (target: string) => {
+    const label = status?.options?.[target] || target;
+    if (!confirm(
+      `Pindah database aktif ke "${label}"?\n\nEfeknya LANGSUNG ke semua orang yang sedang buka erp.graterp.my.id - backend akan restart singkat (~3 detik) lalu jalan dengan database ini.`
+    )) {
+      return;
+    }
+    setSwitching(true);
+    try {
+      await axiosInstance.post('/api/settings/database-switch', { target });
+      alert(`Sedang pindah ke "${label}"... tunggu ~5 detik lalu refresh halaman.`);
+    } catch (error: any) {
+      alert('Gagal switch database: ' + (error?.response?.data?.details || error.message));
+    } finally {
+      setSwitching(false);
+    }
+  };
+
+  return (
+    <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow p-6 border-2 border-red-300 dark:border-red-700">
+      <div className="flex items-center gap-2 mb-2">
+        <CircleStackIcon className="h-6 w-6 text-red-600" />
+        <h3 className="font-bold text-gray-900 dark:text-white">Switch Database Aktif (Super Admin)</h3>
+      </div>
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+        Pindahkan database yang dipakai erp.graterp.my.id. <strong>Berlaku untuk SEMUA orang</strong> yang sedang mengakses aplikasi, bukan cuma Anda.
+      </p>
+      {status && (
+        <div className="mb-4 text-sm">
+          Database aktif sekarang: <span className="font-mono font-bold text-blue-600 dark:text-blue-400">{status.label}</span>
+        </div>
+      )}
+      <div className="flex flex-wrap gap-3">
+        {status && Object.entries(status.options).map(([key, label]) => (
+          <button
+            key={key}
+            onClick={() => handleSwitch(key)}
+            disabled={switching || status.active === key}
+            className={`btn flex items-center gap-2 ${status.active === key ? 'bg-gray-300 dark:bg-gray-700 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700 text-white'}`}
+          >
+            <ArrowPathIcon className="w-4 h-4" />
+            {status.active === key ? `${label} (aktif)` : `Pindah ke: ${label}`}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
 interface SystemConfig {
   id: string;
   category: string;
@@ -211,6 +283,8 @@ const AdvancedSystemConfig: React.FC = () => {
 
   return (
     <div className="p-6">
+      <DatabaseSwitchCard />
+
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">

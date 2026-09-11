@@ -309,7 +309,7 @@ const ManualAdmin: React.FC = () => {
             </button>
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Kelola User Manual
+                Kelola Manual
               </h1>
               <p className="text-gray-600 dark:text-gray-400">
                 Buat dan kelola dokumentasi sistem

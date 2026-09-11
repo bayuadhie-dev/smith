@@ -4,7 +4,7 @@ import { useGetCompanyPublicQuery } from '../services/api'
 
 const ROUTE_TITLES: Record<string, string> = {
   '/app/dashboard': 'Dashboard',
-  '/app/production/work-orders': 'Work Orders',
+  '/app/production/work-orders': 'SPK',
   '/app/production/input': 'Input Produksi',
   '/app/production/daily-controller': 'Daily Controller',
   '/app/production/live-monitoring': 'Live Monitoring',

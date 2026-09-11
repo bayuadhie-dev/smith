@@ -216,22 +216,30 @@ const { id } = useParams()
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Primary UOM *
                     </label>
-                    <select {...register('primary_uom')} className="input-field">
+                    <select {...register('primary_uom', { required: 'Primary UOM is required' })} className="input-field">
+                      <option value="">Select UOM</option>
                       {uomList.map((uom) => (
                         <option key={uom} value={uom}>{uom}</option>
                       ))}
                     </select>
+                    {errors.primary_uom && (
+                      <p className="mt-1 text-sm text-red-600">{errors.primary_uom.message}</p>
+                    )}
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Material Type *
                     </label>
-                    <select {...register('material_type')} className="input-field">
+                    <select {...register('material_type', { required: 'Material type is required' })} className="input-field">
+                      <option value="">Select material type</option>
                       {materialTypes.map((type) => (
                         <option key={type} value={type}>{type.replace('_', ' ')}</option>
                       ))}
                     </select>
+                    {errors.material_type && (
+                      <p className="mt-1 text-sm text-red-600">{errors.material_type.message}</p>
+                    )}
                   </div>
 
                   <div>

@@ -94,8 +94,8 @@ const defaultMessages: Record<EmptyStateType, { title: string; description: stri
     description: 'Kosong kaya kaleng krupuk pas lebaran. Belum ada item di gudang.'
   },
   production: {
-    title: 'Tidak ada work order',
-    description: 'Suwung, durung ono data. Buat work order untuk memulai produksi.'
+    title: 'Tidak ada SPK',
+    description: 'Suwung, durung ono data. Buat SPK untuk memulai produksi.'
   },
   delivery: {
     title: 'Tidak ada pengiriman',

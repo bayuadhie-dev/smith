@@ -27,7 +27,7 @@ const routeLabels: Record<string, string> = {
   'movements': 'Movements',
   // Production
   'production': 'Production',
-  'work-orders': 'Work Orders',
+  'work-orders': 'SPK',
   'scheduling': 'Scheduling',
   'mrp': 'MRP',
   'demand-planning': 'Demand Planning',
@@ -70,7 +70,7 @@ const routeLabels: Record<string, string> = {
   'roster': 'Work Roster',
   // Maintenance
   'maintenance': 'Maintenance',
-  'records': 'Work Orders',
+  'records': 'SPK',
   'schedules': 'Schedule',
   'request': 'Request',
   // R&D

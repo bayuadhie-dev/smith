@@ -13,6 +13,7 @@ import {
 import axiosInstance from '../../utils/axiosConfig';
 import { formatRupiah } from '../../utils/currencyUtils';
 import { useLanguage } from '../../contexts/LanguageContext';
+import SearchableSelect from '../../components/SearchableSelect';
 
 interface BOMItem {
   id: number;
@@ -582,19 +583,14 @@ const BOMManagement: React.FC = () => {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">{t('production.product')}</label>
-                  <select
-                    value={bomForm.product_id}
-                    onChange={(e) => setBomForm({...bomForm, product_id: parseInt(e.target.value)})}
-                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  <SearchableSelect
+                    options={products}
+                    value={bomForm.product_id || null}
+                    onChange={(value) => setBomForm({...bomForm, product_id: Number(value)})}
+                    placeholder="Select Product"
+                    className="mt-1 w-full"
                     disabled={!!selectedBOM}
-                  >
-                    <option value={0}>Select Product</option>
-                    {products.map((product) => (
-                      <option key={product.id} value={product.id}>
-                        {product.name} ({product.code})
-                      </option>
-                    ))}
-                  </select>
+                  />
                 </div>
 
                 <div>

@@ -1587,7 +1587,7 @@ const DailyTab: React.FC<{
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow border overflow-hidden">
         <div className="p-4 border-b bg-gray-50 dark:bg-gray-900">
           <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Detail Harian - Produksi per Hari per Produk</h3>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Klik tanggal untuk melihat detail shift, mesin, dan work order</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Klik tanggal untuk melihat detail shift, mesin, dan SPK</p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
@@ -3747,7 +3747,7 @@ const GraphTab: React.FC<{ data: any }> = ({ data }) => {
       {/* Gantt Chart - WO Timeline */}
       <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
-          📅 Gantt Chart - Timeline Produksi per Work Order
+          📅 Gantt Chart - Timeline Produksi per SPK
         </h3>
         {ganttData.length > 0 ? (
           <>
@@ -3796,14 +3796,14 @@ const GraphTab: React.FC<{ data: any }> = ({ data }) => {
             </div>
             <div className="mt-3 p-3 bg-green-50 rounded-lg">
               <p className="text-xs text-green-900">
-                <strong>Summary:</strong> Total {ganttData.length} Work Orders aktif dalam periode ini. 
+                <strong>Summary:</strong> Total {ganttData.length} SPK aktif dalam periode ini. 
                 Rata-rata durasi: {ganttData.length > 0 ? (ganttData.reduce((sum: number, wo: any) => sum + wo.days.length, 0) / ganttData.length).toFixed(1) : 0} hari per WO.
               </p>
             </div>
           </>
         ) : (
           <div className="p-8 text-center text-gray-400">
-            No work order data available for gantt chart
+            No SPK data available for gantt chart
           </div>
         )}
       </div>

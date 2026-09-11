@@ -116,6 +116,15 @@ const SettingsMain: React.FC = () => {
       category: 'system',
       isNew: true
     },
+    {
+      id: 'account-preferences',
+      title: 'Preferensi Akun',
+      description: 'Configure default GL accounts for items, sales, purchasing, tax, and inventory',
+      icon: ScaleIcon,
+      path: '/app/settings/account-preferences',
+      category: 'system',
+      isNew: true
+    },
     // Integration Settings
     {
       id: 'external-connectors',

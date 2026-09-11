@@ -191,7 +191,7 @@ const ProductLifecycle: React.FC = () => {
             Back to Dashboard
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Product Lifecycle</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Lifecycle Produk</h1>
             <p className="text-gray-600 mt-1">Track product performance across lifecycle stages</p>
           </div>
         </div>

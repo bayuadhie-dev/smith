@@ -91,6 +91,9 @@ const CircularProgress = ({ value, size = 70, strokeWidth = 6, color = 'blue' }:
 };
 
 const getApiBase = () => {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
   const hostname = window.location.hostname;
   if (hostname === 'erp.graterp.my.id' || hostname.endsWith('.graterp.my.id')) {
     return 'https://api.graterp.my.id/api';
@@ -285,7 +288,7 @@ export default function OEEDashboardEnhanced() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
             <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg"><ChartBarIcon className="h-8 w-8 text-white" /></div>
-            OEE Dashboard & RCA
+            OEE Monitoring
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-2 ml-14">Overall Equipment Effectiveness dengan Root Cause Analysis Otomatis</p>
         </div>
@@ -305,8 +308,8 @@ export default function OEEDashboardEnhanced() {
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border p-12 text-center">
           <DocumentChartBarIcon className="h-16 w-16 text-blue-400 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">Belum Ada Data Produksi</h3>
-          <p className="text-gray-500 dark:text-gray-400 mb-6">Data OEE dan RCA akan muncul setelah ada input produksi dari Work Order.</p>
-          <Link to="/app/production/work-orders" className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700"><WrenchScrewdriverIcon className="h-5 w-5" />Lihat Work Orders</Link>
+          <p className="text-gray-500 dark:text-gray-400 mb-6">Data OEE dan RCA akan muncul setelah ada input produksi dari SPK.</p>
+          <Link to="/app/production/work-orders" className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700"><WrenchScrewdriverIcon className="h-5 w-5" />Lihat SPK</Link>
         </div>
       ) : (
         <>
@@ -507,7 +510,7 @@ export default function OEEDashboardEnhanced() {
                               </td>
                               <td className="px-4 py-3">
                                 <span className={`px-2 py-1 text-xs rounded-full ${record.source === 'shift_production' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'}`}>
-                                  {record.source === 'shift_production' ? 'Work Order' : 'OEE Input'}
+                                  {record.source === 'shift_production' ? 'SPK' : 'OEE Input'}
                                 </span>
                               </td>
                             </tr>

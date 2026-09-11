@@ -2,11 +2,11 @@ import { Navigate } from 'react-router-dom'
 import { useAppSelector } from '../hooks/redux'
 
 interface RoleBasedRedirectProps {
-  deskPath?: string
+  defaultPath?: string
 }
 
-export default function RoleBasedRedirect({ 
-  deskPath = '/desk' 
+export default function RoleBasedRedirect({
+  defaultPath = '/app'
 }: RoleBasedRedirectProps) {
   const { user, isAuthenticated, loading } = useAppSelector((state) => state.auth)
   
@@ -39,6 +39,6 @@ export default function RoleBasedRedirect({
     )
   }
   
-  // All authenticated users go to desk (modules will be filtered by permissions)
-  return <Navigate to={deskPath} replace />
+  // All authenticated users go to the main dashboard
+  return <Navigate to={defaultPath} replace />
 }

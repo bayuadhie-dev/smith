@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { notificationService } from '../../services/notificationService';
 import axiosInstance from '../../utils/axiosConfig';
+import AccountPreferences from './AccountPreferences';
 import {
   ArrowDownTrayIcon,
   ArrowPathIcon,
@@ -20,6 +21,7 @@ import {
   GlobeAltIcon,
   KeyIcon,
   LinkIcon,
+  ScaleIcon,
   ShieldCheckIcon,
   UsersIcon
 } from '@heroicons/react/24/outline';
@@ -184,6 +186,7 @@ const Settings: React.FC = () => {
     { id: 'import', name: t('settings.data_import'), icon: DocumentArrowUpIcon },
     { id: 'advanced', name: 'Advanced Settings', icon: KeyIcon },
     { id: 'integration', name: 'Integration', icon: LinkIcon },
+    { id: 'account-preferences', name: 'Preferensi Akun', icon: ScaleIcon },
   ];
 
   const handleCompanyChange = (field: string, value: string) => {
@@ -593,7 +596,7 @@ const Settings: React.FC = () => {
       { 
         type: 'info' as const, 
         title: 'Production Update',
-        message: 'Work Order WO-001 completed successfully. Quality check pending.',
+        message: 'SPK WO-001 completed successfully. Quality check pending.',
         category: 'production'
       },
       { 
@@ -1677,6 +1680,9 @@ const Settings: React.FC = () => {
           </div>
         );
 
+      case 'account-preferences':
+        return <AccountPreferences />;
+
       case 'integration':
         return (
           <div className="space-y-6">
@@ -1773,7 +1779,7 @@ const Settings: React.FC = () => {
   return (
     <div className="container mx-auto p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('settings.title')}</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Settings</h1>
         <p className="text-gray-600 dark:text-gray-300">{t('settings.subtitle')}</p>
       </div>
 

@@ -1,19 +1,50 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
+import toast from 'react-hot-toast';
 import {
   ArrowTrendingDownIcon,
   ArrowTrendingUpIcon,
   BuildingOfficeIcon,
   ChartBarIcon,
   CheckCircleIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
   CogIcon,
   CubeIcon,
   ExclamationTriangleIcon,
+  ShoppingCartIcon,
   TruckIcon
 
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
+
+interface TimePhasedContributor {
+  // 'type' dan field forecast_* baru dari Safety Stock (opsional - baris lama dari
+  // MRP Time-Phased murni tetap kompatibel tanpa field ini, backend selalu isi 'type'
+  // untuk kontributor baru tapi kita tetap treat sebagai opsional untuk aman).
+  type?: 'sales_order' | 'safety_stock_forecast';
+  sales_order_id?: number;
+  order_number?: string;
+  forecast_id?: number;
+  forecast_number?: string;
+  product_name: string | null;
+  quantity: number;
+  month: string;
+}
+
+interface TimePhasedMaterial {
+  material_id: number;
+  material_name: string | null;
+  uom: string | null;
+  total_required: number;
+  available_stock: number;
+  incoming_po_qty: number;
+  shortage_qty: number;
+  // Baru dari Safety Stock - opsional untuk kompatibilitas kalau backend lama.
+  shortage_source?: 'sales_order' | 'safety_stock_forecast';
+  contributors: TimePhasedContributor[];
+}
 interface MRPMetrics {
   total_work_orders?: number;
   pending_orders?: number;
@@ -79,9 +110,57 @@ const MRPDashboard: React.FC = () => {
   const [planningTimeline, setPlanningTimeline] = useState<PlanningTimeline[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const [searchParams] = useSearchParams();
+  const timePhaseSoId = searchParams.get('sales_order_id');
+  const [timePhasedData, setTimePhasedData] = useState<TimePhasedMaterial[] | null>(null);
+  const [loadingTimePhased, setLoadingTimePhased] = useState(false);
+  const [expandedMaterial, setExpandedMaterial] = useState<number | null>(null);
+  const [creatingPoFor, setCreatingPoFor] = useState<number | null>(null);
+
   useEffect(() => {
     loadMRPData();
   }, []);
+
+  useEffect(() => {
+    if (timePhaseSoId) {
+      loadTimePhasedCheck(timePhaseSoId);
+    }
+  }, [timePhaseSoId]);
+
+  const loadTimePhasedCheck = async (soId: string) => {
+    try {
+      setLoadingTimePhased(true);
+      const res = await axiosInstance.get(`/api/mrp/time-phased-check/${soId}`);
+      setTimePhasedData(res.data.materials || []);
+    } catch (error) {
+      toast.error('Gagal memuat Time-Phased Check');
+    } finally {
+      setLoadingTimePhased(false);
+    }
+  };
+
+  const handleCreatePoFromMaterial = async (material: TimePhasedMaterial) => {
+    try {
+      setCreatingPoFor(material.material_id);
+      const res = await axiosInstance.post('/api/mrp/create-purchase-order-from-shortage', {
+        shortage_items: [{
+          material_id: material.material_id,
+          item_name: material.material_name,
+          shortage_quantity: material.shortage_qty,
+          uom: material.uom,
+        }],
+        reference_type: 'sales_order',
+        reference_id: timePhaseSoId ? Number(timePhaseSoId) : undefined,
+        reference_number: timePhaseSoId || '',
+      });
+      toast.success(res.data.message || 'Purchase Order dibuat');
+      if (timePhaseSoId) loadTimePhasedCheck(timePhaseSoId);
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Gagal membuat PO - pastikan material punya supplier terdaftar');
+    } finally {
+      setCreatingPoFor(null);
+    }
+  };
 
   const loadMRPData = async () => {
     try {
@@ -270,10 +349,151 @@ const MRPDashboard: React.FC = () => {
 
   return (
     <div className="p-6 space-y-6">
+      {/* Time-Phased Check (cross-SO aggregation) - only shown when opened
+          with ?sales_order_id=X, e.g. from a Forecast-conversion notification */}
+      {timePhaseSoId && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-amber-300 dark:border-amber-700 overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-amber-50 dark:bg-amber-900/20">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+              <ExclamationTriangleIcon className="h-6 w-6 text-amber-600" />
+              Time-Phased Check — SO #{timePhaseSoId}
+            </h2>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+              Kebutuhan material digabung dengan semua Sales Order confirmed lain dalam rolling 2 bulan (bulan berjalan + 1 bulan ke depan) yang memakai material yang sama.
+            </p>
+          </div>
+          <div className="p-4">
+            {loadingTimePhased ? (
+              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 py-6 justify-center">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                Menghitung agregasi...
+              </div>
+            ) : !timePhasedData || timePhasedData.length === 0 ? (
+              <div className="text-center py-8 text-gray-400">
+                <CheckCircleIcon className="h-10 w-10 mx-auto mb-2" />
+                Tidak ada material relevan (SO ini mungkin belum punya BOM aktif).
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                      <th className="py-2 pr-4">Material</th>
+                      <th className="py-2 pr-4 text-right">Total Kebutuhan (2 bulan)</th>
+                      <th className="py-2 pr-4 text-right">Stok Tersedia</th>
+                      <th className="py-2 pr-4 text-right">PO Masuk</th>
+                      <th className="py-2 pr-4 text-right">Shortage</th>
+                      <th className="py-2 pr-4"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {timePhasedData.map((m) => (
+                      <React.Fragment key={m.material_id}>
+                        <tr className={`border-b border-gray-100 dark:border-gray-700 ${m.shortage_qty > 0 ? 'bg-red-50 dark:bg-red-900/10' : ''}`}>
+                          <td className="py-2 pr-4">
+                            <button
+                              type="button"
+                              onClick={() => setExpandedMaterial(expandedMaterial === m.material_id ? null : m.material_id)}
+                              className="flex items-center gap-1 font-medium text-gray-900 dark:text-white hover:underline"
+                            >
+                              {expandedMaterial === m.material_id ? <ChevronDownIcon className="h-4 w-4" /> : <ChevronRightIcon className="h-4 w-4" />}
+                              {m.material_name || `Material #${m.material_id}`}
+                            </button>
+                          </td>
+                          <td className="py-2 pr-4 text-right">{m.total_required.toLocaleString()} {m.uom}</td>
+                          <td className="py-2 pr-4 text-right">{m.available_stock.toLocaleString()}</td>
+                          <td className="py-2 pr-4 text-right">{m.incoming_po_qty.toLocaleString()}</td>
+                          <td className={`py-2 pr-4 text-right font-semibold ${m.shortage_qty > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                            {m.shortage_qty > 0 ? m.shortage_qty.toLocaleString() : 'Cukup'}
+                            {m.shortage_qty > 0 && m.shortage_source && (
+                              <span
+                                className={`ml-2 align-middle inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                                  m.shortage_source === 'safety_stock_forecast'
+                                    ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
+                                    : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                                }`}
+                                title={m.shortage_source === 'safety_stock_forecast' ? 'Angka shortage diambil dari Forecast (Safety Stock)' : 'Angka shortage diambil dari Sales Order'}
+                              >
+                                {m.shortage_source === 'safety_stock_forecast' ? 'Safety Stock' : 'SO'}
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-2 pr-4">
+                            {m.shortage_qty > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => handleCreatePoFromMaterial(m)}
+                                disabled={creatingPoFor === m.material_id}
+                                className="flex items-center gap-1 px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 disabled:opacity-50"
+                              >
+                                <ShoppingCartIcon className="h-3.5 w-3.5" />
+                                {creatingPoFor === m.material_id ? 'Membuat...' : 'Buat PO'}
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                        {expandedMaterial === m.material_id && (
+                          <tr>
+                            <td colSpan={6} className="bg-gray-50 dark:bg-gray-900 px-4 py-3">
+                              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Rincian kontributor - dari Sales Order (window 2 bulan) dan/atau dari Forecast (Safety Stock):</p>
+                              <table className="min-w-full text-xs">
+                                <thead>
+                                  <tr className="text-left text-gray-500 dark:text-gray-400">
+                                    <th className="py-1 pr-4">Sumber</th>
+                                    <th className="py-1 pr-4">Referensi</th>
+                                    <th className="py-1 pr-4">Produk</th>
+                                    <th className="py-1 pr-4">Bulan</th>
+                                    <th className="py-1 pr-4 text-right">Qty</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {m.contributors.map((c, i) => {
+                                    const isForecast = c.type === 'safety_stock_forecast';
+                                    return (
+                                      <tr key={i} className="border-t border-gray-200 dark:border-gray-700">
+                                        <td className="py-1 pr-4">
+                                          <span
+                                            className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                                              isForecast
+                                                ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
+                                                : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                                            }`}
+                                          >
+                                            {isForecast ? 'Forecast (Safety Stock)' : 'SO'}
+                                          </span>
+                                        </td>
+                                        <td className="py-1 pr-4">
+                                          {isForecast ? (
+                                            <span>{c.forecast_number || '-'}</span>
+                                          ) : (
+                                            <Link to={`/app/sales/orders/${c.sales_order_id}/edit`} className="text-blue-600 hover:underline">{c.order_number}</Link>
+                                          )}
+                                        </td>
+                                        <td className="py-1 pr-4">{c.product_name || '-'}</td>
+                                        <td className="py-1 pr-4">{c.month}</td>
+                                        <td className="py-1 pr-4 text-right">{c.quantity.toLocaleString()}</td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex justify-between items-center">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Material Requirements Planning</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">MRP</h1>
           <p className="text-gray-600 dark:text-gray-300">Integrated production planning and material requirements analysis</p>
           <div className="mt-2 flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
             <span className="flex items-center">
@@ -330,7 +550,7 @@ const MRPDashboard: React.FC = () => {
               <CubeIcon className="h-6 w-6 text-blue-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Work Orders</p>
+              <p className="text-sm font-medium text-gray-600">Total SPK</p>
               <p className="text-2xl font-bold text-gray-900">{formatNumber(metrics.total_work_orders)}</p>
             </div>
           </div>

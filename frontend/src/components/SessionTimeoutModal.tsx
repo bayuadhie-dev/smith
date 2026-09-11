@@ -210,10 +210,12 @@ export default function SessionTimeoutModal({ onExtendSession }: SessionTimeoutM
     try {
       // Call extend-session endpoint - use same logic as axiosConfig
       const hostname = window.location.hostname;
-      const baseURL = (hostname === 'erp.graterp.my.id' || hostname.endsWith('.graterp.my.id'))
+      const baseURL = import.meta.env.VITE_API_URL
+        ? import.meta.env.VITE_API_URL.replace(/\/api$/, '')
+        : (hostname === 'erp.graterp.my.id' || hostname.endsWith('.graterp.my.id'))
         ? 'https://api.graterp.my.id'
         : `http://${hostname}:5000`;
-      
+
       const response = await fetch(`${baseURL}/api/auth/extend-session`, {
         method: 'POST',
         headers: {

@@ -888,6 +888,7 @@ const GroupChat: React.FC = () => {
   // ─── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="fixed inset-0 top-16 flex bg-[#313338] text-gray-100 overflow-hidden font-sans" style={{ fontFamily: "'gg sans','Noto Sans',Arial,sans-serif" }}>
+      <h1 className="sr-only">Group Chat</h1>
 
       {/* ═══ LEFT: Channel Sidebar ═══ */}
       <div className="w-60 bg-[#2b2d31] flex flex-col flex-shrink-0">

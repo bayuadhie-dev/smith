@@ -2219,7 +2219,7 @@ const DocumentControlCenter = () => {
     { key: 'quality_records', label: 'Rekaman Mutu', icon: Archive, color: 'text-purple-600' },
     { key: 'capa', label: 'CAPA', icon: AlertTriangle, color: 'text-orange-600' },
     { key: 'memos', label: 'Komunikasi Internal', icon: Mail, color: 'text-green-600' },
-    { key: 'destruction', label: 'Pemusnahan', icon: Trash2, color: 'text-red-600' },
+    { key: 'destruction', label: 'Pemusnahan Dokumen', icon: Trash2, color: 'text-red-600' },
   ];
 
   return (

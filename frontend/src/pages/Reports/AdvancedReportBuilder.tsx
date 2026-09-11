@@ -56,7 +56,7 @@ const AdvancedReportBuilder: React.FC = () => {
     },
     {
       id: 'production',
-      name: 'Work Orders',
+      name: 'SPK',
       table: 'work_orders',
       fields: ['work_order_number', 'product_name', 'quantity', 'start_date', 'end_date', 'status']
     },

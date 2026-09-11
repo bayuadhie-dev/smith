@@ -24,15 +24,15 @@ export default defineConfig({
     logOverride: { 'this-is-undefined-in-esm': 'silent' }
   },
   server: {
-    port: 3000,
+    port: Number(process.env.PORT) || 3000,
     host: '0.0.0.0',  // Allow LAN access
     allowedHosts: true,  // Allow all hosts for dev server
     cors: true,  // Enable CORS for dev server
-    origin: 'http://erp.graterp.my.id:3000',  // Set proper origin
+    origin: process.env.VITE_ORIGIN || 'http://erp.graterp.my.id:3000',  // Set proper origin
     hmr: true,  // Enable HMR
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: process.env.VITE_API_PROXY_TARGET || 'http://localhost:5000',
         changeOrigin: true,
       },
     },

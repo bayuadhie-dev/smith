@@ -31,6 +31,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^3.0.6",
+    "fabric": "^6.9.1",
     "face-api.js": "^0.20.0",
     "framer-motion": "^10.16.16",
     "html2pdf.js": "^0.14.0",

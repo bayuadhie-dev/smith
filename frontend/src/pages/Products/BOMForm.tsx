@@ -155,7 +155,7 @@ const BOMForm: React.FC = () => {
 
   const fetchMaterials = async () => {
     try {
-      const response = await fetch('/api/materials?per_page=1000', {
+      const response = await fetch('/api/materials?per_page=2000', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

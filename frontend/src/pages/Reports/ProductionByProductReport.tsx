@@ -11,6 +11,7 @@ import {
   ChevronRightIcon,
 } from '@heroicons/react/24/outline';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
+import SearchableSelect from '../../components/SearchableSelect';
 
 interface ProductionData {
   product_id: number;
@@ -202,18 +203,13 @@ export default function ProductionByProductReport() {
           {/* Product Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Produk</label>
-            <select
-              value={selectedProduct}
-              onChange={(e) => setSelectedProduct(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Semua Produk</option>
-              {products.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.code} - {p.name}
-                </option>
-              ))}
-            </select>
+            <SearchableSelect
+              options={products}
+              value={selectedProduct || null}
+              onChange={(value) => setSelectedProduct(value ? String(value) : '')}
+              placeholder="Semua Produk"
+              className="w-full"
+            />
           </div>
 
           {/* Refresh Button */}

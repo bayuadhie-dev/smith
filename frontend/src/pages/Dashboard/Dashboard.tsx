@@ -319,7 +319,7 @@ export default function Dashboard() {
               <ArrowRightIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600 dark:text-gray-300 transition-colors" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('navigation.production')}</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">Manufacturing and work order management</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">Manufacturing and SPK management</p>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-gray-500 dark:text-gray-400">Active Orders</span>
@@ -478,7 +478,7 @@ export default function Dashboard() {
             New OEE Record
           </Link>
           <Link to="/app/production/work-orders/new" className="btn-secondary text-center">
-            Create Work Order
+            Create SPK
           </Link>
           <Link to="/app/quality/inspections/new" className="btn-secondary text-center">
             Quality Inspection

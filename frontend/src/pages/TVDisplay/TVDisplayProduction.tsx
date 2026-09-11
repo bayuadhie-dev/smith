@@ -90,7 +90,7 @@ export default function TVDisplayProduction() {
           <div className="bg-gradient-to-br from-green-600 to-green-800 p-6 rounded-2xl shadow-xl border border-green-400/30">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-green-200 text-sm uppercase tracking-wider">Work Order Aktif</p>
+                <p className="text-green-200 text-sm uppercase tracking-wider">SPK Aktif</p>
                 <p className="text-4xl font-bold mt-2">{data.active_work_orders?.length || 0}</p>
                 <p className="text-green-300 text-sm mt-1">sedang berjalan</p>
               </div>
@@ -121,11 +121,11 @@ export default function TVDisplayProduction() {
           </div>
         </div>
 
-        {/* Active Work Orders */}
+        {/* Active SPK */}
         <div className="bg-black/30 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden">
           <div className="bg-gradient-to-r from-blue-600/50 to-purple-600/50 px-6 py-4 border-b border-white/10">
             <h2 className="text-2xl font-bold flex items-center gap-3">
-              <span className="animate-pulse">🔄</span> Work Order Aktif
+              <span className="animate-pulse">🔄</span> SPK Aktif
             </h2>
           </div>
           
@@ -133,7 +133,7 @@ export default function TVDisplayProduction() {
             {data.active_work_orders?.length === 0 ? (
               <div className="text-center py-12 text-gray-400">
                 <p className="text-6xl mb-4">📭</p>
-                <p className="text-xl">Tidak ada Work Order aktif saat ini</p>
+                <p className="text-xl">Tidak ada SPK aktif saat ini</p>
               </div>
             ) : (
               data.active_work_orders?.map((wo: any, index: number) => (

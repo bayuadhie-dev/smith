@@ -72,7 +72,7 @@ const MobileNavigation: React.FC = () => {
         { name: t('navigation.dashboard'), href: '/app/finance', icon: CurrencyDollarIcon },
         { name: 'Accounting', href: '/app/finance/accounting', icon: CurrencyDollarIcon },
         { name: 'Budget', href: '/app/finance/budget', icon: CurrencyDollarIcon },
-        { name: 'Reports', href: '/app/finance/reports', icon: CurrencyDollarIcon }
+        { name: 'Reports', href: '/app/accounting/reports', icon: CurrencyDollarIcon }
       ]
     },
     {
@@ -92,7 +92,7 @@ const MobileNavigation: React.FC = () => {
       icon: Wrench,
       children: [
         { name: 'Dashboard', href: '/app/maintenance', icon: Wrench },
-        { name: 'Work Orders', href: '/app/maintenance/records', icon: Wrench },
+        { name: 'SPK', href: '/app/maintenance/records', icon: Wrench },
         { name: 'Schedule', href: '/app/maintenance/schedules', icon: Wrench },
         { name: 'New Request', href: '/app/maintenance/request/new', icon: Wrench },
         { name: 'Analytics', href: '/app/maintenance/analytics', icon: Wrench }

@@ -139,7 +139,7 @@ export default function TVDisplayOverview() {
             <CogIcon className="h-12 w-12 text-blue-300" />
             <div className="text-right">
               <div className="text-3xl font-bold">{data?.production.active_work_orders}</div>
-              <div className="text-blue-300">Active Work Orders</div>
+              <div className="text-blue-300">Active SPK</div>
             </div>
           </div>
           <div className="space-y-3">

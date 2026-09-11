@@ -307,7 +307,7 @@ const ProductCategories: React.FC = () => {
             Back to Dashboard
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Product Categories</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Kategori Produk</h1>
             <p className="text-gray-600 mt-1">Organize and manage your product categories</p>
           </div>
         </div>

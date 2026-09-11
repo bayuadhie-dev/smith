@@ -185,7 +185,7 @@ const LandingPage: React.FC = () => {
       href: '/app/production/work-orders',
       color: 'text-gray-600',
       gradient: 'from-gray-600 to-gray-800',
-      features: ['Work Orders', 'Production Planning', 'Machine Management', 'OEE Monitoring']
+      features: ['SPK', 'Production Planning', 'Machine Management', 'OEE Monitoring']
     },
     {
       id: 'quality',
@@ -235,7 +235,7 @@ const LandingPage: React.FC = () => {
       href: '/app/maintenance',
       color: 'text-teal-600',
       gradient: 'from-teal-600 to-teal-800',
-      features: ['Preventive Maintenance', 'Asset Tracking', 'Work Orders', 'Maintenance Analytics']
+      features: ['Preventive Maintenance', 'Asset Tracking', 'SPK', 'Maintenance Analytics']
     }
   ];
 

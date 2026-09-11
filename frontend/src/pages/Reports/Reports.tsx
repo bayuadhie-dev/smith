@@ -94,7 +94,7 @@ const [selectedCategory, setSelectedCategory] = useState('all')
     {
       id: 'production-efficiency',
       title: 'Production Efficiency Report',
-      description: 'Machine utilization, work order completion, and OEE metrics',
+      description: 'Utilisasi mesin, penyelesaian SPK, dan metrik OEE',
       icon: CubeIcon,
       category: 'production',
       frequency: 'Weekly',

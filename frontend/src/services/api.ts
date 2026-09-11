@@ -221,6 +221,14 @@ export const salesApi = api.injectEndpoints({
       }),
       invalidatesTags: ['SalesOrders'],
     }),
+    updateSalesOrder: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/sales/orders/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ['SalesOrders'],
+    }),
     confirmSalesOrder: builder.mutation({
       query: (id) => ({
         url: `/sales/orders/${id}/confirm`,
@@ -346,6 +354,7 @@ export const {
 export const {
   useGetProductsQuery,
   useGetProductQuery,
+  useLazyGetProductQuery,
   useCreateProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,
@@ -375,6 +384,7 @@ export const {
   useGetSalesOrdersQuery,
   useGetSalesOrderQuery,
   useCreateSalesOrderMutation,
+  useUpdateSalesOrderMutation,
   useConfirmSalesOrderMutation,
 } = salesApi
 
@@ -558,6 +568,14 @@ export const purchasingApi = api.injectEndpoints({
       }),
       invalidatesTags: ['Contracts'],
     }),
+    updateContract: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/purchasing/contracts/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ['Contracts'],
+    }),
   }),
 })
 
@@ -598,6 +616,7 @@ export const {
   useGetContractQuery,
   useCreateContractMutation,
   useActivateContractMutation,
+  useUpdateContractMutation,
 } = purchasingApi
 
 // Shipping API moved to separate file: services/shippingApi.ts
@@ -1420,44 +1439,6 @@ export const {
   useGetProductionChartQuery,
 } = dashboardApi
 
-// Desk API
-export const deskApi = api.injectEndpoints({
-  endpoints: (builder) => ({
-    getDeskOverview: builder.query({
-      query: () => '/desk/overview',
-      providesTags: ['Desk'],
-    }),
-    getModuleStats: builder.query({
-      query: (module) => `/desk/module-stats/${module}`,
-      providesTags: ['Desk'],
-    }),
-  }),
-})
-
-export const {
-  useGetDeskOverviewQuery,
-  useGetModuleStatsQuery,
-} = deskApi
-
-// Workspace API
-export const workspaceApi = api.injectEndpoints({
-  endpoints: (builder) => ({
-    getWorkspaceData: builder.query({
-      query: (module) => `/workspace/${module}`,
-      providesTags: ['Workspace'],
-    }),
-    getAvailableModules: builder.query({
-      query: () => '/workspace/modules',
-      providesTags: ['Workspace'],
-    }),
-  }),
-})
-
-export const {
-  useGetWorkspaceDataQuery,
-  useGetAvailableModulesQuery,
-} = workspaceApi
-
 // Shipping hooks exported from services/shippingApi.ts
 
 export const {
@@ -1546,53 +1527,9 @@ export const {
   useGetQualityCompetencyQuery,
 } = qualityEnhancedApi
 
-// Sales Forecasts API
-export const salesForecastsApi = api.injectEndpoints({
-  endpoints: (builder) => ({
-    getSalesForecasts: builder.query({
-      query: (params) => ({
-        url: '/sales/forecasts',
-        params,
-      }),
-      providesTags: ['Sales'],
-    }),
-    getSalesForecast: builder.query({
-      query: (id) => `/sales/forecasts/${id}`,
-      providesTags: ['Sales'],
-    }),
-    createSalesForecast: builder.mutation({
-      query: (data) => ({
-        url: '/sales/forecasts',
-        method: 'POST',
-        body: data,
-      }),
-      invalidatesTags: ['Sales'],
-    }),
-    updateSalesForecast: builder.mutation({
-      query: ({ id, ...data }) => ({
-        url: `/sales/forecasts/${id}`,
-        method: 'PUT',
-        body: data,
-      }),
-      invalidatesTags: ['Sales'],
-    }),
-    deleteSalesForecast: builder.mutation({
-      query: (id) => ({
-        url: `/sales/forecasts/${id}`,
-        method: 'DELETE',
-      }),
-      invalidatesTags: ['Sales'],
-    }),
-  }),
-})
-
-export const {
-  useGetSalesForecastsQuery,
-  useGetSalesForecastQuery,
-  useCreateSalesForecastMutation,
-  useUpdateSalesForecastMutation,
-  useDeleteSalesForecastMutation,
-} = salesForecastsApi
+// Sales Forecast Matrix (ForecastHeader/ForecastLine, 2026-08-24) uses axiosInstance
+// directly from SalesForecastList.tsx / SalesForecastGrid.tsx instead of RTK Query -
+// the old salesForecastsApi (1-row-per-period SalesForecast) was removed with it.
 
 export const {
   useGetWasteRecordsQuery,
@@ -2287,6 +2224,13 @@ export const accurateApi = api.injectEndpoints({
       }),
       invalidatesTags: ['Accurate'],
     }),
+    bulkImportAccurateMaster: builder.mutation<any, { types?: string[] } | void>({
+      query: (body) => ({
+        url: '/integrations/accurate/bulk-import-master',
+        method: 'POST',
+        body: body || {},
+      }),
+    }),
     getAccurateItems: builder.query<any, void>({
       query: () => '/integrations/accurate/accurate-items',
       providesTags: ['Accurate'],
@@ -2490,6 +2434,7 @@ export const accurateApi = api.injectEndpoints({
 export const {
   useGetAccurateConfigQuery,
   useUpdateAccurateConfigMutation,
+  useBulkImportAccurateMasterMutation,
   useGetAccurateItemsQuery,
   useGetAccurateMappingsQuery,
   useGetAccurateSalesInvoicesQuery,
@@ -2536,4 +2481,175 @@ export const {
   useApproveAccurateSyncLogMutation,
   useRejectAccurateSyncLogMutation,
 } = accurateApi;
+
+// Master Data API (unified item + chart of accounts hub)
+export const masterDataApi = api.injectEndpoints({
+  endpoints: (builder) => ({
+    getMaterialsList: builder.query({
+      query: (params) => ({
+        url: '/materials/',
+        params,
+      }),
+      providesTags: ['Materials'],
+    }),
+    getMaterialDetail: builder.query({
+      query: (id) => `/materials/${id}`,
+      providesTags: ['Materials'],
+    }),
+    createMaterial: builder.mutation({
+      query: (data) => ({
+        url: '/materials/',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['Materials'],
+    }),
+    updateMaterialDetail: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/materials/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ['Materials'],
+    }),
+    getProductUsage: builder.query({
+      query: (id) => `/products/${id}/usage`,
+    }),
+    getMaterialUsage: builder.query({
+      query: (id) => `/materials/${id}/usage`,
+    }),
+    getChartOfAccounts: builder.query({
+      query: () => '/finance/chart-of-accounts',
+      providesTags: ['ChartOfAccounts'],
+    }),
+    createAccount: builder.mutation({
+      query: (data) => ({
+        url: '/finance/chart-of-accounts',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['ChartOfAccounts'],
+    }),
+    updateAccount: builder.mutation({
+      query: ({ code, ...data }) => ({
+        url: `/finance/chart-of-accounts/${code}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ['ChartOfAccounts'],
+    }),
+    deleteAccount: builder.mutation({
+      query: (code) => ({
+        url: `/finance/chart-of-accounts/${code}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['ChartOfAccounts'],
+    }),
+    importMasterDataItems: builder.mutation({
+      query: (formData: FormData) => ({
+        url: '/master-data/import-items',
+        method: 'POST',
+        body: formData,
+      }),
+      invalidatesTags: ['Products', 'Materials'],
+    }),
+    getUomUnits: builder.query({
+      query: () => '/uom/units',
+      providesTags: ['UomConversions'],
+    }),
+    createUomUnit: builder.mutation({
+      query: (data) => ({
+        url: '/uom/units',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['UomConversions'],
+    }),
+    getUomConversions: builder.query({
+      query: (params) => ({
+        url: '/uom/conversions',
+        params,
+      }),
+      providesTags: ['UomConversions'],
+    }),
+    createUomConversion: builder.mutation({
+      query: (data) => ({
+        url: '/uom/conversions',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['UomConversions'],
+    }),
+    updateUomConversion: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/uom/conversions/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ['UomConversions'],
+    }),
+    deleteUomConversion: builder.mutation({
+      query: (id) => ({
+        url: `/uom/conversions/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['UomConversions'],
+    }),
+    getProductionRecipes: builder.query({
+      query: (params) => ({
+        url: '/batch-scheduling/recipes',
+        params,
+      }),
+      providesTags: ['ProductionRecipes'],
+    }),
+    createProductionRecipe: builder.mutation({
+      query: (data) => ({
+        url: '/batch-scheduling/recipes',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['ProductionRecipes'],
+    }),
+    updateProductionRecipe: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/batch-scheduling/recipes/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ['ProductionRecipes'],
+    }),
+    deleteProductionRecipe: builder.mutation({
+      query: (id) => ({
+        url: `/batch-scheduling/recipes/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['ProductionRecipes'],
+    }),
+  }),
+});
+
+export const {
+  useGetMaterialsListQuery,
+  useGetMaterialDetailQuery,
+  useLazyGetMaterialDetailQuery,
+  useCreateMaterialMutation,
+  useUpdateMaterialDetailMutation,
+  useLazyGetProductUsageQuery,
+  useLazyGetMaterialUsageQuery,
+  useGetChartOfAccountsQuery,
+  useCreateAccountMutation,
+  useUpdateAccountMutation,
+  useDeleteAccountMutation,
+  useImportMasterDataItemsMutation,
+  useGetUomUnitsQuery,
+  useCreateUomUnitMutation,
+  useGetUomConversionsQuery,
+  useCreateUomConversionMutation,
+  useUpdateUomConversionMutation,
+  useDeleteUomConversionMutation,
+  useGetProductionRecipesQuery,
+  useCreateProductionRecipeMutation,
+  useUpdateProductionRecipeMutation,
+  useDeleteProductionRecipeMutation,
+} = masterDataApi;
 

@@ -40,7 +40,7 @@ export const productNotifications = {
 export const productionNotifications = {
   workOrderCompleted: (woNumber: string) => {
     notificationService.success(
-      `Work Order ${woNumber} has been completed successfully`,
+      `SPK ${woNumber} berhasil diselesaikan`,
       'Production Complete',
       'production'
     );
@@ -48,7 +48,7 @@ export const productionNotifications = {
   
   workOrderStarted: (woNumber: string) => {
     notificationService.info(
-      `Work Order ${woNumber} has been started`,
+      `SPK ${woNumber} telah dimulai`,
       'Production Started',
       'production'
     );

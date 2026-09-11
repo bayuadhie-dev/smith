@@ -15,11 +15,11 @@ const TVDisplaySelector: React.FC = () => {
   const displayOptions = [
     {
       title: 'Production Floor',
-      description: 'Monitor mesin produksi, work orders, dan progress real-time',
+      description: 'Monitor mesin produksi, SPK, dan progress real-time',
       icon: CogIcon,
       href: '/tv/production',
       color: 'blue',
-      features: ['Work Orders Aktif', 'Status Mesin', 'Progress Produksi', 'Target vs Actual']
+      features: ['SPK Aktif', 'Status Mesin', 'Progress Produksi', 'Target vs Actual']
     },
     {
       title: 'Shipping Department',

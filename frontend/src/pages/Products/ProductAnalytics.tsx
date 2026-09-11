@@ -152,7 +152,7 @@ const ProductAnalytics: React.FC = () => {
             Back to Dashboard
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Product Analytics</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Analytics Produk</h1>
             <p className="text-gray-600 mt-1">Deep insights into product performance and trends</p>
           </div>
         </div>

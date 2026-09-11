@@ -93,6 +93,8 @@ export default function ApprovalDashboard() {
       purchase_order: 'Purchase Order',
       production: 'Production',
       inventory_adjustment: 'Inventory Adjustment',
+      stock_transfer: 'Transfer Stok',
+      stock_opname: 'Stok Opname',
       expense: 'Expense',
       payment: 'Payment'
     };
@@ -111,7 +113,7 @@ export default function ApprovalDashboard() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Approval Workflow</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Approval</h1>
         <p className="text-gray-600 dark:text-gray-300">Manage transaction approvals with review and approval process</p>
       </div>
 

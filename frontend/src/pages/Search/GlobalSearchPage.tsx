@@ -165,13 +165,13 @@ export default function GlobalSearchPage() {
         {/* Header */}
         <div className="mb-8">
           <button
-            onClick={() => navigate('/desk')}
+            onClick={() => navigate('/app')}
             className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 mb-4 flex items-center gap-2"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            Back to Desk
+            Back to Dashboard
           </button>
           <h1 className="text-3xl font-bold text-gray-900">Global Search</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Search across all modules and data</p>
@@ -187,7 +187,7 @@ export default function GlobalSearchPage() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Search for work orders, products, customers, documents..."
+                placeholder="Search for SPK, products, customers, documents..."
                 className="w-full pl-10 pr-10 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 autoFocus
               />
@@ -361,10 +361,10 @@ export default function GlobalSearchPage() {
             <MagnifyingGlassIcon className="w-16 h-16 text-gray-300 dark:text-gray-600 dark:text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Start Searching</h3>
             <p className="text-gray-600 dark:text-gray-300 mb-6">
-              Search across all modules to find work orders, products, customers, and more
+              Search across all modules to find SPK, products, customers, and more
             </p>
             <div className="flex flex-wrap justify-center gap-2">
-              <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-full text-sm">Work Orders</span>
+              <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-full text-sm">SPK</span>
               <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-full text-sm">Products</span>
               <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-full text-sm">Customers</span>
               <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-full text-sm">Suppliers</span>
