@@ -125,7 +125,7 @@
 ┌─────────────────────────────────────────────────────────────┐
 │                   Lapisan Database                            │
 │  PostgreSQL (Production - Active) · Migrated Jul 2026       │
-│  321 Tabel · Alembic Migrations · Database Indexing         │
+│  345 Tabel · Alembic Migrations · Database Indexing         │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -379,9 +379,9 @@ POST       /api/spc/recalculate/:product_id/:parameter_id
 **Fitur:**
 - Tracking Inventory Real-time
 - Stock Movement (Receipt, Issue, Transfer)
-- Manajemen Lokasi Gudang
+- **Storage Location Real** (v3.9) — Area Produksi, Gudang Bahan Baku, Gudang Bahan Kemas, Gudang Barang Jadi (WIP disimpan di sini), Gudang Reject; status batch (release/quarantine/reject) independen dari lokasi fisik
 - Alert Stock (Level Min/Max)
-- Valuasi Inventory (FIFO, LIFO, Average)
+- Valuasi Inventory (FIFO, LIFO, Average) — FIFO otomatis mengecualikan stok quarantine/reject
 - Cycle Counting & Stock Opname
 - Support Barcode/QR Code
 - Material Issue untuk Produksi
@@ -486,7 +486,7 @@ GET        /api/purchasing/reports
 - Flow COGM → Finished Goods → COGS
 - Job Costing per Work Order
 
-**Frontend Pages (27 halaman):**
+**Frontend Pages (32 halaman):**
 Dashboard, General Ledger, Chart of Accounts, Accounts Payable, Accounts Receivable, Budget Planning & Forecasting, Cash Flow, Cash Bank Management, Financial Reports, Fixed Assets, WIP Ledger, Tax Management, Consolidation, Costing & Controlling, Invoice Management, Expense & Reimbursement
 
 **Endpoint API:**
@@ -515,7 +515,7 @@ GET/POST   /api/expenses/reimbursements
 - Training & Development
 - Manajemen Roster Shift (drag & drop)
 - Piecework Log (tracking borongan)
-- Staff Leave Request (publik, tanpa login)
+- Staff Leave Request (publik, tanpa login) — ⚠️ sistem terpisah dari Manajemen Cuti formal di atas (model & tabel berbeda, belum tersinkron; cuti via kiosk publik ini tidak ikut terhitung di Attendance/Payroll formal)
 - Outsourcing Vendor Management
 - Portal Self-Service Karyawan
 
@@ -526,7 +526,7 @@ GET/POST   /api/expenses/reimbursements
 - Interface drag & drop
 - View roster mingguan & bulanan
 
-**Frontend Pages (36 halaman):**
+**Frontend Pages (31 halaman):**
 HR Dashboard, Employee List & Form, Attendance Management, Attendance Calendar & Report, Leave Management, Payroll List & Records, Appraisal Management, Training Management, Roster Management (Drag & Drop), Work Roster Weekly, Departments, Face Admin, Piecework Log, Staff Leave Management, Outsourcing Vendor
 
 **Endpoint API:**
@@ -545,6 +545,8 @@ GET/POST   /api/face-recognition
 ---
 
 ### 🔟 **Modul Asset Management**
+
+> ⚠️ **Catatan status (per audit Sept 2026):** modul ini lengkap secara fitur tapi **belum ada data produksi sama sekali**. Pencatatan aset tetap yang benar-benar dipakai sehari-hari saat ini masih lewat **Fixed Assets di modul Finance** (model `FixedAsset`, lebih sederhana, sudah terhubung ke GL). Kedua sistem berjalan paralel tanpa saling terhubung — konsolidasi masih perlu keputusan bisnis: migrasi data Fixed Assets ke sini, atau sebaliknya.
 
 **Fitur:**
 - **Siklus Hidup Aset Lengkap** - Planning → Procurement → Installation → Active → Maintenance → Disposal
@@ -644,6 +646,8 @@ POST       /api/mrp/run
 ---
 
 ### 1️⃣3️⃣ **Modul Riset & Pengembangan**
+
+> ⚠️ **Catatan status (per audit Sept 2026):** ada 2 sistem R&D paralel yang tidak saling terhubung — `rd*.py` ("R&D Legacy", model `ResearchProject`) dan `rnd.py` ("R&D" baru, model `RNDProject`). Yang justru punya data pemakaian nyata adalah **R&D Legacy**; modul RND yang lebih baru belum ada datanya sama sekali. Konsolidasi masih perlu keputusan bisnis.
 
 **Fitur:**
 - Manajemen Project R&D (proyek, milestone, approval)
@@ -860,7 +864,6 @@ GET        /api/integrations/accurate/warehouse-transfer-detail/:id
 | **Face Recognition** | Attendance with face verification | `/api/face-recognition` |
 | **Material Stock** | Raw material inventory tracking | `/api/material-stock` |
 | **UoM (Unit of Measure)** | Satuan ukur & konversi | `/api/uom` |
-| **Desk / Workspace** | Personal workspace & module overview | `/api/desk`, `/api/workspace` |
 | **Search** | Global search seluruh modul | `/api/search` |
 | **Production Approval** | Approval workflow produksi | `/api/production-approval` |
 | **Purchase Invoice** | Invoice pembelian & pembayaran | `/api/purchase-invoice` |
@@ -1162,20 +1165,20 @@ POST /api/cache/clear     # Hapus cache
 
 ```
 SourceCode/
-├── backend/                    # 496 files (excl. pycache)
+├── backend/                    # 414 files (excl. pycache)
 │   ├── app.py                  # Main Flask application
 │   ├── config.py               # Konfigurasi aplikasi
-│   ├── models/                 # 55 model files · 321 DB tables
+│   ├── models/                 # 57 model files · 345 DB tables
 │   │   ├── spc.py              # SPC models (5 tabel)
 │   │   ├── dcc.py              # DCC & CAPA models (13 tabel)
 │   │   ├── production.py       # Production models (~15 tabel)
 │   │   └── ...
-│   ├── routes/                 # 112 route files
+│   ├── routes/                 # 113 route files
 │   │   ├── spc.py              # SPC API endpoints
 │   │   ├── oee.py              # OEE + Quality Objective
 │   │   ├── production.py       # Production endpoints
 │   │   └── ...
-│   ├── utils/                  # 24 helper files
+│   ├── utils/                  # 57 helper files
 │   │   ├── dcc_pdf.py          # PDF generation dengan digital signature
 │   │   ├── email_service.py    # Email notifications
 │   │   ├── production_events.py # Production event handlers
@@ -1183,15 +1186,15 @@ SourceCode/
 │   ├── tests/                  # Test files
 │   ├── migrations/             # Alembic migration files
 │   ├── seeds/                  # Seed data files
-├── frontend/                   # 481 .tsx/.ts files
+├── frontend/                   # 502 .tsx/.ts files
 │   └── src/
-│       ├── pages/              # 40 module directories · 377 page files
+│       ├── pages/              # 39 module directories · 379 page files
 │       │   ├── Quality/SPC/    # SPCDashboard, SPCSampleForm
-│       │   ├── Production/     # 63 production pages
-│       │   ├── Finance/        # 27 finance pages
-│       │   ├── HR/             # 36 HR pages
+│       │   ├── Production/     # 69 production pages
+│       │   ├── Finance/        # 32 finance pages
+│       │   ├── HR/             # 31 HR pages
 │       │   └── ...
-│       ├── components/         # 69 reusable components
+│       ├── components/         # 78 reusable components
 │       ├── services/           # RTK Query API services
 │       ├── store/              # Redux store
 │       └── contexts/           # React contexts (Language, Theme)
@@ -1199,9 +1202,9 @@ SourceCode/
 ├── docker-compose.yml          # Docker configuration
 └── README.md
 
-Backend:  ~137,900 lines of code
-Frontend: ~213,400 lines of code
-Total:    ~351,300+ lines of code
+Backend:  ~153,600 lines of code
+Frontend: ~210,600 lines of code
+Total:    ~364,200+ lines of code
 ```
 
 ---
@@ -1291,6 +1294,14 @@ Asisten AI adalah fitur chatbot terintegrasi yang memungkinkan pengguna untuk me
 ---
 
 ## 📈 Pembaruan Terbaru
+
+### ✨ v3.9 — September 2026 (Restrukturisasi Gudang, Siklus Hidup SPK, Perbaikan GL Finance)
+
+- **Restrukturisasi Storage Location Gudang** — Zona gudang dirombak total menjadi struktur nyata bergaya SAP storage location: Area Produksi, Gudang Bahan Baku, Gudang Bahan Kemas, Gudang Barang Jadi (WIP ikut di sini), dan Gudang Reject. Status batch (release/quarantine/reject) tetap independen dari lokasi fisik. Barang jadi otomatis masuk Area Produksi saat produksi selesai, lalu berpindah ke Gudang Barang Jadi saat Tutup SPK — tercatat sebagai transfer movement yang bisa dibalik.
+- **Siklus Pembatalan SPK** — Dua aksi baru: "Batalkan SPK" (untuk SPK yang sudah *completed*, membalikkan transfer gudang + status QC kembali ke *released*, ditolak otomatis kalau barang sudah dikirim/terpakai) dan "Batalkan Konfirmasi" (untuk batch yang masih *in_progress*, mengosongkan Bahan Aktual dan mengembalikan reservasi/stok tanpa menyentuh gudang).
+- **Pemilihan Batch Manual & Disposisi QC Bertingkat** — Layar konfirmasi Bahan Aktual kini bisa menampilkan stok bahan di semua lokasi dan memilih batch aktual berbeda dari saran FIFO. Disposisi QC (halaman "Ubah Status Batch") kini mendukung pemecahan kuantitas ke beberapa status sekaligus (misal 9.900 pcs release + 100 pcs reject dari satu batch), bukan lagi ubah status satu baris utuh — gaya SAP MB1A/MB1B, dengan jejak histori kuantitas penuh.
+- **Perbaikan GL Finance** — Fixed Asset disposal kini memposting jurnal akuntansi otomatis (akumulasi penyusutan + laba/rugi pelepasan), Purchase Return terhubung ke Inventory/Invoice/GL (sebelumnya blueprint-nya bahkan belum terdaftar), dan beberapa bug field-mismatch yang membuat dropdown Chart of Accounts/Budget/Cash & Bank tampil kosong sudah diperbaiki.
+- **Pembersihan Kode Mati** — Modul Integration palsu (External Connectors/API Gateway/Webhook/Data Sync — tidak pernah benar-benar tersambung ke sistem apa pun) dan sejumlah halaman/endpoint yatim (orphan) dihapus.
 
 ### ✨ v3.8 — Agustus 2026 (Integrasi Accurate Online, BOM Multi-Level, Gudang PM/EPD/FG)
 
@@ -1463,8 +1474,8 @@ See [LICENSE](LICENSE) for full terms.
 
 ### Selesai ✅
 - 20+ modul utama, 100+ sub-modul
-- **55 model files**, **321 tabel database**, **112 route files**
-- **~351,000+ baris kode** (backend + frontend)
+- **57 model files**, **345 tabel database**, **113 route files**
+- **~364,200+ baris kode** (backend + frontend)
 - Autentikasi & otorisasi (JWT + OAuth + Face Recognition)
 - 15+ alur kerja otomatis end-to-end
 - Asisten AI terintegrasi dengan grafik
@@ -1497,8 +1508,8 @@ See [LICENSE](LICENSE) for full terms.
 
 ## 🏆 Pencapaian
 
-- ✅ **321 Tabel DB** | **112 Route Files** | **55 Model Files**
-- ✅ **~351,000+ Baris Kode** (Backend + Frontend)
+- ✅ **345 Tabel DB** | **113 Route Files** | **57 Model Files**
+- ✅ **~364,200+ Baris Kode** (Backend + Frontend)
 - ✅ **20+ Modul Bisnis** dengan 100+ Sub-Modul
 - ✅ **40+ Peran** | **200+ Izin** | RBAC Penuh
 - ✅ **DCC & CAPA** Sesuai ISO 9001:2015
