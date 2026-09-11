@@ -110,10 +110,13 @@ def create_app(config_class=Config):
         'CACHE_KEY_PREFIX': app.config['CACHE_KEY_PREFIX']
     })
     
-    # Store cache in app.extensions for access in routes
-    if not hasattr(app, 'extensions'):
-        app.extensions = {}
-    app.extensions['cache'] = cache
+    # NOTE: don't overwrite app.extensions['cache'] here - Flask-Caching's own
+    # cache.init_app() already stores its internal {cache: config} dict there,
+    # and overwriting it with the raw Cache object breaks cache.set()/get()
+    # everywhere (self.cache property does app.extensions["cache"][self]).
+    # The Cache instance itself is kept under its own key for routes that
+    # need direct access (e.g. reaching the underlying Redis client).
+    app.extensions['cache_instance'] = cache
 
     app.bcrypt = bcrypt  # Make bcrypt accessible from app instance
 
@@ -198,6 +201,8 @@ def create_app(config_class=Config):
         'https://api.graterp.my.id',
         'http://erp.graterp.my.id',   # HTTP fallback for production
         'http://api.graterp.my.id',   # HTTP fallback for production
+        'https://stag.graterp.my.id',      # Staging frontend
+        'https://stag-api.graterp.my.id',  # Staging backend
         'http://localhost:3000',
         'http://127.0.0.1:3000',
     ]
@@ -427,7 +432,6 @@ def create_app(config_class=Config):
 
     from routes.settings_extended import settings_extended_bp
 
-    from routes.integration_extended import integration_bp
 
     from routes.tv_display import tv_display_bp
 
@@ -441,7 +445,11 @@ def create_app(config_class=Config):
 
     from routes.materials_crud import materials_crud_bp
 
-    from routes.materials_simple_crud import materials_simple_crud_bp
+    from routes.master_data_import import master_data_import_bp
+
+    from routes.spk import spk_bp
+
+    from routes.qc_batch_status import qc_batch_status_bp
 
     from routes.products_new import products_new_bp
 
@@ -455,6 +463,8 @@ def create_app(config_class=Config):
 
     from routes.production_planning import planning_bp
 
+    from routes.batch_scheduling import batch_scheduling_bp
+
     from routes.executive_dashboard import executive_dashboard_bp
 
     from routes.attendance import attendance_bp
@@ -467,7 +477,6 @@ def create_app(config_class=Config):
 
     from routes.face_recognition import face_bp
 
-    from routes.desk import desk_bp
     from routes.workspace import workspace_bp
     from routes.search import search_bp
     from routes.accurate_integration import accurate_bp
@@ -501,8 +510,9 @@ def create_app(config_class=Config):
     app.register_blueprint(materials_bp, url_prefix='/api/materials')
 
     app.register_blueprint(materials_crud_bp, url_prefix='/api/materials')
-
-    app.register_blueprint(materials_simple_crud_bp, url_prefix='/api/materials')
+    app.register_blueprint(master_data_import_bp, url_prefix='/api/master-data')
+    app.register_blueprint(spk_bp, url_prefix='/api/spk')
+    app.register_blueprint(qc_batch_status_bp, url_prefix='/api/qc-batch-status')
 
     app.register_blueprint(products_new_bp)
 
@@ -520,6 +530,11 @@ def create_app(config_class=Config):
     app.register_blueprint(pr_bp, url_prefix='/api/purchasing')
 
     app.register_blueprint(purchase_invoice_bp, url_prefix='/api/purchasing')
+    # Imported since at least 2026-08 but never registered - the entire
+    # Purchase Return feature was completely unreachable via API (and has no
+    # frontend page yet either). Found+fixed 2026-09-11 while wiring its
+    # Inventory/Invoice/GL effects on approval.
+    app.register_blueprint(purchase_return_bp, url_prefix='/api/purchasing')
 
     app.register_blueprint(production_bp, url_prefix='/api/production')
     app.register_blueprint(ews_bp, url_prefix='/api/ews')
@@ -552,7 +567,6 @@ def create_app(config_class=Config):
 
     app.register_blueprint(logs_bp, url_prefix='/api/logs')
 
-    app.register_blueprint(desk_bp, url_prefix='/api/desk')  # Desk interface
     app.register_blueprint(workspace_bp, url_prefix='/api/workspace')  # Workspace API
     app.register_blueprint(search_bp, url_prefix='/api/search')  # Global Search API
     app.register_blueprint(converting_bp)  # Converting module - routes have /api/converting prefix
@@ -614,7 +628,6 @@ def create_app(config_class=Config):
 
     app.register_blueprint(settings_extended_bp, url_prefix='/api/settings')
 
-    app.register_blueprint(integration_bp, url_prefix='/api/integration')
 
     app.register_blueprint(tv_display_bp, url_prefix='/api/tv-display')
 
@@ -633,6 +646,7 @@ def create_app(config_class=Config):
     app.register_blueprint(workflow_bp, url_prefix='/api/workflow-integration')  # New integration workflow
 
     app.register_blueprint(planning_bp, url_prefix='/api/production-planning')  # Production Planning (MPS)
+    app.register_blueprint(batch_scheduling_bp, url_prefix='/api/batch-scheduling')  # Batch Scheduling master data (Fase 2)
 
     
 
@@ -1012,7 +1026,7 @@ def create_app(config_class=Config):
 
                 'version': '1.0.0',
 
-                'company': 'PT. Gratia Makmur Sentosa',
+                'company': COMPANY_NAME,
 
                 'statistics': {
 
@@ -1099,7 +1113,11 @@ def create_app(config_class=Config):
 
         print(f"Warning: Could not initialize SocketIO: {str(e)}")
 
-
+    try:
+        from utils.scheduled_jobs import register_scheduled_jobs
+        register_scheduled_jobs(app)
+    except Exception as e:
+        print(f"Warning: Could not register scheduled jobs: {str(e)}")
 
     return app
 
@@ -1192,9 +1210,9 @@ def create_initial_data(app):
 
         company = CompanyProfile(
 
-            company_name='',
+            company_name=COMPANY_NAME,
 
-            legal_name='',
+            legal_name=COMPANY_NAME,
 
             industry='',
 
@@ -1552,11 +1570,11 @@ if __name__ == '__main__':
 
     print("="*60)
 
-    print("\n\u2713 Server starting on http://localhost:5000")
-
-    print("\u2713 WebSocket: ws://localhost:5000")
+    _port = int(os.getenv('PORT', 5000))
+    print(f"\n\u2713 Server starting on http://localhost:{_port}")
+    print(f"\u2713 WebSocket: ws://localhost:{_port}")
 
     print("\n" + "="*60 + "\n")
 
-    socketio.run(app, debug=True, host='0.0.0.0', port=5000, allow_unsafe_werkzeug=True, use_reloader=False)
+    socketio.run(app, debug=True, host='0.0.0.0', port=_port, allow_unsafe_werkzeug=True, use_reloader=False)
 

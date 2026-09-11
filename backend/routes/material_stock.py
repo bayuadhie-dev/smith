@@ -4,16 +4,19 @@ Handles material inventory operations
 """
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db, Material, Inventory, WarehouseLocation, InventoryMovement, User
 from utils import generate_number
 from datetime import datetime
 from sqlalchemy import func, or_
 from utils.timezone import get_local_now, get_local_today
+from utils.inventory_helpers import resolve_initial_stock_status
 
 material_stock_bp = Blueprint('material_stock', __name__)
 
 @material_stock_bp.route('/materials/inventory', methods=['GET'])
 @jwt_required()
+@require_permission('materials.view')
 def get_material_inventory():
     """Get all materials with their inventory levels"""
     try:
@@ -92,6 +95,7 @@ def get_material_inventory():
 
 @material_stock_bp.route('/materials/<int:material_id>/inventory', methods=['GET'])
 @jwt_required()
+@require_permission('materials.view')
 def get_material_inventory_detail(material_id):
     """Get detailed inventory for a specific material"""
     try:
@@ -146,6 +150,7 @@ def get_material_inventory_detail(material_id):
 
 @material_stock_bp.route('/materials/stock/add', methods=['POST'])
 @jwt_required()
+@require_permission('materials.create')
 def add_material_stock():
     """Add stock for a material"""
     try:
@@ -213,6 +218,7 @@ def add_material_stock():
                 serial_number=data.get('serial_number'),
                 production_date=datetime.fromisoformat(data['production_date']) if data.get('production_date') else None,
                 expiry_date=datetime.fromisoformat(data['expiry_date']) if data.get('expiry_date') else None,
+                stock_status=resolve_initial_stock_status('available', material=material),
                 last_stock_check=get_local_now(),
                 created_by=user_id,
                 is_active=True
@@ -255,96 +261,9 @@ def add_material_stock():
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
-@material_stock_bp.route('/materials/stock/adjust', methods=['POST'])
-@jwt_required()
-def adjust_material_stock():
-    """Adjust material stock (increase or decrease)"""
-    try:
-        data = request.get_json()
-        user_id = get_jwt_identity()
-        
-        # Validate required fields
-        required_fields = ['inventory_id', 'adjustment_quantity', 'adjustment_type']
-        for field in required_fields:
-            if field not in data:
-                return jsonify({'error': f'Missing required field: {field}'}), 400
-        
-        inventory_id = data['inventory_id']
-        adjustment_quantity = float(data['adjustment_quantity'])
-        adjustment_type = data['adjustment_type']  # 'increase' or 'decrease'
-        
-        if adjustment_quantity <= 0:
-            return jsonify({'error': 'Adjustment quantity must be greater than 0'}), 400
-        
-        # Get inventory record
-        inventory = db.session.get(Inventory, inventory_id)
-        if not inventory:
-            return jsonify({'error': 'Inventory record not found'}), 404
-        
-        # Check opname lock
-        from utils.opname_lock import check_opname_lock
-        lock = check_opname_lock(
-            location_id=inventory.location_id,
-            material_id=inventory.material_id,
-            product_id=inventory.product_id
-        )
-        if lock['locked']:
-            return jsonify({'error': lock['message']}), 423
-        
-        old_quantity = float(inventory.quantity_on_hand)
-        
-        if adjustment_type == 'increase':
-            new_quantity = old_quantity + adjustment_quantity
-            inventory.quantity_on_hand = new_quantity
-            inventory.quantity_available = float(inventory.quantity_available or 0) + adjustment_quantity
-            movement_type = 'adjustment_in'
-        elif adjustment_type == 'decrease':
-            if adjustment_quantity > old_quantity:
-                return jsonify({'error': 'Adjustment quantity exceeds available stock'}), 400
-            new_quantity = old_quantity - adjustment_quantity
-            inventory.quantity_on_hand = new_quantity
-            inventory.quantity_available = float(inventory.quantity_available or 0) - adjustment_quantity
-            movement_type = 'adjustment_out'
-        else:
-            return jsonify({'error': 'Invalid adjustment type. Use "increase" or "decrease"'}), 400
-        
-        inventory.updated_at = get_local_now()
-        inventory.last_stock_check = get_local_now()
-        
-        # Create inventory movement record
-        movement = InventoryMovement(
-            inventory_id=inventory.id,
-            movement_type=movement_type,
-            quantity=adjustment_quantity,
-            quantity_before=old_quantity,
-            quantity_after=new_quantity,
-            reference_type='stock_adjustment',
-            reference_number=data.get('reference', 'ADJ'),
-            notes=data.get('reason'),
-            created_by=user_id,
-            movement_date=get_local_now()
-        )
-        db.session.add(movement)
-        
-        db.session.commit()
-        
-        return jsonify({
-            'message': 'Stock adjusted successfully',
-            'inventory_id': inventory.id,
-            'material_code': inventory.material.code if inventory.material else None,
-            'material_name': inventory.material.name if inventory.material else None,
-            'adjustment_type': adjustment_type,
-            'adjustment_quantity': adjustment_quantity,
-            'old_quantity': old_quantity,
-            'new_quantity': new_quantity
-        }), 200
-        
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
-
 @material_stock_bp.route('/materials/stock/movements', methods=['GET'])
 @jwt_required()
+@require_permission('materials.view')
 def get_material_movements():
     """Get material stock movements history"""
     try:
@@ -399,6 +318,7 @@ def get_material_movements():
 
 @material_stock_bp.route('/materials/locations', methods=['GET'])
 @jwt_required()
+@require_permission('materials.view')
 def get_warehouse_locations():
     """Get all warehouse locations for material storage"""
     try:
@@ -425,6 +345,7 @@ def get_warehouse_locations():
 
 @material_stock_bp.route('/materials/initialize-inventory', methods=['POST'])
 @jwt_required()
+@require_permission('materials.create')
 def initialize_material_inventory():
     """Initialize inventory records for all materials without inventory"""
     try:

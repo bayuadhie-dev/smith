@@ -76,12 +76,12 @@ const MaterialView: React.FC = () => {
     if (!confirmed) return;
 
     try {
-      await axiosInstance.delete(`/api/materials/${id}/force-delete`);
+      await axiosInstance.delete(`/api/materials/${id}`);
       alert('Material deleted successfully');
       navigate('/app/warehouse/materials/list');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error deleting material:', err);
-      alert('Failed to delete material');
+      alert(err.response?.data?.error || 'Failed to delete material');
     }
   };
 

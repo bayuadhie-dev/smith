@@ -111,12 +111,12 @@ const MaterialsList: React.FC = () => {
     if (!confirmed) return;
 
     try {
-      const response = await axiosInstance.delete(`/api/materials/${materialId}/force-delete`);
+      await axiosInstance.delete(`/api/materials/${materialId}`);
       alert('Material deleted successfully');
       fetchMaterials();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error deleting material:', err);
-      alert('Failed to delete material');
+      alert(err.response?.data?.error || 'Failed to delete material');
     }
   };
 
@@ -223,7 +223,7 @@ const MaterialsList: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Materials Management</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Daftar Material</h1>
           <p className="text-gray-600 dark:text-gray-300">Manage your materials inventory and information</p>
         </div>
         <div className="flex space-x-3">
