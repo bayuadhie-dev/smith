@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db, Employee, Department, ShiftSchedule, Attendance, Leave, EmployeeRoster, Machine
 from utils.i18n import success_response, error_response, get_message
 from utils import generate_number
@@ -16,6 +17,7 @@ hr_extended_bp = Blueprint('hr_extended', __name__)
 
 @hr_extended_bp.route('/employees/<int:employee_id>', methods=['GET'])
 @jwt_required()
+@require_permission('hr.view')
 def get_employee_detail(employee_id):
     """Get detailed employee information"""
     try:
@@ -73,6 +75,7 @@ def get_employee_detail(employee_id):
 
 @hr_extended_bp.route('/employees/<int:employee_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('hr.edit')
 def update_employee(employee_id):
     """Update employee information"""
     try:
@@ -158,6 +161,7 @@ def update_employee(employee_id):
 
 @hr_extended_bp.route('/employees/<int:employee_id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('hr.delete')
 def delete_employee(employee_id):
     """Hard-delete employee (permanent removal)"""
     try:
@@ -175,6 +179,7 @@ def delete_employee(employee_id):
 
 @hr_extended_bp.route('/attendance', methods=['GET'])
 @jwt_required()
+@require_permission('hr.view')
 def get_attendance_records():
     """Get attendance records with filtering"""
     try:
@@ -236,6 +241,7 @@ def get_attendance_records():
 
 @hr_extended_bp.route('/attendance/clock-in', methods=['POST'])
 @jwt_required()
+@require_permission('hr.create')
 def clock_in():
     """Clock in employee"""
     try:
@@ -287,6 +293,7 @@ def clock_in():
 
 @hr_extended_bp.route('/attendance/clock-out', methods=['POST'])
 @jwt_required()
+@require_permission('hr.create')
 def clock_out():
     """Clock out employee"""
     try:
@@ -337,6 +344,7 @@ def clock_out():
 
 @hr_extended_bp.route('/attendance/bulk-mark', methods=['POST'])
 @jwt_required()
+@require_permission('hr.create')
 def bulk_mark_attendance():
     """Bulk mark attendance for multiple employees"""
     try:
@@ -381,6 +389,7 @@ def bulk_mark_attendance():
 
 @hr_extended_bp.route('/leaves', methods=['GET'])
 @jwt_required()
+@require_permission('hr.view')
 def get_leaves():
     """Get leave requests"""
     try:
@@ -432,6 +441,7 @@ def get_leaves():
 
 @hr_extended_bp.route('/leaves', methods=['POST'])
 @jwt_required()
+@require_permission('hr.create')
 def create_leave_request():
     """Create new leave request"""
     try:
@@ -478,6 +488,7 @@ def create_leave_request():
 
 @hr_extended_bp.route('/leaves/<int:leave_id>/approve', methods=['POST'])
 @jwt_required()
+@require_permission('hr.create')
 def approve_leave(leave_id):
     """Approve leave request"""
     try:
@@ -500,6 +511,7 @@ def approve_leave(leave_id):
 
 @hr_extended_bp.route('/leaves/<int:leave_id>/reject', methods=['POST'])
 @jwt_required()
+@require_permission('hr.create')
 def reject_leave(leave_id):
     """Reject leave request"""
     try:
@@ -528,6 +540,7 @@ def reject_leave(leave_id):
 
 @hr_extended_bp.route('/roster', methods=['GET'])
 @jwt_required()
+@require_permission('hr.view')
 def get_roster():
     """Get employee roster"""
     try:
@@ -582,6 +595,7 @@ def get_roster():
 
 @hr_extended_bp.route('/roster', methods=['POST'])
 @jwt_required()
+@require_permission('hr.create')
 def create_roster():
     """Create roster entries"""
     try:
@@ -628,6 +642,7 @@ def create_roster():
 
 @hr_extended_bp.route('/roster/bulk-generate', methods=['POST'])
 @jwt_required()
+@require_permission('hr.create')
 def bulk_generate_roster():
     """Bulk generate roster for multiple employees and dates"""
     try:
@@ -684,6 +699,7 @@ def bulk_generate_roster():
 
 @hr_extended_bp.route('/departments', methods=['POST'])
 @jwt_required()
+@require_permission('hr.create')
 def create_department():
     """Create new department"""
     try:
@@ -723,6 +739,7 @@ def create_department():
 
 @hr_extended_bp.route('/shifts', methods=['POST'])
 @jwt_required()
+@require_permission('hr.create')
 def create_shift():
     """Create new shift schedule"""
     try:

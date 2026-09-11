@@ -1085,7 +1085,7 @@ export default function WorkRosterWeekly() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Work Roster Mingguan</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Roster Kerja Mingguan</h1>
           <p className="text-gray-600 dark:text-gray-300">Pengaturan jadwal kerja produksi per minggu</p>
         </div>
         <div className="flex gap-2">

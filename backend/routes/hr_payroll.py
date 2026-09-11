@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db, Employee, PayrollPeriod, PayrollRecord, SalaryComponent, EmployeeSalaryComponent, Attendance, PieceworkLog
 from utils.i18n import success_response, error_response, get_message
 from utils import generate_number
@@ -16,6 +17,7 @@ hr_payroll_bp = Blueprint('hr_payroll', __name__)
 
 @hr_payroll_bp.route('/periods', methods=['GET'])
 @jwt_required()
+@require_permission('payroll.view')
 def get_payroll_periods():
     """Get all payroll periods"""
     try:
@@ -53,8 +55,50 @@ def get_payroll_periods():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@hr_payroll_bp.route('/periods/<int:period_id>', methods=['GET'])
+@jwt_required()
+@require_permission('payroll.view')
+def get_payroll_period_detail(period_id):
+    """
+    Single PayrollPeriod detail with its PayrollRecord rows - powers the
+    account drill-down modal (Chart of Accounts / Accounting Management)
+    when clicking a payroll_period-sourced GL transaction, same modal-popup
+    pattern as the existing Recurring Payment transaction detail.
+    """
+    try:
+        period = db.session.get(PayrollPeriod, period_id)
+        if not period:
+            return jsonify({'error': 'Payroll period not found'}), 404
+
+        records = PayrollRecord.query.filter_by(payroll_period_id=period_id).all()
+
+        return jsonify({
+            'id': period.id,
+            'period_name': period.period_name,
+            'start_date': period.start_date.isoformat(),
+            'end_date': period.end_date.isoformat(),
+            'status': period.status,
+            'total_employees': period.total_employees,
+            'total_gross_salary': float(period.total_gross_salary),
+            'total_deductions': float(period.total_deductions),
+            'total_net_salary': float(period.total_net_salary),
+            'processed_at': period.processed_at.isoformat() if period.processed_at else None,
+            'records': [{
+                'id': r.id,
+                'employee_name': r.employee.full_name if r.employee else 'N/A',
+                'gross_salary': float(r.gross_salary),
+                'total_deductions': float(r.total_deductions),
+                'net_salary': float(r.net_salary),
+                'status': r.status,
+            } for r in records],
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @hr_payroll_bp.route('/periods', methods=['POST'])
 @jwt_required()
+@require_permission('payroll.create')
 def create_payroll_period():
     """Create new payroll period"""
     try:
@@ -107,6 +151,7 @@ def create_payroll_period():
 
 @hr_payroll_bp.route('/periods/<int:period_id>/approve', methods=['POST'])
 @jwt_required()
+@require_permission('payroll.approve')
 def approve_payroll_period(period_id):
     """Approve payroll period and all its records"""
     try:
@@ -124,6 +169,13 @@ def approve_payroll_period(period_id):
             if record.status == 'calculated':
                 record.status = 'approved'
         
+        # Post one combined GL journal for the whole period (Accurate's
+        # pattern: one payroll posting form, not one journal per employee).
+        from utils.finance_helpers import post_payroll_journal
+        from flask_jwt_extended import get_jwt_identity
+        user_id = get_jwt_identity()
+        post_payroll_journal(period, records, posted_by_user_id=user_id)
+        
         db.session.commit()
         
         return jsonify({'message': 'Payroll period approved successfully'})
@@ -133,6 +185,7 @@ def approve_payroll_period(period_id):
 
 @hr_payroll_bp.route('/periods/<int:period_id>/calculate', methods=['POST'])
 @jwt_required()
+@require_permission('payroll.create')
 def calculate_payroll(period_id):
     """Calculate payroll for all employees in a period"""
     try:
@@ -162,7 +215,15 @@ def calculate_payroll(period_id):
             
             # Calculate attendance data
             attendance_data = calculate_employee_attendance(employee.id, period.start_date, period.end_date)
-            
+
+            if not attendance_data['has_records']:
+                skipped.append({
+                    'employee_id': employee.id,
+                    'name': employee.full_name,
+                    'reason': 'Belum ada data absensi untuk periode ini - HR perlu input dulu'
+                })
+                continue
+
             # Get employee salary components
             salary_components = get_employee_salary_components(employee.id)
             
@@ -232,18 +293,18 @@ def calculate_employee_attendance(employee_id, start_date, end_date):
     total_late_hours = sum([float(a.late_hours or 0) for a in attendances if hasattr(a, 'late_hours') and a.late_hours])
     total_worked_hours = sum([float(a.worked_hours or 0) for a in attendances])
     
-    # If no attendance records at all, assume full attendance (belum ada data absensi = hadir penuh)
-    if len(attendances) == 0 and total_working_days > 0:
-        days_worked = total_working_days
-        days_absent = 0
-    
     return {
         'total_working_days': total_working_days,
         'days_worked': days_worked,
         'days_absent': days_absent,
         'overtime_hours': total_overtime_hours,
         'late_hours': total_late_hours,
-        'worked_hours': total_worked_hours
+        'worked_hours': total_worked_hours,
+        # No silent "assume full attendance" fallback - an employee with zero
+        # Attendance records for the period must be flagged and skipped from
+        # payroll, not paid in full on the assumption their attendance was
+        # fine. HR is expected to record everyone's attendance going forward.
+        'has_records': len(attendances) > 0
     }
 
 def get_employee_salary_components(employee_id):
@@ -654,6 +715,7 @@ def calculate_employee_payroll(employee, period, attendance_data, salary_compone
 
 @hr_payroll_bp.route('/periods/<int:period_id>/records', methods=['GET'])
 @jwt_required()
+@require_permission('payroll.view')
 def get_payroll_records(period_id):
     """Get payroll records for a period"""
     try:
@@ -713,6 +775,7 @@ def get_payroll_records(period_id):
 
 @hr_payroll_bp.route('/records', methods=['POST'])
 @jwt_required()
+@require_permission('payroll.create')
 def create_payroll_record():
     """Create individual payroll record"""
     try:
@@ -779,6 +842,7 @@ def create_payroll_record():
 
 @hr_payroll_bp.route('/records/<int:record_id>', methods=['GET'])
 @jwt_required()
+@require_permission('payroll.view')
 def get_payroll_record(record_id):
     """Get individual payroll record"""
     try:
@@ -816,6 +880,7 @@ def get_payroll_record(record_id):
 
 @hr_payroll_bp.route('/records/<int:record_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('payroll.edit')
 def update_payroll_record(record_id):
     """Update individual payroll record"""
     try:
@@ -864,6 +929,7 @@ def update_payroll_record(record_id):
 
 @hr_payroll_bp.route('/records/<int:record_id>/approve', methods=['POST'])
 @jwt_required()
+@require_permission('payroll.approve')
 def approve_payroll_record(record_id):
     """Approve individual payroll record"""
     try:
@@ -879,12 +945,21 @@ def approve_payroll_record(record_id):
 
 @hr_payroll_bp.route('/records/<int:record_id>/pay', methods=['POST'])
 @jwt_required()
+@require_permission('payroll.create')
 def mark_payroll_paid(record_id):
     """Mark payroll record as paid"""
     try:
         data = request.get_json() or {}
         record = db.session.get(PayrollRecord, record_id) or abort(404)
-        
+
+        # Every payment must post to GL - that only happens when the period
+        # is approved (approve_payroll_period -> post_payroll_journal). A
+        # record still 'calculated' (period not yet approved) could
+        # previously be marked paid directly, sending money out with no
+        # accounting trail.
+        if record.status != 'approved':
+            return jsonify({'error': f'Payroll record harus berstatus approved dulu sebelum bisa ditandai paid (status saat ini: {record.status})'}), 400
+
         record.status = 'paid'
         record.payment_date = get_local_today()
         record.payment_method = data.get('payment_method', 'bank_transfer')
@@ -898,6 +973,7 @@ def mark_payroll_paid(record_id):
 
 @hr_payroll_bp.route('/records/<int:record_id>/payslip', methods=['GET'])
 @jwt_required()
+@require_permission('payroll.view')
 def get_payslip(record_id):
     """Get detailed payslip data for a payroll record"""
     try:
@@ -982,6 +1058,7 @@ def get_payslip(record_id):
 
 @hr_payroll_bp.route('/salary-components', methods=['GET'])
 @jwt_required()
+@require_permission('payroll.view')
 def get_salary_components():
     """Get all salary components"""
     try:
@@ -1002,6 +1079,7 @@ def get_salary_components():
 
 @hr_payroll_bp.route('/salary-components', methods=['POST'])
 @jwt_required()
+@require_permission('payroll.create')
 def create_salary_component():
     """Create new salary component"""
     try:
@@ -1038,6 +1116,7 @@ def create_salary_component():
 
 @hr_payroll_bp.route('/employees/<int:employee_id>/salary-components', methods=['GET'])
 @jwt_required()
+@require_permission('payroll.view')
 def get_employee_salary_components_route(employee_id):
     """Get salary components for specific employee"""
     try:
@@ -1065,6 +1144,7 @@ def get_employee_salary_components_route(employee_id):
 
 @hr_payroll_bp.route('/employees/<int:employee_id>/salary-components', methods=['POST'])
 @jwt_required()
+@require_permission('payroll.create')
 def assign_salary_component():
     """Assign salary component to employee"""
     try:
@@ -1120,6 +1200,7 @@ from models import OutsourcingVendor
 
 @hr_payroll_bp.route('/outsourcing-vendors', methods=['GET'])
 @jwt_required()
+@require_permission('payroll.view')
 def get_outsourcing_vendors():
     """Get all outsourcing vendors"""
     try:
@@ -1130,6 +1211,7 @@ def get_outsourcing_vendors():
 
 @hr_payroll_bp.route('/outsourcing-vendors', methods=['POST'])
 @jwt_required()
+@require_permission('payroll.create')
 def create_outsourcing_vendor():
     """Create outsourcing vendor"""
     try:
@@ -1165,6 +1247,7 @@ def create_outsourcing_vendor():
 
 @hr_payroll_bp.route('/outsourcing-vendors/<int:vendor_id>', methods=['GET'])
 @jwt_required()
+@require_permission('payroll.view')
 def get_outsourcing_vendor(vendor_id):
     """Get single outsourcing vendor"""
     try:
@@ -1184,6 +1267,7 @@ def get_outsourcing_vendor(vendor_id):
 
 @hr_payroll_bp.route('/outsourcing-vendors/<int:vendor_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('payroll.edit')
 def update_outsourcing_vendor(vendor_id):
     """Update outsourcing vendor"""
     try:
@@ -1214,6 +1298,7 @@ def update_outsourcing_vendor(vendor_id):
 
 @hr_payroll_bp.route('/piecework-logs', methods=['GET'])
 @jwt_required()
+@require_permission('payroll.view')
 def get_piecework_logs():
     """Get piecework logs with filters"""
     try:
@@ -1248,6 +1333,7 @@ def get_piecework_logs():
 
 @hr_payroll_bp.route('/piecework-logs', methods=['POST'])
 @jwt_required()
+@require_permission('payroll.create')
 def create_piecework_log():
     """Create piecework log entry"""
     try:
@@ -1288,6 +1374,7 @@ def create_piecework_log():
 
 @hr_payroll_bp.route('/piecework-logs/<int:log_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('payroll.edit')
 def update_piecework_log(log_id):
     """Update piecework log"""
     try:
@@ -1316,6 +1403,7 @@ def update_piecework_log(log_id):
 
 @hr_payroll_bp.route('/piecework-logs/<int:log_id>/verify', methods=['POST'])
 @jwt_required()
+@require_permission('payroll.create')
 def verify_piecework_log(log_id):
     """Verify/approve piecework log"""
     try:
@@ -1341,6 +1429,7 @@ def verify_piecework_log(log_id):
 
 @hr_payroll_bp.route('/piecework-logs/bulk', methods=['POST'])
 @jwt_required()
+@require_permission('payroll.create')
 def bulk_create_piecework_logs():
     """Bulk create piecework logs for multiple entries"""
     try:

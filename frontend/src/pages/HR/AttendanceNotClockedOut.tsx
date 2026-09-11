@@ -70,7 +70,7 @@ const AttendanceNotClockedOut: React.FC = () => {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Belum Clock Out Hari Ini</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Belum Clock Out</h1>
             <p className="text-gray-500 dark:text-gray-400 text-sm">
               {date && new Date(date).toLocaleDateString('id-ID', { 
                 weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' 

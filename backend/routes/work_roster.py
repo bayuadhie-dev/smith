@@ -10,6 +10,7 @@ Handles:
 
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from datetime import datetime, timedelta
 from models import db
 from models.hr_extended import WorkRoster, WorkRosterAssignment, EmployeeSkill, RosterTemplate
@@ -85,6 +86,7 @@ ROSTER_ROLES = {**ROSTER_ROLES_MACHINE, **ROSTER_ROLES_GENERAL}
 
 @work_roster_bp.route('/rosters', methods=['GET'])
 @jwt_required()
+@require_permission('roster.view')
 def get_work_rosters():
     """Get weekly work rosters with optional filters"""
     try:
@@ -128,6 +130,7 @@ def get_work_rosters():
 
 @work_roster_bp.route('/rosters/<int:id>', methods=['GET'])
 @jwt_required()
+@require_permission('roster.view')
 def get_work_roster(id):
     """Get single weekly work roster with all assignments grouped by shift"""
     try:
@@ -194,6 +197,7 @@ def get_work_roster(id):
 
 @work_roster_bp.route('/rosters/by-week', methods=['GET'])
 @jwt_required()
+@require_permission('roster.view')
 def get_roster_by_week():
     """Get roster for a specific week (by date or week number)"""
     try:
@@ -296,6 +300,7 @@ def get_roster_by_week():
 
 @work_roster_bp.route('/rosters', methods=['POST'])
 @jwt_required()
+@require_permission('roster.create')
 def create_work_roster():
     """Create a new weekly work roster with assignments per shift"""
     try:
@@ -377,6 +382,7 @@ def create_work_roster():
 
 @work_roster_bp.route('/rosters/<int:id>', methods=['PUT'])
 @jwt_required()
+@require_permission('roster.edit')
 def update_work_roster(id):
     """Update weekly work roster and assignments"""
     try:
@@ -442,6 +448,7 @@ def update_work_roster(id):
 
 @work_roster_bp.route('/rosters/<int:id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('roster.delete')
 def delete_work_roster(id):
     """Delete work roster"""
     try:
@@ -474,6 +481,7 @@ def delete_work_roster(id):
 
 @work_roster_bp.route('/rosters/calendar', methods=['GET'])
 @jwt_required()
+@require_permission('roster.view')
 def get_roster_calendar():
     """Get roster overview for calendar display"""
     try:
@@ -554,6 +562,7 @@ def get_roster_calendar():
 
 @work_roster_bp.route('/employees/available', methods=['GET'])
 @jwt_required()
+@require_permission('roster.view')
 def get_available_employees():
     """Get employees available for roster assignment"""
     try:
@@ -633,6 +642,7 @@ def get_available_employees():
 
 @work_roster_bp.route('/employees/<int:employee_id>/skills', methods=['GET'])
 @jwt_required()
+@require_permission('roster.view')
 def get_employee_skills(employee_id):
     """Get skills for an employee"""
     try:
@@ -658,6 +668,7 @@ def get_employee_skills(employee_id):
 
 @work_roster_bp.route('/employees/<int:employee_id>/skills', methods=['POST'])
 @jwt_required()
+@require_permission('roster.create')
 def add_employee_skill(employee_id):
     """Add skill to an employee"""
     try:
@@ -703,6 +714,7 @@ def add_employee_skill(employee_id):
 
 @work_roster_bp.route('/skills/<int:id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('roster.delete')
 def delete_employee_skill(id):
     """Delete employee skill"""
     try:
@@ -729,6 +741,7 @@ def delete_employee_skill(id):
 
 @work_roster_bp.route('/templates', methods=['GET'])
 @jwt_required()
+@require_permission('roster.view')
 def get_roster_templates():
     """Get roster templates"""
     try:
@@ -751,6 +764,7 @@ def get_roster_templates():
 
 @work_roster_bp.route('/templates', methods=['POST'])
 @jwt_required()
+@require_permission('roster.create')
 def create_roster_template():
     """Create roster template from current roster"""
     try:
@@ -781,6 +795,7 @@ def create_roster_template():
 
 @work_roster_bp.route('/rosters/copy', methods=['POST'])
 @jwt_required()
+@require_permission('roster.create')
 def copy_roster():
     """Copy roster from one week to another"""
     try:
@@ -871,6 +886,7 @@ def copy_roster():
 
 @work_roster_bp.route('/operators/for-production', methods=['GET'])
 @jwt_required()
+@require_permission('roster.view')
 def get_operators_for_production():
     """
     Get operators assigned for production input
@@ -941,6 +957,7 @@ def get_operators_for_production():
 
 @work_roster_bp.route('/role-definitions', methods=['GET'])
 @jwt_required()
+@require_permission('roster.view')
 def get_role_definitions():
     """Get all role definitions"""
     return jsonify({

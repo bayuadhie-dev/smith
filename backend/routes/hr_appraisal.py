@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db, Employee, AppraisalCycle, AppraisalTemplate, AppraisalCriteria, EmployeeAppraisal, AppraisalScore
 from utils.i18n import success_response, error_response, get_message
 from utils import generate_number
@@ -16,6 +17,7 @@ hr_appraisal_bp = Blueprint('hr_appraisal', __name__)
 
 @hr_appraisal_bp.route('/cycles', methods=['GET'])
 @jwt_required()
+@require_permission('appraisal.view')
 def get_appraisal_cycles():
     """Get all appraisal cycles"""
     try:
@@ -55,6 +57,7 @@ def get_appraisal_cycles():
 
 @hr_appraisal_bp.route('/cycles', methods=['POST'])
 @jwt_required()
+@require_permission('appraisal.create')
 def create_appraisal_cycle():
     """Create new appraisal cycle"""
     try:
@@ -97,6 +100,7 @@ def create_appraisal_cycle():
 
 @hr_appraisal_bp.route('/cycles/<int:cycle_id>/activate', methods=['POST'])
 @jwt_required()
+@require_permission('appraisal.create')
 def activate_appraisal_cycle(cycle_id):
     """Activate appraisal cycle and create appraisals for all employees"""
     try:
@@ -163,6 +167,7 @@ def activate_appraisal_cycle(cycle_id):
 
 @hr_appraisal_bp.route('/templates', methods=['GET'])
 @jwt_required()
+@require_permission('appraisal.view')
 def get_appraisal_templates():
     """Get all appraisal templates"""
     try:
@@ -182,6 +187,7 @@ def get_appraisal_templates():
 
 @hr_appraisal_bp.route('/templates', methods=['POST'])
 @jwt_required()
+@require_permission('appraisal.create')
 def create_appraisal_template():
     """Create new appraisal template"""
     try:
@@ -227,6 +233,7 @@ def create_appraisal_template():
 
 @hr_appraisal_bp.route('/templates/<int:template_id>', methods=['GET'])
 @jwt_required()
+@require_permission('appraisal.view')
 def get_appraisal_template(template_id):
     """Get appraisal template with criteria"""
     try:
@@ -256,6 +263,7 @@ def get_appraisal_template(template_id):
 
 @hr_appraisal_bp.route('/appraisals', methods=['GET'])
 @jwt_required()
+@require_permission('appraisal.view')
 def get_employee_appraisals():
     """Get employee appraisals"""
     try:
@@ -313,6 +321,7 @@ def get_employee_appraisals():
 
 @hr_appraisal_bp.route('/appraisals/<int:appraisal_id>', methods=['GET'])
 @jwt_required()
+@require_permission('appraisal.view')
 def get_appraisal_detail(appraisal_id):
     """Get detailed appraisal with scores"""
     try:
@@ -379,6 +388,7 @@ def get_appraisal_detail(appraisal_id):
 
 @hr_appraisal_bp.route('/appraisals/<int:appraisal_id>/self-review', methods=['POST'])
 @jwt_required()
+@require_permission('appraisal.create')
 def submit_self_review(appraisal_id):
     """Submit self review"""
     try:
@@ -416,6 +426,7 @@ def submit_self_review(appraisal_id):
 
 @hr_appraisal_bp.route('/appraisals/<int:appraisal_id>/manager-review', methods=['POST'])
 @jwt_required()
+@require_permission('appraisal.create')
 def submit_manager_review(appraisal_id):
     """Submit manager review"""
     try:
@@ -492,6 +503,7 @@ def calculate_rating(score):
 
 @hr_appraisal_bp.route('/cycles/<int:cycle_id>/report', methods=['GET'])
 @jwt_required()
+@require_permission('appraisal.view')
 def get_appraisal_cycle_report(cycle_id):
     """Get appraisal cycle summary report"""
     try:

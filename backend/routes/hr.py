@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 import redis
 import os
 import json
@@ -13,6 +14,7 @@ hr_bp = Blueprint('hr', __name__)
 
 @hr_bp.route('/positions', methods=['GET'])
 @jwt_required()
+@require_permission('hr.view')
 def get_positions():
     """
     Get all positions/roles
@@ -59,6 +61,7 @@ def get_positions():
 
 @hr_bp.route('/employees', methods=['GET'])
 @jwt_required()
+@require_permission('employees.view')
 def get_employees():
     """
     Get all employees with pagination
@@ -154,6 +157,7 @@ def get_employees():
 
 @hr_bp.route('/employees', methods=['POST'])
 @jwt_required()
+@require_permission('employees.create')
 def create_employee():
     """
     Create a new employee
@@ -284,6 +288,7 @@ def create_employee():
 
 @hr_bp.route('/departments', methods=['GET'])
 @jwt_required()
+@require_permission('hr.view')
 def get_departments():
     try:
         departments = Department.query.filter_by(is_active=True).all()
@@ -300,6 +305,7 @@ def get_departments():
 
 @hr_bp.route('/shifts', methods=['GET'])
 @jwt_required()
+@require_permission('hr.view')
 def get_shifts():
     try:
         shifts = ShiftSchedule.query.filter_by(is_active=True).all()
@@ -318,6 +324,7 @@ def get_shifts():
 
 @hr_bp.route('/attendance', methods=['POST'])
 @jwt_required()
+@require_permission('attendance.create')
 def record_attendance():
     try:
         data = request.get_json()
@@ -356,6 +363,7 @@ def record_attendance():
 
 @hr_bp.route('/leaves', methods=['GET'])
 @jwt_required()
+@require_permission('leave.view')
 def get_leaves():
     try:
         leaves = Leave.query.order_by(Leave.start_date.desc()).all()
@@ -376,6 +384,7 @@ def get_leaves():
 
 @hr_bp.route('/leaves', methods=['POST'])
 @jwt_required()
+@require_permission('leave.create')
 def create_leave():
     try:
         data = request.get_json()
@@ -401,6 +410,7 @@ def create_leave():
 
 @hr_bp.route('/roster', methods=['GET'])
 @jwt_required()
+@require_permission('roster.view')
 def get_roster():
     try:
         start_date = request.args.get('start_date')
@@ -434,6 +444,7 @@ def get_roster():
 
 @hr_bp.route('/roster', methods=['POST'])
 @jwt_required()
+@require_permission('roster.create')
 def create_roster():
     try:
         data = request.get_json()
@@ -457,6 +468,7 @@ def create_roster():
 
 @hr_bp.route('/roster/weekly', methods=['GET'])
 @jwt_required()
+@require_permission('roster.view')
 def get_weekly_roster():
     """Get weekly roster view for drag and drop functionality"""
     try:
@@ -555,6 +567,7 @@ def get_weekly_roster():
 
 @hr_bp.route('/roster/assign', methods=['POST'])
 @jwt_required()
+@require_permission('roster.create')
 def assign_roster():
     """Assign employee to machine and shift for specific date"""
     try:
@@ -618,6 +631,7 @@ def assign_roster():
 
 @hr_bp.route('/roster/unassign', methods=['POST'])
 @jwt_required()
+@require_permission('roster.create')
 def unassign_roster():
     """Remove employee assignment for specific date"""
     try:
@@ -643,6 +657,7 @@ def unassign_roster():
 
 @hr_bp.route('/roster/copy-week', methods=['POST'])
 @jwt_required()
+@require_permission('roster.create')
 def copy_weekly_roster():
     """Copy roster assignments from one week to another"""
     try:
@@ -688,6 +703,7 @@ def copy_weekly_roster():
 
 @hr_bp.route('/roster/<int:roster_id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('roster.delete')
 def delete_roster_assignment(roster_id):
     try:
         roster = db.session.get(EmployeeRoster, roster_id) or abort(404)
@@ -707,6 +723,7 @@ def delete_roster_assignment(roster_id):
 
 @hr_bp.route('/attendance/sync-to-job-costing', methods=['POST'])
 @jwt_required()
+@require_permission('attendance.create')
 def sync_attendance_to_job_costing():
     """
     Sync employee attendance to job costing.
@@ -826,6 +843,7 @@ def sync_attendance_to_job_costing():
 
 @hr_bp.route('/employees/<int:employee_id>/labor-cost-summary', methods=['GET'])
 @jwt_required()
+@require_permission('employees.view')
 def get_employee_labor_cost_summary(employee_id):
     """Get labor cost summary for an employee"""
     try:

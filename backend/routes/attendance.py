@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, make_response
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db
 from models.hr import Attendance, OfficeLocation
 from models.user import User
@@ -370,6 +371,7 @@ def public_clock_out():
 
 @attendance_bp.route('/clock-in', methods=['POST'])
 @jwt_required()
+@require_permission('attendance.create')
 def clock_in():
     """Clock in with photo verification"""
     try:
@@ -475,6 +477,7 @@ def clock_in():
 
 @attendance_bp.route('/clock-out', methods=['POST'])
 @jwt_required()
+@require_permission('attendance.create')
 def clock_out():
     """Clock out with photo verification"""
     try:
@@ -579,6 +582,7 @@ def clock_out():
 
 @attendance_bp.route('/today', methods=['GET'])
 @jwt_required()
+@require_permission('attendance.view')
 def get_today_attendance():
     """Get current user's attendance for today"""
     try:
@@ -601,6 +605,7 @@ def get_today_attendance():
 
 @attendance_bp.route('/history', methods=['GET'])
 @jwt_required()
+@require_permission('attendance.view')
 def get_attendance_history():
     """Get current user's attendance history"""
     try:
@@ -640,6 +645,7 @@ def get_attendance_history():
 
 @attendance_bp.route('/summary', methods=['GET'])
 @jwt_required()
+@require_permission('attendance.view')
 def get_attendance_summary():
     """Get attendance summary for current month"""
     try:
@@ -690,6 +696,7 @@ def get_attendance_summary():
 
 @attendance_bp.route('/admin/list', methods=['GET'])
 @jwt_required()
+@require_permission('attendance.view')
 def admin_get_all_attendance():
     """Admin: Get all users' attendance"""
     try:
@@ -729,6 +736,7 @@ def admin_get_all_attendance():
 
 @attendance_bp.route('/admin/verify/<int:attendance_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('attendance.edit')
 def admin_verify_attendance(attendance_id):
     """Admin: Verify or reject attendance"""
     try:
@@ -773,6 +781,7 @@ def admin_verify_attendance(attendance_id):
 
 @attendance_bp.route('/report', methods=['GET'])
 @jwt_required()
+@require_permission('attendance.view')
 def get_attendance_report():
     """Get attendance report with filters"""
     try:
@@ -829,6 +838,7 @@ def get_attendance_report():
 
 @attendance_bp.route('/summary/monthly', methods=['GET'])
 @jwt_required()
+@require_permission('attendance.view')
 def get_monthly_summary():
     """Get monthly attendance summary with total hours per person"""
     try:
@@ -901,6 +911,7 @@ def get_monthly_summary():
 
 @attendance_bp.route('/today/late', methods=['GET'])
 @jwt_required()
+@require_permission('attendance.view')
 def get_today_late():
     """Get list of employees who are late today - for HR notification"""
     try:
@@ -939,6 +950,7 @@ def get_today_late():
 
 @attendance_bp.route('/dashboard/stats', methods=['GET'])
 @jwt_required()
+@require_permission('attendance.view')
 def get_attendance_dashboard_stats():
     """Get attendance statistics for dashboard"""
     try:
@@ -994,6 +1006,7 @@ def get_attendance_dashboard_stats():
 
 @attendance_bp.route('/dashboard/not-clocked-out', methods=['GET'])
 @jwt_required()
+@require_permission('attendance.view')
 def get_not_clocked_out():
     """Get list of people who clocked in but haven't clocked out today"""
     try:

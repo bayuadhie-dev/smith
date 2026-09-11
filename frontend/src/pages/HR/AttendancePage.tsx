@@ -259,7 +259,7 @@ const AttendancePage: React.FC = () => {
             <Clock className="w-7 h-7 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Absensi</h1>
+            <h1 className="text-2xl font-bold text-slate-900">Absensi (Foto)</h1>
             <p className="text-sm text-slate-500">Sistem absensi dengan verifikasi foto</p>
           </div>
         </div>

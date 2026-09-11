@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db
 from models.hr import StaffLeaveRequest, OfficeLocation
 from models.user import User
@@ -209,6 +210,7 @@ def public_cancel_leave(request_id):
 
 @staff_leave_bp.route('/list', methods=['GET'])
 @jwt_required()
+@require_permission('leave.view')
 def get_leave_requests():
     """Get all leave requests with filters"""
     try:
@@ -251,6 +253,7 @@ def get_leave_requests():
 
 @staff_leave_bp.route('/pending', methods=['GET'])
 @jwt_required()
+@require_permission('leave.view')
 def get_pending_requests():
     """Get pending leave requests for approval"""
     try:
@@ -269,6 +272,7 @@ def get_pending_requests():
 
 @staff_leave_bp.route('/approve/<int:request_id>', methods=['POST'])
 @jwt_required()
+@require_permission('leave.approve')
 def approve_leave(request_id):
     """Approve a leave request"""
     try:
@@ -299,6 +303,7 @@ def approve_leave(request_id):
 
 @staff_leave_bp.route('/reject/<int:request_id>', methods=['POST'])
 @jwt_required()
+@require_permission('leave.create')
 def reject_leave(request_id):
     """Reject a leave request"""
     try:
@@ -333,6 +338,7 @@ def reject_leave(request_id):
 
 @staff_leave_bp.route('/calendar', methods=['GET'])
 @jwt_required()
+@require_permission('leave.view')
 def get_leave_calendar():
     """Get leave data for calendar view"""
     try:
@@ -386,6 +392,7 @@ def get_leave_calendar():
 
 @staff_leave_bp.route('/office-locations', methods=['GET'])
 @jwt_required()
+@require_permission('leave.view')
 def get_office_locations():
     """Get all office locations"""
     try:
@@ -399,6 +406,7 @@ def get_office_locations():
 
 @staff_leave_bp.route('/office-locations', methods=['POST'])
 @jwt_required()
+@require_permission('leave.create')
 def create_office_location():
     """Create new office location"""
     try:
@@ -442,6 +450,7 @@ def create_office_location():
 
 @staff_leave_bp.route('/office-locations/<int:location_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('leave.edit')
 def update_office_location(location_id):
     """Update office location"""
     try:
@@ -482,6 +491,7 @@ def update_office_location(location_id):
 
 @staff_leave_bp.route('/office-locations/<int:location_id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('leave.delete')
 def delete_office_location(location_id):
     """Delete office location"""
     try:

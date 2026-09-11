@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db, Employee, TrainingCategory, TrainingProgram, TrainingSession, TrainingEnrollment, TrainingRequest
 from utils.i18n import success_response, error_response, get_message
 from utils import generate_number
@@ -16,6 +17,7 @@ hr_training_bp = Blueprint('hr_training', __name__)
 
 @hr_training_bp.route('/categories', methods=['GET'])
 @jwt_required()
+@require_permission('training.view')
 def get_training_categories():
     """Get all training categories"""
     try:
@@ -35,6 +37,7 @@ def get_training_categories():
 
 @hr_training_bp.route('/categories', methods=['POST'])
 @jwt_required()
+@require_permission('training.create')
 def create_training_category():
     """Create new training category"""
     try:
@@ -69,6 +72,7 @@ def create_training_category():
 
 @hr_training_bp.route('/programs', methods=['GET'])
 @jwt_required()
+@require_permission('training.view')
 def get_training_programs():
     """Get all training programs"""
     try:
@@ -122,6 +126,7 @@ def get_training_programs():
 
 @hr_training_bp.route('/programs', methods=['POST'])
 @jwt_required()
+@require_permission('training.create')
 def create_training_program():
     """Create new training program"""
     try:
@@ -171,6 +176,7 @@ def create_training_program():
 
 @hr_training_bp.route('/programs/<int:program_id>', methods=['GET'])
 @jwt_required()
+@require_permission('training.view')
 def get_training_program(program_id):
     """Get training program details"""
     try:
@@ -218,6 +224,7 @@ def get_training_program(program_id):
 
 @hr_training_bp.route('/sessions', methods=['GET'])
 @jwt_required()
+@require_permission('training.view')
 def get_training_sessions():
     """Get all training sessions"""
     try:
@@ -275,6 +282,7 @@ def get_training_sessions():
 
 @hr_training_bp.route('/sessions', methods=['POST'])
 @jwt_required()
+@require_permission('training.create')
 def create_training_session():
     """Create new training session"""
     try:
@@ -325,6 +333,7 @@ def create_training_session():
 
 @hr_training_bp.route('/sessions/<int:session_id>', methods=['GET'])
 @jwt_required()
+@require_permission('training.view')
 def get_training_session(session_id):
     """Get training session details with enrollments"""
     try:
@@ -382,6 +391,7 @@ def get_training_session(session_id):
 
 @hr_training_bp.route('/sessions/<int:session_id>/enroll', methods=['POST'])
 @jwt_required()
+@require_permission('training.create')
 def enroll_employees(session_id):
     """Enroll employees in training session"""
     try:
@@ -431,6 +441,7 @@ def enroll_employees(session_id):
 
 @hr_training_bp.route('/enrollments/<int:enrollment_id>/attendance', methods=['POST'])
 @jwt_required()
+@require_permission('training.create')
 def update_attendance(enrollment_id):
     """Update training attendance"""
     try:
@@ -449,6 +460,7 @@ def update_attendance(enrollment_id):
 
 @hr_training_bp.route('/enrollments/<int:enrollment_id>/assessment', methods=['POST'])
 @jwt_required()
+@require_permission('training.create')
 def update_assessment(enrollment_id):
     """Update training assessment scores"""
     try:
@@ -469,6 +481,7 @@ def update_assessment(enrollment_id):
 
 @hr_training_bp.route('/enrollments/<int:enrollment_id>/certificate', methods=['POST'])
 @jwt_required()
+@require_permission('training.create')
 def issue_certificate(enrollment_id):
     """Issue training certificate"""
     try:
@@ -501,6 +514,7 @@ def issue_certificate(enrollment_id):
 
 @hr_training_bp.route('/requests', methods=['GET'])
 @jwt_required()
+@require_permission('training.view')
 def get_training_requests():
     """Get all training requests"""
     try:
@@ -552,6 +566,7 @@ def get_training_requests():
 
 @hr_training_bp.route('/requests', methods=['POST'])
 @jwt_required()
+@require_permission('training.create')
 def create_training_request():
     """Create new training request"""
     try:
@@ -594,6 +609,7 @@ def create_training_request():
 
 @hr_training_bp.route('/requests/<int:request_id>/approve', methods=['POST'])
 @jwt_required()
+@require_permission('training.create')
 def approve_training_request(request_id):
     """Approve training request"""
     try:
@@ -616,6 +632,7 @@ def approve_training_request(request_id):
 
 @hr_training_bp.route('/requests/<int:request_id>/reject', methods=['POST'])
 @jwt_required()
+@require_permission('training.create')
 def reject_training_request(request_id):
     """Reject training request"""
     try:
@@ -644,6 +661,7 @@ def reject_training_request(request_id):
 
 @hr_training_bp.route('/reports/employee-training-history/<int:employee_id>', methods=['GET'])
 @jwt_required()
+@require_permission('training.view')
 def get_employee_training_history(employee_id):
     """Get training history for specific employee"""
     try:
@@ -682,6 +700,7 @@ def get_employee_training_history(employee_id):
 
 @hr_training_bp.route('/reports/training-effectiveness', methods=['GET'])
 @jwt_required()
+@require_permission('training.view')
 def get_training_effectiveness_report():
     """Get training effectiveness report"""
     try:

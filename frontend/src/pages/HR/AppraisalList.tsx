@@ -56,7 +56,7 @@ const navigate = useNavigate()
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Performance Appraisal</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Penilaian Kinerja</h1>
         <div className="flex gap-2">
           <button 
             onClick={() => navigate('/app/reports?module=appraisal')}
