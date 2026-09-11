@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
+import axiosInstance from '../../utils/axiosConfig';
+import SearchableSelect from '../../components/SearchableSelect';
 import {
   CalendarIcon as Calendar,
   CheckIcon as Save,
@@ -76,15 +78,8 @@ const RFQForm: React.FC = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('/api/products', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setProducts(data.products || []);
-      }
+      const response = await axiosInstance.get('/api/products');
+      setProducts(response.data.products || []);
     } catch (error) {
       console.error('Failed to fetch products:', error);
     }
@@ -92,21 +87,15 @@ const RFQForm: React.FC = () => {
 
   const fetchRFQ = async () => {
     try {
-      const response = await fetch(`/api/purchasing/rfqs/${id}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+      const response = await axiosInstance.get(`/api/purchasing/rfqs/${id}`);
+      const data = response.data;
+      setFormData({
+        title: data.title,
+        description: data.description || '',
+        issue_date: data.issue_date,
+        closing_date: data.closing_date,
+        items: data.items || []
       });
-      if (response.ok) {
-        const data = await response.json();
-        setFormData({
-          title: data.title,
-          description: data.description || '',
-          issue_date: data.issue_date,
-          closing_date: data.closing_date,
-          items: data.items || []
-        });
-      }
     } catch (error) {
       console.error('Failed to fetch RFQ:', error);
     }
@@ -135,29 +124,14 @@ const RFQForm: React.FC = () => {
     }
 
     try {
-      const url = isEdit 
-        ? `/api/purchasing/rfqs/${id}` 
-        : '/api/purchasing/rfqs';
-      
-      const method = isEdit ? 'PUT' : 'POST';
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(formData)
-      });
-
-      if (response.ok) {
-        navigate('/app/purchasing/rfqs');
+      if (isEdit) {
+        await axiosInstance.put(`/api/purchasing/rfqs/${id}`, formData);
       } else {
-        const errorData = await response.json();
-        setError(errorData.message || 'Failed to save RFQ');
+        await axiosInstance.post('/api/purchasing/rfqs', formData);
       }
-    } catch (error) {
-      setError('Network error occurred');
+      navigate('/app/purchasing/rfqs');
+    } catch (error: any) {
+      setError(error?.response?.data?.error || error?.response?.data?.message || 'Failed to save RFQ');
     } finally {
       setLoading(false);
     }
@@ -362,18 +336,13 @@ const RFQForm: React.FC = () => {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                         <CubeIcon className="inline h-4 w-4 mr-1" />{t('production.product')}</label>
-                      <select
-                        value={item.product_id || ''}
-                        onChange={(e) => handleItemChange(index, 'product_id', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      >
-                        <option value="">Select Product (Optional)</option>
-                        {products.map(product => (
-                          <option key={product.id} value={product.id}>
-                            {product.code} - {product.name}
-                          </option>
-                        ))}
-                      </select>
+                      <SearchableSelect
+                        options={products}
+                        value={item.product_id || null}
+                        onChange={(value) => handleItemChange(index, 'product_id', value)}
+                        placeholder="Select Product (Optional)"
+                        className="w-full"
+                      />
                     </div>
 
                     <div>

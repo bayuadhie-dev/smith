@@ -4,22 +4,19 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 import {
-  useGetPurchaseOrdersQuery, 
-  useSubmitForApprovalMutation,
-  useApprovePurchaseOrderMutation 
+  useGetPurchaseOrdersQuery,
+  useSubmitForApprovalMutation
 } from '../../services/api'
 import {
-  CheckCircleIcon,
   ClockIcon,
   DocumentTextIcon,
   EyeIcon,
   FunnelIcon,
   MagnifyingGlassIcon,
-  PencilIcon
-,
+  PencilIcon,
   PlusIcon,
-  XCircleIcon
-} from '@heroicons/react/24/outline'; 
+  ShieldCheckIcon
+} from '@heroicons/react/24/outline';
 export default function PurchaseOrderList() {
     const { t } = useLanguage();
 
@@ -36,7 +33,6 @@ const [search, setSearch] = useState('')
   })
   
   const [submitForApproval] = useSubmitForApprovalMutation()
-  const [approvePO] = useApprovePurchaseOrderMutation()
 
   const getStatusBadge = (status: string) => {
     const badges: Record<string, { class: string; label: string }> = {
@@ -65,36 +61,13 @@ const [search, setSearch] = useState('')
 
   const handleSubmitApproval = async (poId: number) => {
     try {
-      // In real app, you'd get approver IDs from a user selection dialog
-      const approverIds = [1, 2] // Mock approver IDs
-      await submitForApproval({ poId, approver_ids: approverIds }).unwrap()
+      // Role-based approval workflow (ApprovalWorkflow) - no approver selection
+      // needed here anymore; reviewer/approver assignment is role-driven.
+      await submitForApproval({ poId }).unwrap()
       toast.success('Purchase order submitted for approval')
       refetch()
     } catch (error: any) {
       toast.error(error?.data?.error || 'Failed to submit for approval')
-    }
-  }
-
-  const handleApprove = async (poId: number) => {
-    try {
-      await approvePO({ poId, status: 'approved', comments: 'Approved via list action' }).unwrap()
-      toast.success('Purchase order approved')
-      refetch()
-    } catch (error: any) {
-      toast.error(error?.data?.error || 'Failed to approve purchase order')
-    }
-  }
-
-  const handleReject = async (poId: number) => {
-    const comments = prompt('Please provide rejection reason:')
-    if (comments) {
-      try {
-        await approvePO({ poId, status: 'rejected', comments }).unwrap()
-        toast.success('Purchase order rejected')
-        refetch()
-      } catch (error: any) {
-        toast.error(error?.data?.error || 'Failed to reject purchase order')
-      }
     }
   }
 
@@ -109,7 +82,7 @@ const [search, setSearch] = useState('')
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Purchase Orders</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pesanan Pembelian</h1>
           <p className="text-gray-600 dark:text-gray-300">Manage purchase orders and approval workflow</p>
         </div>
         <div className="flex space-x-3">
@@ -302,22 +275,13 @@ const [search, setSearch] = useState('')
                           )}
                           
                           {po.status === 'pending_approval' && (
-                            <>
-                              <button
-                                onClick={() => handleApprove(po.id)}
-                                className="text-green-600 hover:text-green-900 p-1"
-                                title="Approve"
-                              >
-                                <CheckCircleIcon className="h-4 w-4" />
-                              </button>
-                              <button
-                                onClick={() => handleReject(po.id)}
-                                className="text-red-600 hover:text-red-900 p-1"
-                                title="Reject"
-                              >
-                                <XCircleIcon className="h-4 w-4" />
-                              </button>
-                            </>
+                            <Link
+                              to="/app/approval"
+                              className="text-yellow-600 hover:text-yellow-900 p-1"
+                              title="Lihat status approval"
+                            >
+                              <ShieldCheckIcon className="h-4 w-4" />
+                            </Link>
                           )}
                         </div>
                       </td>

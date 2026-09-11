@@ -3,15 +3,16 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 import redis
 import os
 import json
-from models import db, Supplier, PurchaseOrder, PurchaseOrderItem, GoodsReceivedNote, GRNItem, Notification
+from models import db, Supplier, PurchaseOrder, PurchaseOrderItem, GoodsReceivedNote, GRNItem, Notification, Invoice
 from utils.i18n import success_response, error_response, get_message
+from utils.auth_decorators import require_permission
 from models.purchasing import (
     PurchaseApproval, SupplierQuote, PurchaseRFQ, RFQItem, SupplierQuoteItem,
     SupplierContract, ContractItem, PriceHistory
 )
 from models.user import User
-from models.product import Product
-from utils import generate_number
+from models.product import Product, Material
+from utils import generate_number, generate_number_v2
 from utils.business_rules import BusinessRules, ValidationError, PURCHASE_ORDER_TRANSITIONS
 from datetime import datetime, date, timedelta
 from sqlalchemy import and_, or_, desc, asc, func
@@ -19,8 +20,18 @@ from utils.timezone import get_local_now, get_local_today
 
 purchasing_bp = Blueprint('purchasing', __name__)
 
+
+def _calculate_po_total(po, subtotal):
+    """Single source of truth for PurchaseOrder.total_amount - create and
+    update used to compute this two different ways (create ignored tax/
+    discount/shipping entirely, update included them), so a PO approved
+    without ever being edited kept a permanently wrong total whenever those
+    fields applied."""
+    return subtotal + float(po.shipping_cost or 0) + float(po.tax_amount or 0) - float(po.discount_amount or 0)
+
 @purchasing_bp.route('/suppliers', methods=['GET'])
 @jwt_required()
+@require_permission('suppliers.view')
 def get_suppliers():
     try:
         page = request.args.get('page', 1, type=int)
@@ -89,6 +100,7 @@ def get_suppliers():
 
 @purchasing_bp.route('/suppliers', methods=['POST'])
 @jwt_required()
+@require_permission('suppliers.create')
 def create_supplier():
     try:
         data = request.get_json()
@@ -139,6 +151,7 @@ def create_supplier():
 
 @purchasing_bp.route('/suppliers/<int:id>', methods=['GET'])
 @jwt_required()
+@require_permission('suppliers.view')
 def get_supplier(id):
     try:
         supplier = db.session.get(Supplier, id)
@@ -171,6 +184,7 @@ def get_supplier(id):
 
 @purchasing_bp.route('/suppliers/<int:id>', methods=['PUT'])
 @jwt_required()
+@require_permission('suppliers.edit')
 def update_supplier(id):
     try:
         supplier = db.session.get(Supplier, id)
@@ -232,6 +246,7 @@ def update_supplier(id):
 
 @purchasing_bp.route('/suppliers/<int:id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('suppliers.delete')
 def delete_supplier(id):
     try:
         supplier = db.session.get(Supplier, id)
@@ -265,13 +280,26 @@ def delete_supplier(id):
 
 @purchasing_bp.route('/purchase-orders', methods=['GET'])
 @jwt_required()
+@require_permission('purchase_orders.view')
 def get_purchase_orders():
     try:
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 50, type=int)
-        
-        pos = PurchaseOrder.query.order_by(PurchaseOrder.order_date.desc()).paginate(page=page, per_page=per_page)
-        
+        search = request.args.get('search', '').strip()
+        status = request.args.get('status', '').strip()
+        priority = request.args.get('priority', '').strip()
+
+        query = PurchaseOrder.query
+        if search:
+            query = query.filter(PurchaseOrder.po_number.ilike(f'%{search}%'))
+        if status:
+            statuses = [s.strip() for s in status.split(',') if s.strip()]
+            query = query.filter(PurchaseOrder.status.in_(statuses))
+        if priority:
+            query = query.filter(PurchaseOrder.priority == priority)
+
+        pos = query.order_by(PurchaseOrder.order_date.desc()).paginate(page=page, per_page=per_page)
+
         return jsonify({
             'purchase_orders': [{
                 'id': po.id,
@@ -279,6 +307,7 @@ def get_purchase_orders():
                 'supplier_name': po.supplier.company_name,
                 'order_date': po.order_date.isoformat(),
                 'status': po.status,
+                'priority': po.priority,
                 'total_amount': float(po.total_amount)
             } for po in pos.items],
             'total': pos.total
@@ -288,6 +317,7 @@ def get_purchase_orders():
 
 @purchasing_bp.route('/purchase-orders', methods=['POST'])
 @jwt_required()
+@require_permission('purchase_orders.create')
 def create_purchase_order():
     try:
         data = request.get_json()
@@ -305,7 +335,7 @@ def create_purchase_order():
             except Exception as supplier_error:
                 print(f"Supplier validation warning: {supplier_error}")
         
-        po_number = generate_number('PO', PurchaseOrder, 'po_number')
+        po_number = generate_number_v2('purchase_order', 'PO', PurchaseOrder, 'po_number')
         
         po = PurchaseOrder(
             po_number=po_number,
@@ -338,10 +368,10 @@ def create_purchase_order():
             subtotal += item_total
         
         po.subtotal = subtotal
-        po.total_amount = subtotal
-        
+        po.total_amount = _calculate_po_total(po, subtotal)
+
         db.session.commit()
-        
+
         # CREATE NOTIFICATION: Purchase Order Created
         try:
             notification = Notification(
@@ -367,6 +397,7 @@ def create_purchase_order():
 
 @purchasing_bp.route('/purchase-orders/<int:id>', methods=['GET'])
 @jwt_required()
+@require_permission('purchase_orders.view')
 def get_purchase_order(id):
     try:
         po = db.session.get(PurchaseOrder, id)
@@ -376,18 +407,36 @@ def get_purchase_order(id):
         return jsonify({
             'id': po.id,
             'po_number': po.po_number,
+            'supplier_id': po.supplier_id,
             'supplier': {
                 'id': po.supplier.id,
                 'company_name': po.supplier.company_name
             },
             'order_date': po.order_date.isoformat(),
+            'required_date': po.required_date.isoformat() if po.required_date else None,
+            'expected_date': po.expected_date.isoformat() if po.expected_date else None,
+            'delivery_date': po.delivery_date.isoformat() if po.delivery_date else None,
             'status': po.status,
+            'priority': po.priority,
+            'payment_terms': po.payment_terms,
+            'payment_method': po.payment_method,
+            'delivery_address': po.delivery_address,
+            'shipping_method': po.shipping_method,
+            'shipping_cost': float(po.shipping_cost or 0),
+            'notes': po.notes,
+            'internal_notes': po.internal_notes,
+            'subtotal': float(po.subtotal or 0),
+            'tax_amount': float(po.tax_amount or 0),
+            'discount_amount': float(po.discount_amount or 0),
             'total_amount': float(po.total_amount),
+            'has_grn': len(po.grn_records) > 0,
             'items': [{
                 'id': i.id,
-                'product_code': i.product.code,
-                'product_name': i.product.name,
+                'product_id': i.product_id,
+                'product_code': i.product.code if i.product else None,
+                'product_name': i.product.name if i.product else None,
                 'quantity': float(i.quantity),
+                'uom': i.uom,
                 'unit_price': float(i.unit_price),
                 'total_price': float(i.total_price)
             } for i in po.items]
@@ -395,8 +444,124 @@ def get_purchase_order(id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
+@purchasing_bp.route('/purchase-orders/<int:id>', methods=['PUT'])
+@jwt_required()
+@require_permission('purchase_orders.edit')
+def update_purchase_order(id):
+    """Update a Purchase Order. Accurate Online links Penerimaan Barang
+    (goods receipt) directly to a PO, auto-filling the receipt from the
+    PO's items/quantities (help.accurate.id, "Cara Menerima Barang dari
+    Pesanan Pembelian yang Sudah Dibuat") - once a receipt exists against a
+    PO, the PO's committed quantities/prices are the values already used to
+    post that receipt, so we lock item-level (product/quantity/price)
+    changes once any GoodsReceivedNote exists for this PO. Header fields
+    that don't affect what was already received (notes, delivery date,
+    priority, payment terms, shipping) remain editable at any time."""
+    try:
+        po = db.session.get(PurchaseOrder, id)
+        if not po:
+            return jsonify(error_response('api.error', error_code=404)), 404
+
+        if po.status == 'cancelled':
+            return jsonify({'error': 'Purchase Order sudah dibatalkan, tidak bisa diubah'}), 400
+
+        data = request.get_json() or {}
+        has_grn = len(po.grn_records) > 0
+
+        # Setting status='cancelled' through this endpoint used to skip the
+        # same GRN/Invoice checks delete_purchase_order already enforces -
+        # a PO with real receipts/invoices against it could be cancelled
+        # here with no guard at all. Apply the identical check.
+        if data.get('status') == 'cancelled' and po.status != 'cancelled':
+            if has_grn:
+                return jsonify({'error': 'Purchase Order tidak bisa dibatalkan karena sudah memiliki Penerimaan Barang (GRN)'}), 400
+            invoiced = Invoice.query.filter(
+                Invoice.purchase_order_id == po.id,
+                Invoice.invoice_type == 'purchase',
+                Invoice.status != 'cancelled'
+            ).first()
+            if invoiced:
+                return jsonify({'error': 'Purchase Order tidak bisa dibatalkan karena sudah memiliki Faktur Pembelian'}), 400
+
+        header_fields = ['priority', 'payment_terms', 'payment_method', 'delivery_address',
+                          'shipping_method', 'notes', 'internal_notes', 'status']
+        for field in header_fields:
+            if field in data:
+                setattr(po, field, data[field])
+
+        for date_field in ['required_date', 'expected_date', 'delivery_date']:
+            if date_field in data and data[date_field]:
+                setattr(po, date_field, datetime.fromisoformat(data[date_field]))
+
+        if 'items' in data or 'supplier_id' in data:
+            if has_grn:
+                return jsonify({'error': 'Purchase Order sudah memiliki Penerimaan Barang (GRN), item dan supplier tidak bisa diubah'}), 400
+
+            if 'supplier_id' in data:
+                po.supplier_id = data['supplier_id']
+
+            if 'items' in data:
+                PurchaseOrderItem.query.filter_by(po_id=po.id).delete()
+                subtotal = 0
+                for idx, item_data in enumerate(data.get('items', []), 1):
+                    item_total = item_data['quantity'] * item_data['unit_price']
+                    item = PurchaseOrderItem(
+                        po_id=po.id,
+                        line_number=idx,
+                        product_id=item_data['product_id'],
+                        quantity=item_data['quantity'],
+                        uom=item_data.get('uom', 'PCS'),
+                        unit_price=item_data['unit_price'],
+                        total_price=item_total
+                    )
+                    db.session.add(item)
+                    subtotal += item_total
+                po.subtotal = subtotal
+                po.total_amount = _calculate_po_total(po, subtotal)
+
+        db.session.commit()
+        return jsonify({'message': 'PO updated', 'po_id': po.id}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@purchasing_bp.route('/purchase-orders/<int:id>', methods=['DELETE'])
+@jwt_required()
+@require_permission('purchase_orders.delete')
+def delete_purchase_order(id):
+    """Delete a Purchase Order. Blocked once a Penerimaan Barang (GRN) has
+    been recorded against it, mirroring Accurate's linkage between PO and
+    goods receipt - deleting the PO at that point would orphan real
+    inventory-receipt history."""
+    try:
+        po = db.session.get(PurchaseOrder, id)
+        if not po:
+            return jsonify(error_response('api.error', error_code=404)), 404
+
+        if len(po.grn_records) > 0:
+            return jsonify({'error': 'Purchase Order tidak bisa dihapus karena sudah memiliki Penerimaan Barang (GRN)'}), 400
+
+        invoiced = Invoice.query.filter(
+            Invoice.purchase_order_id == po.id,
+            Invoice.invoice_type == 'purchase',
+            Invoice.status != 'cancelled'
+        ).first()
+        if invoiced:
+            return jsonify({'error': 'Purchase Order tidak bisa dihapus karena sudah memiliki Faktur Pembelian'}), 400
+
+        db.session.delete(po)
+        db.session.commit()
+        return jsonify({'message': 'Purchase Order deleted'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
 @purchasing_bp.route('/grn', methods=['GET'])
 @jwt_required()
+@require_permission('purchasing.view')
 def get_grns():
     try:
         grns = GoodsReceivedNote.query.order_by(GoodsReceivedNote.receipt_date.desc()).all()
@@ -415,12 +580,13 @@ def get_grns():
 
 @purchasing_bp.route('/grn', methods=['POST'])
 @jwt_required()
+@require_permission('purchasing.create')
 def create_grn():
     try:
         data = request.get_json()
         user_id = get_jwt_identity()
         
-        grn_number = generate_number('GRN', GoodsReceivedNote, 'grn_number')
+        grn_number = generate_number_v2('grn', 'GRN', GoodsReceivedNote, 'grn_number')
         
         grn = GoodsReceivedNote(
             grn_number=grn_number,
@@ -476,6 +642,7 @@ def create_grn():
                 inventory = inv_query.first()
                 
                 if not inventory:
+                    from utils.inventory_helpers import resolve_initial_stock_status
                     inventory = Inventory(
                         product_id=product_id,
                         material_id=material_id,
@@ -483,7 +650,11 @@ def create_grn():
                         quantity_on_hand=0,
                         quantity_available=0,
                         batch_number=batch_number,
-                        stock_status='available',
+                        stock_status=resolve_initial_stock_status(
+                            'available',
+                            product=db.session.get(Product, product_id) if product_id else None,
+                            material=db.session.get(Material, material_id) if material_id else None,
+                        ),
                         grn_id=grn.id
                     )
                     db.session.add(inventory)
@@ -513,9 +684,35 @@ def create_grn():
                     created_by=user_id
                 )
                 db.session.add(movement)
-        
+
+        # Advance PO status based on total received-vs-ordered across ALL
+        # GRNs for this PO (not just this one) - previously create_grn()
+        # never touched po.status at all, so it stayed stuck at 'approved'
+        # forever after the first receipt, and the GRN form's PO picker
+        # (filtered by status=confirmed,partial) could never find anything.
+        # Fixed 2026-09-11.
+        po = db.session.get(PurchaseOrder, data['po_id'])
+        if po and po.status in ('approved', 'partial'):
+            po_items = PurchaseOrderItem.query.filter_by(po_id=po.id).all()
+            total_ordered = sum(float(i.quantity) for i in po_items)
+            po_item_ids = [i.id for i in po_items]
+            total_accepted = db.session.query(
+                db.func.coalesce(db.func.sum(GRNItem.quantity_accepted), 0)
+            ).filter(GRNItem.po_item_id.in_(po_item_ids)).scalar() or 0
+            if total_ordered > 0:
+                if float(total_accepted) >= total_ordered:
+                    po.status = 'received'
+                else:
+                    po.status = 'partial'
+
         db.session.commit()
-        
+
+        try:
+            from utils.auto_reserve import requeue_insufficient_items
+            requeue_insufficient_items()
+        except Exception:
+            pass  # requeue is best-effort, never blocks GRN creation
+
         return jsonify({'message': 'GRN created', 'grn_id': grn.id, 'grn_number': grn_number}), 201
     except Exception as e:
         db.session.rollback()
@@ -524,6 +721,7 @@ def create_grn():
 
 @purchasing_bp.route('/grn/<int:grn_id>', methods=['GET'])
 @jwt_required()
+@require_permission('purchasing.view')
 def get_grn(grn_id):
     try:
         grn = db.session.get(GoodsReceivedNote, grn_id)
@@ -570,6 +768,7 @@ def get_grn(grn_id):
                 'lot_number': item.lot_number,
                 'production_date': item.production_date.isoformat() if item.production_date else None,
                 'expiry_date': item.expiry_date.isoformat() if item.expiry_date else None,
+                'location_id': item.location_id,
                 'notes': item.notes,
             } for item in grn.items],
         }), 200
@@ -579,6 +778,7 @@ def get_grn(grn_id):
 
 @purchasing_bp.route('/grn/<int:grn_id>/inspect', methods=['POST'])
 @jwt_required()
+@require_permission('purchasing.create')
 def inspect_grn(grn_id):
     """QC Inspection: record accepted/rejected qty per item and adjust inventory"""
     try:
@@ -682,6 +882,7 @@ def inspect_grn(grn_id):
 
 @purchasing_bp.route('/grn/<int:grn_id>/approve', methods=['POST'])
 @jwt_required()
+@require_permission('purchasing.approve')
 def approve_grn(grn_id):
     """Final approval of GRN after inspection"""
     try:
@@ -702,16 +903,90 @@ def approve_grn(grn_id):
         return jsonify({'error': str(e)}), 500
 
 
+@purchasing_bp.route('/grn/<int:grn_id>', methods=['PUT'])
+@jwt_required()
+@require_permission('purchasing.edit')
+def update_grn(grn_id):
+    """Update a GRN. Mirrors Accurate Online's Penerimaan Barang rule: once a
+    Purchase Invoice has been created from a receipt, Accurate keeps the two
+    documents' cost values consistent and rejects re-costing a receipt that
+    has already been invoiced (help.accurate.id, faktur-pembelian /
+    penerimaan-barang docs). We enforce the same rule here: a GRN can no
+    longer be edited once a purchase Invoice referencing its PO exists, or
+    once the GRN itself has been through final QC approval (existing
+    'approved' lock used by inspect/approve endpoints)."""
+    try:
+        grn = db.session.get(GoodsReceivedNote, grn_id)
+        if not grn:
+            return jsonify({'error': 'GRN not found'}), 404
+
+        if grn.status == 'approved':
+            return jsonify({'error': 'GRN sudah final (approved), tidak bisa diubah'}), 400
+
+        invoiced = Invoice.query.filter(
+            Invoice.purchase_order_id == grn.po_id,
+            Invoice.invoice_type == 'purchase',
+            Invoice.status != 'cancelled'
+        ).first()
+        if invoiced:
+            return jsonify({'error': 'GRN tidak bisa diubah karena sudah ada Faktur Pembelian terkait PO ini'}), 400
+
+        data = request.get_json() or {}
+
+        header_fields = ['receipt_date', 'delivery_note_number', 'vehicle_number', 'driver_name', 'notes']
+        for field in header_fields:
+            if field in data:
+                if field == 'receipt_date' and data[field]:
+                    grn.receipt_date = datetime.strptime(data[field].split('T')[0], '%Y-%m-%d')
+                else:
+                    setattr(grn, field, data[field])
+
+        items_data = data.get('items')
+        if items_data:
+            items_by_po_item = {item.po_item_id: item for item in grn.items}
+            for item_data in items_data:
+                po_item_id = item_data.get('po_item_id')
+                grn_item = items_by_po_item.get(po_item_id)
+                if not grn_item:
+                    continue
+                for f in ['quantity_received', 'quantity_accepted', 'quantity_rejected',
+                          'batch_number', 'lot_number', 'location_id', 'notes']:
+                    if f in item_data:
+                        setattr(grn_item, f, item_data[f])
+                if 'production_date' in item_data and item_data['production_date']:
+                    grn_item.production_date = datetime.strptime(item_data['production_date'], '%Y-%m-%d').date()
+                if 'expiry_date' in item_data and item_data['expiry_date']:
+                    grn_item.expiry_date = datetime.strptime(item_data['expiry_date'], '%Y-%m-%d').date()
+
+        db.session.commit()
+        return jsonify({'message': 'GRN updated', 'grn_id': grn.id}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
 # ===============================
 # APPROVAL WORKFLOW ENDPOINTS
 # ===============================
+#
+# NOTE (2026-08-18, punch-list item 4): PO approval was migrated from the
+# module-local PurchaseApproval model to the generic ApprovalWorkflow system
+# (models/approval_workflow.py, routes/approval_workflow.py — same system
+# already used by Sales Orders, see routes/sales.py create_order()).
+#
+# get_po_approvals() and approve_purchase_order() below are kept as-is for
+# backward compatibility but are DEAD CODE from the frontend's perspective —
+# PurchaseOrderList.tsx no longer calls them. The PurchaseApproval model/table
+# is also no longer written to by the PO flow. Left in place intentionally
+# per user decision; not deleted. See PURCHASING_GAP_FIXES_REPORT.md.
 
 @purchasing_bp.route('/purchase-orders/<int:po_id>/approvals', methods=['GET'])
 @jwt_required()
+@require_permission('purchase_orders.view')
 def get_po_approvals(po_id):
     try:
         approvals = PurchaseApproval.query.filter_by(po_id=po_id).order_by(PurchaseApproval.approval_level).all()
-        
+
         return jsonify({
             'approvals': [{
                 'id': a.id,
@@ -732,25 +1007,26 @@ def get_po_approvals(po_id):
 
 @purchasing_bp.route('/purchase-orders/<int:po_id>/approve', methods=['POST'])
 @jwt_required()
+@require_permission('purchase_orders.approve')
 def approve_purchase_order(po_id):
     try:
         data = request.get_json()
         user_id = get_jwt_identity()
-        
+
         # Find pending approval for this user
         approval = PurchaseApproval.query.filter_by(
             po_id=po_id,
             approver_id=user_id,
             status='pending'
         ).first()
-        
+
         if not approval:
             return jsonify(error_response('api.error', error_code=404)), 404
-        
+
         approval.status = data.get('status', 'approved')  # approved or rejected
         approval.comments = data.get('comments')
         approval.approved_at = get_local_now()
-        
+
         # Update PO status if all approvals are complete
         po = db.session.get(PurchaseOrder, po_id)
         if approval.status == 'approved':
@@ -759,16 +1035,16 @@ def approve_purchase_order(po_id):
                 po_id=po_id,
                 status='pending'
             ).count()
-            
+
             if pending_approvals == 1:  # This is the last approval
                 po.status = 'approved'
                 po.approved_by = user_id
                 po.approved_at = get_local_now()
         else:
             po.status = 'rejected'
-        
+
         db.session.commit()
-        
+
         return jsonify({'message': f'Purchase order {approval.status} successfully'}), 200
     except Exception as e:
         db.session.rollback()
@@ -776,29 +1052,55 @@ def approve_purchase_order(po_id):
 
 @purchasing_bp.route('/purchase-orders/<int:po_id>/submit-approval', methods=['POST'])
 @jwt_required()
+@require_permission('purchase_orders.create')
 def submit_for_approval(po_id):
+    """Submit a PO for approval via the generic ApprovalWorkflow system.
+
+    Migrated from the module-local PurchaseApproval flow (which required the
+    caller to pass a hardcoded approver_ids array — bug found in
+    PurchaseOrderList.tsx). Role-based reviewer/approver assignment is now
+    handled by routes/approval_workflow.py (review_workflow/approve_workflow),
+    matching the pattern already used for Sales Orders in routes/sales.py.
+    No approver_ids needed anymore; the request body is ignored/optional.
+    """
     try:
-        data = request.get_json()
-        approver_ids = data.get('approver_ids', [])
-        
+        user_id = get_jwt_identity()
+
         po = db.session.get(PurchaseOrder, po_id)
         if not po:
             return jsonify(error_response('api.error', error_code=404)), 404
-        
-        # Create approval records
-        for level, approver_id in enumerate(approver_ids, 1):
-            approval = PurchaseApproval(
-                po_id=po_id,
-                approval_level=level,
-                approver_id=approver_id,
-                status='pending'
-            )
-            db.session.add(approval)
-        
+
+        if po.status != 'draft':
+            return jsonify(error_response('api.error', error_code=400)), 400
+
+        from models.approval_workflow import ApprovalWorkflow, ApprovalHistory
+
+        workflow = ApprovalWorkflow(
+            transaction_type='purchase_order',
+            transaction_id=po.id,
+            transaction_number=po.po_number,
+            status='pending_review',
+            current_step='review',
+            submitted_by=user_id,
+            submitted_at=get_local_now()
+        )
+        db.session.add(workflow)
+        db.session.flush()
+
+        history = ApprovalHistory(
+            workflow_id=workflow.id,
+            action='submit',
+            action_by=user_id,
+            old_status='draft',
+            new_status='pending_review',
+            notes=f'Purchase Order {po.po_number} submitted for review'
+        )
+        db.session.add(history)
+
         po.status = 'pending_approval'
         db.session.commit()
-        
-        return jsonify(success_response('api.success')), 200
+
+        return jsonify(success_response('api.success', data={'workflow_id': workflow.id})), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
@@ -809,6 +1111,7 @@ def submit_for_approval(po_id):
 
 @purchasing_bp.route('/rfqs', methods=['GET'])
 @jwt_required()
+@require_permission('purchasing.view')
 def get_rfqs():
     try:
         page = request.args.get('page', 1, type=int)
@@ -843,6 +1146,7 @@ def get_rfqs():
 
 @purchasing_bp.route('/rfqs', methods=['POST'])
 @jwt_required()
+@require_permission('purchasing.create')
 def create_rfq():
     try:
         data = request.get_json()
@@ -887,6 +1191,7 @@ def create_rfq():
 
 @purchasing_bp.route('/rfqs/<int:id>', methods=['GET'])
 @jwt_required()
+@require_permission('purchasing.view')
 def get_rfq(id):
     try:
         rfq = db.session.get(PurchaseRFQ, id)
@@ -925,12 +1230,72 @@ def get_rfq(id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
+@purchasing_bp.route('/rfqs/<int:id>', methods=['PUT'])
+@jwt_required()
+@require_permission('purchasing.edit')
+def update_rfq(id):
+    """Update an RFQ. Accurate Online doesn't model RFQ as a native document
+    (RFQ/Permintaan Penawaran here is a SMITH-built feature, no Accurate
+    parity to mirror), but the natural guard mirrors how Accurate locks
+    header data once a downstream document exists: once at least one
+    SupplierQuote has been submitted against this RFQ, its scope
+    (items/closing_date) should not silently change under suppliers who
+    already quoted, so item-level and closing_date edits are blocked once
+    quotes exist; title/description and status transitions remain editable."""
+    try:
+        rfq = db.session.get(PurchaseRFQ, id)
+        if not rfq:
+            return jsonify(error_response('api.error', error_code=404)), 404
+
+        data = request.get_json() or {}
+        has_quotes = len(rfq.quotes) > 0
+
+        if 'title' in data:
+            rfq.title = data['title']
+        if 'description' in data:
+            rfq.description = data['description']
+        if 'status' in data:
+            rfq.status = data['status']
+
+        if not has_quotes:
+            if 'issue_date' in data and data['issue_date']:
+                rfq.issue_date = datetime.strptime(data['issue_date'], '%Y-%m-%d').date()
+            if 'closing_date' in data and data['closing_date']:
+                rfq.closing_date = datetime.strptime(data['closing_date'], '%Y-%m-%d').date()
+
+            if 'items' in data:
+                RFQItem.query.filter_by(rfq_id=rfq.id).delete()
+                for idx, item_data in enumerate(data.get('items', []), 1):
+                    rfq_item = RFQItem(
+                        rfq_id=rfq.id,
+                        line_number=idx,
+                        product_id=item_data.get('product_id'),
+                        material_id=item_data.get('material_id'),
+                        description=item_data['description'],
+                        quantity=item_data['quantity'],
+                        uom=item_data['uom'],
+                        required_date=datetime.strptime(item_data['required_date'], '%Y-%m-%d').date() if item_data.get('required_date') else None,
+                        specifications=item_data.get('specifications')
+                    )
+                    db.session.add(rfq_item)
+        elif 'closing_date' in data or 'items' in data:
+            return jsonify({'error': 'RFQ sudah memiliki penawaran supplier, item dan closing date tidak bisa diubah'}), 400
+
+        db.session.commit()
+        return jsonify({'message': 'RFQ updated', 'rfq_id': rfq.id}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
 # ===============================
 # SUPPLIER QUOTES ENDPOINTS
 # ===============================
 
 @purchasing_bp.route('/quotes', methods=['GET'])
 @jwt_required()
+@require_permission('purchasing.view')
 def get_quotes():
     try:
         page = request.args.get('page', 1, type=int)
@@ -969,11 +1334,12 @@ def get_quotes():
 
 @purchasing_bp.route('/quotes', methods=['POST'])
 @jwt_required()
+@require_permission('purchasing.create')
 def create_quote():
     try:
         data = request.get_json()
         
-        quote_number = generate_number('QUO', SupplierQuote, 'quote_number')
+        quote_number = generate_number_v2('supplier_quote', 'QUO', SupplierQuote, 'quote_number')
         
         quote = SupplierQuote(
             quote_number=quote_number,
@@ -1024,12 +1390,124 @@ def create_quote():
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
+
+@purchasing_bp.route('/quotes/<int:id>', methods=['GET'])
+@jwt_required()
+@require_permission('purchasing.view')
+def get_quote(id):
+    try:
+        quote = db.session.get(SupplierQuote, id)
+        if not quote:
+            return jsonify(error_response('api.error', error_code=404)), 404
+
+        return jsonify({
+            'id': quote.id,
+            'quote_number': quote.quote_number,
+            'supplier_id': quote.supplier_id,
+            'supplier_name': quote.supplier.company_name if quote.supplier else None,
+            'rfq_id': quote.rfq_id,
+            'quote_date': quote.quote_date.isoformat(),
+            'valid_until': quote.valid_until.isoformat() if quote.valid_until else None,
+            'status': quote.status,
+            'currency': quote.currency,
+            'payment_terms': quote.payment_terms,
+            'delivery_terms': quote.delivery_terms,
+            'lead_time_days': quote.lead_time_days,
+            'subtotal': float(quote.subtotal or 0),
+            'tax_amount': float(quote.tax_amount or 0),
+            'total_amount': float(quote.total_amount or 0),
+            'notes': quote.notes,
+            'items': [{
+                'id': i.id,
+                'rfq_item_id': i.rfq_item_id,
+                'line_number': i.line_number,
+                'product_id': i.product_id,
+                'material_id': i.material_id,
+                'description': i.description,
+                'quantity': float(i.quantity),
+                'uom': i.uom,
+                'unit_price': float(i.unit_price),
+                'discount_percent': float(i.discount_percent or 0),
+                'tax_percent': float(i.tax_percent or 0),
+                'total_price': float(i.total_price),
+                'lead_time_days': i.lead_time_days,
+                'notes': i.notes
+            } for i in quote.items]
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@purchasing_bp.route('/quotes/<int:id>', methods=['PUT'])
+@jwt_required()
+@require_permission('purchasing.edit')
+def update_quote(id):
+    """Update a Supplier Quote. Accurate Online has no native Penawaran
+    Supplier document either (this is a SMITH-built feature layered on top
+    of Accurate's PO/GRN/Invoice flow), so we apply the same "locked after
+    it's been acted on downstream" principle Accurate uses elsewhere: once a
+    quote has been accepted (status='accepted'), it has effectively been
+    used to inform a real PO decision, so pricing/items should no longer be
+    silently changed - only re-submitting a new quote or explicitly marking
+    it rejected/expired remains possible."""
+    try:
+        quote = db.session.get(SupplierQuote, id)
+        if not quote:
+            return jsonify(error_response('api.error', error_code=404)), 404
+
+        data = request.get_json() or {}
+
+        if quote.status == 'accepted' and any(k in data for k in ('items', 'currency')):
+            return jsonify({'error': 'Quote sudah diterima (accepted), item dan currency tidak bisa diubah'}), 400
+
+        header_fields = ['payment_terms', 'delivery_terms', 'lead_time_days', 'notes', 'status', 'currency']
+        for field in header_fields:
+            if field in data:
+                setattr(quote, field, data[field])
+
+        if 'quote_date' in data and data['quote_date']:
+            quote.quote_date = datetime.strptime(data['quote_date'], '%Y-%m-%d').date()
+        if 'valid_until' in data and data['valid_until']:
+            quote.valid_until = datetime.strptime(data['valid_until'], '%Y-%m-%d').date()
+
+        if 'items' in data:
+            SupplierQuoteItem.query.filter_by(quote_id=quote.id).delete()
+            subtotal = 0
+            for idx, item_data in enumerate(data.get('items', []), 1):
+                total_price = item_data['quantity'] * item_data['unit_price']
+                quote_item = SupplierQuoteItem(
+                    quote_id=quote.id,
+                    rfq_item_id=item_data.get('rfq_item_id'),
+                    line_number=idx,
+                    product_id=item_data.get('product_id'),
+                    material_id=item_data.get('material_id'),
+                    description=item_data['description'],
+                    quantity=item_data['quantity'],
+                    uom=item_data['uom'],
+                    unit_price=item_data['unit_price'],
+                    total_price=total_price,
+                    lead_time_days=item_data.get('lead_time_days'),
+                    notes=item_data.get('notes')
+                )
+                db.session.add(quote_item)
+                subtotal += total_price
+            quote.subtotal = subtotal
+            quote.total_amount = subtotal
+
+        db.session.commit()
+        return jsonify({'message': 'Quote updated', 'quote_id': quote.id}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
 # ===============================
 # PRICE COMPARISON ENDPOINTS
 # ===============================
 
 @purchasing_bp.route('/price-comparison', methods=['POST'])
 @jwt_required()
+@require_permission('purchasing.create')
 def compare_prices():
     try:
         data = request.get_json()
@@ -1104,6 +1582,7 @@ def compare_prices():
 
 @purchasing_bp.route('/contracts', methods=['GET'])
 @jwt_required()
+@require_permission('purchasing.view')
 def get_contracts():
     try:
         page = request.args.get('page', 1, type=int)
@@ -1148,6 +1627,7 @@ def get_contracts():
 
 @purchasing_bp.route('/contracts', methods=['POST'])
 @jwt_required()
+@require_permission('purchasing.create')
 def create_contract():
     try:
         data = request.get_json()
@@ -1205,6 +1685,7 @@ def create_contract():
 
 @purchasing_bp.route('/contracts/<int:id>', methods=['GET'])
 @jwt_required()
+@require_permission('purchasing.view')
 def get_contract(id):
     try:
         contract = db.session.get(SupplierContract, id)
@@ -1251,8 +1732,80 @@ def get_contract(id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@purchasing_bp.route('/contracts/<int:id>', methods=['PUT'])
+@jwt_required()
+@require_permission('purchasing.edit')
+def update_contract(id):
+    try:
+        contract = db.session.get(SupplierContract, id)
+        if not contract:
+            return jsonify(error_response('api.error', error_code=404)), 404
+
+        data = request.get_json()
+
+        # Header fields editable any time before termination/expiry, per
+        # Accurate's pattern for supplier agreements (only cancelled/expired
+        # contracts are locked - active/draft ones can still be amended).
+        if contract.status in ('expired', 'terminated'):
+            return jsonify({'error': 'Kontrak yang sudah expired/terminated tidak bisa diedit'}), 400
+
+        if 'title' in data:
+            contract.title = data['title']
+        if 'contract_type' in data:
+            contract.contract_type = data['contract_type']
+        if 'start_date' in data:
+            contract.start_date = datetime.strptime(data['start_date'], '%Y-%m-%d').date()
+        if 'end_date' in data:
+            contract.end_date = datetime.strptime(data['end_date'], '%Y-%m-%d').date()
+        if 'currency' in data:
+            contract.currency = data['currency']
+        if 'total_value' in data:
+            contract.total_value = data['total_value']
+        if 'payment_terms' in data:
+            contract.payment_terms = data['payment_terms']
+        if 'delivery_terms' in data:
+            contract.delivery_terms = data['delivery_terms']
+        if 'penalty_clause' in data:
+            contract.penalty_clause = data['penalty_clause']
+        if 'terms_conditions' in data:
+            contract.terms_conditions = data['terms_conditions']
+        if 'auto_renewal' in data:
+            contract.auto_renewal = data['auto_renewal']
+        if 'renewal_period_months' in data:
+            contract.renewal_period_months = data['renewal_period_months']
+        if 'status' in data and data['status'] in ('draft', 'cancelled'):
+            contract.status = data['status']
+        contract.updated_at = get_local_now()
+
+        if 'items' in data:
+            ContractItem.query.filter_by(contract_id=id).delete()
+            for idx, item_data in enumerate(data['items'], 1):
+                contract_item = ContractItem(
+                    contract_id=contract.id,
+                    line_number=idx,
+                    product_id=item_data.get('product_id'),
+                    material_id=item_data.get('material_id'),
+                    description=item_data['description'],
+                    quantity=item_data.get('quantity'),
+                    uom=item_data['uom'],
+                    unit_price=item_data['unit_price'],
+                    min_order_qty=item_data.get('min_order_qty'),
+                    max_order_qty=item_data.get('max_order_qty'),
+                    lead_time_days=item_data.get('lead_time_days'),
+                    price_valid_from=datetime.strptime(item_data['price_valid_from'], '%Y-%m-%d').date() if item_data.get('price_valid_from') else None,
+                    price_valid_to=datetime.strptime(item_data['price_valid_to'], '%Y-%m-%d').date() if item_data.get('price_valid_to') else None
+                )
+                db.session.add(contract_item)
+
+        db.session.commit()
+        return jsonify({'message': 'Contract updated'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
 @purchasing_bp.route('/contracts/<int:id>/activate', methods=['POST'])
 @jwt_required()
+@require_permission('purchasing.create')
 def activate_contract(id):
     try:
         contract = db.session.get(SupplierContract, id)

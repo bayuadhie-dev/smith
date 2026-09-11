@@ -53,7 +53,7 @@ const [search, setSearch] = useState('')
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Supplier Management</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pemasok</h1>
           <p className="text-gray-600 dark:text-gray-300">Manage your supplier database and relationships</p>
         </div>
         <Link

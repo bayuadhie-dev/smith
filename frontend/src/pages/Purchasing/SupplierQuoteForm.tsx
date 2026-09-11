@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
+import axiosInstance from '../../utils/axiosConfig';
 import {
   BuildingOfficeIcon as Building,
   CalendarIcon as Calendar,
@@ -25,7 +26,7 @@ interface RFQ {
   id: number;
   rfq_number: string;
   title: string;
-  items: RFQItem[];
+  items?: RFQItem[];
 }
 
 interface RFQItem {
@@ -114,35 +115,37 @@ const SupplierQuoteForm: React.FC = () => {
 
   useEffect(() => {
     if (formData.rfq_id && !isEdit) {
-      const rfq = rfqs.find(r => r.id === formData.rfq_id);
-      if (rfq) {
-        setSelectedRFQ(rfq);
-        const quoteItems: QuoteItem[] = rfq.items.map(item => ({
-          rfq_item_id: item.id,
-          line_number: item.line_number,
-          description: item.description,
-          quantity: item.quantity,
-          uom: item.uom,
-          unit_price: 0,
-          discount_percent: 0,
-          tax_percent: 11,
-          lead_time_days: formData.lead_time_days,
-          notes: ''
-        }));
-        setFormData(prev => ({ ...prev, items: quoteItems }));
-      }
+      fetchRFQDetail(formData.rfq_id);
     }
-  }, [formData.rfq_id, rfqs, isEdit, formData.lead_time_days]);
+  }, [formData.rfq_id, isEdit]);
+
+  const fetchRFQDetail = async (rfqId: number) => {
+    try {
+      const response = await axiosInstance.get(`/api/purchasing/rfqs/${rfqId}`);
+      const rfq = response.data;
+      setSelectedRFQ(rfq);
+      const quoteItems: QuoteItem[] = (rfq.items || []).map((item: any) => ({
+        rfq_item_id: item.id,
+        line_number: item.line_number,
+        description: item.description,
+        quantity: item.quantity,
+        uom: item.uom,
+        unit_price: 0,
+        discount_percent: 0,
+        tax_percent: 11,
+        lead_time_days: formData.lead_time_days,
+        notes: ''
+      }));
+      setFormData(prev => ({ ...prev, items: quoteItems }));
+    } catch (error) {
+      console.error('Failed to fetch RFQ detail:', error);
+    }
+  };
 
   const fetchSuppliers = async () => {
     try {
-      const response = await fetch('/api/purchasing/suppliers', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setSuppliers(data.suppliers || []);
-      }
+      const response = await axiosInstance.get('/api/purchasing/suppliers');
+      setSuppliers(response.data.suppliers || []);
     } catch (error) {
       console.error('Failed to fetch suppliers:', error);
     }
@@ -150,13 +153,8 @@ const SupplierQuoteForm: React.FC = () => {
 
   const fetchRFQs = async () => {
     try {
-      const response = await fetch('/api/purchasing/rfqs?status=issued', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setRFQs(data.rfqs || []);
-      }
+      const response = await axiosInstance.get('/api/purchasing/rfqs?status=issued');
+      setRFQs(response.data.rfqs || []);
     } catch (error) {
       console.error('Failed to fetch RFQs:', error);
     }
@@ -164,26 +162,35 @@ const SupplierQuoteForm: React.FC = () => {
 
   const fetchQuote = async () => {
     try {
-      const response = await fetch(`/api/purchasing/quotes/${id}`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      const response = await axiosInstance.get(`/api/purchasing/quotes/${id}`);
+      const data = response.data;
+      setFormData({
+        supplier_id: data.supplier_id,
+        rfq_id: data.rfq_id ?? null,
+        quote_date: data.quote_date,
+        valid_until: data.valid_until || '',
+        currency: data.currency || 'IDR',
+        payment_terms: data.payment_terms || '',
+        delivery_terms: data.delivery_terms || '',
+        lead_time_days: data.lead_time_days || 7,
+        notes: data.notes || '',
+        items: (data.items || []).map((item: any) => ({
+          id: item.id,
+          rfq_item_id: item.rfq_item_id ?? null,
+          line_number: item.line_number,
+          description: item.description,
+          quantity: item.quantity,
+          uom: item.uom,
+          unit_price: item.unit_price,
+          discount_percent: item.discount_percent || 0,
+          tax_percent: item.tax_percent || 0,
+          lead_time_days: item.lead_time_days || 7,
+          notes: item.notes || ''
+        }))
       });
-      if (response.ok) {
-        const data = await response.json();
-        setFormData({
-          supplier_id: data.supplier_id,
-          rfq_id: data.rfq_id,
-          quote_date: data.quote_date,
-          valid_until: data.valid_until || '',
-          currency: data.currency,
-          payment_terms: data.payment_terms || '30 days',
-          delivery_terms: data.delivery_terms || 'FOB',
-          lead_time_days: data.lead_time_days || 7,
-          notes: data.notes || '',
-          items: data.items || []
-        });
-      }
     } catch (error) {
       console.error('Failed to fetch quote:', error);
+      setError('Failed to load quote');
     }
   };
 
@@ -209,26 +216,14 @@ const SupplierQuoteForm: React.FC = () => {
     }
 
     try {
-      const url = isEdit ? `/api/purchasing/quotes/${id}` : '/api/purchasing/quotes';
-      const method = isEdit ? 'PUT' : 'POST';
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(formData)
-      });
-
-      if (response.ok) {
-        navigate('/app/purchasing/quotes');
+      if (isEdit) {
+        await axiosInstance.put(`/api/purchasing/quotes/${id}`, formData);
       } else {
-        const errorData = await response.json();
-        setError(errorData.message || 'Failed to save quote');
+        await axiosInstance.post('/api/purchasing/quotes', formData);
       }
-    } catch (error) {
-      setError('Network error occurred');
+      navigate('/app/purchasing/quotes');
+    } catch (error: any) {
+      setError(error?.response?.data?.error || error?.response?.data?.message || 'Failed to save quote');
     } finally {
       setLoading(false);
     }

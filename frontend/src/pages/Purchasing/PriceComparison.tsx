@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { formatRupiah } from '../../utils/currencyUtils';
 import { useComparePricesMutation, useGetProductsQuery } from '../../services/api';
 import { format } from 'date-fns';
 import {
@@ -54,7 +53,7 @@ export default function PriceComparison() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Price Comparison</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Perbandingan Harga</h1>
         <p className="text-gray-600 dark:text-gray-300">Compare supplier prices and analyze market trends</p>
       </div>
 

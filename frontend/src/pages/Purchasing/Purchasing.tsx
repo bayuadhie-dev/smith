@@ -135,7 +135,7 @@ export default function Purchasing() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Purchasing Management</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard Pembelian</h1>
           <p className="text-gray-600 dark:text-gray-300">Comprehensive procurement and supplier management system</p>
         </div>
         <div className="flex space-x-3">

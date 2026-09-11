@@ -9,8 +9,10 @@ import toast from 'react-hot-toast';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   draft:     { label: 'Draft',      color: 'bg-gray-100 text-gray-700' },
-  posted:    { label: 'Posted',     color: 'bg-blue-100 text-blue-700' },
+  sent:      { label: 'Posted',     color: 'bg-blue-100 text-blue-700' },
+  partial:   { label: 'Sebagian',   color: 'bg-yellow-100 text-yellow-700' },
   paid:      { label: 'Lunas',      color: 'bg-green-100 text-green-700' },
+  overdue:   { label: 'Lewat Tempo', color: 'bg-red-100 text-red-700' },
   cancelled: { label: 'Batal',      color: 'bg-red-100 text-red-700' },
 };
 
@@ -34,6 +36,15 @@ export default function InvoiceList() {
   const [payMethod, setPayMethod] = useState('transfer');
   const [payNotes, setPayNotes] = useState('');
   const [paying, setPaying] = useState(false);
+  const [cashBankAccounts, setCashBankAccounts] = useState<any[]>([]);
+  const [payBankAccountId, setPayBankAccountId] = useState('');
+
+  useEffect(() => {
+    axiosInstance.get('/api/finance/chart-of-accounts').then((res) => {
+      const all = res.data.accounts || [];
+      setCashBankAccounts(all.filter((a: any) => a.is_cash_bank));
+    }).catch(() => {});
+  }, []);
 
   const fetchInvoices = async () => {
     setLoading(true);
@@ -62,16 +73,26 @@ export default function InvoiceList() {
 
   const handlePayment = async () => {
     if (!payModal) return;
+    if (!payBankAccountId) {
+      toast.error('Pilih akun Kas/Bank sumber pembayaran');
+      return;
+    }
     setPaying(true);
     try {
       const res = await axiosInstance.post(
         `/api/purchasing/purchase-invoices/${payModal.id}/record-payment`,
-        { amount: parseFloat(payAmount), payment_method: payMethod, notes: payNotes }
+        {
+          amount: parseFloat(payAmount),
+          payment_method: payMethod,
+          notes: payNotes,
+          bank_account_id: Number(payBankAccountId),
+        }
       );
       toast.success(res.data.message);
       setPayModal(null);
       setPayAmount('');
       setPayNotes('');
+      setPayBankAccountId('');
       fetchInvoices();
     } catch (err: any) {
       toast.error(err?.response?.data?.error || 'Gagal mencatat pembayaran');
@@ -90,7 +111,7 @@ export default function InvoiceList() {
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Purchase Invoice</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Faktur Pembelian</h1>
           <p className="text-sm text-gray-500 mt-0.5">Tagihan supplier & 3-Way Matching — {total} total</p>
         </div>
       </div>
@@ -238,6 +259,19 @@ export default function InvoiceList() {
                   <option value="cash">Tunai</option>
                   <option value="giro">Giro</option>
                   <option value="cek">Cek</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Akun Kas/Bank</label>
+                <select
+                  value={payBankAccountId}
+                  onChange={e => setPayBankAccountId(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700 dark:text-white"
+                >
+                  <option value="">Pilih akun...</option>
+                  {cashBankAccounts.map((a: any) => (
+                    <option key={a.id} value={a.id}>{a.code} - {a.name}</option>
+                  ))}
                 </select>
               </div>
               <div>

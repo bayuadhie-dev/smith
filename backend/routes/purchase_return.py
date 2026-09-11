@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from models import db, PurchaseReturn, PurchaseReturnItem, PurchaseInvoice, PurchaseInvoiceItem, Supplier, User
+from utils.auth_decorators import require_permission
+from models import db, PurchaseReturn, PurchaseReturnItem, Invoice, InvoiceItem, Supplier, User
 from utils.i18n import success_response, error_response, get_message
 from utils import generate_number
 from datetime import datetime, date
@@ -14,6 +15,7 @@ purchase_return_bp = Blueprint('purchase_return', __name__)
 
 @purchase_return_bp.route('/purchase-returns', methods=['GET'])
 @jwt_required()
+@require_permission('returns.view')
 def get_purchase_returns():
     """
     Get all purchase returns with filtering
@@ -148,6 +150,7 @@ def get_purchase_returns():
 
 @purchase_return_bp.route('/purchase-returns/<int:id>', methods=['GET'])
 @jwt_required()
+@require_permission('returns.view')
 def get_purchase_return(id):
     """
     Get purchase return detail by ID
@@ -257,6 +260,7 @@ def get_purchase_return(id):
 
 @purchase_return_bp.route('/purchase-returns', methods=['POST'])
 @jwt_required()
+@require_permission('returns.create')
 def create_purchase_return():
     """
     Create new purchase return
@@ -362,8 +366,8 @@ def create_purchase_return():
         return_number = generate_number('PR')
         
         # Get invoice to validate
-        invoice = db.session.get(PurchaseInvoice, data.get('invoice_id'))
-        if not invoice:
+        invoice = db.session.get(Invoice, data.get('invoice_id'))
+        if not invoice or invoice.invoice_type != 'purchase':
             return jsonify({'error': 'Purchase Invoice not found'}), 404
         
         # Create return
@@ -418,7 +422,7 @@ def create_purchase_return():
             db.session.add(item)
             
             # Update invoice item quantity_returned
-            invoice_item = db.session.get(PurchaseInvoiceItem, item_data.get('invoice_item_id'))
+            invoice_item = db.session.get(InvoiceItem, item_data.get('invoice_item_id'))
             if invoice_item:
                 invoice_item.quantity_returned = (invoice_item.quantity_returned or 0) + item_data.get('quantity', 0)
         
@@ -438,6 +442,7 @@ def create_purchase_return():
 
 @purchase_return_bp.route('/purchase-returns/<int:id>', methods=['PUT'])
 @jwt_required()
+@require_permission('returns.edit')
 def update_purchase_return(id):
     """
     Update purchase return
@@ -571,6 +576,7 @@ def update_purchase_return(id):
 
 @purchase_return_bp.route('/purchase-returns/<int:id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('returns.delete')
 def delete_purchase_return(id):
     """
     Delete purchase return
@@ -613,6 +619,7 @@ def delete_purchase_return(id):
 
 @purchase_return_bp.route('/purchase-returns/<int:id>/approve', methods=['POST'])
 @jwt_required()
+@require_permission('returns.create')
 def approve_purchase_return(id):
     """
     Approve purchase return
@@ -640,25 +647,100 @@ def approve_purchase_return(id):
     try:
         return_obj = db.session.get(PurchaseReturn, id) or abort(404)
         user_id = get_jwt_identity()
-        
+
         if return_obj.approval_status == 'approved':
             return jsonify({'error': 'Return already approved'}), 400
-        
+
         return_obj.approval_status = 'approved'
         return_obj.approved_by = user_id
         return_obj.approved_at = get_local_now()
         return_obj.status = 'completed'
-        
+
+        # Real Inventory/Invoice/GL effect on approval - previously this only
+        # flipped status flags with zero accounting or stock impact, so goods
+        # marked "returned" never actually left inventory and the supplier's
+        # payable balance stayed as if nothing happened. Fixed 2026-09-11.
+        from models import Inventory, InventoryMovement
+        from models.finance import GlobalAccountDefault
+        from models.approval_workflow import PendingJournalEntry
+        from utils.finance_helpers import post_pending_journal, resolve_accounts_payable
+
+        items = PurchaseReturnItem.query.filter_by(return_id=return_obj.id).all()
+        for item in items:
+            if not (item.product_id or item.material_id):
+                continue
+            inv_query = Inventory.query
+            if item.product_id:
+                inv_query = inv_query.filter_by(product_id=item.product_id)
+            else:
+                inv_query = inv_query.filter_by(material_id=item.material_id)
+            inv = inv_query.order_by(Inventory.quantity_on_hand.desc()).first()
+            if not inv:
+                continue
+            quantity = float(item.quantity or 0)
+            inv.quantity_on_hand = float(inv.quantity_on_hand) - quantity
+            inv.quantity_available = float(inv.quantity_available) - quantity
+            inv.updated_at = get_local_now()
+            db.session.add(InventoryMovement(
+                inventory_id=inv.id,
+                product_id=item.product_id,
+                material_id=item.material_id,
+                location_id=inv.location_id,
+                movement_type='stock_out',
+                movement_date=get_local_now().date(),
+                quantity=quantity,
+                reference_number=return_obj.return_number,
+                reference_type='purchase_return',
+                reference_id=return_obj.id,
+                notes=f"Retur pembelian {return_obj.return_number}",
+                created_by=user_id
+            ))
+
+        invoice = db.session.get(Invoice, return_obj.invoice_id) if return_obj.invoice_id else None
+        return_total = float(return_obj.total_amount or 0)
+        if invoice and return_total > 0:
+            invoice.total_amount = float(invoice.total_amount or 0) - return_total
+            invoice.balance_due = max(0, float(invoice.total_amount) - float(invoice.paid_amount or 0))
+
+            try:
+                hutang_account_id = resolve_accounts_payable(return_obj.supplier_id)
+            except ValueError:
+                hutang_account_id = None
+            persediaan_default = GlobalAccountDefault.query.filter_by(transaction_key='persediaan').first()
+            if hutang_account_id and persediaan_default:
+                pending = PendingJournalEntry(
+                    workflow_id=None,
+                    entry_date=get_local_now().date(),
+                    description=f'Retur Pembelian {return_obj.return_number}',
+                    reference=return_obj.return_number,
+                    lines=[
+                        {'account_id': hutang_account_id, 'debit': return_total, 'credit': 0,
+                         'description': f'Retur pembelian - kurangi hutang {return_obj.return_number}'},
+                        {'account_id': persediaan_default.account_id, 'debit': 0, 'credit': return_total,
+                         'description': f'Retur pembelian - kurangi persediaan {return_obj.return_number}'},
+                    ],
+                    total_debit=return_total,
+                    total_credit=return_total,
+                    created_by=user_id,
+                )
+                db.session.add(pending)
+                db.session.flush()
+                post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='purchase_return', reference_id=return_obj.id)
+            # If persediaan_default isn't configured, the stock/invoice effect
+            # above still applies - GL posting is skipped rather than failing
+            # the whole approval, and can be posted manually once configured.
+
         db.session.commit()
-        
+
         return jsonify({'message': 'Purchase return approved successfully'}), 200
-        
+
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
 @purchase_return_bp.route('/purchase-returns/<int:id>/reject', methods=['POST'])
 @jwt_required()
+@require_permission('returns.create')
 def reject_purchase_return(id):
     """
     Reject purchase return

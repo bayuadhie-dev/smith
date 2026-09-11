@@ -1,10 +1,11 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from datetime import datetime, date
 from models import db
 from models.purchasing import PurchaseRequisition, PRItem, PurchaseOrder, PurchaseOrderItem, Supplier
 from models.user import User
-from utils import generate_number
+from utils import generate_number, generate_number_v2
 
 pr_bp = Blueprint('purchase_requisition', __name__)
 
@@ -74,6 +75,7 @@ def format_pr_item(item):
 
 @pr_bp.route('/purchase-requisitions', methods=['GET'])
 @jwt_required()
+@require_permission('purchase_requests.view')
 def list_prs():
     try:
         page = request.args.get('page', 1, type=int)
@@ -111,6 +113,7 @@ def list_prs():
 
 @pr_bp.route('/purchase-requisitions/<int:pr_id>', methods=['GET'])
 @jwt_required()
+@require_permission('purchase_requests.view')
 def get_pr(pr_id):
     pr = db.session.get(PurchaseRequisition, pr_id)
     if not pr:
@@ -122,6 +125,7 @@ def get_pr(pr_id):
 
 @pr_bp.route('/purchase-requisitions', methods=['POST'])
 @jwt_required()
+@require_permission('purchase_requests.create')
 def create_pr():
     try:
         user_id = int(get_jwt_identity())
@@ -172,6 +176,7 @@ def create_pr():
 
 @pr_bp.route('/purchase-requisitions/<int:pr_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('purchase_requests.edit')
 def update_pr(pr_id):
     try:
         pr = db.session.get(PurchaseRequisition, pr_id)
@@ -225,6 +230,7 @@ def update_pr(pr_id):
 
 @pr_bp.route('/purchase-requisitions/<int:pr_id>/submit', methods=['POST'])
 @jwt_required()
+@require_permission('purchase_requests.create')
 def submit_pr(pr_id):
     try:
         pr = db.session.get(PurchaseRequisition, pr_id)
@@ -248,6 +254,7 @@ def submit_pr(pr_id):
 
 @pr_bp.route('/purchase-requisitions/<int:pr_id>/approve', methods=['POST'])
 @jwt_required()
+@require_permission('purchase_requests.approve')
 def approve_pr(pr_id):
     try:
         user_id = int(get_jwt_identity())
@@ -285,6 +292,7 @@ def approve_pr(pr_id):
 
 @pr_bp.route('/purchase-requisitions/<int:pr_id>/convert-to-po', methods=['POST'])
 @jwt_required()
+@require_permission('purchase_requests.create')
 def convert_pr_to_po(pr_id):
     try:
         user_id = int(get_jwt_identity())
@@ -302,7 +310,7 @@ def convert_pr_to_po(pr_id):
             return jsonify({'error': 'supplier_id wajib diisi'}), 400
 
         # Generate PO number
-        po_number = generate_number('PO', PurchaseOrder, 'po_number')
+        po_number = generate_number_v2('purchase_order', 'PO', PurchaseOrder, 'po_number')
 
         po = PurchaseOrder(
             po_number=po_number,
@@ -352,6 +360,7 @@ def convert_pr_to_po(pr_id):
 
 @pr_bp.route('/purchase-requisitions/<int:pr_id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('purchase_requests.delete')
 def delete_pr(pr_id):
     try:
         pr = db.session.get(PurchaseRequisition, pr_id)

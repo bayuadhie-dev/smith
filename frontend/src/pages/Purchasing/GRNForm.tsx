@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
+import axiosInstance from '../../utils/axiosConfig';
 import {
   CalendarIcon as Calendar,
   CheckCircleIcon as CheckCircle,
@@ -20,10 +21,12 @@ import {
 interface PurchaseOrder {
   id: number;
   po_number: string;
-  supplier: {
+  supplier_name?: string;
+  supplier?: {
+    id?: number;
     company_name: string;
   };
-  items: POItem[];
+  items?: POItem[];
 }
 
 interface POItem {
@@ -66,6 +69,7 @@ interface GRNItem {
 
 interface GRNFormData {
   po_id: number;
+  supplier_id: number | null;
   receipt_date: string;
   delivery_note_number: string;
   vehicle_number: string;
@@ -79,10 +83,13 @@ const GRNForm: React.FC = () => {
 
   const navigate = useNavigate();
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const prefillPoId = searchParams.get('po_id');
   const isEdit = Boolean(id);
 
   const [formData, setFormData] = useState<GRNFormData>({
-    po_id: 0,
+    po_id: prefillPoId ? Number(prefillPoId) : 0,
+    supplier_id: null,
     receipt_date: new Date().toISOString().split('T')[0],
     delivery_note_number: '',
     vehicle_number: '',
@@ -107,41 +114,41 @@ const GRNForm: React.FC = () => {
 
   useEffect(() => {
     if (formData.po_id && !isEdit) {
-      const po = purchaseOrders.find(p => p.id === formData.po_id);
-      if (po) {
-        setSelectedPO(po);
-        // Initialize items from PO
-        const grnItems: GRNItem[] = po.items.map(item => ({
-          po_item_id: item.id,
-          product_id: item.product?.id || null,
-          quantity_ordered: item.quantity,
-          quantity_received: 0,
-          quantity_accepted: 0,
-          quantity_rejected: 0,
-          uom: item.uom,
-          batch_number: '',
-          lot_number: '',
-          production_date: '',
-          expiry_date: '',
-          location_id: null,
-          notes: ''
-        }));
-        setFormData(prev => ({ ...prev, items: grnItems }));
-      }
+      fetchPODetail(formData.po_id);
     }
-  }, [formData.po_id, purchaseOrders, isEdit]);
+  }, [formData.po_id, isEdit]);
+
+  const fetchPODetail = async (poId: number) => {
+    try {
+      const response = await axiosInstance.get(`/api/purchasing/purchase-orders/${poId}`);
+      const po = response.data;
+      setSelectedPO(po);
+      // Initialize items from PO
+      const grnItems: GRNItem[] = (po.items || []).map((item: any) => ({
+        po_item_id: item.id,
+        product_id: item.product_id ?? item.product?.id ?? null,
+        quantity_ordered: item.quantity,
+        quantity_received: 0,
+        quantity_accepted: 0,
+        quantity_rejected: 0,
+        uom: item.uom || 'PCS',
+        batch_number: '',
+        lot_number: '',
+        production_date: '',
+        expiry_date: '',
+        location_id: null,
+        notes: ''
+      }));
+      setFormData(prev => ({ ...prev, supplier_id: po.supplier?.id ?? null, items: grnItems }));
+    } catch (error) {
+      console.error('Failed to fetch PO detail:', error);
+    }
+  };
 
   const fetchPurchaseOrders = async () => {
     try {
-      const response = await fetch('/api/purchasing/purchase-orders?status=confirmed,partial', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setPurchaseOrders(data.purchase_orders || []);
-      }
+      const response = await axiosInstance.get('/api/purchasing/purchase-orders?status=approved,partial');
+      setPurchaseOrders(response.data.purchase_orders || []);
     } catch (error) {
       console.error('Failed to fetch purchase orders:', error);
     }
@@ -149,15 +156,8 @@ const GRNForm: React.FC = () => {
 
   const fetchLocations = async () => {
     try {
-      const response = await fetch('/api/warehouse/locations', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setLocations(data.locations || []);
-      }
+      const response = await axiosInstance.get('/api/warehouse/locations');
+      setLocations(response.data.locations || []);
     } catch (error) {
       console.error('Failed to fetch locations:', error);
     }
@@ -165,22 +165,40 @@ const GRNForm: React.FC = () => {
 
   const fetchGRN = async () => {
     try {
-      const response = await fetch(`/api/purchasing/grns/${id}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+      const response = await axiosInstance.get(`/api/purchasing/grn/${id}`);
+      const data = response.data;
+      setFormData({
+        po_id: data.po_id,
+        supplier_id: data.supplier_id ?? null,
+        receipt_date: data.receipt_date.split('T')[0],
+        delivery_note_number: data.delivery_note_number || '',
+        vehicle_number: data.vehicle_number || '',
+        driver_name: data.driver_name || '',
+        notes: data.notes || '',
+        items: (data.items || []).map((item: any) => ({
+          po_item_id: item.po_item_id,
+          product_id: item.product_id ?? null,
+          quantity_ordered: item.quantity_ordered,
+          quantity_received: item.quantity_received,
+          quantity_accepted: item.quantity_accepted,
+          quantity_rejected: item.quantity_rejected,
+          uom: item.uom,
+          batch_number: item.batch_number || '',
+          lot_number: item.lot_number || '',
+          production_date: item.production_date ? item.production_date.split('T')[0] : '',
+          expiry_date: item.expiry_date ? item.expiry_date.split('T')[0] : '',
+          location_id: item.location_id ?? null,
+          notes: item.notes || ''
+        }))
       });
-      if (response.ok) {
-        const data = await response.json();
-        setFormData({
-          po_id: data.po_id,
-          receipt_date: data.receipt_date.split('T')[0],
-          delivery_note_number: data.delivery_note_number || '',
-          vehicle_number: data.vehicle_number || '',
-          driver_name: data.driver_name || '',
-          notes: data.notes || '',
-          items: data.items || []
-        });
+      // Also fetch the PO detail so the items section renders with product names
+      if (data.po_id) {
+        try {
+          const poResponse = await axiosInstance.get(`/api/purchasing/purchase-orders/${data.po_id}`);
+          setSelectedPO(poResponse.data);
+        } catch (poError) {
+          console.error('Failed to fetch PO detail for GRN edit:', poError);
+        }
       }
     } catch (error) {
       console.error('Failed to fetch GRN:', error);
@@ -212,30 +230,21 @@ const GRNForm: React.FC = () => {
       return;
     }
 
+    if (!isEdit && !formData.supplier_id) {
+      setError('Selected purchase order has no supplier information');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const url = isEdit 
-        ? `/api/purchasing/grns/${id}` 
-        : '/api/purchasing/grns';
-      
-      const method = isEdit ? 'PUT' : 'POST';
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(formData)
-      });
-
-      if (response.ok) {
-        navigate('/app/purchasing/grns');
+      if (isEdit) {
+        await axiosInstance.put(`/api/purchasing/grn/${id}`, formData);
       } else {
-        const errorData = await response.json();
-        setError(errorData.message || 'Failed to save GRN');
+        await axiosInstance.post('/api/purchasing/grn', formData);
       }
-    } catch (error) {
-      setError('Network error occurred');
+      navigate('/app/purchasing/grn');
+    } catch (error: any) {
+      setError(error?.response?.data?.error || error?.response?.data?.message || 'Failed to save GRN');
     } finally {
       setLoading(false);
     }
@@ -327,7 +336,7 @@ const GRNForm: React.FC = () => {
                   value={formData.po_id}
                   onChange={handleInputChange}
                   required
-                  disabled={isEdit}
+                  disabled={isEdit || Boolean(prefillPoId)}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 dark:bg-gray-800"
                 >
                   <option value="">Select Purchase Order</option>
@@ -600,7 +609,7 @@ const GRNForm: React.FC = () => {
           <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
             <button
               type="button"
-              onClick={() => navigate('/app/purchasing/grns')}
+              onClick={() => navigate('/app/purchasing/grn')}
               className="px-4 py-2 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
             >
               <X className="inline h-4 w-4 mr-2" />{t('common.cancel')}</button>

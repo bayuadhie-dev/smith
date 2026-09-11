@@ -47,7 +47,7 @@ const [search, setSearch] = useState('')
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Request for Quotations (RFQ)</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">RFQ</h1>
           <p className="text-gray-600 dark:text-gray-300">Manage RFQs and collect supplier quotes</p>
         </div>
         <Link

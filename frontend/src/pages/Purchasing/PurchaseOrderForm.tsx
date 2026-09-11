@@ -1,12 +1,15 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useForm, useFieldArray } from 'react-hook-form'
 import toast from 'react-hot-toast'
+import SearchableSelect from '../../components/SearchableSelect'
 import {
   useGetSuppliersQuery,
   useGetProductsQuery,
-  useCreatePurchaseOrderMutation
+  useCreatePurchaseOrderMutation,
+  useUpdatePurchaseOrderMutation,
+  useGetPurchaseOrderQuery
 } from '../../services/api'
 import {
   PlusIcon,
@@ -30,13 +33,17 @@ export default function PurchaseOrderForm() {
     const { t } = useLanguage();
 
 const navigate = useNavigate()
+  const { id } = useParams<{ id: string }>()
+  const isEdit = Boolean(id)
   const [isLoading, setIsLoading] = useState(false)
-  
+
   const { data: suppliers } = useGetSuppliersQuery({})
   const { data: products } = useGetProductsQuery({})
   const [createPO] = useCreatePurchaseOrderMutation()
-  
-  const { register, control, handleSubmit, watch, formState: { errors } } = useForm<PurchaseOrderFormData>({
+  const [updatePO] = useUpdatePurchaseOrderMutation()
+  const { data: existingPO } = useGetPurchaseOrderQuery(id, { skip: !isEdit })
+
+  const { register, control, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<PurchaseOrderFormData>({
     defaultValues: {
       order_date: new Date().toISOString().split('T')[0],
       items: [{ product_id: 0, quantity: 1, unit_price: 0, uom: 'PCS' }]
@@ -49,6 +56,25 @@ const navigate = useNavigate()
   })
 
   const watchedItems = watch('items')
+  const hasGrn = Boolean(existingPO?.has_grn)
+
+  useEffect(() => {
+    if (isEdit && existingPO) {
+      reset({
+        supplier_id: existingPO.supplier_id,
+        order_date: existingPO.order_date,
+        required_date: existingPO.required_date || '',
+        payment_terms: existingPO.payment_terms || '',
+        notes: existingPO.notes || '',
+        items: (existingPO.items || []).map((item: any) => ({
+          product_id: item.product_id,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          uom: item.uom || 'PCS'
+        }))
+      })
+    }
+  }, [isEdit, existingPO, reset])
 
   const calculateTotal = () => {
     return watchedItems.reduce((total, item) => {
@@ -60,16 +86,16 @@ const navigate = useNavigate()
     setIsLoading(true)
     try {
       // Validate items
-      const validItems = data.items.filter(item => 
+      const validItems = data.items.filter(item =>
         item.product_id && item.quantity > 0 && item.unit_price > 0
       )
 
-      if (validItems.length === 0) {
+      if (!hasGrn && validItems.length === 0) {
         toast.error('Please add at least one valid item')
         return
       }
 
-      await createPO({
+      const payload: any = {
         ...data,
         supplier_id: parseInt(data.supplier_id.toString()),
         items: validItems.map(item => ({
@@ -78,12 +104,23 @@ const navigate = useNavigate()
           quantity: parseFloat(item.quantity.toString()),
           unit_price: parseFloat(item.unit_price.toString())
         }))
-      }).unwrap()
-      
-      toast.success('Purchase Order created successfully!')
+      }
+
+      if (isEdit) {
+        if (hasGrn) {
+          // Items/supplier are locked server-side once a GRN exists - only send header fields
+          delete payload.items
+          delete payload.supplier_id
+        }
+        await updatePO({ id, ...payload }).unwrap()
+        toast.success('Purchase Order updated successfully!')
+      } else {
+        await createPO(payload).unwrap()
+        toast.success('Purchase Order created successfully!')
+      }
       navigate('/app/purchasing/purchase-orders')
     } catch (error: any) {
-      toast.error(error.data?.error || 'Failed to create purchase order')
+      toast.error(error.data?.error || `Failed to ${isEdit ? 'update' : 'create'} purchase order`)
     } finally {
       setIsLoading(false)
     }
@@ -101,15 +138,29 @@ const navigate = useNavigate()
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Create Purchase Order</h1>
-          <p className="text-gray-600 dark:text-gray-300">Request materials and products from suppliers</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{isEdit ? 'Edit Purchase Order' : 'Create Purchase Order'}</h1>
+          <p className="text-gray-600 dark:text-gray-300">
+            {isEdit
+              ? (hasGrn ? 'Item dan supplier terkunci karena sudah ada Penerimaan Barang (GRN)' : 'Update this purchase order')
+              : 'Request materials and products from suppliers'}
+          </p>
         </div>
-        <button
-          onClick={() => navigate('/app/purchasing/purchase-orders')}
-          className="btn-secondary"
-        >
-          Back to List
-        </button>
+        <div className="flex items-center gap-2">
+          {isEdit && (
+            <button
+              onClick={() => navigate(`/app/purchasing/grn/new?po_id=${id}`)}
+              className="btn-primary"
+            >
+              Buat GRN
+            </button>
+          )}
+          <button
+            onClick={() => navigate('/app/purchasing/purchase-orders')}
+            className="btn-secondary"
+          >
+            Back to List
+          </button>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -125,6 +176,7 @@ const navigate = useNavigate()
               <select
                 {...register('supplier_id', { required: 'Supplier is required' })}
                 className="input-field"
+                disabled={hasGrn}
               >
                 <option value="">Select a supplier</option>
                 {suppliers?.suppliers?.map((supplier: any) => (
@@ -195,14 +247,16 @@ const navigate = useNavigate()
         <div className="card p-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Order Items</h3>
-            <button
-              type="button"
-              onClick={addItem}
-              className="btn-secondary inline-flex items-center gap-2"
-            >
-              <PlusIcon className="h-4 w-4" />
-              Add Item
-            </button>
+            {!hasGrn && (
+              <button
+                type="button"
+                onClick={addItem}
+                className="btn-secondary inline-flex items-center gap-2"
+              >
+                <PlusIcon className="h-4 w-4" />
+                Add Item
+              </button>
+            )}
           </div>
 
           <div className="space-y-4">
@@ -216,19 +270,18 @@ const navigate = useNavigate()
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                         Product *
                       </label>
-                      <select
-                        {...register(`items.${index}.product_id` as const, {
-                          required: 'Product is required'
-                        })}
-                        className="input-field"
-                      >
-                        <option value="">Select product</option>
-                        {products?.products?.filter((p: any) => p.is_purchasable && p.is_active).map((product: any) => (
-                          <option key={product.id} value={product.id}>
-                            {product.code} - {product.name}
-                          </option>
-                        ))}
-                      </select>
+                      <SearchableSelect
+                        options={(products?.products || []).filter((p: any) => p.is_purchasable && p.is_active).map((product: any) => ({
+                          id: product.id,
+                          code: product.code,
+                          name: product.name
+                        }))}
+                        value={watchedItems[index]?.product_id || null}
+                        onChange={(value) => setValue(`items.${index}.product_id`, value as any, { shouldValidate: true })}
+                        placeholder="Select product"
+                        disabled={hasGrn}
+                        required
+                      />
                     </div>
 
                     <div>
@@ -244,6 +297,7 @@ const navigate = useNavigate()
                           min: { value: 0.01, message: 'Quantity must be greater than 0' }
                         })}
                         className="input-field"
+                        disabled={hasGrn}
                       />
                       {selectedProduct && (
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{selectedProduct.primary_uom}</p>
@@ -264,6 +318,7 @@ const navigate = useNavigate()
                         })}
                         className="input-field"
                         placeholder="0.00"
+                        disabled={hasGrn}
                       />
                     </div>
 
@@ -275,7 +330,7 @@ const navigate = useNavigate()
                     </div>
 
                     <div>
-                      {fields.length > 1 && (
+                      {fields.length > 1 && !hasGrn && (
                         <button
                           type="button"
                           onClick={() => remove(index)}
@@ -337,7 +392,7 @@ const navigate = useNavigate()
             className="btn-primary"
             disabled={isLoading}
           >
-            {isLoading ? 'Creating...' : 'Create Purchase Order'}
+            {isLoading ? (isEdit ? 'Saving...' : 'Creating...') : (isEdit ? 'Save Changes' : 'Create Purchase Order')}
           </button>
         </div>
       </form>
