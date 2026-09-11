@@ -144,7 +144,7 @@ const MaintenanceWorkOrderForm: React.FC = () => {
         setFormData(data.work_order);
       }
     } catch (error) {
-      console.error('Failed to fetch work order:', error);
+      console.error('Failed to fetch SPK:', error);
     }
   };
 
@@ -178,7 +178,7 @@ const MaintenanceWorkOrderForm: React.FC = () => {
         navigate('/app/maintenance/work-orders');
       } else {
         const errorData = await response.json();
-        setError(errorData.message || 'Failed to save work order');
+        setError(errorData.message || 'Failed to save SPK');
       }
     } catch (error) {
       setError('Network error occurred');
@@ -255,9 +255,9 @@ const MaintenanceWorkOrderForm: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            {isEdit ? 'Edit Work Order' : 'Create Work Order'}
+            {isEdit ? 'Edit SPK' : 'Create SPK'}
           </h1>
-          <p className="text-gray-600 dark:text-gray-300">Manage maintenance work orders and tasks</p>
+          <p className="text-gray-600 dark:text-gray-300">Manage maintenance SPK and tasks</p>
         </div>
       </div>
 
@@ -280,7 +280,7 @@ const MaintenanceWorkOrderForm: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Work Order Number
+                  SPK Number
                 </label>
                 <input
                   type="text"
@@ -318,7 +318,7 @@ const MaintenanceWorkOrderForm: React.FC = () => {
                   value={formData.title}
                   onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                   required
-                  placeholder="Brief description of the work order"
+                  placeholder="Brief description of the SPK"
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -618,7 +618,7 @@ const MaintenanceWorkOrderForm: React.FC = () => {
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
             >
               <Save className="inline h-4 w-4 mr-2" />
-              {loading ? 'Saving...' : isEdit ? 'Update Work Order' : 'Create Work Order'}
+              {loading ? 'Saving...' : isEdit ? 'Update SPK' : 'Create SPK'}
             </button>
           </div>
         </form>

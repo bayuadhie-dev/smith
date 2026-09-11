@@ -1,9 +1,10 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db, ShippingOrder, ShippingItem, DeliveryTracking, LogisticsProvider
 from utils.i18n import success_response, error_response, get_message
 from utils import generate_number
-from company_config.company import COMPANY_NAME, COMPANY_ADDRESS_LINE1, COMPANY_PHONE
+from company_config.company import get_company_info
 from datetime import datetime
 from utils.timezone import get_local_now, get_local_today
 
@@ -12,6 +13,7 @@ shipping_bp = Blueprint('shipping', __name__)
 @shipping_bp.route('/orders', methods=['GET'])
 @shipping_bp.route('/orders/', methods=['GET'])
 @jwt_required()
+@require_permission('shipping.view')
 def get_shipping_orders():
     try:
         page = request.args.get('page', 1, type=int)
@@ -35,6 +37,7 @@ def get_shipping_orders():
 
 @shipping_bp.route('/shipments', methods=['POST'])
 @jwt_required()
+@require_permission('shipping.create')
 def create_shipment():
     try:
         data = request.get_json()
@@ -88,13 +91,27 @@ def create_shipment():
 
 @shipping_bp.route('/orders', methods=['POST'])
 @jwt_required()
+@require_permission('shipping.create')
 def create_shipping_order():
     try:
         data = request.get_json()
         user_id = int(get_jwt_identity())
-        
+
+        # Guard against double-shipping the same sales order from this path
+        # (mirrors the guard on create_shipping_from_qc) - this endpoint
+        # deducts Inventory below, so a second call for the same order would
+        # double-deduct stock for goods only shipped once.
+        existing_shipment = ShippingOrder.query.filter(
+            ShippingOrder.sales_order_id == data['sales_order_id'],
+            ShippingOrder.status != 'cancelled'
+        ).first()
+        if existing_shipment:
+            return jsonify({
+                'error': f'Sales order ini sudah punya pengiriman aktif ({existing_shipment.shipping_number}) - tidak bisa dibuat lagi.'
+            }), 400
+
         shipping_number = generate_number('SHP', ShippingOrder, 'shipping_number')
-        
+
         order = ShippingOrder(
             shipping_number=shipping_number,
             sales_order_id=data['sales_order_id'],
@@ -108,10 +125,12 @@ def create_shipping_order():
             shipping_address=data.get('shipping_address'),
             prepared_by=user_id
         )
-        
+
         db.session.add(order)
         db.session.flush()
-        
+
+        from models import Inventory, InventoryMovement
+
         for item_data in data.get('items', []):
             item = ShippingItem(
                 shipping_id=order.id,
@@ -121,7 +140,49 @@ def create_shipping_order():
                 batch_number=item_data.get('batch_number')
             )
             db.session.add(item)
-        
+
+            # Deduct Inventory (2026-09-11 fix - this endpoint previously
+            # created the shipping record with zero stock effect at all,
+            # unlike create_shipping_from_qc which does deduct). Same
+            # location fallback pattern as create_shipping_from_qc.
+            quantity = float(item_data['quantity'])
+            batch_number = item_data.get('batch_number')
+            inv = Inventory.query.filter_by(
+                product_id=item_data['product_id'],
+                batch_number=batch_number,
+                location_id=3
+            ).first()
+            if not inv:
+                inv = Inventory.query.filter_by(
+                    product_id=item_data['product_id'],
+                    batch_number=batch_number
+                ).first()
+            if not inv:
+                inv = Inventory.query.filter_by(
+                    product_id=item_data['product_id']
+                ).first()
+
+            if inv:
+                inv.quantity_on_hand = float(inv.quantity_on_hand) - quantity
+                inv.quantity_available = float(inv.quantity_available) - quantity
+                inv.updated_at = get_local_now()
+
+                movement = InventoryMovement(
+                    inventory_id=inv.id,
+                    product_id=item_data['product_id'],
+                    location_id=inv.location_id,
+                    movement_type='stock_out',
+                    movement_date=get_local_now().date(),
+                    quantity=quantity,
+                    reference_number=shipping_number,
+                    reference_type='sales_order',
+                    reference_id=order.id,
+                    batch_number=batch_number,
+                    notes=f"Shipped via {shipping_number}",
+                    created_by=user_id
+                )
+                db.session.add(movement)
+
         db.session.commit()
         return jsonify({'message': 'Shipping order created', 'shipping_id': order.id}), 201
     except Exception as e:
@@ -130,6 +191,7 @@ def create_shipping_order():
 
 @shipping_bp.route('/tracking', methods=['GET'])
 @jwt_required()
+@require_permission('shipping.view')
 def get_tracking():
     try:
         tracking_number = request.args.get('tracking_number')
@@ -143,7 +205,8 @@ def get_tracking():
         
         # Get tracking history
         tracking_history = DeliveryTracking.query.filter_by(shipping_id=shipping_order.id).order_by(DeliveryTracking.tracking_date.desc()).all()
-        
+        company_info = get_company_info()
+
         return jsonify({
             'tracking_number': tracking_number,
             'status': shipping_order.status,
@@ -153,9 +216,9 @@ def get_tracking():
                 'customer_name': shipping_order.customer.company_name if shipping_order.customer else 'Unknown',
                 'shipping_date': shipping_order.shipping_date.isoformat(),
                 'expected_delivery_date': shipping_order.expected_delivery_date.isoformat() if shipping_order.expected_delivery_date else None,
-                'sender_name': COMPANY_NAME,
-                'sender_address': COMPANY_ADDRESS_LINE1,
-                'sender_phone': COMPANY_PHONE,
+                'sender_name': company_info['name'],
+                'sender_address': company_info['address_line1'],
+                'sender_phone': company_info['phone'],
                 'recipient_name': shipping_order.customer.company_name if shipping_order.customer else 'Unknown',
                 'recipient_address': shipping_order.shipping_address or 'Address not available',
                 'recipient_phone': shipping_order.customer.phone if shipping_order.customer else 'Phone not available',
@@ -187,6 +250,7 @@ def get_tracking():
 
 @shipping_bp.route('/tracking', methods=['POST'])
 @jwt_required()
+@require_permission('shipping.create')
 def add_tracking():
     try:
         data = request.get_json()
@@ -213,6 +277,7 @@ def add_tracking():
 
 @shipping_bp.route('/providers', methods=['GET'])
 @jwt_required()
+@require_permission('shipping.view')
 def get_providers():
     try:
         providers = LogisticsProvider.query.all()
@@ -232,6 +297,7 @@ def get_providers():
 
 @shipping_bp.route('/providers', methods=['POST'])
 @jwt_required()
+@require_permission('shipping.create')
 def create_provider():
     try:
         data = request.get_json()
@@ -261,6 +327,7 @@ def create_provider():
 
 @shipping_bp.route('/providers/<int:id>', methods=['PUT'])
 @jwt_required()
+@require_permission('shipping.edit')
 def update_provider(id):
     try:
         provider = db.session.get(LogisticsProvider, id) or abort(404)
@@ -287,6 +354,7 @@ def update_provider(id):
 
 @shipping_bp.route('/providers/<int:id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('shipping.delete')
 def delete_provider(id):
     try:
         provider = db.session.get(LogisticsProvider, id) or abort(404)
@@ -305,6 +373,7 @@ def delete_provider(id):
 
 @shipping_bp.route('/orders/<int:order_id>', methods=['GET'])
 @jwt_required()
+@require_permission('shipping.view')
 def get_shipping_order(order_id):
     try:
         order = db.session.get(ShippingOrder, order_id) or abort(404)
@@ -351,6 +420,7 @@ def get_shipping_order(order_id):
 
 @shipping_bp.route('/orders/<int:order_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('shipping.edit')
 def update_shipping_order(order_id):
     try:
         order = db.session.get(ShippingOrder, order_id) or abort(404)
@@ -408,6 +478,7 @@ def update_shipping_order(order_id):
 
 @shipping_bp.route('/orders/<int:order_id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('shipping.delete')
 def delete_shipping_order(order_id):
     try:
         order = db.session.get(ShippingOrder, order_id) or abort(404)
@@ -433,6 +504,7 @@ def delete_shipping_order(order_id):
 
 @shipping_bp.route('/tracking/<tracking_number>', methods=['PUT'])
 @jwt_required()
+@require_permission('shipping.edit')
 def update_tracking_status(tracking_number):
     try:
         # Find the shipping order by tracking number
@@ -473,6 +545,7 @@ def update_tracking_status(tracking_number):
 
 @shipping_bp.route('/available-sales-orders', methods=['GET'])
 @jwt_required()
+@require_permission('shipping.view')
 def get_available_sales_orders():
     """Get sales orders that are ready for shipping"""
     try:
@@ -524,6 +597,7 @@ def get_available_sales_orders():
 
 @shipping_bp.route('/ready-for-shipping', methods=['GET'])
 @jwt_required()
+@require_permission('shipping.view')
 def get_ready_for_shipping():
     """
     Get Work Orders that have passed QC and are ready for shipping.
@@ -603,6 +677,7 @@ def get_ready_for_shipping():
 
 @shipping_bp.route('/create-from-qc', methods=['POST'])
 @jwt_required()
+@require_permission('shipping.create')
 def create_shipping_from_qc():
     """
     Create shipping order from QC passed work order.
@@ -625,7 +700,23 @@ def create_shipping_from_qc():
         work_order = db.session.get(WorkOrder, work_order_id)
         if not work_order:
             return jsonify({'error': 'Work order not found'}), 404
-        
+
+        # Guard against double-shipping the same WO (double-click, retry, race
+        # condition) - this endpoint deducts Inventory.quantity_on_hand
+        # unconditionally below, so a second call would double-deduct stock
+        # for the same physical goods without this check.
+        if work_order.status == 'shipped':
+            return jsonify({'error': f'Work Order {work_order.wo_number} sudah berstatus shipped - tidak bisa dikirim ulang.'}), 400
+
+        existing_shipment = ShippingOrder.query.filter(
+            ShippingOrder.work_order_id == work_order_id,
+            ShippingOrder.status != 'cancelled'
+        ).first()
+        if existing_shipment:
+            return jsonify({
+                'error': f'Work Order {work_order.wo_number} sudah punya pengiriman aktif ({existing_shipment.shipping_number}) - tidak bisa dibuat lagi.'
+            }), 400
+
         # Get QC inspection
         qc = None
         if qc_inspection_id:

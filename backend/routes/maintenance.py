@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 import redis
 import os
 import json
@@ -16,6 +17,7 @@ maintenance_bp = Blueprint('maintenance', __name__)
 
 @maintenance_bp.route('/schedules', methods=['GET'])
 @jwt_required()
+@require_permission('maintenance.schedule')
 def get_schedules():
     try:
         schedules = MaintenanceSchedule.query.filter_by(is_active=True).all()
@@ -34,6 +36,7 @@ def get_schedules():
 
 @maintenance_bp.route('/schedules', methods=['POST'])
 @jwt_required()
+@require_permission('maintenance.schedule')
 def create_schedule():
     try:
         data = request.get_json()
@@ -61,6 +64,7 @@ def create_schedule():
 @maintenance_bp.route('/records/', methods=['GET'])
 @maintenance_bp.route('/', methods=['GET'])
 @jwt_required()
+@require_permission('maintenance.view')
 def get_records():
     try:
         machine_id = request.args.get('machine_id', type=int)
@@ -110,6 +114,7 @@ def get_records():
 
 @maintenance_bp.route('/maintenance', methods=['POST'])
 @jwt_required()
+@require_permission('maintenance.create')
 def create_maintenance():
     try:
         data = request.get_json()
@@ -168,6 +173,7 @@ def create_maintenance():
 
 @maintenance_bp.route('/records', methods=['POST'])
 @jwt_required()
+@require_permission('maintenance.create')
 def create_record():
     try:
         data = request.get_json()
@@ -208,6 +214,7 @@ def create_record():
 
 @maintenance_bp.route('/records/<int:record_id>', methods=['PATCH'])
 @jwt_required()
+@require_permission('maintenance.edit')
 def update_maintenance_record(record_id):
     try:
         record = db.session.get(MaintenanceRecord, record_id) or abort(404)
@@ -334,7 +341,18 @@ def update_maintenance_record(record_id):
                     except Exception as pe:
                         # Log error but don't fail the whole request
                         print(f"Error processing maintenance inventory: {pe}")
-        
+
+                # NOTE (2026-09-11): deliberately NOT posting record.cost to GL
+                # here. Per user clarification, maintenance spend is already
+                # covered elsewhere: technician salaries flow through payroll's
+                # existing GL integration (fixed overhead), and spare-part
+                # purchases flow through PO -> Purchase Invoice -> Payment
+                # settlement (which already posts to the correct expense
+                # account on payment, per this session's Payment->GL fix).
+                # MaintenanceRecord.cost is a summary/reporting field on this
+                # record, not an independent transaction - posting it here
+                # would double-count against those two real postings.
+
         if 'work_performed' in data:
             record.work_performed = data['work_performed']
         
@@ -369,6 +387,7 @@ def update_maintenance_record(record_id):
 
 @maintenance_bp.route('/records/<int:record_id>', methods=['GET'])
 @jwt_required()
+@require_permission('maintenance.view')
 def get_maintenance_record(record_id):
     try:
         record = db.session.get(MaintenanceRecord, record_id) or abort(404)
@@ -401,6 +420,7 @@ def get_maintenance_record(record_id):
 
 @maintenance_bp.route('/stats', methods=['GET'])
 @jwt_required()
+@require_permission('maintenance.view')
 def get_maintenance_stats():
     try:
         # Get basic counts
@@ -439,6 +459,7 @@ def get_maintenance_stats():
 
 @maintenance_bp.route('/schedules/<int:schedule_id>/generate', methods=['POST'])
 @jwt_required()
+@require_permission('maintenance.schedule')
 def generate_maintenance_from_schedule(schedule_id):
     try:
         schedule = db.session.get(MaintenanceSchedule, schedule_id) or abort(404)
@@ -495,7 +516,8 @@ def generate_maintenance_from_schedule(schedule_id):
 
 # Enhanced Dashboard Endpoints
 @maintenance_bp.route('/dashboard/kpis', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('maintenance.view')
 def get_maintenance_kpis():
     try:
         from datetime import datetime, timedelta
@@ -595,7 +617,8 @@ def get_maintenance_kpis():
         return jsonify({'error': str(e)}), 500
 
 @maintenance_bp.route('/alerts', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('maintenance.view')
 def get_maintenance_alerts():
     try:
         status = request.args.get('status', 'active')
@@ -610,7 +633,8 @@ def get_maintenance_alerts():
         return jsonify({'error': str(e)}), 500
 
 @maintenance_bp.route('/work-orders/summary', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('maintenance.view')
 def get_work_orders_summary():
     try:
         # Get recent work orders with machine info
@@ -640,7 +664,8 @@ def get_work_orders_summary():
         return jsonify({'error': str(e)}), 500
 
 @maintenance_bp.route('/analytics/trends', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('maintenance.view')
 def get_maintenance_trends():
     try:
         from datetime import datetime, timedelta
@@ -688,7 +713,8 @@ def get_maintenance_trends():
         return jsonify({'error': str(e)}), 500
 
 @maintenance_bp.route('/analytics/equipment-performance', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('maintenance.view')
 def get_equipment_performance():
     try:
         from models import Machine

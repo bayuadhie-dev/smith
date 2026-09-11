@@ -6,7 +6,7 @@ from models.shipping import ShippingOrder, ShippingItem, LogisticsProvider
 from models.sales import SalesOrder, SalesOrderItem
 from models import db, Customer
 from utils import generate_number
-from company_config.company import COMPANY_NAME, COMPANY_ADDRESS_LINE1, COMPANY_PHONE
+from company_config.company import get_company_info
 from datetime import datetime, timedelta
 import random
 
@@ -36,6 +36,7 @@ def create_shipping_from_sales_order(sales_order_id, logistics_provider_id=None,
         
         # Generate shipping number
         shipping_number = generate_number('SHP', ShippingOrder, 'shipping_number')
+        company_info = get_company_info()
         
         # Calculate estimated delivery (2-5 days from now based on service type)
         delivery_days = {
@@ -58,9 +59,9 @@ def create_shipping_from_sales_order(sales_order_id, logistics_provider_id=None,
             recipient_name=customer.company_name or customer.name,
             recipient_address=sales_order.delivery_address or customer.address or "Alamat tidak tersedia",
             recipient_phone=customer.phone or "Phone tidak tersedia",
-            sender_name=COMPANY_NAME,
-            sender_address=COMPANY_ADDRESS_LINE1,
-            sender_phone=COMPANY_PHONE,
+            sender_name=company_info['name'],
+            sender_address=company_info['address_line1'],
+            sender_phone=company_info['phone'],
             service_type=service_type,
             status='preparing',
             notes=f"Auto-generated from Sales Order {sales_order.order_number}",

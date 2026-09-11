@@ -240,7 +240,7 @@ export default function CreateShippingFromQC() {
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <CubeIcon className="h-12 w-12 mx-auto mb-2 text-gray-300" />
                 <p>Tidak ada item siap kirim</p>
-                <p className="text-sm">Pastikan ada Work Order yang sudah lulus QC</p>
+                <p className="text-sm">Pastikan ada SPK yang sudah lulus QC</p>
               </div>
             ) : (
               <div className="space-y-3 max-h-[600px] overflow-y-auto">
@@ -297,7 +297,7 @@ export default function CreateShippingFromQC() {
                 <h3 className="font-semibold text-blue-900 mb-3">Item yang Dipilih</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div>
-                    <span className="text-blue-600">Work Order</span>
+                    <span className="text-blue-600">SPK</span>
                     <p className="font-medium">{selectedItem.work_order_number}</p>
                   </div>
                   <div>

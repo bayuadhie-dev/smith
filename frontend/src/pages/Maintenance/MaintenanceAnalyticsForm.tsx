@@ -341,7 +341,7 @@ const MaintenanceAnalyticsForm: React.FC = () => {
               <div className="flex items-center">
                 <Wrench className="h-8 w-8 text-blue-600" />
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Work Orders</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total SPK</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">{analyticsData.summary.total_work_orders}</p>
                 </div>
               </div>
@@ -442,7 +442,7 @@ const MaintenanceAnalyticsForm: React.FC = () => {
                   <YAxis yAxisId="right" orientation="right" />
                   <Tooltip />
                   <Legend />
-                  <Bar yAxisId="left" dataKey="work_orders" fill="#3B82F6" name="Work Orders" />
+                  <Bar yAxisId="left" dataKey="work_orders" fill="#3B82F6" name="SPK" />
                   <Line yAxisId="right" type="monotone" dataKey="mttr" stroke="#EF4444" name="MTTR (hrs)" />
                 </LineChart>
               </ResponsiveContainer>

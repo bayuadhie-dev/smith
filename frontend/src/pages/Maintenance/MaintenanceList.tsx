@@ -159,7 +159,7 @@ const MaintenanceList: React.FC = () => {
             {t('maintenance.list') || 'Maintenance Records'}
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            {t('maintenance.list_desc') || 'View and manage all maintenance work orders'}
+            {t('maintenance.list_desc') || 'View and manage all maintenance SPK'}
           </p>
         </div>
         <Link
@@ -167,7 +167,7 @@ const MaintenanceList: React.FC = () => {
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           <PlusIcon className="w-5 h-5" />
-          <span>New Work Order</span>
+          <span>New SPK</span>
         </Link>
       </div>
 
@@ -223,7 +223,7 @@ const MaintenanceList: React.FC = () => {
             <thead className="bg-gray-50 dark:bg-gray-900/50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Work Order
+                  SPK
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Machine
@@ -338,7 +338,7 @@ const MaintenanceList: React.FC = () => {
                       className="inline-flex items-center gap-2 mt-4 text-blue-600 hover:text-blue-700"
                     >
                       <PlusIcon className="w-4 h-4" />
-                      Create your first work order
+                      Create your first SPK
                     </Link>
                   </td>
                 </tr>

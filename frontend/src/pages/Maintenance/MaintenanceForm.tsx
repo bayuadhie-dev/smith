@@ -245,7 +245,7 @@ const MaintenanceForm: React.FC = () => {
         toast.success('Maintenance record updated successfully');
       } else {
         await api.post('/api/maintenance/maintenance', payload);
-        toast.success('Maintenance work order created successfully');
+        toast.success('Maintenance SPK created successfully');
       }
       navigate('/app/maintenance/list');
     } catch (error: any) {
@@ -276,7 +276,7 @@ const MaintenanceForm: React.FC = () => {
         </Link>
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            {isEdit ? 'Edit Maintenance Record' : 'New Maintenance Work Order'}
+            {isEdit ? 'Edit Maintenance Record' : 'New Maintenance SPK'}
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
             {isEdit ? 'Update maintenance details' : 'Schedule a new maintenance task'}
@@ -637,7 +637,7 @@ const MaintenanceForm: React.FC = () => {
             ) : (
               <>
                 <WrenchScrewdriverIcon className="w-5 h-5" />
-                {isEdit ? 'Update Record' : 'Create Work Order'}
+                {isEdit ? 'Update Record' : 'Create SPK'}
               </>
             )}
           </button>

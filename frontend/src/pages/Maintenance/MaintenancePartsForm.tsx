@@ -118,7 +118,7 @@ const MaintenancePartsForm: React.FC = () => {
         setWorkOrders(data.work_orders || []);
       }
     } catch (error) {
-      console.error('Failed to fetch work orders:', error);
+      console.error('Failed to fetch SPK:', error);
     }
   };
 
@@ -350,14 +350,14 @@ const MaintenancePartsForm: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Related Work Order
+                  Related SPK
                 </label>
                 <select
                   value={formData.work_order_id}
                   onChange={(e) => setFormData(prev => ({ ...prev, work_order_id: parseInt(e.target.value) || 0 }))}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="">Select Work Order (Optional)</option>
+                  <option value="">Select SPK (Optional)</option>
                   {workOrders.map(wo => (
                     <option key={wo.id} value={wo.id}>
                       {wo.work_order_number} - {wo.title}

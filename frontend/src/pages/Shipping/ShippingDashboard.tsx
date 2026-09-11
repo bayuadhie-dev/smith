@@ -229,14 +229,14 @@ export default function ShippingDashboard() {
           <div className="text-center py-8 text-gray-500 dark:text-gray-400">
             <CubeIcon className="h-12 w-12 mx-auto mb-2 text-gray-300" />
             <p>Tidak ada item siap kirim</p>
-            <p className="text-sm">Pastikan ada Work Order yang sudah lulus QC</p>
+            <p className="text-sm">Pastikan ada SPK yang sudah lulus QC</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-green-200">
               <thead className="bg-green-100">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-green-800 uppercase">Work Order</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-green-800 uppercase">SPK</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-green-800 uppercase">Produk</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-green-800 uppercase">Qty Lulus QC</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-green-800 uppercase">Customer</th>

@@ -27,6 +27,7 @@ class ShippingOrder(db.Model):
     sales_order_id = db.Column(db.Integer, db.ForeignKey('sales_orders.id'), nullable=True)  # nullable for QC-based shipping
     work_order_id = db.Column(db.Integer, db.ForeignKey('work_orders.id'), nullable=True)  # Link to Work Order
     qc_inspection_id = db.Column(db.Integer, db.ForeignKey('quality_inspections.id'), nullable=True)  # Link to QC
+    invoice_id = db.Column(db.Integer, db.ForeignKey('invoices.id'), nullable=True)  # Link to Sales Invoice (filled when invoice dibuat dari surat jalan ini)
     customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'), nullable=False)
     shipping_date = db.Column(db.Date, nullable=False)
     expected_delivery_date = db.Column(db.Date, nullable=True)
@@ -69,6 +70,7 @@ class ShippingOrder(db.Model):
     
     # Relationships
     sales_order = db.relationship('SalesOrder', back_populates='shipping_orders')
+    invoice = db.relationship('Invoice', foreign_keys=[invoice_id])
     customer = db.relationship('Customer')
     logistics_provider = db.relationship('LogisticsProvider', back_populates='shipping_orders')
     items = db.relationship('ShippingItem', back_populates='shipping_order', cascade='all, delete-orphan')

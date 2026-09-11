@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db, MaintenanceSchedule, MaintenanceRecord, MaintenanceTask, EquipmentHistory
 from models.production import Machine
 from models.hr import Employee
@@ -14,6 +15,7 @@ maintenance_extended_bp = Blueprint('maintenance_extended', __name__)
 # Work Order Management Endpoints
 @maintenance_extended_bp.route('/work-orders', methods=['GET'])
 @jwt_required()
+@require_permission('maintenance.view')
 def get_work_orders():
     try:
         page = request.args.get('page', 1, type=int)
@@ -51,6 +53,7 @@ def get_work_orders():
 
 @maintenance_extended_bp.route('/work-orders', methods=['POST'])
 @jwt_required()
+@require_permission('maintenance.create')
 def create_work_order():
     try:
         data = request.get_json()
@@ -84,6 +87,7 @@ def create_work_order():
 
 @maintenance_extended_bp.route('/work-orders/<int:work_order_id>', methods=['GET'])
 @jwt_required()
+@require_permission('maintenance.view')
 def get_work_order(work_order_id):
     try:
         work_order = db.session.get(MaintenanceRecord, work_order_id) or abort(404)
@@ -114,6 +118,7 @@ def get_work_order(work_order_id):
 
 @maintenance_extended_bp.route('/work-orders/<int:work_order_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('maintenance.edit')
 def update_work_order(work_order_id):
     try:
         work_order = db.session.get(MaintenanceRecord, work_order_id) or abort(404)
@@ -156,6 +161,7 @@ def update_work_order(work_order_id):
 # Parts Request Management Endpoints
 @maintenance_extended_bp.route('/parts-requests', methods=['GET'])
 @jwt_required()
+@require_permission('maintenance.view')
 def get_parts_requests():
     try:
         page = request.args.get('page', 1, type=int)
@@ -175,6 +181,7 @@ def get_parts_requests():
 
 @maintenance_extended_bp.route('/parts-requests', methods=['POST'])
 @jwt_required()
+@require_permission('maintenance.create')
 def create_parts_request():
     try:
         data = request.get_json()
@@ -193,6 +200,7 @@ def create_parts_request():
 
 @maintenance_extended_bp.route('/parts-requests/<int:request_id>', methods=['GET'])
 @jwt_required()
+@require_permission('maintenance.view')
 def get_parts_request(request_id):
     try:
         # Mock response for now
@@ -216,6 +224,7 @@ def get_parts_request(request_id):
 
 @maintenance_extended_bp.route('/parts-requests/<int:request_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('maintenance.edit')
 def update_parts_request(request_id):
     try:
         data = request.get_json()
@@ -228,6 +237,7 @@ def update_parts_request(request_id):
 # Analytics Endpoints
 @maintenance_extended_bp.route('/analytics', methods=['GET'])
 @jwt_required()
+@require_permission('maintenance.view')
 def get_maintenance_analytics():
     try:
         date_from = request.args.get('date_from')
@@ -328,6 +338,7 @@ def get_maintenance_analytics():
 
 @maintenance_extended_bp.route('/analytics/export', methods=['GET'])
 @jwt_required()
+@require_permission('maintenance.view')
 def export_maintenance_analytics():
     try:
         format_type = request.args.get('format', 'excel')

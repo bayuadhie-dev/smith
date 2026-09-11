@@ -116,7 +116,7 @@ const AssetDashboard: React.FC = () => {
         <div>
           <h1 className="text-3xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
             <BuildingOfficeIcon className="h-8 w-8 text-blue-600" />
-            Asset Management
+            Dashboard Aset
           </h1>
           <p className="text-slate-500 dark:text-gray-400 mt-1">
             Manajemen Siklus Hidup Aset Terpadu

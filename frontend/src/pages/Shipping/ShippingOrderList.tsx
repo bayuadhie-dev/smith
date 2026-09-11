@@ -28,7 +28,7 @@ const { data, isLoading } = useGetShippingOrdersQuery({})
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Shipping Orders</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pesanan Pengiriman</h1>
         <Link to="/shipping/orders/new" className="btn-primary inline-flex items-center gap-2">
           <PlusIcon className="h-5 w-5" />
           Create Shipment

@@ -65,7 +65,7 @@ const SparePartsList: React.FC = () => {
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
           <WrenchScrewdriverIcon className="h-8 w-8 text-orange-600" />
-          Inventaris Suku Cadang (MRO)
+          Suku Cadang
         </h1>
         <p className="text-slate-500 dark:text-gray-400 mt-1">
           Maintenance, Repair, and Operations Parts

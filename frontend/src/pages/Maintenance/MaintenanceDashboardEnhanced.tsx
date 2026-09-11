@@ -106,12 +106,12 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
         console.log('Alerts endpoint not available');
       }
 
-      // Fetch Work Orders
+      // Fetch SPK
       try {
         const workOrdersResponse = await api.get('/api/maintenance/work-orders/summary');
         setWorkOrders(workOrdersResponse.data.work_orders || []);
       } catch (e) {
-        console.log('Work orders endpoint not available');
+        console.log('SPK endpoint not available');
       }
 
       // Fetch Trends
@@ -189,7 +189,7 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Maintenance Dashboard</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard Maintenance</h1>
           <p className="text-gray-600 dark:text-gray-300">Monitor equipment performance and maintenance activities</p>
         </div>
         <div className="flex items-center gap-4">
@@ -217,7 +217,7 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Work Orders</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total SPK</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{kpis.total_work_orders || 0}</p>
             </div>
             <div className="p-3 bg-blue-100 rounded-lg">
@@ -322,7 +322,7 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
         </div>
       </div>
 
-      {/* Alerts and Work Orders */}
+      {/* Alerts and SPK */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Active Alerts */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
@@ -356,18 +356,18 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
           </div>
         </div>
 
-        {/* Recent Work Orders */}
+        {/* Recent SPK */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Recent Work Orders</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Recent SPK</h3>
             <Settings className="h-5 w-5 text-gray-400" />
           </div>
           <div className="space-y-4">
             {workOrders.length === 0 ? (
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <Calendar className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                <p>No work orders</p>
-                <p className="text-sm">Create your first work order</p>
+                <p>No SPK</p>
+                <p className="text-sm">Create your first SPK</p>
               </div>
             ) : (
               workOrders.slice(0, 5).map((order) => (
@@ -482,7 +482,7 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
           </button>
           <button className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors">
             <CheckCircle className="h-5 w-5 text-gray-400 mr-2" />
-            <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Complete Work Order</span>
+            <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Complete SPK</span>
           </button>
           <button className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-colors">
             <AlertTriangle className="h-5 w-5 text-gray-400 mr-2" />

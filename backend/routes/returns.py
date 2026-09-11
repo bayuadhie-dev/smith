@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db, CustomerReturn, ReturnItem, ReturnQCRecord, ReturnDisposition
 from models import SalesOrder, Customer, Product, User, Inventory, WasteRecord
 from utils.i18n import success_response, error_response, get_message
@@ -15,6 +16,7 @@ returns_bp = Blueprint('returns', __name__)
 
 @returns_bp.route('/', methods=['GET'])
 @jwt_required()
+@require_permission('returns.view')
 def get_returns():
     """Get all customer returns with filtering"""
     try:
@@ -56,6 +58,7 @@ def get_returns():
 
 @returns_bp.route('/', methods=['POST'])
 @jwt_required()
+@require_permission('returns.create')
 def create_return():
     """Create new customer return"""
     try:
@@ -126,6 +129,7 @@ def create_return():
 
 @returns_bp.route('/<int:id>', methods=['GET'])
 @jwt_required()
+@require_permission('returns.view')
 def get_return(id):
     """Get return details"""
     try:
@@ -186,6 +190,7 @@ def get_return(id):
 
 @returns_bp.route('/<int:return_id>/qc', methods=['POST'])
 @jwt_required()
+@require_permission('returns.create')
 def create_qc_inspection():
     """Create QC inspection for return"""
     try:
@@ -251,6 +256,7 @@ def create_qc_inspection():
 
 @returns_bp.route('/<int:return_id>/disposition', methods=['POST'])
 @jwt_required()
+@require_permission('returns.create')
 def create_disposition():
     """Create disposition for return items"""
     try:
@@ -299,40 +305,66 @@ def create_disposition():
         return jsonify({'error': str(e)}), 500
 
 def _process_disposition(disposition, return_item):
-    """Process disposition based on type"""
-    try:
-        if disposition.disposition_type == 'warehouse':
-            # Add back to inventory
-            inventory = Inventory.query.filter_by(
+    """Process disposition based on type.
+    Rewritten - the previous version passed keyword args (product_id/location/
+    quantity on Inventory; product_id/waste_type/source on WasteRecord) that
+    don't exist on either model, so both branches would TypeError the instant
+    they ran. Never caught because the bug was masked by the bare `except`
+    below silently swallowing it."""
+    from models.warehouse import WarehouseLocation
+    from models.waste import WasteCategory
+
+    # No bare except here (2026-09-11 fix) - a failure processing a
+    # disposition (bad warehouse_location, DB error, etc) must surface to the
+    # caller and roll back the whole return, not fail silently while the
+    # return still gets marked 'processed' anyway. The endpoint that calls
+    # this already wraps everything in its own try/except + rollback.
+    if disposition.disposition_type == 'warehouse':
+        location = WarehouseLocation.query.filter_by(location_code=disposition.warehouse_location).first()
+        if not location:
+            raise ValueError(f"Lokasi gudang '{disposition.warehouse_location}' tidak ditemukan")
+
+        inventory = Inventory.query.filter_by(
+            product_id=return_item.product_id,
+            location_id=location.id
+        ).first()
+
+        if inventory:
+            inventory.quantity_on_hand = float(inventory.quantity_on_hand or 0) + disposition.quantity
+            inventory.quantity_available = float(inventory.quantity_available or 0) + disposition.quantity
+        else:
+            inventory = Inventory(
                 product_id=return_item.product_id,
-                location=disposition.warehouse_location
-            ).first()
-            
-            if inventory:
-                inventory.quantity_on_hand += disposition.quantity
-            else:
-                inventory = Inventory(
-                    product_id=return_item.product_id,
-                    location=disposition.warehouse_location,
-                    quantity=disposition.quantity
-                )
-                db.session.add(inventory)
-                
-        elif disposition.disposition_type == 'waste':
-            # Create waste record
-            waste_record = WasteRecord(
-                product_id=return_item.product_id,
-                quantity=disposition.quantity,
-                waste_type=disposition.waste_category or 'defective_return',
-                source='customer_return',
-                disposal_method='pending',
-                notes=f"From return {return_item.customer_return.return_number}",
-                recorded_by=disposition.processed_by
+                location_id=location.id,
+                quantity_on_hand=disposition.quantity,
+                quantity_available=disposition.quantity,
+                stock_status='quarantine',  # returned goods need QC release, not auto-available
             )
-            db.session.add(waste_record)
-            
-    except Exception as e:
-        print(f"Error processing disposition: {e}")
+            db.session.add(inventory)
+
+    elif disposition.disposition_type == 'waste':
+        category_name = disposition.waste_category or 'Customer Return - Defective'
+        category = WasteCategory.query.filter(
+            db.or_(WasteCategory.code == category_name, WasteCategory.name == category_name)
+        ).first()
+        if not category:
+            category = WasteCategory(
+                code=category_name[:50], name=category_name, waste_type='general_waste',
+            )
+            db.session.add(category)
+            db.session.flush()
+
+        waste_record = WasteRecord(
+            record_number=generate_number('WR', WasteRecord, 'record_number'),
+            category_id=category.id,
+            waste_date=get_local_today(),
+            product_id=return_item.product_id,
+            quantity=disposition.quantity,
+            uom=return_item.product.primary_uom if return_item.product else 'PCS',
+            reason=f"Dari retur {return_item.customer_return.return_number}",
+            recorded_by=disposition.processed_by,
+        )
+        db.session.add(waste_record)
 
 # ===============================
 # RETURN ANALYTICS
@@ -340,6 +372,7 @@ def _process_disposition(disposition, return_item):
 
 @returns_bp.route('/analytics', methods=['GET'])
 @jwt_required()
+@require_permission('returns.view')
 def get_return_analytics():
     """Get return analytics and metrics"""
     try:
