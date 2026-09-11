@@ -22,6 +22,31 @@ class Material(db.Model):
     is_hazardous = db.Column(db.Boolean, default=False, nullable=False)
     storage_conditions = db.Column(db.Text, nullable=True)  # temperature, humidity requirements
     expiry_days = db.Column(db.Integer, nullable=True)  # shelf life in days
+
+    # Safety Stock (proactive buffer from Rolling Forecast) - manual entry by master data staff.
+    # NULL = not used for this material, falls back to MRP-only behavior (not the same as 0).
+    # Distinct from min_stock_level/reorder_point above, which are reactive warehouse-report
+    # thresholds only - unrelated to MRP/forecast calculation.
+    safety_stock_qty = db.Column(db.Numeric(15, 2), nullable=True)
+    safety_stock_days = db.Column(db.Integer, nullable=True)  # horizon used to match relevant forecasts
+    is_excluded_from_mrp = db.Column(db.Boolean, default=False, nullable=False)  # skip MRP + Safety Stock entirely (staff hold)
+
+    # ===== Master Data page fields =====
+    kelompok = db.Column(db.String(100), nullable=True)  # free-text tag from Excel "Kelompok" column
+    ppn_code = db.Column(db.String(5), nullable=True)  # Excel "PPN" column: Y=11%, A=1.1%, B=1.2%, L=12% (see utils/tax_helpers.py)
+    erp_approval = db.Column(db.Boolean, default=True, nullable=False)  # True: incoming batches start as quarantine (needs QC release); False: auto-released
+
+    # Account Preferences (Barang & Jasa, per-item override), same 3-level fallback pattern as Product
+    akun_persediaan_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
+    akun_penjualan_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
+    akun_retur_penjualan_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
+    akun_diskon_penjualan_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
+    akun_barang_terkirim_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
+    akun_hpp_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
+    akun_retur_pembelian_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
+    akun_beban_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
+    akun_pembelian_belum_tertagih_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -71,7 +96,27 @@ class Product(db.Model):
     is_sellable = db.Column(db.Boolean, default=True, nullable=False)
     is_purchasable = db.Column(db.Boolean, default=True, nullable=False)
     is_producible = db.Column(db.Boolean, default=False, nullable=False)
-    lead_time_days = db.Column(db.Integer, default=0)
+    lead_time_days = db.Column(db.Integer, default=0)  # order-to-delivery lead time to customer
+
+    # ===== Master Data page fields =====
+    kelompok = db.Column(db.String(100), nullable=True)  # free-text tag from Excel "Kelompok" column
+    ppn_code = db.Column(db.String(5), nullable=True)  # Excel "PPN" column: Y=11%, A=1.1%, B=1.2%, L=12% (see utils/tax_helpers.py)
+    erp_approval = db.Column(db.Boolean, default=True, nullable=False)  # True: incoming batches start as quarantine (needs QC release); False: auto-released
+    self_life_days = db.Column(db.Integer, nullable=True)  # shelf life for finished goods / components
+    retest_period_days = db.Column(db.Integer, nullable=True)  # shorter re-test window for WIP (Barang Dalam Penyelesaian)
+
+    # ===== Account Preferences (Barang & Jasa 9-slot, per-item override) =====
+    # All nullable: 3-level fallback is item override (here) -> category default
+    # (category_account_defaults) -> global default (global_account_defaults).
+    akun_persediaan_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
+    akun_penjualan_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
+    akun_retur_penjualan_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
+    akun_diskon_penjualan_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
+    akun_barang_terkirim_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
+    akun_hpp_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
+    akun_retur_pembelian_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
+    akun_beban_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
+    akun_pembelian_belum_tertagih_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

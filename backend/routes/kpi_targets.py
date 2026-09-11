@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db, KPITarget, seed_kpi_targets
 from datetime import datetime
 from utils.timezone import get_local_now, get_local_today
@@ -9,6 +10,7 @@ kpi_targets_bp = Blueprint('kpi_targets', __name__)
 
 @kpi_targets_bp.route('', methods=['GET'])
 @jwt_required()
+@require_permission('settings.view')
 def get_kpi_targets():
     """Get all KPI targets"""
     try:
@@ -36,6 +38,7 @@ def get_kpi_targets():
 
 @kpi_targets_bp.route('/<int:id>', methods=['GET'])
 @jwt_required()
+@require_permission('settings.view')
 def get_kpi_target(id):
     """Get single KPI target"""
     try:
@@ -54,6 +57,7 @@ def get_kpi_target(id):
 
 @kpi_targets_bp.route('/<int:id>', methods=['PUT'])
 @jwt_required()
+@require_permission('settings.edit')
 def update_kpi_target(id):
     """Update KPI target"""
     try:
@@ -93,6 +97,7 @@ def update_kpi_target(id):
 
 @kpi_targets_bp.route('', methods=['POST'])
 @jwt_required()
+@require_permission('settings.view')
 def create_kpi_target():
     """Create new KPI target"""
     try:
@@ -140,6 +145,7 @@ def create_kpi_target():
 
 @kpi_targets_bp.route('/<int:id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('settings.view')
 def delete_kpi_target(id):
     """Delete KPI target (soft delete)"""
     try:
@@ -163,6 +169,7 @@ def delete_kpi_target(id):
 
 @kpi_targets_bp.route('/seed', methods=['POST'])
 @jwt_required()
+@require_permission('settings.view')
 def seed_defaults():
     """Seed default KPI targets"""
     try:
@@ -177,6 +184,7 @@ def seed_defaults():
 
 @kpi_targets_bp.route('/by-code/<string:code>', methods=['GET'])
 @jwt_required()
+@require_permission('settings.view')
 def get_kpi_by_code(code):
     """Get KPI target by code"""
     try:

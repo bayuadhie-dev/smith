@@ -10,14 +10,21 @@ Features:
 - Deep linking to modules
 """
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import _get_user_permissions
+import difflib
 from models import db
 from models.product import Product, Material
 from models.warehouse import Inventory, WarehouseLocation
 from models.sales import SalesOrder, SalesOrderItem, Customer
 from models.purchasing import PurchaseOrder, PurchaseOrderItem, Supplier
-from models.production import WorkOrder, Machine, BillOfMaterials, BOMItem
+from models.production import WorkOrder, Machine, BillOfMaterials, BOMItem, ShiftProduction, PackingList
+from models.dcc import DccDocument
+from models.expense import Expense
+from models.waste import WasteRecord
+from models.returns import CustomerReturn
+from models.approval_workflow import ApprovalWorkflow
 from models.maintenance import MaintenanceRecord
 from models.user import User
 # Finance models
@@ -194,6 +201,13 @@ INTENT_KEYWORDS = {
     
     # Production
     'work_order': ['wo', 'work order', 'produksi', 'production', 'manufacturing'],
+    'shift': ['shift', 'hasil shift', 'shift kerja', 'shift produksi', 'laporan shift'],
+    'packing_list': ['packing list', 'packing', 'karton', 'pengepakan'],
+    'dcc': ['dcc', 'dokumen terkendali', 'document control', 'daftar dokumen', 'daftar induk dokumen'],
+    'expense': ['expense', 'reimbursement', 'klaim biaya', 'nota', 'pengeluaran karyawan', 'reimburse'],
+    'waste': ['waste', 'limbah', 'scrap', 'buangan', 'sampah produksi'],
+    'return': ['retur', 'return barang', 'pengembalian barang', 'komplain customer'],
+    'approval': ['approval', 'persetujuan', 'menunggu approve', 'pending approval', 'belum di-approve'],
     'maintenance': ['maintenance', 'perawatan', 'perbaikan', 'repair', 'service'],
     
     # Finance
@@ -221,26 +235,124 @@ INTENT_KEYWORDS = {
     'rd': ['r&d', 'rd', 'riset', 'research', 'development', 'pengembangan', 'experiment', 'eksperimen'],
 }
 
+# Which RBAC module.view permission an intent/slash-command needs before its
+# handler is allowed to touch the database. Intents not listed here (e.g.
+# 'general') carry no restriction - they don't read anything sensitive.
+INTENT_PERMISSION_MAP = {
+    'bom': 'bom', 'stock': 'inventory', 'material': 'materials', 'product': 'products',
+    'purchase_order': 'purchase_orders', 'sales': 'sales_orders', 'supplier': 'suppliers',
+    'customer': 'customers', 'work_order': 'work_orders', 'shift': 'production', 'maintenance': 'maintenance',
+    'invoice': 'finance', 'payment': 'finance', 'finance': 'finance',
+    'employee': 'employees', 'attendance': 'attendance', 'department': 'hr',
+    'quality': 'quality', 'oee': 'oee', 'machine': 'oee',
+    'shipping': 'shipping', 'tracking': 'shipping', 'rd': 'rd',
+    'packing_list': 'shipping', 'dcc': 'dcc', 'expense': 'expense',
+    'waste': 'waste', 'return': 'returns', 'approval': 'approval',
+}
+
+SLASH_PERMISSION_MAP = {
+    '/stock': 'inventory', '/sales': 'sales_orders', '/production': 'work_orders',
+    '/po': 'purchase_orders', '/oee': 'oee', '/bom': 'bom', '/employee': 'employees',
+}
+
+
+def _user_can_access(module, perms, bypass):
+    return bypass or (module is not None and f'{module}.view' in perms)
+
+
+def _access_denied_response(module_label):
+    return {
+        'message': f"🔒 Waduh, kamu belum punya akses ke data **{module_label}** nih boss. Hubungi admin kalau butuh akses ini ya.",
+        'links': [],
+        'data': None
+    }
+
+
+def _chat_context_key(user_id):
+    return f'erp_ai_chat_ctx:{user_id}'
+
+
+def _get_chat_context(user_id):
+    """Short-term memory of the user's last topic, so a vague follow-up
+    ('yang stocknya rendah aja gimana?') can still resolve to something."""
+    try:
+        cache = current_app.extensions.get('cache_instance')
+        if cache:
+            return cache.get(_chat_context_key(user_id))
+    except Exception:
+        pass
+    return None
+
+
+def _save_chat_context(user_id, intent, search_term):
+    try:
+        cache = current_app.extensions.get('cache_instance')
+        if cache and intent and intent != 'general':
+            cache.set(_chat_context_key(user_id), {'intent': intent, 'search_term': search_term}, timeout=300)
+    except Exception:
+        pass
+
+
+# Words that signal "this message is a follow-up to what we were just
+# talking about", not a fresh topic on its own.
+FOLLOWUP_HINTS = [
+    'itu', 'nya', 'yang mana', 'gimana kalau', 'kalau yang', 'yang lain',
+    'lebih detail', 'detailnya', 'selain itu', 'terus', 'trus', 'lanjut',
+    'yang tadi', 'tadi', 'itu gimana', 'itu berapa'
+]
+
+
 def detect_intent(query: str) -> list:
-    """Detect user intent from query"""
+    """Detect user intent from query. Exact keyword hits are tried first;
+    if nothing matches, falls back to fuzzy (typo-tolerant) matching against
+    the same keyword list so small typos ("stcok", "pnjualan") still work."""
     query_lower = query.lower()
     intents = []
-    
+
     for intent, keywords in INTENT_KEYWORDS.items():
         for keyword in keywords:
             if keyword in query_lower:
                 if intent not in intents:
                     intents.append(intent)
                 break
-    
+
+    if not intents:
+        # Common connector/filler words are excluded - they're short and
+        # frequently 1-edit-away from a real keyword ("yang" ~ "uang"),
+        # which causes false-positive fuzzy matches otherwise.
+        _fuzzy_stopwords = {
+            'yang', 'dan', 'atau', 'ini', 'itu', 'ada', 'aja', 'saja', 'dong',
+            'deh', 'nih', 'sih', 'gimana', 'kalau', 'kalo', 'sama', 'juga',
+            'akan', 'sudah', 'udah', 'belum', 'buat', 'dari', 'untuk', 'dengan',
+            'lain', 'lainnya', 'bisa', 'kah', 'apa', 'apakah', 'gak', 'nggak',
+        }
+        tokens = [
+            t for t in re.sub(r'[^\w\s]', ' ', query_lower).split()
+            if len(t) >= 4 and t not in _fuzzy_stopwords
+        ]
+        scores = {}
+        for token in tokens:
+            for intent, keywords in INTENT_KEYWORDS.items():
+                match = difflib.get_close_matches(token, keywords, n=1, cutoff=0.82)
+                if match:
+                    scores[intent] = scores.get(intent, 0) + 1
+        if scores:
+            intents = [i for i, _ in sorted(scores.items(), key=lambda x: -x[1])]
+
     return intents if intents else ['general']
 
 def extract_search_term(query: str) -> str:
-    """Extract specific item name from query"""
+    """Extract specific item name from query. A recognizable product/machine
+    code (e.g. ABC-1234, MC-01) is a far more reliable search key than
+    leftover free-text words, so it takes priority when present."""
+    code_match = REGEX_PATTERNS['product_code'].search(query) or REGEX_PATTERNS['machine_code'].search(query)
+    if code_match:
+        return code_match.group(0).strip()
+
     # Remove punctuation first
     import re
     clean_query = re.sub(r'[?!.,;:\'"()]', '', query)
-    
+
     # Only remove very common question words, keep product/material names
     stop_words = [
         'stok', 'stock', 'berapa', 'apa', 'gimana', 'bagaimana', 
@@ -257,7 +369,13 @@ def extract_search_term(query: str) -> str:
         'pelanggan', 'vendor', 'po', 'so', 'wo', 'purchase', 'order',
         'sales', 'work', 'hari', 'bulan', 'tahun', 'minggu', 'kemarin',
         'besok', 'lalu', 'depan', 'rendah', 'tinggi', 'semua', 'total',
-        'jumlah', 'berapa', 'pending', 'aktif', 'active', 'belum', 'lunas'
+        'jumlah', 'berapa', 'pending', 'aktif', 'active', 'belum', 'lunas',
+        'packing', 'list', 'karton', 'pengepakan', 'dcc', 'dokumen', 'daftar',
+        'terkendali', 'induk', 'expense', 'reimbursement', 'klaim', 'biaya',
+        'nota', 'reimburse', 'waste', 'limbah', 'scrap', 'buangan', 'sampah',
+        'retur', 'return', 'pengembalian', 'barang', 'komplain', 'approval',
+        'persetujuan', 'menunggu', 'diapprove', 'approve', 'terbaru', 'shift',
+        'kerja'
     ]
     
     words = clean_query.lower().split()
@@ -266,11 +384,43 @@ def extract_search_term(query: str) -> str:
     
     return ' '.join(search_words) if search_words else ''
 
+INDONESIAN_MONTHS = {
+    'januari': 1, 'februari': 2, 'maret': 3, 'april': 4, 'mei': 5, 'juni': 6,
+    'juli': 7, 'agustus': 8, 'september': 9, 'oktober': 10, 'november': 11, 'desember': 12,
+}
+
+
+def _extract_absolute_date(query: str):
+    """Parse an explicit date out of the query - '23 agustus 2026',
+    '23/08/2026', '23-8-2026'. Returns a date or None."""
+    q = query.lower()
+    m = re.search(r'\b(\d{1,2})\s+(' + '|'.join(INDONESIAN_MONTHS.keys()) + r')\s+(\d{4})\b', q)
+    if m:
+        day, month_name, year = int(m.group(1)), m.group(2), int(m.group(3))
+        try:
+            return datetime(year, INDONESIAN_MONTHS[month_name], day).date()
+        except ValueError:
+            return None
+    m = REGEX_PATTERNS['date_range'].search(query)
+    if m:
+        day, month = int(m.group(1)), int(m.group(2))
+        year_part = m.group(3)
+        year = int(year_part) if year_part else datetime.now().year
+        if year < 100:
+            year += 2000
+        try:
+            return datetime(year, month, day).date()
+        except ValueError:
+            return None
+    return None
+
+
 def extract_time_range(query: str) -> tuple:
-    """Extract time range from query"""
+    """Extract time range from query - relative phrases first, then falls
+    back to an explicit date if one is written out ('23 agustus 2026')."""
     query_lower = query.lower()
     today = get_local_now().date()
-    
+
     if 'hari ini' in query_lower or 'today' in query_lower:
         return today, today
     elif 'kemarin' in query_lower or 'yesterday' in query_lower:
@@ -285,7 +435,11 @@ def extract_time_range(query: str) -> tuple:
     elif 'tahun ini' in query_lower or 'this year' in query_lower:
         start_year = today.replace(month=1, day=1)
         return start_year, today
-    
+
+    explicit_date = _extract_absolute_date(query)
+    if explicit_date:
+        return explicit_date, explicit_date
+
     return None, None
 
 def format_currency(value):
@@ -817,96 +971,123 @@ def handle_chart_request(query: str) -> dict:
         'data': None
     }
 
+# Priority order used to pick ONE primary intent out of everything detected
+# in a query, and the handler + Indonesian label + permission-map key that
+# goes with each. Order matters - mirrors the old elif chain.
+INTENT_DISPATCH = [
+    ('bom', lambda q, s, sd, ed: handle_bom_query(q, s), 'BOM'),
+    ('material', lambda q, s, sd, ed: handle_material_query(q, s), 'Material'),
+    ('product', lambda q, s, sd, ed: handle_product_query(q, s), 'Produk'),
+    ('stock', lambda q, s, sd, ed: handle_stock_query(q, s), 'Stok/Inventory'),
+    ('purchase_order', lambda q, s, sd, ed: handle_po_query(q, s, sd, ed), 'Purchase Order'),
+    ('sales', lambda q, s, sd, ed: handle_sales_query(q, s, sd, ed), 'Sales'),
+    ('work_order', lambda q, s, sd, ed: handle_wo_query(q, s, sd, ed), 'Work Order'),
+    ('shift', lambda q, s, sd, ed: handle_shift_query(q, s, sd, ed), 'Shift Produksi'),
+    ('packing_list', lambda q, s, sd, ed: handle_packing_list_query(q, s), 'Packing List'),
+    ('dcc', lambda q, s, sd, ed: handle_dcc_query(q, s), 'DCC'),
+    ('expense', lambda q, s, sd, ed: handle_expense_query(q, s, sd, ed), 'Expense'),
+    ('waste', lambda q, s, sd, ed: handle_waste_query(q, s, sd, ed), 'Waste'),
+    ('return', lambda q, s, sd, ed: handle_return_query(q, s, sd, ed), 'Returns'),
+    ('approval', lambda q, s, sd, ed: handle_approval_query(q, s), 'Approval'),
+    ('maintenance', lambda q, s, sd, ed: handle_maintenance_query(q, s), 'Maintenance'),
+    ('supplier', lambda q, s, sd, ed: handle_supplier_query(q, s), 'Supplier'),
+    ('customer', lambda q, s, sd, ed: handle_customer_query(q, s), 'Customer'),
+    ('invoice', lambda q, s, sd, ed: handle_invoice_query(q, s, sd, ed), 'Finance'),
+    ('payment', lambda q, s, sd, ed: handle_payment_query(q, s, sd, ed), 'Finance'),
+    ('finance', lambda q, s, sd, ed: handle_finance_query(q, sd, ed), 'Finance'),
+    ('employee', lambda q, s, sd, ed: handle_employee_query(q, s), 'Karyawan'),
+    ('attendance', lambda q, s, sd, ed: handle_attendance_query(q, s, sd, ed), 'Attendance'),
+    ('department', lambda q, s, sd, ed: handle_department_query(q, s), 'HR'),
+    ('quality', lambda q, s, sd, ed: handle_quality_query(q, s, sd, ed), 'Quality'),
+    ('oee', lambda q, s, sd, ed: handle_oee_query(q, s, sd, ed), 'OEE'),
+    ('machine', lambda q, s, sd, ed: handle_oee_query(q, s, sd, ed), 'OEE'),
+    ('shipping', lambda q, s, sd, ed: handle_shipping_query(q, s, sd, ed), 'Shipping'),
+    ('tracking', lambda q, s, sd, ed: handle_shipping_query(q, s, sd, ed), 'Shipping'),
+    ('rd', lambda q, s, sd, ed: handle_rd_query(q, s), 'R&D'),
+]
+
+
 @ai_assistant_bp.route('/query', methods=['POST'])
-@jwt_required(optional=True)
+@jwt_required()
 def process_query():
-    """Process user query and return relevant data"""
+    """Process user query and return relevant data - RBAC-filtered, typo
+    tolerant, and aware of the previous message in the same chat."""
     try:
+        current_user_id = get_jwt_identity()
+        current_user = db.session.get(User, int(current_user_id))
+        bypass = bool(current_user and (current_user.is_admin or getattr(current_user, 'is_super_admin', False)))
+        perms = _get_user_permissions(current_user) if current_user and not bypass else set()
+
         data = request.get_json()
         query = data.get('query', '').strip()
-        
+
         if not query:
             return jsonify({
-                'message': 'Halo boss! Mau tanya apa nih? 🤔\n\nKetik aja pertanyaannya, gue siap bantu!\n\n💡 *Coba ketik `/help` untuk lihat perintah yang tersedia*',
+                'message': 'Halo boss! Aku SMITH 🤖, mau tanya apa nih? 🤔\n\nKetik aja pertanyaannya, gue siap bantu!\n\n💡 *Coba ketik `/help` untuk lihat perintah yang tersedia*',
                 'links': [],
                 'data': None
             })
-        
+
         # Check for slash commands first
         if query.startswith('/'):
+            parts = query.split(maxsplit=1)
+            command = parts[0].lower()
+            resolved_command = None
+            for cmd, config in SLASH_COMMANDS.items():
+                if command == cmd or command in config.get('aliases', []):
+                    resolved_command = cmd
+                    break
+            needed_module = SLASH_PERMISSION_MAP.get(resolved_command)
+            if needed_module and not _user_can_access(needed_module, perms, bypass):
+                return jsonify(_access_denied_response(resolved_command.lstrip('/')))
             return jsonify(handle_slash_command(query))
-        
+
         # Check for chart/graph requests
         if any(kw in query.lower() for kw in ['grafik', 'chart', 'graph', 'tampilkan grafik', 'lihat grafik']):
+            if not _user_can_access('reports', perms, bypass):
+                return jsonify(_access_denied_response('Reports'))
             return jsonify(handle_chart_request(query))
-        
+
         intents = detect_intent(query)
         start_date, end_date = extract_time_range(query)
         search_term = extract_search_term(query)
-        
+
+        # Vague follow-up ("itu gimana?", "yang lain ada?") with nothing new
+        # detected - fall back to what we were just talking about.
+        if intents == ['general']:
+            is_followup_shaped = not search_term or any(h in query.lower() for h in FOLLOWUP_HINTS)
+            if is_followup_shaped:
+                prior = _get_chat_context(current_user_id)
+                if prior:
+                    intents = [prior['intent']]
+                    if not search_term:
+                        search_term = prior.get('search_term') or ''
+
         print(f"=== AI ASSISTANT DEBUG ===")
         print(f"Query: {query}")
         print(f"Intents: {intents}")
         print(f"Search term: {search_term}")
-        
-        response = {
-            'message': '',
-            'links': [],
-            'data': None
-        }
-        
-        # Process based on intent - prioritize specific queries
-        if 'bom' in intents:
-            response = handle_bom_query(query, search_term)
-        elif 'material' in intents:
-            response = handle_material_query(query, search_term)
-        elif 'product' in intents:
-            response = handle_product_query(query, search_term)
-        elif 'stock' in intents:
-            response = handle_stock_query(query, search_term)
-        elif 'purchase_order' in intents:
-            response = handle_po_query(query, search_term, start_date, end_date)
-        elif 'sales' in intents:
-            response = handle_sales_query(query, search_term, start_date, end_date)
-        elif 'work_order' in intents:
-            response = handle_wo_query(query, search_term, start_date, end_date)
-        elif 'maintenance' in intents:
-            response = handle_maintenance_query(query, search_term)
-        elif 'supplier' in intents:
-            response = handle_supplier_query(query, search_term)
-        elif 'customer' in intents:
-            response = handle_customer_query(query, search_term)
-        # Finance
-        elif 'invoice' in intents:
-            response = handle_invoice_query(query, search_term, start_date, end_date)
-        elif 'payment' in intents:
-            response = handle_payment_query(query, search_term, start_date, end_date)
-        elif 'finance' in intents:
-            response = handle_finance_query(query, start_date, end_date)
-        # HR
-        elif 'employee' in intents:
-            response = handle_employee_query(query, search_term)
-        elif 'attendance' in intents:
-            response = handle_attendance_query(query, search_term, start_date, end_date)
-        elif 'department' in intents:
-            response = handle_department_query(query, search_term)
-        # Quality
-        elif 'quality' in intents:
-            response = handle_quality_query(query, search_term, start_date, end_date)
-        # OEE
-        elif 'oee' in intents or 'machine' in intents:
-            response = handle_oee_query(query, search_term, start_date, end_date)
-        # Shipping
-        elif 'shipping' in intents or 'tracking' in intents:
-            response = handle_shipping_query(query, search_term, start_date, end_date)
-        # R&D
-        elif 'rd' in intents:
-            response = handle_rd_query(query, search_term)
-        else:
+
+        response = None
+        chosen_intent = None
+        for intent_key, handler, label in INTENT_DISPATCH:
+            if intent_key in intents:
+                module = INTENT_PERMISSION_MAP.get(intent_key)
+                if not _user_can_access(module, perms, bypass):
+                    response = _access_denied_response(label)
+                    chosen_intent = None
+                    break
+                response = handler(query, search_term, start_date, end_date)
+                chosen_intent = intent_key
+                break
+
+        if response is None:
             response = handle_general_query(query)
-        
+
+        _save_chat_context(current_user_id, chosen_intent, search_term)
+
         return jsonify(response)
-        
+
     except Exception as e:
         print(f"AI Assistant Error: {e}")
         import traceback
@@ -1600,6 +1781,267 @@ def handle_sales_query(query: str, search_term: str, start_date, end_date) -> di
             'data': None
         }
 
+def handle_shift_query(query: str, search_term: str, start_date, end_date) -> dict:
+    """Handle Shift Production result queries (e.g. 'hasil shift tanggal
+    23 agustus 2026'). Uses the date extracted by extract_time_range -
+    supports 'hari ini'/'kemarin' as well as an explicit written date."""
+    try:
+        q = ShiftProduction.query
+        if start_date and end_date:
+            q = q.filter(ShiftProduction.production_date >= start_date,
+                         ShiftProduction.production_date <= end_date)
+        else:
+            today = get_local_now().date()
+            q = q.filter(ShiftProduction.production_date == today)
+            start_date = end_date = today
+
+        records = q.order_by(ShiftProduction.production_date.desc()).limit(20).all()
+
+        if not records:
+            date_label = start_date.strftime('%d %b %Y') if start_date == end_date else f"{start_date.strftime('%d %b %Y')} - {end_date.strftime('%d %b %Y')}"
+            return {
+                'message': f"📅 Gak ada data shift produksi buat tanggal **{date_label}** boss.",
+                'links': [{'label': 'Shift Input', 'href': '/app/production/shift-input'}],
+                'data': None
+            }
+
+        total_actual = sum(float(r.actual_quantity or 0) for r in records)
+        total_good = sum(float(r.good_quantity or 0) for r in records)
+        total_reject = sum(float(r.reject_quantity or 0) for r in records)
+
+        data = [{
+            'Tanggal': r.production_date.strftime('%d-%m-%Y'),
+            'Shift': r.shift,
+            'Mesin': r.machine.code if r.machine else '-',
+            'Produk': (r.product.name[:25] + '..') if r.product and len(r.product.name) > 25 else (r.product.name if r.product else '-'),
+            'Actual': int(r.actual_quantity or 0),
+            'Good': int(r.good_quantity or 0),
+            'Reject': int(r.reject_quantity or 0),
+        } for r in records]
+
+        date_label = start_date.strftime('%d %b %Y') if start_date == end_date else f"{start_date.strftime('%d %b %Y')} - {end_date.strftime('%d %b %Y')}"
+        msg = f"🏭 **Hasil Shift - {date_label}**\n\n"
+        msg += f"• Jumlah record: **{len(records)}**\n"
+        msg += f"• Total actual: **{int(total_actual):,}**\n".replace(',', '.')
+        msg += f"• Total good: **{int(total_good):,}**\n".replace(',', '.')
+        msg += f"• Total reject: **{int(total_reject):,}**\n".replace(',', '.')
+
+        return {
+            'message': msg,
+            'links': [{'label': 'Shift Input', 'href': '/app/production/shift-input'}],
+            'data': data
+        }
+    except Exception as e:
+        print(f"[handle_shift_query] error: {e}")
+        return {
+            'message': random.choice(ERROR_RESPONSES),
+            'links': [{'label': 'Shift Input', 'href': '/app/production/shift-input'}],
+            'data': None
+        }
+
+
+def handle_packing_list_query(query: str, search_term: str) -> dict:
+    """Handle Packing List queries"""
+    try:
+        q = PackingList.query
+        if search_term:
+            q = q.filter(PackingList.product_name.ilike(f'%{search_term}%'))
+        lists = q.order_by(PackingList.id.desc()).limit(10).all()
+
+        if not lists:
+            return {
+                'message': "📦 Gak ada packing list yang cocok boss.",
+                'links': [{'label': 'Packing List', 'href': '/app/production/packing-list'}],
+                'data': None
+            }
+
+        data = [{
+            'WO': pl.work_order.wo_number if pl.work_order else '-',
+            'Produk': pl.product_name,
+            'Total Karton': pl.total_karton or 0,
+        } for pl in lists]
+
+        return {
+            'message': f"📦 Ada **{len(lists)} Packing List** boss:",
+            'links': [{'label': 'Lihat Packing List', 'href': '/app/production/packing-list'}],
+            'data': data
+        }
+    except Exception as e:
+        print(f"[handle_packing_list_query] error: {e}")
+        return {'message': random.choice(ERROR_RESPONSES), 'links': [], 'data': None}
+
+
+def handle_dcc_query(query: str, search_term: str) -> dict:
+    """Handle DCC (Document Control) queries"""
+    try:
+        q = DccDocument.query.filter_by(is_active=True)
+        if search_term:
+            q = q.filter(or_(
+                DccDocument.title.ilike(f'%{search_term}%'),
+                DccDocument.document_number.ilike(f'%{search_term}%')
+            ))
+        docs = q.order_by(DccDocument.document_number).limit(10).all()
+
+        if not docs:
+            return {
+                'message': "📄 Gak ada dokumen terkendali yang cocok boss.",
+                'links': [{'label': 'DCC', 'href': '/app/dcc'}],
+                'data': None
+            }
+
+        data = [{
+            'No Dokumen': d.document_number,
+            'Judul': (d.title[:40] + '..') if len(d.title) > 40 else d.title,
+            'Level': d.document_level,
+            'Departemen': d.department_code,
+        } for d in docs]
+
+        return {
+            'message': f"📄 Ada **{len(docs)} dokumen terkendali** boss:",
+            'links': [{'label': 'Lihat DCC', 'href': '/app/dcc'}],
+            'data': data
+        }
+    except Exception as e:
+        print(f"[handle_dcc_query] error: {e}")
+        return {'message': random.choice(ERROR_RESPONSES), 'links': [], 'data': None}
+
+
+def handle_expense_query(query: str, search_term: str, start_date, end_date) -> dict:
+    """Handle Expense/Reimbursement queries"""
+    try:
+        q = Expense.query
+        query_lower = query.lower()
+        if any(w in query_lower for w in ['belum', 'pending', 'menunggu']):
+            q = q.filter(Expense.status.in_(['draft', 'submitted']))
+        if start_date and end_date:
+            q = q.filter(Expense.expense_date >= start_date, Expense.expense_date <= end_date)
+        expenses = q.order_by(Expense.expense_date.desc()).limit(10).all()
+
+        if not expenses:
+            return {
+                'message': "🧾 Gak ada klaim expense yang cocok boss.",
+                'links': [{'label': 'Expense', 'href': '/app/finance/expenses'}],
+                'data': None
+            }
+
+        total = sum(float(e.amount or 0) for e in expenses)
+        data = [{
+            'No': e.expense_number,
+            'Karyawan': e.employee_name or '-',
+            'Kategori': e.expense_category,
+            'Jumlah': format_currency(e.amount),
+            'Status': e.status,
+        } for e in expenses]
+
+        return {
+            'message': f"🧾 Ada **{len(expenses)} klaim expense** boss, total **{format_currency(total)}**:",
+            'links': [{'label': 'Lihat Expense', 'href': '/app/finance/expenses'}],
+            'data': data
+        }
+    except Exception as e:
+        print(f"[handle_expense_query] error: {e}")
+        return {'message': random.choice(ERROR_RESPONSES), 'links': [], 'data': None}
+
+
+def handle_waste_query(query: str, search_term: str, start_date, end_date) -> dict:
+    """Handle Waste/Scrap queries"""
+    try:
+        q = WasteRecord.query
+        if start_date and end_date:
+            q = q.filter(WasteRecord.waste_date >= start_date, WasteRecord.waste_date <= end_date)
+        records = q.order_by(WasteRecord.waste_date.desc()).limit(10).all()
+
+        if not records:
+            return {
+                'message': "🗑️ Gak ada data waste yang cocok boss.",
+                'links': [{'label': 'Waste Management', 'href': '/app/waste'}],
+                'data': None
+            }
+
+        total_qty = sum(float(r.quantity or 0) for r in records)
+        data = [{
+            'Tanggal': r.waste_date.strftime('%d-%m-%Y'),
+            'Departemen': r.source_department or '-',
+            'Qty': float(r.quantity or 0),
+            'UOM': r.uom,
+            'Status': r.status,
+        } for r in records]
+
+        return {
+            'message': f"🗑️ Ada **{len(records)} record waste** boss, total qty **{total_qty:,.0f}**:".replace(',', '.'),
+            'links': [{'label': 'Lihat Waste', 'href': '/app/waste'}],
+            'data': data
+        }
+    except Exception as e:
+        print(f"[handle_waste_query] error: {e}")
+        return {'message': random.choice(ERROR_RESPONSES), 'links': [], 'data': None}
+
+
+def handle_return_query(query: str, search_term: str, start_date, end_date) -> dict:
+    """Handle Customer Return queries"""
+    try:
+        q = CustomerReturn.query
+        query_lower = query.lower()
+        if any(w in query_lower for w in ['belum', 'pending', 'proses']):
+            q = q.filter(CustomerReturn.status.in_(['received', 'qc_pending']))
+        returns = q.order_by(CustomerReturn.return_date.desc()).limit(10).all()
+
+        if not returns:
+            return {
+                'message': "↩️ Gak ada data retur yang cocok boss.",
+                'links': [{'label': 'Customer Returns', 'href': '/app/returns'}],
+                'data': None
+            }
+
+        data = [{
+            'No Retur': r.return_number,
+            'Customer': r.customer.company_name if r.customer else '-',
+            'Alasan': r.reason,
+            'Status': r.status,
+            'Nilai': format_currency(r.total_value),
+        } for r in returns]
+
+        return {
+            'message': f"↩️ Ada **{len(returns)} retur customer** boss:",
+            'links': [{'label': 'Lihat Returns', 'href': '/app/returns'}],
+            'data': data
+        }
+    except Exception as e:
+        print(f"[handle_return_query] error: {e}")
+        return {'message': random.choice(ERROR_RESPONSES), 'links': [], 'data': None}
+
+
+def handle_approval_query(query: str, search_term: str) -> dict:
+    """Handle pending Approval queries"""
+    try:
+        pending = ApprovalWorkflow.query.filter(
+            ApprovalWorkflow.status.in_(['pending_review', 'pending_approval'])
+        ).order_by(ApprovalWorkflow.id.desc()).limit(10).all()
+
+        if not pending:
+            return {
+                'message': "✅ Gak ada approval yang nunggu boss, semua udah kelar!",
+                'links': [{'label': 'Approval Center', 'href': '/app/approval'}],
+                'data': None
+            }
+
+        data = [{
+            'Tipe': a.transaction_type,
+            'No Transaksi': a.transaction_number or a.transaction_id,
+            'Status': a.status,
+            'Step': a.current_step or '-',
+        } for a in pending]
+
+        return {
+            'message': f"⏳ Ada **{len(pending)} approval** yang nunggu boss:",
+            'links': [{'label': 'Approval Center', 'href': '/app/approval'}],
+            'data': data
+        }
+    except Exception as e:
+        print(f"[handle_approval_query] error: {e}")
+        return {'message': random.choice(ERROR_RESPONSES), 'links': [], 'data': None}
+
+
 def handle_wo_query(query: str, search_term: str, start_date, end_date) -> dict:
     """Handle Work Order related queries"""
     query_lower = query.lower()
@@ -1894,9 +2336,44 @@ def handle_customer_query(query: str, search_term: str) -> dict:
             'data': None
         }
 
+GENERAL_QUERY_LLM_SYSTEM_PROMPT = (
+    "Nama kamu SMITH, asisten chat internal untuk sistem ERP pabrik. Kalau ditanya nama/siapa "
+    "kamu, jawab kamu SMITH. SELALU jawab dalam Bahasa "
+    "Indonesia santai, singkat (maks 2-3 kalimat), jangan pernah menolak menjawab pertanyaan "
+    "ringan atau sapaan. PENTING: kamu TIDAK punya akses ke data asli perusahaan (stok, "
+    "penjualan, keuangan, karyawan, dsb) - jangan pernah mengarang angka atau data bisnis "
+    "apapun. Kalau user menanyakan data spesifik, arahkan mereka untuk mengetik ulang dengan "
+    "kata kunci jelas (misal 'stok gula', 'sales hari ini', 'PO pending') supaya sistem bisa "
+    "carikan datanya, atau saranin ketik /help."
+)
+
+
 def handle_general_query(query: str) -> dict:
-    """Handle general queries"""
-    msg = "Halo boss! 👋 Aku AI Assistant ERP kamu.\n\n"
+    """Handle general/unmatched queries. Tries the tiny local LLM first for
+    a more natural reply (it never sees real ERP data, only rephrases /
+    chats), falls back to the static canned menu if the model isn't
+    available or errors out."""
+    try:
+        from utils.local_llm import is_available, generate_reply
+        if is_available():
+            reply = generate_reply(GENERAL_QUERY_LLM_SYSTEM_PROMPT, query, max_tokens=150)
+            if reply:
+                return {
+                    'message': reply,
+                    'links': [
+                        {'label': 'Dashboard', 'href': '/app'},
+                        {'label': 'Ketik /help untuk daftar perintah', 'href': '#'}
+                    ],
+                    'data': None
+                }
+    except Exception as e:
+        print(f"[local_llm] fallback to static message: {e}")
+
+    return _general_query_static_fallback()
+
+
+def _general_query_static_fallback() -> dict:
+    msg = "Halo boss! 👋 Aku **SMITH**, AI Assistant ERP kamu.\n\n"
     msg += "Aku bisa bantu kamu dengan:\n\n"
     msg += "📦 **Inventory**\n"
     msg += "• *'material POLYESTER'* - cek material\n"

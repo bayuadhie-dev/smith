@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db
 from models.workflow_integration import WorkflowStep, MRPRequirement, ProductionBuffer, WorkflowAutomation
 from models.sales import SalesOrder, SalesOrderItem
@@ -24,6 +25,7 @@ workflow_bp = Blueprint('workflow', __name__)
 
 @workflow_bp.route('/trigger/sales-order/<int:sales_order_id>', methods=['POST'])
 @jwt_required()
+@require_permission('approval.view')
 def trigger_sales_order_workflow(sales_order_id):
     """Trigger complete workflow from sales order confirmation"""
     try:
@@ -43,6 +45,7 @@ def trigger_sales_order_workflow(sales_order_id):
 
 @workflow_bp.route('/trigger/production-completion/<int:shift_production_id>', methods=['POST'])
 @jwt_required()
+@require_permission('approval.view')
 def trigger_production_completion_workflow(shift_production_id):
     """Trigger workflow when production is completed"""
     try:
@@ -65,6 +68,7 @@ def trigger_production_completion_workflow(shift_production_id):
 
 @workflow_bp.route('/mrp-requirements', methods=['GET'])
 @jwt_required()
+@require_permission('approval.view')
 def get_mrp_requirements():
     """Get all MRP requirements with filtering"""
     try:
@@ -112,6 +116,7 @@ def get_mrp_requirements():
 
 @workflow_bp.route('/mrp-requirements/<int:requirement_id>/analyze', methods=['POST'])
 @jwt_required()
+@require_permission('approval.view')
 def analyze_mrp_requirement(requirement_id):
     """Manually trigger analysis for specific MRP requirement"""
     try:
@@ -160,6 +165,7 @@ def analyze_mrp_requirement(requirement_id):
 
 @workflow_bp.route('/production-buffer', methods=['GET'])
 @jwt_required()
+@require_permission('approval.view')
 def get_production_buffer():
     """Get all production buffer records"""
     try:
@@ -201,6 +207,7 @@ def get_production_buffer():
 
 @workflow_bp.route('/production-buffer/<int:buffer_id>/move-to-warehouse', methods=['POST'])
 @jwt_required()
+@require_permission('approval.view')
 def move_buffer_to_warehouse(buffer_id):
     """Move buffer stock to warehouse"""
     try:
@@ -245,6 +252,7 @@ def move_buffer_to_warehouse(buffer_id):
 
 @workflow_bp.route('/workflow-steps', methods=['GET'])
 @jwt_required()
+@require_permission('approval.view')
 def get_workflow_steps():
     """Get workflow steps for tracking progress"""
     try:
@@ -288,6 +296,7 @@ def get_workflow_steps():
 
 @workflow_bp.route('/trigger/customer-return/<int:return_id>', methods=['POST'])
 @jwt_required()
+@require_permission('approval.view')
 def trigger_return_workflow(return_id):
     """Trigger workflow for customer return processing"""
     try:
@@ -332,6 +341,7 @@ def trigger_return_workflow(return_id):
 
 @workflow_bp.route('/dashboard', methods=['GET'])
 @jwt_required()
+@require_permission('approval.view')
 def get_workflow_dashboard():
     """Get workflow dashboard data"""
     try:
@@ -389,46 +399,9 @@ def get_workflow_dashboard():
 # MANUAL WORKFLOW CONTROLS
 # ===============================
 
-@workflow_bp.route('/manual/create-work-order-from-sales', methods=['POST'])
-@jwt_required()
-def manual_create_work_order_from_sales():
-    """Manually create work order from sales order"""
-    try:
-        data = request.get_json()
-        sales_order_id = data.get('sales_order_id')
-        product_id = data.get('product_id')
-        quantity = data.get('quantity')
-        
-        sales_order = db.session.get(SalesOrder, sales_order_id) or abort(404)
-        
-        # Create work order
-        work_order = WorkOrder(
-            wo_number=generate_number('WO', WorkOrder, 'wo_number'),
-            product_id=product_id,
-            quantity_to_produce=quantity,
-            sales_order_id=sales_order_id,
-            required_date=sales_order.delivery_date,
-            status='planned',
-            priority='normal',
-            workflow_status='manual_created'
-        )
-        db.session.add(work_order)
-        db.session.commit()
-        
-        return success_response(
-            message="Work order created successfully",
-            data={
-                'work_order_id': work_order.id,
-                'wo_number': work_order.wo_number
-            }
-        )
-        
-    except Exception as e:
-        db.session.rollback()
-        return error_response(f"Error creating work order: {str(e)}")
-
 @workflow_bp.route('/manual/trigger-quality-inspection', methods=['POST'])
 @jwt_required()
+@require_permission('approval.view')
 def manual_trigger_quality_inspection():
     """Manually trigger quality inspection for production"""
     try:

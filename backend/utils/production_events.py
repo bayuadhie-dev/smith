@@ -155,23 +155,43 @@ def register_production_events(app):
             except Exception as e:
                 print(f"✗ Failed to auto-close WIP Ledger: {str(e)}")
                 
-            # 2. Trigger Async WA Notification
-            import threading
-            from utils.production_notifications import trigger_wo_completion_whatsapp_notification
+            # 2. Queue WA Notification to fire AFTER commit actually completes
+            # (after_update fires during flush, not after commit - so we defer via session.info)
+            if 'pending_wo_wa_notifications' not in db.session.info:
+                db.session.info['pending_wo_wa_notifications'] = []
+            db.session.info['pending_wo_wa_notifications'].append(target.id)
             
-            def send_async(app_ctx, wo_id):
-                with app_ctx:
-                    try:
-                        trigger_wo_completion_whatsapp_notification(wo_id)
-                    except Exception as err:
-                        print(f"✗ Error sending async WA notification: {err}")
-            
-            # Start background thread to avoid blocking SQLAlchemy flush/commit
+    @event.listens_for(db.session, 'after_commit')
+    def fire_pending_wa_notifications(session):
+        """Fire WA notifications only after commit truly completes at DB level."""
+        pending = session.info.pop('pending_wo_wa_notifications', None)
+        if not pending:
+            return
+        
+        import threading
+        import time
+        from models.production import ShiftProduction
+        from utils.production_notifications import trigger_wo_completion_whatsapp_notification
+        
+        def send_async(app_ctx, wo_id):
+            with app_ctx:
+                fire_time = time.time()
+                try:
+                    shift_count = ShiftProduction.query.filter_by(work_order_id=wo_id).count()
+                    print(f"[WA-NOTIF] after_commit fired for WO {wo_id} at {fire_time:.3f} - visible shift rows: {shift_count}")
+                    trigger_wo_completion_whatsapp_notification(wo_id)
+                    print(f"[WA-NOTIF] Successfully sent notification for WO {wo_id}")
+                except Exception as err:
+                    print(f"✗ [WA-NOTIF] Error sending async WA notification for WO {wo_id}: {err}")
+        
+        for wo_id in pending:
+            queue_time = time.time()
+            print(f"[WA-NOTIF] Queueing WO {wo_id} for notification at {queue_time:.3f}")
             threading.Thread(
                 target=send_async,
-                args=(app.app_context(), target.id)
+                args=(app.app_context(), wo_id)
             ).start()
-            
+    
     print("✓ Production event listeners registered")
 
 

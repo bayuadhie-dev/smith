@@ -344,9 +344,16 @@ def success_response(message_key, data=None, **kwargs):
 
 def error_response(message_key, error_code=400, details=None, **kwargs):
     """Create standardized error response"""
+    message = i18n.translate(message_key, **kwargs)
     return {
         'success': False,
-        'message': i18n.translate(message_key, **kwargs),
+        'message': message,
+        # Alias of `message` - many frontend callers read `.data.error` (the
+        # `{'error': str(e)}` shape used by most except-blocks in this
+        # codebase), not `.data.message`, and silently fall back to a
+        # generic toast when this key is missing. Additive only, doesn't
+        # change existing `.message` consumers.
+        'error': message,
         'error_code': error_code,
         'details': details
     }

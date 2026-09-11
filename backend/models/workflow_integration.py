@@ -1,7 +1,7 @@
 from datetime import datetime
 from . import db
 from sqlalchemy import event
-from .sales import SalesOrder, SalesOrderItem, SalesForecast
+from .sales import SalesOrder, SalesOrderItem
 from .production import WorkOrder, ProductionRecord, ShiftProduction
 from .purchasing import PurchaseOrder, PurchaseOrderItem
 from .warehouse import Inventory, InventoryMovement
@@ -161,14 +161,24 @@ class WorkflowAutomation:
         ).all()
         
         for req in mrp_requirements:
-            # Get current inventory
-            inventory = Inventory.query.filter_by(product_id=req.product_id).first()
-            
-            if inventory:
-                req.current_stock = inventory.quantity
-                req.reserved_stock = inventory.reserved_quantity
-                req.available_stock = inventory.available_quantity
-            
+            # Get current inventory - SUM across all locations/batches, not
+            # just the first row, since a product can have several Inventory
+            # rows (one per location). Column names are quantity_on_hand /
+            # quantity_reserved / quantity_available on the real Inventory
+            # model (models/warehouse.py) - this previously read .quantity /
+            # .reserved_quantity / .available_quantity, which don't exist and
+            # raised AttributeError on every call (see create_production_orders_from_mrp
+            # fix note above - same root cause, this function's crash is what
+            # actually made that one unreachable).
+            inv_rows = Inventory.query.filter_by(product_id=req.product_id, is_active=True).all()
+            if inv_rows:
+                # Keep these as Decimal, not float - req.required_quantity below is Decimal
+                # (Numeric column) and Decimal-float raises TypeError, which the outer
+                # try/except silently swallows and rolls back, leaving status stuck at 'pending'.
+                req.current_stock = sum((i.quantity_on_hand or 0) for i in inv_rows)
+                req.reserved_stock = sum((i.quantity_reserved or 0) for i in inv_rows)
+                req.available_stock = sum((i.quantity_available or 0) for i in inv_rows)
+
             # Calculate shortage
             shortage = req.required_quantity - (req.available_stock or 0)
             req.shortage_quantity = max(0, shortage)
@@ -197,8 +207,9 @@ class WorkflowAutomation:
         """Create work orders based on MRP analysis"""
         from .production import WorkOrder
         from .sales import SalesOrder
+        from .product import Product
         from utils import generate_number
-        
+
         sales_order = SalesOrder.query.get(sales_order_id)
         mrp_requirements = MRPRequirement.query.filter_by(
             source_type='sales_order',
@@ -210,12 +221,29 @@ class WorkflowAutomation:
         for req in mrp_requirements:
             if req.shortage_quantity > 0:
                 # Create work order for shortage quantity
+                # MRPRequirement has no `product` relationship - look up Product directly.
+                product = db.session.get(Product, req.product_id)
+                # NOTE: wo_number/quantity are WorkOrder's real column names (see
+                # models/production.py) - this previously used work_order_number/
+                # quantity_to_produce, which don't exist on the model at all and
+                # raised TypeError on every single call, silently swallowed by the
+                # nested try/except chain in trigger_mrp_from_sales_order() /
+                # analyze_mrp_requirements() above. No WorkOrder was ever actually
+                # created via SO confirmation before this fix (2026-08-24).
                 work_order = WorkOrder(
-                    work_order_number=generate_number('WO', WorkOrder, 'work_order_number'),
+                    wo_number=generate_number('WO', WorkOrder, 'wo_number'),
                     product_id=req.product_id,
-                    quantity_to_produce=req.shortage_quantity,
+                    quantity=req.shortage_quantity,
+                    uom=product.primary_uom if product else 'PCS',
                     required_date=req.required_date,
                     sales_order_id=sales_order_id,  # Link to sales order
+                    # machine_id intentionally left unset - Batch Scheduling's own
+                    # design (R2) requires PPIC to assign the machine manually per
+                    # WorkOrder (Machine.code isn't guaranteed to be a clean number,
+                    # so it can't be inferred automatically). This WO won't appear
+                    # in Batch Planning's Generate/Re-plan until that's done - see
+                    # utils/batch_scheduling_algorithm.py's WorkOrder.machine_id
+                    # filter. Not a bug; matches the documented Batch Scheduling plan.
                     status='planned',
                     priority='normal'
                 )
@@ -346,14 +374,34 @@ class WorkflowAutomation:
 # DATABASE EVENT LISTENERS
 # ===============================
 
-@event.listens_for(SalesOrder, 'after_update')
-def sales_order_status_changed(mapper, connection, target):
-    """Trigger workflow when sales order status changes"""
-    if target.status == 'confirmed':
-        # Use after_commit to ensure transaction is complete
-        @event.listens_for(db.session, 'after_commit', once=True)
-        def trigger_mrp(session):
-            WorkflowAutomation.trigger_mrp_from_sales_order(target.id)
+# Disabled: same session-state bug as the ShiftProduction listener below —
+# registering a new `after_commit` listener that synchronously queries/commits
+# on the SAME session inside the `after_commit` dispatch fails with
+# "sqlalchemy.exc.InvalidRequestError: This session is in 'committed' state;
+# no further SQL can be emitted within this transaction" (confirmed live,
+# 2026-08-19 — this broke EVERY `PUT /api/sales/orders/<id>/confirm` call,
+# not just ones related to auto-reserve). The correct pattern (see
+# utils/production_events.py `fire_pending_wa_notifications`) is to defer
+# the actual work to a background thread with its own fresh app_context,
+# not reuse the just-committed session synchronously.
+#
+# Also: WorkflowAutomation.analyze_mrp_requirements() reads
+# Inventory.quantity/.reserved_quantity/.available_quantity, none of which
+# exist on the Inventory model (real columns are quantity_on_hand /
+# quantity_reserved / quantity_available) — this chain has never completed
+# a single run (mrp_requirements/workflow_steps are both 0 rows in
+# production) even setting the session-state bug aside. Left disabled
+# rather than rewritten — this whole legacy MRP-automation subsystem is a
+# candidate for its own review/decommission, out of scope here.
+#
+# @event.listens_for(SalesOrder, 'after_update')
+# def sales_order_status_changed(mapper, connection, target):
+#     """Trigger workflow when sales order status changes"""
+#     if target.status == 'confirmed':
+#         # Use after_commit to ensure transaction is complete
+#         @event.listens_for(db.session, 'after_commit', once=True)
+#         def trigger_mrp(session):
+#             WorkflowAutomation.trigger_mrp_from_sales_order(target.id)
 
 # Disabled: Causing session state issues in after_commit handler
 # @event.listens_for(ShiftProduction, 'after_update')

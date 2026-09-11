@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db
 from models.production import BillOfMaterials, BOMItem
 from models.product import Product, Material
@@ -25,6 +26,7 @@ bom_bp = Blueprint('bom', __name__)
 
 @bom_bp.route('/boms', methods=['GET'])
 @jwt_required()
+@require_permission('bom.view')
 def get_boms():
     """Get all BOMs with filtering and pagination"""
     try:
@@ -110,6 +112,7 @@ def get_boms():
 
 @bom_bp.route('/boms/<int:bom_id>', methods=['GET'])
 @jwt_required()
+@require_permission('bom.view')
 def get_bom(bom_id):
     """Get specific BOM with all items and stock information"""
     try:
@@ -173,6 +176,7 @@ def get_bom(bom_id):
 
 @bom_bp.route('/boms', methods=['POST'])
 @jwt_required()
+@require_permission('bom.create')
 def create_bom():
     """Create new BOM"""
     try:
@@ -212,7 +216,7 @@ def create_bom():
                 material_id=item_data.get('material_id'),
                 product_id=item_data.get('product_id'),
                 quantity=item_data['quantity'],
-                uom=item_data['uom'],
+                uom=item_data.get('uom') or 'PCS',
                 percentage=item_data.get('percentage', 0),
                 scrap_percent=item_data.get('scrap_percent', 0),
                 is_critical=item_data.get('is_critical', False),
@@ -241,6 +245,7 @@ def create_bom():
 
 @bom_bp.route('/boms/<int:bom_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('bom.edit')
 def update_bom(bom_id):
     """Update existing BOM"""
     try:
@@ -312,6 +317,7 @@ def update_bom(bom_id):
 
 @bom_bp.route('/boms/<int:bom_id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('bom.delete')
 def delete_bom(bom_id):
     """Delete BOM"""
     try:
@@ -334,44 +340,126 @@ def delete_bom(bom_id):
 
 @bom_bp.route('/boms/<int:bom_id>/shortage-analysis', methods=['GET'])
 @jwt_required()
+@require_permission('bom.view')
 def get_bom_shortage_analysis(bom_id):
     """Get material shortage analysis for BOM"""
     try:
+        from utils.bom_explosion import explode_bom_requirements, get_current_stock, CircularBOMError, MaxDepthExceededError
+
         bom = db.session.get(BillOfMaterials, bom_id) or abort(404)
         production_qty = request.args.get('production_qty', 1, type=float)
 
-        shortage_items = []
-        total_shortage_cost = 0
+        def scale_fn(bom_item, parent_qty, bom):
+            return float(bom_item.effective_quantity) * parent_qty
 
-        for item in bom.items:
-            required_qty = float(item.effective_quantity) * production_qty
-            available_qty = item.current_stock
-            shortage_qty = max(0, required_qty - available_qty)
-            
-            if shortage_qty > 0:
-                shortage_cost = shortage_qty * (float(item.unit_cost) if item.unit_cost else 0)
-                total_shortage_cost += shortage_cost
-                
-                shortage_items.append({
-                    'item_id': item.id,
-                    'item_name': item.item_name,
-                    'item_code': item.item_code,
-                    'item_type': item.item_type,
-                    'required_quantity': required_qty,
+        def extra_fn(bom_item):
+            return {
+                'item_id': bom_item.id,
+                'item_code': bom_item.item_code,
+                'item_type': bom_item.item_type,
+                'unit_cost': float(bom_item.unit_cost) if bom_item.unit_cost else 0,
+                'is_critical': bom_item.is_critical,
+                'supplier_name': bom_item.supplier.name if bom_item.supplier else None,
+                'lead_time_days': bom_item.lead_time_days
+            }
+
+        try:
+            exploded = explode_bom_requirements(bom.product_id, production_qty, scale_fn, extra_fn=extra_fn)
+        except (CircularBOMError, MaxDepthExceededError) as e:
+            return error_response(str(e)), 400
+
+        def build_shortage_tree(level, path_len):
+            """Build a nested shortage tree from one level of an
+            explode_bom_requirements() result. `level['materials']`/
+            `level['sub_assemblies']` are flattened across the WHOLE
+            subtree (needed by the other 3 flat callers of
+            explode_bom_requirements), so entries belonging to this exact
+            level are isolated by `path` length - deeper entries (from a
+            nested sub-assembly) have a longer path and are skipped here;
+            they're rendered instead via that sub-assembly's own
+            `children` (a separate, unflattened dict), recursed into with
+            path_len + 1.
+            """
+            items = []
+            for m in level['materials']:
+                if len(m['path']) != path_len:
+                    continue
+                available_qty = get_current_stock(material_id=m['material_id'])
+                shortage_qty = max(0, m['required_quantity'] - available_qty)
+                unit_cost = m.get('unit_cost', 0)
+                shortage_cost = shortage_qty * unit_cost
+                items.append({
+                    'item_id': m.get('item_id'),
+                    'item_name': m['material_name'],
+                    'item_code': m.get('item_code'),
+                    'item_type': m.get('item_type'),
+                    'required_quantity': m['required_quantity'],
                     'available_quantity': available_qty,
                     'shortage_quantity': shortage_qty,
-                    'unit_cost': float(item.unit_cost) if item.unit_cost else 0,
+                    'unit_cost': unit_cost,
                     'shortage_cost': shortage_cost,
-                    'is_critical': item.is_critical,
-                    'supplier_name': item.supplier.name if item.supplier else None,
-                    'lead_time_days': item.lead_time_days
+                    'is_critical': m.get('is_critical', False),
+                    'supplier_name': m.get('supplier_name'),
+                    'lead_time_days': m.get('lead_time_days', 0),
+                    'is_wip': False,
+                    'children': None,
                 })
+            for s in level['sub_assemblies']:
+                if len(s['path']) != path_len:
+                    continue
+                product = db.session.get(Product, s['product_id'])
+                unit_cost = float(product.cost) if product and product.cost else 0
+                shortage_cost = s['shortage_quantity'] * unit_cost
+                items.append({
+                    'item_id': None,
+                    'item_name': s['product_name'],
+                    'item_code': product.code if product else None,
+                    'item_type': 'sub_assembly',
+                    'required_quantity': s['required_quantity'],
+                    'available_quantity': s['current_stock'],
+                    'shortage_quantity': s['shortage_quantity'],
+                    'unit_cost': unit_cost,
+                    'shortage_cost': shortage_cost,
+                    'is_critical': False,
+                    'supplier_name': None,
+                    'lead_time_days': 0,
+                    'is_wip': True,
+                    'has_own_bom': s['has_own_bom'],
+                    'matched_via': s.get('matched_via'),
+                    'children': build_shortage_tree(s['children'], path_len + 1) if s.get('children') else None,
+                })
+            return items
+
+        def sum_leaf_shortages(items):
+            """Totals reflect what actually needs procuring for THIS
+            production run - a WIP with no BOM of its own counts itself if
+            short. A WIP that has its own BOM: its `children` breakdown is
+            shown for visibility regardless of shortage (composition is
+            always informative), but only counted into the total when the
+            WIP itself is actually short - if the WIP has enough stock as-is,
+            nothing under it needs producing right now, even though the
+            breakdown of what WOULD be needed to build it from scratch is
+            still displayed."""
+            total_items, total_cost = 0, 0.0
+            for it in items:
+                if it['children']:
+                    if it['shortage_quantity'] > 0:
+                        n, c = sum_leaf_shortages(it['children'])
+                        total_items += n
+                        total_cost += c
+                elif it['shortage_quantity'] > 0:
+                    total_items += 1
+                    total_cost += it['shortage_cost']
+            return total_items, total_cost
+
+        shortage_items = build_shortage_tree(exploded, path_len=1)
+        total_shortage_items, total_shortage_cost = sum_leaf_shortages(shortage_items)
 
         return jsonify({
             'bom_number': bom.bom_number,
             'product_name': get_product_name_from_new(bom.product.code) or bom.product.name,
             'production_quantity': production_qty,
-            'total_shortage_items': len(shortage_items),
+            'total_shortage_items': total_shortage_items,
             'total_shortage_cost': total_shortage_cost,
             'shortage_items': shortage_items
         }), 200
@@ -381,6 +469,7 @@ def get_bom_shortage_analysis(bom_id):
 
 @bom_bp.route('/boms/<int:bom_id>/cost-analysis', methods=['POST'])
 @jwt_required()
+@require_permission('bom.create')
 def create_bom_cost_analysis(bom_id):
     """Create cost analysis for BOM"""
     try:
@@ -422,6 +511,7 @@ def create_bom_cost_analysis(bom_id):
 
 @bom_bp.route('/materials', methods=['GET'])
 @jwt_required()
+@require_permission('bom.view')
 def get_materials_for_bom():
     """Get materials for BOM creation"""
     try:
@@ -465,6 +555,7 @@ def get_materials_for_bom():
 
 @bom_bp.route('/products', methods=['GET'])
 @jwt_required()
+@require_permission('bom.view')
 def get_products_for_bom():
     """Get products for BOM creation"""
     try:

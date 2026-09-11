@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db
 from models.sales import SalesOrder, SalesOrderItem
 from models.production import WorkOrder, ShiftProduction
@@ -8,14 +9,15 @@ from models.shipping import ShippingOrder, ShippingItem
 from models.finance import Invoice, InvoiceItem
 from models.workflow_integration import WorkflowAutomation, WorkflowStep
 from utils.i18n import success_response, error_response
-from utils import generate_number
+from utils import generate_number, generate_number_v2
 from datetime import datetime, timedelta
-from utils.timezone import get_local_now, get_local_today
+from utils.timezone import get_local_now
 
 workflow_complete_bp = Blueprint('workflow_complete', __name__)
 
 @workflow_complete_bp.route('/sales-order/<int:sales_order_id>/confirm', methods=['POST'])
 @jwt_required()
+@require_permission('approval.view')
 def confirm_sales_order(sales_order_id):
     """Confirm sales order first"""
     try:
@@ -41,30 +43,61 @@ def confirm_sales_order(sales_order_id):
 
 @workflow_complete_bp.route('/sales-order/<int:sales_order_id>/trigger-complete', methods=['POST'])
 @jwt_required()
+@require_permission('approval.view')
 def trigger_complete_workflow(sales_order_id):
-    """Trigger complete workflow from sales order to finance"""
+    """Start Production Workflow: turns a confirmed Sales Order into real
+    ProductionPlan + WorkOrder rows (one pair per SO line item), then moves
+    the SO to 'in_production'. Rebuilt 2026-08-20 (Tahap 2) - the previous
+    version only flipped SalesOrder.status with no downstream effect at all.
+
+    Per item: resolve the product's active BOM (fails that item with a
+    clear reason if none exists - not silently skipped), create a
+    ProductionPlan (status='approved', based_on='sales_order',
+    sales_order_id=sales_order_id), generate a single WorkOrder from it via
+    the same _create_work_order() helper already used by the manual
+    "generate work orders from plan" endpoint (reuse, not reimplemented),
+    then mark the plan 'released'. FIFO auto-reservation is triggered once
+    at the end via process_auto_reserve_queue() (Bagian 1's existing
+    mechanism), not reimplemented here either.
+    """
+    from utils.sales_order_workflow import trigger_production_from_so_core, SOWorkflowError
+
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         sales_order = db.session.get(SalesOrder, sales_order_id) or abort(404)
-        
-        # Simple workflow - just update status for now
+
+        try:
+            created, failed = trigger_production_from_so_core(sales_order, user_id)
+        except SOWorkflowError as e:
+            db.session.rollback()
+            return jsonify({'error': e.message, **e.extra}), e.status
+
         sales_order.status = 'in_production'
-        
         db.session.commit()
-        
+
+        # Auto-reserve (Bagian 1) - reuse the existing FIFO-by-document-date
+        # queue, never blocks this response.
+        try:
+            from utils.auto_reserve import process_auto_reserve_queue
+            process_auto_reserve_queue()
+        except Exception as auto_reserve_error:
+            print(f'[trigger_complete_workflow] auto-reserve warning: {auto_reserve_error}')
+
         return jsonify({
-            'message': 'Workflow triggered successfully - Sales order moved to production',
+            'message': f'Workflow triggered - {len(created)} Production Plan(s) dan Work Order(s) dibuat',
             'sales_order_id': sales_order_id,
             'status': sales_order.status,
-            'next_step': 'Production execution required'
+            'created': created,
+            'failed_items': failed
         }), 200
-        
+
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
 @workflow_complete_bp.route('/production/<int:work_order_id>/complete', methods=['POST'])
 @jwt_required()
+@require_permission('approval.view')
 def complete_production(work_order_id):
     """Complete production and trigger quality control"""
     try:
@@ -75,16 +108,15 @@ def complete_production(work_order_id):
         
         # Update work order status
         work_order.status = 'completed'
-        work_order.actual_quantity = data.get('actual_quantity', work_order.quantity_to_produce)
-        work_order.completed_date = get_local_now()
-        work_order.completed_by = user_id
-        
+        work_order.quantity_produced = data.get('actual_quantity', work_order.quantity)
+        work_order.actual_end_date = get_local_now()
+
         # Create Quality Inspection
         quality_inspection = QualityInspection(
             inspection_number=generate_number('QI', QualityInspection, 'inspection_number'),
             work_order_id=work_order_id,
             product_id=work_order.product_id,
-            quantity_inspected=work_order.actual_quantity,
+            quantity_inspected=work_order.quantity_produced,
             inspection_date=get_local_now(),
             inspector_id=user_id,
             status='pending'
@@ -117,6 +149,7 @@ def complete_production(work_order_id):
 
 @workflow_complete_bp.route('/quality/<int:inspection_id>/approve', methods=['POST'])
 @jwt_required()
+@require_permission('approval.approve')
 def approve_quality(inspection_id):
     """Approve quality inspection and trigger shipping"""
     try:
@@ -214,6 +247,7 @@ def approve_quality(inspection_id):
 
 @workflow_complete_bp.route('/shipping/<int:shipping_id>/ship', methods=['POST'])
 @jwt_required()
+@require_permission('approval.view')
 def ship_order(shipping_id):
     """Ship order and trigger finance invoice"""
     try:
@@ -234,7 +268,7 @@ def ship_order(shipping_id):
         
         # Create Invoice automatically
         invoice = Invoice(
-            invoice_number=generate_number('INV', Invoice, 'invoice_number'),
+            invoice_number=generate_number_v2('invoice', 'INV', Invoice, 'invoice_number'),
             sales_order_id=sales_order.id,
             customer_id=sales_order.customer_id,
             invoice_date=get_local_now(),
@@ -289,6 +323,7 @@ def ship_order(shipping_id):
 
 @workflow_complete_bp.route('/status/<int:sales_order_id>', methods=['GET'])
 @jwt_required()
+@require_permission('approval.view')
 def get_workflow_status(sales_order_id):
     """Get complete workflow status for sales order"""
     try:
@@ -333,8 +368,8 @@ def get_workflow_status(sales_order_id):
                 'wo_number': wo.wo_number,
                 'status': wo.status,
                 'product_name': wo.product.name if wo.product else 'Unknown',
-                'quantity_to_produce': float(wo.quantity_to_produce),
-                'actual_quantity': float(wo.actual_quantity) if wo.actual_quantity else None
+                'quantity_to_produce': float(wo.quantity),
+                'actual_quantity': float(wo.quantity_produced) if wo.quantity_produced else None
             } for wo in work_orders],
             'quality_inspections': [{
                 'id': qi.id,

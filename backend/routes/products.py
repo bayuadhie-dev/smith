@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db, Product, ProductCategory, ProductSpecification, ProductPackaging, Material, Inventory, SalesOrder
 from utils.i18n import success_response, error_response, get_message
 from sqlalchemy import or_, func
@@ -8,11 +9,23 @@ from utils.calculations import (
     calculate_packaging_structure, convert_uom, NONWOVEN_CATEGORIES
 )
 from utils.timezone import get_local_now, get_local_today
+from utils.master_data_usage import get_usage
 import redis
 import os
 import json
 
 products_bp = Blueprint('products', __name__)
+
+@products_bp.route('/<int:id>/usage', methods=['GET'])
+@jwt_required()
+@require_permission('products.view')
+def get_product_usage(id):
+    """Where-used report: which tables across the whole schema reference this product,
+    discovered dynamically via FK introspection (not a hardcoded per-module list)."""
+    product = db.session.get(Product, id)
+    if not product:
+        return jsonify(error_response('api.error', error_code=404)), 404
+    return jsonify({'usage': get_usage('products', id)}), 200
 
 @products_bp.route('/categories', methods=['GET'])
 def get_nonwoven_categories():
@@ -128,6 +141,7 @@ def convert_uom_endpoint():
 @products_bp.route('', methods=['GET'])
 @products_bp.route('/', methods=['GET'])
 @jwt_required()
+@require_permission('products.view')
 def get_products():
     """Get all products with filtering and pagination"""
     try:
@@ -186,6 +200,9 @@ def get_products():
                     'is_sellable': p.is_sellable,
                     'is_purchasable': p.is_purchasable,
                     'is_producible': p.is_producible,
+                    'kelompok': p.kelompok,
+                    'ppn_code': p.ppn_code,
+                    'erp_approval': p.erp_approval,
                     'packs_per_karton': p.packaging.packs_per_karton if p.packaging else None,  # From ProductPackaging
                     'created_at': p.created_at.isoformat() if p.created_at else None
                 } for p in products_list],
@@ -217,6 +234,9 @@ def get_products():
                 'is_sellable': p.is_sellable,
                 'is_purchasable': p.is_purchasable,
                 'is_producible': p.is_producible,
+                'kelompok': p.kelompok,
+                    'ppn_code': p.ppn_code,
+                'erp_approval': p.erp_approval,
                 'packs_per_karton': p.packaging.packs_per_karton if p.packaging else None,  # From ProductPackaging
                 'created_at': p.created_at.isoformat() if p.created_at else None
             } for p in products.items],
@@ -238,6 +258,7 @@ def get_products():
 
 @products_bp.route('/<int:id>', methods=['GET'])
 @jwt_required()
+@require_permission('products.view')
 def get_product(id):
     """Get single product details"""
     try:
@@ -267,6 +288,20 @@ def get_product(id):
             'is_purchasable': product.is_purchasable,
             'is_producible': product.is_producible,
             'lead_time_days': product.lead_time_days,
+            'kelompok': product.kelompok,
+            'ppn_code': product.ppn_code,
+            'erp_approval': product.erp_approval,
+            'self_life_days': product.self_life_days,
+            'retest_period_days': product.retest_period_days,
+            'akun_persediaan_id': product.akun_persediaan_id,
+            'akun_penjualan_id': product.akun_penjualan_id,
+            'akun_retur_penjualan_id': product.akun_retur_penjualan_id,
+            'akun_diskon_penjualan_id': product.akun_diskon_penjualan_id,
+            'akun_barang_terkirim_id': product.akun_barang_terkirim_id,
+            'akun_hpp_id': product.akun_hpp_id,
+            'akun_retur_pembelian_id': product.akun_retur_pembelian_id,
+            'akun_beban_id': product.akun_beban_id,
+            'akun_pembelian_belum_tertagih_id': product.akun_pembelian_belum_tertagih_id,
             'created_at': product.created_at.isoformat()
         }
         
@@ -335,6 +370,7 @@ def get_product(id):
 
 @products_bp.route('/', methods=['POST'])
 @jwt_required()
+@require_permission('products.create')
 def create_product():
     """Create new product"""
     try:
@@ -438,6 +474,7 @@ def create_product():
 
 @products_bp.route('/<int:id>', methods=['PUT'])
 @jwt_required()
+@require_permission('products.edit')
 def update_product(id):
     """Update product"""
     try:
@@ -467,7 +504,24 @@ def update_product(id):
             product.cost = data['cost']
         if 'is_active' in data:
             product.is_active = data['is_active']
-        
+        if 'kelompok' in data:
+            product.kelompok = data['kelompok']
+        if 'ppn_code' in data:
+            product.ppn_code = data['ppn_code']
+        if 'erp_approval' in data:
+            product.erp_approval = data['erp_approval']
+        if 'lead_time_days' in data:
+            product.lead_time_days = data['lead_time_days']
+        if 'self_life_days' in data:
+            product.self_life_days = data['self_life_days']
+        if 'retest_period_days' in data:
+            product.retest_period_days = data['retest_period_days']
+        for akun_field in ('akun_persediaan_id', 'akun_penjualan_id', 'akun_retur_penjualan_id',
+                           'akun_diskon_penjualan_id', 'akun_barang_terkirim_id', 'akun_hpp_id',
+                           'akun_retur_pembelian_id', 'akun_beban_id', 'akun_pembelian_belum_tertagih_id'):
+            if akun_field in data:
+                setattr(product, akun_field, data[akun_field])
+
         # Update specification if provided (handle both nested and flat structure)
         spec_fields = ['gsm', 'width_cm', 'length_m', 'thickness_mm', 'color', 
                       'weight_per_sheet_g', 'absorbency', 'tensile_strength', 
@@ -542,6 +596,7 @@ def update_product(id):
 
 @products_bp.route('/<int:id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('products.delete')
 def delete_product(id):
     """Delete product"""
     try:
@@ -571,6 +626,7 @@ def delete_product(id):
 
 @products_bp.route('/delete-all', methods=['DELETE'])
 @jwt_required()
+@require_permission('products.delete')
 def delete_all_products():
     """Delete all products from database"""
     try:
@@ -607,8 +663,9 @@ def delete_all_products():
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
-@products_bp.route('/categories', methods=['GET'])
+@products_bp.route('/product-categories', methods=['GET'])
 @jwt_required()
+@require_permission('products.view')
 def get_categories():
     """Get all product categories"""
     try:
@@ -646,6 +703,7 @@ def get_categories():
 
 @products_bp.route('/categories', methods=['POST'])
 @jwt_required()
+@require_permission('products.create')
 def create_category():
     """Create new product category"""
     try:
@@ -686,6 +744,7 @@ def create_category():
 
 @products_bp.route('/categories/<category_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('products.edit')
 def update_category(category_id):
     """Update product category"""
     try:
@@ -730,6 +789,7 @@ def update_category(category_id):
 
 @products_bp.route('/categories/<category_id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('products.delete')
 def delete_category(category_id):
     """Delete product category"""
     try:
@@ -765,6 +825,7 @@ def delete_category(category_id):
 # Dashboard and Analytics Endpoints
 @products_bp.route('/dashboard/kpis', methods=['GET'])
 @jwt_required()
+@require_permission('products.view')
 def get_dashboard_kpis():
     """Get product dashboard KPIs"""
     try:
@@ -805,6 +866,7 @@ def get_dashboard_kpis():
 
 @products_bp.route('/dashboard/top-products', methods=['GET'])
 @jwt_required()
+@require_permission('products.view')
 def get_top_products():
     """Get top selling products"""
     try:
@@ -834,6 +896,7 @@ def get_top_products():
 
 @products_bp.route('/dashboard/categories', methods=['GET'])
 @jwt_required()
+@require_permission('products.view')
 def get_dashboard_categories():
     """Get category distribution for dashboard"""
     try:
@@ -862,6 +925,7 @@ def get_dashboard_categories():
 
 @products_bp.route('/dashboard/stock-alerts', methods=['GET'])
 @jwt_required()
+@require_permission('products.view')
 def get_stock_alerts():
     """Get stock alerts for dashboard"""
     try:
@@ -890,6 +954,7 @@ def get_stock_alerts():
 
 @products_bp.route('/dashboard/trends', methods=['GET'])
 @jwt_required()
+@require_permission('products.view')
 def get_dashboard_trends():
     """Get product trends for dashboard"""
     try:
@@ -907,6 +972,7 @@ def get_dashboard_trends():
 
 @products_bp.route('/lifecycle/products', methods=['GET'])
 @jwt_required()
+@require_permission('products.view')
 def get_lifecycle_products():
     """Get products with lifecycle stage based on ACTUAL production activity only"""
     try:
@@ -1019,6 +1085,7 @@ def get_lifecycle_products():
 
 @products_bp.route('/lifecycle/stage-metrics', methods=['GET'])
 @jwt_required()
+@require_permission('products.view')
 def get_lifecycle_stage_metrics():
     """Get metrics per lifecycle stage - only for products with actual production"""
     try:
@@ -1105,6 +1172,7 @@ def get_lifecycle_stage_metrics():
 
 @products_bp.route('/lifecycle/timeline', methods=['GET'])
 @jwt_required()
+@require_permission('products.view')
 def get_lifecycle_timeline():
     """Get lifecycle timeline data"""
     try:
@@ -1131,6 +1199,7 @@ def get_lifecycle_timeline():
 
 @products_bp.route('/lifecycle/transitions', methods=['GET'])
 @jwt_required()
+@require_permission('products.view')
 def get_lifecycle_transitions():
     """Get recent lifecycle transitions"""
     try:
@@ -1148,6 +1217,7 @@ def get_lifecycle_transitions():
 
 @products_bp.route('/analytics/performance', methods=['GET'])
 @jwt_required()
+@require_permission('products.view')
 def get_analytics_performance():
     """Get product performance analytics from work orders and production"""
     try:
@@ -1219,6 +1289,7 @@ def get_analytics_performance():
 
 @products_bp.route('/analytics/timeline', methods=['GET'])
 @jwt_required()
+@require_permission('products.view')
 def get_analytics_timeline():
     """Get production timeline from shift production"""
     try:
@@ -1270,6 +1341,7 @@ def get_analytics_timeline():
 
 @products_bp.route('/analytics/categories', methods=['GET'])
 @jwt_required()
+@require_permission('products.view')
 def get_analytics_categories():
     """Get category performance from products and production"""
     try:
@@ -1331,6 +1403,7 @@ def get_analytics_categories():
 
 @products_bp.route('/analytics/profitability', methods=['GET'])
 @jwt_required()
+@require_permission('products.view')
 def get_analytics_profitability():
     """Get profitability analytics"""
     try:
@@ -1346,6 +1419,7 @@ def get_analytics_profitability():
 
 @products_bp.route('/analytics/seasonality', methods=['GET'])
 @jwt_required()
+@require_permission('products.view')
 def get_analytics_seasonality():
     """Get seasonality analytics"""
     try:
@@ -1363,6 +1437,7 @@ def get_analytics_seasonality():
 
 @products_bp.route('/bom', methods=['GET'])
 @jwt_required()
+@require_permission('products.view')
 def get_product_bom():
     """Get Bill of Materials for products"""
     try:
@@ -1376,6 +1451,7 @@ def get_product_bom():
 
 @products_bp.route('/materials', methods=['GET'])
 @jwt_required()
+@require_permission('products.view')
 def get_product_materials():
     """Get materials for BOM management"""
     try:

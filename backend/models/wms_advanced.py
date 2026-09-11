@@ -3,7 +3,11 @@ from . import db
 
 
 class MaterialConsumption(db.Model):
-    """Track material consumption per Work Order - Planned vs Actual with BOM link"""
+    """DEPRECATED — replaced by MaterialIssue/MaterialIssueItem, see
+    WAREHOUSE_FOLLOW_THE_GOODS_DESIGN.md. No FIFO reservation/locking, kept only
+    for backward compatibility with existing data/read-only UI. Do not build new
+    features on this model — use MaterialIssue instead.
+    Track material consumption per Work Order - Planned vs Actual with BOM link"""
     __tablename__ = 'material_consumptions'
 
     id = db.Column(db.Integer, primary_key=True)

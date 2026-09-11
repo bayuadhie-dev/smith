@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db, WasteRecord, WasteCategory, WasteTarget, WasteDisposal
 from models.production import ShiftProduction, Machine, WorkOrder
 from models.product import Product
@@ -14,6 +15,7 @@ waste_bp = Blueprint('waste', __name__)
 @waste_bp.route('/records', methods=['GET'])
 @waste_bp.route('/records/', methods=['GET'])
 @jwt_required()
+@require_permission('waste.view')
 def get_waste_records():
     try:
         # Get date range from query params
@@ -39,10 +41,29 @@ def get_waste_records():
             'source': 'manual',
             'source_department': r.source_department,
             'work_order_id': r.work_order_id,
-            'hazard_level': r.hazard_level or 'none',
+            'production_batch_id': r.production_batch_id,
+            'batch_number': r.production_batch.batch_number if r.production_batch else None,
+            'product_id': r.product_id,
+            'material_id': r.material_id,
+            'item_name': (r.product.name if r.product else None) or (r.material.name if r.material else None),
+            'hazard_level': (r.category.hazard_level if r.category else None) or 'none',
             'estimated_value': float(r.estimated_value or 0)
         } for r in waste_records]
         
+        # WOs already formalized into a real WasteRecord (Aida's closing-time
+        # entry) - their ShiftProduction reject/rework pseudo-rows below must
+        # be excluded from the list, otherwise the same physical reject is
+        # counted twice in the "Total Quantity" KPI: once as a pseudo-record
+        # here, once as the real WasteRecord. Un-formalized WOs still show as
+        # a reminder for Aida to formalize during Tutup SPK closing.
+        formalized_wo_ids = {
+            row[0] for row in db.session.query(WasteRecord.work_order_id).filter(
+                WasteRecord.work_order_id.isnot(None),
+                WasteRecord.waste_date >= start_date,
+                WasteRecord.waste_date <= end_date
+            ).all()
+        }
+
         # Get production reject data from ShiftProduction
         production_rejects = db.session.query(
             ShiftProduction.id,
@@ -51,6 +72,7 @@ def get_waste_records():
             ShiftProduction.rework_quantity,
             ShiftProduction.uom,
             ShiftProduction.shift,
+            ShiftProduction.work_order_id,
             Machine.name.label('machine_name'),
             Machine.code.label('machine_code'),
             Product.name.label('product_name'),
@@ -67,13 +89,17 @@ def get_waste_records():
             ShiftProduction.production_date <= end_date,
             (ShiftProduction.reject_quantity > 0) | (ShiftProduction.rework_quantity > 0)
         ).order_by(ShiftProduction.production_date.desc()).all()
-        
-        # Add production rejects to records
+
+        # Add production rejects to records - skip ones already formalized
+        # into a real WasteRecord for the same WO (see formalized_wo_ids above)
         for pr in production_rejects:
+            if pr.work_order_id and pr.work_order_id in formalized_wo_ids:
+                continue
+
             reject_qty = float(pr.reject_quantity or 0)
             rework_qty = float(pr.rework_quantity or 0)
             total_waste = reject_qty + rework_qty
-            
+
             if total_waste > 0:
                 records.append({
                     'id': f'prod_{pr.id}',
@@ -86,7 +112,7 @@ def get_waste_records():
                     'status': 'recorded',
                     'source': 'production',
                     'source_department': 'Production',
-                    'work_order_id': None,
+                    'work_order_id': pr.work_order_id,
                     'hazard_level': 'none',
                     'estimated_value': 0,
                     'machine_name': pr.machine_name,
@@ -107,6 +133,7 @@ def get_waste_records():
 
 @waste_bp.route('/records', methods=['POST'])
 @jwt_required()
+@require_permission('waste.create')
 def create_waste_record():
     try:
         data = request.get_json()
@@ -121,6 +148,9 @@ def create_waste_record():
             source_department=data.get('source_department'),
             source_machine_id=data.get('source_machine_id'),
             work_order_id=data.get('work_order_id'),
+            production_batch_id=data.get('production_batch_id'),
+            product_id=data.get('product_id'),
+            material_id=data.get('material_id'),
             quantity=data['quantity'],
             uom=data['uom'],
             weight_kg=data.get('weight_kg'),
@@ -159,6 +189,7 @@ def create_waste_record():
 
 @waste_bp.route('/records/<int:id>', methods=['GET'])
 @jwt_required()
+@require_permission('waste.view')
 def get_waste_record(id):
     try:
         record = db.session.get(WasteRecord, id) or abort(404)
@@ -186,6 +217,7 @@ def get_waste_record(id):
 
 @waste_bp.route('/records/<int:id>', methods=['PUT'])
 @jwt_required()
+@require_permission('waste.edit')
 def update_waste_record(id):
     try:
         record = db.session.get(WasteRecord, id) or abort(404)
@@ -215,6 +247,7 @@ def update_waste_record(id):
 
 @waste_bp.route('/records/<int:id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('waste.delete')
 def delete_waste_record(id):
     try:
         record = db.session.get(WasteRecord, id) or abort(404)
@@ -227,6 +260,7 @@ def delete_waste_record(id):
 
 @waste_bp.route('/categories', methods=['GET'])
 @jwt_required()
+@require_permission('waste.view')
 def get_categories():
     try:
         categories = WasteCategory.query.filter_by(is_active=True).all()
@@ -244,6 +278,7 @@ def get_categories():
 
 @waste_bp.route('/targets', methods=['GET'])
 @jwt_required()
+@require_permission('waste.view')
 def get_targets():
     try:
         targets = WasteTarget.query.all()
@@ -262,6 +297,7 @@ def get_targets():
 
 @waste_bp.route('/disposals', methods=['GET'])
 @jwt_required()
+@require_permission('waste.view')
 def get_disposals():
     try:
         disposals = WasteDisposal.query.order_by(WasteDisposal.disposal_date.desc()).all()

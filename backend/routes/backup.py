@@ -6,6 +6,7 @@ Handles database backup creation, restoration, and management.
 
 from flask import Blueprint, request, jsonify, send_file, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db
 from datetime import datetime
 import os
@@ -63,6 +64,7 @@ def save_backup_metadata(metadata):
 
 @backup_bp.route('/backups', methods=['GET'])
 @jwt_required()
+@require_permission('backup.view')
 def get_backups():
     """Get list of all backups"""
     try:
@@ -89,6 +91,7 @@ def get_backups():
 
 @backup_bp.route('/backups/create', methods=['POST'])
 @jwt_required()
+@require_permission('backup.view')
 def create_backup():
     """Create a new database backup"""
     try:
@@ -161,6 +164,7 @@ def create_backup():
 
 @backup_bp.route('/backups/<int:backup_id>/restore', methods=['POST'])
 @jwt_required()
+@require_permission('backup.view')
 def restore_backup(backup_id):
     """Restore database from backup"""
     try:
@@ -218,6 +222,7 @@ def restore_backup(backup_id):
 
 @backup_bp.route('/backups/<int:backup_id>/download', methods=['GET'])
 @jwt_required()
+@require_permission('backup.view')
 def download_backup(backup_id):
     """Download a backup file"""
     try:
@@ -246,6 +251,7 @@ def download_backup(backup_id):
 
 @backup_bp.route('/backups/<int:backup_id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('backup.view')
 def delete_backup(backup_id):
     """Delete a backup"""
     try:
@@ -274,6 +280,7 @@ def delete_backup(backup_id):
 
 @backup_bp.route('/backup-config', methods=['GET'])
 @jwt_required()
+@require_permission('backup.view')
 def get_backup_config():
     """Get backup settings"""
     try:
@@ -293,6 +300,7 @@ def get_backup_config():
 
 @backup_bp.route('/backup-config', methods=['POST'])
 @jwt_required()
+@require_permission('backup.view')
 def save_backup_config():
     """Save backup settings"""
     try:
@@ -316,6 +324,7 @@ def save_backup_config():
 
 @backup_bp.route('/backups/upload', methods=['POST'])
 @jwt_required()
+@require_permission('backup.view')
 def upload_backup():
     """Upload a backup file for restoration"""
     try:

@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db, KPI, MetricData, AnalyticsReport
 from utils.i18n import success_response, error_response, get_message
 from utils import generate_number
@@ -9,6 +10,7 @@ analytics_bp = Blueprint('analytics', __name__)
 
 @analytics_bp.route('/kpis', methods=['GET'])
 @jwt_required()
+@require_permission('reports.view')
 def get_kpis():
     try:
         kpis = KPI.query.filter_by(is_active=True).all()
@@ -28,6 +30,7 @@ def get_kpis():
 
 @analytics_bp.route('/kpis', methods=['POST'])
 @jwt_required()
+@require_permission('reports.create')
 def create_kpi():
     try:
         data = request.get_json()
@@ -52,6 +55,7 @@ def create_kpi():
 
 @analytics_bp.route('/metrics', methods=['POST'])
 @jwt_required()
+@require_permission('reports.create')
 def create_metric():
     try:
         data = request.get_json()
@@ -75,6 +79,7 @@ def create_metric():
 
 @analytics_bp.route('/reports', methods=['GET'])
 @jwt_required()
+@require_permission('reports.view')
 def get_reports():
     try:
         reports = AnalyticsReport.query.order_by(AnalyticsReport.created_at.desc()).all()

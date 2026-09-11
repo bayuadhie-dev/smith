@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db
 from models.mbf_report import MBFReport, MBFReportDetail
 from models.production import WorkOrder
@@ -14,6 +15,7 @@ mbf_report_bp = Blueprint('mbf_report', __name__)
 
 @mbf_report_bp.route('/reports', methods=['GET'])
 @jwt_required()
+@require_permission('reports.view')
 def get_mbf_reports():
     """Get all MBF reports with pagination"""
     try:
@@ -53,6 +55,7 @@ def get_mbf_reports():
 
 @mbf_report_bp.route('/reports/<int:report_id>', methods=['GET'])
 @jwt_required()
+@require_permission('reports.view')
 def get_mbf_report(report_id):
     """Get detailed MBF report by ID"""
     try:
@@ -163,6 +166,7 @@ def get_mbf_report(report_id):
 
 @mbf_report_bp.route('/reports', methods=['POST'])
 @jwt_required()
+@require_permission('reports.create')
 def create_mbf_report():
     """Create new MBF report"""
     try:
@@ -246,6 +250,7 @@ def create_mbf_report():
 
 @mbf_report_bp.route('/reports/<int:report_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('reports.view')
 def update_mbf_report(report_id):
     """Update MBF report"""
     try:
@@ -388,6 +393,7 @@ def update_mbf_report(report_id):
 
 @mbf_report_bp.route('/reports/<int:report_id>/submit', methods=['POST'])
 @jwt_required()
+@require_permission('reports.create')
 def submit_mbf_report(report_id):
     """Submit MBF report for approval"""
     try:
@@ -424,6 +430,7 @@ def submit_mbf_report(report_id):
 
 @mbf_report_bp.route('/reports/<int:report_id>/approve', methods=['POST'])
 @jwt_required()
+@require_permission('reports.create')
 def approve_mbf_report(report_id):
     """Approve MBF report (Supervisor or Manager)"""
     try:
@@ -481,6 +488,7 @@ def approve_mbf_report(report_id):
 
 @mbf_report_bp.route('/reports/<int:report_id>/reject', methods=['POST'])
 @jwt_required()
+@require_permission('reports.create')
 def reject_mbf_report(report_id):
     """Reject MBF report"""
     try:
@@ -521,6 +529,7 @@ def reject_mbf_report(report_id):
 
 @mbf_report_bp.route('/reports/<int:report_id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('reports.view')
 def delete_mbf_report(report_id):
     """Delete MBF report (only draft or rejected)"""
     try:
@@ -540,6 +549,7 @@ def delete_mbf_report(report_id):
 
 @mbf_report_bp.route('/sync-production-data', methods=['POST'])
 @jwt_required()
+@require_permission('reports.create')
 def sync_production_data():
     """Sync actual production data from ShiftProduction (primary) and WorkOrders (fallback)"""
     try:

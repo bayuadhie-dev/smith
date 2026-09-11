@@ -13,12 +13,14 @@ from models.pre_shift_checklist import (
     PreShiftChecklistAuditLog, PreShiftChecklistCorrectiveAction
 )
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 
 pre_shift_checklist_bp = Blueprint('pre_shift_checklist', __name__)
 
 
 @pre_shift_checklist_bp.route('/items', methods=['GET'])
 @jwt_required()
+@require_permission('pre_shift_checklist.view')
 def get_checklist_items():
     """Get all checklist items, optionally filtered by category"""
     category = request.args.get('category')
@@ -143,6 +145,7 @@ def _ensure_extra_items_exist():
 
 @pre_shift_checklist_bp.route('/machines/<int:machine_id>/items', methods=['GET'])
 @jwt_required()
+@require_permission('pre_shift_checklist.view')
 def get_machine_checklist_items(machine_id):
     """Get checklist items applicable for a specific machine"""
     machine = db.session.get(Machine, machine_id) or abort(404)
@@ -174,6 +177,7 @@ def get_machine_checklist_items(machine_id):
 
 @pre_shift_checklist_bp.route('/submit', methods=['POST'])
 @jwt_required()
+@require_permission('pre_shift_checklist.create')
 def submit_checklist():
     """Submit a pre-shift checklist"""
     data = request.get_json()
@@ -263,6 +267,7 @@ def submit_checklist():
 
 @pre_shift_checklist_bp.route('/submissions', methods=['GET'])
 @jwt_required()
+@require_permission('pre_shift_checklist.view')
 def get_submissions():
     """Get checklist submissions with filters"""
     machine_id = request.args.get('machine_id', type=int)
@@ -289,6 +294,7 @@ def get_submissions():
 
 @pre_shift_checklist_bp.route('/submissions/<int:submission_id>', methods=['GET'])
 @jwt_required()
+@require_permission('pre_shift_checklist.view')
 def get_submission_detail(submission_id):
     """Get a single submission with answers"""
     submission = db.session.get(PreShiftChecklistSubmission, submission_id) or abort(404)
@@ -297,6 +303,7 @@ def get_submission_detail(submission_id):
 
 @pre_shift_checklist_bp.route('/status', methods=['GET'])
 @jwt_required()
+@require_permission('pre_shift_checklist.view')
 def get_checklist_status():
     """Get checklist status for all machines for a given date"""
     tanggal_str = request.args.get('tanggal', date.today().isoformat())
@@ -355,6 +362,7 @@ def get_checklist_status():
 
 @pre_shift_checklist_bp.route('/seed', methods=['POST'])
 @jwt_required()
+@require_permission('pre_shift_checklist.create')
 def seed_checklist_items():
     """Seed initial checklist items (Kondisi Mesin + Man Power)"""
     
@@ -450,6 +458,7 @@ def seed_checklist_items():
 
 @pre_shift_checklist_bp.route('/seed-machine-specific', methods=['POST'])
 @jwt_required()
+@require_permission('pre_shift_checklist.create')
 def seed_machine_specific_items():
     """Seed machine-specific checklist items (Perforating, Cutting, Oven, Slitting)"""
     
@@ -580,6 +589,7 @@ def seed_machine_specific_items():
 
 @pre_shift_checklist_bp.route('/weekly-summary', methods=['GET'])
 @jwt_required()
+@require_permission('pre_shift_checklist.view')
 def get_weekly_summary():
     """Get weekly summary of checklist submissions"""
     # Get week start date (Monday)
@@ -659,6 +669,7 @@ def get_weekly_summary():
 
 @pre_shift_checklist_bp.route('/seed-machines', methods=['POST'])
 @jwt_required()
+@require_permission('pre_shift_checklist.create')
 def seed_additional_machines():
     """Seed additional machines: Perforating, Cutting, Oven, Slitting"""
     
@@ -698,6 +709,7 @@ def seed_additional_machines():
 
 @pre_shift_checklist_bp.route('/seed-fliptop', methods=['POST'])
 @jwt_required()
+@require_permission('pre_shift_checklist.create')
 def seed_fliptop_machine():
     """Seed Mesin Fliptop with its checklist items"""
     
@@ -823,6 +835,7 @@ def log_audit(submission_id=None, answer_id=None, action='updated', field_name=N
 
 @pre_shift_checklist_bp.route('/answers/<int:answer_id>/update', methods=['PUT'])
 @jwt_required()
+@require_permission('pre_shift_checklist.edit')
 def update_answer(answer_id):
     """Update a single answer (for maintenance to update NG items)"""
     user_id = get_jwt_identity()
@@ -873,6 +886,7 @@ def update_answer(answer_id):
 
 @pre_shift_checklist_bp.route('/answers/<int:answer_id>/audit-logs', methods=['GET'])
 @jwt_required()
+@require_permission('pre_shift_checklist.view')
 def get_answer_audit_logs(answer_id):
     """Get audit logs for a specific answer"""
     answer = db.session.get(PreShiftChecklistAnswer, answer_id) or abort(404)
@@ -887,6 +901,7 @@ def get_answer_audit_logs(answer_id):
 
 @pre_shift_checklist_bp.route('/submissions/<int:submission_id>/audit-logs', methods=['GET'])
 @jwt_required()
+@require_permission('pre_shift_checklist.view')
 def get_submission_audit_logs(submission_id):
     """Get all audit logs for a submission"""
     submission = db.session.get(PreShiftChecklistSubmission, submission_id) or abort(404)
@@ -901,6 +916,7 @@ def get_submission_audit_logs(submission_id):
 
 @pre_shift_checklist_bp.route('/answers/<int:answer_id>/corrective-action', methods=['POST'])
 @jwt_required()
+@require_permission('pre_shift_checklist.create')
 def create_corrective_action(answer_id):
     """Create or update corrective action for NG item"""
     user_id = get_jwt_identity()
@@ -993,6 +1009,7 @@ def add_supervisor_note(answer_id):
 
 @pre_shift_checklist_bp.route('/ng-items', methods=['GET'])
 @jwt_required()
+@require_permission('pre_shift_checklist.view')
 def get_ng_items():
     """Get all NG items for maintenance dashboard"""
     date_from = request.args.get('date_from')

@@ -3,6 +3,7 @@ Custom BOM Routes - Edit BOM per transaction without affecting master BOM
 """
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db
 from models.custom_bom import CustomBOM, CustomBOMItem
 from models.production import BillOfMaterials
@@ -12,6 +13,7 @@ custom_bom_bp = Blueprint('custom_bom', __name__)
 
 @custom_bom_bp.route('/custom-boms', methods=['GET'])
 @jwt_required()
+@require_permission('bom.view')
 def get_custom_boms():
     """Get custom BOMs with optional filtering"""
     try:
@@ -40,6 +42,7 @@ def get_custom_boms():
 
 @custom_bom_bp.route('/custom-boms/<int:id>', methods=['GET'])
 @jwt_required()
+@require_permission('bom.view')
 def get_custom_bom(id):
     """Get single custom BOM detail"""
     try:
@@ -51,6 +54,7 @@ def get_custom_bom(id):
 
 @custom_bom_bp.route('/custom-boms/create-from-master', methods=['POST'])
 @jwt_required()
+@require_permission('bom.create')
 def create_custom_bom_from_master():
     """Create a custom BOM by copying from master BOM"""
     try:
@@ -102,6 +106,7 @@ def create_custom_bom_from_master():
 
 @custom_bom_bp.route('/custom-boms/<int:id>/items', methods=['PUT'])
 @jwt_required()
+@require_permission('bom.edit')
 def update_custom_bom_items(id):
     """Update custom BOM items"""
     try:
@@ -175,6 +180,7 @@ def update_custom_bom_items(id):
 
 @custom_bom_bp.route('/custom-boms/<int:id>/items/<int:item_id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('bom.delete')
 def remove_custom_bom_item(id, item_id):
     """Mark a custom BOM item as removed (soft delete)"""
     try:
@@ -201,6 +207,7 @@ def remove_custom_bom_item(id, item_id):
 
 @custom_bom_bp.route('/custom-boms/<int:id>/reset', methods=['POST'])
 @jwt_required()
+@require_permission('bom.create')
 def reset_custom_bom(id):
     """Reset custom BOM to match master BOM"""
     try:
@@ -250,6 +257,7 @@ def reset_custom_bom(id):
 
 @custom_bom_bp.route('/custom-boms/<int:id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('bom.delete')
 def delete_custom_bom(id):
     """Soft delete custom BOM"""
     try:

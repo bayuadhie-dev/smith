@@ -10,7 +10,7 @@ from models.production import Machine, WorkOrder
 from models.warehouse import WarehouseZone, WarehouseLocation, Inventory
 from models.work_order_bom import WorkOrderBOMItem
 from models.production import ProductionApproval
-from models.sales import SalesForecast
+from models.sales import ForecastHeader, ForecastLine
 from models.production import ProductionPlan
 from models.material_issue import MaterialIssue
 from models.production import BillOfMaterials, BOMItem
@@ -2106,29 +2106,25 @@ class TestProductionApprovalWorkflow:
         assert response.status_code == 404
 
 class TestCreatePlanFromForecast:
-    """Tests for create_plan_from_forecast endpoint"""
+    """Tests for create_plan_from_forecast endpoint (Sales Forecast Matrix, 2026-08-24:
+    a 'forecast' is now 1 ForecastLine row under a ForecastHeader per year, not a
+    standalone SalesForecast row)."""
 
     @pytest.fixture
     def approved_forecast(self, db_session, test_product, test_user):
-        forecast = SalesForecast(
-            forecast_number='FC-TEST-001',
-            name='Test Forecast Q1',
-            forecast_type='quarterly',
-            period_start=datetime(2026, 1, 1).date(),
-            period_end=datetime(2026, 3, 31).date(),
-            product_id=test_product.id,
-            most_likely=500,
-            status='approved',
-            created_by=test_user.id
-        )
-        db_session.add(forecast)
+        header = ForecastHeader(year=2026, name='Test Forecast 2026', status='approved', created_by=test_user.id)
+        db_session.add(header)
+        db_session.flush()
+        line = ForecastLine(header_id=header.id, product_id=test_product.id, qty_jan=500)
+        db_session.add(line)
         db_session.commit()
-        return forecast
+        return line
 
     def test_create_plan_from_approved_forecast_success(self, client, auth_headers, approved_forecast):
-        """Creating a plan from an approved forecast should succeed and use most_likely as planned quantity"""
+        """Creating a plan from an approved forecast line should succeed and use the given month's qty as planned quantity"""
         response = client.post(
             f'/api/production-planning/production-plans/from-forecast/{approved_forecast.id}',
+            json={'month': 1},
             headers=auth_headers
         )
         assert response.status_code == 201
@@ -2141,29 +2137,23 @@ class TestCreatePlanFromForecast:
         assert plan.sales_forecast_id == approved_forecast.id
 
     def test_create_plan_from_unapproved_forecast_rejected(self, client, auth_headers, db_session, test_product, test_user):
-        """Creating a plan from a draft (not yet approved) forecast should be rejected"""
-        forecast = SalesForecast(
-            forecast_number='FC-TEST-002',
-            name='Test Forecast Draft',
-            forecast_type='monthly',
-            period_start=datetime(2026, 4, 1).date(),
-            period_end=datetime(2026, 4, 30).date(),
-            product_id=test_product.id,
-            most_likely=300,
-            status='draft',
-            created_by=test_user.id
-        )
-        db_session.add(forecast)
+        """Creating a plan from a line under a draft (not yet approved) header should be rejected"""
+        header = ForecastHeader(year=2027, name='Test Forecast Draft', status='draft', created_by=test_user.id)
+        db_session.add(header)
+        db_session.flush()
+        line = ForecastLine(header_id=header.id, product_id=test_product.id, qty_apr=300)
+        db_session.add(line)
         db_session.commit()
 
         response = client.post(
-            f'/api/production-planning/production-plans/from-forecast/{forecast.id}',
+            f'/api/production-planning/production-plans/from-forecast/{line.id}',
+            json={'month': 4},
             headers=auth_headers
         )
         assert response.status_code == 400
 
     def test_create_plan_from_nonexistent_forecast(self, client, auth_headers):
-        """Creating a plan from a non-existent forecast should return 404"""
+        """Creating a plan from a non-existent forecast line should return 404"""
         response = client.post(
             '/api/production-planning/production-plans/from-forecast/999999',
             headers=auth_headers

@@ -8,8 +8,8 @@ from .user import User, Role, UserRole, Permission, RolePermission
 from .product import Material, Product, ProductSpecification, ProductPackaging, ProductCategory
 from .product_excel_schema import ProductNew, ProductVersion
 from .warehouse import WarehouseZone, WarehouseLocation, Inventory, InventoryMovement
-from .sales import Customer, SalesOrder, SalesOrderItem, SalesForecast
-from .purchasing import Supplier, PurchaseOrder, PurchaseOrderItem, GoodsReceivedNote, GRNItem, PurchaseInvoice, PurchaseInvoiceItem, PurchaseReturn, PurchaseReturnItem, PurchaseRequisition, PRItem
+from .sales import Customer, SalesOrder, SalesOrderItem, ForecastHeader, ForecastLine, ForecastLineConversion, ForecastLineMonth
+from .purchasing import Supplier, PurchaseOrder, PurchaseOrderItem, GoodsReceivedNote, GRNItem, PurchaseReturn, PurchaseReturnItem, PurchaseRequisition, PRItem
 from .ews import EWSPrediction
 from .production import (
     Machine, WorkOrder, ProductionRecord, BillOfMaterials, BOMItem, 
@@ -58,10 +58,6 @@ from .settings_extended import (
     AdvancedUserRole, AdvancedPermission, AdvancedRolePermission,
     AdvancedUserRoleAssignment, AuditLog, SystemConfiguration, BackupConfiguration
 )
-from .integration_extended import (
-    ExternalConnector, APIEndpoint, DataSyncJob, SyncJobExecution,
-    Webhook, WebhookDelivery
-)
 from .workflow_integration import (
     WorkflowStep, MRPRequirement, ProductionBuffer, WorkflowAutomation
 )
@@ -97,7 +93,17 @@ from .wms_advanced import (
 from .expense import Expense, Reimbursement
 from .spc import SPCParameter, SPCProductSpec, SPCSample, SPCMeasurement, SPCControlLimitHistory
 from .accurate import AccurateConfig, AccurateItemMapping, AccurateSyncLog
+from .spk import SPKWarehouseStageLog
 from .machine_layout import MachineLayoutWing, MachineLayoutNode, MachineAlias
+from .warehouse_adjustment import InventoryAdjustment, InventoryTransfer
+from .batch_scheduling import (
+    ProductionRecipe, GlobalCalendar, ExceptionCalendar,
+    MachineCalendarOverride, ProductionBatch
+)
+from .document_management import (
+    DocumentTemplate, TemplateVersion, Document, DocumentRevision,
+    DocumentCategory, DocumentAttachment, DocumentLog
+)
 # Import to ensure models are registered
 from . import product_new_schema
 
@@ -110,7 +116,7 @@ __all__ = [
     # Warehouse models
     'WarehouseZone', 'WarehouseLocation', 'Inventory', 'InventoryMovement',
     # Sales models
-    'Customer', 'SalesOrder', 'SalesOrderItem', 'SalesForecast',
+    'Customer', 'SalesOrder', 'SalesOrderItem', 'ForecastHeader', 'ForecastLine', 'ForecastLineConversion', 'ForecastLineMonth',
     # Purchasing models
     'Supplier', 'PurchaseOrder', 'PurchaseOrderItem', 'GoodsReceivedNote', 'GRNItem',
     # Production models
@@ -162,8 +168,6 @@ __all__ = [
     'AdvancedUserRole', 'AdvancedPermission', 'AdvancedRolePermission',
     'AdvancedUserRoleAssignment', 'AuditLog', 'SystemConfiguration', 'BackupConfiguration',
     # Extended Integration models
-    'ExternalConnector', 'APIEndpoint', 'DataSyncJob', 'SyncJobExecution',
-    'Webhook', 'WebhookDelivery',
     # Workflow Integration models
     'WorkflowStep', 'MRPRequirement', 'ProductionBuffer', 'WorkflowAutomation',
     # New Product Schema models
@@ -201,4 +205,12 @@ __all__ = [
     'AccurateConfig', 'AccurateItemMapping', 'AccurateSyncLog',
     # Machine Layout Visualization models
     'MachineLayoutWing', 'MachineLayoutNode', 'MachineAlias',
+    # Warehouse Adjustment models
+    'InventoryAdjustment', 'InventoryTransfer',
+    # Batch Scheduling models
+    'ProductionRecipe', 'GlobalCalendar', 'ExceptionCalendar',
+    'MachineCalendarOverride', 'ProductionBatch',
+    # Document Management / Print Template Designer models
+    'DocumentTemplate', 'TemplateVersion', 'Document', 'DocumentRevision',
+    'DocumentCategory', 'DocumentAttachment', 'DocumentLog',
 ]

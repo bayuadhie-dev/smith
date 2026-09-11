@@ -4,6 +4,7 @@ Menangani pergantian produk di tengah produksi
 """
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from datetime import datetime
 from models import db
 from models.production import WorkOrder, ProductChangeover, Machine, ShiftProduction
@@ -15,6 +16,7 @@ product_changeover_bp = Blueprint('product_changeover', __name__)
 
 @product_changeover_bp.route('/changeovers', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_changeovers():
     """Get list of product changeovers"""
     try:
@@ -55,6 +57,7 @@ def get_changeovers():
 
 @product_changeover_bp.route('/changeovers/<int:id>', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_changeover_detail(id):
     """Get changeover detail"""
     try:
@@ -70,6 +73,7 @@ def get_changeover_detail(id):
 
 @product_changeover_bp.route('/work-orders/<int:wo_id>/changeover', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def initiate_changeover(wo_id):
     """
     Initiate product changeover - Pause current WO and optionally start another
@@ -174,6 +178,7 @@ def initiate_changeover(wo_id):
 
 @product_changeover_bp.route('/changeovers/<int:id>/complete', methods=['POST'])
 @jwt_required()
+@require_permission('production.complete')
 def complete_changeover(id):
     """
     Complete changeover - Start the new work order
@@ -294,6 +299,7 @@ def complete_changeover(id):
 
 @product_changeover_bp.route('/changeovers/<int:id>/cancel', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def cancel_changeover(id):
     """
     Cancel changeover - Resume the original work order
@@ -385,6 +391,7 @@ def cancel_changeover(id):
 
 @product_changeover_bp.route('/machines/<int:machine_id>/available-work-orders', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_available_work_orders_for_changeover(machine_id):
     """
     Get work orders available for changeover on a specific machine

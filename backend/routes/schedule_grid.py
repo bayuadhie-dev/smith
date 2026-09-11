@@ -5,6 +5,7 @@ Auto-generates Work Orders when scheduled date arrives
 """
 from flask import Blueprint, request, jsonify, send_file, Response, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db, Machine, Product
 from models.product import ProductPackaging
 from models.product_excel_schema import ProductNew
@@ -191,6 +192,7 @@ def get_week_start(date_str):
 
 @schedule_grid_bp.route('/schedule-grid', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_schedule_grid():
     """Get schedule grid for a week"""
     try:
@@ -215,6 +217,7 @@ def get_schedule_grid():
 
 @schedule_grid_bp.route('/schedule-grid', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def create_schedule_item():
     """Create new schedule grid item"""
     try:
@@ -262,6 +265,7 @@ def create_schedule_item():
 
 @schedule_grid_bp.route('/schedule-grid/<int:id>', methods=['PUT'])
 @jwt_required()
+@require_permission('production.edit')
 def update_schedule_item(id):
     """Update schedule grid item"""
     try:
@@ -301,6 +305,7 @@ def update_schedule_item(id):
 
 @schedule_grid_bp.route('/schedule-grid/<int:id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('production.delete')
 def delete_schedule_item(id):
     """Delete schedule grid item"""
     try:
@@ -317,6 +322,7 @@ def delete_schedule_item(id):
 
 @schedule_grid_bp.route('/schedule-grid/notes', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def save_schedule_notes():
     """Save notes for a week"""
     try:
@@ -372,6 +378,7 @@ def generate_wo_number():
 
 @schedule_grid_bp.route('/schedule-grid/<int:id>/generate-wo', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def generate_work_order_from_schedule(id):
     """Generate Work Order from a schedule item - DEPRECATED: Use Weekly Plan workflow instead"""
     try:
@@ -465,6 +472,7 @@ def generate_work_order_from_schedule(id):
 
 @schedule_grid_bp.route('/schedule-grid/generate-wo-batch', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def generate_work_orders_batch():
     """Generate Work Orders for all schedules on a specific date or today - DEPRECATED: Use Weekly Plan workflow instead"""
     try:
@@ -559,6 +567,7 @@ def generate_work_orders_batch():
 
 @schedule_grid_bp.route('/schedule-grid/check-today', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def check_schedules_for_today():
     """Check schedules that need WO generation for today"""
     try:
@@ -610,6 +619,7 @@ def check_schedules_for_today():
 
 @schedule_grid_bp.route('/schedule-grid/submit-approval', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def submit_schedule_grid_for_approval():
     """Submit schedule grid items for approval"""
     try:
@@ -648,6 +658,7 @@ def submit_schedule_grid_for_approval():
 
 @schedule_grid_bp.route('/schedule-grid/pending-approval', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_schedule_grid_pending_approval():
     """Get schedule grid items pending approval (grouped by week)"""
     try:
@@ -692,6 +703,7 @@ def get_schedule_grid_pending_approval():
 
 @schedule_grid_bp.route('/schedule-grid/approve', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def approve_schedule_grid():
     """Approve or reject schedule grid items"""
     try:
@@ -733,6 +745,7 @@ def approve_schedule_grid():
 
 @schedule_grid_bp.route('/schedule-grid/<int:id>/generate-wo-approved', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def generate_work_order_from_approved_schedule(id):
     """Generate Work Orders from an approved schedule item - 1 WO per scheduled day"""
     try:
@@ -850,6 +863,7 @@ def generate_work_order_from_approved_schedule(id):
 
 @schedule_grid_bp.route('/monthly-schedule', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_monthly_schedules():
     """Get monthly schedules for a specific month/year"""
     try:
@@ -873,6 +887,7 @@ def get_monthly_schedules():
 
 @schedule_grid_bp.route('/monthly-schedule', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def create_monthly_schedule():
     """Create new monthly schedule item"""
     try:
@@ -919,13 +934,65 @@ def create_monthly_schedule():
 
 @schedule_grid_bp.route('/monthly-schedule/<int:id>', methods=['PUT'])
 @jwt_required()
+@require_permission('production.edit')
 def update_monthly_schedule(id):
-    """Update monthly schedule item"""
+    """Update monthly schedule item.
+
+    Bug ditemukan QA 2026-08-26: kalau target_ctn DIKURANGI di sini, kuota forecast yang
+    jadi sumbernya (ForecastLineConversion.monthly_schedule_id -> baris ini) TIDAK balik -
+    beda dari delete_monthly_schedule() yang sudah benar. 1 baris MonthlySchedule bisa
+    keisi dari BANYAK ForecastLineConversion terakumulasi (forecast boleh dikonversi
+    bertahap - lihat bulk_convert_forecast_to_order di routes/sales.py), jadi
+    pengurangannya perlu dipecah ke beberapa baris konversi itu, bukan cuma 1 angka.
+    Urutan pengurangan: LIFO (konversi PALING BARU dikurangi duluan, mirip undo) - dipilih
+    karena paling sederhana & predictable, belum dikonfirmasi user preferensi lain.
+    Kalau target_ctn baru masih lebih kecil dari total yang sebenarnya berasal dari
+    forecast (jarang, cuma kalau sebagian target_ctn ditambah manual bukan dari forecast),
+    pengurangan berhenti begitu semua baris forecast terkait habis - sisanya (bagian
+    non-forecast) tidak disentuh.
+    """
     try:
+        from decimal import Decimal
+        from models.sales import ForecastLineConversion
         schedule = db.session.get(MonthlySchedule, id) or abort(404)
         data = request.get_json()
-        
+
         if 'target_ctn' in data:
+            old_target = Decimal(str(schedule.target_ctn or 0))
+            new_target = Decimal(str(data['target_ctn']))
+
+            # Guard: tidak boleh diturunkan sampai di bawah yang sudah ke-pull ke Weekly
+            # (scheduled_ctn) - itu sudah jadi jadwal mingguan konkret, tidak bisa
+            # dibatalkan diam-diam lewat sini.
+            scheduled = Decimal(str(schedule.scheduled_ctn or 0))
+            if new_target < scheduled:
+                return jsonify({'error': f'target_ctn tidak boleh kurang dari yang sudah dijadwalkan ke Weekly ({scheduled} CTN)'}), 400
+
+            if new_target < old_target:
+                reduction_ctn = old_target - new_target
+                try:
+                    pack_per_ctn = int(db.session.execute(
+                        db.text("SELECT pack_per_karton FROM products WHERE id = :id"), {'id': schedule.product_id}
+                    ).scalar() or 1)
+                except (ValueError, TypeError):
+                    pack_per_ctn = 1
+                if pack_per_ctn <= 0:
+                    pack_per_ctn = 1
+                remaining_to_release = reduction_ctn * pack_per_ctn
+
+                conversions = ForecastLineConversion.query.filter_by(monthly_schedule_id=schedule.id) \
+                    .order_by(ForecastLineConversion.converted_at.desc()).all()
+                for conv in conversions:
+                    if remaining_to_release <= 0:
+                        break
+                    conv_qty = Decimal(str(conv.quantity or 0))
+                    if conv_qty <= remaining_to_release:
+                        remaining_to_release -= conv_qty
+                        db.session.delete(conv)
+                    else:
+                        conv.quantity = conv_qty - remaining_to_release
+                        remaining_to_release = Decimal(0)
+
             schedule.target_ctn = data['target_ctn']
         if 'machine_id' in data:
             schedule.machine_id = data['machine_id']
@@ -939,14 +1006,14 @@ def update_monthly_schedule(id):
             schedule.notes = data['notes']
         if 'status' in data:
             schedule.status = data['status']
-        
+
         db.session.commit()
-        
+
         return jsonify({
             'message': 'Monthly schedule updated',
             'schedule': schedule.to_dict()
         }), 200
-        
+
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
@@ -954,15 +1021,23 @@ def update_monthly_schedule(id):
 
 @schedule_grid_bp.route('/monthly-schedule/<int:id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('production.delete')
 def delete_monthly_schedule(id):
     """Delete monthly schedule item"""
     try:
         schedule = db.session.get(MonthlySchedule, id) or abort(404)
-        
+
         # Check if has weekly schedules linked
         if schedule.weekly_schedules:
             return jsonify({'error': 'Tidak bisa hapus karena sudah ada jadwal mingguan terkait'}), 400
-        
+
+        # Hapus tautan forecast (kalau schedule ini hasil kirim dari Sales Forecast) -
+        # sama pola dengan delete_work_order() di routes/production.py: begitu schedule-nya
+        # hilang, kuota forecast yang sudah "terkonversi" harus balik lagi (sel forecast
+        # kebuka lagi buat diedit), bukan diam-diam gagal kena FK constraint.
+        from models.sales import ForecastLineConversion
+        ForecastLineConversion.query.filter_by(monthly_schedule_id=id).delete()
+
         db.session.delete(schedule)
         db.session.commit()
         
@@ -975,6 +1050,7 @@ def delete_monthly_schedule(id):
 
 @schedule_grid_bp.route('/monthly-schedule/<int:id>/add-to-weekly', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def add_monthly_to_weekly(id):
     """Add portion of monthly schedule to weekly schedule"""
     try:
@@ -1040,6 +1116,7 @@ def add_monthly_to_weekly(id):
 
 @schedule_grid_bp.route('/monthly-schedule/available', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_available_monthly_schedules():
     """Get monthly schedules that have remaining quantity for a specific week"""
     try:
@@ -1079,6 +1156,7 @@ def get_available_monthly_schedules():
 
 @schedule_grid_bp.route('/monthly-schedule/submit-approval', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def submit_monthly_schedule_for_approval():
     """Submit monthly production plan for approval"""
     try:
@@ -1117,6 +1195,7 @@ def submit_monthly_schedule_for_approval():
 
 @schedule_grid_bp.route('/monthly-schedule/pending-approval', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_monthly_schedules_pending_approval():
     """Get monthly production plans pending approval (grouped by month/year)"""
     try:
@@ -1206,6 +1285,7 @@ def get_monthly_schedules_pending_approval():
 
 @schedule_grid_bp.route('/monthly-schedule/approve', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def approve_monthly_schedule():
     """Approve monthly production plan"""
     try:

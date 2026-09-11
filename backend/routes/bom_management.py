@@ -4,6 +4,7 @@ Handles BOM CRUD operations, versioning, and history tracking
 """
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db, Product, Material, BillOfMaterials, BOMItem, User
 from models.bom_history import BOMHistory, BOMImportLog
 from utils import generate_number
@@ -16,6 +17,7 @@ bom_management_bp = Blueprint('bom_management', __name__)
 
 @bom_management_bp.route('/boms', methods=['GET'])
 @jwt_required()
+@require_permission('bom.view')
 def get_boms():
     """Get all BOMs with filtering and pagination"""
     try:
@@ -90,6 +92,7 @@ def get_boms():
 
 @bom_management_bp.route('/boms/<int:bom_id>', methods=['GET'])
 @jwt_required()
+@require_permission('bom.view')
 def get_bom_detail(bom_id):
     """Get detailed BOM with all items"""
     try:
@@ -150,6 +153,7 @@ def get_bom_detail(bom_id):
 
 @bom_management_bp.route('/boms', methods=['POST'])
 @jwt_required()
+@require_permission('bom.create')
 def create_bom():
     """Create new BOM"""
     try:
@@ -239,6 +243,7 @@ def create_bom():
 
 @bom_management_bp.route('/boms/<int:bom_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('bom.edit')
 def update_bom(bom_id):
     """Update BOM - creates new version"""
     try:
@@ -344,6 +349,7 @@ def update_bom(bom_id):
 
 @bom_management_bp.route('/boms/<int:bom_id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('bom.delete')
 def delete_bom(bom_id):
     """Delete BOM (soft delete - deactivate)"""
     try:
@@ -378,6 +384,7 @@ def delete_bom(bom_id):
 
 @bom_management_bp.route('/boms/<int:bom_id>/items/<int:item_id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('bom.delete')
 def delete_bom_item(bom_id, item_id):
     """Delete a BOM item"""
     try:
@@ -417,6 +424,7 @@ def delete_bom_item(bom_id, item_id):
 
 @bom_management_bp.route('/boms/<int:bom_id>/history', methods=['GET'])
 @jwt_required()
+@require_permission('bom.view')
 def get_bom_history(bom_id):
     """Get BOM version history"""
     try:
@@ -451,6 +459,7 @@ def get_bom_history(bom_id):
 
 @bom_management_bp.route('/boms/product/<int:product_id>/versions', methods=['GET'])
 @jwt_required()
+@require_permission('bom.view')
 def get_product_bom_versions(product_id):
     """Get all BOM versions for a product"""
     try:
@@ -488,6 +497,7 @@ def get_product_bom_versions(product_id):
 
 @bom_management_bp.route('/boms/import-logs', methods=['GET'])
 @jwt_required()
+@require_permission('bom.view')
 def get_import_logs():
     """Get BOM import history"""
     try:

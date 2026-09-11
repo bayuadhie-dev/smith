@@ -4,6 +4,7 @@ API endpoints for documentation and help system
 """
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db
 from models.user import User
 from models.user_manual import ManualCategory, ManualArticle, ManualFAQ
@@ -30,6 +31,7 @@ def get_categories():
 
 @manual_bp.route('/categories', methods=['POST'])
 @jwt_required()
+@require_permission('documents.create')
 def create_category():
     """Create a new category (admin only)"""
     try:
@@ -73,6 +75,7 @@ def create_category():
 
 @manual_bp.route('/categories/<int:category_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('documents.edit')
 def update_category(category_id):
     """Update a category (admin only)"""
     try:
@@ -114,6 +117,7 @@ def update_category(category_id):
 
 @manual_bp.route('/categories/<int:category_id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('documents.delete')
 def delete_category(category_id):
     """Delete a category (admin only)"""
     try:
@@ -221,6 +225,7 @@ def get_article_by_slug(slug):
 
 @manual_bp.route('/articles', methods=['POST'])
 @jwt_required()
+@require_permission('documents.create')
 def create_article():
     """Create a new article (admin only)"""
     try:
@@ -267,6 +272,7 @@ def create_article():
 
 @manual_bp.route('/articles/<int:article_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('documents.edit')
 def update_article(article_id):
     """Update an article (admin only)"""
     try:
@@ -310,6 +316,7 @@ def update_article(article_id):
 
 @manual_bp.route('/articles/<int:article_id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('documents.delete')
 def delete_article(article_id):
     """Delete an article (admin only)"""
     try:
@@ -363,6 +370,7 @@ def get_faqs():
 
 @manual_bp.route('/faqs', methods=['POST'])
 @jwt_required()
+@require_permission('documents.create')
 def create_faq():
     """Create a new FAQ (admin only)"""
     try:
@@ -398,6 +406,7 @@ def create_faq():
 
 @manual_bp.route('/faqs/<int:faq_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('documents.edit')
 def update_faq(faq_id):
     """Update a FAQ (admin only)"""
     try:
@@ -439,6 +448,7 @@ def update_faq(faq_id):
 
 @manual_bp.route('/faqs/<int:faq_id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('documents.delete')
 def delete_faq(faq_id):
     """Delete a FAQ (admin only)"""
     try:

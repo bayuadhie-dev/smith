@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, send_file
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db, SystemSetting, CompanyProfile, User, Role
 from utils.i18n import success_response, error_response, get_message
 from datetime import datetime
@@ -14,6 +15,7 @@ settings_bp = Blueprint('settings', __name__)
 
 @settings_bp.route('/system', methods=['GET'])
 @jwt_required()
+@require_permission('settings.view')
 def get_system_settings():
     """
     Get all system settings
@@ -64,6 +66,7 @@ def get_system_settings():
 
 @settings_bp.route('/system', methods=['PUT'])
 @jwt_required()
+@require_permission('settings.edit')
 def update_system_settings():
     """
     Update system settings
@@ -210,6 +213,7 @@ def get_company_profile():
 
 @settings_bp.route('/company', methods=['PUT'])
 @jwt_required()
+@require_permission('settings.edit')
 def update_company_profile():
     try:
         data = request.get_json()
@@ -241,6 +245,7 @@ def update_company_profile():
 
 @settings_bp.route('/users', methods=['GET'])
 @jwt_required()
+@require_permission('settings.view')
 def get_users():
     try:
         # Get users with eager loading of roles
@@ -272,6 +277,7 @@ def get_users():
 
 @settings_bp.route('/users/<int:user_id>/profile', methods=['GET'])
 @jwt_required()
+@require_permission('settings.view')
 def get_user_profile(user_id):
     """Get user profile by ID - restricted to admin roles"""
     try:
@@ -357,6 +363,7 @@ def get_user_profile(user_id):
 
 @settings_bp.route('/users', methods=['POST'])
 @jwt_required()
+@require_permission('settings.view')
 def create_user():
     try:
         data = request.get_json()
@@ -381,7 +388,12 @@ def create_user():
             password_hash='',  # Will be set below
             full_name=data['full_name'],
             is_active=data.get('is_active', True),
-            is_admin=data.get('is_admin', False)
+            is_admin=data.get('is_admin', False),
+            # BUG FIX 2026-08-17: is_super_admin was never read from the
+            # request at all - checking "superadmin" in the create-user
+            # form silently did nothing, the field always defaulted to
+            # False regardless of what was submitted.
+            is_super_admin=data.get('is_super_admin', False)
         )
         new_user.set_password(data['password'])
         
@@ -396,7 +408,8 @@ def create_user():
                 'email': new_user.email,
                 'full_name': new_user.full_name,
                 'is_active': new_user.is_active,
-                'is_admin': new_user.is_admin
+                'is_admin': new_user.is_admin,
+                'is_super_admin': new_user.is_super_admin
             }
         }), 201
         
@@ -406,6 +419,7 @@ def create_user():
 
 @settings_bp.route('/users/<int:user_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('settings.edit')
 def update_user(user_id):
     try:
         data = request.get_json()
@@ -447,6 +461,11 @@ def update_user(user_id):
         if 'is_admin' in data:
             user.is_admin = data['is_admin']
         
+        # BUG FIX 2026-08-17: same missing-field bug as create_user() -
+        # is_super_admin was never read/updated here either.
+        if 'is_super_admin' in data:
+            user.is_super_admin = data['is_super_admin']
+        
         # Update password if provided
         if 'password' in data and data['password']:
             user.set_password(data['password'])
@@ -475,6 +494,7 @@ def update_user(user_id):
 
 @settings_bp.route('/users/<int:user_id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('settings.view')
 def delete_user(user_id):
     try:
         current_user_id = int(get_jwt_identity())
@@ -501,6 +521,7 @@ def delete_user(user_id):
 
 @settings_bp.route('/users/<int:user_id>/permanent', methods=['DELETE'])
 @jwt_required()
+@require_permission('settings.view')
 def permanent_delete_user(user_id):
     """Permanently delete a user from the database"""
     try:
@@ -550,6 +571,7 @@ def permanent_delete_user(user_id):
 
 @settings_bp.route('/backup/create', methods=['POST'])
 @jwt_required()
+@require_permission('settings.view')
 def create_backup():
     try:
         user_id = int(get_jwt_identity())  # Convert string to int
@@ -598,6 +620,7 @@ def create_backup():
 
 @settings_bp.route('/backup/download/<filename>', methods=['GET'])
 @jwt_required()
+@require_permission('settings.view')
 def download_backup(filename):
     try:
         # In production, you'd store these in a secure location
@@ -613,6 +636,7 @@ def download_backup(filename):
 
 @settings_bp.route('/export/data', methods=['POST'])
 @jwt_required()
+@require_permission('settings.view')
 def export_data():
     try:
         data = request.get_json()
@@ -652,6 +676,7 @@ def export_data():
 
 @settings_bp.route('/security/session-timeout', methods=['PUT'])
 @jwt_required()
+@require_permission('settings.edit')
 def update_session_timeout():
     try:
         data = request.get_json()
@@ -736,6 +761,7 @@ def get_public_roles():
 
 @settings_bp.route('/roles', methods=['GET'])
 @jwt_required()
+@require_permission('settings.view')
 def get_roles():
     """Get all roles with permissions"""
     try:
@@ -767,6 +793,7 @@ def get_roles():
 
 @settings_bp.route('/roles', methods=['POST'])
 @jwt_required()
+@require_permission('settings.view')
 def create_role():
     """Create new role"""
     try:
@@ -818,6 +845,7 @@ def create_role():
 
 @settings_bp.route('/roles/<int:role_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('settings.edit')
 def update_role(role_id):
     """Update role"""
     try:
@@ -874,6 +902,7 @@ def update_role(role_id):
 
 @settings_bp.route('/roles/<int:role_id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('settings.view')
 def delete_role(role_id):
     """Delete role (soft delete)"""
     try:
@@ -908,6 +937,7 @@ def delete_role(role_id):
 
 @settings_bp.route('/permissions', methods=['GET'])
 @jwt_required()
+@require_permission('settings.view')
 def get_permissions():
     """Get all permissions grouped by module"""
     try:
@@ -930,6 +960,7 @@ def get_permissions():
 
 @settings_bp.route('/permissions', methods=['POST'])
 @jwt_required()
+@require_permission('settings.view')
 def create_permission():
     """Create new permission"""
     try:
@@ -987,6 +1018,7 @@ def create_permission():
 
 @settings_bp.route('/users/<int:user_id>/roles', methods=['POST'])
 @jwt_required()
+@require_permission('settings.view')
 def assign_user_roles(user_id):
     """Assign roles to user"""
     try:
@@ -1026,6 +1058,7 @@ def assign_user_roles(user_id):
 
 @settings_bp.route('/users/<int:user_id>/roles/<int:role_id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('settings.view')
 def remove_user_role(user_id, role_id):
     """Remove specific role from user"""
     try:
@@ -1049,6 +1082,7 @@ def remove_user_role(user_id, role_id):
 
 @settings_bp.route('/notifications/test', methods=['POST'])
 @jwt_required()
+@require_permission('settings.view')
 def test_notifications():
     try:
         data = request.get_json()
@@ -1068,6 +1102,98 @@ def test_notifications():
             }), 200
         else:
             return jsonify(error_response('api.error', error_code=400)), 400
-            
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+# ================= DATABASE SWITCH (Super Admin only) =================
+# Lets a Super Admin flip which database erp.graterp.my.id's backend
+# connects to - a genuinely-empty DB for feature testing, or the live one
+# back - without needing SSH. Gated to is_super_admin specifically (not
+# just is_admin/settings.edit) since this can point PRODUCTION at a
+# different database for everyone currently using the app.
+
+_DB_SWITCH_ALLOWED = {
+    'erp_db': 'Database Lama (Live/Production)',
+    'erp_db_v2': 'Database Baru (Kosong)',
+}
+_ENV_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env')
+
+
+def _require_super_admin():
+    user_id = get_jwt_identity()
+    user = db.session.get(User, int(user_id))
+    if not user or not getattr(user, 'is_super_admin', False):
+        return False
+    return True
+
+
+@settings_bp.route('/database-switch/status', methods=['GET'])
+@jwt_required()
+def get_active_database():
+    """Which of the two known databases the backend is currently connected
+    to, parsed from the live SQLAlchemy engine URL (not just .env, so this
+    reflects what's actually running right now)."""
+    try:
+        from flask import current_app
+        uri = current_app.config.get('SQLALCHEMY_DATABASE_URI', '')
+        active = uri.rsplit('/', 1)[-1].split('?')[0]
+        return success_response('settings.active_db_fetched', data={
+            'active': active,
+            'label': _DB_SWITCH_ALLOWED.get(active, active),
+            'options': _DB_SWITCH_ALLOWED,
+        }), 200
+    except Exception as e:
+        return error_response('settings.fetch_error', details=str(e)), 500
+
+
+@settings_bp.route('/database-switch', methods=['POST'])
+@jwt_required()
+def switch_database():
+    """Rewrite DATABASE_URL in .env to point at one of the two whitelisted
+    databases, then restart smith-backend so it takes effect. The HTTP
+    response is sent BEFORE the restart (via a short delayed background
+    command) since the request's own process is what gets restarted."""
+    if not _require_super_admin():
+        return error_response('auth.forbidden', error_code=403), 403
+
+    data = request.get_json(silent=True) or {}
+    target = data.get('target')
+    if target not in _DB_SWITCH_ALLOWED:
+        return error_response('settings.invalid_target', error_code=400,
+                               details=f"target must be one of {list(_DB_SWITCH_ALLOWED.keys())}"), 400
+
+    try:
+        with open(_ENV_PATH, 'r') as f:
+            env_content = f.read()
+
+        import re
+        # Rebuild the URL from the CURRENT one (swap only the db name after
+        # the last '/') so credentials/host never need to be hardcoded here
+        # and this keeps working even if the password is rotated later.
+        current_match = re.search(r'^DATABASE_URL=(.*)$', env_content, flags=re.MULTILINE)
+        if not current_match:
+            return error_response('settings.env_missing_url', error_code=500), 500
+        current_url = current_match.group(1)
+        new_url = re.sub(r'/[^/?]+(\?|$)', f'/{target}\\1', current_url, count=1)
+        env_content = re.sub(r'^DATABASE_URL=.*$', f'DATABASE_URL={new_url}', env_content, flags=re.MULTILINE)
+
+        with open(_ENV_PATH, 'w') as f:
+            f.write(env_content)
+
+        import subprocess
+        # Detached: gives this request's own response time to reach the
+        # client before the process that's serving it gets killed/restarted.
+        subprocess.Popen(
+            'sleep 1 && pm2 restart smith-backend',
+            shell=True, start_new_session=True,
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        )
+
+        return success_response('settings.database_switching', data={
+            'target': target,
+            'label': _DB_SWITCH_ALLOWED[target],
+        }), 200
+    except Exception as e:
+        return error_response('settings.switch_error', details=str(e)), 500

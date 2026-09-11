@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db
 from utils.i18n import success_response, error_response, get_message
 from models.user import User
@@ -21,6 +22,7 @@ settings_extended_bp = Blueprint('settings_extended', __name__)
 # System Configuration Endpoints
 @settings_extended_bp.route('/system-config', methods=['GET'])
 @jwt_required()
+@require_permission('settings.view')
 def get_system_config():
     """Get system configuration settings formatted for frontend"""
     try:
@@ -53,6 +55,7 @@ def get_system_config():
 
 @settings_extended_bp.route('/system-config/update', methods=['POST'])
 @jwt_required()
+@require_permission('settings.view')
 def update_system_config():
     """Update configuration values"""
     try:
@@ -90,6 +93,7 @@ def update_system_config():
 
 @settings_extended_bp.route('/system-config/reset', methods=['POST'])
 @jwt_required()
+@require_permission('settings.view')
 def reset_system_config():
     """Reset configuration category to defaults"""
     try:
@@ -113,6 +117,7 @@ def reset_system_config():
 # Role and Permission Management
 @settings_extended_bp.route('/roles', methods=['GET'])
 @jwt_required()
+@require_permission('settings.view')
 def get_roles():
     """Get all user roles"""
     try:
@@ -157,6 +162,7 @@ def get_roles():
 
 @settings_extended_bp.route('/permissions', methods=['GET'])
 @jwt_required()
+@require_permission('settings.view')
 def get_permissions():
     """Get all available permissions"""
     try:
@@ -213,6 +219,7 @@ def get_permissions():
 # Audit Trail
 @settings_extended_bp.route('/audit-logs', methods=['GET'])
 @jwt_required()
+@require_permission('settings.view')
 def get_audit_logs():
     """Get audit trail logs - REAL DATA from database"""
     try:
@@ -304,6 +311,7 @@ def get_audit_logs():
 
 @settings_extended_bp.route('/audit-logs/export', methods=['GET'])
 @jwt_required()
+@require_permission('settings.view')
 def export_audit_logs():
     """Export audit logs to CSV - REAL DATA"""
     try:

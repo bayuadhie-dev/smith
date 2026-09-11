@@ -8,6 +8,7 @@ Executive Dashboard Routes - Advanced Analytics
 from flask import Blueprint, jsonify, request
 
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 
 from datetime import datetime, timedelta
 
@@ -91,7 +92,8 @@ def normalize_product_name(name):
 
 @executive_dashboard_bp.route('/overview', methods=['GET'])
 
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('executive_dashboard.view')
 
 def get_executive_overview():
 
@@ -526,7 +528,8 @@ def get_executive_overview():
 
 @executive_dashboard_bp.route('/trends', methods=['GET'])
 
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('executive_dashboard.view')
 
 def get_trends():
 
@@ -716,7 +719,8 @@ def get_trends():
 
 @executive_dashboard_bp.route('/performance-scorecard', methods=['GET'])
 
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('executive_dashboard.view')
 
 def get_performance_scorecard():
 
@@ -740,23 +744,29 @@ def get_performance_scorecard():
 
             target = KPITarget.query.filter_by(kpi_code=kpi_code, is_active=True).first()
 
-            if target:
+            # target_value > 0 is treated as "genuinely configured by the user" - rows that
+            # exist but are still 0 (never set) are treated the same as no row at all, so the
+            # KPI is left out of the scorecard rather than showing a bogus 0-target/critical badge.
+            if target and target.target_value and float(target.target_value) > 0:
 
                 return {
 
                     'value': float(target.target_value),
             'warning': float(target.warning_threshold) if target.warning_threshold else 80,
-            'critical': float(target.critical_threshold) if target.critical_threshold else 60
+            'critical': float(target.critical_threshold) if target.critical_threshold else 60,
+            'configured': True
 
                 }
 
-            return {'value': default_value, 'warning': 80, 'critical': 60}
+            return {'value': default_value, 'warning': 80, 'critical': 60, 'configured': False}
 
         
 
         # Helper function to determine status
 
         def get_status(actual, target_info, is_lower_better=False):
+
+            actual = float(actual)
 
             target = target_info['value']
 
@@ -818,22 +828,23 @@ def get_performance_scorecard():
 
         revenue_target = get_target('REVENUE', 500000000)
 
-        revenue_achievement = (revenue / revenue_target['value'] * 100) if revenue_target['value'] > 0 else 0
+        revenue_achievement = (float(revenue) / revenue_target['value'] * 100) if revenue_target['value'] > 0 else 0
 
         
 
-        kpis.append({
+        if revenue_target['configured']:
+            kpis.append({
 
-            'category': 'Financial',
-            'kpi_code': 'REVENUE',
-            'kpi_name': 'Revenue Achievement',
-            'actual': float(revenue),
-            'target': revenue_target['value'],
-            'achievement': round(float(revenue_achievement), 2),
-            'unit': 'IDR',
-            'status': get_status(revenue, revenue_target)
+                'category': 'Financial',
+                'kpi_code': 'REVENUE',
+                'kpi_name': 'Revenue Achievement',
+                'actual': float(revenue),
+                'target': revenue_target['value'],
+                'achievement': round(float(revenue_achievement), 2),
+                'unit': 'IDR',
+                'status': get_status(revenue, revenue_target)
 
-        })
+            })
 
         
 
@@ -851,22 +862,23 @@ def get_performance_scorecard():
 
         oee_target = get_target('OEE', 85)
 
-        oee_achievement = (avg_oee / oee_target['value'] * 100) if oee_target['value'] > 0 else 0
+        oee_achievement = (float(avg_oee) / oee_target['value'] * 100) if oee_target['value'] > 0 else 0
 
         
 
-        kpis.append({
+        if oee_target['configured']:
+            kpis.append({
 
-            'category': 'Production',
-            'kpi_code': 'OEE',
-            'kpi_name': 'Overall Equipment Effectiveness (OEE)',
-            'actual': round(float(avg_oee), 2),
-            'target': oee_target['value'],
-            'achievement': round(float(oee_achievement), 2),
-            'unit': '%',
-            'status': get_status(avg_oee, oee_target)
+                'category': 'Production',
+                'kpi_code': 'OEE',
+                'kpi_name': 'Overall Equipment Effectiveness (OEE)',
+                'actual': round(float(avg_oee), 2),
+                'target': oee_target['value'],
+                'achievement': round(float(oee_achievement), 2),
+                'unit': '%',
+                'status': get_status(avg_oee, oee_target)
 
-        })
+            })
 
         
 
@@ -895,22 +907,23 @@ def get_performance_scorecard():
 
         quality_target = get_target('QUALITY_PASS', 95)
 
-        quality_achievement = (quality_pass_rate / quality_target['value'] * 100) if quality_target['value'] > 0 else 0
+        quality_achievement = (float(quality_pass_rate) / quality_target['value'] * 100) if quality_target['value'] > 0 else 0
 
         
 
-        kpis.append({
+        if quality_target['configured']:
+            kpis.append({
 
-            'category': 'Quality',
-            'kpi_code': 'QUALITY_PASS',
-            'kpi_name': 'Quality Pass Rate',
-            'actual': round(float(quality_pass_rate), 2),
-            'target': quality_target['value'],
-            'achievement': round(float(quality_achievement), 2),
-            'unit': '%',
-            'status': get_status(quality_pass_rate, quality_target)
+                'category': 'Quality',
+                'kpi_code': 'QUALITY_PASS',
+                'kpi_name': 'Quality Pass Rate',
+                'actual': round(float(quality_pass_rate), 2),
+                'target': quality_target['value'],
+                'achievement': round(float(quality_achievement), 2),
+                'unit': '%',
+                'status': get_status(quality_pass_rate, quality_target)
 
-        })
+            })
 
         
 
@@ -936,22 +949,23 @@ def get_performance_scorecard():
 
         otd_target = get_target('OTD', 95)
 
-        otd_achievement = (otd_rate / otd_target['value'] * 100) if otd_target['value'] > 0 else 0
+        otd_achievement = (float(otd_rate) / otd_target['value'] * 100) if otd_target['value'] > 0 else 0
 
         
 
-        kpis.append({
+        if otd_target['configured']:
+            kpis.append({
 
-            'category': 'Sales',
-            'kpi_code': 'OTD',
-            'kpi_name': 'On-Time Delivery Rate',
-            'actual': round(float(otd_rate), 2),
-            'target': otd_target['value'],
-            'achievement': round(float(otd_achievement), 2),
-            'unit': '%',
-            'status': get_status(otd_rate, otd_target)
+                'category': 'Sales',
+                'kpi_code': 'OTD',
+                'kpi_name': 'On-Time Delivery Rate',
+                'actual': round(float(otd_rate), 2),
+                'target': otd_target['value'],
+                'achievement': round(float(otd_achievement), 2),
+                'unit': '%',
+                'status': get_status(otd_rate, otd_target)
 
-        })
+            })
 
         
 
@@ -1004,22 +1018,23 @@ def get_performance_scorecard():
 
         turnover_target = get_target('INVENTORY_TURN', 10)
 
-        turnover_achievement = (inventory_turnover / turnover_target['value'] * 100) if turnover_target['value'] > 0 else 0
+        turnover_achievement = (float(inventory_turnover) / turnover_target['value'] * 100) if turnover_target['value'] > 0 else 0
 
         
 
-        kpis.append({
+        if turnover_target['configured']:
+            kpis.append({
 
-            'category': 'Inventory',
-            'kpi_code': 'INVENTORY_TURN',
-            'kpi_name': 'Inventory Turnover Ratio',
-            'actual': round(float(inventory_turnover), 2),
-            'target': turnover_target['value'],
-            'achievement': round(float(turnover_achievement), 2),
-            'unit': 'times/year',
-            'status': get_status(inventory_turnover, turnover_target)
+                'category': 'Inventory',
+                'kpi_code': 'INVENTORY_TURN',
+                'kpi_name': 'Inventory Turnover Ratio',
+                'actual': round(float(inventory_turnover), 2),
+                'target': turnover_target['value'],
+                'achievement': round(float(turnover_achievement), 2),
+                'unit': 'times/year',
+                'status': get_status(inventory_turnover, turnover_target)
 
-        })
+            })
 
         
 
@@ -1040,18 +1055,19 @@ def get_performance_scorecard():
 
         
 
-        kpis.append({
+        if output_target['configured']:
+            kpis.append({
 
-            'category': 'Production',
-            'kpi_code': 'PRODUCTION_OUTPUT',
-            'kpi_name': 'Production Output',
-            'actual': float(total_output),
-            'target': output_target['value'],
-            'achievement': round(float(output_achievement), 2),
-            'unit': 'units',
-            'status': get_status(total_output, output_target)
+                'category': 'Production',
+                'kpi_code': 'PRODUCTION_OUTPUT',
+                'kpi_name': 'Production Output',
+                'actual': float(total_output),
+                'target': output_target['value'],
+                'achievement': round(float(output_achievement), 2),
+                'unit': 'units',
+                'status': get_status(total_output, output_target)
 
-        })
+            })
 
         
 
@@ -1127,7 +1143,8 @@ def get_performance_scorecard():
 
 @executive_dashboard_bp.route('/top-performers', methods=['GET'])
 
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('executive_dashboard.view')
 
 def get_top_performers():
 
@@ -1244,7 +1261,8 @@ def get_top_performers():
 
 @executive_dashboard_bp.route('/alerts', methods=['GET'])
 
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('executive_dashboard.view')
 
 def get_alerts():  # executive_alerts():
 
@@ -1387,7 +1405,8 @@ def get_alerts():  # executive_alerts():
 
 
 @executive_dashboard_bp.route('/active-users', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('executive_dashboard.view')
 def get_active_users():
     """Get list of active users with their recent activity"""
     try:
@@ -3459,7 +3478,8 @@ def get_production_monitoring():
 
 @executive_dashboard_bp.route('/production-output-details', methods=['GET'])
 
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('executive_dashboard.view')
 
 def get_production_output_details():
 
@@ -3987,7 +4007,8 @@ def get_all_time_downtime():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @executive_dashboard_bp.route('/downtime-detail', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('executive_dashboard.view')
 def get_downtime_detail():
     """
     Detailed downtime breakdown with EXACT REASONS, notes, issues, early stop reason, 
@@ -4135,7 +4156,8 @@ def get_downtime_detail():
 
 
 @executive_dashboard_bp.route('/production-detail', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('executive_dashboard.view')
 def get_production_detail():
     """
     Production breakdown per date, machine, product, shift from ShiftProduction.
@@ -4359,7 +4381,8 @@ def get_production_detail():
 
 
 @executive_dashboard_bp.route('/qc-analytics', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('executive_dashboard.view')
 def get_qc_analytics():
     """Real database metrics for QC Analytics Dashboard"""
     try:
@@ -4415,7 +4438,8 @@ def get_qc_analytics():
 
 
 @executive_dashboard_bp.route('/wo-analytics', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('executive_dashboard.view')
 def get_wo_analytics():
     """Real database metrics for Work Order Analytics Dashboard"""
     try:
@@ -4465,7 +4489,8 @@ def get_wo_analytics():
 
 
 @executive_dashboard_bp.route('/warehouse-analytics', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('executive_dashboard.view')
 def get_warehouse_analytics():
     """Real database metrics for Warehouse & Stock Analytics Dashboard"""
     try:
@@ -4517,7 +4542,8 @@ def get_warehouse_analytics():
 
 
 @executive_dashboard_bp.route('/real-audit-logs', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('executive_dashboard.view')
 def get_real_audit_logs():
     """Get real audit trail logs converted to local WIB time (Asia/Jakarta UTC+7) directly from AuditLog table in database"""
     try:
@@ -4588,7 +4614,8 @@ def get_real_audit_logs():
 
 
 @executive_dashboard_bp.route('/production-analytics', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('executive_dashboard.view')
 def get_production_analytics():
     """Real database metrics for Production Analytics Dashboard computed 100% from ShiftProduction and Machine tables"""
     try:
@@ -4636,7 +4663,8 @@ def get_production_analytics():
 
 
 @executive_dashboard_bp.route('/hr-analytics', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('executive_dashboard.view')
 def get_hr_analytics():
     """Real database metrics for HR Analytics Dashboard computed 100% from Employee and Attendance tables"""
     try:
@@ -4670,7 +4698,8 @@ def get_hr_analytics():
 
 
 @executive_dashboard_bp.route('/maintenance-analytics', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('executive_dashboard.view')
 def get_maintenance_analytics():
     """Real database metrics for Maintenance Analytics Dashboard computed 100% from ShiftProduction and Machine tables"""
     try:
@@ -4886,7 +4915,8 @@ def get_maintenance_analytics():
 
 
 @executive_dashboard_bp.route('/machine-layout', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('executive_dashboard.view')
 def get_machine_layout():
     """
     Factory floor machine layout visualization with OEE per machine, grouped by wing.
@@ -4977,7 +5007,8 @@ def get_machine_layout():
 
 
 @executive_dashboard_bp.route('/machine-layout/<int:machine_id>/detail', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('executive_dashboard.view')
 def get_machine_layout_detail(machine_id):
     """
     Detailed breakdown for a single machine, for the layout dashboard's click-through panel.
@@ -5102,7 +5133,8 @@ def get_machine_layout_detail(machine_id):
 
 
 @executive_dashboard_bp.route('/machine-layout/nodes/batch-update', methods=['POST'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('executive_dashboard.view')
 def batch_update_machine_layout_nodes():
     """
     Batch-update pos_x/pos_y for multiple MachineLayoutNode rows at once,
@@ -5352,3 +5384,70 @@ def admin_delete_alias(machine_id):
     db.session.delete(alias)
     db.session.commit()
     return jsonify({'deleted': True}), 200
+
+
+@executive_dashboard_bp.route('/product-margin', methods=['GET'])
+@jwt_required()
+@require_permission('executive_dashboard.view')
+def get_product_margin():
+    """
+    Omzet/margin per produk = Harga Jual - HPP.
+
+    Status 2026-08-29: HANYA komponen HPP material (dari BOM aktif, via
+    calculate_product_standard_cost) yang dihitung otomatis - itu satu-satunya
+    komponen yang datanya siap. Labor cost & overhead (listrik/air/gaji
+    karyawan) SENGAJA tidak diikutkan - kolomnya belum ada di BOM dan
+    formula alokasinya belum diputuskan user, jangan menebak angka.
+    Harga jual (Product.price) juga masih 0 di semua produk sampai user
+    tarik data dari Accurate Online - endpoint ini menampilkan status
+    'belum_lengkap' apa adanya, bukan mengarang angka.
+    """
+    try:
+        from utils.costing_helper import calculate_product_standard_cost
+        from models.production import BillOfMaterials
+
+        product_ids_with_bom = {
+            row[0] for row in db.session.query(BillOfMaterials.product_id)
+            .filter(BillOfMaterials.is_active == True).distinct().all()
+        }
+
+        products = Product.query.filter(Product.id.in_(product_ids_with_bom)).all() if product_ids_with_bom else []
+
+        rows = []
+        complete_count = 0
+        for p in products:
+            cost_breakdown = calculate_product_standard_cost(p.id)
+            hpp_material = cost_breakdown['material_cost']
+            selling_price = float(p.price) if p.price else 0
+            has_price = selling_price > 0
+            has_hpp = hpp_material > 0
+            if has_price and has_hpp:
+                complete_count += 1
+            rows.append({
+                'product_id': p.id,
+                'product_code': p.code,
+                'product_name': p.name,
+                'hpp_material': round(hpp_material, 2),
+                'selling_price': selling_price,
+                'margin': round(selling_price - hpp_material, 2) if has_price else None,
+                'margin_percent': round((selling_price - hpp_material) / selling_price * 100, 2) if has_price and selling_price > 0 else None,
+                'status': 'lengkap' if (has_price and has_hpp) else ('hpp_saja' if has_hpp else 'belum_ada_data'),
+            })
+
+        rows.sort(key=lambda r: (r['margin'] is None, -(r['margin'] or 0)))
+
+        return jsonify({
+            'success': True,
+            'data': {
+                'rows': rows,
+                'summary': {
+                    'total_produk_ada_bom': len(rows),
+                    'produk_data_lengkap': complete_count,
+                    'catatan': 'HPP di sini baru mencakup biaya material dari BOM. Biaya tenaga kerja dan '
+                               'overhead (listrik/air/gaji karyawan) belum diikutkan - formulanya belum '
+                               'diputuskan. Harga jual menunggu sinkronisasi dari Accurate Online.'
+                }
+            }
+        }), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500

@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db
 from models.asset_management import Asset, DepreciationSchedule, AssetTransfer, AssetValuation, SparePart, SparePartMovement
 from models.maintenance import MaintenanceRecord
@@ -17,6 +18,7 @@ asset_bp = Blueprint('assets', __name__)
 @asset_bp.route('/', methods=['GET'])
 @asset_bp.route('', methods=['GET'])
 @jwt_required()
+@require_permission('maintenance.view')
 def get_assets():
     """Get all assets with filters"""
     try:
@@ -74,6 +76,7 @@ def get_assets():
 
 @asset_bp.route('/<int:asset_id>', methods=['GET'])
 @jwt_required()
+@require_permission('maintenance.view')
 def get_asset_detail(asset_id):
     """Get detailed asset information"""
     try:
@@ -175,6 +178,7 @@ def get_asset_detail(asset_id):
 @asset_bp.route('/', methods=['POST'])
 @asset_bp.route('', methods=['POST'])
 @jwt_required()
+@require_permission('maintenance.create')
 def create_asset():
     """Create new asset"""
     try:
@@ -236,6 +240,7 @@ def create_asset():
 
 @asset_bp.route('/<int:asset_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('maintenance.edit')
 def update_asset(asset_id):
     """Update asset"""
     try:
@@ -303,6 +308,7 @@ def generate_depreciation_schedule(asset_id):
 
 @asset_bp.route('/<int:asset_id>/depreciation-schedule', methods=['GET'])
 @jwt_required()
+@require_permission('maintenance.schedule')
 def get_depreciation_schedule(asset_id):
     """Get depreciation schedule for an asset"""
     try:
@@ -323,6 +329,7 @@ def get_depreciation_schedule(asset_id):
 
 @asset_bp.route('/batch-depreciation', methods=['POST'])
 @jwt_required()
+@require_permission('maintenance.create')
 def calculate_batch_depreciation():
     """Calculate depreciation for all active assets for current month"""
     try:
@@ -376,6 +383,7 @@ def calculate_batch_depreciation():
 
 @asset_bp.route('/<int:asset_id>/transfer', methods=['POST'])
 @jwt_required()
+@require_permission('maintenance.create')
 def transfer_asset(asset_id):
     """Transfer asset to new location/department"""
     try:
@@ -417,6 +425,7 @@ def transfer_asset(asset_id):
 
 @asset_bp.route('/transfers/<int:transfer_id>/approve', methods=['POST'])
 @jwt_required()
+@require_permission('maintenance.create')
 def approve_transfer(transfer_id):
     """Approve asset transfer"""
     try:
@@ -449,6 +458,7 @@ def approve_transfer(transfer_id):
 
 @asset_bp.route('/spare-parts', methods=['GET'])
 @jwt_required()
+@require_permission('maintenance.view')
 def get_spare_parts():
     """Get spare parts inventory"""
     try:
@@ -483,6 +493,7 @@ def get_spare_parts():
 
 @asset_bp.route('/reports/summary', methods=['GET'])
 @jwt_required()
+@require_permission('maintenance.view')
 def get_asset_summary():
     """Get asset summary by category and status"""
     try:
@@ -531,6 +542,7 @@ def get_asset_summary():
 
 @asset_bp.route('/reports/maintenance-due', methods=['GET'])
 @jwt_required()
+@require_permission('maintenance.view')
 def get_maintenance_due():
     """Get assets with upcoming or overdue maintenance"""
     try:

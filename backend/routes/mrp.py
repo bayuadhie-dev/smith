@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from models import db, Material, Product, BillOfMaterials, BOMItem, WorkOrder, SalesOrder, SalesForecast, Inventory, Machine, PurchaseOrder
+from utils.auth_decorators import require_permission
+from models import db, Material, Product, BillOfMaterials, BOMItem, WorkOrder, SalesOrder, Inventory, Machine, PurchaseOrder
+from utils.forecast_helper import forecast_rows_in_range, iter_forecast_month_rows
 from sqlalchemy import func
 from utils.i18n import success_response, error_response, get_message
 from utils.helpers import get_setting_value
@@ -13,6 +15,7 @@ mrp_bp = Blueprint('mrp', __name__)
 
 @mrp_bp.route('/materials', methods=['GET'])
 @jwt_required()
+@require_permission('mrp.view')
 def get_materials():
     """Get all materials for MRP planning"""
     try:
@@ -58,6 +61,7 @@ def get_materials():
 
 @mrp_bp.route('/bom', methods=['GET'])
 @jwt_required()
+@require_permission('mrp.view')
 def get_boms():
     """Get all Bills of Materials"""
     try:
@@ -92,6 +96,7 @@ def get_boms():
 
 @mrp_bp.route('/bom/<int:bom_id>', methods=['GET'])
 @jwt_required()
+@require_permission('mrp.view')
 def get_bom_details(bom_id):
     """Get BOM details with all items"""
     try:
@@ -134,6 +139,7 @@ def get_bom_details(bom_id):
 
 @mrp_bp.route('/requirements', methods=['GET'])
 @jwt_required()
+@require_permission('mrp.view')
 def get_material_requirements():
     """Calculate material requirements based on sales orders and forecasts"""
     try:
@@ -153,55 +159,88 @@ def get_material_requirements():
             SalesOrder.status.in_(['confirmed', 'processing'])
         ).all()
 
+        from utils.bom_explosion import explode_bom_requirements, CircularBOMError, MaxDepthExceededError
+
+        def _mrp_scale_fn(bom_item, parent_qty, bom):
+            # Matches this endpoint's original formula exactly (no batch_size/
+            # pack_per_carton division here - that's specific to
+            # check_and_create_po's cartons-based convention, not this one).
+            return float(parent_qty) * float(bom_item.quantity) * (1 + float(bom_item.scrap_percent or 0) / 100)
+
+        def _merge_exploded_into_requirements(product, quantity, quantity_field, source_entry):
+            """Explode `product`'s BOM (multi-layer) and merge every raw
+            material - plus any leaf sub-assembly with no BOM of its own,
+            to preserve this endpoint's original behavior of surfacing
+            product-referenced BOM lines too, not just true materials -
+            into the shared `requirements` dict. `source_entry(qty)` builds
+            the per-line 'sources' dict for either the confirmed-order or
+            forecast branch."""
+            bom = BillOfMaterials.query.filter_by(product_id=product.id, is_active=True).first()
+            if not bom:
+                return
+            try:
+                exploded = explode_bom_requirements(product.id, quantity, _mrp_scale_fn)
+            except (CircularBOMError, MaxDepthExceededError):
+                return  # dashboard aggregation - skip this product rather than fail the whole report
+
+            lines = list(exploded['materials'])
+            for sub in exploded['sub_assemblies']:
+                if not sub['has_own_bom']:
+                    lines.append({
+                        'material_id': sub['product_id'],
+                        'uom': None,
+                        'material_name': sub['product_name'],
+                        'required_quantity': sub['shortage_quantity'],
+                    })
+
+            for line in lines:
+                key = line['material_id']
+                if key is None or line['required_quantity'] <= 0:
+                    continue
+                # Safety Stock S2: material dengan is_excluded_from_mrp=True dikecualikan
+                # total dari MRP - tidak pernah masuk requirements dashboard ini.
+                # (key bisa juga product_id dari sub-assembly tanpa BOM sendiri, di
+                # situ Material lookup ini natural None dan tidak difilter - sama
+                # seperti ambiguitas code_lookup di bawah, bukan masalah baru.)
+                excluded_material = db.session.get(Material, key)
+                if excluded_material and excluded_material.is_excluded_from_mrp:
+                    continue
+                if key not in requirements:
+                    from models.product import Material as _Material, Product as _Product
+                    code_lookup = db.session.get(_Material, key) or db.session.get(_Product, key)
+                    requirements[key] = {
+                        'material_id': key,
+                        'material_code': code_lookup.code if code_lookup else None,
+                        'material_name': line['material_name'],
+                        'total_quantity': 0,
+                        'confirmed_quantity': 0,
+                        'forecast_quantity': 0,
+                        'uom': line['uom'],
+                        'sources': []
+                    }
+                qty = line['required_quantity']
+                requirements[key]['total_quantity'] += qty
+                requirements[key][quantity_field] += qty
+                requirements[key]['sources'].append(source_entry(qty))
+
         for order in sales_orders:
             for item in order.items:
                 product = item.product
-
-                # Get BOM for this product
-                bom = BillOfMaterials.query.filter_by(
-                    product_id=product.id,
-                    is_active=True
-                ).first()
-
-                if bom:
-                    # Calculate material requirements based on BOM
-                    quantity_needed = item.quantity
-
-                    for bom_item in bom.items:
-                        material_id = bom_item.material_id or bom_item.product_id
-
-                        if material_id not in requirements:
-                            requirements[material_id] = {
-                                'material_id': material_id,
-                                'material_code': bom_item.material.code if bom_item.material else bom_item.product.code,
-                                'material_name': bom_item.material.name if bom_item.material else bom_item.product.name,
-                                'total_quantity': 0,
-                                'confirmed_quantity': 0,
-                                'forecast_quantity': 0,
-                                'uom': bom_item.uom,
-                                'sources': []
-                            }
-
-                        material_qty = quantity_needed * bom_item.quantity * (1 + bom_item.scrap_percent / 100)
-                        requirements[material_id]['total_quantity'] += material_qty
-                        requirements[material_id]['confirmed_quantity'] += material_qty
-
-                        requirements[material_id]['sources'].append({
-                            'type': 'sales_order',
-                            'reference': order.order_number,
-                            'product_name': product.name,
-                            'quantity': material_qty,
-                            'required_date': order.required_date.isoformat() if order.required_date else None,
-                            'status': 'confirmed'
-                        })
+                _merge_exploded_into_requirements(
+                    product, item.quantity, 'confirmed_quantity',
+                    lambda qty, order=order, product=product: {
+                        'type': 'sales_order',
+                        'reference': order.order_number,
+                        'product_name': product.name,
+                        'quantity': qty,
+                        'required_date': order.required_date.isoformat() if order.required_date else None,
+                        'status': 'confirmed'
+                    }
+                )
 
         # 2. PROCESS SALES FORECASTS (if enabled)
         if include_forecasts:
-            forecasts = SalesForecast.query.filter(
-                SalesForecast.period_start <= end_date,
-                SalesForecast.period_end >= start_date,
-                SalesForecast.status.in_(['approved', 'submitted'])
-            ).all()
+            forecasts = forecast_rows_in_range(start_date, end_date)
 
             for forecast in forecasts:
                 if forecast.product_id:
@@ -223,34 +262,18 @@ def get_material_requirements():
                             period_ratio = overlap_days.days / total_forecast_days
                             adjusted_quantity = forecast_quantity * period_ratio
 
-                            for bom_item in bom.items:
-                                material_id = bom_item.material_id or bom_item.product_id
-
-                                if material_id not in requirements:
-                                    requirements[material_id] = {
-                                        'material_id': material_id,
-                                        'material_code': bom_item.material.code if bom_item.material else bom_item.product.code,
-                                        'material_name': bom_item.material.name if bom_item.material else bom_item.product.name,
-                                        'total_quantity': 0,
-                                        'confirmed_quantity': 0,
-                                        'forecast_quantity': 0,
-                                        'uom': bom_item.uom,
-                                        'sources': []
-                                    }
-
-                                material_qty = adjusted_quantity * bom_item.quantity * (1 + bom_item.scrap_percent / 100)
-                                requirements[material_id]['total_quantity'] += material_qty
-                                requirements[material_id]['forecast_quantity'] += material_qty
-
-                                requirements[material_id]['sources'].append({
+                            _merge_exploded_into_requirements(
+                                forecast.product, adjusted_quantity, 'forecast_quantity',
+                                lambda qty, forecast=forecast: {
                                     'type': 'sales_forecast',
                                     'reference': forecast.forecast_number,
                                     'product_name': forecast.product.name if forecast.product else 'Unknown',
-                                    'quantity': material_qty,
+                                    'quantity': qty,
                                     'forecast_period': f"{forecast.period_start.isoformat()} to {forecast.period_end.isoformat()}",
                                     'confidence': forecast.confidence_level,
                                     'status': 'forecast'
-                                })
+                                }
+                            )
 
         # 3. ADD CURRENT STOCK INFORMATION
         for material_id in requirements:
@@ -277,6 +300,7 @@ def get_material_requirements():
 
 @mrp_bp.route('/planning', methods=['POST'])
 @jwt_required()
+@require_permission('mrp.view')
 def create_production_plan():
     """Create production plan based on MRP requirements"""
     try:
@@ -326,46 +350,47 @@ def create_production_plan():
 
 @mrp_bp.route('/forecasts', methods=['GET'])
 @jwt_required()
+@require_permission('mrp.view')
 def get_sales_forecasts():
-    """Get sales forecasts for MRP planning"""
+    """Get sales forecasts for MRP planning.
+    Adapted 2026-08-24 for the Sales Forecast Matrix (ForecastHeader/ForecastLine) -
+    each row here is now 1 (product, month) cell instead of 1 SalesForecast row. The
+    matrix has no per-forecast customer dimension any more (it's per-year, all customers),
+    so customer_name/forecast_type are dropped from the response - nothing in the frontend
+    reads them here (this endpoint duplicates /api/sales/forecasts, kept for whatever
+    still calls this MRP-namespaced path)."""
     try:
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 50, type=int)
         status = request.args.get('status')
         product_id = request.args.get('product_id', type=int)
-        
-        query = SalesForecast.query
-        
-        if status:
-            query = query.filter_by(status=status)
+
+        status_filter = (status,) if status else ('draft', 'approved')
+        rows = list(iter_forecast_month_rows(status_filter=status_filter))
         if product_id:
-            query = query.filter_by(product_id=product_id)
-            
-        forecasts = query.order_by(SalesForecast.period_start.desc()).paginate(
-            page=page, per_page=per_page, error_out=False
-        )
-        
+            rows = [r for r in rows if r.product_id == product_id]
+        rows.sort(key=lambda r: r.period_start, reverse=True)
+
+        total = len(rows)
+        start = (page - 1) * per_page
+        page_rows = rows[start:start + per_page]
+
         return jsonify({
             'forecasts': [{
-                'id': f.id,
+                'line_id': f.line_id,
+                'header_id': f.header_id,
                 'forecast_number': f.forecast_number,
                 'name': f.name,
-                'product_name': f.product.name if f.product else 'All Products',
-                'customer_name': f.customer.company_name if f.customer else 'All Customers',
-                'forecast_type': f.forecast_type,
+                'product_name': f.product.name if f.product else 'Unknown',
                 'period_start': f.period_start.isoformat(),
                 'period_end': f.period_end.isoformat(),
-                'best_case': float(f.best_case),
-                'most_likely': float(f.most_likely),
-                'worst_case': float(f.worst_case),
-                'committed': float(f.committed),
+                'qty': f.qty,
                 'status': f.status,
-                'confidence_level': f.confidence_level,
                 'created_at': f.created_at.isoformat()
-            } for f in forecasts.items],
-            'total': forecasts.total,
-            'pages': forecasts.pages,
-            'current_page': forecasts.page
+            } for f in page_rows],
+            'total': total,
+            'pages': (total + per_page - 1) // per_page if per_page else 1,
+            'current_page': page
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -388,6 +413,7 @@ def get_current_stock(material_id):
 
 @mrp_bp.route('/simulation/scenarios', methods=['POST'])
 @jwt_required()
+@require_permission('mrp.run')
 def run_whatif_simulation():
     """Run What-If simulation with different scenarios"""
     try:
@@ -455,12 +481,11 @@ def run_whatif_simulation():
                             })
 
             # 2. PROCESS SALES FORECASTS (if enabled in scenario)
+            # NOTE: forecast_confidence (best/worst/most_likely) no longer differentiates -
+            # the Matrix only stores 1 plain qty per cell (§3.1(a)), all 3 collapse to the
+            # same value now. Kept the branching for response-shape compatibility.
             if include_forecasts:
-                forecasts = SalesForecast.query.filter(
-                    SalesForecast.period_start <= end_date,
-                    SalesForecast.period_end >= start_date,
-                    SalesForecast.status.in_(['approved', 'submitted'])
-                ).all()
+                forecasts = forecast_rows_in_range(start_date, end_date)
 
                 for forecast in forecasts:
                     if forecast.product_id:
@@ -564,6 +589,7 @@ def run_whatif_simulation():
 
 @mrp_bp.route('/simulation/templates', methods=['GET'])
 @jwt_required()
+@require_permission('mrp.view')
 def get_simulation_templates():
     """Get predefined simulation scenario templates"""
     try:
@@ -641,6 +667,7 @@ def get_simulation_templates():
 
 @mrp_bp.route('/dashboard/metrics', methods=['GET'])
 @jwt_required()
+@require_permission('mrp.view')
 def get_dashboard_metrics():
     """Get MRP dashboard KPIs and metrics"""
     try:
@@ -694,27 +721,47 @@ def get_dashboard_metrics():
 
 @mrp_bp.route('/dashboard/demand-forecast', methods=['GET'])
 @jwt_required()
+@require_permission('mrp.view')
 def get_dashboard_demand_forecast():
     """Get demand forecast for dashboard"""
     try:
+        from models.sales import SalesOrderItem
+
         # Get real demand data from sales orders and forecasts
         forecast = []
-        
-        # Get products with recent sales activity (simplified for now)
-        # Note: This requires proper SalesOrderItem model relationship
-        products_with_sales = []
-        
+
+        # Products with recent sales activity, in a lookback window (default 90 days)
+        lookback_days = int(get_setting_value('mrp.demand_lookback_days', 90))
+        cutoff = get_local_now() - timedelta(days=lookback_days)
+
+        sales_rows = db.session.query(
+            SalesOrderItem.product_id,
+            Product.name,
+            func.sum(SalesOrderItem.quantity).label('total_qty')
+        ).join(SalesOrder, SalesOrderItem.order_id == SalesOrder.id
+        ).join(Product, SalesOrderItem.product_id == Product.id
+        ).filter(SalesOrder.order_date >= cutoff
+        ).group_by(SalesOrderItem.product_id, Product.name).all()
+
+        products_with_sales = [(row.product_id, row.name) for row in sales_rows]
+        current_demand_map = {row.product_id: float(row.total_qty) for row in sales_rows}
+
+        # Latest forecast cell per product (by period_start desc) - precomputed once
+        # instead of 1 query per product, since iter_forecast_month_rows() is a full scan.
+        latest_forecast_by_product = {}
+        for row in iter_forecast_month_rows(status_filter=('draft', 'approved')):
+            existing = latest_forecast_by_product.get(row.product_id)
+            if not existing or row.period_start > existing.period_start:
+                latest_forecast_by_product[row.product_id] = row
+
         for product_id, product_name in products_with_sales:
-            # Calculate current demand (simplified for now)
-            current_demand = 0
-            
+            current_demand = current_demand_map.get(product_id, 0)
+
             # Get forecast data if available
-            forecast_record = SalesForecast.query.filter_by(
-                product_id=product_id
-            ).order_by(SalesForecast.forecast_date.desc()).first()
-            
+            forecast_record = latest_forecast_by_product.get(product_id)
+
             if forecast_record:
-                forecasted_demand = float(forecast_record.most_likely_quantity)
+                forecasted_demand = float(forecast_record.most_likely)
                 variance = ((forecasted_demand - current_demand) / current_demand * 100) if current_demand > 0 else 0
                 
                 trend_threshold = get_setting_value('mrp.demand_trend_threshold_pct', 5.0)
@@ -740,6 +787,7 @@ def get_dashboard_demand_forecast():
 
 @mrp_bp.route('/dashboard/capacity', methods=['GET'])
 @jwt_required()
+@require_permission('mrp.view')
 def get_dashboard_capacity():
     """Get capacity data for dashboard"""
     try:
@@ -804,6 +852,7 @@ def get_dashboard_capacity():
 
 @mrp_bp.route('/dashboard/material-shortages', methods=['GET'])
 @jwt_required()
+@require_permission('mrp.view')
 def get_dashboard_material_shortages():
     """Get material shortages for dashboard"""
     try:
@@ -851,6 +900,7 @@ def get_dashboard_material_shortages():
 
 @mrp_bp.route('/dashboard/timeline', methods=['GET'])
 @jwt_required()
+@require_permission('mrp.view')
 def get_dashboard_timeline():
     """Get planning timeline for dashboard"""
     try:
@@ -893,6 +943,7 @@ def get_dashboard_timeline():
 
 @mrp_bp.route('/demand/forecast', methods=['GET'])
 @jwt_required()
+@require_permission('mrp.view')
 def get_demand_forecast():
     """Get demand forecasting data"""
     try:
@@ -905,25 +956,24 @@ def get_demand_forecast():
         forecasts = []
         
         try:
-            query = db.session.query(SalesForecast)
-            
-            # Join with Product if we need to filter by category
-            if category != 'all' or product != 'all':
-                query = query.join(Product)
-                
-                if category != 'all':
-                    query = query.filter(Product.category == category)
-                    
-                if product != 'all':
-                    query = query.filter(Product.id == product)
-            
-            forecast_records = query.order_by(SalesForecast.created_at.desc()).limit(20).all()
-            
+            forecast_records = list(iter_forecast_month_rows(status_filter=('draft', 'approved')))
+
+            if category != 'all':
+                forecast_records = [f for f in forecast_records if f.product and f.product.category == category]
+            if product != 'all':
+                forecast_records = [f for f in forecast_records if str(f.product_id) == str(product)]
+
+            forecast_records.sort(key=lambda f: f.created_at or f.period_start, reverse=True)
+            forecast_records = forecast_records[:20]
+
             for forecast in forecast_records:
                 try:
                     # Use actual model fields
                     forecasted_demand = float(forecast.most_likely or 0)
-                    current_demand = float(forecast.actual_value or 0)
+                    # actual_value/accuracy_percentage tracking fields don't exist in the
+                    # Matrix (ForecastLine has no actuals-tracking equivalent) - always 0,
+                    # so variance/confidence_level below are not meaningful here any more.
+                    current_demand = 0.0
                     
                     # Calculate variance
                     if current_demand > 0:
@@ -958,7 +1008,7 @@ def get_demand_forecast():
                         'forecasted_demand': int(forecasted_demand),
                         'variance': round(variance_percent, 1),
                         'trend': trend,
-                        'confidence_level': float(forecast.accuracy_percentage or 0),
+                        'confidence_level': 0.0,
                         'seasonality_factor': 1.0,
                         'last_updated': forecast.created_at.isoformat() if forecast.created_at else None
                     })
@@ -1023,6 +1073,7 @@ def get_demand_forecast():
 
 @mrp_bp.route('/demand/historical', methods=['GET'])
 @jwt_required()
+@require_permission('mrp.view')
 def get_demand_historical():
     """Get historical demand data"""
     try:
@@ -1036,6 +1087,7 @@ def get_demand_historical():
 
 @mrp_bp.route('/demand/seasonality', methods=['GET'])
 @jwt_required()
+@require_permission('mrp.view')
 def get_demand_seasonality():
     """Get seasonality patterns"""
     try:
@@ -1049,6 +1101,7 @@ def get_demand_seasonality():
 
 @mrp_bp.route('/demand/accuracy', methods=['GET'])
 @jwt_required()
+@require_permission('mrp.view')
 def get_demand_accuracy():
     """Get forecast accuracy metrics"""
     try:
@@ -1062,6 +1115,7 @@ def get_demand_accuracy():
 
 @mrp_bp.route('/demand/calculate-forecast', methods=['POST'])
 @jwt_required()
+@require_permission('mrp.view')
 def calculate_demand_forecast():
     """Calculate/recalculate demand forecast"""
     try:
@@ -1100,6 +1154,7 @@ def calculate_demand_forecast():
 
 @mrp_bp.route('/capacity/resources', methods=['GET'])
 @jwt_required()
+@require_permission('mrp.view')
 def get_capacity_resources():
     """Get capacity resources data"""
     try:
@@ -1113,6 +1168,7 @@ def get_capacity_resources():
 
 @mrp_bp.route('/capacity/timeline', methods=['GET'])
 @jwt_required()
+@require_permission('mrp.view')
 def get_capacity_timeline():
     """Get capacity timeline data"""
     try:
@@ -1130,6 +1186,7 @@ def get_capacity_timeline():
 
 @mrp_bp.route('/materials/requirements', methods=['GET'])
 @jwt_required()
+@require_permission('mrp.view')
 def get_materials_requirements():
     """Get material requirements data"""
     try:
@@ -1143,6 +1200,7 @@ def get_materials_requirements():
 
 @mrp_bp.route('/materials/summary', methods=['GET'])
 @jwt_required()
+@require_permission('mrp.view')
 def get_materials_summary():
     """Get material requirements summary"""
     try:
@@ -1171,6 +1229,7 @@ def get_materials_summary():
 
 @mrp_bp.route('/suppliers/performance', methods=['GET'])
 @jwt_required()
+@require_permission('mrp.view')
 def get_suppliers_performance():
     """Get supplier performance data"""
     try:
@@ -1184,6 +1243,7 @@ def get_suppliers_performance():
 
 @mrp_bp.route('/suppliers/capacity', methods=['GET'])
 @jwt_required()
+@require_permission('mrp.view')
 def get_suppliers_capacity():
     """Get supplier capacity data"""
     try:
@@ -1201,6 +1261,7 @@ def get_suppliers_capacity():
 
 @mrp_bp.route('/create-purchase-order-from-shortage', methods=['POST'])
 @jwt_required()
+@require_permission('mrp.view')
 def create_po_from_shortage():
     """
     Auto-generate Purchase Order from material shortage
@@ -1209,11 +1270,11 @@ def create_po_from_shortage():
     try:
         from models.purchasing import PurchaseOrder, PurchaseOrderItem, Supplier
         from models.product import Material
-        from utils import generate_number
-        
+        from utils import generate_number_v2
+
         data = request.get_json()
         user_id = int(get_jwt_identity())
-        
+
         shortage_items = data.get('shortage_items', [])
         reference_type = data.get('reference_type', 'sales_order')  # sales_order, sales_forecast, work_order
         reference_id = data.get('reference_id')
@@ -1253,8 +1314,8 @@ def create_po_from_shortage():
             if not supplier:
                 continue
             
-            po_number = generate_number('PO', PurchaseOrder, 'po_number')
-            
+            po_number = generate_number_v2('purchase_order', 'PO', PurchaseOrder, 'po_number')
+
             po = PurchaseOrder(
                 po_number=po_number,
                 supplier_id=supplier_id,
@@ -1340,6 +1401,7 @@ def create_po_from_shortage():
 
 @mrp_bp.route('/check-and-create-po', methods=['POST'])
 @jwt_required()
+@require_permission('mrp.view')
 def check_and_create_po():
     """
     Check material requirements for a sales order and auto-create PO if shortage
@@ -1348,59 +1410,88 @@ def check_and_create_po():
     try:
         from models.production import BillOfMaterials, BOMItem
         from models.warehouse import Inventory
-        
+        from utils.bom_explosion import explode_bom_requirements, get_current_stock as _get_stock, CircularBOMError, MaxDepthExceededError
+
         data = request.get_json()
         user_id = int(get_jwt_identity())
-        
+
         items = data.get('items', [])  # [{product_id, quantity}, ...]
         reference_type = data.get('reference_type', 'sales_order')
         reference_id = data.get('reference_id')
         reference_number = data.get('reference_number', '')
         auto_create_po = data.get('auto_create_po', True)
-        
+
         all_shortages = []
-        
+
+        def scale_fn(bom_item, parent_qty, bom):
+            pack_per_carton = bom.pack_per_carton or 1
+            cartons_needed = parent_qty / pack_per_carton
+            required_qty = float(bom_item.quantity) * cartons_needed / float(bom.batch_size)
+            required_qty *= (1 + float(bom_item.scrap_percent or 0) / 100)
+            return required_qty
+
+        def extra_fn(bom_item):
+            return {
+                'unit_cost': float(bom_item.unit_cost or 0),
+                'supplier_id': bom_item.supplier_id,
+                'is_critical': bom_item.is_critical,
+            }
+
         for item in items:
             product_id = item.get('product_id')
             quantity = float(item.get('quantity', 0))
-            
+
             # Get BOM for product
             bom = BillOfMaterials.query.filter_by(
                 product_id=product_id,
                 is_active=True
             ).first()
-            
+
             if not bom:
                 continue
-            
-            # Calculate cartons needed
-            pack_per_carton = bom.pack_per_carton or 1
-            cartons_needed = quantity / pack_per_carton
-            
-            # Check each BOM item
-            for bom_item in bom.items:
-                required_qty = float(bom_item.quantity) * cartons_needed / float(bom.batch_size)
-                required_qty *= (1 + float(bom_item.scrap_percent or 0) / 100)
-                
-                # Get current stock
-                current_stock = float(bom_item.current_stock or 0)
-                
-                if current_stock < required_qty:
-                    shortage_qty = required_qty - current_stock
+
+            try:
+                exploded = explode_bom_requirements(product_id, quantity, scale_fn, extra_fn=extra_fn)
+            except (CircularBOMError, MaxDepthExceededError) as bom_err:
+                return jsonify({'error': str(bom_err)}), 400
+
+            for m in exploded['materials']:
+                current_stock = _get_stock(material_id=m['material_id'])
+                if current_stock < m['required_quantity']:
                     all_shortages.append({
-                        'material_id': bom_item.material_id,
-                        'product_id': bom_item.product_id,
-                        'item_name': bom_item.item_name,
-                        'item_code': bom_item.item_code,
-                        'required_quantity': required_qty,
+                        'material_id': m['material_id'],
+                        'product_id': None,
+                        'item_name': m['material_name'],
+                        'item_code': None,
+                        'required_quantity': m['required_quantity'],
                         'available_quantity': current_stock,
-                        'shortage_quantity': shortage_qty,
-                        'unit_cost': float(bom_item.unit_cost or 0),
-                        'uom': bom_item.uom,
-                        'supplier_id': bom_item.supplier_id,
-                        'is_critical': bom_item.is_critical
+                        'shortage_quantity': m['required_quantity'] - current_stock,
+                        'unit_cost': m.get('unit_cost', 0),
+                        'uom': m['uom'],
+                        'supplier_id': m.get('supplier_id'),
+                        'is_critical': m.get('is_critical', False)
                     })
-        
+
+            # Sub-assemblies (WIP/mixing) that are themselves short and have
+            # no BOM to explode further - nothing to explode into raw
+            # materials, but still worth surfacing as a shortage since it
+            # can't be auto-PO'd like a material (no supplier on a product).
+            for sub in exploded['sub_assemblies']:
+                if sub['shortage_quantity'] > 0 and not sub['has_own_bom']:
+                    all_shortages.append({
+                        'material_id': None,
+                        'product_id': sub['product_id'],
+                        'item_name': sub['product_name'],
+                        'item_code': None,
+                        'required_quantity': sub['required_quantity'],
+                        'available_quantity': sub['current_stock'],
+                        'shortage_quantity': sub['shortage_quantity'],
+                        'unit_cost': 0,
+                        'uom': None,
+                        'supplier_id': None,
+                        'is_critical': False
+                    })
+
         result = {
             'has_shortage': len(all_shortages) > 0,
             'total_shortage_items': len(all_shortages),
@@ -1433,8 +1524,8 @@ def create_po_from_shortage_internal(shortage_items, reference_type, reference_i
     """Internal function to create PO from shortage items"""
     from models.purchasing import PurchaseOrder, PurchaseOrderItem, Supplier
     from models.product import Material
-    from utils import generate_number
-    
+    from utils import generate_number_v2
+
     # Group items by supplier
     supplier_items = {}
     for item in shortage_items:
@@ -1463,7 +1554,7 @@ def create_po_from_shortage_internal(shortage_items, reference_type, reference_i
         if not supplier:
             continue
         
-        po_number = generate_number('PO', PurchaseOrder, 'po_number')
+        po_number = generate_number_v2('purchase_order', 'PO', PurchaseOrder, 'po_number')
         
         po = PurchaseOrder(
             po_number=po_number,
@@ -1513,8 +1604,30 @@ def create_po_from_shortage_internal(shortage_items, reference_type, reference_i
         })
     
     db.session.commit()
-    
+
     return {
         'message': f'{len(created_pos)} Purchase Order(s) created',
         'purchase_orders': created_pos
     }
+
+
+@mrp_bp.route('/time-phased-check/<int:sales_order_id>', methods=['GET'])
+@jwt_required()
+@require_permission('mrp.view')
+def get_time_phased_check(sales_order_id):
+    """MRP time-phased check with cross-SO aggregation, for PPIC. Triggered
+    automatically (notification) when a Sales Forecast is converted to a
+    Sales Order - this endpoint is what the notification's action_url and
+    the MRP dashboard's "Time-Phased Check" section both call. Recomputed
+    fresh on every call (no snapshot/cache), so PPIC always sees the
+    current picture, not what it looked like at conversion time."""
+    try:
+        from utils.mrp_time_phased import check_time_phased_aggregate
+        result = check_time_phased_aggregate(sales_order_id)
+        return jsonify({'materials': result}), 200
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 404
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500

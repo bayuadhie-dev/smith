@@ -1,14 +1,22 @@
 """
 Company Configuration
-Edit this file to change company information displayed in reports
+
+Source of truth is the CompanyProfile row edited on the Settings page
+(Settings > Company Profile, backend/models/settings.py). get_company_info()
+reads that row live so a rename on the Settings page doesn't require any
+code change here.
+
+The constants below are used ONLY as a fallback for the rare paths that run
+before/without a DB connection (e.g. DB-not-ready error handlers, first-boot
+seeding before any CompanyProfile row exists).
 """
 
-# Company Information
-COMPANY_NAME = "PT GRATIA MAKMUR SENTOSA"
-COMPANY_ADDRESS_LINE1 = "Jalan Bangak - Simo KM 2, RT 009 RW 003"
-COMPANY_ADDRESS_LINE2 = "Banyudono, Boyolali, Jawa Tengah 57373"
+# Fallback values (used only when no CompanyProfile row exists / DB unreachable)
+COMPANY_NAME = "PT. FALMACO NONWOVEN INDUSTRI, Tbk"
+COMPANY_ADDRESS_LINE1 = "Jl. Raya Bangak-Simo KM 2 Tanjunganom Trayu"
+COMPANY_ADDRESS_LINE2 = "Banyudono, Kab Boyolali, Jawa Tengah"
 COMPANY_ADDRESS_LINE3 = "Indonesia"
-COMPANY_PHONE = "(0276) 123456"
+COMPANY_PHONE = "+62-21-1234567"
 COMPANY_EMAIL = "info@gratiamakmur.com"
 COMPANY_WEBSITE = "www.gratiamakmur.com"
 
@@ -17,12 +25,31 @@ COMPANY_WEBSITE = "www.gratiamakmur.com"
 # For base64: "data:image/png;base64,iVBORw0KGgo..."
 COMPANY_LOGO = ""  # Leave empty for no logo, or put path to logo file
 
-# Get full address as single string
+# Get full address as single string (fallback only, see get_company_info())
 def get_full_address():
     return f"{COMPANY_ADDRESS_LINE1}\n{COMPANY_ADDRESS_LINE2}\n{COMPANY_ADDRESS_LINE3}"
 
-# Get company info as dictionary
+# Get company info as dictionary - reads CompanyProfile (Settings page) live,
+# falls back to the constants above only if no profile row exists yet.
 def get_company_info():
+    try:
+        from models.settings import CompanyProfile
+        profile = CompanyProfile.query.first()
+        if profile and profile.company_name:
+            return {
+                'name': profile.company_name,
+                'address_line1': profile.address or COMPANY_ADDRESS_LINE1,
+                'address_line2': '',
+                'address_line3': '',
+                'full_address': profile.address or get_full_address(),
+                'phone': profile.phone or COMPANY_PHONE,
+                'email': profile.email or COMPANY_EMAIL,
+                'website': profile.website or COMPANY_WEBSITE,
+                'logo': profile.logo_path or COMPANY_LOGO
+            }
+    except Exception:
+        pass
+
     return {
         'name': COMPANY_NAME,
         'address_line1': COMPANY_ADDRESS_LINE1,

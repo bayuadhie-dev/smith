@@ -1,10 +1,12 @@
 from flask import Blueprint, jsonify, current_app
 from flask_jwt_extended import jwt_required
+from utils.auth_decorators import require_permission
 
 cache_stats_bp = Blueprint('cache_stats', __name__)
 
 @cache_stats_bp.route('/cache/stats', methods=['GET'])
 @jwt_required()
+@require_permission('settings.view')
 def get_cache_stats():
     """
     Get Redis cache statistics
@@ -12,8 +14,8 @@ def get_cache_stats():
     try:
         # Check if cache is available
         cache = None
-        if hasattr(current_app, 'extensions') and 'cache' in current_app.extensions:
-            cache = current_app.extensions['cache']
+        if hasattr(current_app, 'extensions') and 'cache_instance' in current_app.extensions:
+            cache = current_app.extensions['cache_instance']
         
         if not cache:
             return jsonify({
@@ -65,14 +67,15 @@ def get_cache_stats():
 
 @cache_stats_bp.route('/cache/clear', methods=['POST'])
 @jwt_required()
+@require_permission('settings.edit')
 def clear_cache():
     """
     Clear all Redis cache
     """
     try:
         cache = None
-        if hasattr(current_app, 'extensions') and 'cache' in current_app.extensions:
-            cache = current_app.extensions['cache']
+        if hasattr(current_app, 'extensions') and 'cache_instance' in current_app.extensions:
+            cache = current_app.extensions['cache_instance']
         
         if not cache:
             return jsonify({

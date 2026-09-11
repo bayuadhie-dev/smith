@@ -4,9 +4,10 @@ Dynamic template-based document generation with PDF/Excel export
 """
 from flask import Blueprint, request, jsonify, send_file, render_template_string, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db
 from models.document_management import (
-    DocumentTemplate, Document, DocumentRevision, 
+    DocumentTemplate, TemplateVersion, Document, DocumentRevision,
     DocumentCategory, DocumentAttachment, DocumentLog
 )
 from models.user import User
@@ -37,71 +38,123 @@ except ImportError:
 document_bp = Blueprint('document', __name__, url_prefix='/api/documents')
 
 
+def _user_can_access_template(user_id, template):
+    """Fase 3 access control. is_admin/is_super_admin always bypass - template
+    access is about who can casually browse/edit DESIGNS, not a security
+    boundary against elevated staff. access_scope='all' (the default) means
+    no restriction at all, matching pre-Fase-3 behavior for every template
+    that predates this feature."""
+    if template.access_scope == 'all' or not template.access_scope:
+        return True
+    user = db.session.get(User, user_id)
+    if not user:
+        return False
+    if user.is_admin or user.is_super_admin:
+        return True
+    if template.access_scope == 'user':
+        return user_id in (template.access_user_ids or [])
+    if template.access_scope == 'role':
+        user_role_ids = {ur.role_id for ur in user.roles} if hasattr(user, 'roles') else set()
+        return bool(user_role_ids.intersection(template.access_role_ids or []))
+    return True
+
+
 @document_bp.route('/templates', methods=['GET'])
 @jwt_required()
+@require_permission('documents.view')
 def get_templates():
-    """Get all document templates"""
+    """List template FAMILIES. Each row shows its current live version's status
+    summary - the editor's own version list (§ versions endpoints below) is
+    where per-version detail/history lives."""
     try:
+        current_user_id = int(get_jwt_identity())
         document_type = request.args.get('document_type')
-        
+
         query = DocumentTemplate.query.filter_by(is_active=True)
-        
         if document_type:
             query = query.filter_by(document_type=document_type)
-        
-        templates = query.all()
-        
+        templates = query.order_by(DocumentTemplate.document_type, DocumentTemplate.template_name).all()
+        templates = [t for t in templates if _user_can_access_template(current_user_id, t)]
+
         return jsonify({
             'templates': [{
                 'id': t.id,
                 'template_name': t.template_name,
                 'template_code': t.template_code,
                 'document_type': t.document_type,
-                'paper_size': t.paper_size,
-                'orientation': t.orientation,
-                'is_default': t.is_default
+                'is_default': t.is_default,
+                'is_active': t.is_active,
+                'access_scope': t.access_scope,
+                'access_role_ids': t.access_role_ids,
+                'access_user_ids': t.access_user_ids,
+                'current_version_id': t.current_version_id,
+                'current_version_number': t.current_version.version_number if t.current_version else None,
+                'current_version_status': t.current_version.status if t.current_version else None,
+                'version_count': len(t.versions),
+                'updated_at': t.updated_at.isoformat() if t.updated_at else None,
             } for t in templates]
         }), 200
-        
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 
 @document_bp.route('/templates', methods=['POST'])
 @jwt_required()
+@require_permission('documents.create')
 def create_template():
-    """Create new document template"""
+    """Create a new template FAMILY, with an empty draft v1 to start designing in."""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         data = request.get_json()
-        
+
+        for field in ('template_name', 'template_code', 'document_type'):
+            if not data.get(field):
+                return jsonify({'error': f'{field} wajib diisi'}), 400
+
+        if DocumentTemplate.query.filter_by(template_code=data['template_code']).first():
+            return jsonify({'error': 'template_code sudah dipakai'}), 400
+
+        is_default = bool(data.get('is_default', False))
+        if is_default:
+            DocumentTemplate.query.filter_by(document_type=data['document_type'], is_default=True).update({'is_default': False})
+
+        access_scope = data.get('access_scope', 'all')
+        if access_scope not in ('all', 'role', 'user'):
+            return jsonify({'error': 'access_scope harus all, role, atau user'}), 400
+
         template = DocumentTemplate(
             template_name=data['template_name'],
             template_code=data['template_code'],
             document_type=data['document_type'],
-            template_structure=data['template_structure'],
+            is_default=is_default,
+            is_active=True,
+            access_scope=access_scope,
+            access_role_ids=data.get('access_role_ids') if access_scope == 'role' else None,
+            access_user_ids=data.get('access_user_ids') if access_scope == 'user' else None,
+            created_by=current_user_id,
+        )
+        db.session.add(template)
+        db.session.flush()
+
+        version = TemplateVersion(
+            document_template_id=template.id,
+            version_number=1,
+            status='draft',
+            canvas_data={'version': 'fabric-6', 'objects': []},
             paper_size=data.get('paper_size', 'A4'),
             orientation=data.get('orientation', 'portrait'),
-            margins=data.get('margins', {'top': 20, 'right': 20, 'bottom': 20, 'left': 20}),
-            header_template=data.get('header_template'),
-            footer_template=data.get('footer_template'),
-            available_fields=data.get('available_fields', []),
-            required_fields=data.get('required_fields', []),
-            font_family=data.get('font_family', 'Arial'),
-            font_size=data.get('font_size', 10),
-            custom_css=data.get('custom_css'),
-            is_default=data.get('is_default', False),
-            created_by=current_user_id
+            created_by=current_user_id,
         )
-        
-        db.session.add(template)
+        db.session.add(version)
         db.session.commit()
-        
+
         return jsonify({
-            'message': 'Template created successfully',
-            'template_id': template.id
+            'message': 'Template dibuat',
+            'template_id': template.id,
+            'version_id': version.id,
         }), 201
-        
+
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
@@ -109,343 +162,367 @@ def create_template():
 
 @document_bp.route('/templates/<int:id>', methods=['GET'])
 @jwt_required()
+@require_permission('documents.view')
 def get_template(id):
-    """Get single template"""
+    """Family detail + list of ALL its versions (history - never deleted)."""
     try:
+        current_user_id = int(get_jwt_identity())
         template = db.session.get(DocumentTemplate, id) or abort(404)
-        
+        if not _user_can_access_template(current_user_id, template):
+            return jsonify({'error': 'Kamu tidak punya akses ke template ini'}), 403
+
         return jsonify({
             'template': {
                 'id': template.id,
                 'template_name': template.template_name,
                 'template_code': template.template_code,
                 'document_type': template.document_type,
-                'paper_size': template.paper_size,
-                'orientation': template.orientation,
-                'margins': template.margins,
-                'font_family': template.font_family,
-                'font_size': template.font_size,
-                'header_template': template.header_template,
-                'footer_template': template.footer_template,
-                'template_structure': template.template_structure,
-                'custom_css': template.custom_css,
                 'is_default': template.is_default,
-                'is_active': template.is_active
+                'is_active': template.is_active,
+                'access_scope': template.access_scope,
+                'access_role_ids': template.access_role_ids,
+                'access_user_ids': template.access_user_ids,
+                'current_version_id': template.current_version_id,
+                'versions': [{
+                    'id': v.id,
+                    'version_number': v.version_number,
+                    'status': v.status,
+                    'change_note': v.change_note,
+                    'paper_size': v.paper_size,
+                    'orientation': v.orientation,
+                    'published_at': v.published_at.isoformat() if v.published_at else None,
+                    'created_at': v.created_at.isoformat() if v.created_at else None,
+                } for v in sorted(template.versions, key=lambda v: v.version_number, reverse=True)],
             }
         }), 200
-        
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 
 @document_bp.route('/templates/<int:id>', methods=['PUT'])
 @jwt_required()
+@require_permission('documents.edit')
 def update_template(id):
-    """Update document template"""
+    """Update family metadata only (name/active/default) - design content lives
+    in TemplateVersion, edited via the version endpoints below."""
     try:
+        current_user_id = int(get_jwt_identity())
         template = db.session.get(DocumentTemplate, id) or abort(404)
+        if not _user_can_access_template(current_user_id, template):
+            return jsonify({'error': 'Kamu tidak punya akses ke template ini'}), 403
         data = request.get_json()
-        
-        template.template_name = data.get('template_name', template.template_name)
-        template.template_code = data.get('template_code', template.template_code)
-        template.document_type = data.get('document_type', template.document_type)
-        template.paper_size = data.get('paper_size', template.paper_size)
-        template.orientation = data.get('orientation', template.orientation)
-        template.margins = data.get('margins', template.margins)
-        template.font_family = data.get('font_family', template.font_family)
-        template.font_size = data.get('font_size', template.font_size)
-        template.header_template = data.get('header_template', template.header_template)
-        template.footer_template = data.get('footer_template', template.footer_template)
-        template.template_structure = data.get('template_structure', template.template_structure)
-        template.custom_css = data.get('custom_css', template.custom_css)
-        template.is_default = data.get('is_default', template.is_default)
-        template.is_active = data.get('is_active', template.is_active)
-        
+
+        if 'template_name' in data:
+            template.template_name = data['template_name']
+        if 'is_active' in data:
+            template.is_active = bool(data['is_active'])
+        if 'is_default' in data and data['is_default'] and not template.is_default:
+            DocumentTemplate.query.filter_by(document_type=template.document_type, is_default=True).update({'is_default': False})
+            template.is_default = True
+        elif 'is_default' in data and not data['is_default']:
+            template.is_default = False
+        if 'access_scope' in data:
+            if data['access_scope'] not in ('all', 'role', 'user'):
+                return jsonify({'error': 'access_scope harus all, role, atau user'}), 400
+            template.access_scope = data['access_scope']
+            template.access_role_ids = data.get('access_role_ids') if data['access_scope'] == 'role' else None
+            template.access_user_ids = data.get('access_user_ids') if data['access_scope'] == 'user' else None
+
         db.session.commit()
-        
-        return jsonify({
-            'message': 'Template updated successfully',
-            'template_id': template.id
-        }), 200
-        
+        return jsonify({'message': 'Template diperbarui', 'template_id': template.id}), 200
+
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
 
-@document_bp.route('/preview-data/<document_type>', methods=['GET'])
+@document_bp.route('/templates/<int:id>/versions', methods=['POST'])
 @jwt_required()
-def get_preview_data(document_type):
-    """Get sample data for template preview based on document type"""
+@require_permission('documents.create')
+def create_template_version(id):
+    """Start a new draft version - either blank, or a copy of an existing
+    version's canvas_data (typically the current live one, to edit it further
+    without touching what's actually in production until Publish)."""
     try:
-        from models.sales import SalesOrder, SalesOrderItem
-        from models.production import WorkOrder
-        from models.purchasing import PurchaseOrder
-        from models.inventory import Product
-        from models.crm import Customer
-        
-        # Get company info from settings or use default
-        company_data = {
-            'name': 'PT. CONTOH PERUSAHAAN',
-            'address': 'Jl. Contoh No. 123, Jakarta 12345',
-            'phone': '021-1234567',
-            'email': 'info@contoh.com',
-            'npwp': '01.234.567.8-901.000'
-        }
-        
-        preview_data = {'company': company_data}
-        
-        # Get real sample data based on document type
-        if document_type in ['perintah_kerja', 'penyelesaian_barang_jadi', 'formula_produksi']:
-            work_order = WorkOrder.query.order_by(WorkOrder.id.desc()).first()
-            if work_order:
-                preview_data['workOrder'] = {
-                    'number': work_order.work_order_number,
-                    'transDate': work_order.start_date.strftime('%d/%m/%Y') if work_order.start_date else '-',
-                    'dueDate': work_order.due_date.strftime('%d/%m/%Y') if work_order.due_date else '-',
-                    'status': work_order.status,
-                    'manufacturePlan': f'MP-{work_order.id:04d}',
-                    'description': work_order.notes or '',
-                    'item': {'name': work_order.product.name if work_order.product else '-', 'code': work_order.product.sku if work_order.product else '-'},
-                    'quantity': work_order.quantity,
-                    'itemUnit': {'name': work_order.product.unit if work_order.product else 'Pcs'},
-                    'totalMaterial': f'Rp {work_order.material_cost or 0:,.0f}',
-                    'totalExpense': f'Rp {work_order.overhead_cost or 0:,.0f}',
-                    'totalAmount': f'Rp {work_order.total_cost or 0:,.0f}'
-                }
-                # Materials
-                preview_data['workOrderMaterial'] = []
-                if hasattr(work_order, 'materials'):
-                    for mat in work_order.materials[:5]:
-                        preview_data['workOrderMaterial'].append({
-                            'item': {'code': mat.product.sku if mat.product else '-', 'name': mat.product.name if mat.product else '-'},
-                            'quantity': mat.quantity_required,
-                            'itemUnit': {'name': mat.product.unit if mat.product else 'Pcs'},
-                            'unitPrice': f'Rp {mat.unit_cost or 0:,.0f}',
-                            'amount': f'Rp {(mat.quantity_required or 0) * (mat.unit_cost or 0):,.0f}'
-                        })
-        
-        elif document_type in ['pesanan_penjualan', 'faktur_penjualan', 'pengiriman_pesanan']:
-            sales_order = SalesOrder.query.order_by(SalesOrder.id.desc()).first()
-            if sales_order:
-                preview_data['salesOrder'] = {
-                    'number': sales_order.order_number,
-                    'orderDate': sales_order.order_date.strftime('%d/%m/%Y') if sales_order.order_date else '-',
-                    'requiredDate': sales_order.required_date.strftime('%d/%m/%Y') if sales_order.required_date else '-',
-                    'customer': {
-                        'name': sales_order.customer.name if sales_order.customer else '-',
-                        'address': sales_order.customer.address if sales_order.customer else '-',
-                        'phone': sales_order.customer.phone if sales_order.customer else '-'
-                    },
-                    'deliveryAddress': sales_order.delivery_address or '-',
-                    'subtotal': f'Rp {sales_order.subtotal or 0:,.0f}',
-                    'taxAmount': f'Rp {sales_order.tax_amount or 0:,.0f}',
-                    'discountAmount': f'Rp {sales_order.discount_amount or 0:,.0f}',
-                    'totalAmount': f'Rp {sales_order.total_amount or 0:,.0f}',
-                    'notes': sales_order.notes or ''
-                }
-                # Items
-                preview_data['salesOrderItem'] = []
-                for i, item in enumerate(sales_order.items[:5], 1):
-                    preview_data['salesOrderItem'].append({
-                        'lineNo': i,
-                        'product': {'code': item.product.sku if item.product else '-', 'name': item.product.name if item.product else '-'},
-                        'quantity': item.quantity,
-                        'unit': item.product.unit if item.product else 'Pcs',
-                        'unitPrice': f'Rp {item.unit_price or 0:,.0f}',
-                        'discount': f'Rp {item.discount_amount or 0:,.0f}',
-                        'amount': f'Rp {item.total_price or 0:,.0f}'
-                    })
-        
-        elif document_type in ['pesanan_pembelian', 'faktur_pembelian', 'penerimaan_barang']:
-            purchase_order = PurchaseOrder.query.order_by(PurchaseOrder.id.desc()).first()
-            if purchase_order:
-                preview_data['purchaseOrder'] = {
-                    'number': purchase_order.po_number,
-                    'orderDate': purchase_order.order_date.strftime('%d/%m/%Y') if purchase_order.order_date else '-',
-                    'supplier': {
-                        'name': purchase_order.supplier.name if purchase_order.supplier else '-',
-                        'address': purchase_order.supplier.address if purchase_order.supplier else '-'
-                    },
-                    'totalAmount': f'Rp {purchase_order.total_amount or 0:,.0f}'
-                }
-        
-        return jsonify(preview_data), 200
-        
+        current_user_id = int(get_jwt_identity())
+        template = db.session.get(DocumentTemplate, id) or abort(404)
+        if not _user_can_access_template(current_user_id, template):
+            return jsonify({'error': 'Kamu tidak punya akses ke template ini'}), 403
+        data = request.get_json() or {}
+
+        copy_from_id = data.get('copy_from_version_id')
+        canvas_data = {'version': 'fabric-6', 'objects': []}
+        paper_size, orientation = 'A4', 'portrait'
+        if copy_from_id:
+            source = db.session.get(TemplateVersion, copy_from_id)
+            if source and source.document_template_id == template.id:
+                canvas_data = source.canvas_data
+                paper_size, orientation = source.paper_size, source.orientation
+
+        next_number = db.session.query(db.func.coalesce(db.func.max(TemplateVersion.version_number), 0)).filter_by(document_template_id=template.id).scalar() + 1
+
+        version = TemplateVersion(
+            document_template_id=template.id,
+            version_number=next_number,
+            status='draft',
+            canvas_data=canvas_data,
+            paper_size=paper_size,
+            orientation=orientation,
+            change_note=data.get('change_note'),
+            created_by=current_user_id,
+        )
+        db.session.add(version)
+        db.session.commit()
+
+        return jsonify({'message': 'Versi draft baru dibuat', 'version_id': version.id, 'version_number': version.version_number}), 201
+
     except Exception as e:
-        # Return mock data if error
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@document_bp.route('/templates/<int:id>/versions/<int:version_id>', methods=['GET'])
+@jwt_required()
+@require_permission('documents.view')
+def get_template_version(id, version_id):
+    try:
+        current_user_id = int(get_jwt_identity())
+        version = db.session.get(TemplateVersion, version_id)
+        if not version or version.document_template_id != id:
+            abort(404)
+        if not _user_can_access_template(current_user_id, version.template):
+            return jsonify({'error': 'Kamu tidak punya akses ke template ini'}), 403
+
         return jsonify({
-            'company': {'name': 'PT. CONTOH PERUSAHAAN', 'address': 'Jl. Contoh No. 123, Jakarta'},
-            'workOrder': {'number': 'WO-SAMPLE-001', 'transDate': '28/11/2024', 'item': {'name': 'Produk Sample'}, 'quantity': 100, 'itemUnit': {'name': 'Pcs'}},
-            'error': str(e)
+            'version': {
+                'id': version.id,
+                'document_template_id': version.document_template_id,
+                'version_number': version.version_number,
+                'status': version.status,
+                'canvas_data': version.canvas_data,
+                'paper_size': version.paper_size,
+                'orientation': version.orientation,
+                'canvas_width_mm': float(version.canvas_width_mm) if version.canvas_width_mm else None,
+                'canvas_height_mm': float(version.canvas_height_mm) if version.canvas_height_mm else None,
+                'change_note': version.change_note,
+                'document_type': version.template.document_type,
+            }
         }), 200
 
-
-@document_bp.route('/render-pdf', methods=['POST'])
-@jwt_required()
-def render_pdf_from_template():
-    """Render PDF directly from template structure with data"""
-    try:
-        if not WEASYPRINT_AVAILABLE:
-            return jsonify({'error': 'PDF generation not available. Install WeasyPrint.'}), 500
-        
-        data = request.get_json()
-        template_structure = data.get('template_structure', {})
-        document_data = data.get('document_data', {})
-        paper_size = data.get('paper_size', 'A4')
-        orientation = data.get('orientation', 'portrait')
-        margins = data.get('margins', {'left': 12, 'right': 12, 'top': 14, 'bottom': 11})
-        
-        # Paper dimensions in mm
-        paper_sizes = {
-            'A4': {'width': 210, 'height': 297},
-            'A5': {'width': 148, 'height': 210},
-            'Letter': {'width': 216, 'height': 279},
-            'Legal': {'width': 216, 'height': 356},
-            'F4': {'width': 215, 'height': 330}
-        }
-        paper = paper_sizes.get(paper_size, paper_sizes['A4'])
-        page_width = paper['height'] if orientation == 'landscape' else paper['width']
-        page_height = paper['width'] if orientation == 'landscape' else paper['height']
-        
-        # Helper to get nested value from data
-        def get_field_value(field_path, data):
-            parts = field_path.split('.')
-            value = data
-            for part in parts:
-                if isinstance(value, dict) and part in value:
-                    value = value[part]
-                else:
-                    return ''
-            return str(value) if value is not None else ''
-        
-        # Build HTML from template structure
-        bands = template_structure.get('bands', [])
-        content_html = ''
-        
-        for band in bands:
-            if not band.get('visible', True):
-                continue
-            
-            band_height = band.get('height', 20)
-            band_html = f'<div style="position: relative; height: {band_height}mm; margin-left: {margins["left"]}mm; margin-right: {margins["right"]}mm;">'
-            
-            for el in band.get('elements', []):
-                el_type = el.get('type', 'label')
-                x = el.get('x', 0)
-                y = el.get('y', 0)
-                width = el.get('width', 50)
-                height = el.get('height', 6)
-                font_size = el.get('fontSize', 9)
-                font_weight = el.get('fontWeight', 'normal')
-                text_align = el.get('textAlign', 'left')
-                color = el.get('color', '#000')
-                bg_color = el.get('backgroundColor', 'transparent')
-                border_width = el.get('borderWidth', 0)
-                border_color = el.get('borderColor', '#000')
-                
-                style = f'''
-                    position: absolute;
-                    left: {x}mm; top: {y}mm;
-                    width: {width}mm; height: {height}mm;
-                    font-size: {font_size}pt;
-                    font-weight: {font_weight};
-                    text-align: {text_align};
-                    color: {color};
-                    background-color: {bg_color};
-                    display: flex; align-items: center;
-                    padding: 0 1mm;
-                    overflow: hidden;
-                    white-space: nowrap;
-                '''
-                
-                if el_type == 'box':
-                    style += f'border: {border_width}px solid {border_color};'
-                elif el_type == 'line':
-                    style += f'border-bottom: {border_width}px solid {border_color}; height: 0;'
-                
-                content = ''
-                if el_type == 'label':
-                    content = el.get('content', '')
-                elif el_type == 'field':
-                    field_path = el.get('fieldPath', '')
-                    content = get_field_value(field_path, document_data)
-                elif el_type == 'image':
-                    img_src = el.get('imageSrc', '')
-                    if img_src:
-                        content = f'<img src="{img_src}" style="max-width: 100%; max-height: 100%; object-fit: contain;" />'
-                
-                band_html += f'<div style="{style}">{content}</div>'
-            
-            band_html += '</div>'
-            content_html += band_html
-        
-        # Full HTML document
-        html = f'''
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <style>
-                @page {{
-                    size: {page_width}mm {page_height}mm;
-                    margin: {margins["top"]}mm {margins["right"]}mm {margins["bottom"]}mm {margins["left"]}mm;
-                }}
-                body {{
-                    font-family: Arial, sans-serif;
-                    margin: 0;
-                    padding: 0;
-                }}
-            </style>
-        </head>
-        <body>
-            {content_html}
-        </body>
-        </html>
-        '''
-        
-        # Generate PDF
-        pdf_buffer = BytesIO()
-        HTML(string=html).write_pdf(pdf_buffer)
-        pdf_buffer.seek(0)
-        
-        filename = data.get('filename', f'document-{get_local_now().strftime("%Y%m%d%H%M%S")}.pdf')
-        
-        return send_file(
-            pdf_buffer,
-            mimetype='application/pdf',
-            as_attachment=True,
-            download_name=filename
-        )
-        
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 
+@document_bp.route('/templates/<int:id>/versions/<int:version_id>', methods=['PUT'])
+@jwt_required()
+@require_permission('documents.edit')
+def update_template_version(id, version_id):
+    """Save draft progress. Only 'draft' versions are editable - a published
+    or archived version is frozen (any further edit must go through a new
+    draft version via POST .../versions, so Documents already generated from
+    it stay reproducible)."""
+    try:
+        current_user_id = int(get_jwt_identity())
+        version = db.session.get(TemplateVersion, version_id)
+        if not version or version.document_template_id != id:
+            abort(404)
+        if not _user_can_access_template(current_user_id, version.template):
+            return jsonify({'error': 'Kamu tidak punya akses ke template ini'}), 403
+        if version.status != 'draft':
+            return jsonify({'error': f'Versi ini berstatus "{version.status}", tidak bisa diedit lagi. Buat versi draft baru dari sini kalau mau lanjut edit.'}), 400
+
+        data = request.get_json()
+        if 'canvas_data' in data:
+            version.canvas_data = data['canvas_data']
+        if 'paper_size' in data:
+            version.paper_size = data['paper_size']
+        if 'orientation' in data:
+            version.orientation = data['orientation']
+        if 'canvas_width_mm' in data:
+            version.canvas_width_mm = data['canvas_width_mm']
+        if 'canvas_height_mm' in data:
+            version.canvas_height_mm = data['canvas_height_mm']
+        if 'change_note' in data:
+            version.change_note = data['change_note']
+
+        db.session.commit()
+        return jsonify({'message': 'Draft disimpan', 'version_id': version.id}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@document_bp.route('/templates/<int:id>/versions/<int:version_id>/publish', methods=['POST'])
+@jwt_required()
+@require_permission('documents.create')
+def publish_template_version(id, version_id):
+    """Make this version the LIVE one - render_template_version_to_html() picks
+    it up immediately for every subsequent document generated. The version
+    that was live before (if any) moves to 'archived', never deleted."""
+    try:
+        current_user_id = int(get_jwt_identity())
+        template = db.session.get(DocumentTemplate, id) or abort(404)
+        if not _user_can_access_template(current_user_id, template):
+            return jsonify({'error': 'Kamu tidak punya akses ke template ini'}), 403
+        version = db.session.get(TemplateVersion, version_id)
+        if not version or version.document_template_id != id:
+            abort(404)
+        if not version.canvas_data.get('objects'):
+            return jsonify({'error': 'Desain masih kosong, tidak ada elemen untuk di-publish.'}), 400
+
+        if template.current_version_id and template.current_version_id != version.id:
+            previous = db.session.get(TemplateVersion, template.current_version_id)
+            if previous and previous.status == 'published':
+                previous.status = 'archived'
+
+        version.status = 'published'
+        version.published_at = get_local_now()
+        version.published_by = current_user_id
+        template.current_version_id = version.id
+
+        db.session.commit()
+        return jsonify({'message': f'Versi {version.version_number} sekarang live', 'version_id': version.id}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@document_bp.route('/templates/<int:id>/versions/<int:version_id>/rollback', methods=['POST'])
+@jwt_required()
+@require_permission('documents.create')
+def rollback_template_version(id, version_id):
+    """Point current_version_id back at an older (archived/published) version -
+    the version being rolled back FROM moves to 'archived' too. Nothing is
+    ever deleted; this is purely a pointer change plus a status flip."""
+    try:
+        current_user_id = int(get_jwt_identity())
+        template = db.session.get(DocumentTemplate, id) or abort(404)
+        if not _user_can_access_template(current_user_id, template):
+            return jsonify({'error': 'Kamu tidak punya akses ke template ini'}), 403
+        target = db.session.get(TemplateVersion, version_id)
+        if not target or target.document_template_id != id:
+            abort(404)
+        if target.status == 'draft':
+            return jsonify({'error': 'Tidak bisa rollback ke versi draft - cuma versi yang pernah published.'}), 400
+
+        if template.current_version_id and template.current_version_id != target.id:
+            current = db.session.get(TemplateVersion, template.current_version_id)
+            if current and current.status == 'published':
+                current.status = 'archived'
+
+        target.status = 'published'
+        template.current_version_id = target.id
+
+        db.session.commit()
+        return jsonify({'message': f'Rollback ke versi {target.version_number} berhasil'}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@document_bp.route('/templates/<int:id>/versions/<int:version_id>/preview-pdf', methods=['POST'])
+@jwt_required()
+@require_permission('documents.create')
+def preview_template_version_pdf(id, version_id):
+    """Live preview from inside the editor - renders canvas_data AS-IS (even
+    while still draft) against either data the caller supplies, or an
+    auto-built sample (field label standing in for its own value) so preview
+    works before any real transaction data is wired up."""
+    try:
+        if not WEASYPRINT_AVAILABLE:
+            return jsonify({'error': 'PDF generation not available. Install WeasyPrint.'}), 500
+
+        current_user_id = int(get_jwt_identity())
+        version = db.session.get(TemplateVersion, version_id)
+        if not version or version.document_template_id != id:
+            abort(404)
+        if not _user_can_access_template(current_user_id, version.template):
+            return jsonify({'error': 'Kamu tidak punya akses ke template ini'}), 403
+
+        data = request.get_json() or {}
+        document_data = data.get('document_data')
+        if not document_data:
+            from utils.field_library import get_field_library, COMPANY_FIELDS
+            from utils.company_context import get_company_context
+            library = get_field_library(version.template.document_type)
+            # company.* is real data (already nested under document_data['company']) -
+            # everything else is a flat top-level key per the field_library convention,
+            # filled with its own label as a readable placeholder value.
+            document_data = {'company': get_company_context()}
+            for group_name, group_fields in library.items():
+                if group_name == 'company':
+                    continue
+                for f in group_fields:
+                    if f['type'] == 'list':
+                        sample_row = {c['path']: c['label'] for c in f.get('columns', [])}
+                        document_data[f['path']] = [sample_row, sample_row]
+                    elif f['type'] != 'image':
+                        document_data[f['path']] = f['label']
+
+        from utils.template_render_engine import render_template_version_to_html
+        html = render_template_version_to_html(version, document_data)
+
+        pdf_buffer = BytesIO()
+        HTML(string=html).write_pdf(pdf_buffer)
+        pdf_buffer.seek(0)
+
+        return send_file(pdf_buffer, mimetype='application/pdf', as_attachment=False, download_name='preview.pdf')
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@document_bp.route('/field-library/<document_type>', methods=['GET'])
+@jwt_required()
+@require_permission('documents.view')
+def get_field_library_route(document_type):
+    """Backend-owned field registry for the editor's Field Library panel
+    (Fase 1, replaces the old hardcoded TS constant in the retired
+    TemplateDesigner.tsx). company.* is always included regardless of
+    document_type - see utils/field_library.py and utils/company_context.py."""
+    try:
+        from utils.field_library import get_field_library
+        return jsonify(get_field_library(document_type)), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+
 @document_bp.route('/generate', methods=['POST'])
 @jwt_required()
+@require_permission('documents.create')
 def generate_document():
     """Generate document from template"""
     try:
         current_user_id = get_jwt_identity()
         data = request.get_json()
-        
+
         template = db.session.get(DocumentTemplate, data['template_id']) or abort(404)
-        
+        if not template.current_version_id:
+            return jsonify({'error': f'Template "{template.template_name}" belum punya versi yang di-publish. Selesaikan desain dan publish dulu di Template Designer.'}), 400
+
         # Generate document number
         document_number = generate_number(
             data.get('number_prefix', 'DOC'),
             Document,
             'document_number'
         )
-        
+
+        from utils.company_context import get_company_context
+        document_data = dict(data['document_data'])
+        document_data['company'] = get_company_context()
+
         # Create document
         document = Document(
             document_number=document_number,
             document_title=data.get('document_title'),
             document_type=template.document_type,
-            template_id=template.id,
-            document_data=data['document_data'],
+            template_version_id=template.current_version_id,
+            document_data=document_data,
             reference_type=data.get('reference_type'),
             reference_id=data.get('reference_id'),
             reference_number=data.get('reference_number'),
@@ -453,10 +530,10 @@ def generate_document():
             document_date=datetime.fromisoformat(data['document_date']) if data.get('document_date') else get_local_now(),
             created_by=current_user_id
         )
-        
+
         # Generate HTML content for preview
-        html_content = render_document_html(template, data['document_data'])
-        document.html_content = html_content
+        from utils.template_render_engine import render_template_version_to_html
+        document.html_content = render_template_version_to_html(template.current_version, document_data)
         
         db.session.add(document)
         db.session.flush()
@@ -485,6 +562,7 @@ def generate_document():
 
 @document_bp.route('/<int:id>/preview', methods=['GET'])
 @jwt_required()
+@require_permission('documents.view')
 def preview_document(id):
     """Get document HTML preview"""
     try:
@@ -496,16 +574,104 @@ def preview_document(id):
                 'document_number': document.document_number,
                 'document_title': document.document_title,
                 'html_content': document.html_content,
-                'status': document.status
+                'status': document.status,
+                # Peringatan wajib tidak-bisa-di-dismiss untuk dokumen usang (R11, §7.1) —
+                # frontend WAJIB tampilkan ini besar-besar tiap dokumen superseded dibuka.
+                'is_superseded': document.status == 'superseded',
             }
         }), 200
-        
+
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@document_bp.route('/<int:id>/spk-data', methods=['PUT'])
+@jwt_required()
+@require_permission('documents.edit')
+def update_spk_data(id):
+    """Edit an SPK's business data (qty/notes) after it's been generated - 2026-08-24,
+    SPK_STAGING_BAHAN_BAKU_RENCANA_TEKNIS.md §6. Only document_data (the business-data
+    JSON snapshot: qty, notes, etc) is editable here, NEVER the print layout/design
+    (template_version_id/canvas_data - that's Print Template Designer's domain, shared
+    across every SPK of this type, not this one instance).
+
+    Per the explicit decision on staging-after-edit: this endpoint does NOT touch
+    MaterialIssue/MaterialIssueItem at all - staging stays frozen at whatever it was
+    when the SPK was first approved. If the edited qty creates a gap, that surfaces
+    through the ALREADY-EXISTING shortage picklist (GET /material-issues/shortages),
+    which for SPK-sourced items compares against this CURRENT document_data quantity
+    rather than the frozen MaterialIssueItem.required_quantity - see that endpoint.
+    Follow-up on any gap is manual (staff creates an additional MaterialIssue), not
+    automatic - this endpoint never creates/modifies staging records.
+
+    Old document_data is snapshotted to DocumentRevision first (audit trail), then
+    document_data is updated and html_content re-rendered from the SAME template
+    version (design untouched)."""
+    from utils.template_render_engine import render_template_version_to_html
+
+    try:
+        document = db.session.get(Document, id) or abort(404)
+        if document.document_type not in ('spk_batch', 'spk'):
+            return jsonify({'error': 'Endpoint ini hanya untuk dokumen SPK'}), 400
+        if document.status == 'superseded':
+            return jsonify({'error': 'SPK ini sudah superseded (nomor batch pernah diubah) - edit versi SPK yang aktif'}), 400
+
+        user_id = get_jwt_identity()
+        data = request.get_json() or {}
+
+        editable_fields = ('quantity', 'notes')
+        changes = {k: v for k, v in data.items() if k in editable_fields}
+        if not changes:
+            return jsonify({'error': f'Tidak ada field yang bisa diedit dalam payload (boleh: {", ".join(editable_fields)})'}), 400
+
+        last_revision = DocumentRevision.query.filter_by(document_id=document.id).order_by(DocumentRevision.revision_number.desc()).first()
+        next_revision_number = (last_revision.revision_number + 1) if last_revision else 1
+
+        revision = DocumentRevision(
+            document_id=document.id,
+            revision_number=next_revision_number,
+            revision_note=f'Edit qty/catatan SPK oleh user #{user_id}',
+            previous_data=dict(document.document_data or {}),
+            created_by=user_id,
+        )
+        db.session.add(revision)
+
+        new_data = dict(document.document_data or {})
+        new_data.update(changes)
+        document.document_data = new_data
+
+        if document.template_version_id:
+            template_version = db.session.get(TemplateVersion, document.template_version_id)
+            if template_version:
+                document.html_content = render_template_version_to_html(template_version, new_data)
+
+        log = DocumentLog(
+            document_id=document.id,
+            activity_type='edited',
+            activity_description=f'SPK data diedit: {", ".join(changes.keys())}',
+            user_id=user_id
+        )
+        db.session.add(log)
+
+        db.session.commit()
+
+        return jsonify({
+            'message': 'SPK diperbarui',
+            'document': {
+                'id': document.id,
+                'document_data': document.document_data,
+                'html_content': document.html_content,
+            },
+            'revision_number': next_revision_number,
+        }), 200
+    except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
 
 @document_bp.route('/<int:id>/pdf', methods=['GET'])
 @jwt_required()
+@require_permission('documents.view')
 def generate_pdf(id):
     """Generate and download PDF"""
     try:
@@ -517,6 +683,16 @@ def generate_pdf(id):
         
         # Generate PDF from HTML
         html_content = document.html_content
+        if document.status == 'superseded':
+            # Dokumen usang (R11, §7.1) — peringatan wajib ditempel di file fisiknya juga,
+            # bukan cuma di UI, karena PDF ini bisa diunduh/dicetak lepas dari aplikasi.
+            warning_banner = (
+                '<div style="background:#dc2626;color:#fff;padding:16px;margin-bottom:16px;'
+                'text-align:center;font-weight:bold;font-size:16px;border:3px solid #7f1d1d;">'
+                'DOKUMEN INI SUDAH USANG — nomor batch sudah berubah, JANGAN DIPAKAI. '
+                'Minta cetak ulang SPK yang berlaku saat ini.</div>'
+            )
+            html_content = warning_banner + (html_content or '')
         pdf_buffer = BytesIO()
         
         HTML(string=html_content).write_pdf(pdf_buffer)
@@ -550,6 +726,7 @@ def generate_pdf(id):
 
 @document_bp.route('/<int:id>/excel', methods=['GET'])
 @jwt_required()
+@require_permission('documents.view')
 def generate_excel(id):
     """Generate and download Excel"""
     try:
@@ -674,7 +851,8 @@ def generate_excel(id):
 
 
 @document_bp.route('', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('documents.view')
 def get_documents():
     """Get all documents with filters"""
     try:
@@ -713,6 +891,7 @@ def get_documents():
 
 @document_bp.route('/<int:id>/print', methods=['POST'])
 @jwt_required()
+@require_permission('documents.create')
 def record_print(id):
     """Record document print"""
     try:
@@ -745,6 +924,7 @@ def record_print(id):
 
 @document_bp.route('/<int:id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('documents.delete')
 def delete_document(id):
     """Delete document"""
     try:
@@ -765,6 +945,7 @@ def delete_document(id):
 
 @document_bp.route('/templates/<int:id>/set-default', methods=['PUT'])
 @jwt_required()
+@require_permission('documents.edit')
 def set_default_template(id):
     """Set template as default for its document type"""
     try:
@@ -792,18 +973,23 @@ def set_default_template(id):
 
 @document_bp.route('/templates/<int:id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('documents.delete')
 def delete_template(id):
     """Delete document template"""
     try:
         template = db.session.get(DocumentTemplate, id) or abort(404)
-        
-        # Check if template is in use
-        doc_count = Document.query.filter_by(template_id=id).count()
+
+        version_ids = [v.id for v in template.versions]
+        doc_count = Document.query.filter(Document.template_version_id.in_(version_ids)).count() if version_ids else 0
         if doc_count > 0:
             return jsonify({
                 'error': f'Template is used by {doc_count} documents. Cannot delete.'
             }), 400
-        
+
+        # Clear the self-referential pointer first, or deleting the version rows
+        # (cascaded below) can conflict with current_version_id still pointing at one.
+        template.current_version_id = None
+        db.session.flush()
         db.session.delete(template)
         db.session.commit()
         
@@ -814,119 +1000,10 @@ def delete_template(id):
         return jsonify({'error': str(e)}), 500
 
 
-def render_document_html(template, data):
-    """Render document HTML from template and data"""
-    
-    # Get template values with defaults
-    paper_size = template.paper_size or 'A4'
-    margins = template.margins or {'top': 20, 'right': 20, 'bottom': 20, 'left': 20}
-    font_family = template.font_family or 'Arial'
-    font_size = template.font_size or 10
-    custom_css = template.custom_css or ''
-    
-    # Basic HTML template
-    html = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <style>
-            @page {{
-                size: {paper_size};
-                margin: {margins.get('top', 20)}mm {margins.get('right', 20)}mm 
-                        {margins.get('bottom', 20)}mm {margins.get('left', 20)}mm;
-            }}
-            body {{
-                font-family: {font_family}, sans-serif;
-                font-size: {font_size}pt;
-                line-height: 1.6;
-            }}
-            .header {{
-                text-align: center;
-                margin-bottom: 20px;
-                border-bottom: 2px solid #333;
-                padding-bottom: 10px;
-            }}
-            .content {{
-                margin: 20px 0;
-            }}
-            .footer {{
-                margin-top: 30px;
-                border-top: 1px solid #ccc;
-                padding-top: 10px;
-                font-size: 9pt;
-            }}
-            table {{
-                width: 100%;
-                border-collapse: collapse;
-                margin: 15px 0;
-            }}
-            th, td {{
-                border: 1px solid #ddd;
-                padding: 8px;
-                text-align: left;
-            }}
-            th {{
-                background-color: #f2f2f2;
-                font-weight: bold;
-            }}
-            .field-label {{
-                font-weight: bold;
-                width: 200px;
-            }}
-            {custom_css}
-        </style>
-    </head>
-    <body>
-    """
-    
-    # Add header
-    if template.header_template:
-        html += "<div class='header'>"
-        html += f"<h2>{template.header_template.get('company_name', 'Company Name')}</h2>"
-        html += f"<p>{template.header_template.get('address', '')}</p>"
-        html += "</div>"
-    
-    # Add content
-    html += "<div class='content'>"
-    html += f"<h3>{template.template_name}</h3>"
-    
-    # Render data fields
-    for key, value in data.items():
-        if isinstance(value, list):
-            # Render as table
-            html += f"<h4>{key.replace('_', ' ').title()}</h4>"
-            if value and isinstance(value[0], dict):
-                html += "<table>"
-                html += "<tr>"
-                for header in value[0].keys():
-                    html += f"<th>{header.replace('_', ' ').title()}</th>"
-                html += "</tr>"
-                for item in value:
-                    html += "<tr>"
-                    for val in item.values():
-                        html += f"<td>{val}</td>"
-                    html += "</tr>"
-                html += "</table>"
-        else:
-            # Render as key-value
-            html += f"<p><span class='field-label'>{key.replace('_', ' ').title()}:</span> {value}</p>"
-    
-    html += "</div>"
-    
-    # Add footer
-    if template.footer_template:
-        html += "<div class='footer'>"
-        html += f"<p>{template.footer_template.get('notes', '')}</p>"
-        html += "</div>"
-    
-    html += "</body></html>"
-    
-    return html
-
 
 @document_bp.route('/categories', methods=['GET'])
 @jwt_required()
+@require_permission('documents.view')
 def get_categories():
     """Get document categories"""
     try:
@@ -948,6 +1025,7 @@ def get_categories():
 
 @document_bp.route('/generate-from-sales-order/<int:sales_order_id>', methods=['POST'])
 @jwt_required()
+@require_permission('documents.create')
 def generate_from_sales_order(sales_order_id):
     """Auto-generate Surat Jalan from Sales Order (like Accurate)"""
     try:
@@ -968,6 +1046,7 @@ def generate_from_sales_order(sales_order_id):
 
 @document_bp.route('/generate-from-work-order/<int:work_order_id>', methods=['POST'])
 @jwt_required()
+@require_permission('documents.create')
 def generate_from_work_order(work_order_id):
     """Auto-generate SPK from Work Order (like Accurate)"""
     try:
@@ -988,8 +1067,71 @@ def generate_from_work_order(work_order_id):
         return jsonify({'error': str(e)}), 500
 
 
+@document_bp.route('/generate-from-invoice/<int:invoice_id>', methods=['POST'])
+@jwt_required()
+@require_permission('documents.create')
+def generate_from_invoice(invoice_id):
+    """Auto-generate printable Invoice document. Invoice had no print mechanism
+    at all before Print Template Designer Fase 1 - this endpoint was missed
+    when that generator was first written and is added now (Fase 2)."""
+    try:
+        current_user_id = get_jwt_identity()
+        from utils.document_generator import generate_invoice_document
+        document = generate_invoice_document(invoice_id, current_user_id)
+        return jsonify({
+            'message': 'Invoice document generated successfully',
+            'document_id': document.id,
+            'document_number': document.document_number
+        }), 201
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+
+@document_bp.route('/generate-from-purchase-order/<int:po_id>', methods=['POST'])
+@jwt_required()
+@require_permission('documents.create')
+def generate_from_purchase_order(po_id):
+    """Auto-generate printable Purchase Order document (Fase 2)."""
+    try:
+        current_user_id = get_jwt_identity()
+        from utils.document_generator import generate_purchase_order_document
+        document = generate_purchase_order_document(po_id, current_user_id)
+        return jsonify({
+            'message': 'PO document generated successfully',
+            'document_id': document.id,
+            'document_number': document.document_number
+        }), 201
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+
+@document_bp.route('/generate-from-payment/<int:payment_id>', methods=['POST'])
+@jwt_required()
+@require_permission('documents.create')
+def generate_from_payment(payment_id):
+    """Auto-generate printable Kwitansi from a Payment record (Fase 2)."""
+    try:
+        current_user_id = get_jwt_identity()
+        from utils.document_generator import generate_kwitansi_document
+        document = generate_kwitansi_document(payment_id, current_user_id)
+        return jsonify({
+            'message': 'Kwitansi generated successfully',
+            'document_id': document.id,
+            'document_number': document.document_number
+        }), 201
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+
 @document_bp.route('/dashboard', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('documents.view')
 def get_dashboard():
     """Get document management dashboard stats"""
     try:

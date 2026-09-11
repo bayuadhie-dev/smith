@@ -128,6 +128,16 @@ def create_product():
         product.code = data.get('kode_produk')
         product.name = data.get('nama_produk')
         product.version = 0
+        # This form (spunlace/production spec) has no UOM field - default to PCS
+        # since products.primary_uom is NOT NULL at the DB level
+        product.primary_uom = data.get('primary_uom', 'PCS')
+        if not product.material_type:
+            product.material_type = data.get('material_type', 'FINISHED_GOODS')
+        # This form is specifically for production-spec (spunlace) products,
+        # so they should default to producible=True - otherwise they never
+        # show up in Work Order product dropdowns (which filter on is_producible)
+        if 'is_producible' not in data:
+            product.is_producible = True
         
         # Update all fields from data
         for field in data:

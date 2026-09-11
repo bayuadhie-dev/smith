@@ -4,6 +4,7 @@ CRUD untuk master satuan dan konversi antar satuan.
 """
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db
 from models.uom import UnitOfMeasure, UoMConversion
 from utils.i18n import success_response, error_response
@@ -16,6 +17,7 @@ uom_bp = Blueprint('uom', __name__)
 
 @uom_bp.route('/units', methods=['GET'])
 @jwt_required()
+@require_permission('materials.view')
 def get_units():
     """Get all units of measure"""
     try:
@@ -52,6 +54,7 @@ def get_units():
 
 @uom_bp.route('/units/<int:id>', methods=['GET'])
 @jwt_required()
+@require_permission('materials.view')
 def get_unit(id):
     """Get single unit of measure with its conversions"""
     try:
@@ -80,6 +83,7 @@ def get_unit(id):
 
 @uom_bp.route('/units', methods=['POST'])
 @jwt_required()
+@require_permission('materials.create')
 def create_unit():
     """Create new unit of measure"""
     try:
@@ -117,6 +121,7 @@ def create_unit():
 
 @uom_bp.route('/units/<int:id>', methods=['PUT'])
 @jwt_required()
+@require_permission('materials.edit')
 def update_unit(id):
     """Update unit of measure"""
     try:
@@ -156,6 +161,7 @@ def update_unit(id):
 
 @uom_bp.route('/units/<int:id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('materials.delete')
 def delete_unit(id):
     """Delete unit of measure (soft delete — set inactive)"""
     try:
@@ -190,6 +196,7 @@ def delete_unit(id):
 
 @uom_bp.route('/conversions', methods=['GET'])
 @jwt_required()
+@require_permission('materials.view')
 def get_conversions():
     """Get UoM conversions with filters"""
     try:
@@ -245,6 +252,7 @@ def get_conversions():
 
 @uom_bp.route('/conversions', methods=['POST'])
 @jwt_required()
+@require_permission('materials.create')
 def create_conversion():
     """Create UoM conversion"""
     try:
@@ -320,6 +328,7 @@ def create_conversion():
 
 @uom_bp.route('/conversions/<int:id>', methods=['PUT'])
 @jwt_required()
+@require_permission('materials.edit')
 def update_conversion(id):
     """Update UoM conversion"""
     try:
@@ -361,6 +370,7 @@ def update_conversion(id):
 
 @uom_bp.route('/conversions/<int:id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('materials.delete')
 def delete_conversion(id):
     """Delete UoM conversion (and its reverse)"""
     try:
@@ -391,6 +401,7 @@ def delete_conversion(id):
 
 @uom_bp.route('/convert', methods=['GET'])
 @jwt_required()
+@require_permission('materials.view')
 def convert_quantity():
     """
     Convert quantity between UoMs for a specific material/product.
@@ -466,6 +477,7 @@ def convert_quantity():
 
 @uom_bp.route('/categories', methods=['GET'])
 @jwt_required()
+@require_permission('materials.view')
 def get_uom_categories():
     """Get available UoM categories"""
     return jsonify({

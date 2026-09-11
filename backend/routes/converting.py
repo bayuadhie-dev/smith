@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from datetime import datetime, date, timedelta
 from models import db, ConvertingMachine, ConvertingProduction, Employee, Product
 from utils.helpers import get_setting_value
@@ -24,6 +25,7 @@ def get_local_now():
 
 @converting_bp.route('/api/converting/machines', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_converting_machines():
     """Get all converting machines"""
     try:
@@ -49,6 +51,7 @@ def get_converting_machines():
 
 @converting_bp.route('/api/converting/machines', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def create_converting_machine():
     """Create a new converting machine"""
     try:
@@ -85,6 +88,7 @@ def create_converting_machine():
 
 @converting_bp.route('/api/converting/machines/<int:machine_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('production.edit')
 def update_converting_machine(machine_id):
     """Update a converting machine"""
     try:
@@ -114,6 +118,7 @@ def update_converting_machine(machine_id):
 
 @converting_bp.route('/api/converting/machines/seed', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def seed_converting_machines():
     """Seed initial 12 converting machines"""
     try:
@@ -165,6 +170,7 @@ def seed_converting_machines():
 
 @converting_bp.route('/api/converting/production', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_converting_productions():
     """Get converting productions with filters"""
     try:
@@ -219,6 +225,7 @@ def get_converting_productions():
 
 @converting_bp.route('/api/converting/production', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def create_converting_production():
     """Create a new converting production record with machine-specific data"""
     try:
@@ -322,6 +329,7 @@ def create_converting_production():
 
 @converting_bp.route('/api/converting/production/<int:prod_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('production.edit')
 def update_converting_production(prod_id):
     """Update a converting production record"""
     try:
@@ -422,6 +430,7 @@ def update_converting_production(prod_id):
 
 @converting_bp.route('/api/converting/production/<int:prod_id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('production.delete')
 def delete_converting_production(prod_id):
     """Delete a converting production record"""
     try:
@@ -438,7 +447,8 @@ def delete_converting_production(prod_id):
 # ============ DASHBOARD ============
 
 @converting_bp.route('/api/converting/dashboard', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('production.view')
 def get_converting_dashboard():
     """Get converting dashboard data"""
     try:
@@ -529,6 +539,7 @@ def get_converting_dashboard():
 
 @converting_bp.route('/api/converting/daily-report', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_converting_daily_report():
     """Get daily report for converting"""
     try:
@@ -589,7 +600,8 @@ def get_converting_daily_report():
 
 
 @converting_bp.route('/api/converting/monthly-summary', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('production.view')
 def get_converting_monthly_summary():
     """Get weekly or monthly summary for converting module"""
     try:

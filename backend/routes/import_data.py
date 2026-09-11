@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 import pandas as pd
 import os
 from werkzeug.utils import secure_filename
@@ -37,6 +38,7 @@ def is_empty_val(val):
 
 @import_bp.route('/api/import/data', methods=['POST'])
 @jwt_required()
+@require_permission('inventory.create')
 def import_data():
     try:
         current_user_id = get_jwt_identity()
@@ -362,9 +364,11 @@ def import_inventory(df, user_id):
             # 5. Handle stock_status override if provided in sheet, else default logically
             excel_status = row.get('stock_status')
             if pd.notnull(excel_status) and str(excel_status).strip() != '' and str(excel_status).strip().lower() != 'nan':
+                # Explicit status in the sheet wins - don't second-guess the importer's intent
                 stock_status = str(excel_status).strip()
             else:
-                stock_status = 'released' if product else 'available'
+                from utils.inventory_helpers import resolve_initial_stock_status
+                stock_status = resolve_initial_stock_status('released' if product else 'available', product=product, material=material)
             
             if existing_inventory:
                 # Update (Upsert) - Refresh quantity & sync latest thresholds from Master Data

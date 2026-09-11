@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from datetime import datetime, date, timedelta
 import re
 from models import db, Machine, LiveMonitoringCheck, LiveMonitoringChecklistAnswer, ShiftProduction, WorkOrder, Product
@@ -80,7 +81,8 @@ def natural_sort_key(m):
 
 
 @live_monitoring_bp.route('/dashboard', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('production.view')
 def get_live_monitoring_dashboard():
     """Get live monitoring dashboard - ALL active machines (independent of WO)"""
     try:
@@ -215,7 +217,8 @@ def get_live_monitoring_dashboard():
 
 
 @live_monitoring_bp.route('/check', methods=['POST'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('production.edit')
 def save_check():
     """Save or update a single machine check"""
     try:
@@ -313,7 +316,8 @@ def save_check():
 
 
 @live_monitoring_bp.route('/check/<int:check_id>', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('production.view')
 def get_check_detail(check_id):
     """Get detailed check data including checklist answers"""
     try:
@@ -333,7 +337,8 @@ def get_check_detail(check_id):
 
 
 @live_monitoring_bp.route('/checklist-items/<int:machine_id>', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('production.view')
 def get_checklist_items_for_machine(machine_id):
     """Get checklist items applicable for a specific machine"""
     try:
@@ -387,7 +392,8 @@ def get_checklist_items_for_machine(machine_id):
 
 
 @live_monitoring_bp.route('/weekly-summary', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('production.view')
 def get_weekly_summary():
     """Get weekly summary of live monitoring checks"""
     try:
@@ -462,7 +468,8 @@ def get_weekly_summary():
 
 
 @live_monitoring_bp.route('/mismatches', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('production.view')
 def get_mismatches():
     """Compare live checks with shift production input → find mismatches"""
     try:
@@ -578,7 +585,8 @@ def get_mismatches():
 
 
 @live_monitoring_bp.route('/mismatch-count', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('production.view')
 def get_mismatch_count():
     """Quick count for badge"""
     try:

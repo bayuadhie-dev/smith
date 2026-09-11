@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db
 from models.wip_job_costing import WIPBatch, WIPStageMovement, JobCostEntry, WIPSummary, WIPWorkflowIntegration
 from models.production import WorkOrder, Machine
@@ -19,6 +20,7 @@ wip_job_costing_bp = Blueprint('wip_job_costing', __name__)
 
 @wip_job_costing_bp.route('/wip-batches', methods=['GET'])
 @jwt_required()
+@require_permission('accounting.view')
 def get_wip_batches():
     """Get all WIP batches with filtering"""
     try:
@@ -88,6 +90,7 @@ def get_wip_batches():
 
 @wip_job_costing_bp.route('/wip-batches/<int:wip_batch_id>', methods=['GET'])
 @jwt_required()
+@require_permission('accounting.view')
 def get_wip_batch_detail(wip_batch_id):
     """Get detailed WIP batch information"""
     try:
@@ -182,6 +185,7 @@ def get_wip_batch_detail(wip_batch_id):
 
 @wip_job_costing_bp.route('/wip-batches', methods=['POST'])
 @jwt_required()
+@require_permission('accounting.create')
 def create_wip_batch():
     """Create WIP batch manually from work order"""
     try:
@@ -231,6 +235,7 @@ def create_wip_batch():
 
 @wip_job_costing_bp.route('/wip-batches/create-from-work-order', methods=['POST'])
 @jwt_required()
+@require_permission('accounting.create')
 def create_wip_batch_from_work_order():
     """Create WIP batch from work order"""
     try:
@@ -269,6 +274,7 @@ def create_wip_batch_from_work_order():
 
 @wip_job_costing_bp.route('/wip-batches/<int:wip_batch_id>/move-stage', methods=['POST'])
 @jwt_required()
+@require_permission('accounting.create')
 def move_wip_to_stage(wip_batch_id):
     """Move WIP batch to next production stage"""
     try:
@@ -305,6 +311,7 @@ def move_wip_to_stage(wip_batch_id):
 
 @wip_job_costing_bp.route('/wip-batches/<int:wip_batch_id>/complete-stage', methods=['POST'])
 @jwt_required()
+@require_permission('accounting.create')
 def complete_wip_stage(wip_batch_id):
     """Complete current WIP stage with results"""
     try:
@@ -345,6 +352,7 @@ def complete_wip_stage(wip_batch_id):
 
 @wip_job_costing_bp.route('/job-costs', methods=['GET'])
 @jwt_required()
+@require_permission('accounting.view')
 def get_job_costs():
     """Get job cost entries with filtering"""
     try:
@@ -408,6 +416,7 @@ def get_job_costs():
 
 @wip_job_costing_bp.route('/job-costs', methods=['POST'])
 @jwt_required()
+@require_permission('accounting.create')
 def create_job_cost_entry():
     """Create manual job cost entry"""
     try:
@@ -450,6 +459,7 @@ def create_job_cost_entry():
 
 @wip_job_costing_bp.route('/wip-dashboard', methods=['GET'])
 @jwt_required()
+@require_permission('accounting.view')
 def get_wip_dashboard():
     """Get WIP dashboard data for monitoring"""
     try:
@@ -531,6 +541,7 @@ def get_wip_dashboard():
 
 @wip_job_costing_bp.route('/wip-analytics/bottleneck', methods=['GET'])
 @jwt_required()
+@require_permission('accounting.view')
 def get_bottleneck_analysis():
     """Analyze production bottlenecks based on WIP accumulation"""
     try:
@@ -573,6 +584,7 @@ def get_bottleneck_analysis():
 
 @wip_job_costing_bp.route('/production-stages', methods=['GET'])
 @jwt_required()
+@require_permission('accounting.view')
 def get_production_stages():
     """Get available production stages"""
     stages = [
@@ -589,6 +601,7 @@ def get_production_stages():
 
 @wip_job_costing_bp.route('/cost-categories', methods=['GET'])
 @jwt_required()
+@require_permission('accounting.view')
 def get_cost_categories():
     """Get available cost categories"""
     categories = {

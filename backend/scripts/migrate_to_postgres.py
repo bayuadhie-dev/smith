@@ -327,3 +327,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+pm2 logs smith-backend --lines 50 --nostream

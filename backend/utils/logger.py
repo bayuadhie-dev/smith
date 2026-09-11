@@ -140,15 +140,31 @@ This is an automated alert. Please check the logs for more details.
 
 
 def log_exception(app_logger):
-    """Log unhandled exceptions and send email alert in production"""
-    from flask import request
+    """Log unhandled exceptions and send email alert in production.
+
+    Routine HTTP errors (404 Not Found, 401/403 from abort(), etc.) are NOT
+    genuine application bugs - they're expected traffic (bots/scanners
+    probing random paths, expired tokens, missing resources). Treating them
+    as "Unhandled Exception" spammed the error log and, in production, sent
+    an email alert for every single 404 - drowning out real crashes and
+    flooding whoever's on MAIL_USERNAME. Only true 5xx/non-HTTP exceptions
+    get the full traceback + alert treatment now.
+    """
+    from flask import request, jsonify
+    from werkzeug.exceptions import HTTPException
     import traceback
-    
+
     def handle_exception(e):
+        if isinstance(e, HTTPException):
+            return jsonify({
+                'error': e.name,
+                'message': e.description,
+            }), e.code
+
         # Log the full traceback
         tb = traceback.format_exc()
         app_logger.error(f'Unhandled Exception on {request.method} {request.path}:\n{tb}')
-        
+
         # Send email alert in production
         if os.getenv('FLASK_ENV', 'development') != 'development':
             send_error_email(
@@ -156,12 +172,11 @@ def log_exception(app_logger):
                 error_message=str(e),
                 traceback_text=tb
             )
-        
+
         # Return error response
-        from flask import jsonify
         return jsonify({
             'error': 'Internal server error',
             'message': str(e) if app_logger.level <= logging.DEBUG else 'An unexpected error occurred'
         }), 500
-    
+
     return handle_exception

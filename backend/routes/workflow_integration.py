@@ -6,12 +6,13 @@ Handles end-to-end business workflow integration:
 """
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import (
     db, SalesOrder, SalesOrderItem, PurchaseOrder, PurchaseOrderItem,
     WorkOrder, Product, ProductNew, Material, BillOfMaterials, BOMItem,
     Inventory, Customer, Supplier
 )
-from utils import generate_number
+from utils import generate_number, generate_number_v2
 from datetime import datetime, timedelta
 from sqlalchemy import and_, or_
 import traceback
@@ -25,6 +26,7 @@ workflow_bp = Blueprint('workflow_integration', __name__)
 
 @workflow_bp.route('/sales-order-to-mrp', methods=['POST'])
 @jwt_required()
+@require_permission('approval.view')
 def sales_order_to_mrp():
     """
     Trigger MRP calculation from Sales Order
@@ -124,6 +126,7 @@ def sales_order_to_mrp():
 
 @workflow_bp.route('/mrp-to-purchase-order', methods=['POST'])
 @jwt_required()
+@require_permission('approval.view')
 def mrp_to_purchase_order():
     """
     Create Purchase Order from MRP requirements
@@ -142,7 +145,7 @@ def mrp_to_purchase_order():
             return jsonify({'error': 'supplier_id is required'}), 400
         
         # Create Purchase Order
-        po_number = generate_number('PO', PurchaseOrder, 'po_number')
+        po_number = generate_number_v2('purchase_order', 'PO', PurchaseOrder, 'po_number')
         
         po = PurchaseOrder(
             po_number=po_number,
@@ -211,6 +214,7 @@ def mrp_to_purchase_order():
 
 @workflow_bp.route('/mrp-to-work-order', methods=['POST'])
 @jwt_required()
+@require_permission('approval.view')
 def mrp_to_work_order():
     """
     Create Work Order (SPK) from MRP requirements
@@ -285,6 +289,7 @@ def mrp_to_work_order():
 
 @workflow_bp.route('/complete-workflow', methods=['POST'])
 @jwt_required()
+@require_permission('approval.view')
 def complete_workflow():
     """
     Execute complete workflow from Sales Order to Production
@@ -388,6 +393,7 @@ def complete_workflow():
 
 @workflow_bp.route('/workflow-status/<int:so_id>', methods=['GET'])
 @jwt_required()
+@require_permission('approval.view')
 def get_workflow_status(so_id):
     """
     Get complete workflow status for a Sales Order

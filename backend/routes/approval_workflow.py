@@ -4,6 +4,7 @@ Handles multi-level approval process with review and edit capabilities
 """
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db
 from models.approval_workflow import ApprovalWorkflow, ApprovalHistory, ApprovalConfiguration, PendingJournalEntry
 from models.user import User
@@ -11,8 +12,92 @@ from models.finance import AccountingEntry
 from datetime import datetime
 from sqlalchemy import or_, and_
 from utils.timezone import get_local_now, get_local_today
+from utils.finance_helpers import post_pending_journal
 
 approval_bp = Blueprint('approval', __name__, url_prefix='/api/approval')
+
+
+def apply_workflow_side_effect(workflow, action, user_id):
+    """Dispatch the source-document status/side-effect update for a workflow
+    transitioning to 'approved' or 'rejected'.
+
+    Bagian 2 part 1 (2026-08-19) fix: previously approve_workflow()/
+    reject_workflow() only updated ApprovalWorkflow itself — the source
+    document (PurchaseOrder, SalesOrder, StockTransferOrder, StockOpnameOrder)
+    never got its status flipped back, so e.g. a PO stayed stuck at
+    'pending_approval' forever even after being approved. This hook closes
+    that gap for every transaction_type currently routed through the generic
+    ApprovalWorkflow system. action is 'approve' or 'reject'.
+    """
+    if workflow.transaction_type == 'purchase_order':
+        from models.purchasing import PurchaseOrder
+        po = db.session.get(PurchaseOrder, workflow.transaction_id)
+        if po:
+            po.status = 'approved' if action == 'approve' else 'rejected'
+
+    elif workflow.transaction_type == 'sales_order':
+        from models.sales import SalesOrder
+        so = db.session.get(SalesOrder, workflow.transaction_id)
+        if so:
+            so.status = 'approved' if action == 'approve' else 'rejected'
+
+    elif workflow.transaction_type == 'stock_transfer':
+        from models.wms_advanced import StockTransferOrder
+        sto = db.session.get(StockTransferOrder, workflow.transaction_id)
+        if sto:
+            if action == 'approve':
+                sto.status = 'approved'
+                sto.approved_by = user_id
+                sto.approved_at = get_local_now()
+            else:
+                sto.status = 'draft'
+
+    elif workflow.transaction_type == 'stock_opname':
+        from models.stock_opname import StockOpnameOrder
+        order = db.session.get(StockOpnameOrder, workflow.transaction_id)
+        if order and action == 'approve':
+            from routes.stock_opname import apply_stock_opname_adjustments
+            apply_stock_opname_adjustments(order, user_id, create_adjustments=True)
+        # reject: no inventory side effect, order.status stays 'completed'
+
+    elif workflow.transaction_type == 'inventory_adjustment':
+        from models.warehouse_adjustment import InventoryAdjustment
+        from models.warehouse import Inventory, InventoryMovement
+        adj = db.session.get(InventoryAdjustment, workflow.transaction_id)
+        if adj:
+            if action == 'approve':
+                # Quantity mode only - value-adjustment mode leaves
+                # Inventory.quantity_on_hand untouched (cost-only revaluation,
+                # the journal entry created by approve_workflow()'s
+                # PendingJournalEntry posting is the entire effect).
+                if not adj.is_value_adjustment and adj.inventory_id:
+                    inv = db.session.get(Inventory, adj.inventory_id)
+                    if inv:
+                        inv.quantity_on_hand = adj.physical_quantity
+                        inv.quantity_available = adj.physical_quantity - inv.quantity_reserved
+                        inv.last_stock_check = get_local_now()
+
+                        movement = InventoryMovement(
+                            inventory_id=inv.id,
+                            product_id=inv.product_id,
+                            material_id=inv.material_id,
+                            location_id=inv.location_id,
+                            movement_type='adjust',
+                            movement_date=get_local_now().date(),
+                            quantity=float(adj.adjustment_quantity),
+                            reference_number=adj.adjustment_number,
+                            reference_type='inventory_adjustment',
+                            reference_id=adj.id,
+                            batch_number=adj.batch_number,
+                            notes=f'Penyesuaian stok - {adj.adjustment_number}',
+                            created_by=user_id
+                        )
+                        db.session.add(movement)
+                adj.status = 'applied'
+                adj.approved_by = user_id
+                adj.approved_at = get_local_now()
+            else:
+                adj.status = 'rejected'
 
 
 def get_user_roles(user):
@@ -43,8 +128,55 @@ def user_has_any_role(user, role_names):
     return bool(user_roles & {r.lower() for r in role_names})
 
 
+def user_can_act_on(user, workflow, step):
+    """Check whether ``user`` is allowed to review/approve ``workflow``.
+
+    Reads the role list for the given ``step`` ('review' or 'approval') from
+    ``ApprovalConfiguration.reviewer_roles`` / ``approver_roles`` for the
+    workflow's ``transaction_type`` - there is no hardcoded role list here.
+
+    Returns (allowed: bool, error_message: str | None). ``error_message`` is
+    only set when ``allowed`` is False, and distinguishes "no configuration
+    exists for this transaction type" (safe-fail closed) from "role not in
+    the configured list" so callers can return a clear message. Admin/
+    super_admin users are always allowed, matching the existing project
+    convention (``user_has_any_role`` already treats 'admin' as a wildcard).
+    """
+    user_roles = get_user_roles(user)
+    if 'admin' in user_roles:
+        return True, None
+
+    config = ApprovalConfiguration.query.filter_by(
+        transaction_type=workflow.transaction_type, is_active=True
+    ).first()
+
+    if not config:
+        return False, (
+            f"Belum ada konfigurasi approval untuk jenis transaksi "
+            f"'{workflow.transaction_type}'. Hubungi admin untuk mengatur "
+            f"ApprovalConfiguration terlebih dahulu."
+        )
+
+    configured_roles = config.reviewer_roles if step == 'review' else config.approver_roles
+    if not configured_roles:
+        return False, (
+            f"Konfigurasi approval untuk '{workflow.transaction_type}' tidak "
+            f"memiliki daftar role untuk tahap {step}."
+        )
+
+    allowed_roles = {r.lower() for r in configured_roles}
+    if user_roles & allowed_roles:
+        return True, None
+
+    return False, (
+        f"Unauthorized - role yang diizinkan untuk tahap {step} pada "
+        f"'{workflow.transaction_type}': {', '.join(configured_roles)}"
+    )
+
+
 @approval_bp.route('/workflows', methods=['GET'])
 @jwt_required()
+@require_permission('approval.view')
 def get_workflows():
     """Get approval workflows with filtering"""
     try:
@@ -110,6 +242,7 @@ def get_workflows():
 
 @approval_bp.route('/workflows/<int:workflow_id>', methods=['GET'])
 @jwt_required()
+@require_permission('approval.view')
 def get_workflow_detail(workflow_id):
     """Get workflow detail with history"""
     try:
@@ -171,6 +304,7 @@ def get_workflow_detail(workflow_id):
 
 @approval_bp.route('/workflows', methods=['POST'])
 @jwt_required()
+@require_permission('approval.view')
 def create_workflow():
     """Create new approval workflow"""
     try:
@@ -229,6 +363,7 @@ def create_workflow():
 
 @approval_bp.route('/workflows/<int:workflow_id>/submit', methods=['POST'])
 @jwt_required()
+@require_permission('approval.view')
 def submit_for_review(workflow_id):
     """Submit workflow for review"""
     try:
@@ -267,19 +402,21 @@ def submit_for_review(workflow_id):
 
 @approval_bp.route('/workflows/<int:workflow_id>/review', methods=['POST'])
 @jwt_required()
+@require_permission('approval.view')
 def review_workflow(workflow_id):
     """Review workflow (Manager Production) - can edit data"""
     try:
         current_user_id = get_jwt_identity()
         user = db.session.get(User, current_user_id)
         data = request.get_json()
-        
-        # Check if user has reviewer role
-        if not user_has_any_role(user, ['production_manager', 'warehouse_manager', 'admin']):
-            return jsonify({'error': 'Unauthorized - Reviewer role required'}), 403
-        
+
         workflow = db.session.get(ApprovalWorkflow, workflow_id) or abort(404)
-        
+
+        # Check if user has reviewer role for this transaction_type, per ApprovalConfiguration
+        allowed, error_message = user_can_act_on(user, workflow, 'review')
+        if not allowed:
+            return jsonify({'error': error_message}), 403
+
         # Check if workflow is in pending_review status
         if workflow.status != 'pending_review':
             return jsonify({'error': 'Workflow is not pending review'}), 400
@@ -328,19 +465,21 @@ def review_workflow(workflow_id):
 
 @approval_bp.route('/workflows/<int:workflow_id>/approve', methods=['POST'])
 @jwt_required()
+@require_permission('approval.approve')
 def approve_workflow(workflow_id):
     """Approve workflow (Finance/Accounting) - creates journal entry"""
     try:
         current_user_id = get_jwt_identity()
         user = db.session.get(User, current_user_id)
         data = request.get_json()
-        
-        # Check if user has approver role
-        if not user_has_any_role(user, ['finance', 'accounting', 'finance_manager', 'admin']):
-            return jsonify({'error': 'Unauthorized - Finance/Accounting role required'}), 403
-        
+
         workflow = db.session.get(ApprovalWorkflow, workflow_id) or abort(404)
-        
+
+        # Check if user has approver role for this transaction_type, per ApprovalConfiguration
+        allowed, error_message = user_can_act_on(user, workflow, 'approval')
+        if not allowed:
+            return jsonify({'error': error_message}), 403
+
         # Check if workflow is in pending_approval status
         if workflow.status != 'pending_approval':
             return jsonify({'error': 'Workflow is not pending approval'}), 400
@@ -352,28 +491,22 @@ def approve_workflow(workflow_id):
         workflow.approval_notes = data.get('notes')
         workflow.status = 'approved'
         workflow.current_step = 'completed'
-        
-        # Create journal entry from pending
+
+        # Apply the side effect on the source document (PO/SO status flip,
+        # stock transfer approval, stock opname inventory adjustment, etc.)
+        apply_workflow_side_effect(workflow, 'approve', current_user_id)
+
+        # Create journal entries from pending (one AccountingEntry row per line)
         pending_journal = PendingJournalEntry.query.filter_by(workflow_id=workflow_id).first()
         if pending_journal:
-            journal_entry = AccountingEntry(
-                entry_date=pending_journal.entry_date,
-                description=pending_journal.description,
-                reference=pending_journal.reference,
-                entry_type='journal',
-                status='posted',
-                created_by=current_user_id,
-                approved_by=current_user_id,
-                approved_at=get_local_now()
-            )
-            db.session.add(journal_entry)
+            created_entries = post_pending_journal(pending_journal.id, posted_by_user_id=current_user_id)
             db.session.flush()
-            
-            # Add journal lines (simplified - store in JSON for now)
-            # TODO: Create proper AccountingEntryLine model if needed
-            journal_entry.lines_data = pending_journal.lines  # Store as JSON
-            
-            workflow.journal_entry_id = journal_entry.id
+
+            # journal_entry_id historically pointed at a single AccountingEntry;
+            # keep it pointing at the first line's row so existing readers of
+            # workflow.journal_entry_id still resolve to a real row.
+            if created_entries:
+                workflow.journal_entry_id = created_entries[0].id
         
         # Create history
         history = ApprovalHistory(
@@ -387,7 +520,19 @@ def approve_workflow(workflow_id):
         db.session.add(history)
         
         db.session.commit()
-        
+
+        # Stock actually increased for these two types (opname variance / adjustment
+        # approval) - retry any MaterialIssueItem stuck at reservation_status=
+        # 'insufficient' now that new stock may cover it. Called AFTER commit
+        # (own commits per MaterialIssue, must not be nested inside this
+        # transaction) and best-effort - never blocks the approval response.
+        if workflow.transaction_type in ('stock_opname', 'inventory_adjustment'):
+            try:
+                from utils.auto_reserve import requeue_insufficient_items
+                requeue_insufficient_items()
+            except Exception:
+                pass
+
         return jsonify({
             'message': 'Workflow approved and journal entry created',
             'journal_entry_id': workflow.journal_entry_id
@@ -400,6 +545,7 @@ def approve_workflow(workflow_id):
 
 @approval_bp.route('/workflows/<int:workflow_id>/reject', methods=['POST'])
 @jwt_required()
+@require_permission('approval.reject')
 def reject_workflow(workflow_id):
     """Reject workflow"""
     try:
@@ -408,12 +554,16 @@ def reject_workflow(workflow_id):
         data = request.get_json()
         
         workflow = db.session.get(ApprovalWorkflow, workflow_id) or abort(404)
-        
-        # Check authorization
-        if workflow.status == 'pending_review' and not user_has_any_role(user, ['production_manager', 'warehouse_manager', 'admin']):
-            return jsonify({'error': 'Unauthorized'}), 403
-        elif workflow.status == 'pending_approval' and not user_has_any_role(user, ['finance', 'accounting', 'finance_manager', 'admin']):
-            return jsonify({'error': 'Unauthorized'}), 403
+
+        # Check authorization - same reviewer/approver role config as review/approve
+        if workflow.status == 'pending_review':
+            allowed, error_message = user_can_act_on(user, workflow, 'review')
+            if not allowed:
+                return jsonify({'error': error_message}), 403
+        elif workflow.status == 'pending_approval':
+            allowed, error_message = user_can_act_on(user, workflow, 'approval')
+            if not allowed:
+                return jsonify({'error': error_message}), 403
         
         # Update workflow
         old_status = workflow.status
@@ -421,7 +571,11 @@ def reject_workflow(workflow_id):
         workflow.rejected_at = get_local_now()
         workflow.rejection_reason = data.get('reason')
         workflow.status = 'rejected'
-        
+
+        # Apply the side effect on the source document (PO/SO status flip,
+        # stock transfer sent back to draft, etc.)
+        apply_workflow_side_effect(workflow, 'reject', current_user_id)
+
         # Create history
         history = ApprovalHistory(
             workflow_id=workflow_id,
@@ -444,6 +598,7 @@ def reject_workflow(workflow_id):
 
 @approval_bp.route('/configurations', methods=['GET'])
 @jwt_required()
+@require_permission('approval.view')
 def get_configurations():
     """Get approval configurations"""
     try:
@@ -470,6 +625,7 @@ def get_configurations():
 
 @approval_bp.route('/dashboard', methods=['GET'])
 @jwt_required()
+@require_permission('approval.view')
 def get_dashboard():
     """Get approval dashboard statistics"""
     try:

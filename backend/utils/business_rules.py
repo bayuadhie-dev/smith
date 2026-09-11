@@ -44,14 +44,20 @@ class BusinessRules:
             }
         """
         try:
-            # Get current inventory
-            query = db.session.query(func.sum(Inventory.quantity)).filter(
-                Inventory.product_id == product_id
+            # Get current inventory. quantity_available (not quantity_on_hand) - this
+            # check is "can this actually be promised right now", so already-reserved
+            # stock must not count. Real Inventory columns (models/warehouse.py) are
+            # quantity_on_hand/quantity_reserved/quantity_available - there is no
+            # plain `.quantity` column; that name raised AttributeError on every call,
+            # silently caught by this function's own try/except (fixed 2026-08-24).
+            query = db.session.query(func.sum(Inventory.quantity_available)).filter(
+                Inventory.product_id == product_id,
+                Inventory.is_active == True
             )
-            
+
             if location_id:
                 query = query.filter(Inventory.location_id == location_id)
-            
+
             current_stock = query.scalar() or 0
             
             available = current_stock >= quantity
@@ -126,9 +132,10 @@ class BusinessRules:
                 if not product:
                     return {'low_stock': False, 'message': 'Product not found'}
                 
-                # Get total inventory
-                total_stock = db.session.query(func.sum(Inventory.quantity)).filter(
-                    Inventory.product_id == product_id
+                # Get total inventory (see note above - quantity_available, not .quantity)
+                total_stock = db.session.query(func.sum(Inventory.quantity_available)).filter(
+                    Inventory.product_id == product_id,
+                    Inventory.is_active == True
                 ).scalar() or 0
                 
                 min_stock = product.minimum_stock or 0

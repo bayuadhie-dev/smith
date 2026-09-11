@@ -4,6 +4,7 @@ FG Conversion Routes - WIP to Finish Good conversion management
 
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from datetime import datetime, date
 from sqlalchemy import func, and_, or_, desc
 from models import db
@@ -31,6 +32,7 @@ fg_conversion_bp = Blueprint('fg_conversion', __name__)
 
 @fg_conversion_bp.route('/api/fg-conversion/create', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def create_fg_conversion():
     """Create new FG conversion (auto-triggered after QC or manual)"""
     try:
@@ -149,6 +151,7 @@ def create_fg_conversion():
 
 @fg_conversion_bp.route('/api/fg-conversion/list', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def list_fg_conversions():
     """List all FG conversions with filters"""
     try:
@@ -204,6 +207,7 @@ def list_fg_conversions():
 
 @fg_conversion_bp.route('/api/fg-conversion/<int:conversion_id>', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_fg_conversion(conversion_id):
     """Get FG conversion details"""
     try:
@@ -225,6 +229,7 @@ def get_fg_conversion(conversion_id):
 
 @fg_conversion_bp.route('/api/fg-conversion/<int:conversion_id>/complete', methods=['PUT'])
 @jwt_required()
+@require_permission('production.complete')
 def complete_fg_conversion(conversion_id):
     """
     Complete FG conversion:
@@ -288,6 +293,7 @@ def complete_fg_conversion(conversion_id):
                 if not default_location:
                     return jsonify({'success': False, 'message': 'No warehouse location found'}), 400
                 
+                from utils.inventory_helpers import resolve_initial_stock_status
                 fg_inventory = Inventory(
                     product_id=item.fg_product_id,
                     location_id=default_location.id,
@@ -296,7 +302,7 @@ def complete_fg_conversion(conversion_id):
                     batch_number=item.batch_number,
                     production_date=item.production_date,
                     expiry_date=item.expiry_date,
-                    stock_status='released',  # Auto-released after QC pass
+                    stock_status=resolve_initial_stock_status('released', product=item.fg_product),  # Auto-released after QC pass, unless erp_approval requires manual release
                     work_order_id=conversion.work_order_id,
                     qc_inspection_id=conversion.qc_inspection_id,
                     qc_date=conversion.qc_date,
@@ -385,6 +391,7 @@ def complete_fg_conversion(conversion_id):
 
 @fg_conversion_bp.route('/api/fg-conversion/batch/<batch_number>', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_conversion_by_batch(batch_number):
     """Get FG conversion by batch number"""
     try:
@@ -403,6 +410,7 @@ def get_conversion_by_batch(batch_number):
 
 @fg_conversion_bp.route('/api/fg-conversion/loss-report', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_loss_report():
     """Get loss/reject report with aggregation"""
     try:
@@ -477,6 +485,7 @@ def get_loss_report():
 
 @fg_conversion_bp.route('/api/fg-conversion/auto-create-from-qc', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def auto_create_from_qc():
     """Auto-create FG conversion after QC pass"""
     try:
@@ -510,6 +519,7 @@ def auto_create_from_qc():
 
 @fg_conversion_bp.route('/api/fg-conversion/calculate-materials', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def calculate_materials():
     """Calculate material requirements for FG conversion"""
     try:
@@ -542,6 +552,7 @@ def calculate_materials():
 
 @fg_conversion_bp.route('/api/fg-conversion/validate-batch', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def validate_batch():
     """Validate batch output against ingredient quantity"""
     try:
@@ -576,6 +587,7 @@ def validate_batch():
 
 @fg_conversion_bp.route('/api/fg-conversion/wip-stock/<int:product_id>', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_wip_stock(product_id):
     """Get WIP stock availability for a product"""
     try:
@@ -594,6 +606,7 @@ def get_wip_stock(product_id):
 
 @fg_conversion_bp.route('/api/fg-conversion/check-material-availability', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def check_materials_availability():
     """Check if materials are available in inventory"""
     try:
@@ -618,6 +631,7 @@ def check_materials_availability():
 
 @fg_conversion_bp.route('/api/fg-conversion/<int:conversion_id>/add-loss', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def add_loss_detail(conversion_id):
     """Add loss/reject detail to conversion"""
     try:
@@ -678,6 +692,7 @@ def add_loss_detail(conversion_id):
 
 @fg_conversion_bp.route('/api/fg-conversion/dashboard-stats', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_dashboard_stats():
     """Get FG conversion dashboard statistics"""
     try:

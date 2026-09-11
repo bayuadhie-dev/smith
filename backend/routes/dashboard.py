@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
+from utils.auth_decorators import require_permission
 from models import db, SalesOrder, WorkOrder, Inventory, Machine, Product, User, Customer, Supplier, PurchaseOrder
 from utils.i18n import success_response, error_response, get_message
 from models.oee import OEERecord, OEEAlert
@@ -19,6 +20,7 @@ dashboard_bp = Blueprint('dashboard', __name__)
 
 @dashboard_bp.route('/overview', methods=['GET'])
 @jwt_required()
+@require_permission('dashboard.view')
 def get_overview():
     try:
         # Sales metrics - simplified
@@ -98,6 +100,7 @@ def get_overview():
 
 @dashboard_bp.route('/charts/sales', methods=['GET'])
 @jwt_required()
+@require_permission('dashboard.view')
 def get_sales_chart():
     try:
         days = request.args.get('days', 30, type=int)
@@ -121,6 +124,7 @@ def get_sales_chart():
 
 @dashboard_bp.route('/charts/production', methods=['GET'])
 @jwt_required()
+@require_permission('dashboard.view')
 def get_production_chart():
     try:
         days = request.args.get('days', 30, type=int)
@@ -145,6 +149,7 @@ def get_production_chart():
 
 @dashboard_bp.route('/executive', methods=['GET'])
 @jwt_required()
+@require_permission('dashboard.view')
 def get_executive_dashboard():
     """Comprehensive executive dashboard with all modules KPIs"""
     try:

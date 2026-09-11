@@ -5,6 +5,7 @@ Automatically adapts to any server specs when deployed
 """
 from flask import Blueprint, jsonify
 from flask_jwt_extended import jwt_required
+from utils.auth_decorators import require_permission
 import psutil
 import platform
 from datetime import datetime
@@ -129,6 +130,7 @@ def get_system_metrics_internal():
 
 @system_monitor_bp.route('/system/metrics', methods=['GET'])
 @jwt_required()
+@require_permission('settings.view')
 def get_system_metrics():
     """
     Get REAL-TIME system metrics - AUTHENTICATED
@@ -138,6 +140,7 @@ def get_system_metrics():
 
 @system_monitor_bp.route('/system/info', methods=['GET'])
 @jwt_required()
+@require_permission('settings.view')
 def get_system_info():
     """
     Get system information
@@ -163,6 +166,7 @@ def get_system_info():
 
 @system_monitor_bp.route('/system/processes', methods=['GET'])
 @jwt_required()
+@require_permission('settings.view')
 def get_top_processes():
     """
     Get top processes by CPU and Memory usage
@@ -199,6 +203,7 @@ def get_top_processes():
 
 @system_monitor_bp.route('/system/history', methods=['GET'])
 @jwt_required()
+@require_permission('settings.view')
 def get_system_history():
     """
     Get system metrics history (last 60 seconds)

@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, send_file
 from flask_jwt_extended import jwt_required
+from utils.auth_decorators import require_permission
 from models import db, SalesOrder, WorkOrder, Inventory, Product, Customer, WasteRecord, MaintenanceRecord, QualityTest
 from models.hr import Employee, Attendance
 from models.hr_extended import PayrollRecord
@@ -16,6 +17,7 @@ reports_bp = Blueprint('reports', __name__)
 
 @reports_bp.route('/sales', methods=['GET'])
 @jwt_required()
+@require_permission('reports.view')
 def sales_report():
     try:
         start_date = request.args.get('start_date')
@@ -49,6 +51,7 @@ def sales_report():
 
 @reports_bp.route('/production', methods=['GET'])
 @jwt_required()
+@require_permission('reports.view')
 def production_report():
     try:
         start_date = request.args.get('start_date')
@@ -86,6 +89,7 @@ def production_report():
 
 @reports_bp.route('/inventory', methods=['GET'])
 @jwt_required()
+@require_permission('reports.view')
 def inventory_report():
     try:
         results = db.session.query(
@@ -111,6 +115,7 @@ def inventory_report():
 
 @reports_bp.route('/waste', methods=['GET'])
 @jwt_required()
+@require_permission('reports.view')
 def waste_report():
     try:
         start_date = request.args.get('start_date')
@@ -158,6 +163,7 @@ def waste_report():
 
 @reports_bp.route('/maintenance', methods=['GET'])
 @jwt_required()
+@require_permission('reports.view')
 def maintenance_report():
     try:
         start_date = request.args.get('start_date')
@@ -204,6 +210,7 @@ def maintenance_report():
 
 @reports_bp.route('/quality', methods=['GET'])
 @jwt_required()
+@require_permission('reports.view')
 def quality_report():
     try:
         start_date = request.args.get('start_date')
@@ -239,6 +246,7 @@ def quality_report():
 
 @reports_bp.route('/hr', methods=['GET'])
 @jwt_required()
+@require_permission('reports.view')
 def hr_report():
     try:
         # Employee statistics
@@ -279,6 +287,7 @@ def hr_report():
 
 @reports_bp.route('/financial', methods=['GET'])
 @jwt_required()
+@require_permission('reports.view')
 def financial_report():
     try:
         start_date = request.args.get('start_date')
@@ -328,6 +337,7 @@ def financial_report():
 
 @reports_bp.route('/generate/<report_type>', methods=['POST'])
 @jwt_required()
+@require_permission('reports.create')
 def generate_report(report_type):
     try:
         data = request.get_json()
@@ -359,6 +369,7 @@ def generate_report(report_type):
 
 @reports_bp.route('/dashboard-summary', methods=['GET'])
 @jwt_required()
+@require_permission('reports.view')
 def dashboard_summary():
     try:
         # Get data for the last 30 days
@@ -418,6 +429,7 @@ def dashboard_summary():
 
 @reports_bp.route('/production-by-product', methods=['GET'])
 @jwt_required()
+@require_permission('reports.view')
 def production_by_product_report():
     """Get production report grouped by product and period"""
     try:
@@ -571,6 +583,7 @@ def production_by_product_report():
 
 @reports_bp.route('/production-by-product/export', methods=['GET'])
 @jwt_required()
+@require_permission('reports.view')
 def export_production_by_product():
     """Export production by product report to Excel"""
     try:

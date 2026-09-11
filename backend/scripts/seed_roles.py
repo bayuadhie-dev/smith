@@ -225,6 +225,10 @@ MODULES = {
     'pre_shift_checklist': {
         'name': 'Pre-Shift Checklist',
         'actions': ['view', 'create', 'edit']
+    },
+    'expense': {
+        'name': 'Expense & Reimbursement',
+        'actions': ['view', 'create', 'edit', 'delete', 'submit', 'approve', 'payment']
     }
 }
 
@@ -239,6 +243,7 @@ DEFAULT_ROLES = {
     'Direktur Utama': {
         'description': 'CEO/Direktur Utama - akses executive dashboard dan approval tingkat tinggi',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit', 'approve', 'payment'],
             'dashboard': ['view'],
             'executive_dashboard': ['view'],
             'sales': ['view', 'approve'],
@@ -260,6 +265,7 @@ DEFAULT_ROLES = {
     'Direktur Operasional': {
         'description': 'COO - mengawasi operasional produksi, warehouse, dan supply chain',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit', 'approve', 'payment'],
             'dashboard': ['view'],
             'executive_dashboard': ['view'],
             'production': ['view', 'create', 'edit', 'start', 'complete'],
@@ -284,6 +290,7 @@ DEFAULT_ROLES = {
     'Direktur Keuangan': {
         'description': 'CFO - mengawasi keuangan, akuntansi, dan anggaran',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit', 'approve', 'payment'],
             'dashboard': ['view'],
             'executive_dashboard': ['view'],
             'finance': ['view', 'create', 'edit', 'delete', 'approve', 'post'],
@@ -305,6 +312,7 @@ DEFAULT_ROLES = {
     'Direktur HRD': {
         'description': 'CHRO - mengawasi SDM, rekrutmen, dan pengembangan karyawan',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit'],
             'dashboard': ['view'],
             'executive_dashboard': ['view'],
             'dcc': ['view'],
@@ -326,6 +334,7 @@ DEFAULT_ROLES = {
     'General Manager': {
         'description': 'GM - mengelola operasional harian perusahaan',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit', 'approve', 'payment'],
             'dashboard': ['view'],
             'executive_dashboard': ['view'],
             'sales': ['view', 'create', 'edit', 'approve'],
@@ -344,6 +353,13 @@ DEFAULT_ROLES = {
             'production': ['view', 'create', 'edit', 'start', 'complete'],
             'work_orders': ['view', 'create', 'edit', 'release', 'complete'],
             'bom': ['view', 'create', 'edit'],
+            'mrp': ['view', 'run'],
+            'quality': ['view', 'approve'],
+            'maintenance': ['view', 'approve'],
+            'oee': ['view'],
+            'waste': ['view'],
+            'shipping': ['view', 'approve'],
+            'returns': ['view', 'approve'],
             'finance': ['view', 'create', 'edit', 'approve'],
             'dcc': ['view', 'create', 'edit', 'approve'],
             'documents': ['view', 'create', 'edit', 'print'],
@@ -356,6 +372,7 @@ DEFAULT_ROLES = {
     'Manager Produksi': {
         'description': 'Kepala produksi - mengelola seluruh aktivitas produksi',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit'],
             'dashboard': ['view'],
             'production': ['view', 'create', 'edit', 'delete', 'start', 'complete'],
             'work_orders': ['view', 'create', 'edit', 'delete', 'release', 'complete'],
@@ -380,6 +397,7 @@ DEFAULT_ROLES = {
     'Manager Sales': {
         'description': 'Kepala penjualan - mengelola tim sales dan target penjualan',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit'],
             'dashboard': ['view'],
             'executive_dashboard': ['view'],
             'sales': ['view', 'create', 'edit', 'delete', 'approve'],
@@ -389,7 +407,7 @@ DEFAULT_ROLES = {
             'customers': ['view', 'create', 'edit', 'delete'],
             'products': ['view'],
             'inventory': ['view'],
-            'shipping': ['view'],
+            'shipping': ['view', 'create', 'edit'],
             'returns': ['view', 'approve'],
             'ar': ['view'],
             'employees': ['view'],
@@ -401,6 +419,7 @@ DEFAULT_ROLES = {
     'Manager Purchasing': {
         'description': 'Kepala pembelian - mengelola pengadaan dan vendor',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit'],
             'dashboard': ['view'],
             'purchasing': ['view', 'create', 'edit', 'delete', 'approve'],
             'purchase_requests': ['view', 'create', 'edit', 'delete', 'approve'],
@@ -420,6 +439,7 @@ DEFAULT_ROLES = {
     'Manager Warehouse': {
         'description': 'Kepala gudang - mengelola inventory dan logistik',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit'],
             'dashboard': ['view'],
             'warehouse': ['view', 'create', 'edit', 'delete', 'transfer'],
             'inventory': ['view', 'create', 'edit', 'delete', 'adjust'],
@@ -440,6 +460,7 @@ DEFAULT_ROLES = {
     'Manager Finance': {
         'description': 'Kepala keuangan - mengelola akuntansi dan pelaporan keuangan',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit', 'approve', 'payment'],
             'dashboard': ['view'],
             'executive_dashboard': ['view'],
             'finance': ['view', 'create', 'edit', 'delete', 'approve', 'post'],
@@ -460,6 +481,7 @@ DEFAULT_ROLES = {
     'Manager HRD': {
         'description': 'Kepala HRD - mengelola SDM dan administrasi kepegawaian',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit'],
             'dashboard': ['view'],
             'hr': ['view', 'create', 'edit', 'delete'],
             'employees': ['view', 'create', 'edit', 'delete'],
@@ -477,6 +499,7 @@ DEFAULT_ROLES = {
     'Manager QC': {
         'description': 'Kepala Quality Control - mengelola standar kualitas',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit'],
             'dashboard': ['view'],
             'quality': ['view', 'create', 'edit', 'delete', 'approve'],
             'dcc': ['view', 'create', 'edit', 'approve'],
@@ -494,6 +517,7 @@ DEFAULT_ROLES = {
     'Manager Maintenance': {
         'description': 'Kepala maintenance - mengelola perawatan mesin dan fasilitas',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit'],
             'dashboard': ['view'],
             'maintenance': ['view', 'create', 'edit', 'delete', 'schedule'],
             'oee': ['view', 'create', 'edit'],
@@ -511,6 +535,7 @@ DEFAULT_ROLES = {
     'Manager R&D': {
         'description': 'Kepala R&D - mengelola riset dan pengembangan produk',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit'],
             'dashboard': ['view'],
             'rd': ['view', 'create', 'edit', 'delete'],
             'bom': ['view', 'create', 'edit', 'delete'],
@@ -529,6 +554,7 @@ DEFAULT_ROLES = {
     'Supervisor Produksi': {
         'description': 'Supervisor produksi - mengawasi lini produksi',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit'],
             'dashboard': ['view'],
             'production': ['view', 'create', 'edit', 'start', 'complete'],
             'work_orders': ['view', 'create', 'edit', 'release', 'complete'],
@@ -550,6 +576,7 @@ DEFAULT_ROLES = {
     'Supervisor Warehouse': {
         'description': 'Supervisor gudang - mengawasi operasional gudang',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit'],
             'dashboard': ['view'],
             'warehouse': ['view', 'create', 'edit', 'transfer'],
             'inventory': ['view', 'create', 'edit', 'adjust'],
@@ -569,6 +596,7 @@ DEFAULT_ROLES = {
     'Supervisor QC': {
         'description': 'Supervisor QC - mengawasi inspeksi kualitas',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit'],
             'dashboard': ['view'],
             'quality': ['view', 'create', 'edit', 'approve'],
             'dcc': ['view', 'create', 'edit'],
@@ -584,6 +612,7 @@ DEFAULT_ROLES = {
     'Team Lead Sales': {
         'description': 'Team lead sales - memimpin tim sales',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit'],
             'dashboard': ['view'],
             'sales': ['view', 'create', 'edit'],
             'leads': ['view', 'create', 'edit', 'convert'],
@@ -592,15 +621,17 @@ DEFAULT_ROLES = {
             'customers': ['view', 'create', 'edit'],
             'products': ['view'],
             'inventory': ['view'],
+            'shipping': ['view', 'create', 'edit'],
             'documents': ['view', 'print'],
             'reports': ['view', 'create']
         }
     },
-    
+
     # ==================== STAFF / OFFICER ====================
     'Admin Staff': {
         'description': 'Staff administrasi umum',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit'],
             'dashboard': ['view'],
             'documents': ['view', 'create', 'edit', 'print'],
             'templates': ['view'],
@@ -611,6 +642,7 @@ DEFAULT_ROLES = {
     'Sales Staff': {
         'description': 'Staff penjualan',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit'],
             'dashboard': ['view'],
             'sales': ['view', 'create', 'edit'],
             'leads': ['view', 'create', 'edit', 'convert'],
@@ -619,6 +651,7 @@ DEFAULT_ROLES = {
             'customers': ['view', 'create', 'edit'],
             'products': ['view'],
             'inventory': ['view'],
+            'shipping': ['view', 'create', 'edit'],
             'documents': ['view', 'print'],
             'reports': ['view']
         }
@@ -626,6 +659,7 @@ DEFAULT_ROLES = {
     'Purchasing Staff': {
         'description': 'Staff pembelian',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit'],
             'dashboard': ['view'],
             'purchasing': ['view', 'create', 'edit'],
             'purchase_requests': ['view', 'create', 'edit'],
@@ -641,6 +675,7 @@ DEFAULT_ROLES = {
     'Finance Staff': {
         'description': 'Staff keuangan dan akuntansi',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit', 'approve', 'payment'],
             'dashboard': ['view'],
             'finance': ['view', 'create', 'edit'],
             'accounting': ['view', 'create', 'edit'],
@@ -654,6 +689,7 @@ DEFAULT_ROLES = {
     'HR Staff': {
         'description': 'Staff HRD',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit'],
             'dashboard': ['view'],
             'hr': ['view', 'create', 'edit'],
             'employees': ['view', 'create', 'edit'],
@@ -668,6 +704,7 @@ DEFAULT_ROLES = {
     'Warehouse Staff': {
         'description': 'Staff gudang',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit'],
             'dashboard': ['view'],
             'warehouse': ['view', 'create', 'edit', 'transfer'],
             'inventory': ['view', 'create', 'edit'],
@@ -682,6 +719,7 @@ DEFAULT_ROLES = {
     'QC Staff': {
         'description': 'Staff quality control / inspector',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit'],
             'dashboard': ['view'],
             'quality': ['view', 'create', 'edit'],
             'dcc': ['view', 'create', 'edit'],
@@ -695,6 +733,7 @@ DEFAULT_ROLES = {
     'Maintenance Staff': {
         'description': 'Staff maintenance / teknisi',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit'],
             'dashboard': ['view'],
             'maintenance': ['view', 'create', 'edit'],
             'oee': ['view'],
@@ -706,6 +745,7 @@ DEFAULT_ROLES = {
     'R&D Staff': {
         'description': 'Staff riset dan pengembangan',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit'],
             'dashboard': ['view'],
             'rd': ['view', 'create', 'edit'],
             'bom': ['view', 'create', 'edit'],
@@ -721,6 +761,7 @@ DEFAULT_ROLES = {
     'Operator Produksi': {
         'description': 'Operator mesin produksi',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit'],
             'dashboard': ['view'],
             'production': ['view', 'create', 'edit', 'start', 'complete'],
             'work_orders': ['view', 'complete'],
@@ -737,6 +778,7 @@ DEFAULT_ROLES = {
     'Operator Mesin': {
         'description': 'Operator mesin spesifik (extruder, slitting, dll)',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit'],
             'dashboard': ['view'],
             'production': ['view', 'start', 'complete'],
             'work_orders': ['view', 'complete'],
@@ -752,6 +794,7 @@ DEFAULT_ROLES = {
     'Operator Forklift': {
         'description': 'Operator forklift untuk material handling',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit'],
             'dashboard': ['view'],
             'warehouse': ['view', 'transfer'],
             'inventory': ['view'],
@@ -764,6 +807,7 @@ DEFAULT_ROLES = {
     'Staff Packing': {
         'description': 'Karyawan bagian packing/pengemasan',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit'],
             'dashboard': ['view'],
             'production': ['view', 'complete'],
             'work_orders': ['view', 'complete'],
@@ -779,6 +823,7 @@ DEFAULT_ROLES = {
     'Staff Shipping': {
         'description': 'Karyawan bagian pengiriman',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit'],
             'dashboard': ['view'],
             'shipping': ['view', 'create', 'edit', 'dispatch'],
             'sales_orders': ['view', 'ship'],
@@ -794,6 +839,7 @@ DEFAULT_ROLES = {
     'Staff Receiving': {
         'description': 'Karyawan bagian penerimaan barang',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit'],
             'dashboard': ['view'],
             'purchase_orders': ['view', 'receive'],
             'warehouse': ['view', 'create', 'edit'],
@@ -808,6 +854,7 @@ DEFAULT_ROLES = {
     'Helper Produksi': {
         'description': 'Helper/pembantu di area produksi',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit'],
             'dashboard': ['view'],
             'production': ['view'],
             'work_orders': ['view'],
@@ -820,6 +867,7 @@ DEFAULT_ROLES = {
     'Helper Gudang': {
         'description': 'Helper/pembantu di gudang',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit'],
             'dashboard': ['view'],
             'warehouse': ['view'],
             'inventory': ['view'],
@@ -834,6 +882,7 @@ DEFAULT_ROLES = {
     'IT Admin': {
         'description': 'Administrator IT - mengelola sistem dan user',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit'],
             'dashboard': ['view'],
             'settings': ['view', 'edit'],
             'users': ['view', 'create', 'edit', 'delete'],
@@ -850,6 +899,7 @@ DEFAULT_ROLES = {
     'Auditor': {
         'description': 'Internal auditor - akses read-only untuk audit',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit'],
             'dashboard': ['view'],
             'executive_dashboard': ['view'],
             'sales': ['view'],
@@ -868,6 +918,12 @@ DEFAULT_ROLES = {
             'production': ['view'],
             'work_orders': ['view'],
             'bom': ['view'],
+            'mrp': ['view'],
+            'oee': ['view'],
+            'waste': ['view'],
+            'maintenance': ['view'],
+            'shipping': ['view'],
+            'returns': ['view'],
             'finance': ['view'],
             'journal': ['view'],
             'ar': ['view'],
@@ -875,9 +931,15 @@ DEFAULT_ROLES = {
             'hr': ['view'],
             'employees': ['view'],
             'payroll': ['view'],
+            'attendance': ['view'],
+            'leave': ['view'],
+            'roster': ['view'],
             'quality': ['view'],
             'dcc': ['view'],
             'audit': ['view'],
+            'settings': ['view'],
+            'users': ['view'],
+            'roles': ['view'],
             'documents': ['view'],
             'reports': ['view', 'export']
         }
@@ -885,6 +947,7 @@ DEFAULT_ROLES = {
     'Viewer': {
         'description': 'Read-only access - hanya bisa melihat data',
         'permissions': {
+            'expense': ['view', 'create', 'edit', 'delete', 'submit'],
             'dashboard': ['view'],
             'sales': ['view'],
             'leads': ['view'],
@@ -913,6 +976,19 @@ DEFAULT_ROLES = {
             'dashboard': ['view'],
             'products': ['view'],
             'tv_display': ['view']
+        }
+    },
+    'Admin Closing SPK': {
+        'description': 'Penyelesaian barang jadi (Tutup SPK) - bahan aktual, waste, packing list',
+        'permissions': {
+            'dashboard': ['view'],
+            'work_orders': ['view', 'create', 'edit', 'complete'],
+            'production': ['view'],
+            'waste': ['view', 'create'],
+            'shipping': ['view', 'create', 'edit'],
+            'products': ['view'],
+            'materials': ['view'],
+            'reports': ['view']
         }
     }
 }

@@ -20,6 +20,7 @@ from models.dcc import (
     InternalMemo, InternalMemoDistribution, DccDestructionLog
 )
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 import os
 import json
 import redis
@@ -82,7 +83,8 @@ DEPARTMENTS = [
 # ============================================================
 
 @dcc_bp.route('/dashboard', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('dcc.view')
 def get_dashboard():
     """Get DCC dashboard statistics"""
     total_docs = DccDocument.query.filter_by(is_active=True).count()
@@ -124,7 +126,8 @@ def get_dashboard():
 # ============================================================
 
 @dcc_bp.route('/documents', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('dcc.view')
 def get_documents():
     """Get all documents (Master List / Daftar Induk Dokumen)"""
     level = request.args.get('level')
@@ -206,6 +209,7 @@ def _is_auto_approve_user(user_id):
 
 @dcc_bp.route('/documents', methods=['POST'])
 @jwt_required()
+@require_permission('dcc.create')
 def create_document():
     """Create a new document in master list"""
     data = request.get_json()
@@ -292,7 +296,8 @@ def create_document():
 
 
 @dcc_bp.route('/documents/<int:doc_id>', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('dcc.view')
 def get_document_detail(doc_id):
     """Get document detail with all revisions"""
     doc = db.session.get(DccDocument, doc_id) or abort(404)
@@ -350,6 +355,7 @@ def get_document_detail(doc_id):
 
 @dcc_bp.route('/documents/<int:doc_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('dcc.edit')
 def update_document(doc_id):
     """Update document info"""
     doc = db.session.get(DccDocument, doc_id) or abort(404)
@@ -381,6 +387,7 @@ def update_document(doc_id):
 
 @dcc_bp.route('/documents/<int:doc_id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('dcc.delete')
 def delete_document(doc_id):
     """Soft delete document (is_active=False) — audit trail tetap terjaga"""
     doc = db.session.get(DccDocument, doc_id) or abort(404)
@@ -409,6 +416,7 @@ def delete_document(doc_id):
 
 @dcc_bp.route('/documents/<int:doc_id>/revisions', methods=['POST'])
 @jwt_required()
+@require_permission('dcc.create')
 def create_revision(doc_id):
     """Create new revision for a document — wajib ada DCN yang sudah approved"""
     doc = db.session.get(DccDocument, doc_id) or abort(404)
@@ -477,6 +485,7 @@ def create_revision(doc_id):
 
 @dcc_bp.route('/revisions/<int:rev_id>/upload', methods=['POST'])
 @jwt_required()
+@require_permission('dcc.create')
 def upload_revision_file(rev_id):
     """Upload file (docx/pdf) for a revision"""
     rev = db.session.get(DccDocumentRevision, rev_id) or abort(404)
@@ -512,6 +521,7 @@ def upload_revision_file(rev_id):
 
 @dcc_bp.route('/revisions/<int:rev_id>/approve', methods=['POST'])
 @jwt_required()
+@require_permission('dcc.approve')
 def approve_revision(rev_id):
     """Approve/review a revision — wajib password + role check per level dokumen"""
     rev = db.session.get(DccDocumentRevision, rev_id) or abort(404)
@@ -710,6 +720,7 @@ def approve_revision(rev_id):
 
 @dcc_bp.route('/revisions/<int:rev_id>/download', methods=['GET'])
 @jwt_required()
+@require_permission('dcc.view')
 def download_revision_file(rev_id):
     """Download revision file"""
     rev = db.session.get(DccDocumentRevision, rev_id) or abort(404)
@@ -730,6 +741,7 @@ def download_revision_file(rev_id):
 
 @dcc_bp.route('/revisions/<int:rev_id>/export-pdf', methods=['GET'])
 @jwt_required()
+@require_permission('dcc.view')
 def export_controlled_pdf(rev_id):
     """Export PDF Controlled Copy — watermark + TTD digital + QR + locked"""
     from utils.dcc_pdf import generate_controlled_pdf
@@ -768,6 +780,7 @@ def export_controlled_pdf(rev_id):
 
 @dcc_bp.route('/capa', methods=['GET'])
 @jwt_required()
+@require_permission('dcc.view')
 def get_capa_list():
     """Get CAPA list (CPAR + SCAR)"""
     capa_type = request.args.get('type')  # CPAR, SCAR
@@ -817,6 +830,7 @@ def get_capa_list():
 
 @dcc_bp.route('/capa', methods=['POST'])
 @jwt_required()
+@require_permission('dcc.create')
 def create_capa():
     """Create new CPAR or SCAR"""
     data = request.get_json()
@@ -866,6 +880,7 @@ def create_capa():
 
 @dcc_bp.route('/capa/<int:capa_id>', methods=['GET'])
 @jwt_required()
+@require_permission('dcc.view')
 def get_capa_detail(capa_id):
     """Get CAPA detail with investigation & verification"""
     c = db.session.get(CapaRequest, capa_id) or abort(404)
@@ -919,6 +934,7 @@ def get_capa_detail(capa_id):
 
 @dcc_bp.route('/capa/<int:capa_id>/investigation', methods=['POST'])
 @jwt_required()
+@require_permission('dcc.create')
 def save_investigation(capa_id):
     """Save/update investigation for a CAPA"""
     capa = db.session.get(CapaRequest, capa_id) or abort(404)
@@ -951,6 +967,7 @@ def save_investigation(capa_id):
 
 @dcc_bp.route('/capa/<int:capa_id>/verification', methods=['POST'])
 @jwt_required()
+@require_permission('dcc.create')
 def save_verification(capa_id):
     """Save verification for a CAPA"""
     capa = db.session.get(CapaRequest, capa_id) or abort(404)
@@ -981,6 +998,7 @@ def save_verification(capa_id):
 
 @dcc_bp.route('/capa/<int:capa_id>/status', methods=['PUT'])
 @jwt_required()
+@require_permission('dcc.edit')
 def update_capa_status(capa_id):
     """Update CAPA status"""
     capa = db.session.get(CapaRequest, capa_id) or abort(404)
@@ -1007,6 +1025,7 @@ def update_capa_status(capa_id):
 
 @dcc_bp.route('/memos', methods=['GET'])
 @jwt_required()
+@require_permission('dcc.view')
 def get_memos():
     """Get internal memos"""
     status = request.args.get('status')
@@ -1033,6 +1052,7 @@ def get_memos():
 
 @dcc_bp.route('/memos', methods=['POST'])
 @jwt_required()
+@require_permission('dcc.create')
 def create_memo():
     """Create internal memo"""
     data = request.get_json()
@@ -1062,6 +1082,7 @@ def create_memo():
 
 @dcc_bp.route('/memos/<int:memo_id>', methods=['GET'])
 @jwt_required()
+@require_permission('dcc.view')
 def get_memo_detail(memo_id):
     """Get memo detail"""
     m = db.session.get(InternalMemo, memo_id) or abort(404)
@@ -1093,6 +1114,7 @@ def get_memo_detail(memo_id):
 
 @dcc_bp.route('/memos/<int:memo_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('dcc.edit')
 def update_memo(memo_id):
     """Update memo"""
     memo = db.session.get(InternalMemo, memo_id) or abort(404)
@@ -1111,6 +1133,7 @@ def update_memo(memo_id):
 
 @dcc_bp.route('/memos/<int:memo_id>/publish', methods=['POST'])
 @jwt_required()
+@require_permission('dcc.create')
 def publish_memo(memo_id):
     """Publish memo and distribute to selected departments"""
     memo = db.session.get(InternalMemo, memo_id) or abort(404)
@@ -1162,6 +1185,7 @@ def publish_memo(memo_id):
 
 @dcc_bp.route('/memos/<int:memo_id>/read', methods=['POST'])
 @jwt_required()
+@require_permission('dcc.create')
 def mark_memo_read(memo_id):
     """Legacy endpoint — redirects to acknowledge_memo"""
     return acknowledge_memo(memo_id)
@@ -1173,6 +1197,7 @@ def mark_memo_read(memo_id):
 
 @dcc_bp.route('/destructions', methods=['GET'])
 @jwt_required()
+@require_permission('dcc.view')
 def get_destructions():
     """Get destruction logs"""
     logs = DccDestructionLog.query.order_by(DccDestructionLog.created_at.desc()).all()
@@ -1197,6 +1222,7 @@ def get_destructions():
 
 @dcc_bp.route('/destructions', methods=['POST'])
 @jwt_required()
+@require_permission('dcc.create')
 def create_destruction():
     """Create destruction log (Berita Acara Pemusnahan)"""
     data = request.get_json()
@@ -1231,6 +1257,7 @@ def create_destruction():
 
 @dcc_bp.route('/destructions/<int:log_id>/witness', methods=['POST'])
 @jwt_required()
+@require_permission('dcc.create')
 def confirm_witness(log_id):
     """Witness confirms destruction"""
     log = db.session.get(DccDestructionLog, log_id) or abort(404)
@@ -1246,6 +1273,7 @@ def confirm_witness(log_id):
 
 @dcc_bp.route('/destructions/<int:log_id>/verify', methods=['POST'])
 @jwt_required()
+@require_permission('dcc.create')
 def verify_destruction(log_id):
     """Verify destruction"""
     log = db.session.get(DccDestructionLog, log_id) or abort(404)
@@ -1264,6 +1292,7 @@ def verify_destruction(log_id):
 
 @dcc_bp.route('/departments', methods=['GET'])
 @jwt_required()
+@require_permission('dcc.view')
 def get_departments():
     """Get department list"""
     return jsonify({'departments': DEPARTMENTS})
@@ -1271,6 +1300,7 @@ def get_departments():
 
 @dcc_bp.route('/users', methods=['GET'])
 @jwt_required()
+@require_permission('dcc.view')
 def get_users_for_assignment():
     """Get active users for reviewer/approver assignment"""
     users = User.query.filter_by(is_active=True).order_by(User.full_name).all()
@@ -1289,6 +1319,7 @@ def get_users_for_assignment():
 
 @dcc_bp.route('/capa/dashboard', methods=['GET'])
 @jwt_required()
+@require_permission('dcc.view')
 def get_capa_dashboard():
     """CAPA KPI Dashboard — summary by source, dept, status"""
     now = datetime.now()
@@ -1332,6 +1363,7 @@ def get_capa_dashboard():
 
 @dcc_bp.route('/capa/<int:capa_id>/cancel', methods=['POST'])
 @jwt_required()
+@require_permission('dcc.create')
 def cancel_capa(capa_id):
     """Cancel CAPA (perlu approval Inisiator + Management per QP-DCC-03)"""
     capa = db.session.get(CapaRequest, capa_id) or abort(404)
@@ -1349,6 +1381,7 @@ def cancel_capa(capa_id):
 
 @dcc_bp.route('/capa/monthly-report', methods=['GET'])
 @jwt_required()
+@require_permission('dcc.view')
 def get_capa_monthly_report():
     """Generate FRM-DCC-09 monthly report — termasuk CAPA open dari bulan sebelumnya"""
     month = request.args.get('month', datetime.now().month, type=int)
@@ -1418,6 +1451,7 @@ def get_capa_monthly_report():
 
 @dcc_bp.route('/memos/<int:memo_id>/acknowledge', methods=['POST'])
 @jwt_required()
+@require_permission('dcc.create')
 def acknowledge_memo(memo_id):
     """Tandai memo sudah dibaca (FRM-DCC-07)"""
     user_id = get_jwt_identity()
@@ -1431,6 +1465,7 @@ def acknowledge_memo(memo_id):
 
 @dcc_bp.route('/memos/unread', methods=['GET'])
 @jwt_required()
+@require_permission('dcc.view')
 def get_unread_memos():
     """Get unread memos for current user"""
     user_id = get_jwt_identity()
@@ -1451,6 +1486,7 @@ def get_unread_memos():
 
 @dcc_bp.route('/documents/<int:doc_id>/change-notices', methods=['GET'])
 @jwt_required()
+@require_permission('dcc.view')
 def get_change_notices(doc_id):
     """List change notices for a document"""
     notices = DccChangeNotice.query.filter_by(document_id=doc_id)\
@@ -1469,6 +1505,7 @@ def get_change_notices(doc_id):
 
 @dcc_bp.route('/documents/<int:doc_id>/change-notice', methods=['POST'])
 @jwt_required()
+@require_permission('dcc.create')
 def create_change_notice(doc_id):
     """Submit FRM-DCC-05 (Document/Form Change Notice)"""
     doc = db.session.get(DccDocument, doc_id) or abort(404)
@@ -1496,6 +1533,7 @@ def create_change_notice(doc_id):
 
 @dcc_bp.route('/change-notices/<int:notice_id>/approve', methods=['POST'])
 @jwt_required()
+@require_permission('dcc.approve')
 def approve_change_notice(notice_id):
     """Approve or reject a change notice"""
     notice = db.session.get(DccChangeNotice, notice_id) or abort(404)
@@ -1548,6 +1586,7 @@ def approve_change_notice(notice_id):
 
 @dcc_bp.route('/documents/<int:doc_id>/distribute', methods=['POST'])
 @jwt_required()
+@require_permission('dcc.create')
 def distribute_document(doc_id):
     """Distribute document revision to departments (FRM-DCC-04)"""
     doc = db.session.get(DccDocument, doc_id) or abort(404)
@@ -1580,6 +1619,7 @@ def distribute_document(doc_id):
 
 @dcc_bp.route('/documents/<int:doc_id>/distributions', methods=['GET'])
 @jwt_required()
+@require_permission('dcc.view')
 def get_distributions(doc_id):
     """Get distribution list for a document (FRM-DCC-04)"""
     revisions = DccDocumentRevision.query.filter_by(document_id=doc_id).all()
@@ -1603,6 +1643,7 @@ def get_distributions(doc_id):
 
 @dcc_bp.route('/distribution/<int:dist_id>/acknowledge', methods=['POST'])
 @jwt_required()
+@require_permission('dcc.create')
 def acknowledge_distribution(dist_id):
     """Penerima TTD digital (FRM-DCC-01 Serah Terima Dokumen)"""
     dist = db.session.get(DccDocumentDistribution, dist_id) or abort(404)
@@ -1626,6 +1667,7 @@ def acknowledge_distribution(dist_id):
 
 @dcc_bp.route('/documents/<int:doc_id>/reviews', methods=['GET'])
 @jwt_required()
+@require_permission('dcc.view')
 def get_document_reviews(doc_id):
     """Get review history for a document"""
     reviews = DccDocumentReview.query.filter_by(document_id=doc_id)\
@@ -1640,6 +1682,7 @@ def get_document_reviews(doc_id):
 
 @dcc_bp.route('/documents/<int:doc_id>/review', methods=['POST'])
 @jwt_required()
+@require_permission('dcc.create')
 def submit_document_review(doc_id):
     """Submit kaji ulang dokumen (FRM-DCC-10)"""
     doc = db.session.get(DccDocument, doc_id) or abort(404)
@@ -1670,6 +1713,7 @@ def submit_document_review(doc_id):
 
 @dcc_bp.route('/documents/expiring', methods=['GET'])
 @jwt_required()
+@require_permission('dcc.view')
 def get_expiring_documents():
     """Get documents expiring in 3-4 months (for review alert)"""
     from utils.helpers import get_setting_value
@@ -1697,6 +1741,7 @@ def get_expiring_documents():
 
 @dcc_bp.route('/quality-records', methods=['GET'])
 @jwt_required()
+@require_permission('dcc.view')
 def get_quality_records():
     """Daftar Induk Rekaman Mutu (FRM-DCC-03)"""
     record_type = request.args.get('type')
@@ -1731,6 +1776,7 @@ def get_quality_records():
 
 @dcc_bp.route('/quality-records', methods=['POST'])
 @jwt_required()
+@require_permission('dcc.create')
 def create_quality_record():
     """Create quality record entry"""
     data = request.get_json()
@@ -1757,6 +1803,7 @@ def create_quality_record():
 
 @dcc_bp.route('/quality-records/<int:rec_id>', methods=['GET'])
 @jwt_required()
+@require_permission('dcc.view')
 def get_quality_record_detail(rec_id):
     """Get quality record detail"""
     r = db.session.get(DccQualityRecord, rec_id) or abort(404)
@@ -1775,6 +1822,7 @@ def get_quality_record_detail(rec_id):
 
 @dcc_bp.route('/quality-records/<int:rec_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('dcc.edit')
 def update_quality_record(rec_id):
     """Update quality record"""
     r = db.session.get(DccQualityRecord, rec_id) or abort(404)

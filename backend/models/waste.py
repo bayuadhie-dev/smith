@@ -29,6 +29,9 @@ class WasteRecord(db.Model):
     source_department = db.Column(db.String(100), nullable=True)
     source_machine_id = db.Column(db.Integer, db.ForeignKey('machines.id'), nullable=True)
     work_order_id = db.Column(db.Integer, db.ForeignKey('work_orders.id'), nullable=True)
+    production_batch_id = db.Column(db.Integer, db.ForeignKey('production_batches.id'), nullable=True)  # precise per-batch tracking (Accurate parity: waste follows batch number)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=True)  # which item became waste, if known (e.g. customer return disposition)
+    material_id = db.Column(db.Integer, db.ForeignKey('materials.id'), nullable=True)
     quantity = db.Column(db.Numeric(15, 2), nullable=False)
     uom = db.Column(db.String(20), nullable=False)
     weight_kg = db.Column(db.Numeric(15, 3), nullable=True)
@@ -47,6 +50,9 @@ class WasteRecord(db.Model):
     category = db.relationship('WasteCategory', back_populates='waste_records')
     machine = db.relationship('Machine')
     work_order = db.relationship('WorkOrder')
+    production_batch = db.relationship('ProductionBatch')
+    product = db.relationship('Product')
+    material = db.relationship('Material')
     recorded_by_user = db.relationship('User')
 
 class WasteTarget(db.Model):

@@ -4,6 +4,7 @@ PPIC creates weekly production schedules with material shortage checking
 """
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db, WeeklyProductionPlan, WeeklyProductionPlanItem, Product, Machine, WorkOrder, BillOfMaterials, BOMItem, Inventory, User
 from datetime import datetime, timedelta
 from sqlalchemy import func, and_
@@ -86,6 +87,7 @@ def check_material_availability(product_id, quantity):
 
 @weekly_plan_bp.route('/weekly-plans', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_weekly_plans():
     """Get all weekly production plans"""
     try:
@@ -114,6 +116,7 @@ def get_weekly_plans():
 
 @weekly_plan_bp.route('/weekly-plans/<int:id>', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_weekly_plan(id):
     """Get single weekly production plan with items"""
     try:
@@ -125,6 +128,7 @@ def get_weekly_plan(id):
 
 @weekly_plan_bp.route('/weekly-plans', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def create_weekly_plan():
     """Create new weekly production plan"""
     try:
@@ -171,6 +175,7 @@ def create_weekly_plan():
 
 @weekly_plan_bp.route('/weekly-plans/<int:id>', methods=['PUT'])
 @jwt_required()
+@require_permission('production.edit')
 def update_weekly_plan(id):
     """Update weekly production plan"""
     try:
@@ -197,6 +202,7 @@ def update_weekly_plan(id):
 
 @weekly_plan_bp.route('/weekly-plans/<int:id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('production.delete')
 def delete_weekly_plan(id):
     """Delete weekly production plan"""
     try:
@@ -219,6 +225,7 @@ def delete_weekly_plan(id):
 
 @weekly_plan_bp.route('/weekly-plans/<int:plan_id>/items', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def add_plan_item(plan_id):
     """Add item to weekly production plan"""
     try:
@@ -272,6 +279,7 @@ def add_plan_item(plan_id):
 
 @weekly_plan_bp.route('/weekly-plans/<int:plan_id>/items/<int:item_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('production.edit')
 def update_plan_item(plan_id, item_id):
     """Update plan item"""
     try:
@@ -312,6 +320,7 @@ def update_plan_item(plan_id, item_id):
 
 @weekly_plan_bp.route('/weekly-plans/<int:plan_id>/items/<int:item_id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('production.delete')
 def delete_plan_item(plan_id, item_id):
     """Delete plan item"""
     try:
@@ -334,6 +343,7 @@ def delete_plan_item(plan_id, item_id):
 
 @weekly_plan_bp.route('/weekly-plans/<int:id>/check-materials', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def check_plan_materials(id):
     """Re-check material availability for all items in plan"""
     try:
@@ -377,6 +387,7 @@ def check_plan_materials(id):
 
 @weekly_plan_bp.route('/weekly-plans/<int:id>/submit', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def submit_plan(id):
     """Submit plan for approval"""
     try:
@@ -403,6 +414,7 @@ def submit_plan(id):
 
 @weekly_plan_bp.route('/weekly-plans/<int:id>/approve', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def approve_plan(id):
     """Approve weekly plan"""
     try:
@@ -430,6 +442,7 @@ def approve_plan(id):
 
 @weekly_plan_bp.route('/weekly-plans/<int:id>/reject', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def reject_plan(id):
     """Reject weekly plan"""
     try:
@@ -461,6 +474,7 @@ def reject_plan(id):
 
 @weekly_plan_bp.route('/weekly-plans/pending-approval', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_pending_approval_plans():
     """Get all plans pending approval for manager"""
     try:
@@ -494,6 +508,7 @@ def get_pending_approval_plans():
 
 @weekly_plan_bp.route('/weekly-plans/<int:id>/generate-work-orders', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def generate_work_orders(id):
     """Generate work orders from approved plan with auto-merge for same product/machine/date"""
     try:
@@ -631,6 +646,7 @@ def generate_work_orders(id):
 
 @weekly_plan_bp.route('/current-week', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_current_week():
     """Get current week info"""
     today = get_local_now()

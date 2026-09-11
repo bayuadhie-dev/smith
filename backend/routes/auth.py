@@ -476,7 +476,7 @@ def change_password():
         return jsonify({'error': str(e)}), 500
 
 @auth_bp.route('/users', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
 def get_users():
     """Get all users with complete details for User Management & assignment dropdowns"""
     try:

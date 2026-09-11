@@ -4,21 +4,25 @@ Handles WIP Ledger, Variance Tracking, and Auto-posting to GL
 """
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db
 from models.wip_accounting import WIPLedger, WIPTransaction, WIPVariance, COGMTransfer, COGSPosting
 from models.production import WorkOrder
 from models.product import Product
 from models.finance import AccountingEntry
+from models.approval_workflow import PendingJournalEntry
 from datetime import datetime
 from sqlalchemy import func
 from utils import generate_number
 from utils.timezone import get_local_now, get_local_today
+from utils.finance_helpers import post_pending_journal
 
 wip_accounting_bp = Blueprint('wip_accounting', __name__, url_prefix='/api/wip-accounting')
 
 
 @wip_accounting_bp.route('/ledger', methods=['GET'])
 @jwt_required()
+@require_permission('accounting.view')
 def get_wip_ledger():
     """Get WIP Ledger list with filters"""
     try:
@@ -57,6 +61,7 @@ def get_wip_ledger():
 
 @wip_accounting_bp.route('/ledger/<int:id>', methods=['GET'])
 @jwt_required()
+@require_permission('accounting.view')
 def get_wip_ledger_detail(id):
     """Get WIP Ledger detail with transactions and variances"""
     try:
@@ -124,6 +129,7 @@ def get_wip_ledger_detail(id):
 
 @wip_accounting_bp.route('/ledger/create-from-wo/<int:work_order_id>', methods=['POST'])
 @jwt_required()
+@require_permission('accounting.create')
 def create_wip_ledger_from_wo(work_order_id):
     """Create WIP Ledger from Work Order"""
     try:
@@ -177,6 +183,7 @@ def create_wip_ledger_from_wo(work_order_id):
 
 @wip_accounting_bp.route('/transaction', methods=['POST'])
 @jwt_required()
+@require_permission('accounting.create')
 def add_wip_transaction():
     """Add WIP Transaction (material, labor, overhead)"""
     try:
@@ -237,6 +244,7 @@ def add_wip_transaction():
 
 @wip_accounting_bp.route('/transaction/<int:id>/post-to-gl', methods=['POST'])
 @jwt_required()
+@require_permission('accounting.post')
 def post_wip_transaction_to_gl(id):
     """Post WIP Transaction to General Ledger"""
     try:
@@ -247,40 +255,41 @@ def post_wip_transaction_to_gl(id):
         if transaction.is_posted_to_gl:
             return jsonify({'error': 'Transaction already posted to GL'}), 400
         
-        # Create GL Entry
-        # WIP Inventory (Debit) / Material/Labor/Overhead (Credit)
-        gl_entry = AccountingEntry(
-            entry_date=transaction.transaction_date,
-            description=f'WIP Transaction - {transaction.cost_category}',
-            reference=transaction.transaction_number,
-            entry_type='wip_transaction',
-            status='posted',
-            created_by=current_user_id,
-            approved_by=current_user_id,
-            approved_at=get_local_now()
-        )
-        
-        db.session.add(gl_entry)
-        db.session.flush()
-        
-        # Store journal lines using account configuration
+        # Build a PendingJournalEntry from account configuration, then post it
+        # through the shared helper (one AccountingEntry row per debit/credit line).
         from utils.account_config import create_journal_entry_lines
-        
+
         transaction_type = f'wip_{transaction.cost_category}'
-        gl_entry.lines_data = create_journal_entry_lines(
+        lines = create_journal_entry_lines(
             transaction_type=transaction_type,
             amount=float(transaction.total_cost),
             description=transaction.description
         )
-        
+
+        pending = PendingJournalEntry(
+            workflow_id=None,
+            entry_date=transaction.transaction_date,
+            description=f'WIP Transaction - {transaction.cost_category}',
+            reference=transaction.transaction_number,
+            lines=lines,
+            total_debit=sum(l.get('debit', 0) for l in lines),
+            total_credit=sum(l.get('credit', 0) for l in lines),
+            created_by=current_user_id,
+        )
+        db.session.add(pending)
+        db.session.flush()
+
+        created_entries = post_pending_journal(pending.id, posted_by_user_id=current_user_id)
+        db.session.flush()
+
         transaction.is_posted_to_gl = True
-        transaction.gl_entry_id = gl_entry.id
+        transaction.gl_entry_id = created_entries[0].id if created_entries else None
         
         db.session.commit()
         
         return jsonify({
             'message': 'Transaction posted to GL',
-            'gl_entry_id': gl_entry.id
+            'gl_entry_id': created_entries[0].id if created_entries else None
         }), 200
         
     except Exception as e:
@@ -290,6 +299,7 @@ def post_wip_transaction_to_gl(id):
 
 @wip_accounting_bp.route('/variance/analyze/<int:wip_ledger_id>', methods=['POST'])
 @jwt_required()
+@require_permission('accounting.create')
 def analyze_variances(wip_ledger_id):
     """Analyze and record variances"""
     try:
@@ -346,6 +356,7 @@ def analyze_variances(wip_ledger_id):
 
 @wip_accounting_bp.route('/cogm/transfer', methods=['POST'])
 @jwt_required()
+@require_permission('accounting.create')
 def transfer_to_finished_goods():
     """Transfer WIP to Finished Goods (COGM)"""
     try:
@@ -383,39 +394,40 @@ def transfer_to_finished_goods():
         db.session.add(cogm_transfer)
         db.session.flush()
         
-        # Auto-post to GL: WIP → Finished Goods
-        gl_entry = AccountingEntry(
-            entry_date=get_local_now(),
-            description=f'COGM Transfer - {transfer_number}',
-            reference=transfer_number,
-            entry_type='cogm_transfer',
-            status='posted',
-            created_by=current_user_id,
-            approved_by=current_user_id,
-            approved_at=get_local_now()
-        )
-        
-        db.session.add(gl_entry)
-        db.session.flush()
-        
-        # GL Entry: Finished Goods (Debit) / WIP Inventory (Credit)
+        # Auto-post to GL: WIP -> Finished Goods, via the shared posting helper
         from utils.account_config import create_journal_entry_lines
-        
-        gl_entry.lines_data = create_journal_entry_lines(
+
+        lines = create_journal_entry_lines(
             transaction_type='cogm',
             amount=float(total_cost),
             description=f'COGM from {wip_ledger.work_order_number}'
         )
-        
+
+        pending = PendingJournalEntry(
+            workflow_id=None,
+            entry_date=get_local_now(),
+            description=f'COGM Transfer - {transfer_number}',
+            reference=transfer_number,
+            lines=lines,
+            total_debit=sum(l.get('debit', 0) for l in lines),
+            total_credit=sum(l.get('credit', 0) for l in lines),
+            created_by=current_user_id,
+        )
+        db.session.add(pending)
+        db.session.flush()
+
+        created_entries = post_pending_journal(pending.id, posted_by_user_id=current_user_id)
+        db.session.flush()
+
         cogm_transfer.is_posted_to_gl = True
-        cogm_transfer.gl_entry_id = gl_entry.id
+        cogm_transfer.gl_entry_id = created_entries[0].id if created_entries else None
         cogm_transfer.status = 'posted'
         
         # Update WIP Ledger
         wip_ledger.cogm_amount = total_cost
         wip_ledger.cogm_posted = True
         wip_ledger.cogm_posting_date = get_local_now()
-        wip_ledger.cogm_entry_id = gl_entry.id
+        wip_ledger.cogm_entry_id = created_entries[0].id if created_entries else None
         wip_ledger.completed_quantity = quantity
         wip_ledger.status = 'completed'
         
@@ -425,7 +437,7 @@ def transfer_to_finished_goods():
             'message': 'COGM transferred to Finished Goods',
             'transfer_id': cogm_transfer.id,
             'transfer_number': transfer_number,
-            'gl_entry_id': gl_entry.id
+            'gl_entry_id': created_entries[0].id if created_entries else None
         }), 201
         
     except Exception as e:
@@ -435,6 +447,7 @@ def transfer_to_finished_goods():
 
 @wip_accounting_bp.route('/cogs/post', methods=['POST'])
 @jwt_required()
+@require_permission('accounting.post')
 def post_cogs():
     """Post COGS when product is sold"""
     try:
@@ -460,32 +473,33 @@ def post_cogs():
         db.session.add(cogs_posting)
         db.session.flush()
         
-        # Auto-post to GL: COGS (Debit) / Finished Goods (Credit)
-        gl_entry = AccountingEntry(
-            entry_date=get_local_now(),
-            description=f'COGS - SO {data.get("sales_order_number")}',
-            reference=data.get('sales_order_number'),
-            entry_type='cogs',
-            status='posted',
-            created_by=current_user_id,
-            approved_by=current_user_id,
-            approved_at=get_local_now()
-        )
-        
-        db.session.add(gl_entry)
-        db.session.flush()
-        
-        # GL Entry
+        # Auto-post to GL: COGS (Debit) / Finished Goods (Credit), via shared helper
         from utils.account_config import create_journal_entry_lines
-        
-        gl_entry.lines_data = create_journal_entry_lines(
+
+        lines = create_journal_entry_lines(
             transaction_type='cogs',
             amount=float(cogs_posting.total_cogs),
             description=f'COGS for {data.get("sales_order_number")}'
         )
-        
+
+        pending = PendingJournalEntry(
+            workflow_id=None,
+            entry_date=get_local_now(),
+            description=f'COGS - SO {data.get("sales_order_number")}',
+            reference=data.get('sales_order_number'),
+            lines=lines,
+            total_debit=sum(l.get('debit', 0) for l in lines),
+            total_credit=sum(l.get('credit', 0) for l in lines),
+            created_by=current_user_id,
+        )
+        db.session.add(pending)
+        db.session.flush()
+
+        created_entries = post_pending_journal(pending.id, posted_by_user_id=current_user_id)
+        db.session.flush()
+
         cogs_posting.is_posted_to_gl = True
-        cogs_posting.gl_entry_id = gl_entry.id
+        cogs_posting.gl_entry_id = created_entries[0].id if created_entries else None
         cogs_posting.posting_date = get_local_now()
         
         db.session.commit()
@@ -493,7 +507,7 @@ def post_cogs():
         return jsonify({
             'message': 'COGS posted',
             'cogs_posting_id': cogs_posting.id,
-            'gl_entry_id': gl_entry.id,
+            'gl_entry_id': created_entries[0].id if created_entries else None,
             'gross_profit': float(cogs_posting.gross_profit) if cogs_posting.gross_profit else 0
         }), 201
         
@@ -504,6 +518,7 @@ def post_cogs():
 
 @wip_accounting_bp.route('/auto-create/<int:work_order_id>', methods=['POST'])
 @jwt_required()
+@require_permission('accounting.create')
 def auto_create_wip_ledger(work_order_id):
     """
     Manually trigger WIP Ledger creation from Work Order
@@ -530,6 +545,7 @@ def auto_create_wip_ledger(work_order_id):
 
 @wip_accounting_bp.route('/auto-close/<int:work_order_id>', methods=['POST'])
 @jwt_required()
+@require_permission('accounting.create')
 def auto_close_wip_ledger(work_order_id):
     """
     Manually trigger WIP Ledger closure from Work Order
@@ -556,6 +572,7 @@ def auto_close_wip_ledger(work_order_id):
 
 @wip_accounting_bp.route('/dashboard', methods=['GET'])
 @jwt_required()
+@require_permission('accounting.view')
 def get_wip_dashboard():
     """Get WIP Accounting dashboard statistics"""
     try:

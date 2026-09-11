@@ -61,6 +61,9 @@ Pillow==12.3.0  # Image processing if needed
 
 # PDF Generation
 reportlab==4.0.7
+weasyprint==69.0  # Print Template Designer render engine (utils/template_render_engine.py). Needs system libs
+                  # pango/cairo/gdk-pixbuf2/harfbuzz/fontconfig/freetype2/libffi via pacman BEFORE pip install
+                  # (all already present on the EndeavourOS dev machine as of 2026-08-23 - verify on prod too).
 
 # QR Code & Barcode
 qrcode==7.4.2

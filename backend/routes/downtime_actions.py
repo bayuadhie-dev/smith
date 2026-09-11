@@ -3,6 +3,7 @@ Routes for Downtime Action Items - Root Cause & Follow Up Tracking
 """
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models.production import DowntimeActionItem, Machine, ShiftProduction
 from models.product import Product
 from models.user import User
@@ -39,7 +40,8 @@ def get_week_number(date):
 
 
 @downtime_actions_bp.route('/action-items', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('maintenance.view')
 def get_action_items():
     """Get action items with filters"""
     try:
@@ -79,6 +81,7 @@ def get_action_items():
 
 @downtime_actions_bp.route('/action-items/<int:item_id>', methods=['GET'])
 @jwt_required()
+@require_permission('maintenance.view')
 def get_action_item(item_id):
     """Get single action item"""
     try:
@@ -90,6 +93,7 @@ def get_action_item(item_id):
 
 @downtime_actions_bp.route('/action-items', methods=['POST'])
 @jwt_required()
+@require_permission('maintenance.create')
 def create_action_item():
     """Create new action item"""
     try:
@@ -134,6 +138,7 @@ def create_action_item():
 
 @downtime_actions_bp.route('/action-items/<int:item_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('maintenance.edit')
 def update_action_item(item_id):
     """Update action item (root cause, follow up, status, PIC)"""
     try:
@@ -169,6 +174,7 @@ def update_action_item(item_id):
 
 @downtime_actions_bp.route('/action-items/<int:item_id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('maintenance.delete')
 def delete_action_item(item_id):
     """Delete action item"""
     try:
@@ -185,6 +191,7 @@ def delete_action_item(item_id):
 
 @downtime_actions_bp.route('/generate-action-items', methods=['POST'])
 @jwt_required()
+@require_permission('maintenance.create')
 def generate_action_items():
     """
     Generate action items from top 3 unplanned downtime per machine per product per week
@@ -340,7 +347,8 @@ def generate_action_items():
 
 
 @downtime_actions_bp.route('/export-excel', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('maintenance.view')
 def export_downtime_excel():
     """Export downtime action items report to Excel"""
     try:
@@ -644,7 +652,8 @@ def export_downtime_excel():
 
 
 @downtime_actions_bp.route('/export-pdf', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('maintenance.view')
 def export_downtime_pdf():
     """Export downtime action items report to vector PDF"""
     try:
@@ -990,6 +999,7 @@ def export_downtime_pdf():
 
 @downtime_actions_bp.route('/action-items/summary', methods=['GET'])
 @jwt_required()
+@require_permission('maintenance.view')
 def get_action_items_summary():
     """Get summary of action items by status"""
     try:

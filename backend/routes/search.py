@@ -4,7 +4,7 @@ Global Search Routes - Search across all modules
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy import or_, and_, func
-from models import db
+from models import db, User
 from models.product import Product
 from models.sales import SalesOrder, Customer
 from models.production import WorkOrder
@@ -14,20 +14,34 @@ from models.quality import QualityInspection
 from models.hr import Employee
 from models.dcc import DccDocument
 from models.maintenance import MaintenanceRecord
+from utils.auth_decorators import _get_user_permissions
 
 search_bp = Blueprint('search', __name__)
+
+
+def _can_view(module, perms, bypass):
+    """A search section is only included if the current user can view that module."""
+    return bypass or f'{module}.view' in perms
+
 
 @search_bp.route('/global', methods=['GET'])
 @jwt_required()
 def global_search():
     """
-    Global search across all modules
+    Global search across all modules - each section is filtered by the
+    caller's own module permissions, so a user only ever sees results from
+    modules they're actually allowed to view.
     """
     try:
+        current_user_id = get_jwt_identity()
+        current_user = db.session.get(User, int(current_user_id))
+        bypass = bool(current_user and (current_user.is_admin or getattr(current_user, 'is_super_admin', False)))
+        perms = _get_user_permissions(current_user) if current_user and not bypass else set()
+
         query = request.args.get('q', '').strip()
         module_filter = request.args.get('module', 'all')
         limit = int(request.args.get('limit', 50))
-        
+
         if not query:
             return jsonify({
                 'success': True,
@@ -37,11 +51,11 @@ def global_search():
                     'query': query
                 }
             })
-        
+
         results = []
-        
+
         # Search Products
-        if module_filter in ['all', 'products']:
+        if module_filter in ['all', 'products'] and _can_view('products', perms, bypass):
             try:
                 products = Product.query.filter(
                     or_(
@@ -71,7 +85,7 @@ def global_search():
                 print(f"Error searching products: {e}")
         
         # Search Work Orders
-        if module_filter in ['all', 'production']:
+        if module_filter in ['all', 'production'] and _can_view('production', perms, bypass):
             try:
                 work_orders = WorkOrder.query.filter(
                     or_(
@@ -101,11 +115,11 @@ def global_search():
                 print(f"Error searching work orders: {e}")
         
         # Search Sales Orders
-        if module_filter in ['all', 'sales']:
+        if module_filter in ['all', 'sales'] and _can_view('sales_orders', perms, bypass):
             try:
                 sales_orders = SalesOrder.query.filter(
                     or_(
-                        SalesOrder.so_number.ilike(f'%{query}%'),
+                        SalesOrder.order_number.ilike(f'%{query}%'),
                         SalesOrder.notes.ilike(f'%{query}%')
                     )
                 ).limit(limit).all()
@@ -115,7 +129,7 @@ def global_search():
                         'id': so.id,
                         'type': 'Sales Order',
                         'module': 'sales',
-                        'title': so.so_number,
+                        'title': so.order_number,
                         'subtitle': f'Status: {so.status}',
                         'description': so.notes or '',
                         'url': f'/app/sales/orders/{so.id}',
@@ -131,11 +145,11 @@ def global_search():
                 print(f"Error searching sales orders: {e}")
         
         # Search Customers
-        if module_filter in ['all', 'sales']:
+        if module_filter in ['all', 'sales'] and _can_view('customers', perms, bypass):
             try:
                 customers = Customer.query.filter(
                     or_(
-                        Customer.name.ilike(f'%{query}%'),
+                        Customer.company_name.ilike(f'%{query}%'),
                         Customer.email.ilike(f'%{query}%'),
                         Customer.phone.ilike(f'%{query}%')
                     )
@@ -146,9 +160,9 @@ def global_search():
                         'id': customer.id,
                         'type': 'Customer',
                         'module': 'sales',
-                        'title': customer.name,
+                        'title': customer.company_name,
                         'subtitle': customer.email or customer.phone or '',
-                        'description': customer.address or '',
+                        'description': customer.billing_address or '',
                         'url': f'/app/sales/customers/{customer.id}',
                         'icon': 'user',
                         'color': 'green',
@@ -161,7 +175,7 @@ def global_search():
                 print(f"Error searching customers: {e}")
         
         # Search Purchase Orders
-        if module_filter in ['all', 'purchasing']:
+        if module_filter in ['all', 'purchasing'] and _can_view('purchase_orders', perms, bypass):
             try:
                 purchase_orders = PurchaseOrder.query.filter(
                     or_(
@@ -191,11 +205,11 @@ def global_search():
                 print(f"Error searching purchase orders: {e}")
         
         # Search Suppliers
-        if module_filter in ['all', 'purchasing']:
+        if module_filter in ['all', 'purchasing'] and _can_view('suppliers', perms, bypass):
             try:
                 suppliers = Supplier.query.filter(
                     or_(
-                        Supplier.name.ilike(f'%{query}%'),
+                        Supplier.company_name.ilike(f'%{query}%'),
                         Supplier.email.ilike(f'%{query}%'),
                         Supplier.phone.ilike(f'%{query}%')
                     )
@@ -206,7 +220,7 @@ def global_search():
                         'id': supplier.id,
                         'type': 'Supplier',
                         'module': 'purchasing',
-                        'title': supplier.name,
+                        'title': supplier.company_name,
                         'subtitle': supplier.email or supplier.phone or '',
                         'description': supplier.address or '',
                         'url': f'/app/purchasing/suppliers/{supplier.id}',
@@ -220,13 +234,13 @@ def global_search():
                 print(f"Error searching suppliers: {e}")
         
         # Search Employees
-        if module_filter in ['all', 'hr']:
+        if module_filter in ['all', 'hr'] and _can_view('employees', perms, bypass):
             try:
                 employees = Employee.query.filter(
                     or_(
                         Employee.full_name.ilike(f'%{query}%'),
                         Employee.email.ilike(f'%{query}%'),
-                        Employee.employee_id.ilike(f'%{query}%')
+                        Employee.employee_number.ilike(f'%{query}%')
                     )
                 ).limit(limit).all()
                 
@@ -236,7 +250,7 @@ def global_search():
                         'type': 'Employee',
                         'module': 'hr',
                         'title': employee.full_name,
-                        'subtitle': employee.employee_id or '',
+                        'subtitle': employee.employee_number or '',
                         'description': employee.position or '',
                         'url': f'/app/hr/employees/{employee.id}',
                         'icon': 'user',
@@ -250,13 +264,12 @@ def global_search():
                 print(f"Error searching employees: {e}")
         
         # Search DCC Documents
-        if module_filter in ['all', 'dcc']:
+        if module_filter in ['all', 'dcc'] and _can_view('dcc', perms, bypass):
             try:
                 documents = DccDocument.query.filter(
                     or_(
                         DccDocument.document_number.ilike(f'%{query}%'),
-                        DccDocument.title.ilike(f'%{query}%'),
-                        DccDocument.description.ilike(f'%{query}%')
+                        DccDocument.title.ilike(f'%{query}%')
                     )
                 ).limit(limit).all()
                 
@@ -267,7 +280,7 @@ def global_search():
                         'module': 'dcc',
                         'title': doc.title or doc.document_number,
                         'subtitle': doc.document_number,
-                        'description': doc.description or '',
+                        'description': doc.document_level or '',
                         'url': f'/app/dcc?tab=documents&view={doc.id}',
                         'icon': 'document-text',
                         'color': 'red',
@@ -314,40 +327,49 @@ def global_search():
 @jwt_required()
 def search_suggestions():
     """
-    Get search suggestions based on partial query
+    Get search suggestions based on partial query - filtered by the caller's
+    own module permissions, same rule as /global.
     """
     try:
+        current_user_id = get_jwt_identity()
+        current_user = db.session.get(User, int(current_user_id))
+        bypass = bool(current_user and (current_user.is_admin or getattr(current_user, 'is_super_admin', False)))
+        perms = _get_user_permissions(current_user) if current_user and not bypass else set()
+
         query = request.args.get('q', '').strip()
         limit = int(request.args.get('limit', 10))
-        
+
         if len(query) < 2:
             return jsonify({
                 'success': True,
                 'data': []
             })
-        
+
         suggestions = []
-        
+
         # Get suggestions from various sources
         try:
             # Products
-            products = Product.query.filter(
-                Product.name.ilike(f'%{query}%')
-            ).limit(5).all()
-            suggestions.extend([p.name for p in products])
-            
+            if _can_view('products', perms, bypass):
+                products = Product.query.filter(
+                    Product.name.ilike(f'%{query}%')
+                ).limit(5).all()
+                suggestions.extend([p.name for p in products])
+
             # Work Orders
-            work_orders = WorkOrder.query.filter(
-                WorkOrder.wo_number.ilike(f'%{query}%')
-            ).limit(5).all()
-            suggestions.extend([wo.wo_number for wo in work_orders])
-            
+            if _can_view('production', perms, bypass):
+                work_orders = WorkOrder.query.filter(
+                    WorkOrder.wo_number.ilike(f'%{query}%')
+                ).limit(5).all()
+                suggestions.extend([wo.wo_number for wo in work_orders])
+
             # Customers
-            customers = Customer.query.filter(
-                Customer.name.ilike(f'%{query}%')
-            ).limit(5).all()
-            suggestions.extend([c.name for c in customers])
-            
+            if _can_view('customers', perms, bypass):
+                customers = Customer.query.filter(
+                    Customer.company_name.ilike(f'%{query}%')
+                ).limit(5).all()
+                suggestions.extend([c.company_name for c in customers])
+
         except Exception as e:
             print(f"Error getting suggestions: {e}")
         

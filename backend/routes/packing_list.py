@@ -5,6 +5,7 @@ Manages packing of products from WIP Stock
 
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db
 from models.production import (
     WIPStock, WIPStockMovement, PackingListNew, PackingListNewItem,
@@ -63,6 +64,7 @@ def _receive_fg_to_warehouse(packing_list, user_id):
         ).first()
         
         if not inventory:
+            from utils.inventory_helpers import resolve_initial_stock_status
             # Create NEW inventory record per packing list batch for FIFO
             inventory = Inventory(
                 product_id=product_id,
@@ -71,7 +73,7 @@ def _receive_fg_to_warehouse(packing_list, user_id):
                 quantity_reserved=0,
                 quantity_available=0,
                 batch_number=batch_number,
-                stock_status='released',
+                stock_status=resolve_initial_stock_status('released', product=db.session.get(Product, product_id)),
                 is_active=True,
                 created_by=user_id
             )
@@ -218,6 +220,7 @@ def _deduct_wip_stock(pl, product_id, total_carton, batch_mixing, pack_per_carto
 
 @packing_list_bp.route('/wip-stock', methods=['GET'])
 @jwt_required()
+@require_permission('shipping.view')
 def get_wip_stocks():
     """Get all WIP stocks with filtering"""
     try:
@@ -257,6 +260,7 @@ def get_wip_stocks():
 
 @packing_list_bp.route('/wip-stock/<int:product_id>', methods=['GET'])
 @jwt_required()
+@require_permission('shipping.view')
 def get_wip_stock_by_product(product_id):
     """Get WIP stock for specific product"""
     try:
@@ -276,6 +280,7 @@ def get_wip_stock_by_product(product_id):
 
 @packing_list_bp.route('/wip-stock/<int:product_id>/movements', methods=['GET'])
 @jwt_required()
+@require_permission('shipping.view')
 def get_wip_movements(product_id):
     """Get WIP stock movements for a product"""
     try:
@@ -306,6 +311,7 @@ def get_wip_movements(product_id):
 
 @packing_list_bp.route('/wip-stock/adjustment', methods=['POST'])
 @jwt_required()
+@require_permission('shipping.create')
 def adjust_wip_stock():
     """Manual adjustment of WIP stock"""
     try:
@@ -402,7 +408,8 @@ def generate_packing_number():
 
 
 @packing_list_bp.route('', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('shipping.view')
 def get_packing_lists():
     """Get all packing lists with filtering"""
     try:
@@ -447,7 +454,8 @@ def get_packing_lists():
 
 
 @packing_list_bp.route('/merge', methods=['POST'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('shipping.edit')
 def merge_packing_lists():
     """Merge two existing separate Packing Lists into one single Packing List.
     All items from source_id are moved to target_id with re-sequenced carton numbers.
@@ -503,7 +511,8 @@ def merge_packing_lists():
 
 
 @packing_list_bp.route('/<int:id>', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('shipping.view')
 def get_packing_list(id):
     """Get single packing list with items"""
     try:
@@ -514,6 +523,7 @@ def get_packing_list(id):
 
 @packing_list_bp.route('/check-existing-batch', methods=['GET'])
 @jwt_required()
+@require_permission('shipping.view')
 def check_existing_batch():
     """Check if an open PL exists for the same product + batch_mixing (for OCR auto-merge suggestion)"""
     try:
@@ -553,6 +563,7 @@ def check_existing_batch():
 
 @packing_list_bp.route('/<int:id>/batches/<string:batch_name>/append-cartons', methods=['POST'])
 @jwt_required()
+@require_permission('shipping.create')
 def append_cartons_to_batch(id, batch_name):
     """Append additional cartons to an EXISTING batch on this PL (continuation, not a new batch).
     Used when OCR detects a batch_mixing that already exists on an open PL for the same product.
@@ -621,6 +632,7 @@ def append_cartons_to_batch(id, batch_name):
 
 @packing_list_bp.route('', methods=['POST'])
 @jwt_required()
+@require_permission('shipping.create')
 def create_packing_list():
     """Create new packing list for Finished Good product.
     
@@ -865,6 +877,7 @@ def create_packing_list():
 
 @packing_list_bp.route('/<int:id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('shipping.delete')
 def delete_packing_list(id):
     """Delete packing list and restore WIP stock if not released."""
     try:
@@ -913,6 +926,7 @@ def delete_packing_list(id):
 
 @packing_list_bp.route('/<int:id>', methods=['PUT'])
 @jwt_required()
+@require_permission('shipping.edit')
 def update_packing_list(id):
     """Update packing list details"""
     try:
@@ -942,9 +956,31 @@ def update_packing_list(id):
                     return jsonify({'error': 'Semua karton harus ditimbang terlebih dahulu sebelum diselesaikan'}), 400
                 pl.status = 'completed'
                 pl.completed_at = get_local_now()
+
+                # ============= SPK NATIVE WAREHOUSE STAGE LOG =============
+                # Native replacement for Accurate EJO's "FGS" (masuk Gudang FG) stage,
+                # auto-logged when this packing list is completed - no extra staff action.
+                # PackingListNew isn't directly linked to a WorkOrder, so the source WO is
+                # resolved via the shared batch_mixing identifier already used to join
+                # production output (WIPStockMovement) to packing (same pattern as the
+                # rest of this module).
+                from models.spk import SPKWarehouseStageLog
+                from models.production import WIPStockMovement
+                wo_movement = WIPStockMovement.query.filter_by(
+                    batch_mixing=pl.current_batch_mixing,
+                    reference_type='work_order'
+                ).order_by(WIPStockMovement.id.desc()).first()
+                if wo_movement and wo_movement.reference_id:
+                    db.session.add(SPKWarehouseStageLog(
+                        work_order_id=wo_movement.reference_id,
+                        stage='fg',
+                        quantity=pl.total_pcs or 0,
+                        source_type='packing_list',
+                        source_id=pl.id,
+                    ))
             else:
                 pl.status = new_status
-        
+
         db.session.commit()
         
         return jsonify({
@@ -958,6 +994,7 @@ def update_packing_list(id):
 
 @packing_list_bp.route('/<int:id>/batches', methods=['POST'])
 @jwt_required()
+@require_permission('shipping.create')
 def add_packing_list_batch(id):
     """Add a new batch to an existing packing list and deduct WIP stock"""
     try:
@@ -1057,6 +1094,7 @@ def add_packing_list_batch(id):
 
 @packing_list_bp.route('/<int:id>/batches/<string:batch_name>', methods=['DELETE'])
 @jwt_required()
+@require_permission('shipping.delete')
 def delete_packing_list_batch(id, batch_name):
     """Delete a batch from a packing list and reverse its WIP stock deduction"""
     try:
@@ -1144,6 +1182,7 @@ def delete_packing_list_batch(id, batch_name):
 
 @packing_list_bp.route('/<int:id>/items', methods=['GET'])
 @jwt_required()
+@require_permission('shipping.view')
 def get_packing_list_items(id):
     """Get packing list items with pagination"""
     try:
@@ -1170,6 +1209,7 @@ def get_packing_list_items(id):
 
 @packing_list_bp.route('/<int:id>/items/weigh', methods=['PUT'])
 @jwt_required()
+@require_permission('shipping.edit')
 def weigh_cartons(id):
     """Update weight, weigh date, and batch mixing for cartons (supports manual & OCR final submission)"""
     try:
@@ -1242,6 +1282,7 @@ def weigh_cartons(id):
 
 @packing_list_bp.route('/<int:id>/ocr-weigh-preview', methods=['POST'])
 @jwt_required()
+@require_permission('shipping.create')
 def ocr_preview_packing_list(id):
     """Process handwritten packing list photo using Gemini OCR, match carton_number_full to existing item_id, and calculate Netto weights for preview."""
     try:
@@ -1288,6 +1329,7 @@ def ocr_preview_packing_list(id):
 
 @packing_list_bp.route('/ocr-standalone-preview', methods=['POST'])
 @jwt_required()
+@require_permission('shipping.create')
 def ocr_standalone_preview():
     """Process handwritten packing list photo using Gemini OCR by selecting Product ID first.
     Calculates Netto weight automatically based on the selected product's deduction rule.
@@ -1341,6 +1383,7 @@ def ocr_standalone_preview():
 
 @packing_list_bp.route('/<int:id>/items/batch', methods=['PUT'])
 @jwt_required()
+@require_permission('shipping.edit')
 def update_batch_mixing(id):
     """Update batch mixing for cartons"""
     try:
@@ -1380,6 +1423,7 @@ def update_batch_mixing(id):
 
 @packing_list_bp.route('/<int:id>/cancel', methods=['POST'])
 @jwt_required()
+@require_permission('shipping.create')
 def cancel_packing_list(id):
     """Cancel packing list and return stock.
     
@@ -1552,6 +1596,7 @@ def _return_wip_stock(pl, user_id):
 
 @packing_list_bp.route('/<int:id>/qc', methods=['POST'])
 @jwt_required()
+@require_permission('shipping.create')
 def qc_packing_list(id):
     """QC action on packing list after all cartons are weighed.
     
@@ -1755,6 +1800,7 @@ def _get_fg_availability():
 
 @packing_list_bp.route('/products-with-wip', methods=['GET'])
 @jwt_required()
+@require_permission('shipping.view')
 def get_products_with_wip():
     """Get Finished Good products available for packing.
     

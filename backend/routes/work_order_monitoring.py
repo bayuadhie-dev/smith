@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db
 from models.production import WorkOrder, WorkOrderStatusHistory, ShiftProduction, Machine
 from datetime import datetime, timedelta
@@ -10,6 +11,7 @@ wo_monitoring_bp = Blueprint('work_order_monitoring', __name__)
 
 @wo_monitoring_bp.route('/api/work-orders/monitoring', methods=['GET'])
 @jwt_required()
+@require_permission('work_orders.view')
 def get_work_orders_monitoring():
     """Get all work orders with monitoring data (progress, status, delays)"""
     try:
@@ -114,6 +116,7 @@ def get_work_orders_monitoring():
 
 @wo_monitoring_bp.route('/api/work-orders/<int:wo_id>/timeline', methods=['GET'])
 @jwt_required()
+@require_permission('work_orders.view')
 def get_work_order_timeline(wo_id):
     """Get status timeline for a work order"""
     try:
@@ -142,6 +145,7 @@ def get_work_order_timeline(wo_id):
 
 @wo_monitoring_bp.route('/api/work-orders/<int:wo_id>/breakdown-impact', methods=['GET'])
 @jwt_required()
+@require_permission('work_orders.view')
 def get_breakdown_impact(wo_id):
     """Get machine breakdown impact analysis for a work order"""
     try:
@@ -226,6 +230,7 @@ def get_breakdown_impact(wo_id):
 
 @wo_monitoring_bp.route('/api/work-orders/breakdown-summary', methods=['GET'])
 @jwt_required()
+@require_permission('work_orders.view')
 def get_breakdown_summary():
     """Get summary of all work orders affected by machine breakdowns"""
     try:

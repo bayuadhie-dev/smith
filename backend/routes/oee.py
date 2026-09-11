@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, send_file, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 import redis
 import os
 from models import db, Machine, MaintenanceRecord, MaintenanceSchedule, User
@@ -20,6 +21,7 @@ oee_bp = Blueprint('oee', __name__)
 @oee_bp.route('/records', methods=['GET'])
 @oee_bp.route('/records/', methods=['GET'])
 @jwt_required()
+@require_permission('oee.view')
 def get_records():
     """Get OEE records from both OEERecord and ShiftProduction"""
     try:
@@ -110,10 +112,11 @@ def get_records():
                 'buat karton', 'idle', 'ingredient habis', 'kain belum datang', 'kain habis', 
                 'karton habis', 'kekurangan orang', 'keranjang habis', 'label habis', 'lem habis', 
                 'listrik padam', 'mc stop ( sisa kain dipakai untuk mc 6 ( wetkins antiseptic', 
-                'menganggur', 'menghabiskan order', 'menhabiskan order', 'menunggu kain', 
-                'menunggu mixing', 'menunggu obat', 'menunggu packaging', 'menunggu stiker', 
-                'menunggu tinta', 'menyiapkan produk', 'mixing belum siap', 'no order', 
-                'nunggu kain', 'nunggu mixing', 'nunggu obat', 'nunggu packaging', 'nunggu stiker', 
+                'menganggur', 'menghabiskan ingredient ( opr dialihkan ke packing manual )', 
+                'menghabiskan order', 'menhabiskan order', 'menunggu kain', 'menunggu mixing', 
+                'menunggu obat', 'menunggu packaging', 'menunggu stiker', 'menunggu tinta', 
+                'menyiapkan produk', 'mixing belum siap', 'no order', 'nunggu kain', 
+                'nunggu mixing', 'nunggu obat', 'nunggu packaging', 'nunggu stiker', 
                 'nunggu tinta', 'obat belum datang', 'obat habis', 'operator dialihkan ke mc 7', 
                 'opr dialihkan ke mc 11', 'opr jalan di mc 10', 'opr jalan di mc 7', 
                 'opr pulang ( sakit )', 'packaging belum datang', 'packaging habis', 
@@ -268,6 +271,7 @@ def get_records():
 
 @oee_bp.route('/export-excel', methods=['GET'])
 @jwt_required()
+@require_permission('oee.view')
 def export_controller_excel():
     """Export Controller report to Excel - per tanggal per mesin per work order"""
     try:
@@ -566,6 +570,7 @@ def export_controller_excel():
 
 @oee_bp.route('/records', methods=['POST'])
 @jwt_required()
+@require_permission('oee.create')
 def create_record():
     try:
         data = request.get_json()
@@ -608,6 +613,7 @@ def create_record():
 
 @oee_bp.route('/downtime', methods=['GET'])
 @jwt_required()
+@require_permission('oee.view')
 def get_downtime():
     """Get downtime records from both OEEDowntimeRecord and ShiftProduction"""
     try:
@@ -718,6 +724,7 @@ def get_downtime():
 
 @oee_bp.route('/downtime', methods=['POST'])
 @jwt_required()
+@require_permission('oee.create')
 def create_downtime():
     try:
         data = request.get_json()
@@ -743,6 +750,7 @@ def create_downtime():
 
 @oee_bp.route('/shift-production/<int:id>/downtime', methods=['PUT'])
 @jwt_required()
+@require_permission('oee.edit')
 def update_shift_production_downtime(id):
     """Update downtime breakdown for a ShiftProduction record"""
     try:
@@ -779,10 +787,21 @@ def update_shift_production_downtime(id):
         sp.loss_design = round((sp.downtime_design or 0) / planned_runtime * 100, 2) if planned_runtime > 0 else 0
         sp.loss_others = round((sp.downtime_others or 0) / planned_runtime * 100, 2) if planned_runtime > 0 else 0
         
-        # Recalculate efficiency and OEE
+        # Recalculate availability, efficiency and OEE (standard 3-factor
+        # OEE: Availability x Efficiency x Quality). This used to store
+        # actual_runtime/planned_runtime - the Availability formula - INTO
+        # efficiency_rate, so oee_score ended up as availability*quality
+        # only, silently missing the real performance (Actual/Target output)
+        # factor entirely.
         sp.actual_runtime = planned_runtime - sp.downtime_minutes
-        sp.efficiency_rate = round((sp.actual_runtime / planned_runtime * 100) if planned_runtime > 0 else 100, 2)
-        sp.oee_score = round((sp.efficiency_rate * float(sp.quality_rate or 100)) / 100, 2)
+        availability_rate = (sp.actual_runtime / planned_runtime * 100) if planned_runtime > 0 else 100
+
+        target_qty = float(sp.target_quantity or 0)
+        actual_qty = float(sp.actual_quantity or 0)
+        efficiency_rate = (actual_qty / target_qty * 100) if target_qty > 0 else 100
+        sp.efficiency_rate = round(efficiency_rate, 2)
+
+        sp.oee_score = round((availability_rate * efficiency_rate * float(sp.quality_rate or 100)) / 10000, 2)
         
         db.session.commit()
         
@@ -806,6 +825,7 @@ def update_shift_production_downtime(id):
 
 @oee_bp.route('/shift-production', methods=['GET'])
 @jwt_required()
+@require_permission('oee.view')
 def get_shift_productions():
     """Get ShiftProduction records for editing"""
     try:
@@ -850,6 +870,7 @@ def get_shift_productions():
 
 @oee_bp.route('/dashboard', methods=['GET'])
 @jwt_required()
+@require_permission('oee.view')
 def get_oee_dashboard():
     """Get comprehensive OEE dashboard data from both OEERecord and ShiftProduction"""
     try:
@@ -1119,6 +1140,7 @@ def get_oee_dashboard():
 
 @oee_bp.route('/alerts', methods=['GET'])
 @jwt_required()
+@require_permission('oee.view')
 def get_alerts():
     """Get OEE alerts"""
     try:
@@ -1171,6 +1193,7 @@ def get_alerts():
 
 @oee_bp.route('/alerts/<int:alert_id>/acknowledge', methods=['PUT'])
 @jwt_required()
+@require_permission('oee.edit')
 def acknowledge_alert(alert_id):
     """Acknowledge an OEE alert"""
     try:
@@ -1191,6 +1214,7 @@ def acknowledge_alert(alert_id):
 
 @oee_bp.route('/alerts/<int:alert_id>/resolve', methods=['PUT'])
 @jwt_required()
+@require_permission('oee.edit')
 def resolve_alert(alert_id):
     """Resolve an OEE alert"""
     try:
@@ -1213,6 +1237,7 @@ def resolve_alert(alert_id):
 
 @oee_bp.route('/maintenance-impact', methods=['POST'])
 @jwt_required()
+@require_permission('oee.create')
 def create_maintenance_impact():
     """Create maintenance impact record"""
     try:
@@ -1249,6 +1274,7 @@ def create_maintenance_impact():
 
 @oee_bp.route('/machines/<int:machine_id>/analytics', methods=['GET'])
 @jwt_required()
+@require_permission('oee.view')
 def get_machine_analytics(machine_id):
     """Get detailed analytics for a specific machine"""
     try:
@@ -1389,10 +1415,11 @@ def get_daily_controller():
             'buat karton', 'idle', 'ingredient habis', 'kain belum datang', 'kain habis', 
             'karton habis', 'kekurangan orang', 'keranjang habis', 'label habis', 'lem habis', 
             'listrik padam', 'mc stop ( sisa kain dipakai untuk mc 6 ( wetkins antiseptic', 
-            'menganggur', 'menghabiskan order', 'menhabiskan order', 'menunggu kain', 
-            'menunggu mixing', 'menunggu obat', 'menunggu packaging', 'menunggu stiker', 
-            'menunggu tinta', 'menyiapkan produk', 'mixing belum siap', 'no order', 'nunggu kain', 
-            'nunggu mixing', 'nunggu obat', 'nunggu packaging', 'nunggu stiker', 'nunggu tinta', 
+            'menganggur', 'menghabiskan ingredient ( opr dialihkan ke packing manual )', 
+            'menghabiskan order', 'menhabiskan order', 'menunggu kain', 'menunggu mixing', 
+            'menunggu obat', 'menunggu packaging', 'menunggu stiker', 'menunggu tinta', 
+            'menyiapkan produk', 'mixing belum siap', 'no order', 'nunggu kain', 'nunggu mixing', 
+            'nunggu obat', 'nunggu packaging', 'nunggu stiker', 'nunggu tinta', 
             'obat belum datang', 'obat habis', 'operator dialihkan ke mc 7', 
             'opr dialihkan ke mc 11', 'opr jalan di mc 10', 'opr jalan di mc 7', 
             'opr pulang ( sakit )', 'packaging belum datang', 'packaging habis', 'packing habis', 
@@ -2019,10 +2046,11 @@ def get_daily_controller_detail():
             'buat karton', 'idle', 'ingredient habis', 'kain belum datang', 'kain habis', 
             'karton habis', 'kekurangan orang', 'keranjang habis', 'label habis', 'lem habis', 
             'listrik padam', 'mc stop ( sisa kain dipakai untuk mc 6 ( wetkins antiseptic', 
-            'menganggur', 'menghabiskan order', 'menhabiskan order', 'menunggu kain', 
-            'menunggu mixing', 'menunggu obat', 'menunggu packaging', 'menunggu stiker', 
-            'menunggu tinta', 'menyiapkan produk', 'mixing belum siap', 'no order', 'nunggu kain', 
-            'nunggu mixing', 'nunggu obat', 'nunggu packaging', 'nunggu stiker', 'nunggu tinta', 
+            'menganggur', 'menghabiskan ingredient ( opr dialihkan ke packing manual )', 
+            'menghabiskan order', 'menhabiskan order', 'menunggu kain', 'menunggu mixing', 
+            'menunggu obat', 'menunggu packaging', 'menunggu stiker', 'menunggu tinta', 
+            'menyiapkan produk', 'mixing belum siap', 'no order', 'nunggu kain', 'nunggu mixing', 
+            'nunggu obat', 'nunggu packaging', 'nunggu stiker', 'nunggu tinta', 
             'obat belum datang', 'obat habis', 'operator dialihkan ke mc 7', 
             'opr dialihkan ke mc 11', 'opr jalan di mc 10', 'opr jalan di mc 7', 
             'opr pulang ( sakit )', 'packaging belum datang', 'packaging habis', 'packing habis', 
@@ -2342,6 +2370,7 @@ def get_daily_controller_detail():
 
 @oee_bp.route('/efficiency-alerts', methods=['GET'])
 @jwt_required()
+@require_permission('oee.view')
 def get_efficiency_alerts():
     """Get machines with efficiency below target for today"""
     try:
@@ -2425,6 +2454,7 @@ def get_efficiency_alerts():
 
 @oee_bp.route('/weekly-controller', methods=['GET'])
 @jwt_required()
+@require_permission('oee.view')
 def get_weekly_controller():
     """Get weekly efficiency summary for all machines"""
     try:
@@ -2659,6 +2689,7 @@ def get_weekly_controller():
 
 @oee_bp.route('/monthly-controller', methods=['GET'])
 @jwt_required()
+@require_permission('oee.view')
 def get_monthly_controller():
     """Get monthly efficiency summary for all machines"""
     try:
@@ -2933,6 +2964,7 @@ def get_monthly_controller():
 
 @oee_bp.route('/quality-objectives/production', methods=['GET'])
 @jwt_required()
+@require_permission('oee.view')
 def get_production_quality_objectives():
     """Get production quality objectives - target vs actual per machine per month"""
     try:
@@ -3073,6 +3105,7 @@ def get_production_quality_objectives():
 
 @oee_bp.route('/machine-monthly-targets', methods=['GET'])
 @jwt_required()
+@require_permission('oee.view')
 def get_machine_monthly_targets():
     """Get all monthly targets for a specific period"""
     try:
@@ -3103,6 +3136,7 @@ def get_machine_monthly_targets():
 
 @oee_bp.route('/machine-monthly-targets', methods=['POST'])
 @jwt_required()
+@require_permission('oee.create')
 def set_machine_monthly_target():
     """Set or update monthly target for a machine"""
     try:
@@ -3160,6 +3194,7 @@ def set_machine_monthly_target():
 
 @oee_bp.route('/machine-monthly-targets/bulk', methods=['POST'])
 @jwt_required()
+@require_permission('oee.create')
 def set_bulk_machine_monthly_targets():
     """Set multiple monthly targets at once"""
     try:
@@ -3215,6 +3250,7 @@ def set_bulk_machine_monthly_targets():
 
 @oee_bp.route('/machine-downtime-analysis', methods=['GET'])
 @jwt_required()
+@require_permission('oee.view')
 def get_machine_downtime_analysis():
     """Get downtime analysis per machine with top downtime reasons"""
     try:
@@ -3385,6 +3421,7 @@ def get_machine_downtime_analysis():
 
 @oee_bp.route('/downtime-root-causes', methods=['GET'])
 @jwt_required()
+@require_permission('oee.view')
 def get_downtime_root_causes():
     """Get root cause analysis records"""
     try:
@@ -3426,6 +3463,7 @@ def get_downtime_root_causes():
 
 @oee_bp.route('/downtime-root-causes', methods=['POST'])
 @jwt_required()
+@require_permission('oee.create')
 def create_downtime_root_cause():
     """Create or update root cause analysis"""
     try:
@@ -3469,6 +3507,7 @@ def create_downtime_root_cause():
 
 @oee_bp.route('/downtime-root-causes/<int:id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('oee.delete')
 def delete_downtime_root_cause(id):
     """Delete root cause analysis"""
     try:
