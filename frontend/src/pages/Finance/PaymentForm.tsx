@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useState, useEffect, useRef } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useLanguage } from '../../contexts/LanguageContext';
+import axiosInstance from '../../utils/axiosConfig';
 import {
   BanknotesIcon,
   CalendarDaysIcon,
@@ -8,30 +9,165 @@ import {
   XMarkIcon
 } from '@heroicons/react/24/outline';
 
-const PaymentForm = () => {
-    const { t } = useLanguage();
+interface Party {
+  id: number;
+  name: string;
+}
 
-const navigate = useNavigate()
+interface UnpaidInvoice {
+  id: number;
+  invoice_number: string;
+  due_date: string | null;
+  total_amount: number;
+  balance_due: number;
+}
+
+interface CashBankAccount {
+  id: number;
+  code: string;
+  name: string;
+}
+
+const PaymentForm = () => {
+  const { t } = useLanguage();
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const prefillInvoiceId = searchParams.get('invoice_id')
+  const prefillApplied = useRef(false)
+
+  const [paymentType, setPaymentType] = useState<'supplier' | 'customer'>(
+    searchParams.get('type') === 'supplier' ? 'supplier' : (prefillInvoiceId ? 'customer' : 'supplier')
+  );
+  const [parties, setParties] = useState<Party[]>([]);
+  const [invoices, setInvoices] = useState<UnpaidInvoice[]>([]);
+  const [cashBankAccounts, setCashBankAccounts] = useState<CashBankAccount[]>([]);
+  const [loadingInvoices, setLoadingInvoices] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const [formData, setFormData] = useState({
-    paymentType: '',
-    supplier: '',
-    invoice: '',
+    party_id: '',
+    invoice_id: '',
     amount: '',
-    paymentDate: '',
-    reference: '',
-    description: '',
-    bankAccount: ''
+    payment_date: '',
+    payment_method: 'bank_transfer',
+    reference_number: '',
+    notes: '',
+    bank_account_id: ''
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Load parties (suppliers or customers) + cash/bank accounts whenever
+  // payment type changes
+  useEffect(() => {
+    setFormData(f => ({ ...f, party_id: '', invoice_id: '', amount: '' }));
+    setInvoices([]);
+
+    const partyEndpoint = paymentType === 'supplier'
+      ? '/api/purchasing/suppliers'
+      : '/api/customers';
+
+    axiosInstance.get(partyEndpoint).then((res) => {
+      const list = res.data.suppliers || res.data.customers || res.data || [];
+      setParties(list.map((p: any) => ({
+        id: p.id,
+        name: p.company_name || p.name || `#${p.id}`
+      })));
+    }).catch(() => setParties([]));
+  }, [paymentType]);
+
+  useEffect(() => {
+    axiosInstance.get('/api/finance/chart-of-accounts').then((res) => {
+      const all = res.data.accounts || [];
+      setCashBankAccounts(all.filter((a: any) => a.is_cash_bank));
+    }).catch(() => setCashBankAccounts([]));
+  }, []);
+
+  // Load unpaid invoices whenever the selected party changes
+  useEffect(() => {
+    if (!formData.party_id) {
+      setInvoices([]);
+      return;
+    }
+    setLoadingInvoices(true);
+    const param = paymentType === 'supplier' ? 'supplier_id' : 'customer_id';
+    axiosInstance.get(`/api/finance/invoices/unpaid?${param}=${formData.party_id}`)
+      .then((res) => setInvoices(res.data.invoices || []))
+      .catch(() => setInvoices([]))
+      .finally(() => setLoadingInvoices(false));
+  }, [formData.party_id, paymentType]);
+
+  // Prefill from ?invoice_id= (Temuan 6, UX_AUDIT_REPORT.md) - "Catat Pembayaran" row
+  // action on InvoiceList.tsx navigates here so staff don't have to re-search both the
+  // customer/supplier AND the invoice from scratch. Fetch the invoice once to discover
+  // its party, then auto-select the invoice itself once the party's unpaid-invoice list
+  // has loaded.
+  useEffect(() => {
+    if (!prefillInvoiceId || prefillApplied.current) return;
+    axiosInstance.get(`/api/finance/invoices/${prefillInvoiceId}`).then((res) => {
+      const inv = res.data.invoice || res.data;
+      const partyId = inv.customer_id || inv.supplier_id;
+      if (inv.customer_id) setPaymentType('customer');
+      else if (inv.supplier_id) setPaymentType('supplier');
+      if (partyId) setFormData((f) => ({ ...f, party_id: String(partyId) }));
+    }).catch(() => {});
+  }, [prefillInvoiceId]);
+
+  useEffect(() => {
+    if (!prefillInvoiceId || prefillApplied.current || invoices.length === 0) return;
+    const inv = invoices.find((i) => String(i.id) === String(prefillInvoiceId));
+    if (inv) {
+      handleInvoiceChange(String(inv.id));
+      prefillApplied.current = true;
+    }
+  }, [invoices, prefillInvoiceId]);
+
+  const selectedInvoice = invoices.find(i => i.id === Number(formData.invoice_id));
+
+  const handleInvoiceChange = (invoiceId: string) => {
+    const inv = invoices.find(i => i.id === Number(invoiceId));
+    setFormData({
+      ...formData,
+      invoice_id: invoiceId,
+      amount: inv ? String(inv.balance_due) : formData.amount
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: Implement payment creation logic
-    console.log('Payment data:', formData)
-    navigate('/app/finance/accounts-payable')
+    setError(null);
+
+    if (!formData.invoice_id) {
+      setError('Pilih faktur yang akan dibayar.');
+      return;
+    }
+    if (!formData.bank_account_id) {
+      setError('Pilih akun Kas/Bank.');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await axiosInstance.post('/api/finance/payments', {
+        payment_date: formData.payment_date,
+        payment_type: paymentType === 'supplier' ? 'payment' : 'receipt',
+        invoice_id: Number(formData.invoice_id),
+        supplier_id: paymentType === 'supplier' ? Number(formData.party_id) : undefined,
+        customer_id: paymentType === 'customer' ? Number(formData.party_id) : undefined,
+        payment_method: formData.payment_method,
+        amount: Number(formData.amount),
+        reference_number: formData.reference_number || undefined,
+        bank_account_id: Number(formData.bank_account_id),
+      });
+      navigate(paymentType === 'supplier' ? '/app/accounting/payable' : '/app/accounting/receivable');
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Gagal menyimpan pembayaran. Silakan coba lagi.');
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   const handleCancel = () => {
-    navigate('/app/finance/accounts-payable')
+    navigate('/app/accounting/payable')
   }
 
   return (
@@ -40,7 +176,7 @@ const navigate = useNavigate()
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">💳 Record Payment</h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-1">Record supplier payment or cash transaction</p>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Record supplier payment or customer receipt</p>
         </div>
         <button 
           onClick={handleCancel}
@@ -48,6 +184,12 @@ const navigate = useNavigate()
         >
           <XMarkIcon className="h-5 w-5" />{t('common.cancel')}</button>
       </div>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-4 text-sm">
+          {error}
+        </div>
+      )}
 
       {/* Payment Form */}
       <div className="card p-6">
@@ -57,48 +199,57 @@ const navigate = useNavigate()
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Payment Type
               </label>
-              <select 
+              <select
                 className="input w-full"
-                value={formData.paymentType}
-                onChange={(e) => setFormData({...formData, paymentType: e.target.value})}
+                value={paymentType}
+                onChange={(e) => setPaymentType(e.target.value as 'supplier' | 'customer')}
                 required
               >
-                <option value="">Select payment type</option>
-                <option value="supplier">Supplier Payment</option>
-                <option value="expense">Expense Payment</option>
-                <option value="tax">Tax Payment</option>
-                <option value="salary">Salary Payment</option>
+                <option value="supplier">Supplier Payment (AP)</option>
+                <option value="customer">Customer Receipt (AR)</option>
               </select>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Supplier/Payee
+                {paymentType === 'supplier' ? 'Supplier' : 'Customer'}
               </label>
               <select 
                 className="input w-full"
-                value={formData.supplier}
-                onChange={(e) => setFormData({...formData, supplier: e.target.value})}
+                value={formData.party_id}
+                onChange={(e) => setFormData({...formData, party_id: e.target.value, invoice_id: ''})}
                 required
               >
-                <option value="">Select supplier</option>
-                <option value="supplier-a">Supplier A</option>
-                <option value="supplier-b">Supplier B</option>
-                <option value="supplier-c">Supplier C</option>
+                <option value="">Pilih {paymentType === 'supplier' ? 'supplier' : 'customer'}</option>
+                {parties.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
               </select>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Invoice/Reference
+                Faktur
               </label>
-              <input
-                type="text"
+              <select
                 className="input w-full"
-                placeholder="INV-001 or reference number"
-                value={formData.invoice}
-                onChange={(e) => setFormData({...formData, invoice: e.target.value})}
-              />
+                value={formData.invoice_id}
+                onChange={(e) => handleInvoiceChange(e.target.value)}
+                disabled={!formData.party_id || loadingInvoices}
+                required
+              >
+                <option value="">
+                  {loadingInvoices ? 'Memuat...' : !formData.party_id ? 'Pilih pihak dulu' : 'Pilih faktur'}
+                </option>
+                {invoices.map((inv) => (
+                  <option key={inv.id} value={inv.id}>
+                    {inv.invoice_number} — sisa Rp{inv.balance_due.toLocaleString('id-ID')}
+                  </option>
+                ))}
+              </select>
+              {formData.party_id && !loadingInvoices && invoices.length === 0 && (
+                <p className="text-sm text-gray-500 mt-1">Tidak ada faktur belum lunas untuk pihak ini.</p>
+              )}
             </div>
 
             <div>
@@ -111,8 +262,14 @@ const navigate = useNavigate()
                 placeholder="0"
                 value={formData.amount}
                 onChange={(e) => setFormData({...formData, amount: e.target.value})}
+                max={selectedInvoice?.balance_due}
                 required
               />
+              {selectedInvoice && (
+                <p className="text-sm text-gray-500 mt-1">
+                  Sisa tagihan: Rp{selectedInvoice.balance_due.toLocaleString('id-ID')}
+                </p>
+              )}
             </div>
 
             <div>
@@ -122,8 +279,8 @@ const navigate = useNavigate()
               <input
                 type="date"
                 className="input w-full"
-                value={formData.paymentDate}
-                onChange={(e) => setFormData({...formData, paymentDate: e.target.value})}
+                value={formData.payment_date}
+                onChange={(e) => setFormData({...formData, payment_date: e.target.value})}
                 required
               />
             </div>
@@ -134,15 +291,45 @@ const navigate = useNavigate()
               </label>
               <select 
                 className="input w-full"
-                value={formData.bankAccount}
-                onChange={(e) => setFormData({...formData, bankAccount: e.target.value})}
+                value={formData.bank_account_id}
+                onChange={(e) => setFormData({...formData, bank_account_id: e.target.value})}
                 required
               >
-                <option value="">Select bank account</option>
-                <option value="bca-main">BCA - Main Account</option>
-                <option value="mandiri-ops">Mandiri - Operations</option>
-                <option value="petty-cash">Petty Cash</option>
+                <option value="">Pilih akun Kas/Bank</option>
+                {cashBankAccounts.map((acc) => (
+                  <option key={acc.id} value={acc.id}>{acc.code} - {acc.name}</option>
+                ))}
               </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                Metode Pembayaran
+              </label>
+              <select
+                className="input w-full"
+                value={formData.payment_method}
+                onChange={(e) => setFormData({...formData, payment_method: e.target.value})}
+                required
+              >
+                <option value="cash">Cash</option>
+                <option value="bank_transfer">Bank Transfer</option>
+                <option value="check">Check</option>
+                <option value="credit_card">Credit Card</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                No. Referensi
+              </label>
+              <input
+                type="text"
+                className="input w-full"
+                placeholder="No. transfer / cek (opsional)"
+                value={formData.reference_number}
+                onChange={(e) => setFormData({...formData, reference_number: e.target.value})}
+              />
             </div>
           </div>
 
@@ -152,8 +339,8 @@ const navigate = useNavigate()
               className="input w-full"
               rows={3}
               placeholder="Payment description..."
-              value={formData.description}
-              onChange={(e) => setFormData({...formData, description: e.target.value})}
+              value={formData.notes}
+              onChange={(e) => setFormData({...formData, notes: e.target.value})}
             />
           </div>
 
@@ -166,10 +353,11 @@ const navigate = useNavigate()
             >{t('common.cancel')}</button>
             <button 
               type="submit"
-              className="btn-primary inline-flex items-center gap-2"
+              disabled={submitting}
+              className="btn-primary inline-flex items-center gap-2 disabled:opacity-50"
             >
               <CreditCardIcon className="h-5 w-5" />
-              Record Payment
+              {submitting ? 'Menyimpan...' : 'Record Payment'}
             </button>
           </div>
         </form>
@@ -185,7 +373,7 @@ const navigate = useNavigate()
               <div>
                 <p className="text-sm text-blue-600">Amount to Pay</p>
                 <p className="text-xl font-bold text-blue-800">
-                  {formData.amount ? `Rp ${Number(formData.amount).toLocaleString()}` : 'Rp 0'}
+                  {formData.amount ? `Rp ${Number(formData.amount).toLocaleString('id-ID')}` : 'Rp 0'}
                 </p>
               </div>
             </div>
@@ -197,7 +385,7 @@ const navigate = useNavigate()
               <div>
                 <p className="text-sm text-green-600">Payment Date</p>
                 <p className="text-xl font-bold text-green-800">
-                  {formData.paymentDate || 'Not set'}
+                  {formData.payment_date || 'Not set'}
                 </p>
               </div>
             </div>
@@ -207,9 +395,9 @@ const navigate = useNavigate()
             <div className="flex items-center">
               <CreditCardIcon className="h-8 w-8 text-purple-600 mr-3" />
               <div>
-                <p className="text-sm text-purple-600">Payment Method</p>
+                <p className="text-sm text-purple-600">Bank Account</p>
                 <p className="text-xl font-bold text-purple-800">
-                  {formData.bankAccount || 'Not selected'}
+                  {cashBankAccounts.find(a => a.id === Number(formData.bank_account_id))?.name || 'Not selected'}
                 </p>
               </div>
             </div>

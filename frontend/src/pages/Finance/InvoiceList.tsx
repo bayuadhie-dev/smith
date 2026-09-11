@@ -8,6 +8,12 @@ import {
 ,
   PlusIcon
 } from '@heroicons/react/24/outline';
+const formatDateSafe = (value: string | null | undefined) => {
+  if (!value) return '-'
+  const d = new Date(value)
+  return isNaN(d.getTime()) ? '-' : format(d, 'dd MMM yyyy')
+}
+
 export default function InvoiceList() {
     const { t } = useLanguage();
 
@@ -65,8 +71,8 @@ const { data, isLoading } = useGetInvoicesQuery({})
                       </span>
                     </td>
                     <td>{invoice.customer_name || invoice.supplier_name || '-'}</td>
-                    <td>{format(new Date(invoice.invoice_date), 'dd MMM yyyy')}</td>
-                    <td>{format(new Date(invoice.due_date), 'dd MMM yyyy')}</td>
+                    <td>{formatDateSafe(invoice.invoice_date)}</td>
+                    <td>{formatDateSafe(invoice.due_date)}</td>
                     <td className="font-medium">Rp {invoice.total_amount?.toLocaleString() || '0'}</td>
                     <td className="text-green-600">Rp {invoice.paid_amount?.toLocaleString() || '0'}</td>
                     <td className="text-red-600">Rp {invoice.balance_due?.toLocaleString() || '0'}</td>
@@ -76,11 +82,14 @@ const { data, isLoading } = useGetInvoicesQuery({})
                       </span>
                     </td>
                     <td>
-                      <Link
-                        to={`/finance/invoices/${invoice.id}`}
-                        className="text-primary-600 hover:text-primary-800 text-sm"
-                      >
-                      </Link>
+                      {invoice.status !== 'paid' && invoice.status !== 'cancelled' && (
+                        <Link
+                          to={`/app/finance/payments/new?invoice_id=${invoice.id}`}
+                          className="text-primary-600 hover:text-primary-800 text-sm whitespace-nowrap"
+                        >
+                          Catat Pembayaran
+                        </Link>
+                      )}
                     </td>
                   </tr>
                 ))}

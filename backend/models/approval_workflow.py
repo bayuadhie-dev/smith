@@ -122,11 +122,19 @@ class ApprovalConfiguration(db.Model):
 
 
 class PendingJournalEntry(db.Model):
-    """Temporary storage for journal entries pending approval"""
+    """Temporary storage for journal entries pending approval.
+
+    Note: workflow_id is nullable=True, unlike other workflow_id columns
+    in this file - many rows here (Purchasing, Sales, Expense, Fixed
+    Asset, Recurring Payment, and monthly depreciation journals, built
+    2026-08-15/16) are created directly by GL-posting code outside the
+    approval workflow system entirely, so workflow_id is genuinely absent
+    for them, not just temporarily unset.
+    """
     __tablename__ = 'pending_journal_entries'
     
     id = db.Column(db.Integer, primary_key=True)
-    workflow_id = db.Column(db.Integer, db.ForeignKey('approval_workflows.id'), nullable=False)
+    workflow_id = db.Column(db.Integer, db.ForeignKey('approval_workflows.id'), nullable=True)
     
     # Journal Entry Data (will be created after approval)
     entry_date = db.Column(db.Date, nullable=False)

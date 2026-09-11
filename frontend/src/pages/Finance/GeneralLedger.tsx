@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { formatRupiah } from '../../utils/currencyUtils';
 import axiosInstance from '../../utils/axiosConfig';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import {
   ArrowDownTrayIcon,
   BookOpenIcon,
   MagnifyingGlassIcon,
-  PencilIcon
-,
   PlusIcon,
   TrashIcon
 } from '@heroicons/react/24/outline';
@@ -22,7 +19,22 @@ interface LedgerEntry {
   debit_amount: number
   credit_amount: number
   reference_number: string
+  reference_type: string | null
+  entry_number: string
   created_by: string
+}
+
+interface AccountOption {
+  id: number
+  code: string
+  name: string
+  is_header: boolean
+}
+
+interface NewEntryLine {
+  account_id: string
+  debit: string
+  credit: string
 }
 
 const GeneralLedger = () => {
@@ -40,9 +52,40 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
     search: ''
   })
 
+  // Real accounts fetched from the backend, replacing the previous
+  // hardcoded 10-account list that didn't match any real account in the
+  // database (SMITH's seeded Chart of Accounts uses codes like 2-1110,
+  // 7-1000, not 1000/2000/etc). Used for both the filter dropdown and the
+  // new-entry-line account selects.
+  const [accounts, setAccounts] = useState<AccountOption[]>([])
+
+  // New manual journal entry form state
+  const [newEntryDate, setNewEntryDate] = useState(new Date().toISOString().split('T')[0])
+  const [newEntryDescription, setNewEntryDescription] = useState('')
+  const [newEntryReference, setNewEntryReference] = useState('')
+  const [newEntryLines, setNewEntryLines] = useState<NewEntryLine[]>([
+    { account_id: '', debit: '', credit: '' },
+    { account_id: '', debit: '', credit: '' },
+  ])
+  const [creatingEntry, setCreatingEntry] = useState(false)
+
   useEffect(() => {
     loadEntries()
   }, [currentPage, filters])
+
+  useEffect(() => {
+    loadAccounts()
+  }, [])
+
+  const loadAccounts = async () => {
+    try {
+      const response = await axiosInstance.get('/api/finance/accounts')
+      setAccounts(response.data?.accounts || [])
+    } catch (error) {
+      console.error('Error loading accounts:', error)
+      setAccounts([])
+    }
+  }
 
   const loadEntries = async () => {
     try {
@@ -114,21 +157,81 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
     setCurrentPage(page)
   }
 
-  const handleEditEntry = (entry: LedgerEntry) => {
-    // TODO: Open edit modal or navigate to edit form
-    alert(`Edit journal entry: ${entry.description}\nDate: ${formatDate(entry.entry_date)}\nAmount: ${formatRupiah(entry.debit_amount || entry.credit_amount)}`)
-  }
-
   const handleDeleteEntry = async (entry: LedgerEntry) => {
-    if (window.confirm(`Are you sure you want to delete this journal entry?\n\nDate: ${formatDate(entry.entry_date)}\nDescription: ${entry.description}\nReference: ${entry.reference_number || 'N/A'}`)) {
+    if (window.confirm(`Hapus jurnal manual ini?\n\nTanggal: ${formatDate(entry.entry_date)}\nDeskripsi: ${entry.description}\nReferensi: ${entry.reference_number || 'N/A'}\n\nSemua baris dalam jurnal ini (debit dan kredit) akan ikut terhapus.`)) {
       try {
         await axiosInstance.delete(`/api/finance/general-ledger/${entry.id}`)
-        alert('Journal entry has been deleted successfully.')
         loadEntries() // Reload the entries
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error deleting journal entry:', error)
-        alert('Failed to delete journal entry. Please try again.')
+        alert(error.response?.data?.error || 'Gagal menghapus jurnal. Silakan coba lagi.')
       }
+    }
+  }
+
+  const addNewEntryLine = () => {
+    setNewEntryLines(prev => [...prev, { account_id: '', debit: '', credit: '' }])
+  }
+
+  const removeNewEntryLine = (index: number) => {
+    setNewEntryLines(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const updateNewEntryLine = (index: number, field: keyof NewEntryLine, value: string) => {
+    setNewEntryLines(prev => prev.map((line, i) => i === index ? { ...line, [field]: value } : line))
+  }
+
+  const newEntryTotalDebit = newEntryLines.reduce((sum, l) => sum + (parseFloat(l.debit) || 0), 0)
+  const newEntryTotalCredit = newEntryLines.reduce((sum, l) => sum + (parseFloat(l.credit) || 0), 0)
+  const newEntryIsBalanced = newEntryTotalDebit === newEntryTotalCredit
+
+  const resetNewEntryForm = () => {
+    setNewEntryDate(new Date().toISOString().split('T')[0])
+    setNewEntryDescription('')
+    setNewEntryReference('')
+    setNewEntryLines([
+      { account_id: '', debit: '', credit: '' },
+      { account_id: '', debit: '', credit: '' },
+    ])
+  }
+
+  const handleCreateEntry = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!newEntryIsBalanced || newEntryTotalDebit === 0) {
+      alert('Jurnal harus balance (total debit = total kredit) dan tidak boleh 0.')
+      return
+    }
+
+    const linesPayload = newEntryLines
+      .filter(l => l.account_id && (parseFloat(l.debit) > 0 || parseFloat(l.credit) > 0))
+      .map(l => ({
+        account_id: parseInt(l.account_id, 10),
+        debit: parseFloat(l.debit) || 0,
+        credit: parseFloat(l.credit) || 0,
+      }))
+
+    if (linesPayload.length < 2) {
+      alert('Isi minimal 2 baris jurnal dengan akun dan nominal.')
+      return
+    }
+
+    try {
+      setCreatingEntry(true)
+      await axiosInstance.post('/api/finance/general-ledger', {
+        entry_date: newEntryDate,
+        description: newEntryDescription,
+        reference_number: newEntryReference,
+        lines: linesPayload,
+      })
+      setShowNewEntryModal(false)
+      resetNewEntryForm()
+      loadEntries()
+    } catch (error: any) {
+      console.error('Error creating journal entry:', error)
+      alert(error.response?.data?.error || 'Gagal membuat jurnal. Silakan coba lagi.')
+    } finally {
+      setCreatingEntry(false)
     }
   }
 
@@ -141,7 +244,7 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">📚 General Ledger</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">General Ledger</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">View all accounting entries and transaction details</p>
         </div>
         <div className="flex gap-3">
@@ -220,12 +323,9 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
             onChange={(e) => handleFilterChange('account_id', e.target.value)}
           >
             <option value="">All Accounts</option>
-            <option value="1000">1000 - Cash</option>
-            <option value="1100">1100 - Accounts Receivable</option>
-            <option value="1200">1200 - Inventory</option>
-            <option value="2000">2000 - Accounts Payable</option>
-            <option value="4000">4000 - Sales Revenue</option>
-            <option value="5000">5000 - Cost of Sales</option>
+            {accounts.filter(a => !a.is_header).map(a => (
+              <option key={a.id} value={a.id}>{a.code} - {a.name}</option>
+            ))}
           </select>
 
           <input
@@ -249,6 +349,7 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
               onClick={clearFilters}
               className="btn-secondary flex-1"
             >
+              Clear
             </button>
             <button 
               onClick={() => {
@@ -280,13 +381,17 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.date')}</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Account
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.description')}</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Reference
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Debit
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Credit
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Running Balance
@@ -334,20 +439,21 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
                     <div className="text-sm text-gray-900 dark:text-white">{entry.created_by}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => handleEditEntry(entry)}
-                        className="text-yellow-600 hover:text-yellow-900 flex items-center gap-1"
-                        title="Edit Entry"
-                      >
-                        <PencilIcon className="h-4 w-4" />{t('common.edit')}</button>
+                    {entry.reference_type === 'manual_journal' ? (
                       <button
                         onClick={() => handleDeleteEntry(entry)}
                         className="text-red-600 hover:text-red-900 flex items-center gap-1"
-                        title="Delete Entry"
+                        title="Hapus jurnal manual ini"
                       >
                         <TrashIcon className="h-4 w-4" />{t('common.delete')}</button>
-                    </div>
+                    ) : (
+                      <span
+                        className="text-gray-400 text-xs italic"
+                        title="Jurnal otomatis dari transaksi lain - koreksi lewat sumbernya, bukan dari sini"
+                      >
+                        Otomatis
+                      </span>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -400,12 +506,14 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
               disabled={currentPage === 1}
               className="relative inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
             >
+              Previous
             </button>
             <button
               onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
               className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
             >
+              Next
             </button>
           </div>
           <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
@@ -442,163 +550,134 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
       {/* New Journal Entry Modal */}
       {showNewEntryModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-3xl mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">📚 New Journal Entry</h3>
-              <button 
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Jurnal Manual Baru</h3>
+              <button
                 onClick={() => setShowNewEntryModal(false)}
                 className="text-gray-400 hover:text-gray-600 dark:text-gray-300 text-2xl"
               >
-                ✕
+                &times;
               </button>
             </div>
-            
-            <form 
-              onSubmit={(e) => {
-                e.preventDefault()
-                const formData = new FormData(e.currentTarget)
-                const entryData = {
-                  entry_date: formData.get('entry_date'),
-                  account_code: formData.get('account_code'),
-                  description: formData.get('description'),
-                  reference_number: formData.get('reference_number'),
-                  debit_amount: formData.get('debit_amount') || 0,
-                  credit_amount: formData.get('credit_amount') || 0
-                }
-                
-                // Validation
-                if (!entryData.entry_date || !entryData.account_code || !entryData.description) {
-                  alert('Please fill in all required fields.')
-                  return
-                }
-                
-                if (Number(entryData.debit_amount) === 0 && Number(entryData.credit_amount) === 0) {
-                  alert('Either debit or credit amount must be greater than 0.')
-                  return
-                }
-                
-                if (Number(entryData.debit_amount) > 0 && Number(entryData.credit_amount) > 0) {
-                  alert('Please enter either debit OR credit amount, not both.')
-                  return
-                }
-                
-                console.log('Creating journal entry:', entryData)
-                alert(`Journal entry created successfully!\n\nDate: ${entryData.entry_date}\nAccount: ${entryData.account_code}\nDescription: ${entryData.description}\nAmount: ${formatRupiah(Number(entryData.debit_amount) || Number(entryData.credit_amount))}\nType: ${Number(entryData.debit_amount) > 0 ? 'Debit' : 'Credit'}`)
-                setShowNewEntryModal(false)
-                // In real implementation: loadEntries() to refresh the list
-              }}
-              className="space-y-6"
-            >
+
+            <form onSubmit={handleCreateEntry} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                    Entry Date *
+                    Tanggal Jurnal *
                   </label>
-                  <input 
-                    type="date" 
-                    name="entry_date"
-                    className="input w-full" 
-                    defaultValue={new Date().toISOString().split('T')[0]}
-                    required 
+                  <input
+                    type="date"
+                    value={newEntryDate}
+                    onChange={(e) => setNewEntryDate(e.target.value)}
+                    className="input w-full"
+                    required
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                    Account Code *
+                    Nomor Referensi
                   </label>
-                  <select name="account_code" className="input w-full" required>
-                    <option value="">Select account</option>
-                    <option value="1000">1000 - Cash in Bank</option>
-                    <option value="1100">1100 - Accounts Receivable</option>
-                    <option value="1200">1200 - Inventory</option>
-                    <option value="1300">1300 - Prepaid Expenses</option>
-                    <option value="2000">2000 - Accounts Payable</option>
-                    <option value="2100">2100 - Accrued Expenses</option>
-                    <option value="3000">3000 - Owner's Equity</option>
-                    <option value="4000">4000 - Sales Revenue</option>
-                    <option value="5000">5000 - Cost of Goods Sold</option>
-                    <option value="6000">6000 - Operating Expenses</option>
-                  </select>
+                  <input
+                    type="text"
+                    value={newEntryReference}
+                    onChange={(e) => setNewEntryReference(e.target.value)}
+                    className="input w-full"
+                    placeholder="cth. CHK-123"
+                  />
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Description *
+                  Deskripsi *
                 </label>
-                <textarea 
-                  name="description"
-                  className="input w-full" 
-                  rows={3}
-                  placeholder="Enter transaction description..."
+                <textarea
+                  value={newEntryDescription}
+                  onChange={(e) => setNewEntryDescription(e.target.value)}
+                  className="input w-full"
+                  rows={2}
+                  placeholder="Keterangan transaksi..."
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Reference Number
-                </label>
-                <input 
-                  type="text" 
-                  name="reference_number"
-                  className="input w-full" 
-                  placeholder="e.g., INV-001, CHK-123"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                    Debit Amount
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                    Baris Jurnal * (minimal 2, debit = kredit)
                   </label>
-                  <input 
-                    type="number" 
-                    name="debit_amount"
-                    className="input w-full" 
-                    placeholder="0"
-                    min="0"
-                    step="0.01"
-                  />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Enter amount for debit transactions</p>
+                  <button
+                    type="button"
+                    onClick={addNewEntryLine}
+                    className="text-sm text-blue-600 hover:text-blue-800"
+                  >
+                    + Tambah Baris
+                  </button>
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                    Credit Amount
-                  </label>
-                  <input 
-                    type="number" 
-                    name="credit_amount"
-                    className="input w-full" 
-                    placeholder="0"
-                    min="0"
-                    step="0.01"
-                  />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Enter amount for credit transactions</p>
+                <div className="space-y-2">
+                  {newEntryLines.map((line, idx) => (
+                    <div key={idx} className="grid grid-cols-12 gap-2 items-center">
+                      <select
+                        value={line.account_id}
+                        onChange={(e) => updateNewEntryLine(idx, 'account_id', e.target.value)}
+                        className="input col-span-5"
+                        required
+                      >
+                        <option value="">Pilih akun...</option>
+                        {accounts.filter(a => !a.is_header).map(a => (
+                          <option key={a.id} value={a.id}>{a.code} - {a.name}</option>
+                        ))}
+                      </select>
+                      <input
+                        type="number"
+                        value={line.debit}
+                        onChange={(e) => updateNewEntryLine(idx, 'debit', e.target.value)}
+                        className="input col-span-3"
+                        placeholder="Debit"
+                        min="0"
+                        step="0.01"
+                      />
+                      <input
+                        type="number"
+                        value={line.credit}
+                        onChange={(e) => updateNewEntryLine(idx, 'credit', e.target.value)}
+                        className="input col-span-3"
+                        placeholder="Kredit"
+                        min="0"
+                        step="0.01"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeNewEntryLine(idx)}
+                        disabled={newEntryLines.length <= 2}
+                        className="col-span-1 text-red-500 hover:text-red-700 disabled:opacity-30 disabled:cursor-not-allowed"
+                        title="Hapus baris"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
                 </div>
-              </div>
-
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 className="text-sm font-medium text-blue-800 mb-2">📋 Journal Entry Guidelines:</h4>
-                <ul className="text-xs text-blue-700 space-y-1">
-                  <li>• Enter either debit OR credit amount (not both)</li>
-                  <li>• Debit increases: Assets, Expenses, Dividends</li>
-                  <li>• Credit increases: Liabilities, Equity, Revenue</li>
-                  <li>• Always ensure your journal entries are balanced</li>
-                  <li>• Reference numbers help track source documents</li>
-                </ul>
+                <div className={`mt-3 text-sm font-medium ${newEntryIsBalanced ? 'text-green-600' : 'text-red-600'}`}>
+                  Total Debit: {formatRupiah(newEntryTotalDebit)} | Total Kredit: {formatRupiah(newEntryTotalCredit)}
+                  {newEntryIsBalanced ? ' (Balance)' : ' (Belum balance)'}
+                </div>
               </div>
 
               <div className="flex justify-end gap-4 pt-6 border-t">
-                <button 
+                <button
                   type="button"
                   onClick={() => setShowNewEntryModal(false)}
                   className="btn-secondary"
                 >{t('common.cancel')}</button>
-                <button type="submit" className="btn-primary">
-                  Create Entry
+                <button
+                  type="submit"
+                  className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={!newEntryIsBalanced || newEntryTotalDebit === 0 || creatingEntry}
+                >
+                  {creatingEntry ? 'Menyimpan...' : 'Buat Jurnal'}
                 </button>
               </div>
             </form>

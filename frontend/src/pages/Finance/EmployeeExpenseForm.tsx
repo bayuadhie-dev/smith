@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import axiosInstance from '../../utils/axiosConfig';
 import {
   ArrowLeft,
   Save,
@@ -57,6 +58,25 @@ const EmployeeExpenseForm: React.FC = () => {
   const [existingReceipt, setExistingReceipt] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(isEdit);
+  const [loadingRate, setLoadingRate] = useState(false);
+
+  const handleCurrencyChange = async (currency: string) => {
+    setFormData(prev => ({ ...prev, currency }));
+    if (currency === 'IDR') {
+      setFormData(prev => ({ ...prev, exchange_rate: '1' }));
+      return;
+    }
+    setLoadingRate(true);
+    try {
+      const res = await axiosInstance.get(`/api/finance/exchange-rates/current/${currency}_IDR`);
+      setFormData(prev => ({ ...prev, exchange_rate: res.data.rate.toString() }));
+    } catch {
+      // No rate available (e.g. never fetched yet) - leave the field as-is
+      // so the user can enter it manually rather than blocking the form.
+    } finally {
+      setLoadingRate(false);
+    }
+  };
 
   const categories = [
     'Travel',
@@ -83,13 +103,8 @@ const EmployeeExpenseForm: React.FC = () => {
 
   const fetchEmployees = async () => {
     try {
-      const response = await fetch('/api/hr/employees', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setEmployees(data.employees || data || []);
-      }
+      const response = await axiosInstance.get('/api/hr/employees');
+      setEmployees(response.data.employees || response.data || []);
     } catch (error) {
       console.error('Error fetching employees:', error);
     }
@@ -97,13 +112,8 @@ const EmployeeExpenseForm: React.FC = () => {
 
   const fetchCostCenters = async () => {
     try {
-      const response = await fetch('/api/finance/cost-centers', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setCostCenters(data.cost_centers || data || []);
-      }
+      const response = await axiosInstance.get('/api/finance/cost-centers');
+      setCostCenters(response.data.cost_centers || response.data || []);
     } catch (error) {
       console.error('Error fetching cost centers:', error);
     }
@@ -111,13 +121,8 @@ const EmployeeExpenseForm: React.FC = () => {
 
   const fetchAccounts = async () => {
     try {
-      const response = await fetch('/api/finance/accounts', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setAccounts(data.accounts || data || []);
-      }
+      const response = await axiosInstance.get('/api/finance/accounts');
+      setAccounts(response.data.accounts || response.data || []);
     } catch (error) {
       console.error('Error fetching accounts:', error);
     }
@@ -126,29 +131,25 @@ const EmployeeExpenseForm: React.FC = () => {
   const fetchExpense = async () => {
     try {
       setFetching(true);
-      const response = await fetch(`/api/expenses/${id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      const response = await axiosInstance.get(`/api/expenses/${id}`);
+      const data = response.data;
+      setFormData({
+        employee_id: data.expense.employee_id,
+        expense_date: data.expense.expense_date.split('T')[0],
+        expense_category: data.expense.expense_category,
+        expense_type: data.expense.expense_type,
+        description: data.expense.description,
+        amount: data.expense.amount.toString(),
+        currency: data.expense.currency,
+        exchange_rate: data.expense.exchange_rate.toString(),
+        reference_number: data.expense.reference_number || '',
+        vendor_name: data.expense.vendor_name || '',
+        cost_center_id: data.expense.cost_center_id?.toString() || '',
+        account_id: data.expense.account_id?.toString() || '',
+        notes: data.expense.notes || '',
       });
-      if (response.ok) {
-        const data = await response.json();
-        setFormData({
-          employee_id: data.expense.employee_id,
-          expense_date: data.expense.expense_date.split('T')[0],
-          expense_category: data.expense.expense_category,
-          expense_type: data.expense.expense_type,
-          description: data.expense.description,
-          amount: data.expense.amount.toString(),
-          currency: data.expense.currency,
-          exchange_rate: data.expense.exchange_rate.toString(),
-          reference_number: data.expense.reference_number || '',
-          vendor_name: data.expense.vendor_name || '',
-          cost_center_id: data.expense.cost_center_id?.toString() || '',
-          account_id: data.expense.account_id?.toString() || '',
-          notes: data.expense.notes || '',
-        });
-        if (data.expense.receipt_file_name) {
-          setExistingReceipt(data.expense.receipt_file_name);
-        }
+      if (data.expense.receipt_file_name) {
+        setExistingReceipt(data.expense.receipt_file_name);
       }
     } catch (error) {
       console.error('Error fetching expense:', error);
@@ -201,39 +202,21 @@ const EmployeeExpenseForm: React.FC = () => {
       };
 
       const url = isEdit ? `/api/expenses/${id}` : '/api/expenses';
-      const method = isEdit ? 'PUT' : 'POST';
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify(expenseData),
-      });
+      const response = isEdit
+        ? await axiosInstance.put(url, expenseData)
+        : await axiosInstance.post(url, expenseData);
 
-      if (!response.ok) {
-        throw new Error('Failed to save expense');
-      }
-
-      const result = await response.json();
+      const result = response.data;
       const expenseId = isEdit ? id : result.expense.id;
 
       if (receiptFile) {
         const formDataUpload = new FormData();
         formDataUpload.append('file', receiptFile);
 
-        const uploadResponse = await fetch(`/api/expenses/${expenseId}/upload-receipt`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-          body: formDataUpload,
+        await axiosInstance.post(`/api/expenses/${expenseId}/upload-receipt`, formDataUpload, {
+          headers: { 'Content-Type': 'multipart/form-data' },
         });
-
-        if (!uploadResponse.ok) {
-          throw new Error('Failed to upload receipt');
-        }
       }
 
       alert(isEdit ? 'Expense updated successfully!' : 'Expense created successfully!');
@@ -371,7 +354,7 @@ const EmployeeExpenseForm: React.FC = () => {
                 type="number"
                 required
                 step="0.01"
-                min="0"
+                min="0.01"
                 value={formData.amount}
                 onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -384,19 +367,19 @@ const EmployeeExpenseForm: React.FC = () => {
               </label>
               <select
                 value={formData.currency}
-                onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+                onChange={(e) => handleCurrencyChange(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="IDR">IDR</option>
                 <option value="USD">USD</option>
-                <option value="EUR">EUR</option>
+                <option value="CNY">CNY</option>
               </select>
             </div>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Exchange Rate
+              Exchange Rate {formData.currency !== 'IDR' && loadingRate && <span className="text-gray-400 text-xs">(memuat kurs...)</span>}
             </label>
             <input
               type="number"
@@ -406,7 +389,18 @@ const EmployeeExpenseForm: React.FC = () => {
               onChange={(e) => setFormData({ ...formData, exchange_rate: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="1.0"
+              disabled={formData.currency === 'IDR'}
             />
+            {formData.currency !== 'IDR' && (
+              <p className="text-xs text-gray-500 mt-1">
+                Kurs otomatis dari sistem, bisa diubah manual jika perlu.
+              </p>
+            )}
+            {formData.amount && formData.exchange_rate && (
+              <p className="text-sm font-medium text-gray-700 mt-2">
+                Nilai dalam IDR: Rp{(parseFloat(formData.amount) * parseFloat(formData.exchange_rate)).toLocaleString('id-ID', { maximumFractionDigits: 0 })}
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">

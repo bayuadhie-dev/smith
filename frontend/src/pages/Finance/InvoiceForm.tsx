@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import axiosInstance from '../../utils/axiosConfig'
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useForm, useFieldArray } from 'react-hook-form'
@@ -42,6 +42,8 @@ export default function InvoiceForm() {
 
 const navigate = useNavigate()
   const { id } = useParams()
+  const [searchParams] = useSearchParams()
+  const prefillSalesOrderId = searchParams.get('sales_order_id')
   const isViewMode = Boolean(id)
   const [isLoading, setIsLoading] = useState(false)
   const [invoiceData, setInvoiceData] = useState<any>(null)
@@ -53,7 +55,7 @@ const navigate = useNavigate()
   const { data: suppliers } = useGetSuppliersQuery({})
   const [createInvoice] = useCreateInvoiceMutation()
   
-  const { register, control, handleSubmit, watch, formState: { errors } } = useForm<InvoiceFormData>({
+  const { register, control, handleSubmit, watch, setValue, formState: { errors } } = useForm<InvoiceFormData>({
     defaultValues: {
       invoice_type: 'sales',
       invoice_date: new Date().toISOString().split('T')[0],
@@ -80,6 +82,18 @@ const navigate = useNavigate()
       fetchInvoiceData()
     }
   }, [id])
+
+  // Prefill from ?sales_order_id= (Temuan 5, UX_AUDIT_REPORT.md) - "Buat Invoice" button
+  // on SalesOrderDetails.tsx navigates here with this param so staff don't have to
+  // re-search the same SO from a dropdown of all orders.
+  useEffect(() => {
+    if (!prefillSalesOrderId || isViewMode) return
+    const order = salesOrders?.orders?.find((o: any) => String(o.id) === String(prefillSalesOrderId))
+    if (order) {
+      setValue('sales_order_id', order.id)
+      if (order.customer_id) setValue('customer_id', order.customer_id)
+    }
+  }, [prefillSalesOrderId, isViewMode, salesOrders, setValue])
 
   const fetchInvoiceData = async () => {
     try {
@@ -260,10 +274,10 @@ const navigate = useNavigate()
             </div>
           </div>
 
-          {/* Work Order Reference */}
+          {/* SPK Reference */}
           {invoiceData.work_order_number && (
             <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-              <p className="text-sm text-blue-600">Work Order Reference</p>
+              <p className="text-sm text-blue-600">SPK Reference</p>
               <p className="text-lg font-semibold text-blue-800">{invoiceData.work_order_number}</p>
             </div>
           )}
@@ -385,6 +399,7 @@ const navigate = useNavigate()
               {watchedInvoiceType === 'sales' ? (
                 <select
                   {...register('customer_id', { required: 'Customer is required' })}
+                  disabled={Boolean(prefillSalesOrderId)}
                   className="input-field"
                 >
                   <option value="">Select customer</option>
@@ -416,6 +431,7 @@ const navigate = useNavigate()
               {watchedInvoiceType === 'sales' ? (
                 <select
                   {...register('sales_order_id')}
+                  disabled={Boolean(prefillSalesOrderId)}
                   className="input-field"
                 >
                   <option value="">Select sales order (optional)</option>

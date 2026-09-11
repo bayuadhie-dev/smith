@@ -77,20 +77,14 @@ interface BalanceSheet {
 
 interface CashFlow {
   operating_activities: {
-    net_income: number
-    depreciation: number
-    changes_in_working_capital: number
+    cash_in: number
+    cash_out: number
     net_cash_from_operations: number
   }
   investing_activities: {
-    purchase_of_equipment: number
-    sale_of_assets: number
     net_cash_from_investing: number
   }
   financing_activities: {
-    loan_proceeds: number
-    loan_repayments: number
-    dividends_paid: number
     net_cash_from_financing: number
   }
   net_change_in_cash: number
@@ -391,16 +385,12 @@ const FinancialReports = () => {
               <h4 className="font-semibold text-blue-700 mb-3">OPERATING ACTIVITIES</h4>
               <div className="ml-4 space-y-2">
                 <div className="flex justify-between">
-                  <span>Net Income</span>
-                  <span>{formatRupiah(cashFlow.operating_activities.net_income)}</span>
+                  <span>Kas Masuk</span>
+                  <span>{formatRupiah(cashFlow.operating_activities.cash_in)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Depreciation</span>
-                  <span>{formatRupiah(cashFlow.operating_activities.depreciation)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Changes in Working Capital</span>
-                  <span>{formatRupiah(cashFlow.operating_activities.changes_in_working_capital)}</span>
+                  <span>Kas Keluar</span>
+                  <span>({formatRupiah(cashFlow.operating_activities.cash_out)})</span>
                 </div>
                 <div className="flex justify-between font-semibold border-t pt-2 bg-blue-50 p-2 rounded">
                   <span>Net Cash from Operations</span>
@@ -413,18 +403,13 @@ const FinancialReports = () => {
             <div className="border-b pb-4">
               <h4 className="font-semibold text-green-700 mb-3">INVESTING ACTIVITIES</h4>
               <div className="ml-4 space-y-2">
-                <div className="flex justify-between">
-                  <span>Purchase of Equipment</span>
-                  <span>({formatRupiah(Math.abs(cashFlow.investing_activities.purchase_of_equipment))})</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Sale of Assets</span>
-                  <span>{formatRupiah(cashFlow.investing_activities.sale_of_assets)}</span>
-                </div>
                 <div className="flex justify-between font-semibold border-t pt-2 bg-green-50 p-2 rounded">
                   <span>Net Cash from Investing</span>
                   <span className="text-green-600">{formatRupiah(cashFlow.investing_activities.net_cash_from_investing)}</span>
                 </div>
+                {cashFlow.investing_activities.net_cash_from_investing === 0 && (
+                  <p className="text-xs text-gray-400 italic">Belum ada transaksi investasi (pembelian/penjualan aset tetap) yang tercatat ke GL.</p>
+                )}
               </div>
             </div>
 
@@ -432,22 +417,13 @@ const FinancialReports = () => {
             <div className="border-b pb-4">
               <h4 className="font-semibold text-purple-700 mb-3">FINANCING ACTIVITIES</h4>
               <div className="ml-4 space-y-2">
-                <div className="flex justify-between">
-                  <span>Loan Proceeds</span>
-                  <span>{formatRupiah(cashFlow.financing_activities.loan_proceeds)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Loan Repayments</span>
-                  <span>({formatRupiah(Math.abs(cashFlow.financing_activities.loan_repayments))})</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Dividends Paid</span>
-                  <span>({formatRupiah(Math.abs(cashFlow.financing_activities.dividends_paid))})</span>
-                </div>
                 <div className="flex justify-between font-semibold border-t pt-2 bg-purple-50 p-2 rounded">
                   <span>Net Cash from Financing</span>
                   <span className="text-purple-600">{formatRupiah(cashFlow.financing_activities.net_cash_from_financing)}</span>
                 </div>
+                {cashFlow.financing_activities.net_cash_from_financing === 0 && (
+                  <p className="text-xs text-gray-400 italic">Belum ada transaksi pendanaan (pinjaman/dividen) yang tercatat ke GL.</p>
+                )}
               </div>
             </div>
 
@@ -483,7 +459,7 @@ const FinancialReports = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">📈 Financial Reports</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Laporan Keuangan</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Comprehensive financial statements and analysis</p>
         </div>
         <div className="flex gap-3">
@@ -528,12 +504,11 @@ const FinancialReports = () => {
                   ] : []
                 } else {
                   reportData = cashFlow ? [
-                    { Activity: 'Operating Activities', Item: 'Net Income', Amount: cashFlow.operating_activities?.net_income || 0 },
-                    { Activity: 'Operating Activities', Item: 'Depreciation', Amount: cashFlow.operating_activities?.depreciation || 0 },
-                    { Activity: 'Operating Activities', Item: 'Working Capital Changes', Amount: cashFlow.operating_activities?.changes_in_working_capital || 0 },
-                    { Activity: 'Investing Activities', Item: 'Purchase of Equipment', Amount: cashFlow.investing_activities?.purchase_of_equipment || 0 },
-                    { Activity: 'Financing Activities', Item: 'Loan Proceeds', Amount: cashFlow.financing_activities?.loan_proceeds || 0 },
-                    { Activity: 'Financing Activities', Item: 'Dividends Paid', Amount: cashFlow.financing_activities?.dividends_paid || 0 }
+                    { Activity: 'Operating Activities', Item: 'Kas Masuk', Amount: cashFlow.operating_activities?.cash_in || 0 },
+                    { Activity: 'Operating Activities', Item: 'Kas Keluar', Amount: cashFlow.operating_activities?.cash_out || 0 },
+                    { Activity: 'Operating Activities', Item: 'Net Cash from Operations', Amount: cashFlow.operating_activities?.net_cash_from_operations || 0 },
+                    { Activity: 'Investing Activities', Item: 'Net Cash from Investing', Amount: cashFlow.investing_activities?.net_cash_from_investing || 0 },
+                    { Activity: 'Financing Activities', Item: 'Net Cash from Financing', Amount: cashFlow.financing_activities?.net_cash_from_financing || 0 }
                   ] : []
                 }
                 

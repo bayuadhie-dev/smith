@@ -121,7 +121,7 @@ const ReimbursementList: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Reimbursements</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Reimbursement</h1>
           <p className="text-gray-600">Manage employee reimbursement batches</p>
         </div>
         {hasPermission('expense.create') && (

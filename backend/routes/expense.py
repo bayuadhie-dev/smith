@@ -5,6 +5,7 @@ Enterprise-grade expense management with receipt tracking and approval workflow
 
 from flask import Blueprint, request, jsonify, current_app, send_from_directory
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from werkzeug.utils import secure_filename
 from datetime import datetime
 import os
@@ -42,6 +43,7 @@ def can_view_all(user_id):
 
 @expense_bp.route('', methods=['GET'])
 @jwt_required()
+@require_permission('expense.view')
 def get_expenses():
     """Get list of expenses with filtering"""
     try:
@@ -140,6 +142,7 @@ def get_expenses():
 
 @expense_bp.route('/<int:expense_id>', methods=['GET'])
 @jwt_required()
+@require_permission('expense.view')
 def get_expense(expense_id):
     """Get expense detail"""
     try:
@@ -210,6 +213,7 @@ def get_expense(expense_id):
 
 @expense_bp.route('', methods=['POST'])
 @jwt_required()
+@require_permission('expense.create')
 def create_expense():
     """Create new expense"""
     try:
@@ -227,8 +231,10 @@ def create_expense():
         # Calculate base currency amount
         amount = float(data.get('amount', 0))
         exchange_rate = float(data.get('exchange_rate', 1.0))
+        if amount <= 0:
+            return jsonify({'success': False, 'error': 'Amount harus lebih besar dari 0'}), 400
         amount_base = amount * exchange_rate
-        
+
         expense = Expense(
             employee_id=employee.id,
             employee_name=employee.full_name,
@@ -268,6 +274,7 @@ def create_expense():
 
 @expense_bp.route('/<int:expense_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('expense.edit')
 def update_expense(expense_id):
     """Update expense"""
     try:
@@ -327,6 +334,7 @@ def update_expense(expense_id):
 
 @expense_bp.route('/<int:expense_id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('expense.delete')
 def delete_expense(expense_id):
     """Delete expense"""
     try:
@@ -365,6 +373,7 @@ def delete_expense(expense_id):
 
 @expense_bp.route('/<int:expense_id>/upload-receipt', methods=['POST'])
 @jwt_required()
+@require_permission('expense.create')
 def upload_receipt(expense_id):
     """Upload receipt file for expense"""
     try:
@@ -437,6 +446,7 @@ def upload_receipt(expense_id):
 
 @expense_bp.route('/<int:expense_id>/receipt', methods=['GET'])
 @jwt_required()
+@require_permission('expense.view')
 def get_receipt(expense_id):
     """Download receipt file"""
     try:
@@ -468,6 +478,7 @@ def get_receipt(expense_id):
 
 @expense_bp.route('/<int:expense_id>/submit', methods=['POST'])
 @jwt_required()
+@require_permission('expense.submit')
 def submit_expense(expense_id):
     """Submit expense for approval"""
     try:
@@ -505,6 +516,7 @@ def submit_expense(expense_id):
 
 @expense_bp.route('/<int:expense_id>/approve', methods=['POST'])
 @jwt_required()
+@require_permission('expense.approve')
 def approve_expense(expense_id):
     """Approve expense"""
     try:
@@ -519,7 +531,11 @@ def approve_expense(expense_id):
             return jsonify({'success': False, 'error': 'Permission denied'}), 403
 
         expense = Expense.query.get_or_404(expense_id)
-        
+
+        from utils.finance_helpers import is_period_locked
+        if is_period_locked(expense.expense_date):
+            return jsonify({'success': False, 'error': f'Periode {expense.expense_date.strftime("%Y-%m")} sudah ditutup (period-close). Tidak bisa approve expense di periode ini.'}), 400
+
         if expense.status != 'submitted':
             return jsonify({'success': False, 'error': 'Only submitted expenses can be approved'}), 400
         
@@ -529,7 +545,60 @@ def approve_expense(expense_id):
         expense.approved_by = user_id
         expense.approved_at = datetime.utcnow()
         expense.approval_notes = data.get('approval_notes')
-        
+        db.session.flush()
+
+        # GL posting: Debit Beban Operasional (single global account for all
+        # expense categories, per Bayu's 2026-08-16 decision to keep this
+        # simple rather than per-category), Credit Kas (if expense_type is
+        # Cash - already paid) or Hutang Karyawan (if Credit Card/Company
+        # Card - reimbursement owed to the employee, paid later via
+        # pay_reimbursement()).
+        from models.finance import GlobalAccountDefault
+        from models.approval_workflow import PendingJournalEntry
+        from utils.finance_helpers import post_pending_journal
+
+        beban_default = GlobalAccountDefault.query.filter_by(transaction_key='beban_operasional').first()
+        if not beban_default:
+            db.session.rollback()
+            return jsonify({'success': False, 'error': 'Akun Beban Operasional belum diatur di Preferensi Akun'}), 400
+
+        amount = float(expense.amount_base or expense.amount)
+        is_cash = (expense.expense_type or '').lower() == 'cash'
+        credit_key = 'cash' if is_cash else 'hutang_karyawan'
+        credit_default = GlobalAccountDefault.query.filter_by(transaction_key=credit_key).first()
+        if not credit_default:
+            db.session.rollback()
+            return jsonify({'success': False, 'error': f'Akun untuk {credit_key} belum diatur di Preferensi Akun'}), 400
+
+        journal_lines = [
+            {
+                'account_id': beban_default.account_id,
+                'debit': amount,
+                'credit': 0,
+                'description': f'{expense.expense_category} - {expense.expense_number}',
+            },
+            {
+                'account_id': credit_default.account_id,
+                'debit': 0,
+                'credit': amount,
+                'description': f'{expense.expense_number}',
+            },
+        ]
+
+        pending = PendingJournalEntry(
+            workflow_id=None,
+            entry_date=expense.expense_date,
+            description=f'Expense {expense.expense_number} - {expense.employee_name}',
+            reference=expense.expense_number,
+            lines=journal_lines,
+            total_debit=amount,
+            total_credit=amount,
+            created_by=user_id,
+        )
+        db.session.add(pending)
+        db.session.flush()
+        post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='expense', reference_id=expense.id)
+
         db.session.commit()
         
         return jsonify({
@@ -544,6 +613,7 @@ def approve_expense(expense_id):
 
 @expense_bp.route('/<int:expense_id>/reject', methods=['POST'])
 @jwt_required()
+@require_permission('expense.create')
 def reject_expense(expense_id):
     """Reject expense"""
     try:
@@ -590,6 +660,7 @@ def reject_expense(expense_id):
 
 @expense_bp.route('/reimbursements', methods=['GET'])
 @jwt_required()
+@require_permission('expense.view')
 def get_reimbursements():
     """Get list of reimbursements"""
     try:
@@ -659,6 +730,7 @@ def get_reimbursements():
 
 @expense_bp.route('/reimbursements', methods=['POST'])
 @jwt_required()
+@require_permission('expense.create')
 def create_reimbursement():
     """Create new reimbursement batch"""
     try:
@@ -695,7 +767,9 @@ def create_reimbursement():
         
         # Calculate total
         total_amount = sum(exp.amount_base for exp in expenses)
-        
+        if total_amount <= 0:
+            return jsonify({'success': False, 'error': 'Total reimbursement harus lebih besar dari 0'}), 400
+
         reimbursement = Reimbursement(
             employee_id=employee.id,
             employee_name=employee.full_name,
@@ -737,6 +811,7 @@ def create_reimbursement():
 
 @expense_bp.route('/reimbursements/<int:reimbursement_id>/approve', methods=['POST'])
 @jwt_required()
+@require_permission('expense.approve')
 def approve_reimbursement(reimbursement_id):
     """Approve reimbursement"""
     try:
@@ -778,6 +853,7 @@ def approve_reimbursement(reimbursement_id):
 
 @expense_bp.route('/reimbursements/<int:reimbursement_id>/pay', methods=['POST'])
 @jwt_required()
+@require_permission('expense.create')
 def pay_reimbursement(reimbursement_id):
     """Mark reimbursement as paid"""
     try:
@@ -792,7 +868,12 @@ def pay_reimbursement(reimbursement_id):
             return jsonify({'success': False, 'error': 'Permission denied'}), 403
 
         reimbursement = Reimbursement.query.get_or_404(reimbursement_id)
-        
+
+        from utils.finance_helpers import is_period_locked
+        today = datetime.utcnow().date()
+        if is_period_locked(today):
+            return jsonify({'success': False, 'error': f'Periode {today.strftime("%Y-%m")} sudah ditutup (period-close). Tidak bisa memproses pembayaran reimbursement hari ini.'}), 400
+
         if reimbursement.status != 'approved':
             return jsonify({'success': False, 'error': 'Only approved reimbursements can be paid'}), 400
         
@@ -804,7 +885,51 @@ def pay_reimbursement(reimbursement_id):
         reimbursement.paid_by = user_id
         reimbursement.paid_at = datetime.utcnow()
         reimbursement.payment_reference = data.get('payment_reference')
-        
+        db.session.flush()
+
+        # GL posting: Debit Hutang Karyawan (clears the liability booked
+        # when the underlying expense(s) were approved), Credit Kas (cash
+        # actually goes out now).
+        from models.finance import GlobalAccountDefault
+        from models.approval_workflow import PendingJournalEntry
+        from utils.finance_helpers import post_pending_journal
+
+        hutang_default = GlobalAccountDefault.query.filter_by(transaction_key='hutang_karyawan').first()
+        cash_default = GlobalAccountDefault.query.filter_by(transaction_key='cash').first()
+        if not hutang_default or not cash_default:
+            db.session.rollback()
+            return jsonify({'success': False, 'error': 'Akun Hutang Karyawan atau Kas belum diatur di Preferensi Akun'}), 400
+
+        amount = float(reimbursement.total_amount or 0)
+        journal_lines = [
+            {
+                'account_id': hutang_default.account_id,
+                'debit': amount,
+                'credit': 0,
+                'description': f'Pelunasan reimbursement {reimbursement.reimbursement_number}',
+            },
+            {
+                'account_id': cash_default.account_id,
+                'debit': 0,
+                'credit': amount,
+                'description': f'Pelunasan reimbursement {reimbursement.reimbursement_number}',
+            },
+        ]
+
+        pending = PendingJournalEntry(
+            workflow_id=None,
+            entry_date=datetime.utcnow().date(),
+            description=f'Payment for Reimbursement {reimbursement.reimbursement_number}',
+            reference=reimbursement.reimbursement_number,
+            lines=journal_lines,
+            total_debit=amount,
+            total_credit=amount,
+            created_by=user_id,
+        )
+        db.session.add(pending)
+        db.session.flush()
+        post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='reimbursement', reference_id=reimbursement.id)
+
         db.session.commit()
         
         return jsonify({
@@ -823,6 +948,7 @@ def pay_reimbursement(reimbursement_id):
 
 @expense_bp.route('/dashboard', methods=['GET'])
 @jwt_required()
+@require_permission('expense.view')
 def get_expense_dashboard():
     """Get expense dashboard summary"""
     try:
@@ -880,3 +1006,42 @@ def get_expense_dashboard():
         
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@expense_bp.route('/reimbursements/<int:reimbursement_id>', methods=['GET'])
+@jwt_required()
+@require_permission('expense.view')
+def get_reimbursement_detail(reimbursement_id):
+    """
+    Single-record detail for a Reimbursement, powering both a standalone
+    detail page and the account-drill-down link (reference_type=
+    'reimbursement' in AccountingManagement.tsx's getReferenceLink()).
+    """
+    try:
+        reimbursement = Reimbursement.query.get_or_404(reimbursement_id)
+
+        return jsonify({
+            'id': reimbursement.id,
+            'reimbursement_number': reimbursement.reimbursement_number,
+            'employee_name': reimbursement.employee_name,
+            'total_amount': float(reimbursement.total_amount or 0),
+            'currency': reimbursement.currency,
+            'payment_method': reimbursement.payment_method,
+            'bank_account_number': reimbursement.bank_account_number,
+            'bank_account_name': reimbursement.bank_account_name,
+            'bank_name': reimbursement.bank_name,
+            'status': reimbursement.status,
+            'submitted_at': reimbursement.submitted_at.isoformat() if reimbursement.submitted_at else None,
+            'approved_at': reimbursement.approved_at.isoformat() if reimbursement.approved_at else None,
+            'expenses': [{
+                'id': exp.id,
+                'expense_number': exp.expense_number,
+                'expense_date': exp.expense_date.isoformat() if exp.expense_date else None,
+                'expense_category': exp.expense_category,
+                'description': exp.description,
+                'amount': float(exp.amount or 0),
+            } for exp in reimbursement.expenses],
+        }), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

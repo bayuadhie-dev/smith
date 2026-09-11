@@ -12,14 +12,17 @@ import {
   PlusIcon,
   TrashIcon
 } from '@heroicons/react/24/outline';
+import ChartOfAccounts from './ChartOfAccounts';
 
 interface Account {
   id: number;
-  account_code: string;
-  account_name: string;
-  account_type: string;
+  code: string;
+  name: string;
+  type: string;
   balance: number;
-  parent_id?: number;
+  is_header?: boolean;
+  is_active?: boolean;
+  description?: string;
 }
 
 interface JournalEntry {
@@ -27,31 +30,31 @@ interface JournalEntry {
   entry_number: string;
   entry_date: string;
   description: string;
+  reference_number: string | null;
+  reference_type: string | null;
   total_debit: number;
   total_credit: number;
   status: string;
   created_by: string;
 }
 
-const AccountingManagement: React.FC = () => {
+interface AccountingManagementProps {
+  initialTab?: 'accounts' | 'journal';
+  title?: string;
+}
+
+const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab = 'accounts', title = 'Accounting' }) => {
   const { t } = useLanguage();
 
-  const [activeTab, setActiveTab] = useState<'accounts' | 'journal'>('accounts');
+  const [activeTab, setActiveTab] = useState<'accounts' | 'journal'>(initialTab);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
-  const [showAddAccountModal, setShowAddAccountModal] = useState(false);
+  const [journalDetail, setJournalDetail] = useState<any | null>(null);
+  const [loadingJournalDetail, setLoadingJournalDetail] = useState(false);
   const [showAddJournalModal, setShowAddJournalModal] = useState(false);
-  const [accountFormData, setAccountFormData] = useState({
-    account_code: '',
-    account_name: '',
-    account_type: '',
-    parent_id: null as number | null,
-    description: '',
-    is_active: true
-  });
   const [journalFormData, setJournalFormData] = useState({
     entry_date: new Date().toISOString().split('T')[0],
     description: '',
@@ -71,7 +74,7 @@ const AccountingManagement: React.FC = () => {
       setLoading(true);
       
       if (activeTab === 'accounts') {
-        const response = await axiosInstance.get('/api/finance/accounting/chart-of-accounts');
+        const response = await axiosInstance.get('/api/finance/chart-of-accounts');
         setAccounts(response.data?.accounts || []);
       } else {
         const response = await axiosInstance.get('/api/finance/accounting/journal-entries');
@@ -79,68 +82,13 @@ const AccountingManagement: React.FC = () => {
       }
     } catch (error) {
       console.error('Failed to load data:', error);
-      // Mock data fallback
+      // No mock fallback - showing fake data on API failure risks being
+      // mistaken for real figures. Leave the list empty; the empty-state
+      // UI (if any) or a toast should communicate the failure honestly.
       if (activeTab === 'accounts') {
-        setAccounts([
-          { id: 1, account_code: '1000', account_name: 'Cash and Cash Equivalents', account_type: 'Asset', balance: 45000000000 },
-          { id: 2, account_code: '1100', account_name: 'Accounts Receivable', account_type: 'Asset', balance: 18500000000 },
-          { id: 3, account_code: '1200', account_name: 'Inventory', account_type: 'Asset', balance: 25000000000 },
-          { id: 4, account_code: '1300', account_name: 'Prepaid Expenses', account_type: 'Asset', balance: 2500000000 },
-          { id: 5, account_code: '1500', account_name: 'Property, Plant & Equipment', account_type: 'Asset', balance: 85000000000 },
-          { id: 6, account_code: '2000', account_name: 'Accounts Payable', account_type: 'Liability', balance: 12300000000 },
-          { id: 7, account_code: '2100', account_name: 'Short-term Debt', account_type: 'Liability', balance: 8500000000 },
-          { id: 8, account_code: '2500', account_name: 'Long-term Debt', account_type: 'Liability', balance: 35000000000 },
-          { id: 9, account_code: '3000', account_name: 'Share Capital', account_type: 'Equity', balance: 50000000000 },
-          { id: 10, account_code: '3100', account_name: 'Retained Earnings', account_type: 'Equity', balance: 75000000000 },
-          { id: 11, account_code: '4000', account_name: 'Sales Revenue', account_type: 'Revenue', balance: 125000000000 },
-          { id: 12, account_code: '4100', account_name: 'Other Income', account_type: 'Revenue', balance: 2500000000 },
-          { id: 13, account_code: '5000', account_name: 'Cost of Goods Sold', account_type: 'Expense', balance: 75000000000 },
-          { id: 14, account_code: '6000', account_name: 'Operating Expenses', account_type: 'Expense', balance: 20000000000 },
-          { id: 15, account_code: '6100', account_name: 'Depreciation Expense', account_type: 'Expense', balance: 3500000000 }
-        ]);
+        setAccounts([]);
       } else {
-        setJournalEntries([
-          {
-            id: 1,
-            entry_number: 'JE-001',
-            entry_date: '2024-01-15',
-            description: 'Sales revenue recognition',
-            total_debit: 15000000000,
-            total_credit: 15000000000,
-            status: 'posted',
-            created_by: 'Finance Manager'
-          },
-          {
-            id: 2,
-            entry_number: 'JE-002',
-            entry_date: '2024-01-16',
-            description: 'Raw material purchase',
-            total_debit: 8500000000,
-            total_credit: 8500000000,
-            status: 'posted',
-            created_by: 'Accounting Staff'
-          },
-          {
-            id: 3,
-            entry_number: 'JE-003',
-            entry_date: '2024-01-17',
-            description: 'Salary payment',
-            total_debit: 5200000000,
-            total_credit: 5200000000,
-            status: 'posted',
-            created_by: 'HR Manager'
-          },
-          {
-            id: 4,
-            entry_number: 'JE-004',
-            entry_date: '2024-01-18',
-            description: 'Equipment depreciation',
-            total_debit: 850000000,
-            total_credit: 850000000,
-            status: 'draft',
-            created_by: 'Accounting Staff'
-          }
-        ]);
+        setJournalEntries([]);
       }
     } finally {
       setLoading(false);
@@ -155,16 +103,20 @@ const AccountingManagement: React.FC = () => {
     }).format(amount);
   };
 
-  const handleCloseAccountModal = () => {
-    setShowAddAccountModal(false);
-    setAccountFormData({
-      account_code: '',
-      account_name: '',
-      account_type: '',
-      parent_id: null,
-      description: '',
-      is_active: true
-    });
+  const handleOpenJournalDetail = async (referenceNumber: string) => {
+    setLoadingJournalDetail(true);
+    try {
+      const response = await axiosInstance.get(`/api/finance/accounting/journal-entries/${referenceNumber}`);
+      setJournalDetail(response.data);
+    } catch (error) {
+      console.error('Failed to load journal entry detail:', error);
+    } finally {
+      setLoadingJournalDetail(false);
+    }
+  };
+
+  const handleCloseJournalDetail = () => {
+    setJournalDetail(null);
   };
 
   const handleCloseJournalModal = () => {
@@ -180,16 +132,19 @@ const AccountingManagement: React.FC = () => {
     });
   };
 
-  const handleSubmitAccount = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await axiosInstance.post('/api/finance/accounting/chart-of-accounts', accountFormData);
-      alert('Account created successfully!');
-      handleCloseAccountModal();
-      loadData();
-    } catch (error: any) {
-      console.error('Error creating account:', error);
-      alert(error.response?.data?.error || 'Failed to create account. Please try again.');
+  const handleDeleteJournal = async (entry: JournalEntry) => {
+    if (window.confirm(`Hapus jurnal manual ini?\n\nTanggal: ${new Date(entry.entry_date).toLocaleDateString('id-ID')}\nDeskripsi: ${entry.description}\n\nSemua baris dalam jurnal ini (debit dan kredit) akan ikut terhapus.`)) {
+      try {
+        // Reuses the same DELETE endpoint GeneralLedger.tsx uses (both
+        // pages show the same AccountingEntry data, just grouped
+        // differently) - built 2026-08-17, only allows deleting
+        // reference_type=='manual_journal' entries.
+        await axiosInstance.delete(`/api/finance/general-ledger/${entry.id}`);
+        loadData();
+      } catch (error: any) {
+        console.error('Error deleting journal entry:', error);
+        alert(error.response?.data?.error || 'Gagal menghapus jurnal. Silakan coba lagi.');
+      }
     }
   };
 
@@ -206,7 +161,14 @@ const AccountingManagement: React.FC = () => {
     }
 
     try {
-      await axiosInstance.post('/api/finance/accounting/journal-entries', journalFormData);
+      // FIX 2026-08-17: POST /finance/accounting/journal-entries never
+      // existed in the backend (only GET list + GET detail did) - this
+      // form's onSubmit always 404'd. Reusing POST /finance/general-ledger
+      // instead (built the same session, same AccountingEntry data, same
+      // {account_id, debit, credit, description} line shape this form
+      // already produces) rather than building a second near-duplicate
+      // endpoint for the same underlying table.
+      await axiosInstance.post('/api/finance/general-ledger', journalFormData);
       alert('Journal entry created successfully!');
       handleCloseJournalModal();
       loadData();
@@ -237,12 +199,12 @@ const AccountingManagement: React.FC = () => {
   };
 
   const getAccountTypeColor = (type: string) => {
-    switch (type) {
-      case 'Asset': return 'bg-blue-100 text-blue-800';
-      case 'Liability': return 'bg-red-100 text-red-800';
-      case 'Equity': return 'bg-green-100 text-green-800';
-      case 'Revenue': return 'bg-purple-100 text-purple-800';
-      case 'Expense': return 'bg-orange-100 text-orange-800';
+    switch (type.toLowerCase()) {
+      case 'asset': return 'bg-blue-100 text-blue-800';
+      case 'liability': return 'bg-red-100 text-red-800';
+      case 'equity': return 'bg-green-100 text-green-800';
+      case 'revenue': return 'bg-purple-100 text-purple-800';
+      case 'expense': return 'bg-orange-100 text-orange-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -257,15 +219,15 @@ const AccountingManagement: React.FC = () => {
   };
 
   const filteredAccounts = accounts.filter(account => {
-    const matchesSearch = account.account_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         account.account_code.includes(searchTerm);
-    const matchesFilter = filterType === 'all' || account.account_type === filterType;
+    const matchesSearch = (account.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (account.code || '').includes(searchTerm);
+    const matchesFilter = filterType === 'all' || account.type === filterType;
     return matchesSearch && matchesFilter;
   });
 
   const filteredJournalEntries = journalEntries.filter(entry => {
-    const matchesSearch = entry.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         entry.entry_number.includes(searchTerm);
+    const matchesSearch = (entry.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (entry.entry_number || '').includes(searchTerm);
     const matchesFilter = filterType === 'all' || entry.status === filterType;
     return matchesSearch && matchesFilter;
   });
@@ -281,31 +243,29 @@ const AccountingManagement: React.FC = () => {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
+      {/* Header - accounts tab gets its own full header from the embedded ChartOfAccounts */}
+      {activeTab === 'journal' && (
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Accounting Management</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{title}</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Manage chart of accounts and journal entries</p>
         </div>
-        <div className="flex space-x-3">
-          <button className="btn-secondary">
-            <ArrowPathIcon className="h-4 w-4 mr-2" />
-          </button>
-          <button 
-            onClick={() => {
-              if (activeTab === 'accounts') {
-                setShowAddAccountModal(true)
-              } else {
-                setShowAddJournalModal(true)
-              }
-            }}
-            className="btn-primary"
-          >
-            <PlusIcon className="h-4 w-4 mr-2" />
-            {activeTab === 'accounts' ? 'Add Account' : 'New Entry'}
-          </button>
-        </div>
+        {activeTab === 'journal' && (
+          <div className="flex space-x-3">
+            <button className="btn-secondary">
+              <ArrowPathIcon className="h-4 w-4 mr-2" />
+            </button>
+            <button
+              onClick={() => setShowAddJournalModal(true)}
+              className="btn-primary"
+            >
+              <PlusIcon className="h-4 w-4 mr-2" />
+              New Entry
+            </button>
+          </div>
+        )}
       </div>
+      )}
 
       {/* Tabs */}
       <div className="border-b border-gray-200 dark:border-gray-700">
@@ -335,107 +295,41 @@ const AccountingManagement: React.FC = () => {
         </nav>
       </div>
 
-      {/* Search and FunnelIcon */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-1">
-          <div className="relative">
-            <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder={`Search ${activeTab === 'accounts' ? 'accounts' : 'journal entries'}...`}
-              className="pl-10 pr-4 py-2 w-full border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+      {/* Search and FunnelIcon - journal tab only; accounts tab has its own inside ChartOfAccounts */}
+      {activeTab === 'journal' && (
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1">
+            <div className="relative">
+              <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search journal entries..."
+                className="pl-10 pr-4 py-2 w-full border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <FunnelIcon className="h-5 w-5 text-gray-400" />
+            <select
+              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+            >
+              <option value="all">All {t('common.status')}</option>
+              <option value="posted">Posted</option>
+              <option value="draft">Draft</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
           </div>
         </div>
-        <div className="flex items-center space-x-2">
-          <FunnelIcon className="h-5 w-5 text-gray-400" />
-          <select
-            className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-          >
-            <option value="all">All {activeTab === 'accounts' ? 'Types' : t('common.status')}</option>
-            {activeTab === 'accounts' ? (
-              <>
-                <option value="Asset">Asset</option>
-                <option value="Liability">Liability</option>
-                <option value="Equity">Equity</option>
-                <option value="Revenue">Revenue</option>
-                <option value="Expense">Expense</option>
-              </>
-            ) : (
-              <>
-                <option value="posted">Posted</option>
-                <option value="draft">Draft</option>
-                <option value="cancelled">Cancelled</option>
-              </>
-            )}
-          </select>
-        </div>
-      </div>
+      )}
 
       {/* Content */}
       {activeTab === 'accounts' ? (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-900">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Account Code
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Account Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                </th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredAccounts.map((account) => (
-                <tr key={account.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                    {account.account_code}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    {account.account_name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getAccountTypeColor(account.account_type)}`}>
-                      {account.account_type}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white text-right font-medium">
-                    {formatRupiah(account.balance)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                    <div className="flex justify-center space-x-2">
-                      <button className="text-blue-600 hover:text-blue-900">
-                        <EyeIcon className="h-4 w-4" />
-                      </button>
-                      <button className="text-green-600 hover:text-green-900">
-                        <PencilIcon className="h-4 w-4" />
-                      </button>
-                      <button className="text-red-600 hover:text-red-900">
-                        <TrashIcon className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          
-          {filteredAccounts.length === 0 && (
-            <div className="text-center py-8">
-              <BanknotesIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500 dark:text-gray-400">No accounts found</p>
-            </div>
-          )}
+        <div className="-m-6">
+          <ChartOfAccounts />
         </div>
       ) : (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
@@ -480,16 +374,30 @@ const AccountingManagement: React.FC = () => {
                     {entry.created_by}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                    <div className="flex justify-center space-x-2">
-                      <button className="text-blue-600 hover:text-blue-900">
+                    <div className="flex justify-center items-center space-x-2">
+                      <button
+                        onClick={() => handleOpenJournalDetail(entry.entry_number)}
+                        className="text-blue-600 hover:text-blue-900"
+                        title="Lihat detail"
+                      >
                         <EyeIcon className="h-4 w-4" />
                       </button>
-                      <button className="text-green-600 hover:text-green-900">
-                        <PencilIcon className="h-4 w-4" />
-                      </button>
-                      <button className="text-red-600 hover:text-red-900">
-                        <TrashIcon className="h-4 w-4" />
-                      </button>
+                      {entry.reference_type === 'manual_journal' ? (
+                        <button
+                          onClick={() => handleDeleteJournal(entry)}
+                          className="text-red-600 hover:text-red-900"
+                          title="Hapus jurnal manual ini"
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                        </button>
+                      ) : (
+                        <span
+                          className="text-gray-400 text-xs italic"
+                          title="Jurnal otomatis dari transaksi lain - koreksi lewat sumbernya, bukan dari sini"
+                        >
+                          Otomatis
+                        </span>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -516,7 +424,7 @@ const AccountingManagement: React.FC = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Assets</p>
               <p className="text-xl font-bold text-gray-900 dark:text-white">
-                {formatRupiah(accounts.filter(a => a.account_type === 'Asset').reduce((sum, a) => sum + a.balance, 0))}
+                {formatRupiah(accounts.filter(a => a.type === 'asset').reduce((sum, a) => sum + a.balance, 0))}
               </p>
             </div>
           </div>
@@ -530,7 +438,7 @@ const AccountingManagement: React.FC = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Liabilities</p>
               <p className="text-xl font-bold text-gray-900 dark:text-white">
-                {formatRupiah(accounts.filter(a => a.account_type === 'Liability').reduce((sum, a) => sum + a.balance, 0))}
+                {formatRupiah(accounts.filter(a => a.type === 'liability').reduce((sum, a) => sum + a.balance, 0))}
               </p>
             </div>
           </div>
@@ -544,7 +452,7 @@ const AccountingManagement: React.FC = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Equity</p>
               <p className="text-xl font-bold text-gray-900 dark:text-white">
-                {formatRupiah(accounts.filter(a => a.account_type === 'Equity').reduce((sum, a) => sum + a.balance, 0))}
+                {formatRupiah(accounts.filter(a => a.type === 'equity').reduce((sum, a) => sum + a.balance, 0))}
               </p>
             </div>
           </div>
@@ -564,132 +472,88 @@ const AccountingManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* Add Account Modal */}
-      {showAddAccountModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Add New Account</h3>
-              <button 
-                onClick={handleCloseAccountModal}
+      {(journalDetail || loadingJournalDetail) && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[60]">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                {journalDetail ? journalDetail.reference_number : 'Memuat...'}
+              </h3>
+              <button
+                onClick={handleCloseJournalDetail}
                 className="text-gray-400 hover:text-gray-600 dark:text-gray-300 text-2xl"
               >
-                ✕
+                &times;
               </button>
             </div>
-            
-            <form onSubmit={handleSubmitAccount} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                    Account Code *
-                  </label>
-                  <input 
-                    type="text" 
-                    className="input w-full" 
-                    value={accountFormData.account_code}
-                    onChange={(e) => setAccountFormData({...accountFormData, account_code: e.target.value})}
-                    placeholder="e.g., 1010"
-                    required 
-                  />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Unique account identifier</p>
+
+            {loadingJournalDetail ? (
+              <div className="text-gray-500 text-sm py-8 text-center">Memuat...</div>
+            ) : journalDetail && (
+              <>
+                <div className="grid grid-cols-2 gap-3 text-sm mb-4 bg-gray-50 dark:bg-gray-900 rounded-md p-4">
+                  <div>
+                    <div className="text-gray-500 dark:text-gray-400">Tanggal</div>
+                    <div className="font-medium text-gray-900 dark:text-white">
+                      {journalDetail.entry_date
+                        ? new Date(journalDetail.entry_date).toLocaleDateString('id-ID')
+                        : '-'}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-gray-500 dark:text-gray-400">Status</div>
+                    <div className="font-medium text-gray-900 dark:text-white">{journalDetail.status}</div>
+                  </div>
+                  <div className="col-span-2">
+                    <div className="text-gray-500 dark:text-gray-400">Deskripsi</div>
+                    <div className="font-medium text-gray-900 dark:text-white">{journalDetail.description}</div>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                    Account Type *
-                  </label>
-                  <select 
-                    className="input w-full"
-                    value={accountFormData.account_type}
-                    onChange={(e) => setAccountFormData({...accountFormData, account_type: e.target.value})}
-                    required
-                  >
-                    <option value="">Select type</option>
-                    <option value="Asset">Asset</option>
-                    <option value="Liability">Liability</option>
-                    <option value="Equity">Equity</option>
-                    <option value="Revenue">Revenue</option>
-                    <option value="Expense">Expense</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Account Name *
-                </label>
-                <input 
-                  type="text" 
-                  className="input w-full" 
-                  value={accountFormData.account_name}
-                  onChange={(e) => setAccountFormData({...accountFormData, account_name: e.target.value})}
-                  placeholder="e.g., Cash in Bank"
-                  required 
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Parent Account
-                </label>
-                <select 
-                  className="input w-full"
-                  value={accountFormData.parent_id || ''}
-                  onChange={(e) => setAccountFormData({...accountFormData, parent_id: e.target.value ? parseInt(e.target.value) : null})}
-                >
-                  <option value="">None (Top Level Account)</option>
-                  {accounts.filter(a => !a.parent_id).map(account => (
-                    <option key={account.id} value={account.id}>
-                      {account.account_code} - {account.account_name}
-                    </option>
-                  ))}
-                </select>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Optional: Select parent for sub-account</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Description
-                </label>
-                <textarea 
-                  className="input w-full" 
-                  rows={3}
-                  value={accountFormData.description}
-                  onChange={(e) => setAccountFormData({...accountFormData, description: e.target.value})}
-                  placeholder="Account purpose and usage notes..."
-                />
-              </div>
-
-              <div className="flex items-center">
-                <input 
-                  type="checkbox" 
-                  id="is_active"
-                  checked={accountFormData.is_active}
-                  onChange={(e) => setAccountFormData({...accountFormData, is_active: e.target.checked})}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded"
-                />
-                <label htmlFor="is_active" className="ml-2 block text-sm text-gray-900 dark:text-white">
-                  Active Account
-                </label>
-              </div>
-
-              <div className="flex justify-end gap-4 pt-4 border-t">
-                <button 
-                  type="button"
-                  onClick={handleCloseAccountModal}
-                  className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
-                >
-                  {t('common.cancel')}
-                </button>
-                <button 
-                  type="submit" 
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                >
-                  Create Account
-                </button>
-              </div>
-            </form>
+                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                  Rincian Baris Jurnal
+                </h4>
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                      <th className="py-2">No. Baris</th>
+                      <th className="py-2">Akun</th>
+                      <th className="py-2 text-right">Debit</th>
+                      <th className="py-2 text-right">Kredit</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {journalDetail.lines.map((line: any) => (
+                      <tr key={line.id} className="border-b border-gray-100 dark:border-gray-800">
+                        <td className="py-2 font-mono text-xs">{line.entry_number}</td>
+                        <td className="py-2">
+                          {line.account_code} - {line.account_name}
+                        </td>
+                        <td className="py-2 text-right">
+                          {line.debit_amount > 0 ? `Rp${line.debit_amount.toLocaleString('id-ID')}` : '-'}
+                        </td>
+                        <td className="py-2 text-right">
+                          {line.credit_amount > 0 ? `Rp${line.credit_amount.toLocaleString('id-ID')}` : '-'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr className="font-semibold text-gray-900 dark:text-white border-t-2 border-gray-300 dark:border-gray-600">
+                      <td className="py-2" colSpan={2}>
+                        Total
+                      </td>
+                      <td className="py-2 text-right">
+                        Rp{journalDetail.total_debit.toLocaleString('id-ID')}
+                      </td>
+                      <td className="py-2 text-right">
+                        Rp{journalDetail.total_credit.toLocaleString('id-ID')}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -781,7 +645,7 @@ const AccountingManagement: React.FC = () => {
                             <option value="">Select account</option>
                             {accounts.map(account => (
                               <option key={account.id} value={account.id}>
-                                {account.account_code} - {account.account_name}
+                                {account.code} - {account.name}
                               </option>
                             ))}
                           </select>

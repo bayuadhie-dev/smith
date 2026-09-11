@@ -124,7 +124,7 @@ const [payables, setPayables] = useState<AccountPayable[]>([])
   const handleDeletePayable = async (payable: AccountPayable) => {
     if (window.confirm(`Are you sure you want to delete invoice ${payable.invoice_number} from ${payable.supplier_name}?`)) {
       try {
-        await axiosInstance.delete(`/api/finance/accounts-payable/${payable.id}`)
+        await axiosInstance.delete(`/api/finance/invoices/${payable.id}`)
         alert(`Invoice ${payable.invoice_number} has been deleted successfully.`)
         loadPayables() // Reload the list
       } catch (error) {
@@ -143,7 +143,7 @@ const [payables, setPayables] = useState<AccountPayable[]>([])
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">💳 Accounts Payable</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Accounts Payable</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Manage supplier outstanding balances and payment schedules</p>
         </div>
         <div className="flex gap-3">

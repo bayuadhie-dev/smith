@@ -173,7 +173,7 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">🧾 Tax Management</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Manajemen Pajak</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Monitor VAT, income tax, and withholding tax obligations</p>
         </div>
         <div className="flex gap-3">

@@ -150,7 +150,7 @@ const ExpenseList: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Expenses</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Beban</h1>
           <p className="text-gray-600">Manage employee expense claims</p>
         </div>
         {hasPermission('expense.create') && (

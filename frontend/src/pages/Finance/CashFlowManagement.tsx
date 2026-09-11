@@ -29,7 +29,7 @@ interface CashFlowAnalysis {
   investing_cash_flow: number;
   financing_cash_flow: number;
   net_cash_flow: number;
-  cash_conversion_cycle: number;
+  days_sales_outstanding: number | null;
   free_cash_flow: number;
 }
 
@@ -58,33 +58,12 @@ const CashFlowManagement: React.FC = () => {
       setAnalysis(analysisRes.data?.analysis || null);
     } catch (error) {
       console.error('Failed to load cash flow data:', error);
-      // Mock data fallback
-      if (selectedPeriod === 'weekly') {
-        setForecast([
-          { period: 'Week 1', opening_balance: 45000000000, cash_in: 8500000000, cash_out: 7200000000, closing_balance: 46300000000 },
-          { period: 'Week 2', opening_balance: 46300000000, cash_in: 9200000000, cash_out: 8100000000, closing_balance: 47400000000 },
-          { period: 'Week 3', opening_balance: 47400000000, cash_in: 8800000000, cash_out: 7800000000, closing_balance: 48400000000 },
-          { period: 'Week 4', opening_balance: 48400000000, cash_in: 10500000000, cash_out: 9200000000, closing_balance: 49700000000 }
-        ]);
-      } else {
-        setForecast([
-          { period: 'Jan', opening_balance: 42000000000, cash_in: 25000000000, cash_out: 22000000000, closing_balance: 45000000000 },
-          { period: 'Feb', opening_balance: 45000000000, cash_in: 28000000000, cash_out: 24500000000, closing_balance: 48500000000 },
-          { period: 'Mar', opening_balance: 48500000000, cash_in: 26500000000, cash_out: 23800000000, closing_balance: 51200000000 },
-          { period: 'Apr', opening_balance: 51200000000, cash_in: 29500000000, cash_out: 26200000000, closing_balance: 54500000000 },
-          { period: 'May', opening_balance: 54500000000, cash_in: 31000000000, cash_out: 28500000000, closing_balance: 57000000000 },
-          { period: 'Jun', opening_balance: 57000000000, cash_in: 33500000000, cash_out: 30200000000, closing_balance: 60300000000 }
-        ]);
-      }
-
-      setAnalysis({
-        operating_cash_flow: 35000000000,
-        investing_cash_flow: -8500000000,
-        financing_cash_flow: -2500000000,
-        net_cash_flow: 24000000000,
-        cash_conversion_cycle: 45,
-        free_cash_flow: 26500000000
-      });
+      // No mock-data fallback - showing fabricated billions-of-rupiah numbers
+      // on a real API failure was indistinguishable from real data. Show an
+      // honest empty state instead; the page below already handles empty
+      // forecast/analysis gracefully.
+      setForecast([]);
+      setAnalysis(null);
     } finally {
       setLoading(false);
     }
@@ -115,7 +94,7 @@ const CashFlowManagement: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Cash Flow Management</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Arus Kas</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Cash flow tracking and forecasting</p>
         </div>
         <div className="flex space-x-3">
@@ -191,8 +170,8 @@ const CashFlowManagement: React.FC = () => {
                 <ClockIcon className="h-5 w-5 text-orange-600" />
               </div>
               <div className="ml-3">
-                <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Cash Cycle</p>
-                <p className="text-lg font-bold text-gray-900 dark:text-white">{analysis.cash_conversion_cycle} days</p>
+                <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Days Sales Outstanding</p>
+                <p className="text-lg font-bold text-gray-900 dark:text-white">{analysis.days_sales_outstanding != null ? `${analysis.days_sales_outstanding} days` : '-'}</p>
               </div>
             </div>
           </div>

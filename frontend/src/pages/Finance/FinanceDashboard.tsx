@@ -90,7 +90,9 @@ const FinanceDashboard: React.FC = () => {
       setRevenueData(revenueRes.data?.revenue || []);
     } catch (error) {
       console.error('Failed to load finance data:', error);
-      // Set minimal fallback data to prevent chart errors
+      // Show an honest empty state on API failure - no fabricated
+      // placeholder months/categories (the "No Data" pie slice used to
+      // render as a real-looking 100% chart segment).
       setKpis({
         total_revenue: 0,
         total_expenses: 0,
@@ -101,19 +103,9 @@ const FinanceDashboard: React.FC = () => {
         accounts_payable: 0,
         working_capital: 0
       });
-      setCashFlowData([
-        { month: 'Jan', cash_in: 0, cash_out: 0, net_cash_flow: 0 },
-        { month: 'Feb', cash_in: 0, cash_out: 0, net_cash_flow: 0 },
-        { month: 'Mar', cash_in: 0, cash_out: 0, net_cash_flow: 0 }
-      ]);
-      setExpenseBreakdown([
-        { category: 'No Data', amount: 1, percentage: 100 }
-      ]);
-      setRevenueData([
-        { month: 'Jan', revenue: 0, profit: 0, expenses: 0 },
-        { month: 'Feb', revenue: 0, profit: 0, expenses: 0 },
-        { month: 'Mar', revenue: 0, profit: 0, expenses: 0 }
-      ]);
+      setCashFlowData([]);
+      setExpenseBreakdown([]);
+      setRevenueData([]);
     } finally {
       setLoading(false);
     }
@@ -139,7 +131,7 @@ const FinanceDashboard: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Finance Dashboard</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard Keuangan</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Financial overview and key performance indicators</p>
         </div>
       </div>

@@ -15,10 +15,10 @@ import {
 
 interface CashAccount {
   id: number
-  account_name: string
-  account_number: string
+  code: string
+  name: string
+  account_type: string
   balance: number
-  currency: string
 }
 
 const CashBankManagement = () => {
@@ -120,7 +120,7 @@ const [cashAccounts, setCashAccounts] = useState<CashAccount[]>([])
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Bank Accounts</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {cashAccounts.filter(acc => acc.account_name.toLowerCase().includes('bank')).length}
+                {cashAccounts.filter(acc => acc.name.toLowerCase().includes('bank')).length}
               </p>
             </div>
           </div>
@@ -134,7 +134,7 @@ const [cashAccounts, setCashAccounts] = useState<CashAccount[]>([])
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Cash Accounts</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {cashAccounts.filter(acc => acc.account_name.toLowerCase().includes('cash')).length}
+                {cashAccounts.filter(acc => acc.name.toLowerCase().includes('cash')).length}
               </p>
             </div>
           </div>
@@ -164,11 +164,11 @@ const [cashAccounts, setCashAccounts] = useState<CashAccount[]>([])
               <div className="flex items-start justify-between">
                 <div className="flex items-center">
                   <div className="text-4xl mr-4">
-                    {getAccountTypeIcon(account.account_name)}
+                    {getAccountTypeIcon(account.name)}
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{account.account_name}</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Account: {account.account_number}</p>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{account.name}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Kode: {account.code}</p>
                     <div className="mt-2">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${health.bg} ${health.color}`}>
                         {health.status.charAt(0).toUpperCase() + health.status.slice(1)}
@@ -180,7 +180,7 @@ const [cashAccounts, setCashAccounts] = useState<CashAccount[]>([])
                   <p className={`text-2xl font-bold ${health.color}`}>
                     {formatRupiah(account.balance)}
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{account.currency}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{account.account_type}</p>
                 </div>
               </div>
 
@@ -265,7 +265,7 @@ const [cashAccounts, setCashAccounts] = useState<CashAccount[]>([])
                   <option value="">Select account</option>
                   {cashAccounts.map((account) => (
                     <option key={account.id} value={account.id}>
-                      {account.account_name} - {formatRupiah(account.balance)}
+                      {account.name} - {formatRupiah(account.balance)}
                     </option>
                   ))}
                 </select>
@@ -279,7 +279,7 @@ const [cashAccounts, setCashAccounts] = useState<CashAccount[]>([])
                   <option value="">Select account</option>
                   {cashAccounts.map((account) => (
                     <option key={account.id} value={account.id}>
-                      {account.account_name} - {formatRupiah(account.balance)}
+                      {account.name} - {formatRupiah(account.balance)}
                     </option>
                   ))}
                 </select>

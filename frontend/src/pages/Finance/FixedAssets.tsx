@@ -42,6 +42,9 @@ const [assets, setAssets] = useState<FixedAsset[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
   const [showAddModal, setShowAddModal] = useState(false)
+  const [disposalTarget, setDisposalTarget] = useState<FixedAsset | null>(null)
+  const [disposalAmount, setDisposalAmount] = useState('')
+  const [disposalNotes, setDisposalNotes] = useState('')
 
   useEffect(() => {
     loadAssets()
@@ -192,7 +195,12 @@ const [assets, setAssets] = useState<FixedAsset[]>([])
     e.preventDefault()
     try {
       if (editingAsset) {
-        await axiosInstance.put(`/api/finance/fixed-assets/${editingAsset.id}`, formData)
+        // acquisition_cost/acquisition_date are locked once an asset exists -
+        // backend rejects them on PUT (would desync recorded value from any
+        // GL postings already made). Strip them here so editing other fields
+        // doesn't fail just because the shared form state still carries them.
+        const { acquisition_cost, acquisition_date, ...editableData } = formData
+        await axiosInstance.put(`/api/finance/fixed-assets/${editingAsset.id}`, editableData)
         alert('Fixed asset updated successfully!')
       } else {
         await axiosInstance.post('/api/finance/fixed-assets', formData)
@@ -206,16 +214,30 @@ const [assets, setAssets] = useState<FixedAsset[]>([])
     }
   }
 
-  const handleDeleteAsset = async (asset: FixedAsset) => {
-    if (window.confirm(`Are you sure you want to delete this fixed asset?\n\nName: ${asset.asset_name}\nCode: ${asset.asset_code}\nCategory: ${asset.category}\nNet Book Value: ${formatRupiah(asset.net_book_value)}\n\nThis action cannot be undone.`)) {
-      try {
-        await axiosInstance.delete(`/api/finance/fixed-assets/${asset.id}`)
-        alert(`Fixed asset "${asset.asset_name}" has been deleted successfully.`)
-        loadAssets() // Reload the assets
-      } catch (error) {
-        console.error('Error deleting fixed asset:', error)
-        alert('Failed to delete fixed asset. Please try again.')
-      }
+  const handleDeleteAsset = (asset: FixedAsset) => {
+    // Opens the disposal form instead of a bare confirm() - the backend now
+    // posts a real GL journal (accumulated depreciation + gain/loss) on
+    // disposal, so we need a real disposal_amount from the user, not a guess.
+    setDisposalTarget(asset)
+    setDisposalAmount('')
+    setDisposalNotes('')
+  }
+
+  const handleConfirmDisposal = async () => {
+    if (!disposalTarget) return
+    try {
+      await axiosInstance.delete(`/api/finance/fixed-assets/${disposalTarget.id}`, {
+        data: {
+          disposal_amount: disposalAmount ? parseFloat(disposalAmount) : 0,
+          disposal_notes: disposalNotes || 'Dihapus dari halaman Fixed Assets',
+        }
+      })
+      alert(`Fixed asset "${disposalTarget.asset_name}" has been marked as disposed.`)
+      setDisposalTarget(null)
+      loadAssets()
+    } catch (error: any) {
+      console.error('Error disposing fixed asset:', error)
+      alert(error.response?.data?.error || 'Failed to dispose fixed asset. Please try again.')
     }
   }
 
@@ -228,7 +250,7 @@ const [assets, setAssets] = useState<FixedAsset[]>([])
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">🏢 Fixed Assets</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Fixed Assets</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Manage asset depreciation and lifecycle tracking</p>
         </div>
         <div className="flex gap-3">
@@ -529,6 +551,7 @@ const [assets, setAssets] = useState<FixedAsset[]>([])
                     value={formData.acquisition_cost}
                     onChange={(e) => setFormData({...formData, acquisition_cost: parseFloat(e.target.value) || 0})}
                     step="0.01"
+                    min="0.01"
                     required
                   />
                 </div>
@@ -623,6 +646,61 @@ const [assets, setAssets] = useState<FixedAsset[]>([])
           <BuildingOfficeIcon className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No fixed assets found</h3>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Start by adding your first fixed asset</p>
+        </div>
+      )}
+
+      {disposalTarget && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Dispose Aset</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+              {disposalTarget.asset_name} ({disposalTarget.asset_code})<br />
+              Net Book Value: {formatRupiah(disposalTarget.net_book_value)}
+            </p>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Hasil Pelepasan / Penjualan (Rp)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={disposalAmount}
+                  onChange={(e) => setDisposalAmount(e.target.value)}
+                  placeholder="0 jika tidak ada penjualan (aset rusak/dibuang)"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Catatan</label>
+                <input
+                  type="text"
+                  value={disposalNotes}
+                  onChange={(e) => setDisposalNotes(e.target.value)}
+                  placeholder="Alasan pelepasan aset"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Sistem akan otomatis membuat jurnal: hapus akumulasi penyusutan, hapus nilai perolehan aset, catat kas masuk (jika ada), dan catat laba/rugi pelepasan.
+              </p>
+            </div>
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={() => setDisposalTarget(null)}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleConfirmDisposal}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              >
+                Tandai Disposed
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

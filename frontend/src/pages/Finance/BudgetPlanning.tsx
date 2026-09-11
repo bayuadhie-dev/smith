@@ -54,6 +54,10 @@ const BudgetPlanning: React.FC = () => {
     description: '',
     status: 'draft'
   });
+  const [accounts, setAccounts] = useState<{id: number; code: string; name: string}[]>([]);
+  const [budgetLines, setBudgetLines] = useState<{account_id: string; budget_amount: number; notes: string}[]>([
+    { account_id: '', budget_amount: 0, notes: '' }
+  ]);
 
   useEffect(() => {
     loadBudgetData();
@@ -63,57 +67,23 @@ const BudgetPlanning: React.FC = () => {
     try {
       setLoading(true);
       
-      const [budgetsRes, varianceRes] = await Promise.all([
+      const [budgetsRes, varianceRes, accountsRes] = await Promise.all([
         axiosInstance.get('/api/finance/budget/budgets'),
-        axiosInstance.get('/api/finance/budget/variance-analysis')
+        axiosInstance.get('/api/finance/budget/variance-analysis'),
+        axiosInstance.get('/api/finance/chart-of-accounts')
       ]);
+      const accountList = (accountsRes.data.accounts || accountsRes.data || []).filter((a: any) => !a.is_header);
+      setAccounts(accountList);
 
       setBudgets(budgetsRes.data?.budgets || []);
       setVarianceAnalysis(varianceRes.data?.analysis || []);
     } catch (error) {
       console.error('Failed to load budget data:', error);
-      // Mock data fallback
-      setBudgets([
-        {
-          id: 1,
-          budget_name: 'Annual Budget 2024',
-          budget_period: '2024',
-          total_budget: 150000000000,
-          total_actual: 125000000000,
-          variance: -25000000000,
-          variance_percent: -16.7,
-          status: 'active'
-        },
-        {
-          id: 2,
-          budget_name: 'Q4 2024 Budget',
-          budget_period: 'Q4 2024',
-          total_budget: 40000000000,
-          total_actual: 38500000000,
-          variance: -1500000000,
-          variance_percent: -3.8,
-          status: 'active'
-        },
-        {
-          id: 3,
-          budget_name: 'Marketing Budget 2024',
-          budget_period: '2024',
-          total_budget: 12000000000,
-          total_actual: 8500000000,
-          variance: -3500000000,
-          variance_percent: -29.2,
-          status: 'active'
-        }
-      ]);
-
-      setVarianceAnalysis([
-        { category: 'Revenue', budget: 150000000000, actual: 125000000000, variance: -25000000000, variance_percent: -16.7 },
-        { category: 'Raw Materials', budget: 45000000000, actual: 35000000000, variance: -10000000000, variance_percent: -22.2 },
-        { category: 'Labor Costs', budget: 30000000000, actual: 28000000000, variance: -2000000000, variance_percent: -6.7 },
-        { category: 'Manufacturing', budget: 18000000000, actual: 15000000000, variance: -3000000000, variance_percent: -16.7 },
-        { category: 'Marketing', budget: 10000000000, actual: 8500000000, variance: -1500000000, variance_percent: -15.0 },
-        { category: 'Administration', budget: 7000000000, actual: 5200000000, variance: -1800000000, variance_percent: -25.7 }
-      ]);
+      // Show an honest empty state on API failure - this used to inject
+      // fabricated multi-billion-rupiah budgets/variances indistinguishable
+      // from real data.
+      setBudgets([]);
+      setVarianceAnalysis([]);
     } finally {
       setLoading(false);
     }
@@ -155,8 +125,13 @@ const BudgetPlanning: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const validLines = budgetLines.filter(l => l.account_id && l.budget_amount > 0);
+    if (validLines.length === 0) {
+      alert('Tambahkan minimal 1 baris akun dengan nominal anggaran.');
+      return;
+    }
     try {
-      await axiosInstance.post('/api/finance/budget/budgets', formData);
+      await axiosInstance.post('/api/finance/budgets', { ...formData, budget_year: formData.fiscal_year, lines: validLines });
       alert('Budget created successfully!');
       handleCloseModal();
       loadBudgetData();
@@ -165,6 +140,22 @@ const BudgetPlanning: React.FC = () => {
       alert(error.response?.data?.error || 'Failed to create budget. Please try again.');
     }
   };
+
+  const addBudgetLine = () => {
+    setBudgetLines([...budgetLines, { account_id: '', budget_amount: 0, notes: '' }]);
+  };
+
+  const removeBudgetLine = (index: number) => {
+    setBudgetLines(budgetLines.filter((_, i) => i !== index));
+  };
+
+  const updateBudgetLine = (index: number, field: string, value: any) => {
+    const updated = [...budgetLines];
+    updated[index] = { ...updated[index], [field]: value };
+    setBudgetLines(updated);
+  };
+
+  const budgetLinesTotal = budgetLines.reduce((sum, l) => sum + (Number(l.budget_amount) || 0), 0);
 
   const getVarianceBgColor = (variance: number) => {
     if (variance > 0) return 'bg-green-100 text-green-800';
@@ -188,7 +179,7 @@ const BudgetPlanning: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Budget Planning</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Perencanaan Anggaran</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Budget planning and variance analysis</p>
         </div>
         <div className="flex space-x-3">
@@ -571,20 +562,55 @@ const BudgetPlanning: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Total Budget Amount (IDR) *
-                </label>
-                <input 
-                  type="number" 
-                  className="input w-full text-lg font-semibold"
-                  value={formData.total_budget}
-                  onChange={(e) => setFormData({...formData, total_budget: parseFloat(e.target.value) || 0})}
-                  step="1000000"
-                  min="0"
-                  required 
-                />
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  {formData.total_budget > 0 && formatRupiah(formData.total_budget)}
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                    Baris Anggaran per Akun *
+                  </label>
+                  <button
+                    type="button"
+                    onClick={addBudgetLine}
+                    className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                  >
+                    + Tambah Baris
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {budgetLines.map((line, idx) => (
+                    <div key={idx} className="flex gap-2 items-start">
+                      <select
+                        className="input flex-1"
+                        value={line.account_id}
+                        onChange={(e) => updateBudgetLine(idx, 'account_id', e.target.value)}
+                      >
+                        <option value="">Pilih akun</option>
+                        {accounts.map((acc) => (
+                          <option key={acc.id} value={acc.id}>
+                            {acc.code} - {acc.name}
+                          </option>
+                        ))}
+                      </select>
+                      <input
+                        type="number"
+                        className="input w-40"
+                        placeholder="Nominal"
+                        value={line.budget_amount || ''}
+                        onChange={(e) => updateBudgetLine(idx, 'budget_amount', parseFloat(e.target.value) || 0)}
+                        step="1000000"
+                        min="0"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeBudgetLine(idx)}
+                        disabled={budgetLines.length === 1}
+                        className="px-3 py-2 text-red-600 hover:text-red-800 disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 mt-2">
+                  Total: {formatRupiah(budgetLinesTotal)}
                 </p>
               </div>
 
