@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db, ResearchReport, ResearchProject, User
 from utils.i18n import success_response, error_response, get_message
 from utils import generate_number
@@ -16,6 +17,7 @@ rd_reports_bp = Blueprint('rd_reports', __name__)
 
 @rd_reports_bp.route('/', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_reports():
     """Get all research reports with filtering and pagination"""
     try:
@@ -79,6 +81,7 @@ def get_reports():
 
 @rd_reports_bp.route('/', methods=['POST'])
 @jwt_required()
+@require_permission('rd.create')
 def create_report():
     """Create new research report"""
     try:
@@ -137,6 +140,7 @@ def create_report():
 
 @rd_reports_bp.route('/<int:id>', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_report(id):
     """Get report details"""
     try:
@@ -181,6 +185,7 @@ def get_report(id):
 
 @rd_reports_bp.route('/<int:id>', methods=['PUT'])
 @jwt_required()
+@require_permission('rd.edit')
 def update_report(id):
     """Update report"""
     try:
@@ -241,6 +246,7 @@ def update_report(id):
 
 @rd_reports_bp.route('/<int:id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('rd.delete')
 def delete_report(id):
     """Delete report"""
     try:
@@ -262,6 +268,7 @@ def delete_report(id):
 
 @rd_reports_bp.route('/<int:id>/review', methods=['POST'])
 @jwt_required()
+@require_permission('rd.create')
 def review_report(id):
     """Review report"""
     try:
@@ -291,6 +298,7 @@ def review_report(id):
 
 @rd_reports_bp.route('/<int:id>/approve', methods=['POST'])
 @jwt_required()
+@require_permission('rd.create')
 def approve_report(id):
     """Approve report for publication"""
     try:
@@ -315,6 +323,7 @@ def approve_report(id):
 
 @rd_reports_bp.route('/<int:id>/submit', methods=['POST'])
 @jwt_required()
+@require_permission('rd.create')
 def submit_report(id):
     """Submit report for review"""
     try:
@@ -340,6 +349,7 @@ def submit_report(id):
 
 @rd_reports_bp.route('/analytics', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_reports_analytics():
     """Get reports analytics"""
     try:
@@ -407,6 +417,7 @@ def get_reports_analytics():
 
 @rd_reports_bp.route('/projects', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_projects_for_reports():
     """Get available projects for reports"""
     try:

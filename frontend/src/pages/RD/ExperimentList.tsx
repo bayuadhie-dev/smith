@@ -128,7 +128,7 @@ const ExperimentList: React.FC = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            {t('rd.experiments') || 'R&D Experiments'}
+            {t('rd.experiments') || 'Eksperimen R&D'}
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
             {t('rd.experiments_desc') || 'Manage research experiments and trials'}

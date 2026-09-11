@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db, ProductDevelopment, ResearchProject, Prototype, ProductTestResult, User
 from utils.i18n import success_response, error_response, get_message
 from utils import generate_number
@@ -16,6 +17,7 @@ rd_products_bp = Blueprint('rd_products', __name__)
 
 @rd_products_bp.route('/', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_product_developments():
     """Get all product developments with filtering and pagination"""
     try:
@@ -90,6 +92,7 @@ def get_product_developments():
 
 @rd_products_bp.route('/', methods=['POST'])
 @jwt_required()
+@require_permission('rd.create')
 def create_product_development():
     """Create new product development"""
     try:
@@ -146,6 +149,7 @@ def create_product_development():
 
 @rd_products_bp.route('/<int:id>', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_product_development(id):
     """Get product development details"""
     try:
@@ -212,6 +216,7 @@ def get_product_development(id):
 
 @rd_products_bp.route('/<int:id>', methods=['PUT'])
 @jwt_required()
+@require_permission('rd.edit')
 def update_product_development(id):
     """Update product development"""
     try:
@@ -283,6 +288,7 @@ def update_product_development(id):
 
 @rd_products_bp.route('/<int:id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('rd.delete')
 def delete_product_development(id):
     """Delete product development"""
     try:
@@ -305,6 +311,7 @@ def delete_product_development(id):
 
 @rd_products_bp.route('/<int:id>/approve', methods=['POST'])
 @jwt_required()
+@require_permission('rd.create')
 def approve_product_development(id):
     """Approve product development"""
     try:
@@ -332,6 +339,7 @@ def approve_product_development(id):
 
 @rd_products_bp.route('/analytics', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_product_development_analytics():
     """Get product development analytics"""
     try:
@@ -423,6 +431,7 @@ def get_product_development_analytics():
 
 @rd_products_bp.route('/<int:development_id>/convert-to-production', methods=['POST'])
 @jwt_required()
+@require_permission('rd.create')
 def convert_rd_to_production(development_id):
     """
     Convert approved R&D product to production.
@@ -561,6 +570,7 @@ def convert_rd_to_production(development_id):
 
 @rd_products_bp.route('/ready-for-production', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_rd_products_ready_for_production():
     """Get R&D products that are approved and ready to be converted to production"""
     try:

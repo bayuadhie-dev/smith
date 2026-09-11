@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db, RDMaterial, ResearchProject, Experiment, Supplier, User
 from utils.i18n import success_response, error_response, get_message
 from utils import generate_number
@@ -16,6 +17,7 @@ rd_materials_bp = Blueprint('rd_materials', __name__)
 
 @rd_materials_bp.route('/', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_materials():
     """Get all R&D materials with filtering and pagination"""
     try:
@@ -92,6 +94,7 @@ def get_materials():
 
 @rd_materials_bp.route('/', methods=['POST'])
 @jwt_required()
+@require_permission('rd.create')
 def create_material_request():
     """Create new material request"""
     try:
@@ -156,6 +159,7 @@ def create_material_request():
 
 @rd_materials_bp.route('/<int:id>', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_material(id):
     """Get material details"""
     try:
@@ -201,6 +205,7 @@ def get_material(id):
 
 @rd_materials_bp.route('/<int:id>', methods=['PUT'])
 @jwt_required()
+@require_permission('rd.edit')
 def update_material(id):
     """Update material"""
     try:
@@ -270,6 +275,7 @@ def update_material(id):
 
 @rd_materials_bp.route('/<int:id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('rd.delete')
 def delete_material(id):
     """Delete material"""
     try:
@@ -292,6 +298,7 @@ def delete_material(id):
 
 @rd_materials_bp.route('/<int:id>/approve', methods=['POST'])
 @jwt_required()
+@require_permission('rd.create')
 def approve_material_request(id):
     """Approve material request"""
     try:
@@ -315,6 +322,7 @@ def approve_material_request(id):
 
 @rd_materials_bp.route('/<int:id>/receive', methods=['POST'])
 @jwt_required()
+@require_permission('rd.create')
 def receive_material(id):
     """Mark material as received"""
     try:
@@ -357,6 +365,7 @@ def receive_material(id):
 
 @rd_materials_bp.route('/<int:id>/use', methods=['POST'])
 @jwt_required()
+@require_permission('rd.create')
 def use_material(id):
     """Record material usage"""
     try:
@@ -416,6 +425,7 @@ def use_material(id):
 
 @rd_materials_bp.route('/analytics', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_materials_analytics():
     """Get materials analytics"""
     try:
@@ -490,6 +500,7 @@ def get_materials_analytics():
 
 @rd_materials_bp.route('/suppliers', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_suppliers():
     """Get available suppliers"""
     try:

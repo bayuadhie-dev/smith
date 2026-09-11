@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db, ResearchProject, Experiment, ProductDevelopment, RDMaterial, ResearchReport, Prototype, ProductTestResult
 from utils.i18n import success_response, error_response, get_message
 from utils import generate_number
@@ -28,6 +29,7 @@ rd_bp.register_blueprint(rd_reports_bp, url_prefix='/reports')
 
 @rd_bp.route('/dashboard', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_rd_dashboard():
     """Get R&D dashboard overview"""
     try:
@@ -123,7 +125,8 @@ def get_rd_dashboard():
         return jsonify({'error': str(e)}), 500
 
 @rd_bp.route('/analytics', methods=['GET'])
-@jwt_required(optional=True)
+@jwt_required()
+@require_permission('rd.view')
 def get_rd_analytics():
     """Get comprehensive R&D analytics"""
     try:
@@ -187,6 +190,7 @@ def get_rd_analytics():
 
 @rd_bp.route('/projects', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def legacy_get_projects():
     """Legacy endpoint - redirects to new structure"""
     try:

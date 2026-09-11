@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db, ResearchProject, User
 from utils.i18n import success_response, error_response, get_message
 from utils import generate_number
@@ -16,6 +17,7 @@ rd_projects_bp = Blueprint('rd_projects', __name__)
 
 @rd_projects_bp.route('/', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_projects():
     """Get all research projects with filtering and pagination"""
     try:
@@ -79,6 +81,7 @@ def get_projects():
 
 @rd_projects_bp.route('/', methods=['POST'])
 @jwt_required()
+@require_permission('rd.create')
 def create_project():
     """Create new research project"""
     try:
@@ -133,6 +136,7 @@ def create_project():
 
 @rd_projects_bp.route('/<int:id>', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_project(id):
     """Get project details"""
     try:
@@ -174,6 +178,7 @@ def get_project(id):
 
 @rd_projects_bp.route('/<int:id>', methods=['PUT'])
 @jwt_required()
+@require_permission('rd.edit')
 def update_project(id):
     """Update project"""
     try:
@@ -239,6 +244,7 @@ def update_project(id):
 
 @rd_projects_bp.route('/<int:id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('rd.delete')
 def delete_project(id):
     """Delete project"""
     try:
@@ -261,6 +267,7 @@ def delete_project(id):
 
 @rd_projects_bp.route('/analytics', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_projects_analytics():
     """Get projects analytics"""
     try:
@@ -336,6 +343,7 @@ def get_projects_analytics():
 
 @rd_projects_bp.route('/<int:id>/progress', methods=['PUT'])
 @jwt_required()
+@require_permission('rd.edit')
 def update_project_progress(id):
     """Update project progress"""
     try:
@@ -374,6 +382,7 @@ def update_project_progress(id):
 
 @rd_projects_bp.route('/team-members', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_team_members():
     """Get available team members (users)"""
     try:

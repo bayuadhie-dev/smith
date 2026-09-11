@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db, Experiment, ResearchProject, User
 from utils.i18n import success_response, error_response, get_message
 from utils import generate_number
@@ -16,6 +17,7 @@ rd_experiments_bp = Blueprint('rd_experiments', __name__)
 
 @rd_experiments_bp.route('/', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_experiments():
     """Get all experiments with filtering and pagination"""
     try:
@@ -82,6 +84,7 @@ def get_experiments():
 
 @rd_experiments_bp.route('/', methods=['POST'])
 @jwt_required()
+@require_permission('rd.create')
 def create_experiment():
     """Create new experiment"""
     try:
@@ -135,6 +138,7 @@ def create_experiment():
 
 @rd_experiments_bp.route('/<int:id>', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_experiment(id):
     """Get experiment details"""
     try:
@@ -179,6 +183,7 @@ def get_experiment(id):
 
 @rd_experiments_bp.route('/<int:id>', methods=['PUT'])
 @jwt_required()
+@require_permission('rd.edit')
 def update_experiment(id):
     """Update experiment"""
     try:
@@ -240,6 +245,7 @@ def update_experiment(id):
 
 @rd_experiments_bp.route('/<int:id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('rd.delete')
 def delete_experiment(id):
     """Delete experiment"""
     try:
@@ -262,6 +268,7 @@ def delete_experiment(id):
 
 @rd_experiments_bp.route('/<int:id>/review', methods=['POST'])
 @jwt_required()
+@require_permission('rd.create')
 def review_experiment(id):
     """Review experiment results"""
     try:
@@ -296,6 +303,7 @@ def review_experiment(id):
 
 @rd_experiments_bp.route('/analytics', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_experiments_analytics():
     """Get experiments analytics"""
     try:
@@ -385,6 +393,7 @@ def get_experiments_analytics():
 
 @rd_experiments_bp.route('/projects', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_projects_for_experiments():
     """Get available projects for experiments"""
     try:

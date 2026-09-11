@@ -35,7 +35,7 @@ export default function RDDashboard() {
               <div className="p-2 bg-white dark:bg-gray-800/20 rounded-lg backdrop-blur-sm">
                 <LightBulbIcon className="w-6 h-6" />
               </div>
-              <h1 className="text-2xl md:text-3xl font-bold">R&D Dashboard</h1>
+              <h1 className="text-2xl md:text-3xl font-bold">R&D Dashboard (Legacy)</h1>
             </div>
             <p className="text-purple-100 mt-2">Research & Development Management Center</p>
           </div>

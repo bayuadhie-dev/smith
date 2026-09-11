@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db
 from models.hr import Employee, Department
 from utils.i18n import success_response, error_response, get_message
@@ -12,6 +13,7 @@ rd_extended_bp = Blueprint('rd_extended', __name__)
 # R&D Reports Endpoints
 @rd_extended_bp.route('/reports', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_rd_reports():
     try:
         report_type = request.args.get('report_type', 'overview')
@@ -165,6 +167,7 @@ def get_rd_reports():
 
 @rd_extended_bp.route('/reports/export', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def export_rd_reports():
     try:
         format_type = request.args.get('format', 'excel')
@@ -181,6 +184,7 @@ def export_rd_reports():
 # Project Details Extended Endpoints
 @rd_extended_bp.route('/projects/<int:project_id>/details', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_project_details(project_id):
     try:
         # Mock detailed project data
@@ -332,6 +336,7 @@ def get_project_details(project_id):
 
 @rd_extended_bp.route('/projects/<int:project_id>/details', methods=['PUT'])
 @jwt_required()
+@require_permission('rd.edit')
 def update_project_details(project_id):
     try:
         data = request.get_json()
@@ -343,6 +348,7 @@ def update_project_details(project_id):
 
 @rd_extended_bp.route('/projects/details', methods=['POST'])
 @jwt_required()
+@require_permission('rd.create')
 def create_project_details():
     try:
         data = request.get_json()

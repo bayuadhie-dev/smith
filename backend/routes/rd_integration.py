@@ -4,6 +4,7 @@ Connects R&D Legacy module with Products, Production, Warehouse, and Quality mod
 """
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db
 from models.rd import ResearchProject, Experiment, ProductDevelopment, RDMaterial, Prototype
 from models.product import Product, Material
@@ -24,6 +25,7 @@ rd_integration_bp = Blueprint('rd_integration', __name__)
 
 @rd_integration_bp.route('/products/lookup', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def lookup_products():
     """Get products for linking to R&D developments"""
     try:
@@ -62,6 +64,7 @@ def lookup_products():
 
 @rd_integration_bp.route('/products/create-from-development/<int:dev_id>', methods=['POST'])
 @jwt_required()
+@require_permission('rd.create')
 def create_product_from_development(dev_id):
     """Create a new product from R&D product development"""
     try:
@@ -121,6 +124,7 @@ def create_product_from_development(dev_id):
 
 @rd_integration_bp.route('/bom/lookup', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def lookup_boms():
     """Get BOMs for reference"""
     try:
@@ -160,6 +164,7 @@ def lookup_boms():
 
 @rd_integration_bp.route('/bom/create-from-prototype/<int:prototype_id>', methods=['POST'])
 @jwt_required()
+@require_permission('rd.create')
 def create_bom_from_prototype(prototype_id):
     """Create BOM from R&D prototype specifications"""
     try:
@@ -242,6 +247,7 @@ def create_bom_from_prototype(prototype_id):
 
 @rd_integration_bp.route('/materials/lookup', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def lookup_materials():
     """Get materials from warehouse for R&D use"""
     try:
@@ -280,6 +286,7 @@ def lookup_materials():
 
 @rd_integration_bp.route('/materials/request-from-warehouse', methods=['POST'])
 @jwt_required()
+@require_permission('rd.create')
 def request_material_from_warehouse():
     """Request material from warehouse for R&D project"""
     try:
@@ -332,6 +339,7 @@ def request_material_from_warehouse():
 
 @rd_integration_bp.route('/warehouses/lookup', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def lookup_warehouses():
     """Get warehouse zones for storage location"""
     try:
@@ -356,6 +364,7 @@ def lookup_warehouses():
 
 @rd_integration_bp.route('/machines/lookup', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def lookup_machines():
     """Get machines for experiment equipment"""
     try:
@@ -397,6 +406,7 @@ def lookup_machines():
 
 @rd_integration_bp.route('/quality/create-test-from-experiment/<int:exp_id>', methods=['POST'])
 @jwt_required()
+@require_permission('rd.create')
 def create_quality_test_from_experiment(exp_id):
     """Create quality test based on R&D experiment results"""
     try:
@@ -443,6 +453,7 @@ def create_quality_test_from_experiment(exp_id):
 
 @rd_integration_bp.route('/quality/tests', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_rd_quality_tests():
     """Get quality tests related to R&D"""
     try:
@@ -475,6 +486,7 @@ def get_rd_quality_tests():
 
 @rd_integration_bp.route('/suppliers/lookup', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def lookup_suppliers():
     """Get suppliers for R&D material procurement"""
     try:

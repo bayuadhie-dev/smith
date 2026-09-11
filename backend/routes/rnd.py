@@ -6,6 +6,7 @@ Workflow: LAB_SCALE → PILOT_SCALE → VALIDATION → COMPLETION
 """
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from datetime import datetime, date
 from sqlalchemy import func, or_, and_
 
@@ -65,6 +66,7 @@ def generate_experiment_number(formula_id):
 
 @rnd_bp.route('/projects', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_projects():
     """Get all R&D projects with filtering and pagination"""
     try:
@@ -110,6 +112,7 @@ def get_projects():
 
 @rnd_bp.route('/projects/<int:id>', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_project(id):
     """Get single R&D project with details"""
     try:
@@ -127,6 +130,7 @@ def get_project(id):
 
 @rnd_bp.route('/projects', methods=['POST'])
 @jwt_required()
+@require_permission('rd.create')
 def create_project():
     """Create new R&D project"""
     try:
@@ -165,6 +169,7 @@ def create_project():
 
 @rnd_bp.route('/projects/<int:id>', methods=['PUT'])
 @jwt_required()
+@require_permission('rd.edit')
 def update_project(id):
     """Update R&D project"""
     try:
@@ -207,6 +212,7 @@ def update_project(id):
 
 @rnd_bp.route('/projects/<int:id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('rd.delete')
 def delete_project(id):
     """Delete R&D project"""
     try:
@@ -236,6 +242,7 @@ def delete_project(id):
 
 @rnd_bp.route('/projects/<int:id>/request-approval', methods=['POST'])
 @jwt_required()
+@require_permission('rd.create')
 def request_stage_approval(id):
     """Request approval for stage transition"""
     try:
@@ -293,6 +300,7 @@ def request_stage_approval(id):
 
 @rnd_bp.route('/approvals/<int:id>/approve', methods=['POST'])
 @jwt_required()
+@require_permission('rd.create')
 def approve_stage(id):
     """Approve stage transition"""
     try:
@@ -338,6 +346,7 @@ def approve_stage(id):
 
 @rnd_bp.route('/approvals/<int:id>/reject', methods=['POST'])
 @jwt_required()
+@require_permission('rd.create')
 def reject_stage(id):
     """Reject stage transition"""
     try:
@@ -371,6 +380,7 @@ def reject_stage(id):
 
 @rnd_bp.route('/approvals/pending', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_pending_approvals():
     """Get all pending approvals"""
     try:
@@ -390,6 +400,7 @@ def get_pending_approvals():
 
 @rnd_bp.route('/projects/<int:project_id>/formulas', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_formulas(project_id):
     """Get all formulas for a project"""
     try:
@@ -405,6 +416,7 @@ def get_formulas(project_id):
 
 @rnd_bp.route('/formulas/<int:id>', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_formula(id):
     """Get single formula with details"""
     try:
@@ -422,6 +434,7 @@ def get_formula(id):
 
 @rnd_bp.route('/projects/<int:project_id>/formulas', methods=['POST'])
 @jwt_required()
+@require_permission('rd.create')
 def create_formula(project_id):
     """Create new formula for a project"""
     try:
@@ -491,6 +504,7 @@ def create_formula(project_id):
 
 @rnd_bp.route('/formulas/<int:id>', methods=['PUT'])
 @jwt_required()
+@require_permission('rd.edit')
 def update_formula(id):
     """Update formula"""
     try:
@@ -551,6 +565,7 @@ def update_formula(id):
 
 @rnd_bp.route('/formulas/<int:id>/select', methods=['POST'])
 @jwt_required()
+@require_permission('rd.create')
 def select_formula(id):
     """Select formula as the chosen one for production"""
     try:
@@ -583,6 +598,7 @@ def select_formula(id):
 
 @rnd_bp.route('/formulas/<int:id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('rd.delete')
 def delete_formula(id):
     """Delete formula"""
     try:
@@ -610,6 +626,7 @@ def delete_formula(id):
 
 @rnd_bp.route('/formulas/<int:formula_id>/experiments', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_experiments(formula_id):
     """Get all experiments for a formula"""
     try:
@@ -625,6 +642,7 @@ def get_experiments(formula_id):
 
 @rnd_bp.route('/experiments/<int:id>', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_experiment(id):
     """Get single experiment with details"""
     try:
@@ -642,6 +660,7 @@ def get_experiment(id):
 
 @rnd_bp.route('/formulas/<int:formula_id>/experiments', methods=['POST'])
 @jwt_required()
+@require_permission('rd.create')
 def create_experiment(formula_id):
     """Create new experiment for a formula"""
     try:
@@ -692,6 +711,7 @@ def create_experiment(formula_id):
 
 @rnd_bp.route('/experiments/<int:id>', methods=['PUT'])
 @jwt_required()
+@require_permission('rd.edit')
 def update_experiment(id):
     """Update experiment"""
     try:
@@ -744,6 +764,7 @@ def update_experiment(id):
 
 @rnd_bp.route('/experiments/<int:id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('rd.delete')
 def delete_experiment(id):
     """Delete experiment"""
     try:
@@ -768,6 +789,7 @@ def delete_experiment(id):
 
 @rnd_bp.route('/projects/<int:id>/convert-to-production', methods=['POST'])
 @jwt_required()
+@require_permission('rd.create')
 def convert_to_production_bom(id):
     """
     Convert R&D formula to Production BOM
@@ -929,6 +951,7 @@ def convert_to_production_bom(id):
 
 @rnd_bp.route('/conversions', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_conversions():
     """Get all conversion records"""
     try:
@@ -946,6 +969,7 @@ def get_conversions():
 
 @rnd_bp.route('/dashboard', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_dashboard():
     """Get R&D dashboard statistics"""
     try:
@@ -997,6 +1021,7 @@ def get_dashboard():
 
 @rnd_bp.route('/machines', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_machines():
     """Get available machines for experiments"""
     try:
@@ -1017,6 +1042,7 @@ def get_machines():
 
 @rnd_bp.route('/materials', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_materials():
     """Get available materials for formulas"""
     try:
@@ -1049,6 +1075,7 @@ def get_materials():
 
 @rnd_bp.route('/products', methods=['GET'])
 @jwt_required()
+@require_permission('rd.view')
 def get_products():
     """Get available products for linking"""
     try:

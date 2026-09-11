@@ -217,7 +217,7 @@ const ResearchReportsForm: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Research & Development Reports</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Laporan R&D</h1>
           <p className="text-gray-600 dark:text-gray-300">Comprehensive R&D project analysis and performance reporting</p>
         </div>
         

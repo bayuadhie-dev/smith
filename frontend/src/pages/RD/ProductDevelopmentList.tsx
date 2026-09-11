@@ -145,7 +145,7 @@ const ProductDevelopmentList: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Product Development</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Pengembangan Produk</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">Manage R&D product development pipeline</p>
         </div>
         <Link
