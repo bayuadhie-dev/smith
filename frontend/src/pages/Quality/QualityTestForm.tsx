@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useForm, useFieldArray } from 'react-hook-form'
 import toast from 'react-hot-toast'
+import SearchableSelect from '../../components/SearchableSelect'
 import {
   useCreateQualityTestMutation,
   useGetProductsQuery,
@@ -46,7 +47,7 @@ const navigate = useNavigate()
   const { data: employees } = useGetEmployeesQuery({})
   const [createQualityTest] = useCreateQualityTestMutation()
   
-  const { register, control, handleSubmit, watch, formState: { errors } } = useForm<QualityTestFormData>({
+  const { register, control, handleSubmit, watch, setValue, formState: { errors } } = useForm<QualityTestFormData>({
     defaultValues: {
       test_date: new Date().toISOString().slice(0, 16), // datetime-local format
       sample_size: 1,
@@ -122,10 +123,14 @@ const navigate = useNavigate()
   }
 
   const onSubmit = async (data: QualityTestFormData) => {
+    if (!data.product_id) {
+      toast.error('Product is required')
+      return
+    }
     setIsLoading(true)
     try {
       // Validate test parameters
-      const validParameters = data.test_parameters.filter(param => 
+      const validParameters = data.test_parameters.filter(param =>
         param.parameter_name && param.expected_value && param.actual_value
       )
 
@@ -224,17 +229,17 @@ const navigate = useNavigate()
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Product *
               </label>
-              <select
-                {...register('product_id', { required: 'Product is required' })}
-                className="input-field"
-              >
-                <option value="">Select product</option>
-                {products?.products?.map((product: any) => (
-                  <option key={product.id} value={product.id}>
-                    {product.code} - {product.name}
-                  </option>
-                ))}
-              </select>
+              <SearchableSelect
+                options={(products?.products || []).map((product: any) => ({
+                  id: product.id,
+                  code: product.code,
+                  name: product.name
+                }))}
+                value={watch('product_id') || null}
+                onChange={(value) => setValue('product_id', value as any, { shouldValidate: true })}
+                placeholder="Select product"
+                required
+              />
               {errors.product_id && (
                 <p className="mt-1 text-sm text-red-600">{errors.product_id.message}</p>
               )}

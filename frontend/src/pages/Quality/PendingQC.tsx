@@ -72,7 +72,7 @@ export default function PendingQC() {
   }, []);
 
   const handleCreateQCTest = (workOrder: PendingQCWorkOrder) => {
-    // Navigate to the new QC form with work order data
+    // Navigate to the new QC form with SPK data
     navigate(`/app/quality/pending-qc/${workOrder.id}`);
   };
 
@@ -141,10 +141,10 @@ export default function PendingQC() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <ClipboardDocumentCheckIcon className="w-7 h-7 text-blue-600" />
-            QC Work Order
+            QC SPK
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">
-            Daftar Work Order yang memerlukan Quality Control
+            Daftar SPK yang memerlukan Quality Control
           </p>
         </div>
         <button
@@ -245,7 +245,7 @@ export default function PendingQC() {
               <thead className="bg-gray-50 dark:bg-gray-900 dark:bg-gray-700/50">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Work Order
+                    SPK
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Produk
@@ -340,8 +340,8 @@ export default function PendingQC() {
                         <ClipboardDocumentCheckIcon className="w-12 h-12 text-gray-300 dark:text-gray-600" />
                         <p className="text-gray-500 dark:text-gray-400">
                           {activeTab === 'pending' 
-                            ? 'Tidak ada Work Order yang menunggu QC'
-                            : 'Tidak ada Work Order yang sudah di-QC'}
+                            ? 'Tidak ada SPK yang menunggu QC'
+                            : 'Tidak ada SPK yang sudah di-QC'}
                         </p>
                       </div>
                     </td>

@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db, QualityTest, QualityInspection, CAPA, QualityStandard
 from models.production import WorkOrder
 from models.warehouse import Inventory, InventoryMovement, WarehouseLocation
@@ -11,8 +12,75 @@ from utils.timezone import get_local_now, get_local_today
 
 quality_bp = Blueprint('quality', __name__)
 
+
+@quality_bp.route('/inventory-disposition', methods=['POST'])
+@jwt_required()
+@require_permission('quality.edit')
+def create_inventory_disposition():
+    """Partial QC disposition on one Inventory batch - MB1A/MB1B-style
+    quantity splits (2026-09-11), e.g. release 9,900pcs + reject 100pcs out
+    of a 10,000pcs quarantined batch in one call. See
+    utils/inventory_helpers.py::apply_qc_disposition_splits for the mechanics.
+    """
+    try:
+        data = request.get_json() or {}
+        user_id = int(get_jwt_identity())
+
+        inventory_id = data.get('inventory_id')
+        splits = data.get('splits') or []
+        reason = (data.get('notes') or '').strip()
+        if not inventory_id:
+            return jsonify({'error': 'inventory_id is required'}), 400
+        if not reason:
+            return jsonify({'error': 'Alasan (notes) wajib diisi'}), 400
+
+        source = db.session.get(Inventory, inventory_id)
+        old_status = source.stock_status if source else None
+
+        from utils.inventory_helpers import apply_qc_disposition_splits
+        movements = apply_qc_disposition_splits(
+            inventory_id=inventory_id,
+            splits=splits,
+            user_id=user_id,
+            reference_type=data.get('reference_type', 'manual_disposition'),
+            reference_id=data.get('reference_id'),
+            notes=data.get('notes'),
+        )
+
+        # Same AuditLog trail the whole-batch-flip endpoint
+        # (routes/qc_batch_status.py::update_batch_status) writes, so the
+        # "Riwayat" button on the Ubah Status Batch page shows a consistent
+        # history regardless of which endpoint made the change.
+        import json as _json
+        from models.settings_extended import AuditLog
+        db.session.add(AuditLog(
+            user_id=user_id,
+            action='update',
+            resource_type='inventory_batch',
+            resource_id=str(inventory_id),
+            resource_name=(source.batch_number if source else None) or f'Inventory #{inventory_id}',
+            old_values=_json.dumps({'stock_status': old_status}),
+            new_values=_json.dumps({'splits': splits, 'reason': data.get('notes')}),
+            request_method=request.method,
+            request_url=request.url,
+        ))
+
+        db.session.commit()
+
+        return jsonify({
+            'message': f'{len(movements)} disposisi berhasil dicatat',
+            'movements': [{'id': m.id, 'status_after': m.status_after, 'quantity': float(m.quantity)} for m in movements],
+        }), 201
+    except ValueError as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
 @quality_bp.route('/tests', methods=['GET'])
 @jwt_required()
+@require_permission('quality.view')
 def get_tests():
     try:
         tests = QualityTest.query.order_by(QualityTest.test_date.desc()).all()
@@ -31,6 +99,7 @@ def get_tests():
 
 @quality_bp.route('/tests', methods=['POST'])
 @jwt_required()
+@require_permission('quality.create')
 def create_quality_test():
     try:
         data = request.get_json()
@@ -81,6 +150,7 @@ def create_quality_test():
 
 @quality_bp.route('/inspections', methods=['GET'])
 @jwt_required()
+@require_permission('quality.view')
 def get_inspections():
     try:
         inspections = QualityInspection.query.order_by(QualityInspection.inspection_date.desc()).all()
@@ -99,6 +169,7 @@ def get_inspections():
 
 @quality_bp.route('/inspections', methods=['POST'])
 @jwt_required()
+@require_permission('quality.create')
 def create_inspection():
     try:
         data = request.get_json()
@@ -123,6 +194,7 @@ def create_inspection():
 
 @quality_bp.route('/capa', methods=['GET'])
 @jwt_required()
+@require_permission('quality.view')
 def get_capas():
     try:
         capas = CAPA.query.order_by(CAPA.issue_date.desc()).all()
@@ -141,6 +213,7 @@ def get_capas():
 
 @quality_bp.route('/capa', methods=['POST'])
 @jwt_required()
+@require_permission('quality.create')
 def create_capa():
     try:
         data = request.get_json()
@@ -168,6 +241,7 @@ def create_capa():
 
 @quality_bp.route('/standards', methods=['GET'])
 @jwt_required()
+@require_permission('quality.view')
 def get_standards():
     try:
         standards = QualityStandard.query.filter_by(is_active=True).all()
@@ -186,6 +260,7 @@ def get_standards():
 
 @quality_bp.route('/pending-qc', methods=['GET'])
 @jwt_required()
+@require_permission('quality.view')
 def get_pending_qc_work_orders():
     """Get completed work orders that need QC inspection"""
     try:
@@ -252,6 +327,7 @@ def get_pending_qc_work_orders():
 
 @quality_bp.route('/work-order/<int:wo_id>/qc-test', methods=['POST'])
 @jwt_required()
+@require_permission('quality.create')
 def create_qc_test_for_work_order(wo_id):
     """Create QC test for a completed work order"""
     try:
@@ -306,6 +382,7 @@ def create_qc_test_for_work_order(wo_id):
 
 @quality_bp.route('/work-order/<int:wo_id>/qc-test', methods=['GET'])
 @jwt_required()
+@require_permission('quality.view')
 def get_qc_test_for_work_order(wo_id):
     """Get QC test for a specific work order"""
     try:
@@ -335,6 +412,7 @@ def get_qc_test_for_work_order(wo_id):
 
 @quality_bp.route('/work-order/<int:wo_id>/detail', methods=['GET'])
 @jwt_required()
+@require_permission('quality.view')
 def get_finish_good_detail(wo_id):
     """Get comprehensive finish good QC detail: WO info + QC test + shift productions"""
     try:
@@ -434,6 +512,7 @@ def get_finish_good_detail(wo_id):
 
 @quality_bp.route('/tests/<int:test_id>/result', methods=['PUT'])
 @jwt_required()
+@require_permission('quality.edit')
 def update_qc_test_result(test_id):
     """Update QC test result"""
     try:
@@ -469,6 +548,7 @@ def update_qc_test_result(test_id):
 
 @quality_bp.route('/inspections/<int:inspection_id>/set-disposition', methods=['POST'])
 @jwt_required()
+@require_permission('quality.create')
 def set_qc_disposition(inspection_id):
     """
     Set disposition for QC inspection based on checklist results.
@@ -536,6 +616,21 @@ def set_qc_disposition(inspection_id):
                     status='pending'
                 )
                 db.session.add(waste_record)
+
+            # The WO's finished-goods batch row (auto-received as 'quarantine'
+            # per the mandatory QC-gate decision) must flip to 'reject' here -
+            # otherwise it stays stuck in 'quarantine' forever, indistinguishable
+            # from a batch still genuinely awaiting QC.
+            if inspection.work_order_id:
+                wo_batch_row = Inventory.query.filter_by(
+                    work_order_id=inspection.work_order_id, product_id=inspection.product_id
+                ).first()
+                if wo_batch_row:
+                    wo_batch_row.stock_status = 'reject'
+                    wo_batch_row.qc_inspection_id = inspection.id
+                    wo_batch_row.qc_date = get_local_now()
+                    wo_batch_row.qc_notes = data.get('disposition_notes')
+                    wo_batch_row.updated_at = get_local_now()
         else:
             inspection.result = 'conditional'
         
@@ -558,6 +653,7 @@ def set_qc_disposition(inspection_id):
 
 @quality_bp.route('/inspections/<int:inspection_id>/transfer-to-warehouse', methods=['POST'])
 @jwt_required()
+@require_permission('quality.create')
 def transfer_qc_to_warehouse(inspection_id):
     """
     Transfer QC passed/quarantine items to Warehouse Finished Goods.
@@ -604,35 +700,58 @@ def transfer_qc_to_warehouse(inspection_id):
         # Get work order for batch info
         work_order = inspection.work_order
         
-        # Create or update inventory record
-        existing_inventory = Inventory.query.filter_by(
-            product_id=inspection.product_id,
-            location_id=location_id,
-            batch_number=inspection.batch_number,
-            stock_status=inspection.disposition
-        ).first()
-        
-        if existing_inventory:
-            existing_inventory.quantity_on_hand += quantity
-            existing_inventory.quantity_available += quantity
-            existing_inventory.updated_at = get_local_now()
-            inventory = existing_inventory
+        # If this WO's finished-goods batch was already received by
+        # auto_receive_finished_goods() (routes/production_integration.py -
+        # matches by work_order_id+product_id, now always 'quarantine' for
+        # finished goods per the 2026-09-09 QC-gate decision), this transfer
+        # is that SAME physical batch changing status after QC, not a second
+        # receipt - update its status in place. Matching by product+location+
+        # batch+status alone (the old behavior) could hit that exact row and
+        # add quantity a second time, double-counting stock.
+        wo_batch_row = None
+        if inspection.work_order_id:
+            wo_batch_row = Inventory.query.filter_by(
+                work_order_id=inspection.work_order_id,
+                product_id=inspection.product_id
+            ).first()
+
+        if wo_batch_row:
+            wo_batch_row.stock_status = inspection.disposition
+            wo_batch_row.qc_inspection_id = inspection.id
+            wo_batch_row.qc_date = get_local_now()
+            wo_batch_row.qc_notes = inspection.disposition_notes
+            wo_batch_row.location_id = location_id
+            wo_batch_row.updated_at = get_local_now()
+            inventory = wo_batch_row
         else:
-            inventory = Inventory(
+            existing_inventory = Inventory.query.filter_by(
                 product_id=inspection.product_id,
                 location_id=location_id,
-                quantity_on_hand=quantity,
-                quantity_available=quantity,
                 batch_number=inspection.batch_number,
-                production_date=work_order.actual_end.date() if work_order and work_order.actual_end else get_local_now().date(),
-                stock_status=inspection.disposition,  # released or quarantine
-                qc_inspection_id=inspection.id,
-                work_order_id=inspection.work_order_id,
-                qc_date=get_local_now(),
-                qc_notes=inspection.disposition_notes,
-                created_by=user_id
-            )
-            db.session.add(inventory)
+                stock_status=inspection.disposition
+            ).first()
+
+            if existing_inventory:
+                existing_inventory.quantity_on_hand += quantity
+                existing_inventory.quantity_available += quantity
+                existing_inventory.updated_at = get_local_now()
+                inventory = existing_inventory
+            else:
+                inventory = Inventory(
+                    product_id=inspection.product_id,
+                    location_id=location_id,
+                    quantity_on_hand=quantity,
+                    quantity_available=quantity,
+                    batch_number=inspection.batch_number,
+                    production_date=work_order.actual_end.date() if work_order and work_order.actual_end else get_local_now().date(),
+                    stock_status=inspection.disposition,  # released or quarantine
+                    qc_inspection_id=inspection.id,
+                    work_order_id=inspection.work_order_id,
+                    qc_date=get_local_now(),
+                    qc_notes=inspection.disposition_notes,
+                    created_by=user_id
+                )
+                db.session.add(inventory)
         
         db.session.flush()
         
@@ -681,6 +800,7 @@ def transfer_qc_to_warehouse(inspection_id):
 
 @quality_bp.route('/inspections/pending-transfer', methods=['GET'])
 @jwt_required()
+@require_permission('quality.view')
 def get_pending_warehouse_transfer():
     """
     Get QC inspections that are completed but not yet transferred to warehouse.
@@ -724,6 +844,7 @@ def get_pending_warehouse_transfer():
 
 @quality_bp.route('/warehouse/by-status', methods=['GET'])
 @jwt_required()
+@require_permission('quality.view')
 def get_inventory_by_qc_status():
     """
     Get inventory grouped by QC status (released, quarantine, reject).
@@ -775,6 +896,7 @@ def get_inventory_by_qc_status():
 
 @quality_bp.route('/incoming-materials', methods=['GET'])
 @jwt_required()
+@require_permission('quality.view')
 def get_incoming_materials_for_qc():
     """Get received materials that need QC inspection"""
     try:
@@ -842,6 +964,7 @@ def get_incoming_materials_for_qc():
 
 @quality_bp.route('/incoming-materials/<int:item_id>/inspect', methods=['POST'])
 @jwt_required()
+@require_permission('quality.create')
 def inspect_incoming_material(item_id):
     """Create QC inspection for incoming material"""
     try:
@@ -897,11 +1020,35 @@ def inspect_incoming_material(item_id):
         )
         
         db.session.add(inspection)
+        db.session.flush()  # need inspection.id before referencing it below
+
+        # A rejected incoming inspection must quarantine the physical stock
+        # that was already received via GRN - previously this only wrote a
+        # QualityInspection row with no effect on GRNItem or Inventory at
+        # all, so rejected raw material stayed usable as normal stock with
+        # no return-to-supplier trail.
+        quarantined_inventory_ids = []
+        if inspection.result == 'rejected':
+            gr_item.quantity_rejected = float(gr_item.quantity_rejected or 0) + float(data.get('defect_found', 0) or gr_item.quantity_received)
+            gr_item.quantity_accepted = max(0, float(gr_item.quantity_received) - float(gr_item.quantity_rejected))
+
+            from models.warehouse import Inventory
+            matching_inventory = Inventory.query.filter_by(
+                grn_id=gr_item.grn_id, material_id=gr_item.material_id, batch_number=gr_item.batch_number
+            ).all()
+            for inv in matching_inventory:
+                inv.stock_status = 'quarantine'
+                inv.qc_inspection_id = inspection.id
+                inv.qc_notes = f'Ditolak QC Barang Masuk ({inspection_number}) - menunggu retur ke supplier'
+                inv.qc_date = get_local_now()
+                quarantined_inventory_ids.append(inv.id)
+
         db.session.commit()
-        
+
         return jsonify({
             'message': 'Inspection saved successfully',
-            'inspection_id': inspection.id
+            'inspection_id': inspection.id,
+            'quarantined_inventory_ids': quarantined_inventory_ids
         }), 201
         
     except Exception as e:
@@ -916,6 +1063,7 @@ def inspect_incoming_material(item_id):
 
 @quality_bp.route('/in-process', methods=['GET'])
 @jwt_required()
+@require_permission('quality.view')
 def get_in_process_qc():
     """Get active production processes for IPQC"""
     try:
@@ -1000,6 +1148,7 @@ def get_in_process_qc():
 
 @quality_bp.route('/in-process/<int:wo_id>/inspect', methods=['POST'])
 @jwt_required()
+@require_permission('quality.create')
 def create_ipqc_inspection(wo_id):
     """Create IPQC inspection for active work order"""
     try:

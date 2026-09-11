@@ -4,6 +4,7 @@ Endpoint untuk sampling, measurement, kalkulasi UCL/LCL, dan Western Electric Ru
 """
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db
 from models.spc import SPCParameter, SPCProductSpec, SPCSample, SPCMeasurement, SPCControlLimitHistory
 from models.product import Product
@@ -260,6 +261,7 @@ def auto_calculate_control_limits(product_id: int, parameter_id: int) -> dict:
 # ─────────────────────────────────────────────
 @spc_bp.route('/parameters', methods=['GET'])
 @jwt_required()
+@require_permission('quality.view')
 def get_parameters():
     """Get semua SPC parameters"""
     try:
@@ -283,6 +285,7 @@ def get_parameters():
 # ─────────────────────────────────────────────
 @spc_bp.route('/specs', methods=['GET'])
 @jwt_required()
+@require_permission('quality.view')
 def get_specs():
     """Get specs per produk"""
     try:
@@ -318,6 +321,7 @@ def get_specs():
 
 @spc_bp.route('/specs', methods=['POST'])
 @jwt_required()
+@require_permission('quality.create')
 def create_spec():
     """Buat spec baru untuk produk + parameter"""
     try:
@@ -344,6 +348,7 @@ def create_spec():
 
 @spc_bp.route('/specs/<int:id>', methods=['PUT'])
 @jwt_required()
+@require_permission('quality.edit')
 def update_spec(id):
     """Update spec (manual override UCL/LCL)"""
     try:
@@ -365,6 +370,7 @@ def update_spec(id):
 # ─────────────────────────────────────────────
 @spc_bp.route('/samples', methods=['GET'])
 @jwt_required()
+@require_permission('quality.view')
 def get_samples():
     """Get samples dengan filter"""
     try:
@@ -411,6 +417,7 @@ def get_samples():
 
 @spc_bp.route('/samples', methods=['POST'])
 @jwt_required()
+@require_permission('quality.create')
 def create_sample():
     """
     Input sample baru + measurements sekaligus.
@@ -522,6 +529,7 @@ def create_sample():
 
 @spc_bp.route('/samples/<int:id>', methods=['GET'])
 @jwt_required()
+@require_permission('quality.view')
 def get_sample_detail(id):
     """Detail sample beserta semua measurements"""
     try:
@@ -579,6 +587,7 @@ def get_sample_detail(id):
 # ─────────────────────────────────────────────
 @spc_bp.route('/chart-data', methods=['GET'])
 @jwt_required()
+@require_permission('quality.view')
 def get_chart_data():
     """
     Data untuk X-bar R chart.
@@ -654,6 +663,7 @@ def get_chart_data():
 # ─────────────────────────────────────────────
 @spc_bp.route('/dashboard', methods=['GET'])
 @jwt_required()
+@require_permission('quality.view')
 def get_dashboard():
     """Dashboard overview SPC — semua produk semua parameter"""
     try:
@@ -734,6 +744,7 @@ def get_dashboard():
 # ─────────────────────────────────────────────
 @spc_bp.route('/recalculate/<int:product_id>/<int:parameter_id>', methods=['POST'])
 @jwt_required()
+@require_permission('quality.create')
 def recalculate_limits(product_id, parameter_id):
     """Trigger manual recalculation UCL/LCL"""
     try:

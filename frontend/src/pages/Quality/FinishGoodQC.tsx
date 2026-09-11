@@ -272,7 +272,7 @@ export default function FinishGoodQC() {
         </div>
       </div>
 
-      {/* Work Orders List */}
+      {/* SPK List */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-12">
@@ -283,15 +283,15 @@ export default function FinishGoodQC() {
             <CubeIcon className="w-12 h-12 mx-auto text-gray-400 mb-4" />
             <p className="text-gray-500">
               {activeTab === 'pending' 
-                ? 'Tidak ada work order yang menunggu QC' 
-                : 'Belum ada work order yang sudah di-QC'}
+                ? 'Tidak ada SPK yang menunggu QC' 
+                : 'Belum ada SPK yang sudah di-QC'}
             </p>
           </div>
         ) : (
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-gray-900 dark:bg-gray-700">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Work Order</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">SPK</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Produk</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Qty Produksi</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Mesin</th>

@@ -111,7 +111,7 @@ export default function SPCSampleForm({ onClose, onSuccess }: Props) {
   };
 
   const handleSubmit = async () => {
-    if (!selectedWO) return alert('Pilih Work Order terlebih dahulu');
+    if (!selectedWO) return alert('Pilih SPK terlebih dahulu');
     if (measurements.length === 0) return alert('Tambahkan minimal 1 parameter');
 
     const payload = {
@@ -190,7 +190,7 @@ export default function SPCSampleForm({ onClose, onSuccess }: Props) {
 
         <div className="p-6 space-y-5">
 
-          {/* Pilih Work Order */}
+          {/* Pilih SPK */}
           <div>
             {/* Filter bar */}
             <div className="grid grid-cols-3 gap-2 mb-3">
@@ -216,14 +216,14 @@ export default function SPCSampleForm({ onClose, onSuccess }: Props) {
               />
             </div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Work Order <span className="text-red-500">*</span>
+              SPK <span className="text-red-500">*</span>
               <span className="ml-2 text-xs text-gray-400 font-normal">({filteredWOs.length} dari {workOrders.length} WO)</span>
             </label>
             <select
               onChange={(e) => handleWOSelect(e.target.value)}
               className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">-- Pilih Work Order --</option>
+              <option value="">-- Pilih SPK --</option>
               {filteredWOs.map((wo: any) => (
                 <option key={wo.id} value={wo.id}>
                   {wo.wo_number} — {wo.product_name} | {wo.machine_name || 'Mesin ?'}

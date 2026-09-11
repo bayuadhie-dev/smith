@@ -135,11 +135,13 @@ export default function WorkOrderQCForm() {
     try {
       const token = localStorage.getItem('token');
       const hostname = window.location.hostname;
-      const baseURL = (hostname === 'erp.graterp.my.id' || hostname.endsWith('.graterp.my.id'))
+      const baseURL = import.meta.env.VITE_API_URL
+        ? import.meta.env.VITE_API_URL.replace(/\/api$/, '')
+        : (hostname === 'erp.graterp.my.id' || hostname.endsWith('.graterp.my.id'))
         ? 'https://api.graterp.my.id'
         : `http://${hostname}:5000`;
       
-      // Fetch pending QC data to get work order info
+      // Fetch pending QC data to get SPK info
       const response = await fetch(`${baseURL}/api/quality/pending-qc`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
@@ -177,8 +179,8 @@ export default function WorkOrderQCForm() {
         }
       }
     } catch (error) {
-      console.error('Error fetching work order:', error);
-      toast.error('Gagal memuat data Work Order');
+      console.error('Error fetching SPK:', error);
+      toast.error('Gagal memuat data SPK');
     } finally {
       setLoading(false);
     }
@@ -215,7 +217,9 @@ export default function WorkOrderQCForm() {
       const fullNotes = `${checkResults}${rejectSummary}\n\n${formData.notes || ''}`.trim();
       
       const hostname = window.location.hostname;
-      const baseURL = (hostname === 'erp.graterp.my.id' || hostname.endsWith('.graterp.my.id'))
+      const baseURL = import.meta.env.VITE_API_URL
+        ? import.meta.env.VITE_API_URL.replace(/\/api$/, '')
+        : (hostname === 'erp.graterp.my.id' || hostname.endsWith('.graterp.my.id'))
         ? 'https://api.graterp.my.id'
         : `http://${hostname}:5000`;
       
@@ -345,7 +349,7 @@ export default function WorkOrderQCForm() {
   if (!workOrder) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">Work Order tidak ditemukan</p>
+        <p className="text-gray-500">SPK tidak ditemukan</p>
         <button
           onClick={() => navigate('/app/quality/pending-qc')}
           className="mt-4 text-blue-600 hover:text-blue-700"
@@ -382,11 +386,11 @@ export default function WorkOrderQCForm() {
         </div>
       </div>
 
-      {/* Work Order Info Card */}
+      {/* SPK Info Card */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-800 p-6">
         <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-4 flex items-center gap-2">
           <DocumentTextIcon className="w-5 h-5" />
-          Informasi Work Order
+          Informasi SPK
         </h3>
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

@@ -149,7 +149,7 @@ export default function QualityDashboardEnhanced() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Quality Management Dashboard</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard Quality</h1>
           <p className="text-gray-600 dark:text-gray-300">Enhanced quality analytics and monitoring</p>
         </div>
         <div className="flex items-center gap-4">
@@ -172,7 +172,7 @@ export default function QualityDashboardEnhanced() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-300">Pending QC</p>
-              <p className="text-lg font-semibold">Work Orders</p>
+              <p className="text-lg font-semibold">SPK</p>
             </div>
             <ClockIcon className="h-8 w-8 text-blue-500" />
           </div>

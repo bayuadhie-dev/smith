@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db, Product, Machine, User, Employee
 from utils.i18n import success_response, error_response, get_message
 from models.quality import QualityInspection, QualityTest, CAPA
@@ -17,6 +18,7 @@ quality_enhanced_bp = Blueprint('quality_enhanced', __name__)
 
 @quality_enhanced_bp.route('/dashboard', methods=['GET'])
 @jwt_required()
+@require_permission('quality.view')
 def get_quality_dashboard():
     """Enhanced quality dashboard with comprehensive metrics"""
     try:
@@ -144,6 +146,7 @@ def get_quality_dashboard():
 
 @quality_enhanced_bp.route('/alerts', methods=['GET'])
 @jwt_required()
+@require_permission('quality.view')
 def get_quality_alerts():
     """Get quality alerts with filtering"""
     try:
@@ -194,6 +197,7 @@ def get_quality_alerts():
 
 @quality_enhanced_bp.route('/alerts/<int:alert_id>/acknowledge', methods=['PUT'])
 @jwt_required()
+@require_permission('quality.edit')
 def acknowledge_alert(alert_id):
     """Acknowledge a quality alert"""
     try:
@@ -217,6 +221,7 @@ def acknowledge_alert(alert_id):
 
 @quality_enhanced_bp.route('/alerts/<int:alert_id>/resolve', methods=['PUT'])
 @jwt_required()
+@require_permission('quality.edit')
 def resolve_alert(alert_id):
     """Resolve a quality alert"""
     try:
@@ -243,6 +248,7 @@ def resolve_alert(alert_id):
 
 @quality_enhanced_bp.route('/analytics', methods=['GET'])
 @jwt_required()
+@require_permission('quality.view')
 def get_quality_analytics():
     """Get quality analytics and KPIs"""
     try:
@@ -303,6 +309,7 @@ def get_quality_analytics():
 
 @quality_enhanced_bp.route('/targets', methods=['GET'])
 @jwt_required()
+@require_permission('quality.view')
 def get_quality_targets():
     """Get quality targets"""
     try:
@@ -337,6 +344,7 @@ def get_quality_targets():
 
 @quality_enhanced_bp.route('/targets', methods=['POST'])
 @jwt_required()
+@require_permission('quality.create')
 def create_quality_target():
     """Create a new quality target"""
     try:
@@ -371,6 +379,7 @@ def create_quality_target():
 
 @quality_enhanced_bp.route('/audits', methods=['GET'])
 @jwt_required()
+@require_permission('quality.view')
 def get_quality_audits():
     """Get quality audits"""
     try:
@@ -421,6 +430,7 @@ def get_quality_audits():
 
 @quality_enhanced_bp.route('/training/competency', methods=['GET'])
 @jwt_required()
+@require_permission('quality.view')
 def get_quality_competency():
     """Get quality training competency status"""
     try:

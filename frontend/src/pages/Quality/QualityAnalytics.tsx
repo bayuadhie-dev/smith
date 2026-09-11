@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useGetQualityAnalyticsQuery } from '../../services/api';
+import { useGetQualityAnalyticsQuery, useGetProductsQuery } from '../../services/api';
+import SearchableSelect from '../../components/SearchableSelect';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area
@@ -16,10 +17,11 @@ export default function QualityAnalytics() {
   const [period, setPeriod] = useState('monthly');
   const [productId, setProductId] = useState<number | undefined>();
 
-  const { data: analyticsData, isLoading } = useGetQualityAnalyticsQuery({ 
-    period, 
-    product_id: productId 
+  const { data: analyticsData, isLoading } = useGetQualityAnalyticsQuery({
+    period,
+    product_id: productId
   });
+  const { data: productsData } = useGetProductsQuery({});
 
   const analytics = analyticsData?.analytics || [];
   const summary = analyticsData?.summary || {};
@@ -78,16 +80,12 @@ export default function QualityAnalytics() {
 
           <div className="flex items-center gap-2">
             <FunnelIcon className="h-5 w-5 text-gray-400" />
-            <select
-              value={productId || ''}
-              onChange={(e) => setProductId(e.target.value ? parseInt(e.target.value) : undefined)}
-              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">All Products</option>
-              <option value="1">Product A</option>
-              <option value="2">Product B</option>
-              <option value="3">Product C</option>
-            </select>
+            <SearchableSelect
+              options={(productsData?.products || []).map((p: any) => ({ id: p.id, code: p.code, name: p.name }))}
+              value={productId ?? null}
+              onChange={(value) => setProductId(value ? Number(value) : undefined)}
+              placeholder="All Products"
+            />
           </div>
         </div>
       </div>
