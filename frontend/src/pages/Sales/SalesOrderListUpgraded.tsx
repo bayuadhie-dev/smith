@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useGetSalesOrdersQuery } from '../../services/api';
 import { format } from 'date-fns';
@@ -21,6 +21,7 @@ import {
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import axiosInstance from '../../utils/axiosConfig';
 import toast from 'react-hot-toast';
+import ConfirmAndStartProductionModal from '../../components/Sales/ConfirmAndStartProductionModal';
 
 interface SalesOrder {
   id: number;
@@ -42,6 +43,21 @@ const SalesOrderListUpgraded: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
   const [showActions, setShowActions] = useState<number | null>(null);
+  const [approvingOrder, setApprovingOrder] = useState<SalesOrder | null>(null);
+  const actionsRef = useRef<HTMLDivElement>(null);
+
+  // Bug kosmetik (2026-08-25): klik di luar action menu tidak menutupnya - tidak ada
+  // listener klik-di-luar sama sekali sebelumnya, cuma toggle di tombolnya sendiri.
+  useEffect(() => {
+    if (showActions === null) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (actionsRef.current && !actionsRef.current.contains(e.target as Node)) {
+        setShowActions(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showActions]);
 
   const { data, isLoading, refetch } = useGetSalesOrdersQuery({
     search: searchTerm,
@@ -141,7 +157,7 @@ const SalesOrderListUpgraded: React.FC = () => {
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-3">
               <ShoppingCartIcon className="h-8 w-8" />
-              Sales Orders
+              Pesanan Penjualan
             </h1>
             <p className="text-emerald-100 mt-1">Manage customer orders and fulfillment</p>
           </div>
@@ -310,7 +326,17 @@ const SalesOrderListUpgraded: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-4 py-4">
-                      <div className="relative">
+                      <div className="flex items-center gap-1 relative" ref={order.id === showActions ? actionsRef : undefined}>
+                        {order.status === 'draft' && (
+                          <button
+                            onClick={() => setApprovingOrder(order)}
+                            title="Approve & Mulai Produksi"
+                            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700"
+                          >
+                            <CheckCircleIcon className="h-4 w-4" />
+                            Approve
+                          </button>
+                        )}
                         <button
                           onClick={() => setShowActions(showActions === order.id ? null : order.id)}
                           className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
@@ -333,13 +359,15 @@ const SalesOrderListUpgraded: React.FC = () => {
                               <PencilIcon className="h-4 w-4 mr-2" />
                               Edit Order
                             </Link>
-                            <Link
-                              to={`/app/sales/orders/${order.id}/workflow`}
-                              className="flex items-center px-4 py-2 text-sm text-blue-600 hover:bg-blue-50"
-                            >
-                              <ArrowPathIcon className="h-4 w-4 mr-2" />
-                              Workflow
-                            </Link>
+                            {order.status !== 'draft' && (
+                              <Link
+                                to={`/app/sales/orders/${order.id}/workflow`}
+                                className="flex items-center px-4 py-2 text-sm text-blue-600 hover:bg-blue-50"
+                              >
+                                <ArrowPathIcon className="h-4 w-4 mr-2" />
+                                Riwayat Produksi &amp; Pengiriman
+                              </Link>
+                            )}
                             <button
                               onClick={() => handlePrintOrder(order.id)}
                               className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
@@ -386,6 +414,16 @@ const SalesOrderListUpgraded: React.FC = () => {
             </Link>
           </div>
         </div>
+      )}
+
+      {approvingOrder && (
+        <ConfirmAndStartProductionModal
+          orderId={approvingOrder.id}
+          orderNumber={approvingOrder.order_number}
+          itemCount={approvingOrder.item_count}
+          onClose={() => setApprovingOrder(null)}
+          onSuccess={() => refetch()}
+        />
       )}
     </div>
   );

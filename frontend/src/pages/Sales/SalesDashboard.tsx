@@ -100,7 +100,7 @@ const SalesDashboard: React.FC = () => {
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg shadow-lg p-6 text-white">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Sales Dashboard</h1>
+            <h1 className="text-3xl font-bold">Dashboard Penjualan</h1>
             <p className="text-blue-100 mt-2">Comprehensive CRM and Sales Management</p>
           </div>
           <ChartBarIcon className="h-12 w-12 text-blue-200" />

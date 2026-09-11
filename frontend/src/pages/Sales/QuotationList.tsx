@@ -21,6 +21,7 @@ import {
 import { useState, useEffect } from 'react'
 import axiosInstance from '../../utils/axiosConfig'
 import LoadingSpinner from '../../components/Common/LoadingSpinner'
+import QuotationDetailModal from './QuotationDetailModal'
 interface Quotation {
   id: number
   quotation_number: string
@@ -42,6 +43,7 @@ const QuotationList = () => {
 
 const [quotations, setQuotations] = useState<Quotation[]>([])
   const [loading, setLoading] = useState(true)
+  const [selectedQuotationId, setSelectedQuotationId] = useState<number | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [filters, setFilters] = useState({
@@ -139,7 +141,7 @@ const [quotations, setQuotations] = useState<Quotation[]>([])
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">💼 Quotations</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Penawaran</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Manage sales quotations and proposals</p>
         </div>
         <div className="flex gap-3">
@@ -366,12 +368,12 @@ const [quotations, setQuotations] = useState<Quotation[]>([])
                     
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex gap-2">
-                        <Link
-                          to={`/app/sales/quotations/${quotation.id}`}
+                        <button
+                          onClick={() => setSelectedQuotationId(quotation.id)}
                           className="text-indigo-600 hover:text-indigo-900"
                         >
                           <EyeIcon className="h-4 w-4" />
-                        </Link>
+                        </button>
                         <Link
                           to={`/app/sales/quotations/${quotation.id}/edit`}
                           className="text-green-600 hover:text-green-900"
@@ -443,6 +445,15 @@ const [quotations, setQuotations] = useState<Quotation[]>([])
           <li>• Track quotation performance in the dashboard</li>
         </ul>
       </div>
+
+      {selectedQuotationId && (
+        <QuotationDetailModal
+          quotationId={selectedQuotationId}
+          onClose={() => setSelectedQuotationId(null)}
+          onConvert={(id) => { handleConvertToOrder(id); setSelectedQuotationId(null) }}
+          getStatusColor={getStatusColor}
+        />
+      )}
     </div>
   )
 }

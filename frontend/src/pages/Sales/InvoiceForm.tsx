@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
+import axiosInstance from '../../utils/axiosConfig';
+import SearchableSelect from '../../components/SearchableSelect';
 import {
   BuildingOfficeIcon as Building,
   CalendarIcon as Calendar,
@@ -132,15 +134,8 @@ const InvoiceForm: React.FC = () => {
 
   const fetchCustomers = async () => {
     try {
-      const response = await fetch('/api/sales/customers', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setCustomers(data.customers || []);
-      }
+      const response = await axiosInstance.get('/api/sales/customers');
+      setCustomers(response.data.customers || []);
     } catch (error) {
       console.error('Failed to fetch customers:', error);
     }
@@ -148,15 +143,8 @@ const InvoiceForm: React.FC = () => {
 
   const fetchSalesOrders = async () => {
     try {
-      const response = await fetch('/api/sales/orders?status=confirmed,partial', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setSalesOrders(data.sales_orders || []);
-      }
+      const response = await axiosInstance.get('/api/sales/orders?status=confirmed,partial');
+      setSalesOrders(response.data.sales_orders || []);
     } catch (error) {
       console.error('Failed to fetch sales orders:', error);
     }
@@ -164,22 +152,15 @@ const InvoiceForm: React.FC = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('/api/products-new/?per_page=1000', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        const mappedProducts = (data.products || []).map((p: any) => ({
-          id: p.id,
-          code: p.kode_produk || p.code,
-          name: p.nama_produk || p.name,
-          primary_uom: p.satuan || p.primary_uom || 'pcs',
-          price: p.harga_jual || p.price || 0,
-        }));
-        setProducts(mappedProducts);
-      }
+      const response = await axiosInstance.get('/api/products-new/?per_page=1000');
+      const mappedProducts = (response.data.products || []).map((p: any) => ({
+        id: p.id,
+        code: p.kode_produk || p.code,
+        name: p.nama_produk || p.name,
+        primary_uom: p.satuan || p.primary_uom || 'pcs',
+        price: p.harga_jual || p.price || 0,
+      }));
+      setProducts(mappedProducts);
     } catch (error) {
       console.error('Failed to fetch products:', error);
     }
@@ -187,13 +168,9 @@ const InvoiceForm: React.FC = () => {
 
   const fetchInvoice = async () => {
     try {
-      const response = await fetch(`/api/finance/invoices/${id}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
+      const response = await axiosInstance.get(`/api/finance/invoices/${id}`);
+      {
+        const data = response.data;
         setFormData({
           invoice_type: data.invoice_type,
           invoice_date: data.invoice_date,
@@ -234,29 +211,18 @@ const InvoiceForm: React.FC = () => {
     }
 
     try {
-      const url = isEdit 
-        ? `/api/finance/invoices/${id}` 
+      const url = isEdit
+        ? `/api/finance/invoices/${id}`
         : '/api/finance/invoices';
-      
-      const method = isEdit ? 'PUT' : 'POST';
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(formData)
-      });
-
-      if (response.ok) {
-        navigate('/app/sales/invoices');
+      if (isEdit) {
+        await axiosInstance.put(url, formData);
       } else {
-        const errorData = await response.json();
-        setError(errorData.message || 'Failed to save invoice');
+        await axiosInstance.post(url, formData);
       }
-    } catch (error) {
-      setError('Network error occurred');
+      navigate('/app/sales/invoices');
+    } catch (error: any) {
+      setError(error?.response?.data?.message || 'Failed to save invoice');
     } finally {
       setLoading(false);
     }
@@ -554,18 +520,13 @@ const InvoiceForm: React.FC = () => {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                         <CubeIcon className="inline h-4 w-4 mr-1" />{t('production.product')}</label>
-                      <select
-                        value={item.product_id || ''}
-                        onChange={(e) => handleItemChange(index, 'product_id', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      >
-                        <option value="">Select Product</option>
-                        {products.map(product => (
-                          <option key={product.id} value={product.id}>
-                            {product.code} - {product.name}
-                          </option>
-                        ))}
-                      </select>
+                      <SearchableSelect
+                        options={products}
+                        value={item.product_id || null}
+                        onChange={(value) => handleItemChange(index, 'product_id', value)}
+                        placeholder="Select Product"
+                        className="w-full"
+                      />
                     </div>
 
                     <div>

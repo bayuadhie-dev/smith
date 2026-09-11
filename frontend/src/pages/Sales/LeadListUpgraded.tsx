@@ -234,7 +234,7 @@ const LeadListUpgraded: React.FC = () => {
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-3">
               <UserGroupIcon className="h-8 w-8" />
-              Lead Management
+              Prospek (Leads)
             </h1>
             <p className="text-blue-100 mt-1">Track and convert your sales leads</p>
           </div>

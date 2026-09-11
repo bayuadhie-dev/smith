@@ -1,9 +1,12 @@
-import React from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useGetSalesOrderQuery } from '../../services/api';
+import axiosInstance from '../../utils/axiosConfig';
+import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import DocumentGenerateButton from '../../components/DocumentGenerateButton';
+import ConfirmAndStartProductionModal from '../../components/Sales/ConfirmAndStartProductionModal';
 import {
   CalendarIcon,
   ClipboardDocumentListIcon,
@@ -15,11 +18,94 @@ import {
   TruckIcon,
   UserIcon
 } from '@heroicons/react/24/outline';
+
+interface ConfirmWarning {
+  product_name: string;
+  shortage: number;
+}
+interface ConfirmResult {
+  message: string;
+  created: { product_id: number; wo_number: string }[];
+  failed_items: { product_name: string; reason: string }[];
+  warnings?: ConfirmWarning[];
+}
+
 const SalesOrderDetails: React.FC = () => {
   const { t } = useLanguage();
 
   const { id } = useParams<{ id: string }>();
-  const { data: order, isLoading, error } = useGetSalesOrderQuery(id!);
+  const navigate = useNavigate();
+  const { data: order, isLoading, error, refetch } = useGetSalesOrderQuery(id!);
+  const [isTriggeringProduction, setIsTriggeringProduction] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  const [showShipModal, setShowShipModal] = useState(false);
+  const [shipDate, setShipDate] = useState(new Date().toISOString().split('T')[0]);
+  const [shipQty, setShipQty] = useState<Record<number, string>>({});
+  const [isShipping, setIsShipping] = useState(false);
+  const [shipError, setShipError] = useState<string | null>(null);
+
+  const openShipModal = () => {
+    const defaults: Record<number, string> = {};
+    (order?.items || []).forEach((item: any) => {
+      const remaining = Number(item.quantity) - Number(item.quantity_shipped || 0);
+      if (remaining > 0) defaults[item.id] = String(remaining);
+    });
+    setShipQty(defaults);
+    setShipDate(new Date().toISOString().split('T')[0]);
+    setShipError(null);
+    setShowShipModal(true);
+  };
+
+  const handleCreateShipment = async () => {
+    setShipError(null);
+    const itemsToShip = (order?.items || [])
+      .filter((item: any) => Number(shipQty[item.id]) > 0)
+      .map((item: any) => ({
+        product_id: item.product_id,
+        quantity: Number(shipQty[item.id]),
+        uom: item.uom,
+      }));
+    if (itemsToShip.length === 0) {
+      setShipError('Isi minimal 1 item dengan qty > 0.');
+      return;
+    }
+    setIsShipping(true);
+    try {
+      const res = await axiosInstance.post('/api/shipping/orders', {
+        sales_order_id: Number(id),
+        customer_id: order.customer_id,
+        shipping_date: shipDate,
+        shipping_address: order.delivery_address,
+        items: itemsToShip,
+      });
+      toast.success('Pengiriman dibuat');
+      setShowShipModal(false);
+      navigate(`/app/shipping/orders/${res.data.shipping_id}`);
+    } catch (err: any) {
+      setShipError(err.response?.data?.error || 'Gagal membuat pengiriman');
+    } finally {
+      setIsShipping(false);
+    }
+  };
+
+  // Fallback pemulihan untuk kasus langka: SO nyangkut di status 'confirmed' tanpa
+  // produksi jalan (mis. endpoint confirm lama dipanggil terpisah dari luar UI ini).
+  // confirm-and-start-production tidak bisa dipakai di sini karena butuh status
+  // 'draft' - jadi panggil langsung trigger-complete (cuma bagian produksinya saja).
+  const handleTriggerProductionOnly = async () => {
+    if (!window.confirm('SO ini sudah confirmed tapi belum ada SPK. Mulai produksi sekarang?')) return;
+    setIsTriggeringProduction(true);
+    try {
+      const res = await axiosInstance.post(`/api/workflow-complete/sales-order/${id}/trigger-complete`);
+      toast.success(res.data?.message || 'Produksi dimulai');
+      refetch();
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Gagal memulai produksi');
+    } finally {
+      setIsTriggeringProduction(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -87,13 +173,15 @@ const SalesOrderDetails: React.FC = () => {
               className="btn-secondary inline-flex items-center gap-2"
             >
               <PencilIcon className="h-4 w-4" />{t('common.edit')}</Link>
-            <Link
-              to={`/app/sales/orders/${id}/workflow`}
-              className="btn-primary inline-flex items-center gap-2"
-            >
-              <EyeIcon className="h-4 w-4" />
-              View Workflow
-            </Link>
+            {order.status !== 'draft' && (
+              <Link
+                to={`/app/sales/orders/${id}/workflow`}
+                className="btn-secondary inline-flex items-center gap-2"
+              >
+                <EyeIcon className="h-4 w-4" />
+                Riwayat Produksi &amp; Pengiriman
+              </Link>
+            )}
           </div>
         </div>
 
@@ -332,14 +420,24 @@ const SalesOrderDetails: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
         <div className="flex flex-wrap gap-3">
           {order.status === 'draft' && (
-            <button className="btn-primary">
-              Confirm Order
+            <button className="btn-primary" onClick={() => setShowConfirmModal(true)}>
+              Confirm & Mulai Produksi
             </button>
           )}
           {order.status === 'confirmed' && (
-            <Link to={`/app/sales/orders/${id}/workflow`} className="btn-primary">
-              Start Production Workflow
+            <button className="btn-primary" onClick={handleTriggerProductionOnly} disabled={isTriggeringProduction}>
+              {isTriggeringProduction ? 'Memproses...' : 'Mulai Produksi (SO sudah confirmed, belum jalan produksinya)'}
+            </button>
+          )}
+          {order.status !== 'draft' && (
+            <Link to={`/app/finance/invoices/new?sales_order_id=${id}`} className="btn-secondary">
+              Buat Invoice
             </Link>
+          )}
+          {order.status !== 'draft' && (
+            <button className="btn-secondary" onClick={openShipModal}>
+              Buat Pengiriman
+            </button>
           )}
           <Link to={`/app/sales/orders/${id}/edit`} className="btn-secondary">
             Edit Order
@@ -349,6 +447,67 @@ const SalesOrderDetails: React.FC = () => {
           </Link>
         </div>
       </div>
+
+      {showConfirmModal && (
+        <ConfirmAndStartProductionModal
+          orderId={id!}
+          orderNumber={order.order_number}
+          itemCount={order.items?.length || 0}
+          onClose={() => setShowConfirmModal(false)}
+          onSuccess={() => refetch()}
+        />
+      )}
+
+      {showShipModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Buat Pengiriman</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+              {order.order_number} — {order.customer_name} — isi qty yang mau dikirim sekarang (default = sisa belum dikirim).
+            </p>
+            {shipError && (
+              <div className="mb-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 p-3 rounded">{shipError}</div>
+            )}
+            <div className="mb-3">
+              <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Tanggal Kirim</label>
+              <input
+                type="date"
+                value={shipDate}
+                onChange={(e) => setShipDate(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-sm"
+              />
+            </div>
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              {(order.items || []).map((item: any) => {
+                const remaining = Number(item.quantity) - Number(item.quantity_shipped || 0);
+                return (
+                  <div key={item.id} className="flex items-center justify-between gap-3 border border-gray-200 dark:border-gray-700 rounded-lg p-2">
+                    <div className="text-sm">
+                      <div className="font-medium">{item.product_name}</div>
+                      <div className="text-gray-400 text-xs">Sisa belum dikirim: {remaining} {item.uom}</div>
+                    </div>
+                    <input
+                      type="number"
+                      min={0}
+                      max={remaining}
+                      value={shipQty[item.id] ?? ''}
+                      onChange={(e) => setShipQty({ ...shipQty, [item.id]: e.target.value })}
+                      disabled={remaining <= 0}
+                      className="w-24 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-sm text-right disabled:bg-gray-100 dark:disabled:bg-gray-800"
+                    />
+                  </div>
+                );
+              })}
+            </div>
+            <div className="flex justify-end gap-2 mt-5">
+              <button className="btn-outline" onClick={() => setShowShipModal(false)} disabled={isShipping}>Batal</button>
+              <button className="btn-primary" onClick={handleCreateShipment} disabled={isShipping}>
+                {isShipping ? 'Memproses...' : 'Buat Pengiriman'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

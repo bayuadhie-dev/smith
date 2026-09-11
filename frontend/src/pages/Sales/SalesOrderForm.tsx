@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useForm, useFieldArray } from 'react-hook-form'
 import toast from 'react-hot-toast'
+import axiosInstance from '../../utils/axiosConfig'
+import SearchableSelect from '../../components/SearchableSelect'
+import ShortageRow, { MaterialShortage } from '../../components/Sales/ShortageRow'
 import {
   useCreateSalesOrderMutation,
+  useUpdateSalesOrderMutation,
+  useGetSalesOrderQuery,
   useGetCustomersQuery
 } from '../../services/api'
 import {
@@ -56,18 +61,6 @@ interface BOMProduct {
   category?: string;
 }
 
-interface MaterialShortage {
-  item_name: string;
-  item_code: string;
-  required_quantity: number;
-  available_quantity: number;
-  shortage_quantity: number;
-  is_critical: boolean;
-  supplier_name: string | null;
-  lead_time_days: number;
-  unit_cost: number;
-}
-
 interface MaterialRequirements {
   product_id: number;
   product_name: string;
@@ -82,23 +75,46 @@ export default function SalesOrderForm() {
     const { t } = useLanguage();
 
 const navigate = useNavigate()
+  const { id } = useParams<{ id: string }>()
+  const isEdit = Boolean(id)
   const [isLoading, setIsLoading] = useState(false)
   const [bomProducts, setBomProducts] = useState<BOMProduct[]>([])
   const [bomInfo, setBomInfo] = useState<BOMInfo>({})
   const [materialRequirements, setMaterialRequirements] = useState<MaterialRequirements[]>([])
   const [loadingMRP, setLoadingMRP] = useState(false)
   const [showMRPPanel, setShowMRPPanel] = useState(false)
-  
+
   const { data: customers } = useGetCustomersQuery({})
+  const { data: existingOrder, isLoading: isLoadingOrder } = useGetSalesOrderQuery(id!, { skip: !isEdit })
   const [createOrder] = useCreateSalesOrderMutation()
-  
-  const { register, control, handleSubmit, watch, formState: { errors } } = useForm<SalesOrderFormData>({
+  const [updateOrder] = useUpdateSalesOrderMutation()
+
+  const { register, control, handleSubmit, watch, reset, setValue, formState: { errors } } = useForm<SalesOrderFormData>({
     defaultValues: {
       order_date: new Date().toISOString().split('T')[0],
       priority: 'normal',
       items: [{ product_id: 0, quantity: 1, unit_price: 0, discount_percent: 0 }]
     }
   })
+
+  // Pre-fill the form once the existing order arrives (edit mode only)
+  useEffect(() => {
+    if (isEdit && existingOrder) {
+      reset({
+        customer_id: existingOrder.customer_id,
+        order_date: existingOrder.order_date ? existingOrder.order_date.split('T')[0] : new Date().toISOString().split('T')[0],
+        required_date: existingOrder.required_date ? existingOrder.required_date.split('T')[0] : undefined,
+        priority: existingOrder.priority || 'normal',
+        notes: existingOrder.notes || '',
+        items: (existingOrder.items || []).map((item: any) => ({
+          product_id: item.product_id,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          discount_percent: item.discount_percent || 0
+        }))
+      })
+    }
+  }, [isEdit, existingOrder, reset])
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -114,14 +130,10 @@ const navigate = useNavigate()
 
   const fetchBOMProducts = async () => {
     try {
-      const response = await fetch('/api/production/boms?all=true', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
+      const response = await axiosInstance.get('/api/production/boms?all=true')
+
+      {
+        const data = response.data
         const bomMap: BOMInfo = {}
         const products: BOMProduct[] = []
         
@@ -190,16 +202,9 @@ const navigate = useNavigate()
         const url = `/api/production/boms/${bomProduct.id}/shortage-analysis?production_qty=${cartonsNeeded}`
         console.log('MRP Check - Fetching:', url)
         
-        const response = await fetch(url, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        })
-        
-        console.log('MRP Check - Response status:', response.status)
-        
-        if (response.ok) {
-          const data = await response.json()
+        try {
+          const response = await axiosInstance.get(url)
+          const data = response.data
           console.log('MRP Check - Response data:', data)
           requirements.push({
             product_id: bomProduct.product_id,
@@ -210,8 +215,8 @@ const navigate = useNavigate()
             shortage_items: data.shortage_items || [],
             has_sufficient_stock: (data.total_shortage_items || 0) === 0
           })
-        } else {
-          console.error('MRP Check - Error response:', await response.text())
+        } catch (err) {
+          console.error('MRP Check - Error response:', err)
         }
       }
       
@@ -262,7 +267,7 @@ const navigate = useNavigate()
     setIsLoading(true)
     try {
       // Validate items
-      const validItems = data.items.filter(item => 
+      const validItems = data.items.filter(item =>
         item.product_id && item.quantity > 0 && item.unit_price > 0
       )
 
@@ -271,18 +276,45 @@ const navigate = useNavigate()
         return
       }
 
+      const normalizedItems = validItems.map(item => ({
+        ...item,
+        product_id: parseInt(item.product_id.toString()),
+        quantity: parseFloat(item.quantity.toString()),
+        unit_price: parseFloat(item.unit_price.toString()),
+        discount_percent: parseFloat((item.discount_percent || 0).toString())
+      }))
+
+      if (isEdit) {
+        try {
+          await updateOrder({
+            id: id!,
+            customer_id: parseInt(data.customer_id.toString()),
+            required_date: data.required_date,
+            priority: data.priority,
+            notes: data.notes,
+            items: normalizedItems
+          }).unwrap()
+          toast.success('Sales Order updated successfully!')
+          navigate('/app/sales/orders')
+        } catch (error: any) {
+          // 409 = specific item(s) blocked because a linked SPK already started
+          if (error.status === 409 && error.data?.blocked_items) {
+            toast.error(error.data.error || 'Sebagian item tidak bisa diedit karena SPK terkait sudah berjalan', { duration: 8000 })
+          } else {
+            toast.error(error.data?.error || 'Failed to update sales order')
+          }
+        } finally {
+          setIsLoading(false)
+        }
+        return
+      }
+
       const result = await createOrder({
         ...data,
         customer_id: parseInt(data.customer_id.toString()),
-        items: validItems.map(item => ({
-          ...item,
-          product_id: parseInt(item.product_id.toString()),
-          quantity: parseFloat(item.quantity.toString()),
-          unit_price: parseFloat(item.unit_price.toString()),
-          discount_percent: parseFloat((item.discount_percent || 0).toString())
-        }))
+        items: normalizedItems
       }).unwrap()
-      
+
       // Check for material shortage and auto-create PO
       const hasShortage = materialRequirements.some(r => !r.has_sufficient_stock)
       if (hasShortage && result.order_id) {
@@ -301,26 +333,19 @@ const navigate = useNavigate()
             })))
           
           // Call MRP to create PO
-          const poResponse = await fetch('/api/mrp/check-and-create-po', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
-            body: JSON.stringify({
-              items: validItems.map(item => ({
-                product_id: parseInt(item.product_id.toString()),
-                quantity: parseFloat(item.quantity.toString())
-              })),
-              reference_type: 'sales_order',
-              reference_id: result.order_id,
-              reference_number: result.order_number,
-              auto_create_po: true
-            })
+          const poResponse = await axiosInstance.post('/api/mrp/check-and-create-po', {
+            items: validItems.map(item => ({
+              product_id: parseInt(item.product_id.toString()),
+              quantity: parseFloat(item.quantity.toString())
+            })),
+            reference_type: 'sales_order',
+            reference_id: result.order_id,
+            reference_number: result.order_number,
+            auto_create_po: true
           })
-          
-          if (poResponse.ok) {
-            const poResult = await poResponse.json()
+
+          {
+            const poResult = poResponse.data
             if (poResult.purchase_orders && poResult.purchase_orders.length > 0) {
               toast.success(
                 `${poResult.purchase_orders.length} Purchase Order(s) auto-created for material shortage!`,
@@ -334,19 +359,8 @@ const navigate = useNavigate()
         }
       }
       
-      // Check if workflow was created
-      if (result.workflow_id) {
-        toast.success(`Sales Order created and submitted for approval! (Workflow ID: ${result.workflow_id})`)
-        // Optionally navigate to approval page
-        if (window.confirm('Order submitted for approval. View approval workflow?')) {
-          navigate(`/app/approval/${result.workflow_id}`)
-        } else {
-          navigate('/app/sales/orders')
-        }
-      } else {
-        toast.success('Sales Order created successfully!')
-        navigate('/app/sales/orders')
-      }
+      toast.success(`Sales Order ${result.order_number || ''} berhasil dibuat`)
+      navigate('/app/sales/orders')
     } catch (error: any) {
       toast.error(error.data?.error || 'Failed to create sales order')
     } finally {
@@ -370,12 +384,20 @@ const navigate = useNavigate()
 
   const selectedCustomer = customers?.customers?.find((c: any) => c.id == watch('customer_id'))
 
+  if (isEdit && isLoadingOrder) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Create Sales Order</h1>
-          <p className="text-gray-600 dark:text-gray-300">Create a new sales order for customer</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{isEdit ? 'Edit Sales Order' : 'Create Sales Order'}</h1>
+          <p className="text-gray-600 dark:text-gray-300">{isEdit ? 'Update an existing sales order' : 'Create a new sales order for customer'}</p>
         </div>
         <button
           onClick={() => navigate('/app/sales/orders')}
@@ -529,19 +551,18 @@ const navigate = useNavigate()
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                         Product *
                       </label>
-                      <select
-                        {...register(`items.${index}.product_id` as const, {
-                          required: 'Product is required'
-                        })}
-                        className="input-field"
-                      >
-                        <option value="">Select product</option>
-                        {bomProducts.map((product) => (
-                          <option key={product.product_id} value={product.product_id}>
-                            {product.product_code} - {product.product_name}
-                          </option>
-                        ))}
-                      </select>
+                      <SearchableSelect
+                        options={bomProducts.map((product) => ({
+                          id: product.product_id,
+                          code: product.product_code,
+                          name: product.product_name
+                        }))}
+                        value={watchedItems[index]?.product_id || null}
+                        onChange={(value) => setValue(`items.${index}.product_id`, value as any, { shouldValidate: true })}
+                        placeholder="Select product"
+                        className="w-full"
+                        required
+                      />
                     </div>
 
                     <div>
@@ -770,26 +791,7 @@ const navigate = useNavigate()
                           </thead>
                           <tbody>
                             {req.shortage_items.map((item, i) => (
-                              <tr key={i} className={`border-b last:border-0 ${item.is_critical ? 'bg-red-50' : ''}`}>
-                                <td className="py-2">
-                                  <span className="font-medium">{item.item_name}</span>
-                                  {item.is_critical && (
-                                    <span className="ml-2 px-1.5 py-0.5 bg-red-600 text-white text-xs rounded">CRITICAL</span>
-                                  )}
-                                  <p className="text-xs text-gray-500 dark:text-gray-400">{item.item_code}</p>
-                                </td>
-                                <td className="py-2 text-right">{item.required_quantity.toLocaleString()}</td>
-                                <td className="py-2 text-right">{item.available_quantity.toLocaleString()}</td>
-                                <td className="py-2 text-right font-medium text-red-600">
-                                  {item.shortage_quantity.toLocaleString()}
-                                </td>
-                                <td className="py-2">
-                                  {item.supplier_name || '-'}
-                                  {item.lead_time_days > 0 && (
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">{item.lead_time_days} days</p>
-                                  )}
-                                </td>
-                              </tr>
+                              <ShortageRow key={i} item={item} depth={0} />
                             ))}
                           </tbody>
                         </table>
@@ -810,7 +812,7 @@ const navigate = useNavigate()
                           the missing materials. The order will proceed to production once materials are received.
                         </p>
                         <p className="text-sm text-amber-600 mt-2">
-                          Workflow: Sales Order → Purchase Requisition → PO → GRN → Work Order → QC → Shipping
+                          Workflow: Sales Order → Purchase Requisition → PO → GRN → SPK → QC → Shipping
                         </p>
                       </div>
                     </div>
@@ -847,7 +849,7 @@ const navigate = useNavigate()
             className="btn-primary"
             disabled={isLoading}
           >
-            {isLoading ? 'Creating...' : 'Create Sales Order'}
+            {isLoading ? (isEdit ? 'Saving...' : 'Creating...') : (isEdit ? 'Save Changes' : 'Create Sales Order')}
           </button>
         </div>
       </form>

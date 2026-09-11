@@ -183,6 +183,13 @@ class Customer(db.Model):
     # Business Information
     credit_limit = db.Column(db.Numeric(15, 2), default=0)
     payment_terms_days = db.Column(db.Integer, default=30)
+
+    # Account Preferences: overrides GlobalAccountDefault('accounts_receivable')
+    # when set. Per Accurate's pattern (confirmed via web search 2026-08-17),
+    # piutang usaha can be set per-customer, same as accounts payable is
+    # per-supplier via Supplier.akun_hutang_usaha_id.
+    akun_piutang_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
+
     customer_type = db.Column(db.String(50), nullable=True)  # wholesale, retail, distributor
     industry = db.Column(db.String(100), nullable=True)
     company_size = db.Column(db.String(50), nullable=True)  # startup, small, medium, large, enterprise
@@ -623,56 +630,200 @@ class SalesReport(db.Model):
 # SALES FORECAST
 # ===============================
 
-class SalesForecast(db.Model):
-    __tablename__ = 'sales_forecasts'
-    
+class ForecastHeader(db.Model):
+    """Sales Forecast Matrix - 1 row per rolling 12-month window (see
+    SALES_FORECAST_MATRIX_RENCANA_TEKNIS.md, rombak 2026-08-25 per keputusan manajemen:
+    forecast TIDAK terkunci ke tahun kalender Jan-Des - bisa mulai dari bulan apa saja,
+    mis. mulai Agustus 2026 -> berlaku sampai Juli 2027). `period_start` selalu tanggal 1
+    bulan mulai; `period_end` (12 bulan setelahnya) dihitung, tidak disimpan.
+    Replaces the old SalesForecast (1 row per product+period) - retired 2026-08-24, no data
+    migration (old draft data was disposable per explicit confirmation)."""
+    __tablename__ = 'forecast_headers'
+
     id = db.Column(db.Integer, primary_key=True)
-    forecast_number = db.Column(db.String(100), unique=True, nullable=False, index=True)
-    name = db.Column(db.String(200), nullable=False)
-    
-    # Forecast Period
-    forecast_type = db.Column(db.String(20), nullable=False)  # monthly, quarterly, yearly
-    period_start = db.Column(db.Date, nullable=False)
-    period_end = db.Column(db.Date, nullable=False)
-    
-    # Forecast Details
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
-    customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'), nullable=True)
-    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=True)
-    
-    # Forecast Values
-    best_case = db.Column(db.Numeric(15, 2), default=0)
-    most_likely = db.Column(db.Numeric(15, 2), default=0)
-    worst_case = db.Column(db.Numeric(15, 2), default=0)
-    committed = db.Column(db.Numeric(15, 2), default=0)
-    
-    # Tracking
-    actual_value = db.Column(db.Numeric(15, 2), default=0)
-    variance = db.Column(db.Numeric(15, 2), default=0)
-    accuracy_percentage = db.Column(db.Numeric(5, 2), default=0)
-    
-    # Resource Planning
-    required_manpower = db.Column(db.Integer, default=0)  # Jumlah kebutuhan man power
-    shifts_per_day = db.Column(db.Integer, default=1)  # Jumlah shift per hari
-    
-    # Status
-    status = db.Column(db.String(50), nullable=False, default='draft')  # draft, submitted, approved, closed
-    confidence_level = db.Column(db.String(20), nullable=True)  # high, medium, low
-    methodology = db.Column(db.String(100), nullable=True)  # pipeline, historical, quota
-    
-    notes = db.Column(db.Text, nullable=True)
-    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    period_start = db.Column(db.Date, nullable=False)  # always day=1
+    name = db.Column(db.String(200), nullable=True)
+    status = db.Column(db.String(20), nullable=False, default='draft')  # draft, approved (§3.3)
     approved_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     approved_at = db.Column(db.DateTime, nullable=True)
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # Relationships
-    user = db.relationship('User', foreign_keys=[user_id])
-    customer = db.relationship('Customer')
-    product = db.relationship('Product')
+
+    lines = db.relationship('ForecastLine', backref='header', cascade='all, delete-orphan', lazy='selectin')
     created_by_user = db.relationship('User', foreign_keys=[created_by])
     approved_by_user = db.relationship('User', foreign_keys=[approved_by])
-    
+
+    @property
+    def period_end(self):
+        """Last day of the 12th month in this window (inclusive)."""
+        from dateutil.relativedelta import relativedelta
+        from calendar import monthrange
+        last_month = self.period_start + relativedelta(months=11)
+        return last_month.replace(day=monthrange(last_month.year, last_month.month)[1])
+
+    def month_date(self, month_index):
+        """month_index 1-12 (position in this forecast's window, NOT calendar month) ->
+        actual calendar date (day=1) for that slot."""
+        from dateutil.relativedelta import relativedelta
+        return self.period_start + relativedelta(months=month_index - 1)
+
     def __repr__(self):
-        return f'<SalesForecast {self.forecast_number} - {self.name}>'
+        return f'<ForecastHeader {self.period_start}>'
+
+
+class ForecastLine(db.Model):
+    """1 row per product per ForecastHeader. Rombak putaran 6 (2026-08-25, keputusan
+    manajemen - grid rolling + bisa geser lihat histori): qty_m1..qty_m12 (12 kolom
+    tetap terikat ke header.period_start) DIHAPUS, diganti child table ForecastLineMonth
+    (1 baris per bulan KALENDER asli, sparse, tidak dibatasi 12 bulan). Ini yang bikin
+    grid bisa "rolling" (selalu bisa query bulan berjalan + 11 ke depan) SEKALIGUS bisa
+    digeser mundur lihat histori (query bulan berapa saja, tidak cuma window awal).
+    best_case/most_likely/worst_case/committed sudah lama non-aktif dari sebelum rombak
+    ini, ikut dihapus sekalian (tidak pernah dipakai UI matrix)."""
+    __tablename__ = 'forecast_lines'
+
+    id = db.Column(db.Integer, primary_key=True)
+    header_id = db.Column(db.Integer, db.ForeignKey('forecast_headers.id', ondelete='CASCADE'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    product = db.relationship('Product')
+    conversions = db.relationship('ForecastLineConversion', backref='line', cascade='all, delete-orphan', lazy='selectin')
+    months = db.relationship('ForecastLineMonth', backref='line', cascade='all, delete-orphan', lazy='selectin')
+
+    __table_args__ = (
+        db.UniqueConstraint('header_id', 'product_id', name='uq_forecast_line_header_product'),
+    )
+
+    def __repr__(self):
+        return f'<ForecastLine header={self.header_id} product={self.product_id}>'
+
+
+class ForecastLineMonth(db.Model):
+    """1 baris per (ForecastLine, bulan kalender asli) - sparse, dibuat baru putaran 6.
+    `period` SELALU tanggal 1 bulan kalender itu (bukan slot 1-12 relatif ke header lagi)
+    - inilah yang memungkinkan grid rolling (query period >= bulan-ini) dan digeser bebas
+    ke bulan manapun buat lihat histori, tidak terikat ke window 12 bulan tetap."""
+    __tablename__ = 'forecast_line_months'
+
+    id = db.Column(db.Integer, primary_key=True)
+    line_id = db.Column(db.Integer, db.ForeignKey('forecast_lines.id', ondelete='CASCADE'), nullable=False)
+    period = db.Column(db.Date, nullable=False)  # selalu day=1
+    quantity = db.Column(db.Numeric(15, 2), nullable=False, default=0)
+    # "Grid forecast harus hidup" (masukan user 2026-08-26): diisi timestamp saat qty sel ini
+    # dinaikkan OTOMATIS oleh _bump_forecast_for_so_item() (utils/sales_order_workflow.py)
+    # karena demand SO riil melampaui target - dikosongkan lagi (None) begitu user edit manual
+    # cell ini (lihat update_forecast_line di routes/sales.py), supaya keterangan "otomatis"
+    # ini akurat, bukan nempel selamanya.
+    so_bumped_at = db.Column(db.DateTime, nullable=True)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint('line_id', 'period', name='uq_forecast_line_month_line_period'),
+    )
+
+    def __repr__(self):
+        return f'<ForecastLineMonth line={self.line_id} period={self.period}>'
+
+
+class ForecastLineConversion(db.Model):
+    """Tracks which (line, month) cells have been converted to a real Sales Order - a small
+    sparse child table (§5) instead of 12 more wide columns, since most cells are never
+    converted.
+
+    2026-08-24 (tracking realisasi): no longer unique per (line, month) - a cell can be
+    converted MULTIPLE times over time (partial realizations, e.g. 12,000 now + more
+    later against the same forecasted 15,000), each row here is 1 realization slice with
+    its own `quantity`. converted_qty for a cell = SUM(quantity) over all its rows."""
+    __tablename__ = 'forecast_line_conversions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    line_id = db.Column(db.Integer, db.ForeignKey('forecast_lines.id', ondelete='CASCADE'), nullable=False)
+    # 2026-08-25 (rombak putaran 6): `month` (slot 1-12 relatif ke header.period_start)
+    # diganti `period` (Date, bulan kalender ASLI) - grid sekarang rolling/bisa digeser,
+    # jadi realisasi harus tertaut ke bulan kalender nyata, bukan slot posisi lagi.
+    period = db.Column(db.Date, nullable=False)  # selalu day=1
+    quantity = db.Column(db.Numeric(15, 2), nullable=False, default=0)
+    # 2026-08-25 (rombak putaran 5, keputusan manajemen): forecast di-convert jadi Work
+    # Order (produksi build-ahead), BUKAN Sales Order lagi - forecast itu agregat semua
+    # customer, sedangkan SO/customer riil baru muncul dari Manual/Quotation dan itu yang
+    # reserve stok FG-nya berdasarkan tanggal kirim. sales_order_id dipertahankan
+    # nullable (baris LAMA dari sebelum rombak ini masih tertaut ke SO).
+    # 2026-08-26 (rombak putaran 7, keputusan manajemen): forecast TIDAK lagi langsung
+    # jadi Work Order - dikirim ke Monthly Schedule (routes/schedule_grid.py) dulu supaya
+    # PPIC review & pecah ke Weekly Planning sebelum WO beneran terbit (WorkOrder/Monthly
+    # Schedule/Weekly Planning/Batch Planning jadi 1 alur nyambung, bukan lompat langsung).
+    # work_order_id dipertahankan nullable (baris LAMA putaran 5 masih tertaut ke WO
+    # langsung) - baris BARU pakai monthly_schedule_id. Tepat 1 dari ketiganya harus
+    # terisi (lihat CheckConstraint).
+    sales_order_id = db.Column(db.Integer, db.ForeignKey('sales_orders.id'), nullable=True)
+    work_order_id = db.Column(db.Integer, db.ForeignKey('work_orders.id'), nullable=True)
+    monthly_schedule_id = db.Column(db.Integer, db.ForeignKey('monthly_schedules.id'), nullable=True)
+    converted_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    converted_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    sales_order = db.relationship('SalesOrder')
+    work_order = db.relationship('WorkOrder')
+    monthly_schedule = db.relationship('MonthlySchedule')
+    converted_by_user = db.relationship('User')
+
+    __table_args__ = (
+        db.CheckConstraint(
+            '(CASE WHEN sales_order_id IS NOT NULL THEN 1 ELSE 0 END + '
+            'CASE WHEN work_order_id IS NOT NULL THEN 1 ELSE 0 END + '
+            'CASE WHEN monthly_schedule_id IS NOT NULL THEN 1 ELSE 0 END) = 1',
+            name='check_forecast_conversion_so_or_wo'
+        ),
+    )
+
+    def __repr__(self):
+        return f'<ForecastLineConversion line={self.line_id} month={self.month}>'
+
+
+class CustomerDeposit(db.Model):
+    """
+    Customer uang muka (down payment) - stored as a free-floating balance per
+    customer, not tied to a specific Sales Order, per Bayu's 2026-08-16
+    decision. Money in (this row) posts as a liability (akun_uang_muka_
+    pelanggan_id credit) until consumed by an invoice.
+    """
+    __tablename__ = 'customer_deposits'
+
+    id = db.Column(db.Integer, primary_key=True)
+    deposit_number = db.Column(db.String(100), unique=True, nullable=False, index=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'), nullable=False, index=True)
+    deposit_date = db.Column(db.Date, nullable=False)
+    amount = db.Column(db.Numeric(15, 2), nullable=False)
+    amount_used = db.Column(db.Numeric(15, 2), nullable=False, default=0)
+    notes = db.Column(db.Text, nullable=True)
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    customer = db.relationship('Customer')
+
+    @property
+    def amount_available(self):
+        return float(self.amount) - float(self.amount_used)
+
+
+class CustomerDepositUsage(db.Model):
+    """
+    Tracks how much of a given CustomerDeposit was applied to a given
+    Invoice - a many-to-many join with the amount applied, since one
+    deposit can be split across multiple invoices and one invoice could
+    theoretically draw from multiple deposits (oldest-first, see
+    apply_customer_deposit() in finance_helpers.py).
+    """
+    __tablename__ = 'customer_deposit_usages'
+
+    id = db.Column(db.Integer, primary_key=True)
+    deposit_id = db.Column(db.Integer, db.ForeignKey('customer_deposits.id'), nullable=False, index=True)
+    invoice_id = db.Column(db.Integer, db.ForeignKey('invoices.id'), nullable=False, index=True)
+    amount_applied = db.Column(db.Numeric(15, 2), nullable=False)
+    applied_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    deposit = db.relationship('CustomerDeposit')

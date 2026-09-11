@@ -4,6 +4,7 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { useLanguage } from '../../contexts/LanguageContext';
 import axiosInstance from '../../utils/axiosConfig';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
+import SearchableSelect from '../../components/SearchableSelect';
 import {
   ArrowLeftIcon,
   ExclamationTriangleIcon,
@@ -14,8 +15,8 @@ import {
 
 interface QuotationFormData {
   customer_id: number
-  issue_date: string
-  expiry_date: string
+  quote_date: string
+  valid_until: string
   terms_conditions?: string
   notes?: string
   items: {
@@ -23,6 +24,7 @@ interface QuotationFormData {
     product_name?: string
     description?: string
     quantity: number
+    uom: string
     unit_price: number
     discount_percent: number
     tax_percent: number
@@ -59,11 +61,12 @@ const QuotationForm = () => {
   
   const { register, handleSubmit, watch, setValue, control, formState: { errors } } = useForm<QuotationFormData>({
     defaultValues: {
-      issue_date: new Date().toISOString().split('T')[0],
-      expiry_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      quote_date: new Date().toISOString().split('T')[0],
+      valid_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       items: [{
         product_id: 0,
         quantity: 1,
+        uom: 'pcs',
         unit_price: 0,
         discount_percent: 0,
         tax_percent: 11,
@@ -122,8 +125,8 @@ const QuotationForm = () => {
       const quotation = response.data.quotation
       
       setValue('customer_id', quotation.customer_id)
-      setValue('issue_date', quotation.issue_date)
-      setValue('expiry_date', quotation.expiry_date)
+      setValue('quote_date', quotation.quote_date)
+      setValue('valid_until', quotation.valid_until)
       setValue('terms_conditions', quotation.terms_conditions)
       setValue('notes', quotation.notes)
       setValue('items', quotation.items)
@@ -172,6 +175,7 @@ const QuotationForm = () => {
     if (product) {
       setValue(`items.${itemIndex}.product_name`, product.name)
       setValue(`items.${itemIndex}.unit_price`, product.price)
+      setValue(`items.${itemIndex}.uom`, product.primary_uom)
       calculateItemTotal(itemIndex)
     }
   }
@@ -189,10 +193,28 @@ const QuotationForm = () => {
     }
   }
 
+  // register() already returns its own onChange (updates RHF's internal
+  // state, which watch()/watchedItems relies on) - a plain onChange prop
+  // added after the {...register(...)} spread REPLACES that onChange
+  // instead of adding to it, so watchedItems never sees the new keystroke
+  // and calculateItemTotal() always computes off the previous value
+  // (looks like the total "lags" one keystroke behind). This wraps both.
+  const registerCalc = (fieldPath: `items.${number}.${'quantity' | 'unit_price' | 'discount_percent' | 'tax_percent'}`, index: number) => {
+    const { onChange, ...rest } = register(fieldPath)
+    return {
+      ...rest,
+      onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+        onChange(e)
+        calculateItemTotal(index)
+      }
+    }
+  }
+
   const addItem = () => {
     append({
       product_id: 0,
       quantity: 1,
+      uom: 'pcs',
       unit_price: 0,
       discount_percent: 0,
       tax_percent: 11,
@@ -262,11 +284,11 @@ const QuotationForm = () => {
               </label>
               <input
                 type="date"
-                {...register('issue_date', { required: 'Issue date is required' })}
+                {...register('quote_date', { required: 'Issue date is required' })}
                 className="input"
               />
-              {errors.issue_date && (
-                <p className="mt-1 text-sm text-red-600">{errors.issue_date.message}</p>
+              {errors.quote_date && (
+                <p className="mt-1 text-sm text-red-600">{errors.quote_date.message}</p>
               )}
             </div>
 
@@ -277,11 +299,11 @@ const QuotationForm = () => {
               </label>
               <input
                 type="date"
-                {...register('expiry_date', { required: 'Expiry date is required' })}
+                {...register('valid_until', { required: 'Expiry date is required' })}
                 className="input"
               />
-              {errors.expiry_date && (
-                <p className="mt-1 text-sm text-red-600">{errors.expiry_date.message}</p>
+              {errors.valid_until && (
+                <p className="mt-1 text-sm text-red-600">{errors.valid_until.message}</p>
               )}
             </div>
           </div>
@@ -346,18 +368,16 @@ const QuotationForm = () => {
                 <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('production.product')}</label>
-                    <select
-                      {...register(`items.${index}.product_id` as const)}
-                      onChange={(e) => handleProductChange(index, parseInt(e.target.value))}
-                      className="input"
-                    >
-                      <option value="">Select product</option>
-                      {products.map((product) => (
-                        <option key={product.id} value={product.id}>
-                          {product.code} - {product.name}
-                        </option>
-                      ))}
-                    </select>
+                    <SearchableSelect
+                      options={products}
+                      value={watchedItems[index]?.product_id || null}
+                      onChange={(value) => {
+                        setValue(`items.${index}.product_id`, Number(value))
+                        handleProductChange(index, Number(value))
+                      }}
+                      placeholder="Select product"
+                      className="w-full"
+                    />
                   </div>
 
                   <div>
@@ -366,8 +386,7 @@ const QuotationForm = () => {
                       type="number"
                       step="0.01"
                       min="0"
-                      {...register(`items.${index}.quantity` as const)}
-                      onChange={() => calculateItemTotal(index)}
+                      {...registerCalc(`items.${index}.quantity`, index)}
                       className="input"
                     />
                   </div>
@@ -378,8 +397,7 @@ const QuotationForm = () => {
                       type="number"
                       step="0.01"
                       min="0"
-                      {...register(`items.${index}.unit_price` as const)}
-                      onChange={() => calculateItemTotal(index)}
+                      {...registerCalc(`items.${index}.unit_price`, index)}
                       className="input"
                     />
                   </div>
@@ -391,8 +409,7 @@ const QuotationForm = () => {
                       step="0.01"
                       min="0"
                       max="100"
-                      {...register(`items.${index}.discount_percent` as const)}
-                      onChange={() => calculateItemTotal(index)}
+                      {...registerCalc(`items.${index}.discount_percent`, index)}
                       className="input"
                     />
                   </div>
@@ -403,8 +420,7 @@ const QuotationForm = () => {
                       type="number"
                       step="0.01"
                       min="0"
-                      {...register(`items.${index}.tax_percent` as const)}
-                      onChange={() => calculateItemTotal(index)}
+                      {...registerCalc(`items.${index}.tax_percent`, index)}
                       className="input"
                     />
                   </div>

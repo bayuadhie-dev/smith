@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useLanguage } from '../../contexts/LanguageContext';
 import axiosInstance from '../../utils/axiosConfig'
 import LoadingSpinner from '../../components/Common/LoadingSpinner'
@@ -51,6 +51,8 @@ interface User {
 
 const OpportunityForm = () => {
   const navigate = useNavigate()
+  const { id } = useParams<{ id: string }>()
+  const isEditMode = !!id
   const { t } = useLanguage();
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -76,7 +78,7 @@ const OpportunityForm = () => {
 
   useEffect(() => {
     loadInitialData()
-  }, [])
+  }, [id])
 
   useEffect(() => {
     if (formData.pipeline_id) {
@@ -112,8 +114,27 @@ const OpportunityForm = () => {
 
       // Set default pipeline
       const defaultPipeline = pipelinesRes.data.pipelines?.find((p: Pipeline) => p.is_default)
-      if (defaultPipeline) {
+      if (defaultPipeline && !isEditMode) {
         setFormData(prev => ({ ...prev, pipeline_id: defaultPipeline.id.toString() }))
+      }
+
+      // Edit mode: load existing opportunity data
+      if (isEditMode) {
+        const oppRes = await axiosInstance.get(`/api/sales/opportunities/${id}`)
+        const opp = oppRes.data
+        setFormData({
+          name: opp.name || '',
+          description: opp.description || '',
+          lead_id: opp.lead_id ? String(opp.lead_id) : '',
+          customer_id: opp.customer_id ? String(opp.customer_id) : '',
+          pipeline_id: opp.pipeline_id ? String(opp.pipeline_id) : '',
+          stage_id: opp.stage_id ? String(opp.stage_id) : '',
+          value: opp.value !== undefined && opp.value !== null ? String(opp.value) : '',
+          probability: opp.probability !== undefined && opp.probability !== null ? String(opp.probability) : '',
+          expected_close_date: opp.expected_close_date || '',
+          assigned_to: opp.assigned_to ? String(opp.assigned_to) : '',
+          source: opp.source || ''
+        })
       }
 
     } catch (error) {
@@ -154,14 +175,18 @@ const OpportunityForm = () => {
         source: formData.source || undefined
       }
 
-      const response = await axiosInstance.post('/api/sales/opportunities', payload)
-      
-      alert(`Opportunity created successfully!\nOpportunity #: ${response.data.opportunity_number}`)
+      if (isEditMode) {
+        await axiosInstance.put(`/api/sales/opportunities/${id}`, payload)
+        alert('Opportunity updated successfully!')
+      } else {
+        const response = await axiosInstance.post('/api/sales/opportunities', payload)
+        alert(`Opportunity created successfully!\nOpportunity #: ${response.data.opportunity_number}`)
+      }
       navigate('/app/sales/opportunities')
-      
+
     } catch (error: any) {
-      console.error('Error creating opportunity:', error)
-      alert(`Error creating opportunity: ${error.response?.data?.error || error.message}`)
+      console.error('Error saving opportunity:', error)
+      alert(`Error saving opportunity: ${error.response?.data?.error || error.message}`)
     } finally {
       setSubmitting(false)
     }
@@ -183,8 +208,8 @@ const OpportunityForm = () => {
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">🎯 {t('sales.new_opportunity')}</h1>
-            <p className="text-gray-600 dark:text-gray-300 mt-1">Create a new sales opportunity</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">🎯 {isEditMode ? 'Edit Opportunity' : t('sales.new_opportunity')}</h1>
+            <p className="text-gray-600 dark:text-gray-300 mt-1">{isEditMode ? 'Update this sales opportunity' : 'Create a new sales opportunity'}</p>
           </div>
         </div>
       </div>
@@ -366,7 +391,7 @@ const OpportunityForm = () => {
                 className="input w-full"
                 value={formData.expected_close_date}
                 onChange={(e) => handleInputChange('expected_close_date', e.target.value)}
-                min={new Date().toISOString().split('T')[0]}
+                min={isEditMode ? undefined : new Date().toISOString().split('T')[0]}
               />
             </div>
 
@@ -429,10 +454,10 @@ const OpportunityForm = () => {
             {submitting ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Creating...
+                {isEditMode ? 'Saving...' : 'Creating...'}
               </>
             ) : (
-              'Create Opportunity'
+              isEditMode ? 'Save Changes' : 'Create Opportunity'
             )}
           </button>
         </div>

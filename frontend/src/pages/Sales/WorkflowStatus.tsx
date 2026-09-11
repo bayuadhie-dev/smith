@@ -1,23 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useParams, Link } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import {
-  ArrowRightIcon,
   BeakerIcon,
   CheckCircleIcon,
   ClockIcon,
   CogIcon,
   DocumentTextIcon,
   ExclamationTriangleIcon,
-  TruckIcon
+  TruckIcon,
+  ArrowLeftIcon,
 } from '@heroicons/react/24/outline';
-interface WorkflowStep {
-  step_name: string;
-  step_order: number;
-  status: string;
-  completed_at?: string;
-}
 
 interface WorkOrder {
   id: number;
@@ -58,16 +51,22 @@ interface WorkflowData {
     status: string;
     customer_name: string;
   };
-  workflow_steps: WorkflowStep[];
   work_orders: WorkOrder[];
   quality_inspections: QualityInspection[];
   shipping_orders: ShippingOrder[];
   invoices: Invoice[];
 }
 
+// Rebuilt 2026-08-24 (Rombak SO): halaman ini dulunya punya tombol "Confirm Sales
+// Order" dan "Trigger Complete Workflow" sendiri - duplikat 2-langkah dari modal
+// "Confirm & Mulai Produksi" yang sudah dibuat di SalesOrderDetails.tsx
+// (POST /confirm-and-start-production, 1 aksi atomik). Timeline "Workflow Progress"
+// juga dihapus - itu baca dari tabel WorkflowStep yang sudah tidak pernah diisi lagi
+// sejak trigger_mrp_from_sales_order() dilepas dari confirm_order() (lihat
+// SO_APPROVE_FLOW_TRACE.md) - makanya selalu tampil kosong ("cacat, tidak ada
+// detail"). Halaman ini sekarang MURNI read-only: riwayat WO/QC/Shipping/Invoice
+// per SO. Aksi approve SO sepenuhnya ada di SalesOrderDetails.tsx / List.
 const WorkflowStatus: React.FC = () => {
-  const { t } = useLanguage();
-
   const { id } = useParams<{ id: string }>();
   const [workflowData, setWorkflowData] = useState<WorkflowData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -86,26 +85,6 @@ const WorkflowStatus: React.FC = () => {
       setError(error.response?.data?.error || 'Failed to fetch workflow status');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const confirmSalesOrder = async () => {
-    try {
-      await axiosInstance.post(`/api/workflow-complete/sales-order/${id}/confirm`);
-      alert('Sales order confirmed successfully!');
-      fetchWorkflowStatus();
-    } catch (error: any) {
-      alert(error.response?.data?.error || 'Failed to confirm sales order');
-    }
-  };
-
-  const triggerCompleteWorkflow = async () => {
-    try {
-      await axiosInstance.post(`/api/workflow-complete/sales-order/${id}/trigger-complete`);
-      alert('Workflow triggered successfully!');
-      fetchWorkflowStatus();
-    } catch (error: any) {
-      alert(error.response?.data?.error || 'Failed to trigger workflow');
     }
   };
 
@@ -128,7 +107,7 @@ const WorkflowStatus: React.FC = () => {
     try {
       const approved = confirm('Approve this quality inspection?');
       const notes = prompt('Enter inspection notes (optional):') || '';
-      
+
       await axiosInstance.post(`/api/workflow-complete/quality/${inspectionId}/approve`, {
         approved,
         notes
@@ -144,7 +123,7 @@ const WorkflowStatus: React.FC = () => {
     try {
       const trackingNumber = prompt('Enter tracking number:') || '';
       const carrier = prompt('Enter carrier name:') || '';
-      
+
       await axiosInstance.post(`/api/workflow-complete/shipping/${shippingId}/ship`, {
         tracking_number: trackingNumber,
         carrier
@@ -156,39 +135,11 @@ const WorkflowStatus: React.FC = () => {
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return <CheckCircleIcon className="h-6 w-6 text-green-500" />;
-      case 'pending':
-        return <ClockIcon className="h-6 w-6 text-yellow-500" />;
-      case 'failed':
-        return <ExclamationTriangleIcon className="h-6 w-6 text-red-500" />;
-      default:
-        return <ClockIcon className="h-6 w-6 text-gray-400" />;
-    }
-  };
-
-  const getStepIcon = (stepName: string) => {
-    switch (stepName.toLowerCase()) {
-      case 'production planning':
-        return <CogIcon className="h-8 w-8" />;
-      case 'quality control':
-        return <BeakerIcon className="h-8 w-8" />;
-      case 'shipping preparation':
-        return <TruckIcon className="h-8 w-8" />;
-      case 'invoice generated':
-        return <DocumentTextIcon className="h-8 w-8" />;
-      default:
-        return <ClockIcon className="h-8 w-8" />;
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-3">Loading workflow status...</span>
+        <span className="ml-3">Memuat riwayat...</span>
       </div>
     );
   }
@@ -199,27 +150,39 @@ const WorkflowStatus: React.FC = () => {
         <div className="text-red-600 mb-4">
           <ExclamationTriangleIcon className="h-12 w-12 mx-auto" />
         </div>
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Error Loading Workflow</h3>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Gagal Memuat Riwayat</h3>
         <p className="text-gray-500 dark:text-gray-400">{error}</p>
       </div>
     );
   }
 
   if (!workflowData) {
-    return <div>No workflow data found</div>;
+    return <div>Data tidak ditemukan</div>;
   }
+
+  const hasNoDownstreamData =
+    workflowData.work_orders.length === 0 &&
+    workflowData.quality_inspections.length === 0 &&
+    workflowData.shipping_orders.length === 0 &&
+    workflowData.invoices.length === 0;
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <Link
+          to={`/app/sales/orders/${id}`}
+          className="inline-flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:underline mb-3"
+        >
+          <ArrowLeftIcon className="h-4 w-4" /> Kembali ke Sales Order
+        </Link>
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Workflow Status: {workflowData.sales_order.order_number}
+              Riwayat Produksi &amp; Pengiriman: {workflowData.sales_order.order_number}
             </h1>
             <p className="text-gray-600 dark:text-gray-300">Customer: {workflowData.sales_order.customer_name}</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Status: 
+            <p className="text-sm text-gray-500 dark:text-gray-400">Status SO:
               <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${
                 workflowData.sales_order.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
                 workflowData.sales_order.status === 'in_production' ? 'bg-yellow-100 text-yellow-800' :
@@ -231,64 +194,24 @@ const WorkflowStatus: React.FC = () => {
               </span>
             </p>
           </div>
+        </div>
+      </div>
+
+      {hasNoDownstreamData && (
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 text-center text-gray-500 dark:text-gray-400">
+          Belum ada SPK/QC/Pengiriman/Invoice untuk SO ini.
           {workflowData.sales_order.status === 'draft' && (
-            <button
-              onClick={confirmSalesOrder}
-              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-            >
-              Confirm Sales Order
-            </button>
-          )}
-          {workflowData.sales_order.status === 'confirmed' && (
-            <button
-              onClick={triggerCompleteWorkflow}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              Trigger Complete Workflow
-            </button>
+            <> SO ini masih draft — buka <Link to={`/app/sales/orders/${id}`} className="text-blue-600 dark:text-blue-400 underline">halaman Sales Order</Link> untuk Confirm &amp; Mulai Produksi.</>
           )}
         </div>
-      </div>
+      )}
 
-      {/* Workflow Steps */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-        <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Workflow Progress</h2>
-        <div className="flex items-center space-x-4 overflow-x-auto pb-4">
-          {workflowData.workflow_steps.map((step, index) => (
-            <div key={index} className="flex items-center">
-              <div className={`flex flex-col items-center p-4 rounded-lg min-w-[200px] ${
-                step.status === 'completed' ? 'bg-green-50 border-2 border-green-200' :
-                step.status === 'pending' ? 'bg-yellow-50 border-2 border-yellow-200' :
-                'bg-gray-50 border-2 border-gray-200'
-              }`}>
-                <div className={`p-2 rounded-full ${
-                  step.status === 'completed' ? 'bg-green-100 text-green-600' :
-                  step.status === 'pending' ? 'bg-yellow-100 text-yellow-600' :
-                  'bg-gray-100 text-gray-600'
-                }`}>
-                  {getStepIcon(step.step_name)}
-                </div>
-                <h3 className="font-medium text-sm text-center mt-2">{step.step_name}</h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-                  {step.status === 'completed' && step.completed_at ? 
-                    new Date(step.completed_at).toLocaleDateString() : 
-                    step.status
-                  }
-                </p>
-                {getStatusIcon(step.status)}
-              </div>
-              {index < workflowData.workflow_steps.length - 1 && (
-                <ArrowRightIcon className="h-6 w-6 text-gray-400 mx-2" />
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Work Orders */}
+      {/* SPK */}
       {workflowData.work_orders.length > 0 && (
         <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Production Orders</h2>
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <CogIcon className="h-5 w-5" /> Production Orders
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {workflowData.work_orders.map((wo) => (
               <div key={wo.id} className="border rounded-lg p-4">
@@ -325,7 +248,9 @@ const WorkflowStatus: React.FC = () => {
       {/* Quality Inspections */}
       {workflowData.quality_inspections.length > 0 && (
         <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Quality Inspections</h2>
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <BeakerIcon className="h-5 w-5" /> Quality Inspections
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {workflowData.quality_inspections.map((qi) => (
               <div key={qi.id} className="border rounded-lg p-4">
@@ -340,7 +265,7 @@ const WorkflowStatus: React.FC = () => {
                   </span>
                 </div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {qi.inspection_date ? 
+                  {qi.inspection_date ?
                     `Inspected: ${new Date(qi.inspection_date).toLocaleDateString()}` :
                     'Pending inspection'
                   }
@@ -362,7 +287,9 @@ const WorkflowStatus: React.FC = () => {
       {/* Shipping Orders */}
       {workflowData.shipping_orders.length > 0 && (
         <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Shipping Orders</h2>
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <TruckIcon className="h-5 w-5" /> Shipping Orders
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {workflowData.shipping_orders.map((so) => (
               <div key={so.id} className="border rounded-lg p-4">
@@ -380,7 +307,7 @@ const WorkflowStatus: React.FC = () => {
                   <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">Tracking: {so.tracking_number}</p>
                 )}
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {so.shipping_date ? 
+                  {so.shipping_date ?
                     `Shipped: ${new Date(so.shipping_date).toLocaleDateString()}` :
                     'Not shipped yet'
                   }
@@ -402,7 +329,9 @@ const WorkflowStatus: React.FC = () => {
       {/* Invoices */}
       {workflowData.invoices.length > 0 && (
         <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Invoices</h2>
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <DocumentTextIcon className="h-5 w-5" /> Invoices
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {workflowData.invoices.map((inv) => (
               <div key={inv.id} className="border rounded-lg p-4">
@@ -420,7 +349,7 @@ const WorkflowStatus: React.FC = () => {
                   Amount: Rp {inv.total_amount.toLocaleString('id-ID')}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {inv.invoice_date ? 
+                  {inv.invoice_date ?
                     `Date: ${new Date(inv.invoice_date).toLocaleDateString()}` :
                     'No date'
                   }

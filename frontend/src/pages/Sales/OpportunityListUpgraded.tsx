@@ -249,7 +249,7 @@ const OpportunityListUpgraded: React.FC = () => {
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-3">
               <FunnelIcon className="h-8 w-8" />
-              Sales Pipeline
+              Peluang Penjualan
             </h1>
             <p className="text-purple-100 mt-1">Manage and track your sales opportunities</p>
           </div>
