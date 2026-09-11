@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
+from utils.auth_decorators import require_permission
 from models import db, ThirdPartyAPI, IntegrationLog
 from utils.i18n import success_response, error_response, get_message
 
@@ -7,6 +8,7 @@ integration_bp = Blueprint('integration', __name__)
 
 @integration_bp.route('/apis', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_apis():
     try:
         apis = ThirdPartyAPI.query.filter_by(is_active=True).all()
@@ -24,6 +26,7 @@ def get_apis():
 
 @integration_bp.route('/logs', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_logs():
     try:
         logs = IntegrationLog.query.order_by(IntegrationLog.log_date.desc()).limit(100).all()

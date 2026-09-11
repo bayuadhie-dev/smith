@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react'
 import {
   useGetAccurateConfigQuery,
   useUpdateAccurateConfigMutation,
+  useBulkImportAccurateMasterMutation,
   useGetAccurateItemsQuery,
   useGetAccurateMappingsQuery,
   useGetAccurateSalesInvoicesQuery,
@@ -267,6 +268,21 @@ export default function AccurateIntegration() {
 
   const { data: configResp, isLoading: configLoading } = useGetAccurateConfigQuery()
   const [updateConfig, { isLoading: isUpdatingConfig }] = useUpdateAccurateConfigMutation()
+  const [bulkImportMaster, { isLoading: isBulkImporting }] = useBulkImportAccurateMasterMutation()
+  const [bulkImportResult, setBulkImportResult] = useState<any>(null)
+
+  const handleBulkImportMaster = async () => {
+    if (!window.confirm('Import semua Item, Vendor, Customer, dan GL Account dari Accurate sebagai record BARU di SMITH? Cocok untuk database yang masih kosong. Data yang kodenya sudah ada akan dilewati (tidak duplikat).')) {
+      return
+    }
+    setBulkImportResult(null)
+    try {
+      const res = await bulkImportMaster().unwrap()
+      setBulkImportResult(res.data)
+    } catch (err: any) {
+      alert('Gagal import: ' + (err?.data?.details || err.message))
+    }
+  }
 
   const { data: itemsResp } = useGetAccurateItemsQuery()
   const { data: mappingsResp } = useGetAccurateMappingsQuery()
@@ -306,6 +322,9 @@ export default function AccurateIntegration() {
 
   // Detail modal state
   const [detailModal, setDetailModal] = useState<{ module: string; id: string } | null>(null)
+  // Drill-down: klik komponen material di detail BOM -> lihat spesifikasi item (dimensi/berat/multi-unit)
+  const [bomItemDrillNo, setBomItemDrillNo] = useState<string | null>(null)
+  const bomItemDrillQ = useGetAccurateItemDetailQuery(bomItemDrillNo ?? '', { skip: !bomItemDrillNo })
   // Panggil semua 11 hooks tiap render (aturan Hooks), skip semua kecuali yang aktif di modal
   const itemDetailQ = useGetAccurateItemDetailQuery(detailModal?.id ?? '', { skip: !detailModal || detailModal.module !== 'item' })
   const vendorDetailQ = useGetAccurateVendorDetailQuery(detailModal?.id ?? '', { skip: !detailModal || detailModal.module !== 'vendor' })
@@ -355,7 +374,7 @@ export default function AccurateIntegration() {
   const [clientSecret, setClientSecret] = useState('')
   const [dbId, setDbId] = useState('')
   const [accessToken, setAccessToken] = useState('')
-  const [apiUrl, setApiUrl] = useState('https://accurate.id')
+  const [apiUrl, setApiUrl] = useState('')
 
   const callbackUrl = `${window.location.origin}/api/integrations/accurate/oauth/callback`
   const webhookUrl = `${window.location.origin}/api/integrations/accurate/webhook`
@@ -642,7 +661,7 @@ export default function AccurateIntegration() {
                   <input
                     type="text"
                     className="input w-full font-mono text-xs"
-                    value={apiUrl}
+                    value={apiUrl || config?.api_url || ''}
                     onChange={(e) => setApiUrl(e.target.value)}
                   />
                 </div>
@@ -668,7 +687,7 @@ export default function AccurateIntegration() {
 
                 {config?.client_id && (
                   <a
-                    href={`https://account.accurate.id/oauth/authorize?client_id=${config.client_id}&response_type=code&redirect_uri=${encodeURIComponent(callbackUrl)}&scope=${encodeURIComponent('item_view item_save sales_invoice_view sales_invoice_save purchase_invoice_view purchase_invoice_save sales_order_view purchase_order_view customer_view vendor_view glaccount_view journal_voucher_view bank_transfer_view bill_of_material_view bill_of_material_save work_order_view work_order_save')}`}
+                    href={`https://account.accurate.id/oauth/authorize?client_id=${config.client_id}&response_type=code&redirect_uri=${encodeURIComponent(callbackUrl)}&scope=${encodeURIComponent('item_view item_save customer_view customer_save vendor_view vendor_save glaccount_view glaccount_save sales_invoice_view sales_invoice_save sales_order_view sales_order_save purchase_invoice_view purchase_invoice_save purchase_order_view purchase_order_save bank_transfer_view bank_transfer_save journal_voucher_view journal_voucher_save bill_of_material_view bill_of_material_save work_order_view work_order_save item_transfer_view item_transfer_save finished_good_slip_view finished_good_slip_save')}`}
                     target="_blank"
                     rel="noreferrer"
                     className="btn bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center gap-2"
@@ -679,6 +698,37 @@ export default function AccurateIntegration() {
                 )}
               </div>
             </form>
+          </div>
+
+          {/* Bulk Master Data Import - for a fresh/empty SMITH database */}
+          <div className="card p-6 space-y-3 border-2 border-amber-400 dark:border-amber-600">
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+              ⚡ Import Massal Data Master (untuk database baru/kosong)
+            </h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Tarik SEMUA Item, Vendor, Customer, dan GL Account dari Accurate lalu buat langsung sebagai record baru di SMITH — tanpa perlu mapping manual satu-satu.
+              Aman dijalankan berkali-kali: kode yang sudah ada di SMITH otomatis dilewati (tidak duplikat).
+            </p>
+            <button
+              type="button"
+              onClick={handleBulkImportMaster}
+              disabled={isBulkImporting}
+              className="btn bg-amber-600 hover:bg-amber-700 text-white font-semibold"
+            >
+              {isBulkImporting ? 'Mengimpor... (bisa beberapa menit)' : 'Import Semua Sekarang'}
+            </button>
+            {bulkImportResult && (
+              <div className="mt-2 text-xs font-mono bg-slate-50 dark:bg-slate-900 rounded p-3 border border-gray-200 dark:border-gray-700">
+                {Object.entries(bulkImportResult).map(([type, r]: [string, any]) => (
+                  <div key={type} className="mb-1">
+                    <span className="font-bold">{type}</span>: dibuat {r.created ?? '-'}, dilewati {r.skipped_existing ?? '-'}, error {r.errors?.length ?? 0}
+                    {r.errors?.length > 0 && (
+                      <div className="text-red-500 ml-4">{r.errors.slice(0, 5).join('; ')}</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Webhook & Callback URL Guide Box */}
@@ -1146,7 +1196,7 @@ export default function AccurateIntegration() {
                 fetching: fetchingVendors,
                 columns: ['No Vendor', 'Nama', 'Email', 'Telepon'],
                 rowMapper: (r) => [r.vendor_no, r.name, r.email || '-', r.phone || '-'],
-                idField: 'vendor_no',
+                idField: 'id',
               },
               customer: {
                 data: customersResp?.data,
@@ -1154,7 +1204,7 @@ export default function AccurateIntegration() {
                 fetching: fetchingCustomers,
                 columns: ['No Customer', 'Nama', 'Email', 'Telepon'],
                 rowMapper: (r) => [r.customer_no, r.name, r.email || '-', r.phone || '-'],
-                idField: 'customer_no',
+                idField: 'id',
               },
               glaccount: {
                 data: glAccountsResp?.data,
@@ -1162,7 +1212,7 @@ export default function AccurateIntegration() {
                 fetching: fetchingGlAccounts,
                 columns: ['No Akun', 'Nama', 'Tipe'],
                 rowMapper: (r) => [r.account_no, r.name, r.account_type],
-                idField: 'account_no',
+                idField: 'id',
               },
               sales_invoice: {
                 data: salesInvoicesResp?.data,
@@ -1396,6 +1446,7 @@ export default function AccurateIntegration() {
                     // BOM: tampilkan komponen material + quantity
                     if (detailModal.module === 'bill_of_material') {
                       const materials: any[] = d.detailMaterial || []
+                      const totalHpp = materials.reduce((sum, m) => sum + (Number(m.totalStandardCost) || 0), 0)
                       return (
                         <div className="space-y-3">
                           <div className="text-sm font-medium text-gray-900 dark:text-white">
@@ -1409,18 +1460,45 @@ export default function AccurateIntegration() {
                                 <tr className="text-left text-gray-500 dark:text-gray-400">
                                   <th className="py-1.5 pr-4 font-medium">Item Komponen</th>
                                   <th className="py-1.5 pr-4 font-medium">Satuan</th>
-                                  <th className="py-1.5 font-medium">Quantity</th>
+                                  <th className="py-1.5 pr-4 font-medium">Quantity</th>
+                                  <th className="py-1.5 pr-4 font-medium text-right">Harga Satuan</th>
+                                  <th className="py-1.5 font-medium text-right">Total Harga</th>
                                 </tr>
                               </thead>
                               <tbody>
                                 {materials.map((m, i) => (
-                                  <tr key={i} className="border-b border-gray-100 dark:border-gray-700">
-                                    <td className="py-1.5 pr-4">{m.item?.name || m.item?.no || '-'}</td>
+                                  <tr
+                                    key={i}
+                                    className={`border-b border-gray-100 dark:border-gray-700 ${m.item?.no ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50' : ''}`}
+                                    onClick={() => m.item?.no && setBomItemDrillNo(m.item.no)}
+                                    title={m.item?.no ? 'Klik untuk lihat spesifikasi item (dimensi/berat/multi-unit)' : undefined}
+                                  >
+                                    <td className="py-1.5 pr-4">
+                                      {m.item?.no ? (
+                                        <span className="text-blue-600 dark:text-blue-400 hover:underline">
+                                          {m.item?.name || m.item?.no}
+                                        </span>
+                                      ) : (m.item?.name || '-')}
+                                    </td>
                                     <td className="py-1.5 pr-4">{m.itemUnit?.name || '-'}</td>
-                                    <td className="py-1.5 font-semibold">{m.quantity ?? '-'}</td>
+                                    <td className="py-1.5 pr-4 font-semibold">{m.quantity ?? '-'}</td>
+                                    <td className="py-1.5 pr-4 text-right tabular-nums">
+                                      {m.standardCost != null ? Number(m.standardCost).toLocaleString('id-ID') : '-'}
+                                    </td>
+                                    <td className="py-1.5 text-right font-semibold tabular-nums">
+                                      {m.totalStandardCost != null ? Number(m.totalStandardCost).toLocaleString('id-ID') : '-'}
+                                    </td>
                                   </tr>
                                 ))}
                               </tbody>
+                              <tfoot>
+                                <tr className="border-t-2 border-gray-200 dark:border-gray-700">
+                                  <td className="py-1.5 pr-4 font-semibold" colSpan={4}>HPP Total</td>
+                                  <td className="py-1.5 text-right font-bold tabular-nums text-gray-900 dark:text-white">
+                                    {totalHpp.toLocaleString('id-ID')}
+                                  </td>
+                                </tr>
+                              </tfoot>
                             </table>
                           )}
                         </div>
@@ -1521,7 +1599,9 @@ export default function AccurateIntegration() {
                               </tr>
                               <tr className="border-b border-gray-100 dark:border-gray-700">
                                 <td className="py-1.5 pr-4 font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">Total</td>
-                                <td className="py-1.5 font-semibold">{d.totalAmount ?? '-'}</td>
+                                <td className="py-1.5 font-semibold tabular-nums">
+                                  {d.totalAmount != null ? Number(d.totalAmount).toLocaleString('id-ID') : '-'}
+                                </td>
                               </tr>
                               <tr className="border-b border-gray-100 dark:border-gray-700">
                                 <td className="py-1.5 pr-4 font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">Status</td>
@@ -1529,26 +1609,48 @@ export default function AccurateIntegration() {
                               </tr>
                             </tbody>
                           </table>
-                          {detailItems.length > 0 && (
-                            <table className="w-full text-xs">
-                              <thead>
-                                <tr className="text-left text-gray-500 dark:text-gray-400">
-                                  <th className="py-1.5 pr-4 font-medium">Item</th>
-                                  <th className="py-1.5 pr-4 font-medium">Qty</th>
-                                  <th className="py-1.5 font-medium">Subtotal</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {detailItems.map((it: any, i: number) => (
-                                  <tr key={i} className="border-b border-gray-100 dark:border-gray-700">
-                                    <td className="py-1.5 pr-4">{it.item?.name || it.detailName || '-'}</td>
-                                    <td className="py-1.5 pr-4">{it.quantity ?? '-'}</td>
-                                    <td className="py-1.5">{it.subTotal ?? '-'}</td>
+                          {detailItems.length > 0 && (() => {
+                            // Field asli Accurate untuk baris item transaksi itu `unitPrice` &
+                            // `totalPrice` - BUKAN `subTotal` (field itu tidak pernah ada di
+                            // response Accurate, jadi kolom Subtotal sebelumnya selalu "-").
+                            // Dikonfirmasi lewat panggilan API live utk sales_invoice,
+                            // sales_order, purchase_invoice, purchase_order - sama semua.
+                            const totalLines = detailItems.reduce((sum, it) => sum + (Number(it.totalPrice) || 0), 0)
+                            return (
+                              <table className="w-full text-xs">
+                                <thead>
+                                  <tr className="text-left text-gray-500 dark:text-gray-400">
+                                    <th className="py-1.5 pr-4 font-medium">Item</th>
+                                    <th className="py-1.5 pr-4 font-medium">Qty</th>
+                                    <th className="py-1.5 pr-4 font-medium text-right">Harga Satuan</th>
+                                    <th className="py-1.5 font-medium text-right">Subtotal</th>
                                   </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          )}
+                                </thead>
+                                <tbody>
+                                  {detailItems.map((it: any, i: number) => (
+                                    <tr key={i} className="border-b border-gray-100 dark:border-gray-700">
+                                      <td className="py-1.5 pr-4">{it.item?.name || it.detailName || '-'}</td>
+                                      <td className="py-1.5 pr-4">{it.quantity ?? '-'}</td>
+                                      <td className="py-1.5 pr-4 text-right tabular-nums">
+                                        {it.unitPrice != null ? Number(it.unitPrice).toLocaleString('id-ID') : '-'}
+                                      </td>
+                                      <td className="py-1.5 text-right font-semibold tabular-nums">
+                                        {it.totalPrice != null ? Number(it.totalPrice).toLocaleString('id-ID') : '-'}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                                <tfoot>
+                                  <tr className="border-t-2 border-gray-200 dark:border-gray-700">
+                                    <td className="py-1.5 pr-4 font-semibold" colSpan={3}>Total Baris</td>
+                                    <td className="py-1.5 text-right font-bold tabular-nums text-gray-900 dark:text-white">
+                                      {totalLines.toLocaleString('id-ID')}
+                                    </td>
+                                  </tr>
+                                </tfoot>
+                              </table>
+                            )
+                          })()}
                         </div>
                       )
                     }
@@ -1571,6 +1673,110 @@ export default function AccurateIntegration() {
                           ))}
                         </tbody>
                       </table>
+                    )
+                  })()}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Drill-down dari BOM: spesifikasi packaging item komponen (dimensi/berat/multi-unit) */}
+          {bomItemDrillNo && (
+            <div
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4"
+              onClick={() => setBomItemDrillNo(null)}
+            >
+              <div
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[85vh] overflow-hidden flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+                    Spesifikasi Item: {bomItemDrillNo}
+                  </h3>
+                  <button
+                    onClick={() => setBomItemDrillNo(null)}
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                  >
+                    <XMarkIcon className="w-5 h-5" />
+                  </button>
+                </div>
+                <div className="overflow-y-auto p-4">
+                  {bomItemDrillQ.isFetching ? (
+                    <div className="text-center py-10 text-sm text-gray-500 dark:text-gray-400">
+                      Memuat spesifikasi item...
+                    </div>
+                  ) : bomItemDrillQ.isError || !bomItemDrillQ.data?.data ? (
+                    <div className="text-center py-10 text-sm text-red-500">
+                      Gagal memuat spesifikasi item ini.
+                    </div>
+                  ) : (() => {
+                    const di = bomItemDrillQ.data.data
+                    const generalRows: [string, any][] = [
+                      ['Nama', di.name],
+                      ['No Item', di.no],
+                      ['Tipe', di.itemType],
+                      ['Satuan Dasar', di.unit1Name],
+                    ]
+                    const packagingRows: [string, any][] = [
+                      ['Berat', di.weight != null ? `${di.weight} kg` : '-'],
+                      ['Dimensi (P x L x T)', (di.dimWidth || di.dimHeight || di.dimDepth) ? `${di.dimWidth ?? 0} x ${di.dimHeight ?? 0} x ${di.dimDepth ?? 0}` : '-'],
+                    ]
+                    const unitLevels = [2, 3, 4, 5].map((n) => ({
+                      name: di[`unit${n}Name`],
+                      ratio: di[`ratio${n}`],
+                    })).filter((u) => u.name)
+                    return (
+                      <div className="space-y-4">
+                        <table className="w-full text-xs">
+                          <tbody>
+                            {generalRows.map(([k, v]) => (
+                              <tr key={k} className="border-b border-gray-100 dark:border-gray-700">
+                                <td className="py-1.5 pr-4 font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">{k}</td>
+                                <td className="py-1.5 text-gray-900 dark:text-gray-100">{v === null || v === undefined ? '-' : String(v)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+
+                        <div>
+                          <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Spesifikasi Packaging</div>
+                          <table className="w-full text-xs">
+                            <tbody>
+                              {packagingRows.map(([k, v]) => (
+                                <tr key={k} className="border-b border-gray-100 dark:border-gray-700">
+                                  <td className="py-1.5 pr-4 font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">{k}</td>
+                                  <td className="py-1.5 text-gray-900 dark:text-gray-100">{v === null || v === undefined ? '-' : String(v)}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        <div>
+                          <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Konversi Satuan Kemasan</div>
+                          {unitLevels.length === 0 ? (
+                            <div className="text-xs text-gray-500">Tidak ada konversi multi-unit untuk item ini.</div>
+                          ) : (
+                            <table className="w-full text-xs">
+                              <thead>
+                                <tr className="text-left text-gray-500 dark:text-gray-400">
+                                  <th className="py-1.5 pr-4 font-medium">Satuan</th>
+                                  <th className="py-1.5 font-medium">Rasio ke {di.unit1Name || 'Satuan Dasar'}</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {unitLevels.map((u) => (
+                                  <tr key={u.name} className="border-b border-gray-100 dark:border-gray-700">
+                                    <td className="py-1.5 pr-4">{u.name}</td>
+                                    <td className="py-1.5">1 {u.name} = {u.ratio} {di.unit1Name || ''}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          )}
+                        </div>
+                      </div>
                     )
                   })()}
                 </div>

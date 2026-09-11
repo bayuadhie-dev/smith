@@ -639,6 +639,8 @@ def _get_or_create_warehouse_inventory(location_id, product_id=None, material_id
     if inv:
         return inv
 
+    from utils.inventory_helpers import resolve_initial_stock_status
+    from models.product import Product, Material
     inv = Inventory(
         product_id=product_id,
         material_id=material_id,
@@ -649,7 +651,11 @@ def _get_or_create_warehouse_inventory(location_id, product_id=None, material_id
         min_stock_level=0,
         max_stock_level=0,
         is_active=True,
-        stock_status='in_stock',
+        stock_status=resolve_initial_stock_status(
+            'in_stock',
+            product=db.session.get(Product, product_id) if product_id else None,
+            material=db.session.get(Material, material_id) if material_id else None,
+        ),
     )
     db.session.add(inv)
     db.session.flush()
@@ -707,7 +713,8 @@ def sync_ejo_warehouse_stock(client, max_pages=10, page_size=20):
             break
 
         for row in rows:
-            wo_detail = get_work_order_detail(client, row['id'])
+          try:
+            wo_detail = get_work_order_detail(client, row.get('id'))
             if not wo_detail:
                 continue
             summary['scanned'] += 1
@@ -777,6 +784,14 @@ def sync_ejo_warehouse_stock(client, max_pages=10, page_size=20):
                 ))
                 already_synced.add((ejo_number, stage_type))
                 summary['synced'] += 1
+          except Exception as row_err:
+            print(f"⚠️ sync_ejo_warehouse_stock: skipped one WO due to error: {row_err}")
+            db.session.rollback()
+            continue
+
+        # Commit after each page so a crash on a later page doesn't lose
+        # everything already synced on earlier pages.
+        db.session.commit()
 
     db.session.commit()
     return summary
@@ -944,80 +959,87 @@ def sync_warehouse_stock_from_item_detail(client, max_items=None):
                 db.session.commit()
                 return summary
             items_processed += 1
+            try:
+                detail = _get(client, 'item/detail.do', {'id': row.get('id')})
+                if not detail.get('s'):
+                    continue
+                item_detail = detail.get('d', {})
+                summary['scanned'] += 1
 
-            detail = _get(client, 'item/detail.do', {'id': row['id']})
-            if not detail.get('s'):
+                item_name = item_detail.get('name')
+                warehouse_rows = item_detail.get('detailWarehouseData', [])
+                relevant_stock = {
+                    wh['id']: wh
+                    for wh in warehouse_rows
+                    if wh.get('id') in _ACCURATE_WAREHOUSE_TO_SMITH_LOCATION
+                }
+                if not relevant_stock:
+                    summary['skipped_no_stock'] += 1
+                    continue
+
+                match = find_smith_match(item_name) if item_name else None
+                if not match:
+                    summary['skipped_no_match'] += 1
+                    if item_name:
+                        unmatched = EjoWarehouseUnmatchedProduct.query.filter_by(accurate_item_name=item_name).first()
+                        if unmatched:
+                            unmatched.occurrence_count += 1
+                            unmatched.last_seen_at = datetime.utcnow()
+                        else:
+                            db.session.add(EjoWarehouseUnmatchedProduct(
+                                accurate_item_name=item_name,
+                                occurrence_count=1,
+                            ))
+                    continue
+                # match can be a product (finished goods) or a material (raw
+                # material, chemical, packaging) - PM warehouse in particular
+                # is mostly materials, so both must be handled
+                is_material = match.get('table') == 'materials'
+                product_id = None if is_material else match['id']
+                material_id = match['id'] if is_material else None
+
+                from models.accurate import WarehouseStockSnapshotDetail
+
+                for accurate_wh_id, wh_data in relevant_stock.items():
+                    location_id = _ACCURATE_WAREHOUSE_TO_SMITH_LOCATION[accurate_wh_id]
+                    qty = wh_data.get('unit1Quantity', 0)
+
+                    inv = _get_or_create_warehouse_inventory(location_id, product_id=product_id, material_id=material_id)
+                    inv.quantity_on_hand = float(qty)
+                    inv.quantity_available = float(qty)
+
+                    # flush before checking so any snapshot inserted earlier in
+                    # this same request (e.g. a prior page's item) is visible -
+                    # guards against the unique constraint firing on a stale read
+                    db.session.flush()
+                    snapshot_filter = {'material_id': material_id, 'smith_location_id': location_id} if is_material \
+                        else {'product_id': product_id, 'smith_location_id': location_id}
+                    snapshot = WarehouseStockSnapshotDetail.query.filter_by(**snapshot_filter).first()
+                    if not snapshot:
+                        snapshot = WarehouseStockSnapshotDetail(
+                            product_id=product_id, material_id=material_id, smith_location_id=location_id
+                        )
+                        db.session.add(snapshot)
+                    snapshot.accurate_warehouse_id = accurate_wh_id
+                    snapshot.accurate_warehouse_name = wh_data.get('warehouseName')
+                    snapshot.pic = wh_data.get('pic')
+                    snapshot.unit1_quantity = wh_data.get('unit1Quantity')
+                    snapshot.unit1_name = item_detail.get('unit1NameWarehouse')
+                    snapshot.unit2_quantity = wh_data.get('unit2Quantity')
+                    snapshot.unit2_name = item_detail.get('unit2NameWarehouse')
+                    snapshot.unit3_quantity = wh_data.get('unit3Quantity')
+                    snapshot.unit3_name = item_detail.get('unit3NameWarehouse')
+                    snapshot.synced_at = datetime.utcnow()
+
+                    summary['synced'] += 1
+            except Exception as item_err:
+                print(f"⚠️ sync_warehouse_stock_from_item_detail: skipped one item due to error: {item_err}")
+                db.session.rollback()
                 continue
-            item_detail = detail.get('d', {})
-            summary['scanned'] += 1
 
-            item_name = item_detail.get('name')
-            warehouse_rows = item_detail.get('detailWarehouseData', [])
-            relevant_stock = {
-                wh['id']: wh
-                for wh in warehouse_rows
-                if wh.get('id') in _ACCURATE_WAREHOUSE_TO_SMITH_LOCATION
-            }
-            if not relevant_stock:
-                summary['skipped_no_stock'] += 1
-                continue
-
-            match = find_smith_match(item_name) if item_name else None
-            if not match:
-                summary['skipped_no_match'] += 1
-                if item_name:
-                    unmatched = EjoWarehouseUnmatchedProduct.query.filter_by(accurate_item_name=item_name).first()
-                    if unmatched:
-                        unmatched.occurrence_count += 1
-                        unmatched.last_seen_at = datetime.utcnow()
-                    else:
-                        db.session.add(EjoWarehouseUnmatchedProduct(
-                            accurate_item_name=item_name,
-                            occurrence_count=1,
-                        ))
-                continue
-            # match can be a product (finished goods) or a material (raw
-            # material, chemical, packaging) - PM warehouse in particular
-            # is mostly materials, so both must be handled
-            is_material = match.get('table') == 'materials'
-            product_id = None if is_material else match['id']
-            material_id = match['id'] if is_material else None
-
-            from models.accurate import WarehouseStockSnapshotDetail
-
-            for accurate_wh_id, wh_data in relevant_stock.items():
-                location_id = _ACCURATE_WAREHOUSE_TO_SMITH_LOCATION[accurate_wh_id]
-                qty = wh_data.get('unit1Quantity', 0)
-
-                inv = _get_or_create_warehouse_inventory(location_id, product_id=product_id, material_id=material_id)
-                inv.quantity_on_hand = float(qty)
-                inv.quantity_available = float(qty)
-
-                # flush before checking so any snapshot inserted earlier in
-                # this same request (e.g. a prior page's item) is visible -
-                # guards against the unique constraint firing on a stale read
-                db.session.flush()
-                snapshot_filter = {'material_id': material_id, 'smith_location_id': location_id} if is_material \
-                    else {'product_id': product_id, 'smith_location_id': location_id}
-                snapshot = WarehouseStockSnapshotDetail.query.filter_by(**snapshot_filter).first()
-                if not snapshot:
-                    snapshot = WarehouseStockSnapshotDetail(
-                        product_id=product_id, material_id=material_id, smith_location_id=location_id
-                    )
-                    db.session.add(snapshot)
-                snapshot.accurate_warehouse_id = accurate_wh_id
-                snapshot.accurate_warehouse_name = wh_data.get('warehouseName')
-                snapshot.pic = wh_data.get('pic')
-                snapshot.unit1_quantity = wh_data.get('unit1Quantity')
-                snapshot.unit1_name = item_detail.get('unit1NameWarehouse')
-                snapshot.unit2_quantity = wh_data.get('unit2Quantity')
-                snapshot.unit2_name = item_detail.get('unit2NameWarehouse')
-                snapshot.unit3_quantity = wh_data.get('unit3Quantity')
-                snapshot.unit3_name = item_detail.get('unit3NameWarehouse')
-                snapshot.synced_at = datetime.utcnow()
-
-                summary['synced'] += 1
-
+        # Commit after each page so a crash partway through the ~1594-item
+        # catalog scan doesn't lose everything synced on earlier pages.
+        db.session.commit()
         page += 1
 
     db.session.commit()
@@ -1156,7 +1178,8 @@ def sync_warehouse_transfer_log(client, max_pages=150, page_size=20):
             break
 
         for row in rows:
-            transfer_id = row['id']
+          try:
+            transfer_id = row.get('id')
             summary['scanned'] += 1
             if transfer_id in already_synced:
                 summary['skipped_already_synced'] += 1
@@ -1211,6 +1234,14 @@ def sync_warehouse_transfer_log(client, max_pages=150, page_size=20):
 
             already_synced.add(transfer_id)
             summary['synced'] += 1
+          except Exception as row_err:
+            print(f"⚠️ sync_warehouse_transfer_log: skipped one transfer due to error: {row_err}")
+            db.session.rollback()
+            continue
+
+        # Commit after each page so a crash partway through the ~2933-row
+        # catalog doesn't lose everything synced on earlier pages.
+        db.session.commit()
 
     db.session.commit()
     return summary

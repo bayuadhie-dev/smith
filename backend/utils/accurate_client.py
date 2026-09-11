@@ -125,24 +125,26 @@ class AccurateClient:
                 if not res_data.get('s') or not res_data.get('d'):
                     break
                 for row in res_data['d']:
-                    items.append({
-                        'item_no': row.get('no'),
-                        'name': row.get('name'),
-                        'unit': row.get('unitName', 'Pcs'),
-                        'item_type': row.get('itemType', 'ITEM'),
-                        'unit_price': row.get('unitPrice', 0),
-                        'stock': row.get('quantity', row.get('stkQuantity', 0))
-                    })
+                    try:
+                        items.append({
+                            'item_no': row.get('no'),
+                            'name': row.get('name'),
+                            'unit': row.get('unitName', 'Pcs'),
+                            'item_type': row.get('itemType', 'ITEM'),
+                            'unit_price': row.get('unitPrice', 0),
+                            'stock': row.get('quantity', row.get('stkQuantity', 0))
+                        })
+                    except Exception as row_err:
+                        print(f"⚠️ Accurate item row mapping error, skipped: {row_err}")
                 sp = res_data.get('sp', {})
                 page_count = sp.get('pageCount', 1)
                 if page >= page_count:
                     break
                 page += 1
-            if items:
-                return items
         except Exception as e:
-            print(f"⚠️ Accurate API fetch error (using fallback mock): {e}")
-
+            print(f"⚠️ Accurate API fetch error at page {page}: {e}")
+        if items:
+            return items
         return self.get_mock_accurate_items()
 
     def fetch_items_with_category_from_accurate(self):
@@ -187,44 +189,74 @@ class AccurateClient:
             page += 1
         return items
 
-    def fetch_transfers_from_accurate(self):
+    def fetch_transfers_from_accurate(self, max_transfers=50):
+        """Recent item-transfers for the Dry-Run preview (Tab 3) - each one
+        with its real line items (item_no/qty/name/unit), fetched via one
+        detail.do call per transfer. Capped to max_transfers (most recent
+        page from Accurate) since detail calls are per-transfer and a
+        preview must stay responsive - the full historical catalog (can be
+        thousands of rows) is what Tab 8's "Sinkronkan Histori" is for,
+        which already paginates+commits incrementally."""
         if not self.is_connected():
             return self.get_mock_item_transfers()
 
         try:
             transfers = []
-            page = 1
-            page_size = 100
-            while True:
-                url = (f"{self.config.api_url}/accurate/api/item-transfer/list.do"
-                       f"?fields=id,number,transDate,toWarehouse"
-                       f"&sp.page={page}&sp.pageSize={page_size}")
-                resp = requests.get(url, headers=self.get_headers(), timeout=15)
-                if resp.status_code != 200:
-                    break
+            url = (f"{self.config.api_url}/accurate/api/item-transfer/list.do"
+                   f"?fields=id,number,transDate,toWarehouse"
+                   f"&sp.page=1&sp.pageSize={max_transfers}")
+            resp = requests.get(url, headers=self.get_headers(), timeout=15)
+            if resp.status_code == 200:
                 res_data = resp.json()
-                if not res_data.get('s') or not res_data.get('d'):
-                    break
-                for row in res_data['d']:
-                    transfers.append({
-                        'tx_no': row.get('number'),
-                        'tx_date': row.get('transDate'),
-                        'type': 'item_transfer',
-                        'from_warehouse': 'Gudang Asal',
-                        'to_warehouse': row.get('toWarehouse', {}).get('name', 'Gudang Tujuan'),
-                        'items': []  # Will be populated by detail call
-                    })
-                sp = res_data.get('sp', {})
-                page_count = sp.get('pageCount', 1)
-                if page >= page_count:
-                    break
-                page += 1
+                for row in res_data.get('d') or []:
+                    try:
+                        transfer_id = row.get('id')
+                        items = []
+                        detail_url = f"{self.config.api_url}/accurate/api/item-transfer/detail.do?id={transfer_id}"
+                        detail_resp = requests.get(detail_url, headers=self.get_headers(), timeout=15)
+                        if detail_resp.status_code == 200:
+                            detail_data = detail_resp.json().get('d', {}) or {}
+                            for item_row in detail_data.get('detailItem', []) or []:
+                                item = item_row.get('item', {}) or {}
+                                qty = item_row.get('quantity')
+                                if qty is None:
+                                    serials = item_row.get('detailSerialNumber') or []
+                                    qty = sum(float(s.get('quantity') or 0) for s in serials)
+                                items.append({
+                                    'item_no': item.get('no'),
+                                    'name': item.get('name'),
+                                    'qty': float(qty or 0),
+                                    'unit': item_row.get('itemUnit', {}).get('name') if isinstance(item_row.get('itemUnit'), dict) else None,
+                                })
+                        transfers.append({
+                            'tx_no': row.get('number'),
+                            'tx_date': row.get('transDate'),
+                            'type': 'item_transfer',
+                            'from_warehouse': 'Gudang Asal',
+                            'to_warehouse': row.get('toWarehouse', {}).get('name', 'Gudang Tujuan'),
+                            'items': items,
+                        })
+                    except Exception as row_err:
+                        print(f"⚠️ item-transfer row error, skipped: {row_err}")
             if transfers:
                 return transfers
         except Exception as e:
             print(f"⚠️ Accurate API fetch transfers error (using fallback mock): {e}")
 
         return self.get_mock_item_transfers()
+
+    @staticmethod
+    def _total_stock(fk_column, ref_id):
+        """Sum current on-hand stock across all warehouse locations for a
+        Product or Material. Product/Material themselves carry no stock
+        field - real stock lives in the Inventory table, one row per
+        (item, location)."""
+        from models.warehouse import Inventory
+        from sqlalchemy import func
+        total = db.session.query(func.sum(Inventory.quantity_on_hand)).filter(
+            getattr(Inventory, fk_column) == ref_id
+        ).scalar()
+        return float(total or 0)
 
     # ================= DRY-RUN SIMULATION ENGINE =================
     def run_simulation(self, user_id=None):
@@ -266,12 +298,12 @@ class AccurateClient:
                         mat = materials.get(mapping.smith_material_id)
                         if mat:
                             smith_item_name = mat.name
-                            current_stock = float(mat.stock_quantity or 0)
+                            current_stock = self._total_stock('material_id', mat.id)
                     elif mapping.smith_item_type == 'product' and mapping.smith_product_id:
                         prod = products.get(mapping.smith_product_id)
                         if prod:
                             smith_item_name = prod.name
-                            current_stock = float(prod.stock_quantity or 0)
+                            current_stock = self._total_stock('product_id', prod.id)
 
                     new_simulated_stock = current_stock + converted_qty
 
@@ -736,11 +768,11 @@ class AccurateClient:
         """
         if not self.is_connected():
             return mock_data or []
-        try:
-            all_results = []
-            page = 1
-            page_size = 100
-            while True:
+        all_results = []
+        page = 1
+        page_size = 100
+        while True:
+            try:
                 url = (f"{self.config.api_url}/accurate/api/{endpoint}"
                        f"?fields={fields}&sp.page={page}&sp.pageSize={page_size}")
                 resp = requests.get(url, headers=self.get_headers(), timeout=15)
@@ -749,16 +781,23 @@ class AccurateClient:
                 res_data = resp.json()
                 if not res_data.get('s') or not res_data.get('d'):
                     break
-                all_results.extend([mapper(row) for row in res_data['d']])
+                # Map each row independently - one malformed row (unexpected
+                # null/shape from Accurate) must not discard every row
+                # already fetched on this and prior pages.
+                for row in res_data['d']:
+                    try:
+                        all_results.append(mapper(row))
+                    except Exception as row_err:
+                        print(f"⚠️ Accurate row mapping error ({endpoint}), skipped: {row_err}")
                 sp = res_data.get('sp', {})
                 page_count = sp.get('pageCount', 1)
                 if page >= page_count:
                     break
                 page += 1
-            return all_results if all_results else (mock_data or [])
-        except Exception as e:
-            print(f"⚠️ Accurate API fetch error ({endpoint}): {e}")
-        return mock_data or []
+            except Exception as e:
+                print(f"⚠️ Accurate API fetch error ({endpoint}) at page {page}: {e}")
+                break
+        return all_results if all_results else (mock_data or [])
 
     # ================= SALES =================
     def fetch_sales_invoices(self):
@@ -792,6 +831,7 @@ class AccurateClient:
             'customer/list.do',
             'id,name,customerNo,email,mobilePhone',
             lambda r: {
+                'id': r.get('id'),
                 'customer_no': r.get('customerNo'),
                 'name': r.get('name'),
                 'email': r.get('email'),
@@ -831,6 +871,7 @@ class AccurateClient:
             'vendor/list.do',
             'id,name,vendorNo,email,mobilePhone',
             lambda r: {
+                'id': r.get('id'),
                 'vendor_no': r.get('vendorNo'),
                 'name': r.get('name'),
                 'email': r.get('email'),
@@ -870,6 +911,7 @@ class AccurateClient:
             'glaccount/list.do',
             'id,no,name,accountType',
             lambda r: {
+                'id': r.get('id'),
                 'account_no': r.get('no'),
                 'name': r.get('name'),
                 'account_type': r.get('accountType'),
@@ -902,32 +944,38 @@ class AccurateClient:
 
     # ================= DETAIL FETCHERS =================
     def _fetch_detail_generic(self, endpoint, id_param, id_value):
-        """Generic detail fetcher. endpoint contoh 'item/detail.do', id_param contoh 'no' atau 'number'."""
+        """Generic detail fetcher. endpoint contoh 'item/detail.do', id_param
+        contoh 'id' atau 'number'. Raises with Accurate's own error message
+        on failure (e.g. a permission block on their side) instead of
+        silently returning None, so the caller can show the real reason."""
         if not self.is_connected():
-            return None
-        try:
-            url = f"{self.config.api_url}/accurate/api/{endpoint}?{id_param}={id_value}"
-            resp = requests.get(url, headers=self.get_headers(), timeout=15)
-            if resp.status_code == 200:
-                res_data = resp.json()
-                if res_data.get('s'):
-                    return res_data.get('d')
-            return None
-        except Exception as e:
-            print(f"⚠️ Accurate API detail fetch error ({endpoint}): {e}")
-            return None
+            raise Exception("Belum terhubung ke Accurate")
+        url = f"{self.config.api_url}/accurate/api/{endpoint}?{id_param}={id_value}"
+        resp = requests.get(url, headers=self.get_headers(), timeout=15)
+        if resp.status_code != 200:
+            raise Exception(f"Accurate API HTTP {resp.status_code}")
+        res_data = resp.json()
+        if not res_data.get('s'):
+            msg = res_data.get('d')
+            msg = '; '.join(msg) if isinstance(msg, list) else str(msg)
+            raise Exception(msg or 'Accurate menolak permintaan ini')
+        return res_data.get('d')
 
     def fetch_item_detail(self, no):
         return self._fetch_detail_generic('item/detail.do', 'no', no)
 
-    def fetch_vendor_detail(self, no):
-        return self._fetch_detail_generic('vendor/detail.do', 'no', no)
+    def fetch_vendor_detail(self, id_value):
+        # vendor/detail.do rejects the human-readable vendorNo ("Pemasok
+        # tidak tepat") - it only accepts Accurate's internal numeric id.
+        return self._fetch_detail_generic('vendor/detail.do', 'id', id_value)
 
-    def fetch_customer_detail(self, no):
-        return self._fetch_detail_generic('customer/detail.do', 'no', no)
+    def fetch_customer_detail(self, id_value):
+        # same story as vendor: customer/detail.do needs the internal id,
+        # not customerNo ("Pelanggan tidak tepat" otherwise).
+        return self._fetch_detail_generic('customer/detail.do', 'id', id_value)
 
-    def fetch_gl_account_detail(self, no):
-        return self._fetch_detail_generic('glaccount/detail.do', 'no', no)
+    def fetch_gl_account_detail(self, id_value):
+        return self._fetch_detail_generic('glaccount/detail.do', 'id', id_value)
 
     def fetch_sales_invoice_detail(self, number):
         return self._fetch_detail_generic('sales-invoice/detail.do', 'number', number)

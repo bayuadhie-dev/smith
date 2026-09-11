@@ -7,6 +7,7 @@ import requests
 from datetime import datetime
 from flask import Blueprint, request, jsonify, redirect
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db
 from models.accurate import AccurateConfig, AccurateItemMapping, AccurateSyncLog
 from utils.accurate_client import AccurateClient
@@ -86,6 +87,7 @@ def oauth_callback():
 
 @accurate_bp.route('/config', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_config():
     """Mengambil konfigurasi integrasi Accurate saat ini."""
     try:
@@ -101,6 +103,7 @@ def get_config():
 
 @accurate_bp.route('/config', methods=['POST'])
 @jwt_required()
+@require_permission('integration.configure')
 def update_config():
     """Memperbarui konfigurasi API Accurate & mode Dry-Run."""
     try:
@@ -136,6 +139,7 @@ def update_config():
 
 @accurate_bp.route('/accurate-items', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_accurate_items():
     """Mengambil daftar barang/BOM dari API Accurate Online (atau mock data)."""
     print("[ROUTE DEBUG] get_accurate_items() called")
@@ -150,6 +154,7 @@ def get_accurate_items():
 
 @accurate_bp.route('/mappings', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_mappings():
     """Daftar pemetaan barang Accurate ↔ SMITH ERP."""
     try:
@@ -161,6 +166,7 @@ def get_mappings():
 
 @accurate_bp.route('/mappings', methods=['POST'])
 @jwt_required()
+@require_permission('integration.configure')
 def save_mapping():
     """Membuat atau memperbarui pemetaan item Accurate ke SMITH ERP."""
     try:
@@ -189,8 +195,59 @@ def save_mapping():
         return error_response('accurate.save_error', details=str(e)), 500
 
 
+@accurate_bp.route('/mappings/auto-map', methods=['POST'])
+@jwt_required()
+@require_permission('integration.configure')
+def auto_map_items():
+    """Bulk-create AccurateItemMapping rows by matching Accurate item_no
+    directly against Product.code - only correct when Product records were
+    themselves bulk-imported from Accurate (see /bulk-import-master), so
+    code == accurate item_no by construction. Skips items with no matching
+    Product and mappings that already exist. Each row is independent
+    (own try/except + commit) so one bad row never blocks the rest."""
+    from models.product import Product
+    try:
+        client = AccurateClient()
+        items = client.fetch_items_from_accurate()
+    except Exception as e:
+        return error_response('accurate.fetch_error', details=str(e)), 500
+
+    already_mapped = {m.accurate_item_no for m in AccurateItemMapping.query.with_entities(AccurateItemMapping.accurate_item_no).all()}
+    products_by_code = {p.code: p.id for p in Product.query.with_entities(Product.code, Product.id).all()}
+
+    result = {'mapped': 0, 'skipped_already_mapped': 0, 'skipped_no_product_match': 0, 'errors': []}
+    for item in items:
+        item_no = item.get('item_no')
+        try:
+            if not item_no:
+                continue
+            if item_no in already_mapped:
+                result['skipped_already_mapped'] += 1
+                continue
+            product_id = products_by_code.get(item_no)
+            if not product_id:
+                result['skipped_no_product_match'] += 1
+                continue
+            db.session.add(AccurateItemMapping(
+                accurate_item_no=item_no,
+                accurate_item_name=item.get('name'),
+                accurate_item_type='ITEM',
+                smith_item_type='product',
+                smith_product_id=product_id,
+                uom_conversion_ratio=1.0,
+                notes='Auto-mapped by code match',
+            ))
+            db.session.commit()
+            result['mapped'] += 1
+        except Exception as e:
+            db.session.rollback()
+            result['errors'].append(f"{item_no}: {e}")
+    return success_response('accurate.auto_map_done', data=result), 200
+
+
 @accurate_bp.route('/sync/dry-run', methods=['POST'])
 @jwt_required()
+@require_permission('integration.sync')
 def run_dry_run():
     """Menjalankan Simulasi Dry-Run Penarikan API Accurate & Perhitungan Diff Stok."""
     try:
@@ -204,6 +261,7 @@ def run_dry_run():
 
 @accurate_bp.route('/sync-logs', methods=['GET'])
 @jwt_required()
+@require_permission('integration.sync')
 def get_sync_logs():
     """Mengambil daftar log sync / approval queue Accurate."""
     try:
@@ -219,6 +277,7 @@ def get_sync_logs():
 
 @accurate_bp.route('/sync-logs/<int:log_id>/approve', methods=['POST'])
 @jwt_required()
+@require_permission('integration.configure')
 def approve_sync_log(log_id):
     """Menyetujui (Approve) transaksi sync log dari Accurate ke WMS SMITH ERP."""
     try:
@@ -233,6 +292,7 @@ def approve_sync_log(log_id):
 
 @accurate_bp.route('/sync-logs/<int:log_id>/reject', methods=['POST'])
 @jwt_required()
+@require_permission('integration.configure')
 def reject_sync_log(log_id):
     """Menolak (Reject) transaksi sync log dari Accurate."""
     try:
@@ -266,6 +326,7 @@ def trigger_sync_scan_cron():
 
 @accurate_bp.route('/sync-scan', methods=['POST'])
 @jwt_required()
+@require_permission('integration.sync')
 def trigger_sync_scan():
     """
     Scan seluruh item Accurate, klasifikasikan + cocokkan dengan data SMITH,
@@ -284,6 +345,7 @@ def trigger_sync_scan():
 
 @accurate_bp.route('/delete-scan', methods=['POST'])
 @jwt_required()
+@require_permission('integration.sync')
 def trigger_delete_scan():
     """
     Scan item SMITH hasil sync Accurate (code berawalan ACC-) yang sudah
@@ -304,6 +366,7 @@ def trigger_delete_scan():
 
 @accurate_bp.route('/bom-scan', methods=['POST'])
 @jwt_required()
+@require_permission('integration.sync')
 def trigger_bom_scan():
     """
     Scan seluruh BOM/formula Accurate, bandingkan dengan BillOfMaterials
@@ -322,8 +385,31 @@ def trigger_bom_scan():
         return error_response('accurate.bom_scan_error', details=str(e)), 500
 
 
+@accurate_bp.route('/bom-scan-cron', methods=['POST'])
+def trigger_bom_scan_cron():
+    """
+    Sama seperti /bom-scan tapi tanpa auth -- untuk dipanggil dari system
+    cron via curl polos, mengikuti pola /sync-scan-cron dan
+    /warehouse-transfer-sync-cron yang sudah ada. created_by disimpan
+    sebagai None (bukan user asli, tapi scheduled job).
+
+    Cadence pendaftaran cron (mingguan, bukan hourly) diatur manual oleh
+    developer langsung di server -- bukan sesuatu yang dikelola dari
+    kode/repo ini. Endpoint ini scan ~1.5-9.5 menit tergantung kondisi API
+    Accurate (lihat docstring /bom-scan), jadi jangan didaftarkan hourly.
+    """
+    try:
+        from utils.accurate_bom_scan import scan_and_queue_bom_changes
+        result = scan_and_queue_bom_changes(created_by=None)
+        return success_response('accurate.bom_scan_done', data=result), 200
+    except Exception as e:
+        db.session.rollback()
+        return error_response('accurate.bom_scan_error', details=str(e)), 500
+
+
 @accurate_bp.route('/bom-delete-scan', methods=['POST'])
 @jwt_required()
+@require_permission('integration.sync')
 def trigger_bom_delete_scan():
     """
     Scan BillOfMaterials Internal ERP (hasil sync Accurate) yang BOM-nya
@@ -342,6 +428,7 @@ def trigger_bom_delete_scan():
 
 @accurate_bp.route('/bom-item-index-scan', methods=['POST'])
 @jwt_required()
+@require_permission('integration.sync')
 def trigger_bom_item_index_scan():
     """
     Scan seluruh BOM Accurate (~643) dan bangun ulang cache index
@@ -362,6 +449,7 @@ def trigger_bom_item_index_scan():
 
 @accurate_bp.route('/work-order-cache-scan', methods=['POST'])
 @jwt_required()
+@require_permission('integration.sync')
 def trigger_work_order_cache_scan():
     """
     Scan Perintah Kerja (EJO) Accurate terbaru (default hingga 2500) dan
@@ -380,6 +468,7 @@ def trigger_work_order_cache_scan():
 
 @accurate_bp.route('/work-order-cache', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_work_order_cache():
     """
     Ambil daftar Perintah Kerja (EJO) Accurate dari cache lokal (hasil
@@ -404,6 +493,7 @@ def get_work_order_cache():
 
 @accurate_bp.route('/ejo-manual-match', methods=['POST'])
 @jwt_required()
+@require_permission('integration.sync')
 def ejo_manual_match():
     """
     Hitung diff lengkap (quantity + bahan) antara sebuah EJO Accurate dan
@@ -438,8 +528,26 @@ def ejo_manual_match():
         return error_response('accurate.ejo_manual_match_error', details=str(e)), 500
 
 
+@accurate_bp.route('/warehouse-transfer-sync-cron', methods=['POST'])
+def trigger_warehouse_transfer_sync_cron():
+    """
+    Sama seperti /warehouse-transfer-sync tapi tanpa auth -- untuk
+    dipanggil dari system cron via curl polos, mengikuti pola
+    /sync-scan-cron yang sudah ada.
+    """
+    try:
+        from utils.accurate_ejo_check import sync_warehouse_transfer_log
+        client = AccurateClient()
+        result = sync_warehouse_transfer_log(client)
+        return success_response('accurate.warehouse_transfer_sync_done', data=result), 200
+    except Exception as e:
+        db.session.rollback()
+        return error_response('accurate.warehouse_transfer_sync_error', details=str(e)), 500
+
+
 @accurate_bp.route('/warehouse-transfer-sync', methods=['POST'])
 @jwt_required()
+@require_permission('integration.sync')
 def trigger_warehouse_transfer_sync():
     """
     Sync histori transaksi resmi perpindahan barang antar gudang dari
@@ -459,6 +567,7 @@ def trigger_warehouse_transfer_sync():
 
 @accurate_bp.route('/warehouse-transfer-list', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_warehouse_transfer_list_endpoint():
     """
     Daftar transaksi transfer gudang Accurate yang sudah disync. Query
@@ -475,6 +584,7 @@ def get_warehouse_transfer_list_endpoint():
 
 @accurate_bp.route('/warehouse-transfer-detail/<int:transfer_log_id>', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_warehouse_transfer_detail_endpoint(transfer_log_id):
     """
     Detail lengkap satu transaksi transfer gudang, termasuk rincian item
@@ -492,6 +602,7 @@ def get_warehouse_transfer_detail_endpoint(transfer_log_id):
 
 @accurate_bp.route('/warehouse-snapshot-summary', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_warehouse_snapshot_summary_endpoint():
     """
     Ringkasan stok Gudang PM/EPD/FG dari hasil sync snapshot resmi
@@ -507,6 +618,7 @@ def get_warehouse_snapshot_summary_endpoint():
 
 @accurate_bp.route('/warehouse-snapshot-detail', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_warehouse_snapshot_detail_endpoint():
     """
     Detail resmi Accurate untuk sebuah produk ATAU material di Gudang
@@ -531,8 +643,28 @@ def get_warehouse_snapshot_detail_endpoint():
         return error_response('accurate.fetch_error', details=str(e)), 500
 
 
+@accurate_bp.route('/warehouse-stock-full-sync-cron', methods=['POST'])
+def trigger_warehouse_stock_full_sync_cron():
+    """
+    Sama seperti /warehouse-stock-full-sync tapi tanpa auth -- untuk
+    dipanggil dari system cron via curl polos. PERHATIAN: proses ini
+    makan waktu 15-25 menit, jadwalkan cron dengan interval yang cukup
+    longgar (misal setiap 4-6 jam) agar tidak overlap dengan run
+    berikutnya.
+    """
+    try:
+        from utils.accurate_ejo_check import sync_warehouse_stock_from_item_detail
+        client = AccurateClient()
+        result = sync_warehouse_stock_from_item_detail(client)
+        return success_response('accurate.warehouse_full_sync_done', data=result), 200
+    except Exception as e:
+        db.session.rollback()
+        return error_response('accurate.warehouse_full_sync_error', details=str(e)), 500
+
+
 @accurate_bp.route('/warehouse-stock-full-sync', methods=['POST'])
 @jwt_required()
+@require_permission('integration.sync')
 def trigger_warehouse_stock_full_sync():
     """
     Full-catalog sync stok Gudang PM/EPD/FG dari data resmi Accurate
@@ -553,6 +685,7 @@ def trigger_warehouse_stock_full_sync():
 
 @accurate_bp.route('/warehouse-unmatched-suggestions', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_warehouse_unmatched_suggestions():
     """
     Kandidat produk mirip di Internal ERP untuk sebuah nama item Accurate
@@ -575,6 +708,7 @@ def get_warehouse_unmatched_suggestions():
 
 @accurate_bp.route('/warehouse-stock-detail', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_warehouse_stock_detail_endpoint():
     """
     Detail lengkap kontribusi stok sebuah produk di Gudang EPD/FG: daftar
@@ -598,6 +732,7 @@ def get_warehouse_stock_detail_endpoint():
 
 @accurate_bp.route('/warehouse-stock-summary', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_warehouse_stock_summary_endpoint():
     """
     Ringkasan stok Gudang EPD dan FG saat ini (hasil sync EJO), untuk
@@ -613,6 +748,7 @@ def get_warehouse_stock_summary_endpoint():
 
 @accurate_bp.route('/ejo-warehouse-sync', methods=['POST'])
 @jwt_required()
+@require_permission('integration.sync')
 def trigger_ejo_warehouse_sync():
     """
     Scan EJO Accurate terbaru dan sinkronkan stok Gudang EPD dan FG di
@@ -633,6 +769,7 @@ def trigger_ejo_warehouse_sync():
 
 @accurate_bp.route('/smith-work-orders-by-product', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_smith_work_orders_by_product():
     """
     Daftar WO Internal ERP untuk sebuah product_id, dipakai UI pemilihan
@@ -664,6 +801,7 @@ def get_smith_work_orders_by_product():
 
 @accurate_bp.route('/ejo-check', methods=['POST'])
 @jwt_required()
+@require_permission('integration.sync')
 def check_ejo_number():
     """
     Kroscek hasil produksi: input nomor EJO (Perintah Kerja Accurate),
@@ -689,6 +827,7 @@ def check_ejo_number():
 # ================= SALES =================
 @accurate_bp.route('/sales-invoices', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_accurate_sales_invoices():
     try:
         client = AccurateClient()
@@ -699,6 +838,7 @@ def get_accurate_sales_invoices():
 
 @accurate_bp.route('/sales-orders', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_accurate_sales_orders():
     try:
         client = AccurateClient()
@@ -709,6 +849,7 @@ def get_accurate_sales_orders():
 
 @accurate_bp.route('/customers', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_accurate_customers():
     try:
         client = AccurateClient()
@@ -720,6 +861,7 @@ def get_accurate_customers():
 # ================= PURCHASING =================
 @accurate_bp.route('/purchase-invoices', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_accurate_purchase_invoices():
     try:
         client = AccurateClient()
@@ -730,6 +872,7 @@ def get_accurate_purchase_invoices():
 
 @accurate_bp.route('/purchase-orders', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_accurate_purchase_orders():
     try:
         client = AccurateClient()
@@ -740,6 +883,7 @@ def get_accurate_purchase_orders():
 
 @accurate_bp.route('/vendors', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_accurate_vendors():
     try:
         client = AccurateClient()
@@ -751,6 +895,7 @@ def get_accurate_vendors():
 # ================= FINANCE =================
 @accurate_bp.route('/bank-transfers', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_accurate_bank_transfers():
     try:
         client = AccurateClient()
@@ -761,6 +906,7 @@ def get_accurate_bank_transfers():
 
 @accurate_bp.route('/expenses', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_accurate_expenses():
     try:
         client = AccurateClient()
@@ -772,6 +918,7 @@ def get_accurate_expenses():
 # ================= ACCOUNTING =================
 @accurate_bp.route('/gl-accounts', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_accurate_gl_accounts():
     try:
         client = AccurateClient()
@@ -782,6 +929,7 @@ def get_accurate_gl_accounts():
 
 @accurate_bp.route('/journal-vouchers', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_accurate_journal_vouchers():
     try:
         client = AccurateClient()
@@ -793,6 +941,7 @@ def get_accurate_journal_vouchers():
 # ================= MANUFACTURING / BOM =================
 @accurate_bp.route('/bills-of-material', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_accurate_bills_of_material():
     try:
         client = AccurateClient()
@@ -804,6 +953,7 @@ def get_accurate_bills_of_material():
 # ================= DETAIL ENDPOINTS =================
 @accurate_bp.route('/item-detail/<path:no>', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_accurate_item_detail(no):
     try:
         client = AccurateClient()
@@ -814,6 +964,7 @@ def get_accurate_item_detail(no):
 
 @accurate_bp.route('/vendor-detail/<path:no>', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_accurate_vendor_detail(no):
     try:
         client = AccurateClient()
@@ -824,6 +975,7 @@ def get_accurate_vendor_detail(no):
 
 @accurate_bp.route('/customer-detail/<path:no>', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_accurate_customer_detail(no):
     try:
         client = AccurateClient()
@@ -834,6 +986,7 @@ def get_accurate_customer_detail(no):
 
 @accurate_bp.route('/gl-account-detail/<path:no>', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_accurate_gl_account_detail(no):
     try:
         client = AccurateClient()
@@ -844,6 +997,7 @@ def get_accurate_gl_account_detail(no):
 
 @accurate_bp.route('/sales-invoice-detail/<path:number>', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_accurate_sales_invoice_detail(number):
     try:
         client = AccurateClient()
@@ -854,6 +1008,7 @@ def get_accurate_sales_invoice_detail(number):
 
 @accurate_bp.route('/sales-order-detail/<path:number>', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_accurate_sales_order_detail(number):
     try:
         client = AccurateClient()
@@ -864,6 +1019,7 @@ def get_accurate_sales_order_detail(number):
 
 @accurate_bp.route('/purchase-invoice-detail/<path:number>', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_accurate_purchase_invoice_detail(number):
     try:
         client = AccurateClient()
@@ -874,6 +1030,7 @@ def get_accurate_purchase_invoice_detail(number):
 
 @accurate_bp.route('/purchase-order-detail/<path:number>', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_accurate_purchase_order_detail(number):
     try:
         client = AccurateClient()
@@ -884,6 +1041,7 @@ def get_accurate_purchase_order_detail(number):
 
 @accurate_bp.route('/bank-transfer-detail/<path:number>', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_accurate_bank_transfer_detail(number):
     try:
         client = AccurateClient()
@@ -894,6 +1052,7 @@ def get_accurate_bank_transfer_detail(number):
 
 @accurate_bp.route('/journal-voucher-detail/<path:number>', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_accurate_journal_voucher_detail(number):
     try:
         client = AccurateClient()
@@ -904,6 +1063,7 @@ def get_accurate_journal_voucher_detail(number):
 
 @accurate_bp.route('/bill-of-material-detail/<path:number>', methods=['GET'])
 @jwt_required()
+@require_permission('integration.view')
 def get_accurate_bill_of_material_detail(number):
     try:
         client = AccurateClient()
@@ -911,3 +1071,174 @@ def get_accurate_bill_of_material_detail(number):
         return success_response('accurate.detail_fetched', data=data), 200
     except Exception as e:
         return error_response('accurate.fetch_error', details=str(e)), 500
+
+
+# ================= BULK MASTER DATA IMPORT =================
+# For a fresh/empty SMITH database (e.g. staging): create new Product,
+# Supplier, Customer and Account rows directly from Accurate's live master
+# lists, skipping the manual per-item mapping flow (Tab 2-4) entirely -
+# that flow exists for warehouse *stock* reconciliation against EXISTING
+# SMITH records, not bulk initial data seeding. Each record is processed
+# independently (own try/except + commit) so one bad row never aborts the
+# whole batch or rolls back rows already imported.
+
+_ACCURATE_GL_TYPE_TO_SMITH = {
+    'CASH_BANK': ('asset', 'debit'), 'ACCOUNT_RECEIVABLE': ('asset', 'debit'),
+    'OTHER_CURRENT_ASSET': ('asset', 'debit'), 'FIXED_ASSET': ('asset', 'debit'),
+    'OTHER_ASSET': ('asset', 'debit'), 'INVENTORY': ('asset', 'debit'),
+    'ACCOUNT_PAYABLE': ('liability', 'credit'), 'OTHER_CURRENT_LIABILITY': ('liability', 'credit'),
+    'LONG_TERM_LIABILITY': ('liability', 'credit'),
+    'EQUITY': ('equity', 'credit'), 'RETAINED_EARNING': ('equity', 'credit'),
+    'INCOME': ('revenue', 'credit'), 'OTHER_INCOME': ('revenue', 'credit'),
+    'COST_OF_GOODS_SOLD': ('expense', 'debit'), 'EXPENSE': ('expense', 'debit'),
+    'OTHER_EXPENSE': ('expense', 'debit'),
+}
+
+
+def _bulk_import_items():
+    from models.product import Product
+    client = AccurateClient()
+    rows = client.fetch_items_from_accurate()
+    result = {'created': 0, 'skipped_existing': 0, 'errors': []}
+    for row in rows:
+        try:
+            code = row.get('item_no')
+            if not code:
+                continue
+            if Product.query.filter_by(code=code).first():
+                result['skipped_existing'] += 1
+                continue
+            db.session.add(Product(
+                code=code,
+                name=row.get('name') or code,
+                primary_uom=row.get('unit') or 'Pcs',
+                price=row.get('unit_price') or 0,
+                cost=0,
+                material_type='finished_goods',
+                is_active=True,
+            ))
+            db.session.commit()
+            result['created'] += 1
+        except Exception as e:
+            db.session.rollback()
+            result['errors'].append(f"{row.get('item_no')}: {e}")
+    return result
+
+
+def _bulk_import_vendors():
+    from models.purchasing import Supplier
+    client = AccurateClient()
+    rows = client.fetch_vendors()
+    result = {'created': 0, 'skipped_existing': 0, 'errors': []}
+    for row in rows:
+        try:
+            code = row.get('vendor_no')
+            if not code:
+                continue
+            if Supplier.query.filter_by(code=code).first():
+                result['skipped_existing'] += 1
+                continue
+            db.session.add(Supplier(
+                code=code,
+                company_name=row.get('name') or code,
+                email=row.get('email'),
+                phone=row.get('phone'),
+                is_active=True,
+            ))
+            db.session.commit()
+            result['created'] += 1
+        except Exception as e:
+            db.session.rollback()
+            result['errors'].append(f"{row.get('vendor_no')}: {e}")
+    return result
+
+
+def _bulk_import_customers():
+    from models.sales import Customer
+    client = AccurateClient()
+    rows = client.fetch_customers()
+    result = {'created': 0, 'skipped_existing': 0, 'errors': []}
+    for row in rows:
+        try:
+            code = row.get('customer_no')
+            if not code:
+                continue
+            if Customer.query.filter_by(code=code).first():
+                result['skipped_existing'] += 1
+                continue
+            db.session.add(Customer(
+                code=code,
+                company_name=row.get('name') or code,
+                email=row.get('email'),
+                phone=row.get('phone'),
+                is_active=True,
+            ))
+            db.session.commit()
+            result['created'] += 1
+        except Exception as e:
+            db.session.rollback()
+            result['errors'].append(f"{row.get('customer_no')}: {e}")
+    return result
+
+
+def _bulk_import_gl_accounts():
+    from models.finance import Account
+    client = AccurateClient()
+    rows = client.fetch_gl_accounts()
+    result = {'created': 0, 'skipped_existing': 0, 'errors': []}
+    for row in rows:
+        try:
+            code = row.get('account_no')
+            if not code:
+                continue
+            if Account.query.filter_by(account_code=code).first():
+                result['skipped_existing'] += 1
+                continue
+            account_type, normal_balance = _ACCURATE_GL_TYPE_TO_SMITH.get(
+                row.get('account_type'), ('asset', 'debit')
+            )
+            db.session.add(Account(
+                account_code=code,
+                account_name=row.get('name') or code,
+                account_type=account_type,
+                normal_balance=normal_balance,
+            ))
+            db.session.commit()
+            result['created'] += 1
+        except Exception as e:
+            db.session.rollback()
+            result['errors'].append(f"{row.get('account_no')}: {e}")
+    return result
+
+
+_BULK_IMPORTERS = {
+    'items': _bulk_import_items,
+    'vendors': _bulk_import_vendors,
+    'customers': _bulk_import_customers,
+    'gl_accounts': _bulk_import_gl_accounts,
+}
+
+
+@accurate_bp.route('/bulk-import-master', methods=['POST'])
+@jwt_required()
+@require_permission('integration.sync')
+def bulk_import_master_data():
+    """Bulk-create Product/Supplier/Customer/Account rows straight from
+    Accurate's live master lists - intended for a fresh/empty SMITH
+    database. Pass {"types": ["items","vendors","customers","gl_accounts"]}
+    to run a subset; omit for all four. Each type runs fully independently
+    (one type erroring out doesn't block the others), and each row within
+    a type is its own try/except + commit (see _BULK_IMPORTERS above)."""
+    data = request.get_json(silent=True) or {}
+    requested = data.get('types') or list(_BULK_IMPORTERS.keys())
+    summary = {}
+    for t in requested:
+        importer = _BULK_IMPORTERS.get(t)
+        if not importer:
+            summary[t] = {'error': f'unknown type: {t}'}
+            continue
+        try:
+            summary[t] = importer()
+        except Exception as e:
+            summary[t] = {'error': str(e)}
+    return success_response('accurate.bulk_import_done', data=summary), 200
