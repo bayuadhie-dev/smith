@@ -37,7 +37,7 @@ interface ScheduleItem {
   order_pack: number;
   spek_kain: string;
   no_spk: string;
-  wo_id?: number; // Work Order ID for navigation
+  wo_id?: number; // SPK ID for navigation
   wo_number?: string;
   status: string; // planned, wo_created, in_progress, completed
   color: string;
@@ -416,18 +416,18 @@ const WeeklyProductionPlan: React.FC = () => {
   };
 
   const handleGenerateWO = async (scheduleId: number) => {
-    if (!confirm('Generate Work Order dari jadwal ini?')) return;
+    if (!confirm('Generate SPK dari jadwal ini?')) return;
     try {
       const response = await axiosInstance.post(`/api/production/schedule-grid/${scheduleId}/generate-wo`);
       alert(response.data.message);
       fetchData();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Gagal membuat Work Order');
+      alert(error.response?.data?.error || 'Gagal membuat SPK');
     }
   };
 
   const handleGenerateAllWO = async () => {
-    if (!confirm('Generate semua Work Order untuk hari ini?')) return;
+    if (!confirm('Generate semua SPK untuk hari ini?')) return;
     try {
       const response = await axiosInstance.post('/api/production/schedule-grid/generate-wo-batch', {
         date: toLocalDateString(new Date())
@@ -435,7 +435,7 @@ const WeeklyProductionPlan: React.FC = () => {
       alert(response.data.message);
       fetchData();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Gagal membuat Work Orders');
+      alert(error.response?.data?.error || 'Gagal membuat SPK');
     }
   };
 
@@ -471,13 +471,13 @@ const WeeklyProductionPlan: React.FC = () => {
   };
 
   const handleGenerateWOApproved = async (scheduleId: number) => {
-    if (!confirm('Generate Work Order dari jadwal yang sudah diapprove ini?')) return;
+    if (!confirm('Generate SPK dari jadwal yang sudah diapprove ini?')) return;
     try {
       const response = await axiosInstance.post(`/api/production/schedule-grid/${scheduleId}/generate-wo-approved`);
       alert(response.data.message);
       fetchData();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Gagal membuat Work Order');
+      alert(error.response?.data?.error || 'Gagal membuat SPK');
     }
   };
 
@@ -503,7 +503,7 @@ const WeeklyProductionPlan: React.FC = () => {
                 <CalendarDaysIcon className="h-8 w-8 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white tracking-wide">Production Schedule</h1>
+                <h1 className="text-2xl font-bold text-white tracking-wide">Jadwal Produksi Mingguan</h1>
                 <p className="text-blue-100 text-sm">Jadwal Produksi Mingguan - PPIC</p>
               </div>
             </div>
@@ -867,7 +867,7 @@ const WeeklyProductionPlan: React.FC = () => {
                               <button
                                 onClick={() => handleGenerateWOApproved(item.id)}
                                 className="p-1.5 text-amber-500 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all"
-                                title="Generate Work Order"
+                                title="Generate SPK"
                               >
                                 <BoltIcon className="h-4 w-4" />
                               </button>
@@ -876,7 +876,7 @@ const WeeklyProductionPlan: React.FC = () => {
                               <button
                                 onClick={() => navigate(`/app/production/work-orders/${item.wo_id}`)}
                                 className="p-1.5 text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
-                                title="Lihat Work Order"
+                                title="Lihat SPK"
                               >
                                 <ArrowTopRightOnSquareIcon className="h-4 w-4" />
                               </button>

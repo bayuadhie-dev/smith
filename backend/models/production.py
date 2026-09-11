@@ -23,6 +23,7 @@ class Machine(db.Model):
     last_maintenance = db.Column(db.Date, nullable=True)
     next_maintenance = db.Column(db.Date, nullable=True)
     installation_date = db.Column(db.Date, nullable=True)
+    machine_number = db.Column(db.Integer, nullable=True)  # Pure numeric machine identity for Batch Scheduling numbering (R8) - must be filled manually by PPIC, not derived from `code` (code is not guaranteed numeric)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     legacy_converting_machine_id = db.Column(db.Integer, nullable=True, index=True)  # bridge to converting_machines.id for machines migrated from that legacy table (audit trail only, no FK constraint since it's cross-table by design)
     specifications = db.Column(db.Text, nullable=True)
@@ -231,7 +232,16 @@ class ProductionPlan(db.Model):
     period_end = db.Column(db.Date, nullable=False)
     
     # Source References
-    sales_forecast_id = db.Column(db.Integer, db.ForeignKey('sales_forecasts.id'), nullable=True)
+    # Points at ForecastLine (Sales Forecast Matrix, 2026-08-24) - the closest equivalent
+    # to the old per-product SalesForecast row this used to point at (retired, table dropped).
+    sales_forecast_id = db.Column(db.Integer, db.ForeignKey('forecast_lines.id'), nullable=True)
+    # NOTE (Tahap 2, 2026-08-20): this column was already referenced by
+    # routes/production_planning.py's _create_work_order() helper
+    # (`sales_order_id=plan.sales_order_id`) before it actually existed on
+    # this model - that call would have raised AttributeError the moment it
+    # ran against a real ProductionPlan. Adding it here completes that
+    # pre-existing assumption, not introducing a new one.
+    sales_order_id = db.Column(db.Integer, db.ForeignKey('sales_orders.id'), nullable=True)
     based_on = db.Column(db.String(50), nullable=False, default='forecast')  # forecast, sales_order, both, manual
     
     # Planning Details
@@ -262,7 +272,8 @@ class ProductionPlan(db.Model):
     # Relationships
     product = db.relationship('Product')
     machine = db.relationship('Machine')
-    sales_forecast = db.relationship('SalesForecast')
+    sales_forecast = db.relationship('ForecastLine')
+    sales_order = db.relationship('SalesOrder')
     work_orders = db.relationship('WorkOrder', back_populates='production_plan')
     created_by_user = db.relationship('User', foreign_keys=[created_by])
     approved_by_user = db.relationship('User', foreign_keys=[approved_by])
@@ -408,6 +419,7 @@ class ShiftProduction(db.Model):
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
     work_order_id = db.Column(db.Integer, db.ForeignKey('work_orders.id'), nullable=True)
     batch_number = db.Column(db.String(100), nullable=True, index=True)  # Batch tracking from ingredient mixing
+    production_batch_id = db.Column(db.Integer, db.ForeignKey('production_batches.id'), nullable=True)  # Link to Batch Scheduling ProductionBatch - legacy batch_number text field left untouched
     
     # Production Data
     target_quantity = db.Column(db.Numeric(15, 2), nullable=False)
@@ -482,6 +494,7 @@ class ShiftProduction(db.Model):
     machine = db.relationship('Machine', back_populates='shift_productions')
     product = db.relationship('Product')
     work_order = db.relationship('WorkOrder')
+    production_batch = db.relationship('ProductionBatch', back_populates='shift_productions')
     operator = db.relationship('Employee', foreign_keys=[operator_id])
     supervisor = db.relationship('Employee', foreign_keys=[supervisor_id])
     created_by_user = db.relationship('User', foreign_keys=[created_by])
@@ -1716,3 +1729,37 @@ class FGConversionLossDetail(db.Model):
     
     def __repr__(self):
         return f'<FGConversionLossDetail {self.loss_type} - {self.loss_quantity} {self.uom}>'
+
+
+class DowntimeKeyword(db.Model):
+    """
+    SQLAlchemy model matching the pre-existing 'downtime_keywords' table,
+    which was originally created via raw SQL (CREATE TABLE IF NOT EXISTS
+    in routes/keyword_manager.py) rather than a model class. Adding this
+    model doesn't change the table's structure at all - it exists purely
+    so Alembic's autogenerate recognizes the table and stops flagging it
+    as an orphan to be dropped on every future `flask db migrate` run
+    (a recurring annoyance discovered 2026-08-15/16 across several
+    unrelated migrations).
+
+    routes/keyword_manager.py's raw-SQL CREATE TABLE / INSERT / UPDATE /
+    DELETE calls are left untouched - this model is additive only, not a
+    replacement for that code.
+    """
+    __tablename__ = 'downtime_keywords'
+
+    id = db.Column(db.Integer, primary_key=True)
+    keyword = db.Column(db.Text, nullable=False)
+    category = db.Column(db.Text, nullable=False)
+    priority = db.Column(db.Integer, default=0)
+    notes = db.Column(db.Text, default='')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        db.Index(
+            'idx_downtime_keywords_keyword_lower',
+            db.func.lower(keyword),
+            unique=True,
+        ),
+    )

@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required
+from utils.auth_decorators import require_permission
 from models import db, WarehouseZone, WarehouseLocation, Inventory, InventoryMovement, Product
 from models.product import Material
 from utils.i18n import success_response, error_response, get_message
@@ -15,6 +16,7 @@ warehouse_bp = Blueprint('warehouse', __name__)
 
 @warehouse_bp.route('/zones', methods=['GET'])
 @jwt_required()
+@require_permission('warehouse.view')
 def get_zones():
     """Get all warehouse zones"""
     try:
@@ -54,6 +56,7 @@ def get_zones():
 
 @warehouse_bp.route('/zones', methods=['POST'])
 @jwt_required()
+@require_permission('warehouse.create')
 def create_zone():
     """Create warehouse zone"""
     try:
@@ -84,6 +87,7 @@ def create_zone():
 
 @warehouse_bp.route('/locations', methods=['GET'])
 @jwt_required()
+@require_permission('warehouse.view')
 def get_locations():
     """Get all warehouse locations"""
     try:
@@ -153,6 +157,7 @@ def get_locations():
 
 @warehouse_bp.route('/locations/<int:id>', methods=['GET'])
 @jwt_required()
+@require_permission('warehouse.view')
 def get_location_detail(id):
     """Get single warehouse location with inventory items"""
     try:
@@ -253,6 +258,7 @@ def get_location_detail(id):
 
 @warehouse_bp.route('/locations', methods=['POST'])
 @jwt_required()
+@require_permission('warehouse.create')
 def create_location():
     """Create warehouse location"""
     try:
@@ -287,6 +293,7 @@ def create_location():
 
 @warehouse_bp.route('/inventory', methods=['GET'])
 @jwt_required()
+@require_permission('inventory.view')
 def get_inventory():
     """Get inventory - supports both products and materials"""
     try:
@@ -440,6 +447,7 @@ def get_inventory():
 
 @warehouse_bp.route('/inventory/add', methods=['POST'])
 @jwt_required()
+@require_permission('inventory.create')
 def add_to_inventory():
     """Add product or material to inventory"""
     try:
@@ -482,6 +490,7 @@ def add_to_inventory():
             ).first()
             
             if not inventory:
+                from utils.inventory_helpers import resolve_initial_stock_status
                 inventory = Inventory(
                     product_id=product_id,
                     location_id=location_id,
@@ -492,7 +501,7 @@ def add_to_inventory():
                     lot_number=data.get('lot_number'),
                     production_date=datetime.fromisoformat(data['production_date']).date() if data.get('production_date') else None,
                     expiry_date=datetime.fromisoformat(data['expiry_date']).date() if data.get('expiry_date') else None,
-                    stock_status=data.get('stock_status', 'released'),
+                    stock_status=resolve_initial_stock_status(data.get('stock_status', 'released'), product=db.session.get(Product, product_id)),
                     is_active=True,
                     created_by=user_id
                 )
@@ -506,6 +515,7 @@ def add_to_inventory():
             ).first()
             
             if not inventory:
+                from utils.inventory_helpers import resolve_initial_stock_status
                 inventory = Inventory(
                     material_id=material_id,
                     location_id=location_id,
@@ -515,7 +525,7 @@ def add_to_inventory():
                     batch_number=data.get('batch_number'),
                     lot_number=data.get('lot_number'),
                     expiry_date=datetime.fromisoformat(data['expiry_date']).date() if data.get('expiry_date') else None,
-                    stock_status=data.get('stock_status', 'available'),  # Material default = available
+                    stock_status=resolve_initial_stock_status(data.get('stock_status', 'available'), material=db.session.get(Material, material_id)),  # Material default = available
                     supplier_batch=data.get('supplier_batch'),
                     is_active=True,
                     created_by=user_id
@@ -567,6 +577,7 @@ def add_to_inventory():
 
 @warehouse_bp.route('/movements', methods=['GET'])
 @jwt_required()
+@require_permission('warehouse.view')
 def get_movements():
     """Get inventory movements with pagination and filters"""
     try:
@@ -657,6 +668,7 @@ def get_movements():
 
 @warehouse_bp.route('/movements/<int:movement_id>', methods=['GET'])
 @jwt_required()
+@require_permission('warehouse.view')
 def get_movement_detail(movement_id):
     """Get single inventory movement detail"""
     try:
@@ -729,6 +741,7 @@ def get_movement_detail(movement_id):
 
 @warehouse_bp.route('/movements', methods=['POST'])
 @jwt_required()
+@require_permission('warehouse.create')
 def create_movement():
     """Create inventory movement (stock_in, stock_out, transfer, adjust)"""
     try:
@@ -939,6 +952,7 @@ def create_movement():
 
 @warehouse_bp.route('/stock-summary', methods=['GET'])
 @jwt_required()
+@require_permission('warehouse.view')
 def get_stock_summary():
     """Get stock summary by product"""
     try:
@@ -970,6 +984,7 @@ def get_stock_summary():
 # Enhanced Dashboard Endpoints
 @warehouse_bp.route('/dashboard', methods=['GET'])
 @jwt_required()
+@require_permission('warehouse.view')
 def get_warehouse_dashboard():
     try:
         from datetime import datetime, timedelta
@@ -1137,6 +1152,7 @@ def get_warehouse_dashboard():
 
 @warehouse_bp.route('/alerts', methods=['GET'])
 @jwt_required()
+@require_permission('warehouse.view')
 def get_warehouse_alerts():
     """Get warehouse alerts: low stock & out of stock for both Products AND Materials"""
     try:
@@ -1238,6 +1254,7 @@ def get_warehouse_alerts():
 
 @warehouse_bp.route('/analytics/turnover', methods=['GET'])
 @jwt_required()
+@require_permission('warehouse.view')
 def get_inventory_turnover():
     try:
         from datetime import datetime, timedelta
@@ -1297,6 +1314,7 @@ def get_inventory_turnover():
 
 @warehouse_bp.route('/fifo-batches', methods=['GET'])
 @jwt_required()
+@require_permission('warehouse.view')
 def get_fifo_batches():
     """Get available inventory batches in FIFO order (oldest first).
     Used to show which batches will be consumed for a given quantity.

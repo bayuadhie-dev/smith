@@ -93,7 +93,7 @@ export default function WorkOrderBOMEdit() {
   };
 
   const handleCopyFromMaster = async () => {
-    if (!confirm('Copy BOM dari master ke Work Order ini? BOM ini akan bisa diedit tanpa mengubah BOM master.')) {
+    if (!confirm('Copy BOM dari master ke SPK ini? BOM ini akan bisa diedit tanpa mengubah BOM master.')) {
       return;
     }
     
@@ -110,14 +110,14 @@ export default function WorkOrderBOMEdit() {
   };
 
   const handleResetBOM = async () => {
-    if (!confirm('Reset BOM Work Order? Semua perubahan akan dihapus dan bisa di-copy ulang dari master.')) {
+    if (!confirm('Reset BOM SPK? Semua perubahan akan dihapus dan bisa di-copy ulang dari master.')) {
       return;
     }
     
     try {
       setSaving(true);
       await axiosInstance.post(`/api/production/work-orders/${workOrderId}/bom/reset`);
-      toast.success('BOM Work Order berhasil di-reset');
+      toast.success('BOM SPK berhasil di-reset');
       fetchData();
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Gagal reset BOM');
@@ -141,7 +141,7 @@ export default function WorkOrderBOMEdit() {
   };
 
   const handleDeleteItem = async (itemId: number) => {
-    if (!confirm('Hapus item ini dari BOM Work Order? BOM master tidak akan terpengaruh.')) {
+    if (!confirm('Hapus item ini dari BOM SPK? BOM master tidak akan terpengaruh.')) {
       return;
     }
     
@@ -231,7 +231,7 @@ export default function WorkOrderBOMEdit() {
             <ArrowLeftIcon className="h-5 w-5" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Edit BOM Work Order</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Edit BOM SPK</h1>
             <p className="text-gray-600 dark:text-gray-300">{workOrder?.wo_number} - {workOrder?.product_name}</p>
           </div>
         </div>
@@ -275,9 +275,9 @@ export default function WorkOrderBOMEdit() {
           <div>
             {bomSource === 'work_order' && (
               <>
-                <p className="font-medium text-green-800">BOM Work Order (Editable)</p>
+                <p className="font-medium text-green-800">BOM SPK (Editable)</p>
                 <p className="text-sm text-green-700">
-                  BOM ini adalah copy khusus untuk Work Order ini. Perubahan <strong>TIDAK</strong> akan mempengaruhi BOM master.
+                  BOM ini adalah copy khusus untuk SPK ini. Perubahan <strong>TIDAK</strong> akan mempengaruhi BOM master.
                 </p>
               </>
             )}
@@ -293,7 +293,7 @@ export default function WorkOrderBOMEdit() {
               <>
                 <p className="font-medium text-yellow-800">Tidak Ada BOM</p>
                 <p className="text-sm text-yellow-700">
-                  Work Order ini tidak memiliki BOM. Anda bisa menambahkan item secara manual.
+                  SPK ini tidak memiliki BOM. Anda bisa menambahkan item secara manual.
                 </p>
               </>
             )}

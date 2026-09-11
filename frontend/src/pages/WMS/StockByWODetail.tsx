@@ -93,7 +93,7 @@ const StockByWODetail: React.FC = () => {
       setRecords(res.data.production_records || []);
       setTransactions(res.data.transactions || []);
     } catch (err: any) {
-      toast.error('Gagal memuat detail Work Order');
+      toast.error('Gagal memuat detail SPK');
     } finally {
       setLoading(false);
     }
@@ -110,7 +110,7 @@ const StockByWODetail: React.FC = () => {
   if (!wo) {
     return (
       <div className="p-6 text-center text-gray-500">
-        <p>Work Order tidak ditemukan</p>
+        <p>SPK tidak ditemukan</p>
         <button onClick={() => navigate('/app/wms/stock-by-wo')} className="mt-3 text-blue-600 hover:underline">
           Kembali
         </button>

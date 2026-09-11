@@ -48,17 +48,21 @@ interface Zone {
   material_type: string
 }
 
-export default function InventoryListEnhanced() {
+interface InventoryListEnhancedProps {
+  mode?: 'per-gudang' | 'bahan-baku'
+}
+
+export default function InventoryListEnhanced({ mode = 'per-gudang' }: InventoryListEnhancedProps) {
   const [inventory, setInventory] = useState<InventoryItem[]>([])
   const [zones, setZones] = useState<Zone[]>([])
   const [loading, setLoading] = useState(true)
   const [totalItems, setTotalItems] = useState(0)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
-  
+
   // Filters
   const [search, setSearch] = useState('')
-  const [itemType, setItemType] = useState<string>('')
+  const [itemType, setItemType] = useState<string>(mode === 'bahan-baku' ? 'material' : '')
   const [zoneId, setZoneId] = useState<string>('')
   const [stockStatus, setStockStatus] = useState<string>('')
   const [categoryGroup, setCategoryGroup] = useState<string>('')
@@ -253,8 +257,12 @@ export default function InventoryListEnhanced() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Inventori Gudang</h1>
-          <p className="text-gray-600 dark:text-gray-300">Kelola stok produk dan bahan baku</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            {mode === 'bahan-baku' ? 'Penambahan Bahan Baku' : 'Barang per Gudang'}
+          </h1>
+          <p className="text-gray-600 dark:text-gray-300">
+            {mode === 'bahan-baku' ? 'Kelola stok bahan baku' : 'Kelola stok produk dan bahan baku per lokasi gudang'}
+          </p>
         </div>
         <div className="flex items-center gap-3">
           <button

@@ -3,6 +3,7 @@ Stock Opname (Physical Inventory Count) Routes
 """
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db
 from models.stock_opname import StockOpnameOrder, StockOpnameItem
 from models.warehouse import WarehouseZone, WarehouseLocation, Inventory, InventoryMovement
@@ -18,6 +19,7 @@ stock_opname_bp = Blueprint('stock_opname', __name__)
 
 @stock_opname_bp.route('/orders', methods=['GET'])
 @jwt_required()
+@require_permission('inventory.view')
 def get_opname_orders():
     """Get list of stock opname orders"""
     try:
@@ -50,6 +52,7 @@ def get_opname_orders():
 
 @stock_opname_bp.route('/orders/<int:id>', methods=['GET'])
 @jwt_required()
+@require_permission('inventory.view')
 def get_opname_order(id):
     """Get single stock opname order with items"""
     try:
@@ -66,6 +69,7 @@ def get_opname_order(id):
 
 @stock_opname_bp.route('/orders', methods=['POST'])
 @jwt_required()
+@require_permission('inventory.create')
 def create_opname_order():
     """Create new stock opname order"""
     try:
@@ -161,6 +165,7 @@ def generate_opname_items(order):
 
 @stock_opname_bp.route('/orders/<int:id>', methods=['PUT'])
 @jwt_required()
+@require_permission('inventory.edit')
 def update_opname_order(id):
     """Update stock opname order"""
     try:
@@ -195,6 +200,7 @@ def update_opname_order(id):
 
 @stock_opname_bp.route('/orders/<int:id>/start', methods=['PUT'])
 @jwt_required()
+@require_permission('inventory.edit')
 def start_opname(id):
     """Start stock opname counting"""
     try:
@@ -220,6 +226,7 @@ def start_opname(id):
 
 @stock_opname_bp.route('/orders/<int:id>/items', methods=['GET'])
 @jwt_required()
+@require_permission('inventory.view')
 def get_opname_items(id):
     """Get items for a stock opname order"""
     try:
@@ -254,6 +261,7 @@ def get_opname_items(id):
 
 @stock_opname_bp.route('/orders/<int:order_id>/items/<int:item_id>/count', methods=['PUT'])
 @jwt_required()
+@require_permission('inventory.edit')
 def count_item(order_id, item_id):
     """Record count for an item"""
     try:
@@ -300,6 +308,7 @@ def count_item(order_id, item_id):
 
 @stock_opname_bp.route('/orders/<int:id>/complete', methods=['PUT'])
 @jwt_required()
+@require_permission('inventory.edit')
 def complete_opname(id):
     """Complete stock opname and calculate variances"""
     try:
@@ -352,65 +361,127 @@ def complete_opname(id):
         return jsonify({'error': str(e)}), 500
 
 
+def apply_stock_opname_adjustments(order, user_id, create_adjustments=True):
+    """Apply inventory variance adjustments for a completed stock opname order.
+
+    Shared by the legacy direct-approve endpoint below and by the generic
+    ApprovalWorkflow dispatch hook (routes/approval_workflow.py) — same side
+    effect regardless of which path triggered the approval.
+    """
+    if create_adjustments:
+        items_with_variance = StockOpnameItem.query.filter(
+            StockOpnameItem.opname_order_id == order.id,
+            StockOpnameItem.variance_qty != 0
+        ).all()
+
+        for item in items_with_variance:
+            if item.inventory_id:
+                inventory = db.session.get(Inventory, item.inventory_id)
+                if inventory:
+                    inventory.quantity_on_hand = item.counted_qty
+                    inventory.quantity_available = item.counted_qty - inventory.quantity_reserved
+                    inventory.last_stock_check = get_local_now()
+
+                    movement = InventoryMovement(
+                        inventory_id=inventory.id,
+                        product_id=inventory.product_id,
+                        material_id=inventory.material_id,
+                        location_id=inventory.location_id,
+                        movement_type='adjust',
+                        movement_date=get_local_now().date(),
+                        quantity=float(item.variance_qty),
+                        reference_number=order.opname_number,
+                        reference_type='stock_opname',
+                        reference_id=order.id,
+                        batch_number=item.batch_number,
+                        notes=f'Penyesuaian dari Stok Opname {order.opname_number}',
+                        created_by=user_id
+                    )
+                    db.session.add(movement)
+
+    order.approved_by = user_id
+    order.approved_at = get_local_now()
+
+
+# NOTE (Bagian 2 part 1, 2026-08-19; corrected 2026-08-19 after frontend
+# wiring audit): approve_opname() below is NOT dead code — it was mislabeled
+# as such when submit_opname_for_approval() was added. In reality
+# frontend/src/pages/Warehouse/StockOpnameDetail.tsx's handleApprove() still
+# calls THIS endpoint exclusively; the newer POST /orders/<id>/submit-approval
+# (which routes through the generic ApprovalWorkflow system, see
+# routes/approval_workflow.py) is not yet wired to any UI. Keep this endpoint
+# working as-is until the frontend is switched over to submit-approval —
+# see WAREHOUSE_FRONTEND_WIRING_AUDIT.md item 3 for the migration plan.
+# Do not remove this route.
 @stock_opname_bp.route('/orders/<int:id>/approve', methods=['PUT'])
 @jwt_required()
+@require_permission('inventory.edit')
 def approve_opname(id):
     """Approve stock opname and create adjustments"""
     try:
         user_id = int(get_jwt_identity())
         order = db.session.get(StockOpnameOrder, id) or abort(404)
-        
+
         if order.status != 'completed':
             return jsonify({'error': 'Opname belum selesai'}), 400
-        
+
         data = request.get_json()
         create_adjustments = data.get('create_adjustments', True)
-        
-        if create_adjustments:
-            # Create inventory adjustments for variances
-            items_with_variance = StockOpnameItem.query.filter(
-                StockOpnameItem.opname_order_id == id,
-                StockOpnameItem.variance_qty != 0
-            ).all()
-            
-            for item in items_with_variance:
-                # Update inventory
-                if item.inventory_id:
-                    inventory = db.session.get(Inventory, item.inventory_id)
-                    if inventory:
-                        old_qty = inventory.quantity_on_hand
-                        inventory.quantity_on_hand = item.counted_qty
-                        inventory.quantity_available = item.counted_qty - inventory.quantity_reserved
-                        inventory.last_stock_check = get_local_now()
-                        
-                        # Create movement record
-                        movement = InventoryMovement(
-                            inventory_id=inventory.id,
-                            product_id=inventory.product_id,
-                            material_id=inventory.material_id,
-                            location_id=inventory.location_id,
-                            movement_type='adjust',
-                            movement_date=get_local_now().date(),
-                            quantity=float(item.variance_qty),
-                            reference_number=order.opname_number,
-                            reference_type='stock_opname',
-                            reference_id=order.id,
-                            batch_number=item.batch_number,
-                            notes=f'Penyesuaian dari Stok Opname {order.opname_number}',
-                            created_by=user_id
-                        )
-                        db.session.add(movement)
-        
-        order.approved_by = user_id
-        order.approved_at = get_local_now()
-        
+
+        apply_stock_opname_adjustments(order, user_id, create_adjustments)
+
         db.session.commit()
-        
+
         return jsonify({
             'message': 'Stok opname disetujui dan penyesuaian dibuat',
             'order': order.to_dict()
         }), 200
-        
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@stock_opname_bp.route('/orders/<int:id>/submit-approval', methods=['POST'])
+@jwt_required()
+@require_permission('inventory.create')
+def submit_opname_for_approval(id):
+    """Submit a completed stock opname order for approval via the generic
+    ApprovalWorkflow system. Pattern mirrors routes/purchasing.py submit_for_approval()."""
+    try:
+        user_id = get_jwt_identity()
+
+        order = db.session.get(StockOpnameOrder, id) or abort(404)
+        if order.status != 'completed':
+            return jsonify({'error': 'Opname belum selesai'}), 400
+
+        from models.approval_workflow import ApprovalWorkflow, ApprovalHistory
+
+        workflow = ApprovalWorkflow(
+            transaction_type='stock_opname',
+            transaction_id=order.id,
+            transaction_number=order.opname_number,
+            status='pending_review',
+            current_step='review',
+            submitted_by=user_id,
+            submitted_at=get_local_now()
+        )
+        db.session.add(workflow)
+        db.session.flush()
+
+        history = ApprovalHistory(
+            workflow_id=workflow.id,
+            action='submit',
+            action_by=user_id,
+            old_status='completed',
+            new_status='pending_review',
+            notes=f'Stock Opname {order.opname_number} submitted for review'
+        )
+        db.session.add(history)
+
+        db.session.commit()
+
+        return jsonify({'message': 'Opname submitted for approval', 'workflow_id': workflow.id}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
@@ -418,6 +489,7 @@ def approve_opname(id):
 
 @stock_opname_bp.route('/orders/<int:id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('inventory.delete')
 def delete_opname_order(id):
     """Delete stock opname order"""
     try:
@@ -438,6 +510,7 @@ def delete_opname_order(id):
 
 @stock_opname_bp.route('/zones', methods=['GET'])
 @jwt_required()
+@require_permission('inventory.view')
 def get_zones():
     """Get warehouse zones for dropdown"""
     try:

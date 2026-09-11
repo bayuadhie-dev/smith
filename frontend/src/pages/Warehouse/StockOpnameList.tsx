@@ -53,10 +53,14 @@ const TYPE_LABELS: { [key: string]: string } = {
   cycle: 'Cycle Count',
 };
 
-export default function StockOpnameList() {
+interface StockOpnameListProps {
+  mode?: 'perintah' | 'hasil';
+}
+
+export default function StockOpnameList({ mode = 'perintah' }: StockOpnameListProps) {
   const [orders, setOrders] = useState<StockOpnameOrder[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState(mode === 'hasil' ? 'completed' : '');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -139,17 +143,21 @@ export default function StockOpnameList() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <ClipboardDocumentCheckIcon className="h-8 w-8 text-blue-600" />
-            Stok Opname
+            {mode === 'hasil' ? 'Hasil Opname' : 'Perintah Stok Opname'}
           </h1>
-          <p className="text-gray-600 dark:text-gray-300">Kelola penghitungan fisik inventory</p>
+          <p className="text-gray-600 dark:text-gray-300">
+            {mode === 'hasil' ? 'Lihat hasil dan selisih stok opname yang sudah selesai' : 'Kelola penghitungan fisik inventory'}
+          </p>
         </div>
-        <Link
-          to="/app/warehouse/stock-opname/new"
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          <PlusIcon className="h-5 w-5" />
-          Buat Perintah Opname
-        </Link>
+        {mode !== 'hasil' && (
+          <Link
+            to="/app/warehouse/stock-opname/new"
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            <PlusIcon className="h-5 w-5" />
+            Buat Perintah Opname
+          </Link>
+        )}
       </div>
 
       {/* Filters */}

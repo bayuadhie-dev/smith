@@ -18,8 +18,17 @@ def _build_fifo_query(material_id=None, product_id=None, use_available=False):
         use_available: If True, filter by quantity_available > 0 (for reservation).
                        If False, filter by quantity_on_hand > 0 (for deduction).
     """
-    filters = [Inventory.is_active == True]
-    
+    filters = [
+        Inventory.is_active == True,
+        # Quarantined/rejected stock (e.g. incoming material that failed QC)
+        # must never be picked for consumption - excluded explicitly rather
+        # than allow-listing 'available' only, since finished-goods flows can
+        # legitimately consume 'released' stock too. Fixed 2026-09-11: this
+        # filter didn't exist before, so QC-rejected material could still be
+        # reserved/deducted into production.
+        Inventory.stock_status.notin_(['quarantine', 'reject']),
+    ]
+
     if use_available:
         filters.append(Inventory.quantity_available > 0)
     else:

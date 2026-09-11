@@ -81,11 +81,11 @@ export default function WorkOrderBreakdown() {
     try {
       setLoading(true);
       
-      // Fetch work order details
+      // Fetch SPK details
       const woRes = await axiosInstance.get(`/api/production/work-orders/${id}`);
       setWorkOrder(woRes.data.work_order);
       
-      // Fetch shift productions for this work order
+      // Fetch shift productions for this SPK
       const spRes = await axiosInstance.get(`/api/production-input/shift-productions`, {
         params: { work_order_id: id }
       });
@@ -203,7 +203,7 @@ export default function WorkOrderBreakdown() {
   if (!workOrder) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-800">Work Order tidak ditemukan</p>
+        <p className="text-red-800">SPK tidak ditemukan</p>
       </div>
     );
   }

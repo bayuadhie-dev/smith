@@ -7,7 +7,17 @@ class MaterialIssue(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     issue_number = db.Column(db.String(100), unique=True, nullable=False, index=True)
-    work_order_id = db.Column(db.Integer, db.ForeignKey('work_orders.id'), nullable=False)
+    work_order_id = db.Column(db.Integer, db.ForeignKey('work_orders.id'), nullable=True)
+    sales_order_id = db.Column(db.Integer, db.ForeignKey('sales_orders.id'), nullable=True)
+    production_plan_id = db.Column(db.Integer, db.ForeignKey('production_plans.id'), nullable=True)
+    # SPK-triggered staging (2026-08-24) - precise link to the batch whose SPK issuance
+    # created this. A WorkOrder can have several ProductionBatch/SPK, so work_order_id
+    # alone can't disambiguate which SPK a staging request came from.
+    production_batch_id = db.Column(db.Integer, db.ForeignKey('production_batches.id'), nullable=True)
+    # Where this MaterialIssue came from: 'manual' (staf minta manual), 'auto_reserve'
+    # (dibuat otomatis saat SO confirmed / Plan approved / WO released), or 'spk' (dibuat
+    # otomatis saat SPK batch terbit - SPK_STAGING_BAHAN_BAKU_RENCANA_TEKNIS.md)
+    trigger_source = db.Column(db.String(20), nullable=False, default='manual')
     issue_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     requested_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     approved_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
@@ -30,15 +40,24 @@ class MaterialIssue(db.Model):
     # Additional information
     notes = db.Column(db.Text, nullable=True)
     special_instructions = db.Column(db.Text, nullable=True)
-    
+
+    # Receipt confirmation by Production (checklist terima — kebutuhan A)
+    # Set only once ALL items on this document have received_quantity filled.
+    received_confirmed_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    received_confirmed_at = db.Column(db.DateTime, nullable=True)
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     # Relationships
     work_order = db.relationship('WorkOrder')
+    sales_order = db.relationship('SalesOrder')
+    production_plan = db.relationship('ProductionPlan')
+    production_batch = db.relationship('ProductionBatch')
     requested_by_user = db.relationship('User', foreign_keys=[requested_by])
     approved_by_user = db.relationship('User', foreign_keys=[approved_by])
     issued_by_user = db.relationship('User', foreign_keys=[issued_by])
+    received_confirmed_by_user = db.relationship('User', foreign_keys=[received_confirmed_by])
     items = db.relationship('MaterialIssueItem', back_populates='material_issue', cascade='all, delete-orphan')
     
     def __repr__(self):
@@ -69,6 +88,17 @@ class MaterialIssueItem(db.Model):
     required_quantity = db.Column(db.Numeric(15, 2), nullable=False)
     issued_quantity = db.Column(db.Numeric(15, 2), default=0)
     returned_quantity = db.Column(db.Numeric(15, 2), default=0)
+    # Qty confirmed by Production at receipt checklist (kebutuhan A) — may differ
+    # from issued_quantity (system-sent) if there's a physical discrepancy.
+    received_quantity = db.Column(db.Numeric(15, 2), nullable=True, default=None)
+    receive_note = db.Column(db.Text, nullable=True)
+    # Snapshot of FIFO reservation outcome for this item: none/full/partial/insufficient
+    reservation_status = db.Column(db.String(20), nullable=False, default='none')
+    # Actual qty reserved via fifo_reserve_stock (<= required_quantity; equals
+    # required_quantity when reservation_status='full', 0 when 'insufficient').
+    # Needed so fifo_release_reservation() releases the exact reserved amount,
+    # not just a guess from required_quantity - matters most for 'partial'.
+    reserved_quantity = db.Column(db.Numeric(15, 2), nullable=True, default=0)
     uom = db.Column(db.String(20), nullable=False)
     
     # Inventory details

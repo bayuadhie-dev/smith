@@ -199,7 +199,7 @@ const WorkOrderKanban: React.FC = () => {
         setAllWorkOrders(workOrders);
         buildColumns(workOrders, searchTerm, machineFilter, priorityFilter);
       } catch (error) {
-        console.error('Error fetching work orders:', error);
+        console.error('Error fetching SPK:', error);
       } finally {
         setLoading(false);
         setRefreshing(false);
@@ -275,7 +275,7 @@ const WorkOrderKanban: React.FC = () => {
       );
     } catch (error: any) {
       console.error('Error updating status:', error);
-      setDragError(error.response?.data?.error || 'Gagal update status Work Order');
+      setDragError(error.response?.data?.error || 'Gagal update status SPK');
       setTimeout(() => setDragError(null), 4000);
       // Revert
       fetchWorkOrders(true);
@@ -310,7 +310,7 @@ const WorkOrderKanban: React.FC = () => {
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-300">Memuat Work Orders...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-300">Memuat SPK...</p>
         </div>
       </div>
     );
@@ -430,7 +430,7 @@ const WorkOrderKanban: React.FC = () => {
                     {column.items.length === 0 && !snapshot.isDraggingOver && (
                       <div className="text-center py-8 text-gray-400 text-sm">
                         <ClipboardDocumentListIcon className="h-8 w-8 mx-auto mb-2 opacity-40" />
-                        Tidak ada Work Order
+                        Tidak ada SPK
                       </div>
                     )}
 

@@ -1,283 +1,179 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useNavigate } from 'react-router-dom';
+import axiosInstance from '../../utils/axiosConfig';
+import { toast } from 'react-hot-toast';
 import {
-  ArrowTrendingDownIcon as TrendingDown,
+  ArrowTrendingDownIcon,
   ArrowTrendingUpIcon,
-  CalendarIcon as Calendar,
-  ChartBarIcon as Calculator
-,
   CheckIcon as Save,
   CubeIcon,
   CurrencyDollarIcon,
   DocumentTextIcon,
   ExclamationCircleIcon,
-  HashtagIcon as Hash,
+  MagnifyingGlassIcon,
   MapPinIcon,
-  XMarkIcon as X
+  XMarkIcon as X,
 } from '@heroicons/react/24/outline';
-interface Product {
-  id: number;
-  name: string;
-  code: string;
-  primary_uom: string;
-}
 
-interface Location {
+interface InventoryRow {
   id: number;
+  product_id: number | null;
+  material_id: number | null;
+  item_name: string;
+  item_code: string;
+  uom: string;
   location_code: string;
-  zone: {
-    name: string;
-  };
+  quantity_on_hand: number;
 }
 
-interface InventoryItem {
-  quantity: number;
-  unit_cost: number;
+interface Account {
+  id: number;
+  code: string;
+  name: string;
 }
 
-interface AdjustmentFormData {
-  product_id: number;
-  location_id: number;
-  adjustment_type: string;
-  reason: string;
-  system_quantity: number;
-  physical_quantity: number;
-  batch_number: string;
-  lot_number: string;
-  serial_number: string;
-  unit_cost: number | null;
-  notes: string;
-  reference_document: string;
-  adjustment_date: string;
-}
+const reasons = [
+  { value: 'counting_error', label: 'Kesalahan Hitung' },
+  { value: 'damaged', label: 'Rusak' },
+  { value: 'expired', label: 'Kadaluarsa' },
+  { value: 'theft', label: 'Kehilangan/Pencurian' },
+  { value: 'system_error', label: 'Kesalahan Sistem' },
+  { value: 'stock_take', label: 'Stock Take' },
+  { value: 'quality_issue', label: 'Masalah Kualitas' },
+  { value: 'other', label: 'Lainnya' },
+];
 
 const AdjustmentForm: React.FC = () => {
-  const { t } = useLanguage();
-
   const navigate = useNavigate();
-  const { id } = useParams();
-  const isEdit = Boolean(id);
 
-  const [formData, setFormData] = useState<AdjustmentFormData>({
-    product_id: 0,
-    location_id: 0,
-    adjustment_type: 'recount',
-    reason: 'counting_error',
-    system_quantity: 0,
-    physical_quantity: 0,
-    batch_number: '',
-    lot_number: '',
-    serial_number: '',
-    unit_cost: null,
-    notes: '',
-    reference_document: '',
-    adjustment_date: new Date().toISOString().split('T')[0]
-  });
+  const [search, setSearch] = useState('');
+  const [inventoryOptions, setInventoryOptions] = useState<InventoryRow[]>([]);
+  const [selectedInventory, setSelectedInventory] = useState<InventoryRow | null>(null);
+  const [searching, setSearching] = useState(false);
 
-  const [products, setProducts] = useState<Product[]>([]);
-  const [locations, setLocations] = useState<Location[]>([]);
-  const [currentInventory, setCurrentInventory] = useState<InventoryItem | null>(null);
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [isValueAdjustment, setIsValueAdjustment] = useState(false);
+  const [physicalQuantity, setPhysicalQuantity] = useState('');
+  const [totalCostImpact, setTotalCostImpact] = useState('');
+  const [unitCost, setUnitCost] = useState('');
+  const [reason, setReason] = useState('counting_error');
+  const [akunPenyesuaianId, setAkunPenyesuaianId] = useState('');
+  const [notes, setNotes] = useState('');
+  const [referenceDocument, setReferenceDocument] = useState('');
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const adjustmentTypes = [
-    { value: 'positive', label: 'Positive Adjustment (Increase Stock)' },
-    { value: 'negative', label: 'Negative Adjustment (Decrease Stock)' },
-    { value: 'recount', label: 'Physical Recount' }
-  ];
-
-  const reasons = [
-    { value: 'counting_error', label: 'Counting Error' },
-    { value: 'damaged', label: 'Damaged Goods' },
-    { value: 'expired', label: 'Expired Products' },
-    { value: 'theft', label: 'Theft/Loss' },
-    { value: 'system_error', label: 'System Error' },
-    { value: 'stock_take', label: 'Stock Take Adjustment' },
-    { value: 'quality_issue', label: 'Quality Issue' },
-    { value: 'other', label: 'Other' }
-  ];
-
   useEffect(() => {
-    fetchProducts();
-    fetchLocations();
-    if (isEdit) {
-      fetchAdjustment();
+    fetchAccounts();
+  }, []);
+
+  const fetchAccounts = async () => {
+    try {
+      const res = await axiosInstance.get('/api/finance/accounts');
+      setAccounts(res.data.accounts || []);
+    } catch (err) {
+      // Non-critical - user can still submit without an override, global default applies
     }
-  }, [id]);
+  };
 
-  useEffect(() => {
-    // Fetch current inventory when product and location are selected
-    if (formData.product_id && formData.location_id && !isEdit) {
-      fetchCurrentInventory();
+  const searchInventory = async () => {
+    if (!search.trim()) {
+      toast.error('Masukkan kata kunci pencarian item');
+      return;
     }
-  }, [formData.product_id, formData.location_id, isEdit]);
-
-  useEffect(() => {
-    // Auto-set system quantity from current inventory
-    if (currentInventory && !isEdit) {
-      setFormData(prev => ({
-        ...prev,
-        system_quantity: currentInventory.quantity,
-        unit_cost: currentInventory.unit_cost
+    try {
+      setSearching(true);
+      const res = await axiosInstance.get('/api/warehouse/inventory', {
+        params: { search, per_page: 20 },
+      });
+      const rows = (res.data.inventory || res.data.items || []).map((inv: any) => ({
+        id: inv.id,
+        product_id: inv.product_id,
+        material_id: inv.material_id,
+        item_name: inv.product_name || inv.material_name || inv.item_name || '-',
+        item_code: inv.product_code || inv.material_code || inv.item_code || '',
+        uom: inv.uom || inv.primary_uom || '',
+        location_code: inv.location_code || (inv.location && inv.location.location_code) || '',
+        quantity_on_hand: Number(inv.quantity_on_hand ?? inv.quantity ?? 0),
       }));
-    }
-  }, [currentInventory, isEdit]);
-
-  const fetchProducts = async () => {
-    try {
-      const response = await fetch('/api/products-new/?per_page=1000', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        const mappedProducts = (data.products || []).map((p: any) => ({
-          id: p.id,
-          code: p.kode_produk || p.code,
-          name: p.nama_produk || p.name,
-          primary_uom: p.satuan || p.primary_uom || 'pcs',
-        }));
-        setProducts(mappedProducts);
+      setInventoryOptions(rows);
+      if (rows.length === 0) {
+        toast.error('Tidak ditemukan item inventory dengan kata kunci tersebut');
       }
-    } catch (error) {
-      console.error('Failed to fetch products:', error);
+    } catch (err) {
+      toast.error('Gagal mencari inventory');
+    } finally {
+      setSearching(false);
     }
   };
 
-  const fetchLocations = async () => {
-    try {
-      const response = await fetch('/api/warehouse/locations', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setLocations(data.locations || []);
-      }
-    } catch (error) {
-      console.error('Failed to fetch locations:', error);
-    }
+  const selectInventory = (inv: InventoryRow) => {
+    setSelectedInventory(inv);
+    setInventoryOptions([]);
+    setSearch('');
   };
 
-  const fetchCurrentInventory = async () => {
-    try {
-      const response = await fetch(`/api/warehouse/inventory/current?product_id=${formData.product_id}&location_id=${formData.location_id}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setCurrentInventory(data);
-      } else {
-        setCurrentInventory({ quantity: 0, unit_cost: 0 });
-      }
-    } catch (error) {
-      console.error('Failed to fetch current inventory:', error);
-      setCurrentInventory({ quantity: 0, unit_cost: 0 });
-    }
-  };
-
-  const fetchAdjustment = async () => {
-    try {
-      const response = await fetch(`/api/warehouse/adjustments/${id}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setFormData({
-          product_id: data.product_id,
-          location_id: data.location_id,
-          adjustment_type: data.adjustment_type,
-          reason: data.reason,
-          system_quantity: data.system_quantity,
-          physical_quantity: data.physical_quantity,
-          batch_number: data.batch_number || '',
-          lot_number: data.lot_number || '',
-          serial_number: data.serial_number || '',
-          unit_cost: data.unit_cost,
-          notes: data.notes || '',
-          reference_document: data.reference_document || '',
-          adjustment_date: data.adjustment_date ? data.adjustment_date.split('T')[0] : ''
-        });
-      }
-    } catch (error) {
-      console.error('Failed to fetch adjustment:', error);
-    }
-  };
+  const adjustmentQuantity =
+    !isValueAdjustment && selectedInventory && physicalQuantity !== ''
+      ? Number(physicalQuantity) - selectedInventory.quantity_on_hand
+      : 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
 
+    if (!selectedInventory) {
+      setError('Pilih item inventory terlebih dahulu');
+      return;
+    }
+    if (!isValueAdjustment && physicalQuantity === '') {
+      setError('Physical Quantity wajib diisi untuk mode Quantity');
+      return;
+    }
+    if (isValueAdjustment && totalCostImpact === '') {
+      setError('Total Cost Impact wajib diisi untuk mode Value Adjustment');
+      return;
+    }
+
+    setLoading(true);
     try {
-      const url = isEdit 
-        ? `/api/warehouse/adjustments/${id}` 
-        : '/api/warehouse/adjustments';
-      
-      const method = isEdit ? 'PUT' : 'POST';
+      const payload: any = {
+        inventory_id: selectedInventory.id,
+        reason,
+        is_value_adjustment: isValueAdjustment,
+        notes: notes || undefined,
+        reference_document: referenceDocument || undefined,
+      };
+      if (akunPenyesuaianId) payload.akun_penyesuaian_id = Number(akunPenyesuaianId);
+      if (unitCost) payload.unit_cost = Number(unitCost);
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(formData)
-      });
-
-      if (response.ok) {
-        navigate('/app/warehouse/adjustments');
+      if (isValueAdjustment) {
+        payload.total_cost_impact = Number(totalCostImpact);
       } else {
-        const errorData = await response.json();
-        setError(errorData.message || 'Failed to save adjustment');
+        payload.physical_quantity = Number(physicalQuantity);
       }
-    } catch (error) {
-      setError('Network error occurred');
+
+      const res = await axiosInstance.post('/api/wms/adjustments', payload);
+      const adjustmentId = res.data.adjustment?.id;
+      toast.success('Penyesuaian stok dibuat sebagai draft');
+      navigate(adjustmentId ? `/app/warehouse/adjustments/${adjustmentId}` : '/app/warehouse/adjustments');
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Gagal membuat penyesuaian stok');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: name.includes('_id') || name.includes('quantity') || name === 'unit_cost' 
-        ? (value === '' ? (name === 'unit_cost' ? null : 0) : Number(value))
-        : value
-    }));
-  };
-
-  const selectedProduct = products.find(p => p.id === formData.product_id);
-  const adjustmentQuantity = formData.physical_quantity - formData.system_quantity;
-  const totalCostImpact = adjustmentQuantity && formData.unit_cost ? adjustmentQuantity * formData.unit_cost : 0;
-  const variancePercentage = formData.system_quantity > 0 ? (adjustmentQuantity / formData.system_quantity) * 100 : 0;
-
-  const isPositiveAdjustment = adjustmentQuantity > 0;
-  const isNegativeAdjustment = adjustmentQuantity < 0;
-
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            {isEdit ? 'Edit Inventory Adjustment' : 'New Inventory Adjustment'}
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            {isEdit ? 'Update inventory adjustment details' : 'Create new inventory adjustment for stock correction'}
-          </p>
-        </div>
+    <div className="p-6 space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Buat Penyesuaian Stok</h1>
+        <p className="text-gray-600 dark:text-gray-300">
+          Draft akan dibuat dulu, lalu bisa diajukan untuk persetujuan dari halaman detail
+        </p>
       </div>
 
-      {/* Form */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
@@ -287,316 +183,212 @@ const AdjustmentForm: React.FC = () => {
             </div>
           )}
 
-          {/* Product and Location */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                <CubeIcon className="inline h-4 w-4 mr-1" />
-                Product *
-              </label>
-              <select
-                name="product_id"
-                value={formData.product_id}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">Select Product</option>
-                {products.map(product => (
-                  <option key={product.id} value={product.id}>
-                    {product.code} - {product.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                <MapPinIcon className="inline h-4 w-4 mr-1" />
-                Location *
-              </label>
-              <select
-                name="location_id"
-                value={formData.location_id}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">Select Location</option>
-                {locations.map(location => (
-                  <option key={location.id} value={location.id}>
-                    {location.location_code} - {location.zone?.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Adjustment Type and Reason */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Adjustment Type *
-              </label>
-              <select
-                name="adjustment_type"
-                value={formData.adjustment_type}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                {adjustmentTypes.map(type => (
-                  <option key={type.value} value={type.value}>
-                    {type.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Reason *
-              </label>
-              <select
-                name="reason"
-                value={formData.reason}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                {reasons.map(reason => (
-                  <option key={reason.value} value={reason.value}>
-                    {reason.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Quantities */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                System Quantity *
-              </label>
-              <div className="relative">
-                <input
-                  type="number"
-                  name="system_quantity"
-                  value={formData.system_quantity}
-                  onChange={handleInputChange}
-                  required
-                  min="0"
-                  step="0.01"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  readOnly={!isEdit && currentInventory !== null}
-                />
-                {selectedProduct && (
-                  <span className="absolute right-3 top-2 text-sm text-gray-500 dark:text-gray-400">
-                    {selectedProduct.primary_uom}
-                  </span>
-                )}
-              </div>
-              {currentInventory && !isEdit && (
-                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                  Current system stock
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Physical Quantity *
-              </label>
-              <div className="relative">
-                <input
-                  type="number"
-                  name="physical_quantity"
-                  value={formData.physical_quantity}
-                  onChange={handleInputChange}
-                  required
-                  min="0"
-                  step="0.01"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-                {selectedProduct && (
-                  <span className="absolute right-3 top-2 text-sm text-gray-500 dark:text-gray-400">
-                    {selectedProduct.primary_uom}
-                  </span>
-                )}
-              </div>
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Actual counted quantity
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Adjustment Quantity
-              </label>
-              <div className={`px-3 py-2 border rounded-lg ${
-                isPositiveAdjustment ? 'bg-green-50 border-green-200 text-green-700' :
-                isNegativeAdjustment ? 'bg-red-50 border-red-200 text-red-700' :
-                'bg-gray-50 border-gray-300 text-gray-700'
-              }`}>
-                <div className="flex items-center gap-2">
-                  {isPositiveAdjustment && <ArrowTrendingUpIcon className="h-4 w-4" />}
-                  {isNegativeAdjustment && <TrendingDown className="h-4 w-4" />}
-                  {adjustmentQuantity.toFixed(2)} {selectedProduct?.primary_uom || ''}
+          {/* Item picker */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+              <CubeIcon className="inline h-4 w-4 mr-1" />
+              Item Inventory *
+            </label>
+            {selectedInventory ? (
+              <div className="flex items-center justify-between p-3 border border-blue-200 bg-blue-50 rounded-lg">
+                <div>
+                  <p className="font-medium text-gray-900">{selectedInventory.item_code} - {selectedInventory.item_name}</p>
+                  <p className="text-sm text-gray-600 flex items-center gap-1">
+                    <MapPinIcon className="h-4 w-4" /> {selectedInventory.location_code} — Stok sistem: {selectedInventory.quantity_on_hand} {selectedInventory.uom}
+                  </p>
                 </div>
+                <button type="button" onClick={() => setSelectedInventory(null)} className="text-gray-400 hover:text-gray-600">
+                  <X className="h-5 w-5" />
+                </button>
               </div>
-              {variancePercentage !== 0 && (
-                <p className={`mt-1 text-sm ${
-                  isPositiveAdjustment ? 'text-green-600' : 'text-red-600'
-                }`}>
-                  {variancePercentage > 0 ? '+' : ''}{variancePercentage.toFixed(1)}% variance
-                </p>
-              )}
+            ) : (
+              <>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); searchInventory(); } }}
+                    placeholder="Cari nama/kode produk atau material..."
+                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={searchInventory}
+                    disabled={searching}
+                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-1"
+                  >
+                    <MagnifyingGlassIcon className="h-4 w-4" /> Cari
+                  </button>
+                </div>
+                {inventoryOptions.length > 0 && (
+                  <div className="mt-2 border border-gray-200 rounded-lg divide-y max-h-64 overflow-y-auto">
+                    {inventoryOptions.map((inv) => (
+                      <button
+                        type="button"
+                        key={inv.id}
+                        onClick={() => selectInventory(inv)}
+                        className="w-full text-left px-3 py-2 hover:bg-gray-50 flex items-center justify-between"
+                      >
+                        <div>
+                          <p className="font-medium text-sm text-gray-900">{inv.item_code} - {inv.item_name}</p>
+                          <p className="text-xs text-gray-500">{inv.location_code}</p>
+                        </div>
+                        <span className="text-sm text-gray-600">{inv.quantity_on_hand} {inv.uom}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Mode toggle */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Mode Penyesuaian</label>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 text-sm">
+                <input type="radio" checked={!isValueAdjustment} onChange={() => setIsValueAdjustment(false)} />
+                Quantity — koreksi jumlah fisik
+              </label>
+              <label className="flex items-center gap-2 text-sm">
+                <input type="radio" checked={isValueAdjustment} onChange={() => setIsValueAdjustment(true)} />
+                Value — koreksi nilai/harga saja (qty tidak berubah)
+              </label>
             </div>
           </div>
 
-          {/* Batch Information */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                <Hash className="inline h-4 w-4 mr-1" />
-                Batch Number
-              </label>
-              <input
-                type="text"
-                name="batch_number"
-                value={formData.batch_number}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter batch number"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Lot Number
-              </label>
-              <input
-                type="text"
-                name="lot_number"
-                value={formData.lot_number}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter lot number"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Serial Number
-              </label>
-              <input
-                type="text"
-                name="serial_number"
-                value={formData.serial_number}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter serial number"
-              />
-            </div>
+          {/* Reason */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Alasan *</label>
+            <select
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              required
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              {reasons.map((r) => (
+                <option key={r.value} value={r.value}>{r.label}</option>
+              ))}
+            </select>
           </div>
 
-          {/* Cost Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Quantity mode fields */}
+          {!isValueAdjustment && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Physical Quantity *</label>
+                <input
+                  type="number"
+                  value={physicalQuantity}
+                  onChange={(e) => setPhysicalQuantity(e.target.value)}
+                  step="0.01"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Hasil hitung fisik"
+                />
+                {selectedInventory && physicalQuantity !== '' && (
+                  <p className={`mt-1 text-sm ${adjustmentQuantity > 0 ? 'text-green-600' : adjustmentQuantity < 0 ? 'text-red-600' : 'text-gray-500'}`}>
+                    {adjustmentQuantity > 0 && <ArrowTrendingUpIcon className="inline h-4 w-4 mr-1" />}
+                    {adjustmentQuantity < 0 && <ArrowTrendingDownIcon className="inline h-4 w-4 mr-1" />}
+                    Selisih: {adjustmentQuantity > 0 ? '+' : ''}{adjustmentQuantity}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                  <CurrencyDollarIcon className="inline h-4 w-4 mr-1" />
+                  Unit Cost (opsional, untuk hitung jurnal)
+                </label>
+                <input
+                  type="number"
+                  value={unitCost}
+                  onChange={(e) => setUnitCost(e.target.value)}
+                  step="0.01"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Harga per unit"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Value mode fields */}
+          {isValueAdjustment && (
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 <CurrencyDollarIcon className="inline h-4 w-4 mr-1" />
-                Unit Cost (IDR)
+                Total Cost Impact (IDR) *
               </label>
               <input
                 type="number"
-                name="unit_cost"
-                value={formData.unit_cost || ''}
-                onChange={handleInputChange}
-                min="0"
+                value={totalCostImpact}
+                onChange={(e) => setTotalCostImpact(e.target.value)}
                 step="0.01"
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter unit cost"
+                placeholder="Positif = naik nilai, negatif = turun nilai"
               />
+              <p className="mt-1 text-sm text-gray-500">Kuantitas stok tidak akan berubah - hanya nilai/jurnal.</p>
             </div>
+          )}
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                <Calculator className="inline h-4 w-4 mr-1" />
-                Total Cost Impact (IDR)
-              </label>
-              <div className={`px-3 py-2 border rounded-lg ${
-                totalCostImpact > 0 ? 'bg-green-50 border-green-200 text-green-700' :
-                totalCostImpact < 0 ? 'bg-red-50 border-red-200 text-red-700' :
-                'bg-gray-50 border-gray-300 text-gray-700'
-              }`}>
-                {totalCostImpact > 0 ? '+' : ''}{totalCostImpact.toLocaleString('id-ID')}
-              </div>
-            </div>
+          {/* Akun Penyesuaian override */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+              Akun Penyesuaian (opsional)
+            </label>
+            <select
+              value={akunPenyesuaianId}
+              onChange={(e) => setAkunPenyesuaianId(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Pakai default global (Pengaturan &gt; Preferensi Akun &gt; Inventory)</option>
+              {accounts.filter((acc) => !(acc as any).is_header).map((acc) => (
+                <option key={acc.id} value={acc.id}>{acc.code} - {acc.name}</option>
+              ))}
+            </select>
           </div>
 
-          {/* Reference and Date */}
+          {/* Reference and notes */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Dokumen Referensi</label>
+              <input
+                type="text"
+                value={referenceDocument}
+                onChange={(e) => setReferenceDocument(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="mis. Stock Take ST-2026-001"
+              />
+            </div>
+            <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Reference Document
+                <DocumentTextIcon className="inline h-4 w-4 mr-1" />
+                Catatan
               </label>
               <input
                 type="text"
-                name="reference_document"
-                value={formData.reference_document}
-                onChange={handleInputChange}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="e.g., Stock Take ST-2025-001"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                <Calendar className="inline h-4 w-4 mr-1" />
-                Adjustment Date *
-              </label>
-              <input
-                type="date"
-                name="adjustment_date"
-                value={formData.adjustment_date}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Penjelasan singkat"
               />
             </div>
           </div>
 
-          {/* Notes */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-              <DocumentTextIcon className="inline h-4 w-4 mr-1" />
-            </label>
-            <textarea
-              name="notes"
-              value={formData.notes}
-              onChange={handleInputChange}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Enter detailed explanation for the adjustment..."
-            />
-          </div>
-
-          {/* Actions */}
           <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
             <button
               type="button"
               onClick={() => navigate('/app/warehouse/adjustments')}
-              className="px-4 py-2 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+              className="px-4 py-2 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50"
             >
-              <X className="inline h-4 w-4 mr-2" />{t('common.cancel')}</button>
+              <X className="inline h-4 w-4 mr-2" />Batal
+            </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save className="inline h-4 w-4 mr-2" />
-              {loading ? 'Saving...' : isEdit ? 'Update Adjustment' : 'Create Adjustment'}
+              {loading ? 'Menyimpan...' : 'Simpan sebagai Draft'}
             </button>
           </div>
         </form>

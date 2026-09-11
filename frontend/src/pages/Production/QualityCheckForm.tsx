@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
+import SearchableSelect from '../../components/SearchableSelect';
 import {
   CalendarIcon as Calendar,
   CheckBadgeIcon as QualityIcon,
@@ -272,19 +273,13 @@ const QualityCheckForm: React.FC = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   <CubeIcon className="inline h-4 w-4 mr-1" />{t('production.product')}</label>
-                <select
-                  name="product_id"
-                  value={formData.product_id || ''}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">Select Product</option>
-                  {products.map(product => (
-                    <option key={product.id} value={product.id}>
-                      {product.code} - {product.name}
-                    </option>
-                  ))}
-                </select>
+                <SearchableSelect
+                  options={products}
+                  value={formData.product_id || null}
+                  onChange={(value) => setFormData(prev => ({ ...prev, product_id: value as any }))}
+                  placeholder="Select Product"
+                  className="w-full"
+                />
               </div>
 
               <div>

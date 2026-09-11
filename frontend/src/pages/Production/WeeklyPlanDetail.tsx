@@ -203,12 +203,12 @@ const WeeklyPlanDetail: React.FC = () => {
   };
 
   const handleGenerateWO = async () => {
-    if (!confirm('Generate Work Order untuk semua item yang belum memiliki WO?')) return;
+    if (!confirm('Generate SPK untuk semua item yang belum memiliki WO?')) return;
     
     try {
       setGeneratingWO(true);
       const response = await axiosInstance.post(`/api/production/weekly-plans/${id}/generate-work-orders`);
-      alert(`${response.data.work_orders.length} Work Order berhasil dibuat!`);
+      alert(`${response.data.work_orders.length} SPK berhasil dibuat!`);
       fetchData();
     } catch (error: any) {
       alert(error.response?.data?.error || 'Gagal generate WO');
@@ -331,7 +331,7 @@ const WeeklyPlanDetail: React.FC = () => {
             className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2 disabled:opacity-50"
           >
             <ClipboardDocumentListIcon className="h-5 w-5" />
-            {generatingWO ? 'Generating...' : 'Generate Work Orders'}
+            {generatingWO ? 'Generating...' : 'Generate SPK'}
           </button>
         )}
         
@@ -377,7 +377,7 @@ const WeeklyPlanDetail: React.FC = () => {
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tanggal</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Mesin</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status Material</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Work Order</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">SPK</th>
                   {canEdit && <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>}
                 </tr>
               </thead>

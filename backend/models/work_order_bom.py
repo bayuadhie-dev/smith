@@ -14,6 +14,19 @@ class WorkOrderBOMItem(db.Model):
     # Original BOM reference (for tracking)
     original_bom_id = db.Column(db.Integer, db.ForeignKey('bill_of_materials.id'), nullable=True)
     original_bom_item_id = db.Column(db.Integer, db.ForeignKey('bom_items.id'), nullable=True)
+
+    # Multi-level drill-down (Barang Jadi -> WIP -> Mixing), materialized from
+    # utils/bom_explosion.py::explode_bom_requirements() by
+    # routes/production.py::expand_work_order_bom_tree(). depth=1 is the
+    # top-level BOM (unchanged behavior for WOs that never expand deeper).
+    parent_item_id = db.Column(db.Integer, db.ForeignKey('work_order_bom_items.id', ondelete='CASCADE'), nullable=True)
+    depth = db.Column(db.Integer, nullable=False, default=1)
+
+    # Per-batch partial closing (Tutup Batch) - when set, this row is one
+    # ProductionBatch's own actual-consumption tree, scaled to that batch's
+    # planned_qty, not the whole WO's quantity. NULL means WO-wide (legacy,
+    # pre-partial-closing rows, or a WO with a single implicit batch).
+    production_batch_id = db.Column(db.Integer, db.ForeignKey('production_batches.id', ondelete='CASCADE'), nullable=True)
     
     # Item details (copied from BOM or manually added)
     line_number = db.Column(db.Integer, nullable=False)
@@ -32,6 +45,12 @@ class WorkOrderBOMItem(db.Model):
     quantity_planned = db.Column(db.Numeric(15, 4), nullable=True)  # quantity_per_unit * WO quantity
     quantity_actual = db.Column(db.Numeric(15, 4), nullable=True)   # Actual usage from production
     quantity_variance = db.Column(db.Numeric(15, 4), nullable=True) # Difference
+    # Which physical Inventory batch was actually consumed - user-selectable
+    # (2026-09-11) via the "Lihat stok di semua lokasi" modal on the SPK
+    # confirmation screen, since actual consumption can differ from the
+    # FIFO-suggested batch (e.g. suggested batch A, but B is used instead -
+    # both must be 'released'/'available' status, never quarantine/reject).
+    actual_batch_number = db.Column(db.String(100), nullable=True)
     
     # Cost tracking
     unit_cost = db.Column(db.Numeric(15, 4), nullable=True)
@@ -51,6 +70,7 @@ class WorkOrderBOMItem(db.Model):
     
     # Relationships
     work_order = db.relationship('WorkOrder', backref=db.backref('wo_bom_items', cascade='all, delete-orphan'))
+    children = db.relationship('WorkOrderBOMItem', backref=db.backref('parent', remote_side=[id]))
     material = db.relationship('Material')
     product = db.relationship('Product')
     modified_by_user = db.relationship('User')

@@ -116,8 +116,8 @@ const [batchNumber, setBatchNumber] = useState('')
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">🔍 Traceability</h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-1">Track work orders and production history</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Traceability</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Track SPK and production history</p>
         </div>
       </div>
 
@@ -126,7 +126,7 @@ const [batchNumber, setBatchNumber] = useState('')
         <div className="flex items-center gap-4">
           <div className="flex-1">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-              Work Order / Batch Number
+              SPK / Batch Number
             </label>
             <div className="relative">
               <input
@@ -177,7 +177,7 @@ const [batchNumber, setBatchNumber] = useState('')
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Work Order</h3>
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">SPK</h3>
                 <div className="space-y-1">
                   <div className="font-medium text-gray-900 dark:text-white">{traceData.work_order.wo_number}</div>
                   <div className="text-sm text-gray-600 dark:text-gray-300">{traceData.work_order.product_name}</div>
@@ -408,7 +408,7 @@ const [batchNumber, setBatchNumber] = useState('')
       {!traceData && !loading && !error && (
         <div className="card p-12 text-center">
           <DocumentMagnifyingGlassIcon className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Masukkan nomor Work Order untuk mulai tracking</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Masukkan nomor SPK untuk mulai tracking</h3>
           <p className="text-gray-500 dark:text-gray-400 mb-6">
             Cari dengan nomor WO (contoh: WO-001) atau batch number untuk melihat histori produksi lengkap.
           </p>
@@ -416,7 +416,7 @@ const [batchNumber, setBatchNumber] = useState('')
             <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 text-left">
               <h4 className="font-medium text-gray-900 dark:text-white mb-2">Yang akan ditampilkan:</h4>
               <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
-                <li>• Detail work order dan timeline</li>
+                <li>• Detail SPK dan timeline</li>
                 <li>• Informasi mesin dan operator</li>
                 <li>• Jumlah produksi dan metrik kualitas</li>
                 <li>• Data downtime dan efisiensi</li>

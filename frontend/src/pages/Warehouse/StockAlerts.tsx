@@ -80,7 +80,7 @@ const StockAlerts: React.FC = () => {
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
           <ExclamationTriangleIcon className="h-7 w-7 text-amber-500" />
-          Stok Minimum Alert
+          Peringatan Stok Minimum
         </h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
           Barang yang stoknya di bawah batas minimum

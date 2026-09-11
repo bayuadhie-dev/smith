@@ -8,18 +8,30 @@ class InventoryAdjustment(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     adjustment_number = db.Column(db.String(100), unique=True, nullable=False, index=True)
-    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=True)
+    material_id = db.Column(db.Integer, db.ForeignKey('materials.id'), nullable=True)
+    inventory_id = db.Column(db.Integer, db.ForeignKey('inventory.id'), nullable=True)
     location_id = db.Column(db.Integer, db.ForeignKey('warehouse_locations.id'), nullable=False)
-    
+
     # Adjustment Details
     adjustment_type = db.Column(db.String(50), nullable=False)  # positive, negative, recount
     reason = db.Column(db.String(100), nullable=False)  # damaged, expired, theft, counting_error, system_error
-    
+
+    # Value Adjustment mode: True = adjust cost/value only (no quantity change,
+    # e.g. revaluation) - Inventory.quantity_on_hand is left untouched and
+    # total_cost_impact is the user-entered value delta. False (default) =
+    # physical quantity adjustment from stock-opname-style variance.
+    is_value_adjustment = db.Column(db.Boolean, nullable=False, default=False)
+
     # Quantities
     system_quantity = db.Column(db.Numeric(15, 2), nullable=False)  # Current system quantity
     physical_quantity = db.Column(db.Numeric(15, 2), nullable=False)  # Actual counted quantity
     adjustment_quantity = db.Column(db.Numeric(15, 2), nullable=False)  # Difference (physical - system)
-    
+
+    # Account Preferences: default is inventory_account_settings.akun_penyesuaian_id,
+    # this field allows a per-adjustment override.
+    akun_penyesuaian_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
+
     # Batch Information
     batch_number = db.Column(db.String(100), nullable=True)
     lot_number = db.Column(db.String(100), nullable=True)
@@ -44,12 +56,51 @@ class InventoryAdjustment(db.Model):
     
     # Relationships
     product = db.relationship('Product')
+    material = db.relationship('Material')
+    inventory = db.relationship('Inventory')
     location = db.relationship('WarehouseLocation')
     requested_by_user = db.relationship('User', foreign_keys=[requested_by])
     approved_by_user = db.relationship('User', foreign_keys=[approved_by])
-    
+
+    __table_args__ = (
+        db.CheckConstraint(
+            '(product_id IS NOT NULL AND material_id IS NULL) OR (product_id IS NULL AND material_id IS NOT NULL)',
+            name='check_adjustment_product_or_material'
+        ),
+    )
+
     def __repr__(self):
         return f'<InventoryAdjustment {self.adjustment_number} - {self.adjustment_quantity}>'
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'adjustment_number': self.adjustment_number,
+            'product_id': self.product_id,
+            'product_name': self.product.name if self.product else None,
+            'material_id': self.material_id,
+            'material_name': self.material.name if self.material else None,
+            'inventory_id': self.inventory_id,
+            'location_id': self.location_id,
+            'location_name': self.location.location_code if self.location else None,
+            'adjustment_type': self.adjustment_type,
+            'reason': self.reason,
+            'is_value_adjustment': self.is_value_adjustment,
+            'system_quantity': float(self.system_quantity) if self.system_quantity is not None else None,
+            'physical_quantity': float(self.physical_quantity) if self.physical_quantity is not None else None,
+            'adjustment_quantity': float(self.adjustment_quantity) if self.adjustment_quantity is not None else None,
+            'akun_penyesuaian_id': self.akun_penyesuaian_id,
+            'unit_cost': float(self.unit_cost) if self.unit_cost is not None else None,
+            'total_cost_impact': float(self.total_cost_impact) if self.total_cost_impact is not None else None,
+            'status': self.status,
+            'requested_by': self.requested_by,
+            'approved_by': self.approved_by,
+            'approved_at': self.approved_at.isoformat() if self.approved_at else None,
+            'notes': self.notes,
+            'reference_document': self.reference_document,
+            'adjustment_date': self.adjustment_date.isoformat() if self.adjustment_date else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+        }
     
     @property
     def is_positive(self):
@@ -78,7 +129,7 @@ class InventoryTransfer(db.Model):
     # Transfer Details
     quantity = db.Column(db.Numeric(15, 2), nullable=False)
     uom = db.Column(db.String(20), nullable=False)
-    
+
     # Batch Information
     batch_number = db.Column(db.String(100), nullable=True)
     lot_number = db.Column(db.String(100), nullable=True)

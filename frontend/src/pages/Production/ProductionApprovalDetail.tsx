@@ -318,11 +318,11 @@ const ProductionApprovalDetail: React.FC = () => {
         </div>
       </div>
 
-      {/* Work Order Info */}
+      {/* SPK Info */}
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
         <h2 className="text-lg font-medium mb-4 flex items-center gap-2">
           <DocumentTextIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-          Informasi Work Order
+          Informasi SPK
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>

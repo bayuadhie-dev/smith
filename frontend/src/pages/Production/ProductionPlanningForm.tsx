@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
-import { 
+import SearchableSelect from '../../components/SearchableSelect';
+import {
   ClipboardDocumentListIcon, 
   CubeIcon, 
   ExclamationTriangleIcon,
@@ -150,8 +151,8 @@ const ProductionPlanningForm: React.FC = () => {
     }));
   };
 
-  const handleProductChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const productId = Number(e.target.value);
+  const handleProductChange = (value: number | string | null) => {
+    const productId = Number(value);
     const product = products.find(p => p.id === productId);
     
     setFormData(prev => ({
@@ -400,19 +401,14 @@ const ProductionPlanningForm: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Product <span className="text-red-500">*</span>
               </label>
-              <select
-                value={formData.product_id || ''}
+              <SearchableSelect
+                options={products}
+                value={formData.product_id || null}
                 onChange={handleProductChange}
+                placeholder="-- Select Product --"
                 required
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">-- Select Product --</option>
-                {products.map(product => (
-                  <option key={product.id} value={product.id}>
-                    {product.code} - {product.name}
-                  </option>
-                ))}
-              </select>
+                className="w-full"
+              />
             </div>
 
             <div>

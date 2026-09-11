@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db, Product, WarehouseZone, WarehouseLocation, Inventory, InventoryMovement
 from utils.i18n import success_response, error_response, get_message
 from models.warehouse_enhanced import (
@@ -17,6 +18,7 @@ warehouse_enhanced_bp = Blueprint('warehouse_enhanced', __name__)
 
 @warehouse_enhanced_bp.route('/dashboard', methods=['GET'])
 @jwt_required()
+@require_permission('warehouse.view')
 def get_enhanced_dashboard():
     """Enhanced warehouse dashboard with comprehensive metrics"""
     try:
@@ -124,6 +126,7 @@ def get_enhanced_dashboard():
 
 @warehouse_enhanced_bp.route('/analytics', methods=['GET'])
 @jwt_required()
+@require_permission('warehouse.view')
 def get_warehouse_analytics():
     """Get warehouse analytics and KPIs"""
     try:
@@ -196,6 +199,7 @@ def get_warehouse_analytics():
 
 @warehouse_enhanced_bp.route('/abc-analysis', methods=['GET'])
 @jwt_required()
+@require_permission('warehouse.view')
 def get_abc_analysis():
     """Get ABC analysis results"""
     try:
@@ -235,6 +239,7 @@ def get_abc_analysis():
 
 @warehouse_enhanced_bp.route('/reorder-points', methods=['GET'])
 @jwt_required()
+@require_permission('warehouse.view')
 def get_reorder_points():
     """Get inventory reorder points and recommendations"""
     try:
@@ -285,6 +290,7 @@ def get_reorder_points():
 
 @warehouse_enhanced_bp.route('/alerts', methods=['GET'])
 @jwt_required()
+@require_permission('warehouse.view')
 def get_warehouse_alerts():
     """Get warehouse alerts"""
     try:
@@ -332,6 +338,7 @@ def get_warehouse_alerts():
 
 @warehouse_enhanced_bp.route('/alerts/<int:alert_id>/acknowledge', methods=['POST'])
 @jwt_required()
+@require_permission('warehouse.create')
 def acknowledge_alert(alert_id):
     """Acknowledge a warehouse alert"""
     try:
@@ -352,6 +359,7 @@ def acknowledge_alert(alert_id):
 
 @warehouse_enhanced_bp.route('/alerts/<int:alert_id>/resolve', methods=['POST'])
 @jwt_required()
+@require_permission('warehouse.create')
 def resolve_alert(alert_id):
     """Resolve a warehouse alert"""
     try:
@@ -375,6 +383,7 @@ def resolve_alert(alert_id):
 
 @warehouse_enhanced_bp.route('/optimization', methods=['GET'])
 @jwt_required()
+@require_permission('warehouse.view')
 def get_optimization_results():
     """Get warehouse optimization results"""
     try:
@@ -412,6 +421,7 @@ def get_optimization_results():
 
 @warehouse_enhanced_bp.route('/forecast', methods=['GET'])
 @jwt_required()
+@require_permission('warehouse.view')
 def get_demand_forecast():
     """Get demand forecast and predictions"""
     try:
@@ -453,6 +463,7 @@ def get_demand_forecast():
 
 @warehouse_enhanced_bp.route('/stock-summary', methods=['GET'])
 @jwt_required()
+@require_permission('warehouse.view')
 def get_enhanced_stock_summary():
     """Get enhanced stock summary with analytics"""
     try:

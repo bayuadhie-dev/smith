@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
+import SearchableSelect from '../../components/SearchableSelect';
 import {
   ArrowRightIcon,
   CalendarIcon as Calendar,
@@ -85,7 +86,7 @@ const MovementForm: React.FC = () => {
     { value: '', label: 'No Reference' },
     { value: 'sales_order', label: 'Sales Order' },
     { value: 'purchase_order', label: 'Purchase Order' },
-    { value: 'work_order', label: 'Work Order' },
+    { value: 'work_order', label: 'SPK' },
     { value: 'stock_take', label: 'Stock Take' }
   ];
 
@@ -310,20 +311,14 @@ const MovementForm: React.FC = () => {
               <CubeIcon className="inline h-4 w-4 mr-1" />
               Product *
             </label>
-            <select
-              name="product_id"
-              value={formData.product_id}
-              onChange={handleInputChange}
+            <SearchableSelect
+              options={products}
+              value={formData.product_id || null}
+              onChange={(value) => setFormData(prev => ({ ...prev, product_id: value as any }))}
+              placeholder="Select Product"
               required
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">Select Product</option>
-              {products.map(product => (
-                <option key={product.id} value={product.id}>
-                  {product.code} - {product.name}
-                </option>
-              ))}
-            </select>
+              className="w-full"
+            />
           </div>
 
           {/* Location Selection */}

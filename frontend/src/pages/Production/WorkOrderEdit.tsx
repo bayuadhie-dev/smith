@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeftIcon, CheckIcon } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
+import SearchableSelect from '../../components/SearchableSelect';
 
 interface Product {
   id: number;
@@ -94,7 +95,7 @@ export default function WorkOrderEdit() {
       });
     } catch (error) {
       console.error('Error fetching data:', error);
-      toast.error('Gagal memuat data Work Order');
+      toast.error('Gagal memuat data SPK');
     } finally {
       setLoading(false);
     }
@@ -140,11 +141,11 @@ export default function WorkOrderEdit() {
         force: true // Allow editing even if in_progress
       });
       
-      toast.success('Work Order berhasil diupdate');
+      toast.success('SPK berhasil diupdate');
       navigate(`/app/production/work-orders/${id}`);
     } catch (error: any) {
-      console.error('Error updating work order:', error);
-      toast.error(error.response?.data?.error || 'Gagal update Work Order');
+      console.error('Error updating SPK:', error);
+      toast.error(error.response?.data?.error || 'Gagal update SPK');
     } finally {
       setSaving(false);
     }
@@ -161,7 +162,7 @@ export default function WorkOrderEdit() {
   if (!workOrder) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-800">Work Order tidak ditemukan</p>
+        <p className="text-red-800">SPK tidak ditemukan</p>
       </div>
     );
   }
@@ -177,7 +178,7 @@ export default function WorkOrderEdit() {
           <ArrowLeftIcon className="h-5 w-5" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Edit Work Order</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Edit SPK</h1>
           <p className="text-gray-600 dark:text-gray-300">{workOrder.wo_number}</p>
         </div>
       </div>
@@ -190,19 +191,14 @@ export default function WorkOrderEdit() {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Produk *
             </label>
-            <select
-              value={formData.product_id}
-              onChange={(e) => handleChange('product_id', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            <SearchableSelect
+              options={products}
+              value={formData.product_id || null}
+              onChange={(value) => handleChange('product_id', String(value ?? ''))}
+              placeholder="Pilih Produk"
+              className="w-full"
               required
-            >
-              <option value="">Pilih Produk</option>
-              {products.map(product => (
-                <option key={product.id} value={product.id}>
-                  {product.code} - {product.name}
-                </option>
-              ))}
-            </select>
+            />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>

@@ -269,7 +269,7 @@ const FGConversionDetail: React.FC = () => {
           </h2>
           <div className="space-y-3">
             <div>
-              <label className="text-sm text-gray-500 dark:text-gray-400">Work Order</label>
+              <label className="text-sm text-gray-500 dark:text-gray-400">SPK</label>
               <p className="text-gray-900 dark:text-white font-medium">{conversion.wo_number}</p>
             </div>
             <div>

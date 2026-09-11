@@ -10,6 +10,7 @@ Handles automatic integrations between Production and other modules:
 
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db
 from models.production import WorkOrder, ShiftProduction, Machine
 from models.warehouse import Inventory, InventoryMovement
@@ -171,81 +172,116 @@ def auto_receive_finished_goods(work_order_id, quantity_produced, user_id=None):
     Automatically receive finished goods to warehouse when production completes
     Uses pure SQL to avoid ORM foreign key validation issues
     Returns: (success: bool, message: str, inventory_id: int)
+
+    Each WO completion gets its OWN batch row (keyed by work_order_id, with
+    batch_number=wo_number and production_date set) instead of accumulating
+    into an arbitrary pre-existing row for the product - so batches from
+    different WOs/dates stay distinguishable for QC (see routes/qc_batch_status.py).
+    Idempotent: re-running for the same work_order_id updates that WO's own
+    row rather than creating a duplicate.
     """
     from sqlalchemy import text
     from utils.opname_lock import check_opname_lock
-    
+    from utils.inventory_helpers import resolve_initial_stock_status
+    from models.product import Product
+
     try:
         # Get WO info using raw SQL (including scheduled_start_date for proper dating)
         result = db.session.execute(text("""
-            SELECT id, wo_number, product_id, scheduled_start_date, actual_end_date 
+            SELECT id, wo_number, product_id, scheduled_start_date, actual_end_date
             FROM work_orders WHERE id = :wo_id
         """), {'wo_id': work_order_id})
         wo_row = result.fetchone()
-        
+
         if not wo_row:
             return False, "Work order not found", None
-        
+
         wo_id, wo_number, product_id, wo_start_date, wo_end_date = wo_row
-        
+
         # Check opname lock for the finished goods product
         if product_id:
             lock = check_opname_lock(product_id=product_id)
             if lock['locked']:
                 return False, lock['message'], None
-        
+
         # Use WO end date if available, otherwise start date, otherwise today
         movement_date = wo_end_date or wo_start_date or get_local_now().date()
         if hasattr(movement_date, 'date'):
             movement_date = movement_date.date()
         if hasattr(movement_date, 'isoformat'):
             movement_date = movement_date.isoformat()
-        
+
         if not product_id:
             return False, "Work order has no product", None
-        
-        # Check if inventory exists for this product
+
+        product = db.session.get(Product, product_id)
+        initial_status = resolve_initial_stock_status('released', product=product)
+
+        # Idempotency: this WO's own batch row, if auto-receive already ran for it
         result = db.session.execute(text("""
-            SELECT id, location_id, quantity_on_hand, quantity_available 
-            FROM inventory WHERE product_id = :product_id LIMIT 1
-        """), {'product_id': product_id})
+            SELECT id, location_id, quantity_on_hand, quantity_available
+            FROM inventory WHERE work_order_id = :work_order_id AND product_id = :product_id LIMIT 1
+        """), {'work_order_id': work_order_id, 'product_id': product_id})
         inv_row = result.fetchone()
-        
+
         if inv_row:
             inventory_id = inv_row[0]
             location_id = inv_row[1]
             current_on_hand = float(inv_row[2] or 0)
             current_available = float(inv_row[3] or 0)
         else:
-            # Get default location
+            # Finished goods land in Area Produksi first (2026-09-11 warehouse
+            # restructure) - NOT directly in the finished-goods warehouse.
+            # They only move to Gudang Barang Jadi once Tutup SPK/Tutup Batch
+            # actually closes the batch (see the transfer step in
+            # routes/production.py's batch-close endpoint). This reflects the
+            # real physical flow: goods fresh off the line sit in the
+            # production area, not yet formally received into the warehouse.
             result = db.session.execute(text("""
-                SELECT id FROM warehouse_locations WHERE is_active = 1 LIMIT 1
+                SELECT wl.id FROM warehouse_locations wl
+                JOIN warehouse_zones wz ON wl.zone_id = wz.id
+                WHERE wz.code = 'PROD-AREA' AND wl.is_active = true LIMIT 1
             """))
             loc_row = result.fetchone()
-            
+
+            if not loc_row:
+                # Fallback if the Area Produksi zone/location isn't set up
+                # for some reason - never block production completion over
+                # a warehouse-config gap.
+                result = db.session.execute(text("""
+                    SELECT id FROM warehouse_locations WHERE is_active = true LIMIT 1
+                """))
+                loc_row = result.fetchone()
+
             if not loc_row:
                 return False, "No warehouse location available", None
-            
+
             location_id = loc_row[0]
-            
-            # Create new inventory using raw SQL
+
+            # Create a NEW inventory row for THIS WO's batch (own production_date +
+            # batch_number, not merged into another batch of the same product)
             db.session.execute(text("""
-                INSERT INTO inventory 
-                (product_id, location_id, quantity_on_hand, quantity_available, 
-                 quantity_reserved, min_stock_level, max_stock_level, 
-                 is_active, stock_status, work_order_id, created_at, updated_at)
-                VALUES (:product_id, :location_id, 0, 0, 0, 0, 0, 1, 'released', 
+                INSERT INTO inventory
+                (product_id, location_id, quantity_on_hand, quantity_available,
+                 quantity_reserved, min_stock_level, max_stock_level, batch_number,
+                 production_date, is_active, stock_status, work_order_id, created_at, updated_at)
+                VALUES (:product_id, :location_id, 0, 0, 0, 0, 0, :batch_number,
+                        :production_date, true, :stock_status,
                         :work_order_id, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             """), {
                 'product_id': product_id,
                 'location_id': location_id,
+                'batch_number': wo_number,
+                'production_date': movement_date,
+                'stock_status': initial_status,
                 'work_order_id': work_order_id
             })
-            
-            # Get the new inventory ID
+
+            # Get the new inventory ID (this WO's row, just inserted)
             result = db.session.execute(text("""
-                SELECT id FROM inventory WHERE product_id = :product_id ORDER BY id DESC LIMIT 1
-            """), {'product_id': product_id})
+                SELECT id FROM inventory WHERE work_order_id = :work_order_id AND product_id = :product_id
+                ORDER BY id DESC LIMIT 1
+            """), {'work_order_id': work_order_id, 'product_id': product_id})
             inv_row = result.fetchone()
             inventory_id = inv_row[0]
             current_on_hand = 0
@@ -277,8 +313,8 @@ def auto_receive_finished_goods(work_order_id, quantity_produced, user_id=None):
         new_available = current_available + quantity_produced
         
         db.session.execute(text("""
-            UPDATE inventory 
-            SET quantity_on_hand = :qty_on_hand, 
+            UPDATE inventory
+            SET quantity_on_hand = :qty_on_hand,
                 quantity_available = :qty_available,
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = :inventory_id
@@ -287,9 +323,67 @@ def auto_receive_finished_goods(work_order_id, quantity_produced, user_id=None):
             'qty_available': new_available,
             'inventory_id': inventory_id
         })
-        
+
+        # Transfer Area Produksi -> Gudang Barang Jadi (2026-09-11 warehouse
+        # restructure). complete_work_order() only calls this function once
+        # Tutup SPK's own prerequisites (all batches closed, packing list
+        # done) are already satisfied, so by this point the goods are ready
+        # to formally enter the warehouse - this is the "Tutup SPK moves
+        # goods to the warehouse" step. Idempotent: only transfers if the row
+        # is still sitting in Area Produksi; a re-run after it already moved
+        # is a no-op (never double-transfers or mis-locates a row that was
+        # since moved further, e.g. by a real WMS stock transfer).
+        cur_loc = db.session.execute(text("""
+            SELECT wl.id, wz.code FROM inventory i
+            JOIN warehouse_locations wl ON i.location_id = wl.id
+            JOIN warehouse_zones wz ON wl.zone_id = wz.id
+            WHERE i.id = :inventory_id
+        """), {'inventory_id': inventory_id}).fetchone()
+
+        if cur_loc and cur_loc[1] == 'PROD-AREA':
+            fg_loc = db.session.execute(text("""
+                SELECT wl.id FROM warehouse_locations wl
+                JOIN warehouse_zones wz ON wl.zone_id = wz.id
+                WHERE wz.code = 'WH-FG' AND wl.is_active = true LIMIT 1
+            """)).fetchone()
+            if fg_loc:
+                prod_area_loc_id = cur_loc[0]
+                fg_loc_id = fg_loc[0]
+                db.session.execute(text("""
+                    INSERT INTO inventory_movements
+                    (inventory_id, product_id, location_id, movement_type, movement_date,
+                     quantity, reference_type, reference_id, reference_number, notes,
+                     created_by, created_at)
+                    VALUES (:inventory_id, :product_id, :location_id, 'transfer_out',
+                            :movement_date, :quantity, 'work_order', :reference_id,
+                            :reference_number, :notes, :created_by, CURRENT_TIMESTAMP)
+                """), {
+                    'inventory_id': inventory_id, 'product_id': product_id, 'location_id': prod_area_loc_id,
+                    'movement_date': movement_date, 'quantity': new_on_hand,
+                    'reference_id': work_order_id, 'reference_number': wo_number,
+                    'notes': f'Tutup SPK {wo_number} - transfer ke Gudang Barang Jadi', 'created_by': user_id
+                })
+                db.session.execute(text("""
+                    INSERT INTO inventory_movements
+                    (inventory_id, product_id, location_id, movement_type, movement_date,
+                     quantity, reference_type, reference_id, reference_number, notes,
+                     created_by, created_at)
+                    VALUES (:inventory_id, :product_id, :location_id, 'transfer_in',
+                            :movement_date, :quantity, 'work_order', :reference_id,
+                            :reference_number, :notes, :created_by, CURRENT_TIMESTAMP)
+                """), {
+                    'inventory_id': inventory_id, 'product_id': product_id, 'location_id': fg_loc_id,
+                    'movement_date': movement_date, 'quantity': new_on_hand,
+                    'reference_id': work_order_id, 'reference_number': wo_number,
+                    'notes': f'Tutup SPK {wo_number} - transfer ke Gudang Barang Jadi', 'created_by': user_id
+                })
+                db.session.execute(text("""
+                    UPDATE inventory SET location_id = :fg_loc_id, updated_at = CURRENT_TIMESTAMP
+                    WHERE id = :inventory_id
+                """), {'fg_loc_id': fg_loc_id, 'inventory_id': inventory_id})
+
         db.session.commit()
-        
+
         return True, f"Successfully received {quantity_produced} units to inventory", inventory_id
         
     except Exception as e:
@@ -301,6 +395,7 @@ def auto_receive_finished_goods(work_order_id, quantity_produced, user_id=None):
 
 @production_integration_bp.route('/api/production/work-orders/<int:wo_id>/auto-deduct', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def trigger_auto_deduct(wo_id):
     """Manual trigger for material auto-deduction"""
     try:
@@ -326,6 +421,7 @@ def trigger_auto_deduct(wo_id):
 
 @production_integration_bp.route('/api/production/work-orders/<int:wo_id>/auto-receive', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def trigger_auto_receive(wo_id):
     """Manual trigger for finished goods auto-receiving"""
     try:
@@ -356,6 +452,7 @@ def trigger_auto_receive(wo_id):
 
 @production_integration_bp.route('/api/production/work-orders/<int:wo_id>/material-availability', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def check_material_availability(wo_id):
     """Check if all materials are available for production"""
     try:

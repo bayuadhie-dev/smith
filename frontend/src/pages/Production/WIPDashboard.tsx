@@ -457,7 +457,7 @@ const WIPDashboard: React.FC = () => {
                 <thead>
                   <tr>
                     <th>WIP Batch No</th>
-                    <th>Work Order</th>
+                    <th>SPK</th>
                     <th>{t('production.product')}</th>
                     <th>Current Stage</th>
                     <th>Progress</th>
@@ -526,7 +526,7 @@ const WIPDashboard: React.FC = () => {
           <div className="card-body text-center">
             <PlayIcon className="h-8 w-8 text-blue-600 mx-auto mb-2" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Start New WIP Batch</h3>
-            <p className="text-gray-500 dark:text-gray-400">Create WIP batch from work order</p>
+            <p className="text-gray-500 dark:text-gray-400">Create WIP batch from SPK</p>
           </div>
         </Link>
 

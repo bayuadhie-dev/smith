@@ -280,7 +280,7 @@ const ProductionScheduling = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Work Order
+                  SPK
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('production.machine')}</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -435,10 +435,10 @@ const ProductionScheduling = () => {
             <form className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Work Order
+                  SPK
                 </label>
                 <select className="input w-full">
-                  <option value="">Select work order</option>
+                  <option value="">Select SPK</option>
                   {workOrders.map((wo) => (
                     <option key={wo.id} value={wo.id}>
                       {wo.wo_number} - {wo.product_name}

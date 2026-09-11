@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db, Material, Inventory, InventoryMovement
 from sqlalchemy import func, desc, and_, or_
 from datetime import datetime, date, timedelta
@@ -10,6 +11,7 @@ materials_bp = Blueprint('materials', __name__)
 
 @materials_bp.route('/', methods=['GET'])
 @jwt_required()
+@require_permission('materials.view')
 def get_materials():
     """
     Get all materials with filtering and pagination
@@ -121,6 +123,9 @@ def get_materials():
                 'cost_per_unit': float(m.cost_per_unit) if m.cost_per_unit else 0,
                 'supplier': m.supplier.name if m.supplier else None,
                 'is_active': m.is_active,
+                'kelompok': m.kelompok,
+                'ppn_code': m.ppn_code,
+                'erp_approval': m.erp_approval,
                 'created_at': m.created_at.isoformat() if m.created_at else None
             } for m in materials.items],
             'pagination': {
@@ -137,6 +142,7 @@ def get_materials():
 
 @materials_bp.route('/types', methods=['GET'])
 @jwt_required()
+@require_permission('materials.view')
 def get_material_types():
     """
     Get material types with counts
@@ -191,6 +197,7 @@ def get_material_types():
 
 @materials_bp.route('/inventory', methods=['GET'])
 @jwt_required()
+@require_permission('materials.view')
 def get_materials_inventory():
     """Get materials with inventory levels"""
     try:
@@ -249,6 +256,7 @@ def get_materials_inventory():
 
 @materials_bp.route('/movements', methods=['GET'])
 @jwt_required()
+@require_permission('materials.view')
 def get_material_movements():
     """Get material inventory movements"""
     try:
@@ -297,6 +305,7 @@ def get_material_movements():
 
 @materials_bp.route('/dashboard', methods=['GET'])
 @jwt_required()
+@require_permission('materials.view')
 def get_materials_dashboard():
     """Get materials dashboard metrics"""
     try:

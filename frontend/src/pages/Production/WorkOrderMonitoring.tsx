@@ -60,7 +60,7 @@ const WorkOrderMonitoring: React.FC = () => {
       const res = await axiosInstance.get(`/api/work-orders/monitoring?${params.toString()}`);
       setWorkOrders(res.data.work_orders || []);
     } catch (error) {
-      console.error('Error fetching work orders:', error);
+      console.error('Error fetching SPK:', error);
     } finally {
       setLoading(false);
     }
@@ -131,7 +131,7 @@ const WorkOrderMonitoring: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Work Order Monitoring</h1>
+          <h1 className="text-2xl font-bold text-slate-800">WO Monitoring</h1>
           <p className="text-slate-500">Real-time tracking & progress monitoring</p>
         </div>
         <div className="flex items-center gap-2">
@@ -215,7 +215,7 @@ const WorkOrderMonitoring: React.FC = () => {
         </div>
       </div>
 
-      {/* Work Orders Table */}
+      {/* SPK Table */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -329,7 +329,7 @@ const WorkOrderMonitoring: React.FC = () => {
               {workOrders.length === 0 && (
                 <tr>
                   <td colSpan={10} className="px-4 py-8 text-center text-slate-500">
-                    No work orders found
+                    No SPK found
                   </td>
                 </tr>
               )}

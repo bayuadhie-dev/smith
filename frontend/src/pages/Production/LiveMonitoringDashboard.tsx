@@ -127,7 +127,7 @@ const LiveMonitoringDashboard: React.FC = () => {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
-              <SignalIcon className="h-7 w-7" /> Live Production Monitoring
+              <SignalIcon className="h-7 w-7" /> Live Monitoring
             </h1>
             <p className="text-emerald-100 text-sm mt-1">
               Patrol Mesin Setiap 2 Jam &bull; {data.shift_label}

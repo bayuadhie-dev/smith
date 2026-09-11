@@ -4,13 +4,14 @@ Manager Produksi approval workflow sebelum forward ke Finance
 """
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from datetime import datetime
 from models import db
 from models.production import WorkOrder, ProductionApproval
 from models.wip_job_costing import WIPBatch, JobCostEntry
 from models.user import User
 from models.notification import Notification
-from utils.helpers import generate_number
+from utils.helpers import generate_number, generate_number_v2
 from utils.i18n import success_response, error_response
 from sqlalchemy import or_
 from utils.timezone import get_local_now, get_local_today
@@ -48,6 +49,7 @@ def get_manager_user_ids():
 
 @production_approval_bp.route('/production-approvals', methods=['GET'])
 @jwt_required()
+@require_permission('work_orders.view')
 def get_production_approvals():
     """Get list of production approvals"""
     try:
@@ -87,6 +89,7 @@ def get_production_approvals():
 
 @production_approval_bp.route('/production-approvals/<int:id>', methods=['GET'])
 @jwt_required()
+@require_permission('work_orders.view')
 def get_production_approval_detail(id):
     """Get production approval detail with full data including material usage"""
     try:
@@ -480,6 +483,7 @@ def get_production_approval_detail(id):
 
 @production_approval_bp.route('/production-approvals', methods=['POST'])
 @jwt_required()
+@require_permission('work_orders.create')
 def create_production_approval():
     """Create production approval request from completed work order"""
     try:
@@ -546,6 +550,7 @@ def create_production_approval():
 
 @production_approval_bp.route('/production-approvals/<int:id>', methods=['PUT'])
 @jwt_required()
+@require_permission('work_orders.edit')
 def update_production_approval(id):
     """Manager can edit approval data before approving"""
     try:
@@ -611,6 +616,7 @@ def update_production_approval(id):
 
 @production_approval_bp.route('/production-approvals/<int:id>/approve', methods=['PUT'])
 @jwt_required()
+@require_permission('work_orders.edit')
 def approve_production(id):
     """Manager approves production - ready to forward to finance"""
     try:
@@ -665,12 +671,13 @@ def approve_production(id):
                 ).first()
                 
                 if not inv:
+                    from utils.inventory_helpers import resolve_initial_stock_status
                     inv = Inventory(
                         product_id=wo.product_id,
                         location_id=3,
                         quantity_on_hand=0,
                         quantity_available=0,
-                        stock_status='available',
+                        stock_status=resolve_initial_stock_status('available', product=wo.product),
                         created_by=user_id
                     )
                     db.session.add(inv)
@@ -732,6 +739,7 @@ def approve_production(id):
 
 @production_approval_bp.route('/production-approvals/<int:id>/reject', methods=['PUT'])
 @jwt_required()
+@require_permission('work_orders.edit')
 def reject_production(id):
     """Manager rejects production approval"""
     try:
@@ -789,6 +797,7 @@ def reject_production(id):
 
 @production_approval_bp.route('/production-approvals/<int:id>/forward-to-finance', methods=['PUT'])
 @jwt_required()
+@require_permission('work_orders.edit')
 def forward_to_finance(id):
     """Forward approved production to finance module"""
     try:
@@ -811,7 +820,7 @@ def forward_to_finance(id):
         # Create production cost record in finance
         # This creates internal costing record, not customer invoice
         invoice = Invoice(
-            invoice_number=generate_number('PC', Invoice, 'invoice_number'),  # Production Cost
+            invoice_number=generate_number_v2('production_cost_invoice', 'PC', Invoice, 'invoice_number'),  # Production Cost
             invoice_type='production_cost',
             customer_id=None,  # Internal cost, no customer
             work_order_id=wo.id,
@@ -887,6 +896,7 @@ def forward_to_finance(id):
 
 @production_approval_bp.route('/work-orders/<int:wo_id>/submit-for-approval', methods=['POST'])
 @jwt_required()
+@require_permission('work_orders.create')
 def submit_wo_for_approval(wo_id):
     """Submit completed work order for manager approval"""
     try:

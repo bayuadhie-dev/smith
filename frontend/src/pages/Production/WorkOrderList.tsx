@@ -97,7 +97,7 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
         setSummary(response.data.summary)
       }
     } catch (error) {
-      console.error('Error loading work orders:', error)
+      console.error('Error loading SPK:', error)
     } finally {
       setLoading(false)
     }
@@ -108,32 +108,32 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
       await axiosInstance.put(`/api/production/work-orders/${id}/status`, { status: newStatus })
       loadWorkOrders() // Refresh list
     } catch (error) {
-      console.error('Error updating work order status:', error)
-      alert('Failed to update work order status')
+      console.error('Error updating SPK status:', error)
+      alert('Failed to update SPK status')
     }
   }
 
   const handleDelete = async (id: number, woNumber: string) => {
-    if (!window.confirm(`Are you sure you want to delete Work Order ${woNumber}?`)) {
+    if (!window.confirm(`Are you sure you want to delete SPK ${woNumber}?`)) {
       return
     }
     try {
       await axiosInstance.delete(`/api/production/work-orders/${id}`)
-      alert('Work Order deleted successfully')
+      alert('SPK deleted successfully')
       loadWorkOrders()
     } catch (error: any) {
-      console.error('Error deleting work order:', error)
-      alert(error.response?.data?.error || 'Failed to delete work order')
+      console.error('Error deleting SPK:', error)
+      alert(error.response?.data?.error || 'Failed to delete SPK')
     }
   }
 
   const handleBulkComplete = async () => {
     const inProgressCount = workOrders.filter(wo => wo.status === 'in_progress').length
     if (inProgressCount === 0) {
-      alert('Tidak ada Work Order dengan status In Progress')
+      alert('Tidak ada SPK dengan status In Progress')
       return
     }
-    if (!window.confirm(`Selesaikan semua ${inProgressCount} Work Order yang In Progress?`)) {
+    if (!window.confirm(`Selesaikan semua ${inProgressCount} SPK yang In Progress?`)) {
       return
     }
     try {
@@ -143,7 +143,7 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
       loadWorkOrders()
     } catch (error: any) {
       console.error('Error bulk completing:', error)
-      alert(error.response?.data?.error || 'Gagal menyelesaikan Work Orders')
+      alert(error.response?.data?.error || 'Gagal menyelesaikan SPK')
     } finally {
       setBulkCompleting(false)
     }
@@ -158,11 +158,11 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
       }
       // Then start
       await axiosInstance.put(`/api/production/work-orders/${id}/status`, { status: 'in_progress', auto_deduct: false })
-      toast.success('Work Order berhasil distart!')
+      toast.success('SPK berhasil distart!')
       loadWorkOrders()
     } catch (error: any) {
-      console.error('Error starting work order:', error)
-      toast.error(error.response?.data?.error || 'Failed to start work order')
+      console.error('Error starting SPK:', error)
+      toast.error(error.response?.data?.error || 'Failed to start SPK')
     }
   }
 
@@ -219,8 +219,8 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">📋 Work Orders</h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-1">Manage production work orders and schedules</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">SPK</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Manage production SPK and schedules</p>
         </div>
         <div className="flex gap-3 items-center">
           {/* View Mode Toggle */}
@@ -261,7 +261,7 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
           </button>
           <Link to="/app/production/work-orders/new" className="btn-primary inline-flex items-center gap-2">
             <PlusIcon className="h-5 w-5" />
-            New Work Order
+            New SPK
           </Link>
         </div>
       </div>
@@ -375,10 +375,10 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
         </div>
       </div>
 
-      {/* Work Orders Table */}
+      {/* SPK Table */}
       <div className="card">
         <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-gray-700 dark:text-white">Work Orders</h3>
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-white">SPK</h3>
           <span className="text-xs text-gray-400">{workOrders.length} ditampilkan</span>
         </div>
         
@@ -406,7 +406,7 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
                   </div>
                 </th>
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Work Order
+                  SPK
                 </th>
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Produk & Mesin
@@ -454,7 +454,7 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
                       )}
                     </td>
 
-                    {/* Work Order + Actions */}
+                    {/* SPK + Actions */}
                     <td className="px-3 py-2.5 whitespace-nowrap">
                       <Link
                         to={`/app/production/work-orders/${wo.id}`}
@@ -621,14 +621,14 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
         {workOrders.length === 0 && !loading && (
           <div className="text-center py-12">
             <ClockIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No work orders found</h3>
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No SPK found</h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Get started by creating your first work order
+              Get started by creating your first SPK
             </p>
             <div className="mt-6">
               <Link to="/app/production/work-orders/new" className="btn-primary">
                 <PlusIcon className="h-5 w-5 mr-2" />
-                New Work Order
+                New SPK
               </Link>
             </div>
           </div>
@@ -640,7 +640,7 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
         isOpen={showActivityLog}
         onClose={() => setShowActivityLog(false)}
         resourceType="work_order"
-        title="Log Aktivitas Work Order"
+        title="Log Aktivitas SPK"
       />
 
       {/* Production Output Detail Modal */}

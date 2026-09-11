@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
 import {
@@ -30,6 +31,7 @@ interface TransferOrder {
 
 const statusMap: Record<string, { color: string; label: string }> = {
   draft: { color: 'bg-gray-100 text-gray-700', label: 'Draft' },
+  pending_approval: { color: 'bg-amber-100 text-amber-700', label: 'Menunggu Persetujuan' },
   approved: { color: 'bg-blue-100 text-blue-700', label: 'Approved' },
   in_transit: { color: 'bg-yellow-100 text-yellow-700', label: 'In Transit' },
   completed: { color: 'bg-green-100 text-green-700', label: 'Completed' },
@@ -45,6 +47,7 @@ const reasonLabels: Record<string, string> = {
 };
 
 const TransferOrderPage: React.FC = () => {
+  const navigate = useNavigate();
   const [data, setData] = useState<TransferOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('');
@@ -70,13 +73,17 @@ const TransferOrderPage: React.FC = () => {
     }
   };
 
-  const handleApprove = async (id: number) => {
+  const handleSubmitApproval = async (id: number) => {
     try {
-      await axiosInstance.post(`/api/wms/transfers/${id}/approve`);
-      toast.success('Transfer disetujui');
+      const res = await axiosInstance.post(`/api/wms/transfers/${id}/submit-approval`);
+      toast.success('Transfer diajukan untuk persetujuan');
       fetchData();
+      const workflowId = res.data?.workflow_id;
+      if (workflowId && window.confirm('Transfer diajukan untuk persetujuan. Lihat alur approval sekarang?')) {
+        navigate(`/app/approval/${workflowId}`);
+      }
     } catch (err: any) {
-      toast.error(err.response?.data?.error || 'Gagal menyetujui');
+      toast.error(err.response?.data?.error || 'Gagal mengajukan persetujuan');
     }
   };
 
@@ -111,6 +118,7 @@ const TransferOrderPage: React.FC = () => {
           >
             <option value="">Semua Status</option>
             <option value="draft">Draft</option>
+            <option value="pending_approval">Menunggu Persetujuan</option>
             <option value="approved">Approved</option>
             <option value="completed">Completed</option>
           </select>
@@ -170,9 +178,14 @@ const TransferOrderPage: React.FC = () => {
                       </td>
                       <td className="px-4 py-3 text-center">
                         {t.status === 'draft' && (
-                          <button onClick={() => handleApprove(t.id)} className="inline-flex items-center gap-1 px-3 py-1 bg-blue-600 text-white rounded-lg text-xs hover:bg-blue-700">
-                            <CheckBadgeIcon className="h-4 w-4" /> Approve
+                          <button onClick={() => handleSubmitApproval(t.id)} className="inline-flex items-center gap-1 px-3 py-1 bg-blue-600 text-white rounded-lg text-xs hover:bg-blue-700">
+                            <CheckBadgeIcon className="h-4 w-4" /> Ajukan Persetujuan
                           </button>
+                        )}
+                        {t.status === 'pending_approval' && (
+                          <span className="text-xs text-amber-600 flex items-center justify-center gap-1">
+                            <ClockIcon className="h-4 w-4" /> Menunggu Approval
+                          </span>
                         )}
                         {t.status === 'approved' && (
                           <button onClick={() => handleExecute(t.id)} className="inline-flex items-center gap-1 px-3 py-1 bg-green-600 text-white rounded-lg text-xs hover:bg-green-700">

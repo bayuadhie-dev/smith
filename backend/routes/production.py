@@ -3,7 +3,9 @@ import redis
 import os
 import json
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db, Machine, WorkOrder, ProductionRecord, BillOfMaterials, BOMItem, ProductionSchedule, Product, Employee
+from models.ews import EWSPrediction
 from models.production import RemainingStock
 from models.work_order_bom import WorkOrderBOMItem
 from models.product import Material
@@ -61,6 +63,7 @@ production_bp = Blueprint('production', __name__)
 # ============= MACHINES =============
 @production_bp.route('/machines', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_machines():
     """
     Get all active machines (cached for 10 minutes)
@@ -252,7 +255,9 @@ def get_or_update_machine(id):
                 machine.is_active = data['is_active']
             if 'maintenance_schedule' in data:
                 machine.maintenance_schedule = data['maintenance_schedule']
-            
+            if 'machine_number' in data:
+                machine.machine_number = data['machine_number'] if data['machine_number'] not in ('', None) else None
+
             if data.get('installation_date'):
                 try:
                     date_str = data['installation_date']
@@ -311,6 +316,7 @@ def get_or_update_machine(id):
                 'next_maintenance': machine.next_maintenance.isoformat() if machine.next_maintenance else None,
                 'installation_date': machine.installation_date.isoformat() if machine.installation_date else None,
                 'maintenance_schedule': machine.maintenance_schedule,
+                'machine_number': machine.machine_number,
                 'notes': machine.notes,
                 'is_active': machine.is_active if machine.is_active is not None else True,
                 'created_at': machine.created_at.isoformat() if machine.created_at else None,
@@ -323,6 +329,7 @@ def get_or_update_machine(id):
 
 @production_bp.route('/machines', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def create_machine():
     """
     Create a new machine
@@ -397,6 +404,7 @@ def create_machine():
 
 @production_bp.route('/machines/<int:id>/update', methods=['PUT'])
 @jwt_required()
+@require_permission('production.edit')
 def update_machine(id):
     try:
         machine = db.session.get(Machine, id)
@@ -449,6 +457,7 @@ def update_machine(id):
 
 @production_bp.route('/machines/<int:id>/efficiency', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_machine_efficiency(id):
     """Get machine efficiency data for specific time period"""
     try:
@@ -518,6 +527,7 @@ def get_machine_efficiency(id):
 
 @production_bp.route('/machines/<int:machine_id>/detail', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_machine_detail(machine_id):
     """
     Get detailed info for a single machine: current/last work order,
@@ -616,6 +626,7 @@ def get_machine_detail(machine_id):
 
 @production_bp.route('/work-center-summary', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_work_center_summary():
     """
     Get Work Center dashboard summary: all machines with today's aggregated
@@ -716,6 +727,7 @@ def get_work_center_summary():
 # ============= WORK ORDERS =============
 @production_bp.route('/work-orders', methods=['GET'])
 @jwt_required()
+@require_permission('work_orders.view')
 def get_work_orders():
     try:
         from models.production import ShiftProduction
@@ -825,6 +837,7 @@ def get_work_orders():
 
 @production_bp.route('/work-orders/status-tracking', methods=['GET'])
 @jwt_required()
+@require_permission('work_orders.view')
 def get_work_orders_status_tracking():
     """Get work orders with input status tracking"""
     try:
@@ -889,6 +902,7 @@ def get_work_orders_status_tracking():
 
 @production_bp.route('/work-orders/<int:id>', methods=['GET'])
 @jwt_required()
+@require_permission('work_orders.view')
 def get_work_order(id):
     """Get single work order detail"""
     try:
@@ -999,6 +1013,7 @@ def get_work_order(id):
             'product_id': wo.product_id,
             'product_name': get_product_name_from_new(wo.product.code if wo.product else None) or (wo.product.name if wo.product else 'Unknown Product'),
             'product_code': wo.product.code if wo.product else None,
+            'product_material_type': wo.product.material_type if wo.product else None,
             'bom_id': wo.bom_id,
             'bom_number': wo.bom.bom_number if wo.bom else None,
             'quantity': float(wo.quantity) if wo.quantity else 0,
@@ -1133,6 +1148,7 @@ def get_work_order(id):
 
 @production_bp.route('/work-orders', methods=['POST'])
 @jwt_required()
+@require_permission('work_orders.create')
 def create_work_order():
     try:
         # Invalidate cache
@@ -1159,7 +1175,22 @@ def create_work_order():
         # Determine source_type: manual, from_bom, from_schedule
         source_type = data.get('source_type', 'manual')
         bom_id = data.get('bom_id')
-        
+
+        # Rencana #2 (2026-08-25, keputusan manajemen): kalau machine_id tidak diisi
+        # manual, otomatis ambil dari mesin recipe default produk itu (ProductionRecipe.
+        # is_default) - supaya WO ini langsung "kebaca" sama Batch Planning
+        # (run_generate_replan() mensyaratkan machine_id terisi & mencocokkan recipe
+        # produk+mesin, utamakan is_default). PPIC tetap bisa ganti machine_id manual
+        # di WO ini kapan saja sebelum Generate/Re-plan dijalankan.
+        machine_id = data.get('machine_id')
+        if not machine_id:
+            from models.batch_scheduling import ProductionRecipe
+            default_recipe = ProductionRecipe.query.filter_by(
+                product_id=data['product_id'], is_default=True, is_active=True
+            ).first()
+            if default_recipe:
+                machine_id = default_recipe.machine_id
+
         wo = WorkOrder(
             wo_number=wo_number,
             product_id=data['product_id'],
@@ -1170,7 +1201,8 @@ def create_work_order():
             status='planned',
             priority=data.get('priority', 'normal'),
             source_type=source_type,  # manual, from_bom, from_schedule
-            machine_id=data.get('machine_id'),
+            sales_order_id=data.get('sales_order_id'),
+            machine_id=machine_id,
             scheduled_start_date=datetime.fromisoformat(data['scheduled_start_date']) if data.get('scheduled_start_date') else None,
             scheduled_end_date=datetime.fromisoformat(data['scheduled_end_date']) if data.get('scheduled_end_date') else None,
             notes=data.get('notes'),
@@ -1196,6 +1228,7 @@ def create_work_order():
 
 @production_bp.route('/work-orders/<int:id>', methods=['PUT'])
 @jwt_required()
+@require_permission('work_orders.edit')
 def update_work_order(id):
     """Update work order"""
     try:
@@ -1227,6 +1260,8 @@ def update_work_order(id):
             wo.priority = data['priority']
         if 'machine_id' in data:
             wo.machine_id = data['machine_id']
+        if 'sales_order_id' in data:
+            wo.sales_order_id = data['sales_order_id']
         if 'uom' in data:
             wo.uom = data['uom']
         if 'pack_per_carton' in data:
@@ -1254,6 +1289,7 @@ def update_work_order(id):
 
 @production_bp.route('/work-orders/<int:id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('work_orders.delete')
 def delete_work_order(id):
     """Delete work order"""
     try:
@@ -1312,10 +1348,21 @@ def delete_work_order(id):
         
         # 6. Update weekly plan items to remove WO reference
         WeeklyProductionPlanItem.query.filter_by(work_order_id=id).update({'work_order_id': None})
+
+        # 6b. Hapus tautan forecast (kalau WO ini hasil bulk-convert dari Sales Forecast) -
+        # ini SENGAJA dihapus, bukan cuma di-null-kan: begitu WO-nya hilang, kuota
+        # forecast yang sudah "terkonversi" harus balik lagi (sel forecast kebuka lagi
+        # buat diedit) - lihat SalesForecastGrid.tsx realizationStatus/isLocked.
+        from models.sales import ForecastLineConversion
+        ForecastLineConversion.query.filter_by(work_order_id=id).delete()
         
         # 7. Delete production records if force
         if force:
             ProductionRecord.query.filter_by(work_order_id=id).delete()
+            # Delete EWSPrediction rows first (FK: ews_predictions -> shift_productions)
+            sp_ids = [sp.id for sp in ShiftProduction.query.filter_by(work_order_id=id).with_entities(ShiftProduction.id).all()]
+            if sp_ids:
+                EWSPrediction.query.filter(EWSPrediction.shift_production_id.in_(sp_ids)).delete(synchronize_session=False)
             ShiftProduction.query.filter_by(work_order_id=id).delete()
         
         # 8. Recalculate machine efficiency after deleting ShiftProduction
@@ -1369,6 +1416,7 @@ def delete_work_order(id):
 
 @production_bp.route('/work-orders/<int:id>/status', methods=['PUT'])
 @jwt_required()
+@require_permission('work_orders.edit')
 def update_work_order_status(id):
     """Update work order status with auto warehouse integration"""
     try:
@@ -1388,9 +1436,20 @@ def update_work_order_status(id):
         
         old_status = wo.status
         integration_results = {}
-        
+
         # Update status
         wo.status = new_status
+
+        # AUTO-RESERVE (Bagian 1 / B): when a WO transitions into 'released',
+        # process the full FIFO-by-document-date backlog (SO/Plan/WO), not
+        # just this one WO in isolation. Never blocks the status update.
+        if new_status == 'released' and old_status != 'released':
+            try:
+                db.session.commit()
+                from utils.auto_reserve import process_auto_reserve_queue
+                process_auto_reserve_queue()
+            except Exception as auto_reserve_error:
+                print(f"Auto-reserve queue warning: {auto_reserve_error}")
         
         # Set timestamps based on status
         if new_status == 'in_progress' and not wo.actual_start_date:
@@ -1434,6 +1493,56 @@ def update_work_order_status(id):
                             'details': integration_results['material_deduction']
                         }), 400
         
+        elif new_status == 'cancelled' and old_status != 'cancelled':
+            # Reverse any FIFO material deduction already issued for this WO -
+            # previously cancelling a WO just set the status with no reversal,
+            # so material issued before cancellation was permanently treated
+            # as consumed even though production never happened.
+            from models.material_issue import MaterialIssue
+            from models.warehouse import Inventory, InventoryMovement
+
+            reversed_count = 0
+            issues = MaterialIssue.query.filter(
+                MaterialIssue.work_order_id == id,
+                MaterialIssue.status.in_(['issued', 'partial'])
+            ).all()
+            for mi in issues:
+                movements = InventoryMovement.query.filter_by(
+                    reference_type='material_issue', reference_id=mi.id, movement_type='stock_out'
+                ).all()
+                for mv in movements:
+                    inv = db.session.get(Inventory, mv.inventory_id)
+                    if not inv:
+                        continue
+                    inv.quantity_on_hand = float(inv.quantity_on_hand) + float(mv.quantity)
+                    inv.quantity_available = float(inv.quantity_available or 0) + float(mv.quantity)
+                    inv.updated_at = datetime.utcnow()
+                    reversal = InventoryMovement(
+                        inventory_id=inv.id,
+                        product_id=mv.product_id,
+                        material_id=mv.material_id,
+                        location_id=mv.location_id,
+                        movement_type='stock_in',
+                        movement_date=datetime.utcnow().date(),
+                        quantity=mv.quantity,
+                        reference_number=wo.wo_number,
+                        reference_type='wo_cancellation_reversal',
+                        reference_id=wo.id,
+                        batch_number=mv.batch_number,
+                        lot_number=mv.lot_number,
+                        unit_cost=mv.unit_cost,
+                        total_cost=mv.total_cost,
+                        notes=f'Reversal: WO {wo.wo_number} dibatalkan setelah material issue {mi.issue_number}',
+                        created_by=get_jwt_identity()
+                    )
+                    db.session.add(reversal)
+                    reversed_count += 1
+                mi.status = 'cancelled'
+            integration_results['material_reversal'] = {
+                'material_issues_reversed': len(issues),
+                'inventory_movements_reversed': reversed_count
+            }
+
         elif new_status == 'completed' and not wo.actual_end_date:
             wo.actual_end_date = datetime.utcnow()
             if wo.machine:
@@ -1483,6 +1592,7 @@ def update_work_order_status(id):
 
 @production_bp.route('/work-orders/<int:id>/production-records', methods=['GET'])
 @jwt_required()
+@require_permission('work_orders.view')
 def get_work_order_production_records(id):
     """Get production records for a specific work order, plus same-machine records for shift usage"""
     try:
@@ -1554,6 +1664,7 @@ def get_work_order_production_records(id):
 
 @production_bp.route('/work-orders/<int:id>/production-records', methods=['POST'])
 @jwt_required()
+@require_permission('work_orders.create')
 def create_work_order_production_record(id):
     """Create production record for a work order and ShiftProduction for OEE tracking"""
     try:
@@ -1658,12 +1769,18 @@ def create_work_order_production_record(id):
         
         # Calculate quality rate
         quality_rate = (good_qty / actual_qty * 100) if actual_qty > 0 else 100
-        
+
         # Calculate efficiency rate (100% - total loss from downtime)
         efficiency_rate = float(data.get('efficiency_rate', 100))
-        
-        # Calculate OEE score
-        oee_score = (efficiency_rate * quality_rate) / 100
+
+        # Calculate availability rate (Run Time / Planned Production Time -
+        # standard OEE factor, this endpoint previously omitted it entirely
+        # from oee_score, silently treating a WO with heavy downtime the
+        # same as one with none as long as efficiency/quality looked fine).
+        availability_rate = (actual_runtime / planned_runtime * 100) if planned_runtime > 0 else 100
+
+        # Calculate OEE score = Availability x Efficiency x Quality (standard 3-factor OEE)
+        oee_score = (availability_rate * efficiency_rate * quality_rate) / 10000
         
         # Calculate loss percentages
         def calc_loss(downtime_min, planned_min):
@@ -1813,13 +1930,14 @@ def create_work_order_production_record(id):
                 print(f"[DEBUG BUFFER STOCK] fg_location found: {fg_location}")
      
                 if fg_location:
+                    from utils.inventory_helpers import resolve_initial_stock_status
                     inventory = Inventory(
                         product_id=wo.product_id,
                         location_id=fg_location.id,
                         quantity_on_hand=0,
                         quantity_reserved=0,
                         quantity_available=0,
-                        stock_status='released',
+                        stock_status=resolve_initial_stock_status('released', product=wo.product),
                         is_active=True,
                         created_by=user_id
                     )
@@ -1847,10 +1965,6 @@ def create_work_order_production_record(id):
             # Flush buffer stock changes now, in a controlled manner,
             # before any later query (e.g. Machine lookup) triggers autoflush
             db.session.flush()
-        # Auto-complete if target reached
-        if wo.quantity_produced >= wo.quantity:
-            wo.status = 'completed'
-            wo.actual_end_date = datetime.utcnow()
         
         # Update machine efficiency and availability based on latest production
         machine = db.session.get(Machine, machine_id)
@@ -2034,6 +2148,20 @@ def create_work_order_production_record(id):
         # capture IDs before commit to avoid expired-object reload issues
         record_id = record.id
         shift_production_id = shift_production.id
+
+        # ============= SPK NATIVE WAREHOUSE STAGE LOG =============
+        # Native replacement for Accurate EJO's "MS" (masuk Gudang EPD) stage -
+        # auto-logged from this same shift-input submission, no extra staff action.
+        from models.spk import SPKWarehouseStageLog
+        if good_qty_produced > 0:
+            db.session.add(SPKWarehouseStageLog(
+                work_order_id=id,
+                stage='epd',
+                quantity=good_qty_produced,
+                source_type='shift_input',
+                source_id=record_id,
+            ))
+
         db.session.commit()
         from models.warehouse import Inventory as _Inv
         print(f"[DEBUG BUFFER STOCK] after commit - checking inventory count: {_Inv.query.filter_by(product_id=wo.product_id, stock_status='released').count()}")
@@ -2137,6 +2265,7 @@ def create_work_order_production_record(id):
 
 @production_bp.route('/work-orders/<int:id>/start', methods=['PUT'])
 @jwt_required()
+@require_permission('work_orders.edit')
 def start_work_order(id):
     try:
         from models.material_issue import MaterialIssue, MaterialIssueItem
@@ -2367,19 +2496,268 @@ def start_work_order(id):
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
+def _check_batch_closing_requirements(batch):
+    """Gate for 'Tutup Batch' (partial closing, one ProductionBatch at a time -
+    see design discussion: each batch = one physical production event, the
+    SMITH equivalent of Accurate's per-event Finished Good Slip). Only checks
+    actual material consumption for THIS batch's own WorkOrderBOMItem rows -
+    packing list stays a WO-level check (PackingListItem.batch_mixing is
+    free-text from OCR/manual entry, not a reliable FK to ProductionBatch.id,
+    so it can't be split per-batch here without a data-model change nobody
+    asked for). Return (ok: bool, missing: list[str])."""
+    missing = []
+
+    bom_items = WorkOrderBOMItem.query.filter_by(
+        work_order_id=batch.work_order_id, production_batch_id=batch.id
+    ).filter(WorkOrderBOMItem.item_type != 'wip_sub_assembly').all()
+    unfilled = [i for i in bom_items if i.quantity_actual is None]
+    if unfilled:
+        missing.append(f'Pemakaian bahan aktual belum diisi untuk {len(unfilled)} item BOM batch ini')
+    if not bom_items:
+        missing.append('Belum ada rincian bahan aktual untuk batch ini - buka tab Bahan Aktual dan expand BOM dulu')
+
+    return len(missing) == 0, missing
+
+
+@production_bp.route('/batches/<int:batch_id>/close', methods=['PUT'])
+@jwt_required()
+@require_permission('work_orders.complete')
+def close_batch(batch_id):
+    """'Tutup Batch' - Aida formalizes ONE finished batch's actual material
+    consumption, independent of whether the rest of the WO's batches are
+    done yet. This is the partial/bertahap closing unit; the WO-level
+    'Selesaikan SPK' gate (_check_closing_requirements) just checks that
+    every batch has gone through this."""
+    try:
+        from models.batch_scheduling import ProductionBatch
+
+        batch = db.session.get(ProductionBatch, batch_id)
+        if not batch:
+            return jsonify({'error': 'Batch not found'}), 404
+        if batch.admin_closed:
+            return jsonify({'error': f'Batch {batch.batch_number} sudah ditutup sebelumnya.'}), 400
+
+        ok, missing = _check_batch_closing_requirements(batch)
+        if not ok:
+            return jsonify({
+                'error': 'Batch belum bisa ditutup - syarat penutupan belum lengkap',
+                'missing': missing,
+            }), 400
+
+        user_id = int(get_jwt_identity())
+        batch.admin_closed = True
+        batch.admin_closed_at = datetime.utcnow()
+        batch.admin_closed_by = user_id
+        db.session.commit()
+
+        return jsonify({'message': f'Batch {batch.batch_number} berhasil ditutup', 'batch_id': batch.id}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@production_bp.route('/batches/<int:batch_id>/cancel-confirmation', methods=['PUT'])
+@jwt_required()
+@require_permission('work_orders.complete')
+def cancel_batch_confirmation(batch_id):
+    """'Batalkan Konfirmasi' (2026-09-11) - the lighter counterpart to
+    revert_completed_work_order(): for a batch that's still in_progress
+    (Bahan Aktual filled in, but Tutup Batch never executed), undo the
+    confirmation entirely so it can be redone from scratch. Unlike reverting
+    a completed WO, nothing has left the system yet at this stage (no
+    finished-goods transfer, no GL) - only reverses what's local to this
+    batch's own material consumption:
+      1. Clears WorkOrderBOMItem.quantity_actual/actual_batch_number for this
+         batch (logged to AuditLog first, not silently dropped).
+      2. Reverses any MaterialIssue already physically issued for this batch
+         (adds stock back, same pattern as WO-level cancellation).
+      3. Releases any FIFO reservation made for this batch that was never
+         actually issued (quantity_reserved -> quantity_available).
+      4. Batch status in_progress -> approved; WO status in_progress ->
+         released (only if no other batch on the same WO is still running);
+         machine reset to idle.
+    Blocked entirely if the batch is already admin_closed (use the
+    completed-WO revert action for that case instead - it has its own
+    unwind of the warehouse transfer already built).
+    """
+    try:
+        from models.batch_scheduling import ProductionBatch
+        from models.material_issue import MaterialIssue, MaterialIssueItem
+        from models.warehouse import Inventory, InventoryMovement
+        from models.settings_extended import AuditLog
+        from utils.fifo_helper import fifo_release_reservation
+        import json as _json
+
+        batch = db.session.get(ProductionBatch, batch_id)
+        if not batch:
+            return jsonify({'error': 'Batch not found'}), 404
+        if batch.admin_closed:
+            return jsonify({'error': f'Batch {batch.batch_number} sudah ditutup (Tutup Batch) - gunakan aksi "Batalkan SPK" di level WO untuk membatalkan, bukan aksi ini.'}), 400
+
+        user_id = int(get_jwt_identity())
+        wo = db.session.get(WorkOrder, batch.work_order_id)
+
+        # 1. Clear Bahan Aktual, logging what's being wiped first.
+        bom_items = WorkOrderBOMItem.query.filter_by(production_batch_id=batch_id).all()
+        cleared = []
+        for item in bom_items:
+            if item.quantity_actual is not None or item.actual_batch_number is not None:
+                cleared.append({
+                    'item_id': item.id, 'item_name': item.item_name,
+                    'quantity_actual': float(item.quantity_actual) if item.quantity_actual is not None else None,
+                    'actual_batch_number': item.actual_batch_number,
+                })
+                item.quantity_actual = None
+                item.actual_batch_number = None
+                item.quantity_variance = None
+                item.is_modified = False
+
+        if cleared:
+            db.session.add(AuditLog(
+                user_id=user_id, action='update', resource_type='production_batch_confirmation',
+                resource_id=str(batch_id), resource_name=batch.batch_number,
+                old_values=_json.dumps({'bahan_aktual': cleared}),
+                new_values=_json.dumps({'status': 'confirmation_cancelled'}),
+                request_method=request.method, request_url=request.url,
+            ))
+
+        # 2. Reverse already-issued MaterialIssue for this batch.
+        issued = MaterialIssue.query.filter(
+            MaterialIssue.production_batch_id == batch_id,
+            MaterialIssue.status.in_(['issued', 'partial'])
+        ).all()
+        for mi in issued:
+            movements = InventoryMovement.query.filter_by(
+                reference_type='material_issue', reference_id=mi.id, movement_type='stock_out'
+            ).all()
+            for mv in movements:
+                inv = db.session.get(Inventory, mv.inventory_id)
+                if not inv:
+                    continue
+                inv.quantity_on_hand = float(inv.quantity_on_hand) + float(mv.quantity)
+                inv.quantity_available = float(inv.quantity_available or 0) + float(mv.quantity)
+                inv.updated_at = get_local_now()
+                db.session.add(InventoryMovement(
+                    inventory_id=inv.id, product_id=mv.product_id, material_id=mv.material_id,
+                    location_id=mv.location_id, movement_type='stock_in', movement_date=get_local_now().date(),
+                    quantity=mv.quantity, reference_number=batch.batch_number,
+                    reference_type='batch_confirmation_cancel', reference_id=batch_id,
+                    batch_number=mv.batch_number, lot_number=mv.lot_number,
+                    notes=f'Reversal: batalkan konfirmasi batch {batch.batch_number}', created_by=user_id,
+                ))
+            mi.status = 'cancelled'
+
+        # 3. Release reservations that were never actually issued.
+        # reservation_status lives on MaterialIssueItem, not MaterialIssue.
+        reserved_only = MaterialIssue.query.filter(
+            MaterialIssue.production_batch_id == batch_id,
+            MaterialIssue.status.in_(['pending', 'approved'])
+        ).all()
+        for mi in reserved_only:
+            for mi_item in MaterialIssueItem.query.filter(
+                MaterialIssueItem.material_issue_id == mi.id,
+                MaterialIssueItem.reservation_status != 'none'
+            ).all():
+                qty = float(mi_item.reserved_quantity or mi_item.required_quantity or 0)
+                if qty > 0:
+                    fifo_release_reservation(
+                        material_id=mi_item.material_id, product_id=mi_item.product_id,
+                        quantity_to_release=qty
+                    )
+                mi_item.reservation_status = 'none'
+            mi.status = 'cancelled'
+
+        # 4. Roll back statuses.
+        if batch.status == 'in_progress':
+            batch.status = 'approved'
+        if batch.machine_id:
+            from models.production import Machine
+            machine = db.session.get(Machine, batch.machine_id)
+            if machine:
+                machine.status = 'idle'
+
+        if wo and wo.status == 'in_progress':
+            other_active = ProductionBatch.query.filter(
+                ProductionBatch.work_order_id == wo.id,
+                ProductionBatch.id != batch_id,
+                ProductionBatch.status == 'in_progress'
+            ).first()
+            if not other_active:
+                wo.status = 'released'
+
+        db.session.commit()
+
+        return jsonify({
+            'message': f'Konfirmasi batch {batch.batch_number} dibatalkan - bisa dikonfirmasi ulang dari awal.',
+            'batch_id': batch.id,
+            'bom_items_cleared': len(cleared),
+            'material_issues_reversed': len(issued),
+            'reservations_released': len(reserved_only),
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+def _check_closing_requirements(wo):
+    """Gate untuk 'Tutup SPK' (lihat routes untuk halaman Tutup SPK) - hanya berlaku untuk
+    WO barang jadi (product.material_type == 'finished_goods'). WO tahap WIP/Premix/Waste
+    tidak melalui packing list sama sekali, jadi TIDAK kena gate ini.
+
+    Bahan aktual sekarang dicek PER BATCH (lihat _check_batch_closing_requirements /
+    'Tutup Batch') - gate WO-level ini hanya memastikan SEMUA batch WO sudah
+    ditutup satu-satu (partial/bertahap closing), plus packing list yang tetap
+    dicek di level WO (lihat catatan di _check_batch_closing_requirements soal
+    kenapa packing list tidak bisa dipecah per-batch).
+    Return (ok: bool, missing: list[str])."""
+    if not wo.product or (wo.product.material_type or '').strip().lower() != 'finished_goods':
+        return True, []
+
+    from models.production import PackingList
+    from models.batch_scheduling import ProductionBatch
+
+    missing = []
+
+    batches = ProductionBatch.query.filter_by(work_order_id=wo.id).all()
+    if not batches:
+        missing.append('Belum ada batch produksi untuk work order ini')
+    else:
+        unclosed = [b for b in batches if not b.admin_closed]
+        if unclosed:
+            names = ', '.join(b.batch_number for b in unclosed[:5])
+            more = f' (+{len(unclosed) - 5} lagi)' if len(unclosed) > 5 else ''
+            missing.append(f'{len(unclosed)} batch belum ditutup: {names}{more}')
+
+    has_packing_list = PackingList.query.filter_by(work_order_id=wo.id).filter(
+        PackingList.total_karton > 0
+    ).first()
+    if not has_packing_list:
+        missing.append('Packing list belum dibuat/di-sync untuk work order ini')
+
+    return len(missing) == 0, missing
+
+
 @production_bp.route('/work-orders/<int:id>/complete', methods=['PUT'])
 @jwt_required()
+@require_permission('work_orders.complete')
 def complete_work_order(id):
     try:
         from routes.production_integration import auto_receive_finished_goods
-        
+
         wo = db.session.get(WorkOrder, id)
         if not wo:
             return jsonify(error_response('api.error', error_code=404)), 404
-        
+
         if wo.status == 'completed':
             return jsonify({'error': 'Work order already completed'}), 400
-        
+
+        ok, missing = _check_closing_requirements(wo)
+        if not ok:
+            return jsonify({
+                'error': 'SPK belum bisa diselesaikan - syarat penutupan belum lengkap',
+                'missing': missing,
+            }), 400
+
         data = request.get_json() or {}
         user_id = int(get_jwt_identity())
         
@@ -2418,14 +2796,135 @@ def complete_work_order(id):
         }
         if integration_results:
             response['integration_results'] = integration_results
-        
+
         return jsonify(response), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
+
+@production_bp.route('/work-orders/<int:id>/revert-to-released', methods=['PUT'])
+@jwt_required()
+@require_permission('work_orders.complete')
+def revert_completed_work_order(id):
+    """'Cancel SPK' for an already-completed WO - per user design (2026-09-11):
+    this is NOT a blanket status flip. It reverses the exact chain
+    complete_work_order() created: un-release (if QC already released/split
+    the batch) + transfer the finished goods back from Gudang Barang Jadi to
+    Area Produksi, restoring the state to "goods fresh off the line, not yet
+    through Tutup SPK" - only then does WorkOrder.status actually drop back
+    to 'released'. Blocked entirely (not partially reversed) if the goods
+    have already moved further than that (shipped, or their quantity no
+    longer matches what was produced - consumed elsewhere).
+    """
+    try:
+        from models.warehouse import Inventory, InventoryMovement, WarehouseLocation, WarehouseZone
+        from models.shipping import ShippingOrder
+
+        wo = db.session.get(WorkOrder, id)
+        if not wo:
+            return jsonify({'error': 'Work order not found'}), 404
+        if wo.status != 'completed':
+            return jsonify({'error': f"WO ini berstatus '{wo.status}', bukan 'completed' - aksi ini hanya untuk membatalkan SPK yang sudah completed."}), 400
+
+        user_id = int(get_jwt_identity())
+
+        # Block if already shipped (any active, non-cancelled shipment
+        # referencing this WO) - goods are physically gone, nothing left to
+        # reverse in this system.
+        active_shipment = ShippingOrder.query.filter(
+            ShippingOrder.work_order_id == id,
+            ShippingOrder.status != 'cancelled'
+        ).first()
+        if active_shipment:
+            return jsonify({
+                'error': f'Tidak bisa dibatalkan - barang jadi WO ini sudah dikirim ({active_shipment.shipping_number}). Batalkan pengiriman itu dulu jika memang perlu.'
+            }), 400
+
+        fg_rows = Inventory.query.filter_by(work_order_id=id, product_id=wo.product_id).all()
+        if not fg_rows:
+            return jsonify({'error': 'Tidak ditemukan baris stok barang jadi untuk WO ini - tidak ada yang perlu dibalik.'}), 400
+
+        total_remaining = sum(float(r.quantity_on_hand or 0) for r in fg_rows)
+        expected_qty = float(wo.quantity_good) if wo.quantity_good else float(wo.quantity_produced or 0)
+        if expected_qty > 0 and total_remaining + 0.01 < expected_qty:
+            return jsonify({
+                'error': f'Tidak bisa dibatalkan - sebagian barang jadi WO ini sudah berkurang dari yang diproduksi ({total_remaining} dari {expected_qty}), kemungkinan sudah terpakai/pindah ke tempat lain.'
+            }), 400
+
+        prod_area_loc = WarehouseLocation.query.join(WarehouseZone).filter(
+            WarehouseZone.code == 'PROD-AREA', WarehouseLocation.is_active == True
+        ).first()
+        if not prod_area_loc:
+            return jsonify({'error': 'Lokasi Area Produksi tidak ditemukan - hubungi admin gudang.'}), 400
+
+        movement_date = get_local_now().date()
+        consolidated_qty = 0.0
+
+        # Reverse every row this WO's finished goods ended up in (could be
+        # more than one if QC disposition split it into e.g. available+reject)
+        # back into quarantine, logging what each row's status/location was.
+        for row in fg_rows:
+            qty = float(row.quantity_on_hand or 0)
+            if qty <= 0:
+                continue
+            consolidated_qty += qty
+            db.session.add(InventoryMovement(
+                inventory_id=row.id, product_id=row.product_id, material_id=row.material_id,
+                location_id=row.location_id, movement_type='qc_disposition',
+                movement_date=movement_date, quantity=qty,
+                reference_type='work_order_revert', reference_id=id,
+                batch_number=row.batch_number, status_before=row.stock_status, status_after='quarantine',
+                notes=f'Pembatalan SPK {wo.wo_number} - unrelease', created_by=user_id,
+            ))
+            row.quantity_on_hand = 0
+            row.quantity_available = 0
+            row.stock_status = 'quarantine'
+            row.updated_at = get_local_now()
+
+        if consolidated_qty <= 0:
+            return jsonify({'error': 'Tidak ada quantity tersisa untuk dibalik.'}), 400
+
+        # Move the (now-zeroed) primary row back to Area Produksi with the
+        # full consolidated quantity, rather than leaving quantity spread
+        # across now-empty rows at Gudang Barang Jadi.
+        primary = fg_rows[0]
+        db.session.add(InventoryMovement(
+            inventory_id=primary.id, product_id=primary.product_id, location_id=primary.location_id,
+            movement_type='transfer_out', movement_date=movement_date, quantity=consolidated_qty,
+            reference_type='work_order_revert', reference_id=id, batch_number=primary.batch_number,
+            notes=f'Pembatalan SPK {wo.wo_number} - transfer balik ke Area Produksi', created_by=user_id,
+        ))
+        db.session.add(InventoryMovement(
+            inventory_id=primary.id, product_id=primary.product_id, location_id=prod_area_loc.id,
+            movement_type='transfer_in', movement_date=movement_date, quantity=consolidated_qty,
+            reference_type='work_order_revert', reference_id=id, batch_number=primary.batch_number,
+            notes=f'Pembatalan SPK {wo.wo_number} - transfer balik ke Area Produksi', created_by=user_id,
+        ))
+        primary.location_id = prod_area_loc.id
+        primary.quantity_on_hand = consolidated_qty
+        primary.quantity_available = 0
+        primary.stock_status = 'quarantine'
+        primary.updated_at = get_local_now()
+
+        wo.status = 'released'
+        wo.actual_end_date = None
+
+        db.session.commit()
+
+        return jsonify({
+            'message': f'SPK {wo.wo_number} dibatalkan - barang jadi ({consolidated_qty}) dikembalikan ke Area Produksi berstatus quarantine.',
+            'wo_number': wo.wo_number,
+            'quantity_reverted': consolidated_qty,
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
 @production_bp.route('/work-orders/bulk-complete', methods=['PUT'])
 @jwt_required()
+@require_permission('work_orders.complete')
 def bulk_complete_work_orders():
     """Complete all in_progress work orders at once"""
     try:
@@ -2441,9 +2940,19 @@ def bulk_complete_work_orders():
         
         completed_list = []
         errors = []
-        
+        skipped = []
+
         for wo in in_progress_wos:
             try:
+                ok, missing = _check_closing_requirements(wo)
+                if not ok:
+                    skipped.append({
+                        'id': wo.id,
+                        'wo_number': wo.wo_number,
+                        'missing': missing,
+                    })
+                    continue
+
                 wo.status = 'completed'
                 wo.actual_end_date = datetime.utcnow()
                 
@@ -2483,6 +2992,7 @@ def bulk_complete_work_orders():
             'message': f'{len(completed_list)} Work Order berhasil diselesaikan',
             'completed': len(completed_list),
             'completed_list': completed_list,
+            'skipped': skipped,
             'errors': errors
         }), 200
     except Exception as e:
@@ -2492,6 +3002,7 @@ def bulk_complete_work_orders():
 
 @production_bp.route('/production-records', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_production_records():
     """Get production records"""
     try:
@@ -2526,6 +3037,7 @@ def get_production_records():
 
 @production_bp.route('/production-records', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def create_production_record():
     try:
         data = request.get_json()
@@ -2581,6 +3093,7 @@ def create_production_record():
 
 @production_bp.route('/production-records/<int:record_id>', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_production_record(record_id):
     """Get single production record by ID"""
     try:
@@ -2627,6 +3140,7 @@ def get_production_record(record_id):
 
 @production_bp.route('/production-records/<int:record_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('production.edit')
 def update_production_record(record_id):
     """Update production record and adjust work order totals and ShiftProduction"""
     try:
@@ -2789,17 +3303,27 @@ def update_production_record(record_id):
                 if downtime_notes:
                     shift_production.issues = downtime_notes
             
-            # Recalculate efficiency and OEE
+            # Recalculate availability, efficiency and OEE (standard 3-factor
+            # OEE: Availability x Efficiency x Quality). This used to compute
+            # actual_runtime/planned_runtime and store it INTO efficiency_rate
+            # - that's the Availability formula, not Efficiency (Actual/Target
+            # output) - so oee_score ended up as availability*quality only,
+            # silently missing the real performance factor, and the
+            # persisted efficiency_rate column meant something different here
+            # than everywhere else that reads it.
             planned_runtime = shift_production.planned_runtime or 480
             total_downtime = float(shift_production.downtime_minutes or 0)
             actual_runtime = planned_runtime - total_downtime
             shift_production.actual_runtime = actual_runtime
-            
-            efficiency_rate = (actual_runtime / planned_runtime * 100) if planned_runtime > 0 else 100
+
+            availability_rate = (actual_runtime / planned_runtime * 100) if planned_runtime > 0 else 100
+
+            target_qty = float(shift_production.target_quantity or 0)
+            efficiency_rate = (float(new_produced) / target_qty * 100) if target_qty > 0 else 100
             shift_production.efficiency_rate = round(efficiency_rate, 2)
-            
+
             quality_rate = shift_production.quality_rate or 100
-            shift_production.oee_score = round((efficiency_rate * quality_rate) / 100, 2)
+            shift_production.oee_score = round((availability_rate * efficiency_rate * quality_rate) / 10000, 2)
         
         db.session.commit()
         
@@ -2832,6 +3356,7 @@ def update_production_record(record_id):
 
 @production_bp.route('/bom', methods=['GET'])
 @jwt_required()
+@require_permission('bom.view')
 def get_boms():
     """
     Get all active Bill of Materials
@@ -2907,6 +3432,7 @@ def get_boms():
 
 @production_bp.route('/bom', methods=['POST'])
 @jwt_required()
+@require_permission('bom.create')
 def create_bom():
     """
     Create a new Bill of Materials
@@ -3016,6 +3542,7 @@ def create_bom():
 
 @production_bp.route('/schedules', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_schedules():
     try:
         schedules = ProductionSchedule.query.order_by(ProductionSchedule.scheduled_start).all()
@@ -3036,6 +3563,7 @@ def get_schedules():
 # ============= ADVANCED SCHEDULING =============
 @production_bp.route('/schedules', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def create_schedule():
     try:
         data = request.get_json()
@@ -3085,6 +3613,7 @@ def create_schedule():
         return jsonify({'error': str(e)}), 500
 @production_bp.route('/traceability/<search_term>', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_traceability(search_term):
     """Get complete traceability information for a batch or work order"""
     try:
@@ -3154,6 +3683,7 @@ def get_traceability(search_term):
 
 @production_bp.route('/dashboard/summary', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_production_dashboard():
     """Get production dashboard summary"""
     try:
@@ -3192,6 +3722,7 @@ from models.production import PackingList, PackingListItem
 
 @production_bp.route('/work-orders/<int:wo_id>/packing-list', methods=['GET'])
 @jwt_required()
+@require_permission('work_orders.view')
 def get_packing_list(wo_id):
     """Get packing list for a work order and specific product"""
     try:
@@ -3264,6 +3795,7 @@ def get_packing_list(wo_id):
 
 @production_bp.route('/work-orders/<int:wo_id>/packing-list/sync', methods=['POST'])
 @jwt_required()
+@require_permission('work_orders.create')
 def sync_packing_list(wo_id):
     """Sync packing list items based on actual karton count with user-defined start number"""
     try:
@@ -3349,6 +3881,7 @@ def sync_packing_list(wo_id):
 
 @production_bp.route('/work-orders/<int:wo_id>/packing-list/items', methods=['PUT'])
 @jwt_required()
+@require_permission('work_orders.edit')
 def update_packing_list_items(wo_id):
     """Update packing list items (weight, batch mixing)"""
     try:
@@ -3397,6 +3930,7 @@ def update_packing_list_items(wo_id):
 
 @production_bp.route('/work-orders/<int:wo_id>/packing-list/batch-mixing', methods=['POST'])
 @jwt_required()
+@require_permission('work_orders.create')
 def set_batch_mixing(wo_id):
     """Set new batch mixing for subsequent cartons"""
     try:
@@ -3454,6 +3988,7 @@ def set_batch_mixing(wo_id):
 # ============= REMAINING STOCK (SISA ORDER) =============
 @production_bp.route('/remaining-stocks', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_remaining_stocks():
     """Get all remaining stocks (Sisa Order)"""
     try:
@@ -3469,6 +4004,7 @@ def get_remaining_stocks():
 
 @production_bp.route('/remaining-stocks', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def create_remaining_stock():
     """Create new remaining stock entry"""
     try:
@@ -3521,6 +4057,7 @@ def create_remaining_stock():
 
 @production_bp.route('/remaining-stocks/<int:id>', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_remaining_stock(id):
     """Get single remaining stock by ID"""
     try:
@@ -3534,6 +4071,7 @@ def get_remaining_stock(id):
 
 @production_bp.route('/remaining-stocks/<int:id>', methods=['PUT'])
 @jwt_required()
+@require_permission('production.edit')
 def update_remaining_stock(id):
     """Update remaining stock entry"""
     try:
@@ -3584,6 +4122,7 @@ def update_remaining_stock(id):
 
 @production_bp.route('/remaining-stocks/<int:id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('production.delete')
 def delete_remaining_stock(id):
     """Delete remaining stock entry"""
     try:
@@ -3606,6 +4145,7 @@ def delete_remaining_stock(id):
 
 @production_bp.route('/remaining-stocks/export-excel', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def export_remaining_stocks_excel():
     """Export remaining stocks to Excel"""
     try:
@@ -3707,8 +4247,126 @@ def export_remaining_stocks_excel():
 
 # ============= WORK ORDER BOM (Editable copy of BOM for WO) =============
 
+def _suggest_actual_from_material_issue(wo_id, material_id, target_uom, production_batch_id=None):
+    """Sum MaterialIssueItem.issued_quantity (real FIFO-deducted warehouse
+    output, per Tutup SPK design - Aida reviews/confirms this instead of
+    typing actual consumption from scratch) across all MaterialIssue for this
+    WO+material, converting each issue's own uom to the BOM row's uom via
+    models/uom.py::UoMConversion. Returns (suggested_qty_or_None, note_or_None) -
+    never silently guesses a wrong number when no conversion exists for a
+    portion of the total; that portion is excluded and named in the note.
+    When production_batch_id is given (Tutup Batch), scopes to just that
+    batch's own MaterialIssue rows instead of the whole WO's."""
+    from models.material_issue import MaterialIssue, MaterialIssueItem
+    from models.uom import UnitOfMeasure, UoMConversion
+
+    query = db.session.query(MaterialIssueItem.uom, func.coalesce(func.sum(MaterialIssueItem.issued_quantity), 0)) \
+        .join(MaterialIssue, MaterialIssueItem.material_issue_id == MaterialIssue.id) \
+        .filter(MaterialIssue.work_order_id == wo_id, MaterialIssueItem.material_id == material_id)
+    if production_batch_id:
+        query = query.filter(MaterialIssue.production_batch_id == production_batch_id)
+    rows = query.group_by(MaterialIssueItem.uom).all()
+
+    if not rows:
+        return None, None
+
+    target_uom_norm = (target_uom or '').strip().upper()
+    total = 0.0
+    unconverted = []
+
+    for issue_uom, qty in rows:
+        qty = float(qty or 0)
+        if qty == 0:
+            continue
+        issue_uom_norm = (issue_uom or '').strip().upper()
+        if issue_uom_norm == target_uom_norm:
+            total += qty
+            continue
+
+        from_unit = UnitOfMeasure.query.filter(func.upper(UnitOfMeasure.code) == issue_uom_norm).first()
+        to_unit = UnitOfMeasure.query.filter(func.upper(UnitOfMeasure.code) == target_uom_norm).first()
+        conversion = None
+        if from_unit and to_unit:
+            conversion = UoMConversion.query.filter_by(
+                from_uom_id=from_unit.id, to_uom_id=to_unit.id, material_id=material_id, is_active=True
+            ).first() or UoMConversion.query.filter_by(
+                from_uom_id=from_unit.id, to_uom_id=to_unit.id, material_id=None, product_id=None, is_active=True
+            ).first()
+
+        if conversion:
+            total += qty * float(conversion.conversion_factor)
+        else:
+            unconverted.append(f'{qty} {issue_uom}')
+
+    note = None
+    if unconverted:
+        note = f"Tidak bisa dikonversi ke {target_uom}: {', '.join(unconverted)} (belum ada rasio UOM untuk material ini)"
+
+    if total == 0 and not unconverted:
+        return None, None
+    return (total if total > 0 else None), note
+
+
+@production_bp.route('/batches/<int:batch_id>/bom', methods=['GET'])
+@jwt_required()
+@require_permission('work_orders.view')
+def get_batch_bom(batch_id):
+    """Bahan Aktual tree scoped to ONE ProductionBatch (Tutup Batch)."""
+    try:
+        from models.batch_scheduling import ProductionBatch
+
+        batch = db.session.get(ProductionBatch, batch_id)
+        if not batch:
+            return jsonify({'error': 'Batch not found'}), 404
+
+        items = WorkOrderBOMItem.query.filter_by(
+            work_order_id=batch.work_order_id, production_batch_id=batch_id
+        ).order_by(WorkOrderBOMItem.line_number).all()
+
+        items_json = []
+        for item in items:
+            suggested_actual, suggested_note = (None, None)
+            if item.item_type == 'material' and item.quantity_actual is None and item.material_id:
+                suggested_actual, suggested_note = _suggest_actual_from_material_issue(
+                    batch.work_order_id, item.material_id, item.uom, production_batch_id=batch_id
+                )
+            items_json.append({
+                'id': item.id,
+                'parent_item_id': item.parent_item_id,
+                'depth': item.depth,
+                'line_number': item.line_number,
+                'material_id': item.material_id,
+                'product_id': item.product_id,
+                'item_name': item.item_name,
+                'item_code': item.item_code,
+                'item_type': item.item_type,
+                'quantity_per_unit': float(item.quantity_per_unit) if item.quantity_per_unit else 0,
+                'uom': item.uom,
+                'scrap_percent': float(item.scrap_percent) if item.scrap_percent else 0,
+                'quantity_planned': float(item.quantity_planned) if item.quantity_planned else 0,
+                'quantity_actual': float(item.quantity_actual) if item.quantity_actual is not None else None,
+                'actual_batch_number': item.actual_batch_number,
+                'suggested_actual': suggested_actual,
+                'suggested_actual_note': suggested_note,
+                'unit_cost': float(item.unit_cost) if item.unit_cost else 0,
+                'notes': item.notes,
+            })
+
+        return jsonify({
+            'batch_id': batch_id,
+            'batch_number': batch.batch_number,
+            'work_order_id': batch.work_order_id,
+            'planned_qty': float(batch.planned_qty),
+            'admin_closed': batch.admin_closed,
+            'bom_items': items_json,
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @production_bp.route('/work-orders/<int:wo_id>/bom', methods=['GET'])
 @jwt_required()
+@require_permission('work_orders.view')
 def get_work_order_bom(wo_id):
     """Get BOM items for a work order (WO-specific copy or from master BOM)"""
     try:
@@ -3721,13 +4379,15 @@ def get_work_order_bom(wo_id):
         
         if wo_bom_items:
             # Return WO-specific BOM
-            return jsonify({
-                'source': 'work_order',
-                'work_order_id': wo_id,
-                'wo_number': wo.wo_number,
-                'product_id': wo.product_id,
-                'bom_items': [{
+            items_json = []
+            for item in wo_bom_items:
+                suggested_actual, suggested_note = (None, None)
+                if item.item_type == 'material' and item.quantity_actual is None and item.material_id:
+                    suggested_actual, suggested_note = _suggest_actual_from_material_issue(wo_id, item.material_id, item.uom)
+                items_json.append({
                     'id': item.id,
+                    'parent_item_id': item.parent_item_id,
+                    'depth': item.depth,
                     'line_number': item.line_number,
                     'material_id': item.material_id,
                     'product_id': item.product_id,
@@ -3738,13 +4398,22 @@ def get_work_order_bom(wo_id):
                     'uom': item.uom,
                     'scrap_percent': float(item.scrap_percent) if item.scrap_percent else 0,
                     'quantity_planned': float(item.quantity_planned) if item.quantity_planned else 0,
-                    'quantity_actual': float(item.quantity_actual) if item.quantity_actual else 0,
+                    'quantity_actual': float(item.quantity_actual) if item.quantity_actual is not None else None,
+                'actual_batch_number': item.actual_batch_number,
+                    'suggested_actual': suggested_actual,
+                    'suggested_actual_note': suggested_note,
                     'unit_cost': float(item.unit_cost) if item.unit_cost else 0,
                     'is_modified': item.is_modified,
                     'is_added': item.is_added,
                     'modification_reason': item.modification_reason,
                     'notes': item.notes
-                } for item in wo_bom_items]
+                })
+            return jsonify({
+                'source': 'work_order',
+                'work_order_id': wo_id,
+                'wo_number': wo.wo_number,
+                'product_id': wo.product_id,
+                'bom_items': items_json
             }), 200
         
         # If no WO-specific BOM, find master BOM
@@ -3801,6 +4470,7 @@ def get_work_order_bom(wo_id):
 
 @production_bp.route('/work-orders/<int:wo_id>/bom/copy-from-master', methods=['POST'])
 @jwt_required()
+@require_permission('work_orders.create')
 def copy_bom_to_work_order(wo_id):
     """Copy BOM items from master BOM to work order for editing"""
     try:
@@ -3876,6 +4546,7 @@ def copy_bom_to_work_order(wo_id):
 
 @production_bp.route('/work-orders/<int:wo_id>/bom/<int:item_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('work_orders.edit')
 def update_work_order_bom_item(wo_id, item_id):
     """Update a WO BOM item (does NOT affect master BOM)"""
     try:
@@ -3937,6 +4608,7 @@ def update_work_order_bom_item(wo_id, item_id):
 
 @production_bp.route('/work-orders/<int:wo_id>/bom', methods=['POST'])
 @jwt_required()
+@require_permission('work_orders.create')
 def add_work_order_bom_item(wo_id):
     """Add a new BOM item to work order (manual addition)"""
     try:
@@ -4013,6 +4685,7 @@ def add_work_order_bom_item(wo_id):
 
 @production_bp.route('/work-orders/<int:wo_id>/bom/<int:item_id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('work_orders.delete')
 def delete_work_order_bom_item(wo_id, item_id):
     """Delete a WO BOM item (does NOT affect master BOM)"""
     try:
@@ -4032,6 +4705,7 @@ def delete_work_order_bom_item(wo_id, item_id):
 
 @production_bp.route('/work-orders/<int:wo_id>/bom/actual', methods=['PUT'])
 @jwt_required()
+@require_permission('work_orders.edit')
 def update_work_order_bom_actual(wo_id):
     """Bulk update actual quantities for all WO BOM items after production input"""
     try:
@@ -4043,7 +4717,18 @@ def update_work_order_bom_actual(wo_id):
         if not wo:
             return jsonify({'error': 'Work order not found'}), 404
 
+        # Batches already closed via "Tutup Batch" are locked - this endpoint
+        # is the only writer of quantity_actual, so the lock has to be
+        # enforced here, not just by hiding the edit button in the frontend
+        # (a prior gap: this check was missing entirely, letting a closed
+        # batch's actuals be silently overwritten through this same endpoint).
+        from models.batch_scheduling import ProductionBatch
+        closed_batch_ids = {
+            b.id for b in ProductionBatch.query.filter_by(work_order_id=wo_id, admin_closed=True).all()
+        }
+
         updated = 0
+        locked_skipped = 0
         for entry in items_data:
             item_id = entry.get('item_id')
             qty_actual = entry.get('quantity_actual')
@@ -4052,18 +4737,42 @@ def update_work_order_bom_actual(wo_id):
             item = WorkOrderBOMItem.query.filter_by(id=item_id, work_order_id=wo_id).first()
             if not item:
                 continue
+            if item.production_batch_id and item.production_batch_id in closed_batch_ids:
+                locked_skipped += 1
+                continue
             item.quantity_actual = float(qty_actual)
             if item.quantity_planned is not None:
                 item.quantity_variance = float(qty_actual) - float(item.quantity_planned)
             if entry.get('notes') is not None:
                 item.notes = entry['notes']
+            batch_number = entry.get('batch_number')
+            if batch_number:
+                # Server-side re-check (2026-09-11) - the frontend only lets
+                # the user pick a released batch in the picker modal, but
+                # this endpoint must not trust that blindly since the batch
+                # could have been quarantined/rejected between then and now.
+                from models.warehouse import Inventory
+                inv_q = Inventory.query.filter_by(batch_number=batch_number)
+                if item.material_id:
+                    inv_q = inv_q.filter_by(material_id=item.material_id)
+                elif item.product_id:
+                    inv_q = inv_q.filter_by(product_id=item.product_id)
+                blocked = inv_q.filter(Inventory.stock_status.in_(['quarantine', 'reject'])).first()
+                if blocked:
+                    return jsonify({
+                        'error': f'Batch {batch_number} untuk {item.item_name} berstatus {blocked.stock_status} - tidak bisa dipakai. Hubungi QC untuk release terlebih dahulu.'
+                    }), 400
+                item.actual_batch_number = batch_number
             item.is_modified = True
             item.modified_by = user_id
             item.modified_at = datetime.utcnow()
             updated += 1
 
         db.session.commit()
-        return jsonify({'message': f'{updated} BOM item(s) actual quantity updated', 'updated': updated}), 200
+        message = f'{updated} BOM item(s) actual quantity updated'
+        if locked_skipped:
+            message += f' ({locked_skipped} dilewati karena batch-nya sudah ditutup)'
+        return jsonify({'message': message, 'updated': updated, 'locked_skipped': locked_skipped}), 200
 
     except Exception as e:
         db.session.rollback()
@@ -4072,19 +4781,191 @@ def update_work_order_bom_actual(wo_id):
 
 @production_bp.route('/work-orders/<int:wo_id>/bom/reset', methods=['POST'])
 @jwt_required()
+@require_permission('work_orders.create')
 def reset_work_order_bom(wo_id):
     """Delete all WO BOM items and re-copy from master BOM"""
     try:
         wo = db.session.get(WorkOrder, wo_id)
         if not wo:
             return jsonify({'error': 'Work order not found'}), 404
-        
+
         # Delete existing WO BOM items
         WorkOrderBOMItem.query.filter_by(work_order_id=wo_id).delete()
         db.session.commit()
-        
+
         return jsonify({'message': 'Work order BOM items deleted. You can now copy from master BOM again.'}), 200
-        
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+def _materialize_bom_tree(wo_id, product_id, quantity, parent_item_id, depth, line_counter,
+                           max_depth=10, _path=None, _material_id_to_product_id=None, production_batch_id=None):
+    """Recursively walk a product's active BOM (Barang Jadi -> WIP -> Mixing) and
+    persist ONE WorkOrderBOMItem row per line at EVERY level - unlike
+    utils/bom_explosion.py::explode_bom_requirements() (which flattens/merges
+    materials for shortage-calculation purposes), this always shows the full
+    composition at every level with no merging, so each row maps 1:1 to a UI
+    tree node the user can input actual consumption against.
+    line_counter is a single-element list used as a mutable int (line_number
+    must be unique per WO, not just per level).
+    Reuses bom_explosion's own material-code-matching: in this production data,
+    NO BOMItem row actually uses product_id for a WIP sub-assembly - they're all
+    stored as material_id where the Material's code happens to match a Product
+    with its own active BOM (confirmed via bom_explosion.py's docstring and via
+    live testing on WO id 3)."""
+    from utils.bom_explosion import _build_material_code_to_active_bom_map
+
+    _path = _path or []
+    if _material_id_to_product_id is None:
+        _material_id_to_product_id = _build_material_code_to_active_bom_map()
+    if product_id in _path:
+        return  # circular BOM - skip rather than crash the whole closing flow
+    if depth > max_depth:
+        return
+
+    bom = BillOfMaterials.query.filter_by(product_id=product_id, is_active=True).first()
+    if not bom:
+        return
+
+    for bom_item in bom.items:
+        required_qty = float(bom_item.quantity) * quantity
+        line_counter[0] += 1
+
+        matched_sub_product_id = None
+        if bom_item.material_id and bom_item.material_id in _material_id_to_product_id:
+            matched_sub_product_id = _material_id_to_product_id[bom_item.material_id]
+        elif bom_item.product_id:
+            matched_sub_product_id = bom_item.product_id
+
+        if matched_sub_product_id:
+            sub_bom = BillOfMaterials.query.filter_by(product_id=matched_sub_product_id, is_active=True).first()
+            sub_name = bom_item.product.name if bom_item.product_id else (bom_item.material.name if bom_item.material else 'Unknown')
+            sub_code = bom_item.product.code if bom_item.product_id else (bom_item.material.code if bom_item.material else None)
+            row = WorkOrderBOMItem(
+                work_order_id=wo_id,
+                production_batch_id=production_batch_id,
+                parent_item_id=parent_item_id,
+                depth=depth,
+                line_number=line_counter[0],
+                material_id=bom_item.material_id,
+                product_id=matched_sub_product_id,
+                item_name=sub_name,
+                item_code=sub_code,
+                item_type='wip_sub_assembly',
+                quantity_per_unit=bom_item.quantity,
+                uom=bom_item.uom,
+                scrap_percent=bom_item.scrap_percent or 0,
+                quantity_planned=required_qty,
+                unit_cost=bom_item.unit_cost,
+            )
+            db.session.add(row)
+            db.session.flush()  # need row.id as parent_item_id for children
+
+            if sub_bom is not None:
+                _materialize_bom_tree(
+                    wo_id, matched_sub_product_id, required_qty, row.id, depth + 1,
+                    line_counter, max_depth=max_depth, _path=_path + [product_id],
+                    _material_id_to_product_id=_material_id_to_product_id,
+                    production_batch_id=production_batch_id,
+                )
+
+        elif bom_item.material_id:
+            row = WorkOrderBOMItem(
+                work_order_id=wo_id,
+                production_batch_id=production_batch_id,
+                parent_item_id=parent_item_id,
+                depth=depth,
+                line_number=line_counter[0],
+                material_id=bom_item.material_id,
+                item_name=bom_item.material.name if bom_item.material else 'Unknown',
+                item_code=bom_item.material.code if bom_item.material else None,
+                item_type='material',
+                quantity_per_unit=bom_item.quantity,
+                uom=bom_item.uom,
+                scrap_percent=bom_item.scrap_percent or 0,
+                quantity_planned=required_qty,
+                unit_cost=bom_item.unit_cost,
+            )
+            db.session.add(row)
+
+
+@production_bp.route('/work-orders/<int:wo_id>/batches/<int:batch_id>/bom/expand-tree', methods=['POST'])
+@jwt_required()
+@require_permission('work_orders.create')
+def expand_batch_bom_tree(wo_id, batch_id):
+    """Same as expand_work_order_bom_tree, but scoped to ONE ProductionBatch
+    (Tutup Batch / partial closing) - materializes the tree scaled to the
+    batch's own planned_qty, not the whole WO's quantity, and tags every row
+    with production_batch_id so it never collides with other batches' rows
+    or with legacy WO-wide rows (production_batch_id IS NULL) for the same
+    WorkOrderBOMItem.line_number unique constraint."""
+    try:
+        from models.batch_scheduling import ProductionBatch
+
+        wo = db.session.get(WorkOrder, wo_id)
+        if not wo:
+            return jsonify({'error': 'Work order not found'}), 404
+        if not wo.product_id:
+            return jsonify({'error': 'Work order has no product'}), 400
+
+        batch = db.session.get(ProductionBatch, batch_id)
+        if not batch or batch.work_order_id != wo_id:
+            return jsonify({'error': 'Batch not found for this work order'}), 404
+
+        bom = wo.bom or BillOfMaterials.query.filter_by(product_id=wo.product_id, is_active=True).first()
+        if not bom:
+            return jsonify({'error': 'Tidak ada BOM untuk produk work order ini'}), 400
+
+        WorkOrderBOMItem.query.filter_by(work_order_id=wo_id, production_batch_id=batch_id).delete()
+        db.session.flush()
+
+        # line_number must stay unique across the WHOLE WO (unique_wo_bom_line),
+        # not just within this batch - start past whatever the highest
+        # existing line_number is (other batches, or legacy WO-wide rows).
+        max_line = db.session.query(db.func.max(WorkOrderBOMItem.line_number)).filter_by(work_order_id=wo_id).scalar() or 0
+        line_counter = [max_line]
+        _materialize_bom_tree(wo_id, wo.product_id, float(batch.planned_qty), None, 1, line_counter, production_batch_id=batch_id)
+        db.session.commit()
+
+        count = WorkOrderBOMItem.query.filter_by(work_order_id=wo_id, production_batch_id=batch_id).count()
+        return jsonify({'message': f'{count} baris BOM (semua level) berhasil dibuat untuk batch {batch.batch_number}', 'total_rows': count}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@production_bp.route('/work-orders/<int:wo_id>/bom/expand-tree', methods=['POST'])
+@jwt_required()
+@require_permission('work_orders.create')
+def expand_work_order_bom_tree(wo_id):
+    """Materialize the FULL multi-level BOM (Barang Jadi -> WIP -> Mixing) as real
+    WorkOrderBOMItem rows, so the existing bulk-actual endpoint and the Tutup SPK
+    closing gate work at every depth without any changes to their own logic.
+    Replaces any prior WO-specific BOM items for this WO (idempotent)."""
+    try:
+        wo = db.session.get(WorkOrder, wo_id)
+        if not wo:
+            return jsonify({'error': 'Work order not found'}), 404
+        if not wo.product_id:
+            return jsonify({'error': 'Work order has no product'}), 400
+
+        bom = wo.bom or BillOfMaterials.query.filter_by(product_id=wo.product_id, is_active=True).first()
+        if not bom:
+            return jsonify({'error': 'Tidak ada BOM untuk produk work order ini'}), 400
+
+        WorkOrderBOMItem.query.filter_by(work_order_id=wo_id).delete()
+        db.session.flush()
+
+        line_counter = [0]
+        _materialize_bom_tree(wo_id, wo.product_id, float(wo.quantity), None, 1, line_counter)
+        db.session.commit()
+
+        count = WorkOrderBOMItem.query.filter_by(work_order_id=wo_id).count()
+        return jsonify({'message': f'{count} baris BOM (semua level) berhasil dibuat', 'total_rows': count}), 200
+
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500

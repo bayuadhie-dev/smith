@@ -24,6 +24,9 @@ interface MaterialFormData {
   is_hazardous: boolean;
   storage_conditions: string;
   expiry_days: number;
+  safety_stock_qty: number | '';
+  safety_stock_days: number | '';
+  is_excluded_from_mrp: boolean;
   supplier_id: number;
 }
 
@@ -49,6 +52,9 @@ const MaterialCreate: React.FC = () => {
     is_hazardous: false,
     storage_conditions: '',
     expiry_days: 0,
+    safety_stock_qty: '',
+    safety_stock_days: '',
+    is_excluded_from_mrp: false,
     supplier_id: 0
   });
 
@@ -101,9 +107,16 @@ const MaterialCreate: React.FC = () => {
     }));
   };
 
+  // Field terpisah dari handleInputChange biasa: kosong HARUS tetap kosong (NULL di
+  // backend, "belum dipakai") bukan 0 - beda arti untuk Safety Stock (S1 fallback).
+  const handleNullableNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value === '' ? '' : parseFloat(value) }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validation
     if (!formData.code || !formData.name || !formData.material_type || !formData.category || !formData.primary_uom) {
       alert('Please fill in all required fields');
@@ -112,7 +125,12 @@ const MaterialCreate: React.FC = () => {
 
     setSaving(true);
     try {
-      const response = await axiosInstance.post('/api/materials/', formData);
+      const payload = {
+        ...formData,
+        safety_stock_qty: formData.safety_stock_qty === '' ? null : formData.safety_stock_qty,
+        safety_stock_days: formData.safety_stock_days === '' ? null : formData.safety_stock_days,
+      };
+      const response = await axiosInstance.post('/api/materials/', payload);
       alert('Material created successfully');
       navigate(`/app/warehouse/materials/${response.data.material_id}`);
     } catch (err) {
@@ -365,6 +383,57 @@ const MaterialCreate: React.FC = () => {
                     placeholder="0"
                   />
                 </div>
+              </div>
+            </div>
+
+            {/* Safety Stock (MRP Rolling Forecast buffer) */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Safety Stock (MRP)</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                Buffer proaktif dari Rolling Forecast. Kosongkan kalau material ini tidak perlu buffer khusus (tetap diproses MRP biasa).
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                    Safety Stock Qty
+                  </label>
+                  <input
+                    type="number"
+                    name="safety_stock_qty"
+                    value={formData.safety_stock_qty}
+                    onChange={handleNullableNumberChange}
+                    step="0.01"
+                    min="0"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Kosong = tidak dipakai"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                    Safety Stock Horizon (hari)
+                  </label>
+                  <input
+                    type="number"
+                    name="safety_stock_days"
+                    value={formData.safety_stock_days}
+                    onChange={handleNullableNumberChange}
+                    min="0"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Kosong = tidak dipakai"
+                  />
+                </div>
+              </div>
+              <div className="flex items-center mt-4">
+                <input
+                  type="checkbox"
+                  name="is_excluded_from_mrp"
+                  checked={formData.is_excluded_from_mrp}
+                  onChange={handleInputChange}
+                  className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 dark:border-gray-600 rounded"
+                />
+                <label className="ml-2 block text-sm text-gray-900 dark:text-white">
+                  Exclude from MRP (jangan pernah auto-generate PR/PO untuk material ini)
+                </label>
               </div>
             </div>
           </div>

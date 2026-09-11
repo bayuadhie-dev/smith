@@ -64,11 +64,11 @@ const ProductChangeover: React.FC = () => {
     try {
       setLoading(true);
       
-      // Fetch current work order
+      // Fetch current SPK
       const woResponse = await axiosInstance.get(`/api/production/work-orders/${woId}`);
       setCurrentWO(woResponse.data.work_order || woResponse.data);
       
-      // Fetch available work orders for changeover
+      // Fetch available SPK for changeover
       if (woResponse.data.work_order?.machine_id || woResponse.data.machine_id) {
         const machineId = woResponse.data.work_order?.machine_id || woResponse.data.machine_id;
         const availableResponse = await axiosInstance.get(`/api/production/machines/${machineId}/available-work-orders`);
@@ -103,7 +103,7 @@ const ProductChangeover: React.FC = () => {
       
       alert('Changeover berhasil dimulai!');
       
-      // Navigate to changeover detail or work order list
+      // Navigate to changeover detail or SPK list
       if (form.to_work_order_id) {
         navigate(`/app/production/work-orders/${form.to_work_order_id}`);
       } else {
@@ -147,12 +147,12 @@ const ProductChangeover: React.FC = () => {
         </div>
       )}
 
-      {/* Current Work Order Info */}
+      {/* Current SPK Info */}
       {currentWO && (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <CubeIcon className="h-5 w-5 text-blue-500" />
-            Work Order Saat Ini
+            SPK Saat Ini
           </h2>
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -241,10 +241,10 @@ const ProductChangeover: React.FC = () => {
           />
         </div>
 
-        {/* Select Next Work Order */}
+        {/* Select Next SPK */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-            Work Order Selanjutnya (Opsional)
+            SPK Selanjutnya (Opsional)
           </label>
           {availableWOs.length > 0 ? (
             <div className="space-y-2 max-h-60 overflow-y-auto border rounded-lg p-2">
@@ -293,7 +293,7 @@ const ProductChangeover: React.FC = () => {
             </div>
           ) : (
             <p className="text-gray-500 dark:text-gray-400 text-sm p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
-              Tidak ada Work Order yang tersedia untuk mesin ini
+              Tidak ada SPK yang tersedia untuk mesin ini
             </p>
           )}
         </div>

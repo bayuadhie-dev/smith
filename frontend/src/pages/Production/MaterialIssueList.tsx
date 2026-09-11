@@ -8,7 +8,8 @@ import {
   XCircleIcon,
   ArrowPathIcon,
   EyeIcon,
-  FunnelIcon
+  FunnelIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 import axiosInstance from '../../utils/axiosConfig'
 
@@ -132,10 +133,17 @@ const MaterialIssueList: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-start mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pengeluaran Material</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Permintaan Barang</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Kelola pengeluaran material untuk produksi</p>
         </div>
         <div className="flex gap-2">
+          <Link
+            to="/app/production/material-issues/shortages"
+            className="btn btn-secondary flex items-center gap-2"
+          >
+            <ExclamationTriangleIcon className="h-5 w-5" />
+            Laporan Kekurangan
+          </Link>
           <button
             onClick={() => setShowFilters(!showFilters)}
             className="btn btn-secondary flex items-center gap-2"
@@ -239,7 +247,7 @@ const MaterialIssueList: React.FC = () => {
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Issue</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Work Order</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">SPK</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Produk</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tanggal</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Item</th>

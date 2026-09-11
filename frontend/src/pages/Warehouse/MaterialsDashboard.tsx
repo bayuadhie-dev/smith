@@ -125,7 +125,7 @@ const MaterialsDashboard: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Materials Dashboard</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard Barang & Material</h1>
           <p className="text-gray-600 dark:text-gray-300">Overview of your materials inventory and activities</p>
         </div>
         <div className="flex space-x-3">

@@ -47,7 +47,7 @@ const [period, setPeriod] = useState('monthly')
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Warehouse Analytics</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Analytics Gudang</h1>
           <p className="text-gray-600 dark:text-gray-300">Advanced inventory analytics and performance metrics</p>
         </div>
         <div className="flex space-x-4">

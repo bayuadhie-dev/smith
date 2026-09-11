@@ -4,6 +4,7 @@ Full integration with Production, Materials, WIP, and Finished Goods.
 """
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import (
     db, Inventory, InventoryMovement, WarehouseZone, WarehouseLocation,
     Product, Material, WorkOrder, ProductionRecord, Machine,
@@ -14,6 +15,7 @@ from models.wms_advanced import (
     MaterialConsumption, InventoryTransaction, PickList, PickListItem,
     StockTransferOrder, StockTransferItem, CycleCountSchedule
 )
+from models.warehouse_adjustment import InventoryAdjustment
 from sqlalchemy import func, or_, and_, desc, case
 from sqlalchemy.orm import joinedload
 from datetime import datetime, date, timedelta
@@ -39,6 +41,7 @@ def generate_txn_number(prefix='TXN'):
 # ============================================================
 @wms_advanced_bp.route('/dashboard', methods=['GET'])
 @jwt_required()
+@require_permission('warehouse.view')
 def wms_dashboard():
     """WMS Dashboard - aggregated KPIs"""
     try:
@@ -170,6 +173,7 @@ def wms_dashboard():
 # ============================================================
 @wms_advanced_bp.route('/stock-by-wo', methods=['GET'])
 @jwt_required()
+@require_permission('warehouse.view')
 def stock_by_work_order():
     """Get inventory grouped by Work Order — shows output per WO"""
     try:
@@ -285,6 +289,7 @@ def stock_by_work_order():
 
 @wms_advanced_bp.route('/stock-by-wo/<int:wo_id>', methods=['GET'])
 @jwt_required()
+@require_permission('warehouse.view')
 def stock_by_wo_detail(wo_id):
     """Detailed stock breakdown for a specific Work Order"""
     try:
@@ -467,6 +472,7 @@ def stock_by_wo_detail(wo_id):
 # ============================================================
 @wms_advanced_bp.route('/material-consumption', methods=['GET'])
 @jwt_required()
+@require_permission('warehouse.view')
 def get_material_consumptions():
     """List material consumptions with filters"""
     try:
@@ -593,8 +599,13 @@ def get_material_consumptions():
 
 @wms_advanced_bp.route('/material-consumption/generate/<int:wo_id>', methods=['POST'])
 @jwt_required()
+@require_permission('warehouse.create')
 def generate_material_consumption(wo_id):
-    """Generate planned material consumption from BOM for a Work Order"""
+    """DEPRECATED — replaced by MaterialIssue, see WAREHOUSE_FOLLOW_THE_GOODS_DESIGN.md.
+    MaterialConsumption has no FIFO reservation/locking (unlike MaterialIssue +
+    fifo_helper.py) and 0 frontend callers for this endpoint as of Bagian 1.
+    Left in place for backward compatibility only — do not build new features on it.
+    Generate planned material consumption from BOM for a Work Order"""
     try:
         wo = db.session.get(WorkOrder, wo_id)
         if not wo:
@@ -645,8 +656,14 @@ def generate_material_consumption(wo_id):
 
 @wms_advanced_bp.route('/material-consumption/<int:mc_id>/issue', methods=['POST'])
 @jwt_required()
+@require_permission('warehouse.create')
 def issue_material(mc_id):
-    """Issue material - update actual quantity consumed"""
+    """DEPRECATED — replaced by MaterialIssue, see WAREHOUSE_FOLLOW_THE_GOODS_DESIGN.md.
+    Directly mutates quantity_actual without touching Inventory.quantity_reserved/
+    quantity_available and without row-locking (unlike fifo_deduct_stock). 0
+    frontend callers for this endpoint as of Bagian 1. Left in place for backward
+    compatibility only — do not build new features on it.
+    Issue material - update actual quantity consumed"""
     try:
         mc = db.session.get(MaterialConsumption, mc_id)
         if not mc:
@@ -707,6 +724,7 @@ def issue_material(mc_id):
 # ============================================================
 @wms_advanced_bp.route('/transactions', methods=['GET'])
 @jwt_required()
+@require_permission('warehouse.view')
 def get_transactions():
     """Get inventory transactions with full filtering"""
     try:
@@ -760,6 +778,7 @@ def get_transactions():
 
 @wms_advanced_bp.route('/transactions/<int:txn_id>', methods=['GET'])
 @jwt_required()
+@require_permission('warehouse.view')
 def get_transaction_detail(txn_id):
     """Get single transaction detail"""
     try:
@@ -796,6 +815,7 @@ def get_transaction_detail(txn_id):
 
 @wms_advanced_bp.route('/transactions', methods=['POST'])
 @jwt_required()
+@require_permission('warehouse.create')
 def create_transaction():
     """Create manual inventory transaction"""
     try:
@@ -838,6 +858,7 @@ def create_transaction():
 # ============================================================
 @wms_advanced_bp.route('/pick-lists', methods=['GET'])
 @jwt_required()
+@require_permission('warehouse.view')
 def get_pick_lists():
     """List all pick lists"""
     try:
@@ -868,6 +889,7 @@ def get_pick_lists():
 
 @wms_advanced_bp.route('/pick-lists', methods=['POST'])
 @jwt_required()
+@require_permission('warehouse.create')
 def create_pick_list():
     """Create a new pick list"""
     try:
@@ -919,6 +941,7 @@ def create_pick_list():
 
 @wms_advanced_bp.route('/pick-lists/<int:pl_id>', methods=['GET'])
 @jwt_required()
+@require_permission('warehouse.view')
 def get_pick_list_detail(pl_id):
     """Get pick list detail with items"""
     try:
@@ -932,6 +955,7 @@ def get_pick_list_detail(pl_id):
 
 @wms_advanced_bp.route('/pick-lists/<int:pl_id>/pick-item/<int:item_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('warehouse.edit')
 def pick_item(pl_id, item_id):
     """Mark a pick list item as picked"""
     try:
@@ -975,6 +999,7 @@ def pick_item(pl_id, item_id):
 # ============================================================
 @wms_advanced_bp.route('/transfers', methods=['GET'])
 @jwt_required()
+@require_permission('warehouse.transfer')
 def get_transfers():
     """List stock transfer orders"""
     try:
@@ -1001,6 +1026,7 @@ def get_transfers():
 
 @wms_advanced_bp.route('/transfers', methods=['POST'])
 @jwt_required()
+@require_permission('warehouse.transfer')
 def create_transfer():
     """Create stock transfer order"""
     try:
@@ -1045,8 +1071,19 @@ def create_transfer():
         return jsonify({'error': str(e)}), 500
 
 
+# NOTE (Bagian 2 part 1, 2026-08-19; corrected 2026-08-19 after frontend
+# wiring audit): approve_transfer() below is NOT dead code — it was
+# mislabeled as such when submit_transfer_for_approval() was added. In
+# reality frontend/src/pages/WMS/TransferOrderPage.tsx's handleApprove()
+# still calls THIS endpoint exclusively; the newer
+# POST /transfers/<id>/submit-approval (which routes through the generic
+# ApprovalWorkflow system, see routes/approval_workflow.py) is not yet
+# wired to any UI. Keep this endpoint working as-is until the frontend is
+# switched over to submit-approval — see WAREHOUSE_FRONTEND_WIRING_AUDIT.md
+# item 3 for the migration plan. Do not remove this route.
 @wms_advanced_bp.route('/transfers/<int:sto_id>/approve', methods=['POST'])
 @jwt_required()
+@require_permission('warehouse.transfer')
 def approve_transfer(sto_id):
     """Approve a stock transfer order"""
     try:
@@ -1068,8 +1105,57 @@ def approve_transfer(sto_id):
         return jsonify({'error': str(e)}), 500
 
 
+@wms_advanced_bp.route('/transfers/<int:sto_id>/submit-approval', methods=['POST'])
+@jwt_required()
+@require_permission('warehouse.transfer')
+def submit_transfer_for_approval(sto_id):
+    """Submit a stock transfer order for approval via the generic ApprovalWorkflow
+    system. Pattern mirrors routes/purchasing.py submit_for_approval()."""
+    try:
+        user_id = get_jwt_identity()
+
+        sto = db.session.get(StockTransferOrder, sto_id)
+        if not sto:
+            return jsonify({'error': 'Transfer not found'}), 404
+        if sto.status != 'draft':
+            return jsonify({'error': f'Cannot submit transfer with status: {sto.status}'}), 400
+
+        from models.approval_workflow import ApprovalWorkflow, ApprovalHistory
+
+        workflow = ApprovalWorkflow(
+            transaction_type='stock_transfer',
+            transaction_id=sto.id,
+            transaction_number=sto.transfer_number,
+            status='pending_review',
+            current_step='review',
+            submitted_by=user_id,
+            submitted_at=get_local_now()
+        )
+        db.session.add(workflow)
+        db.session.flush()
+
+        history = ApprovalHistory(
+            workflow_id=workflow.id,
+            action='submit',
+            action_by=user_id,
+            old_status='draft',
+            new_status='pending_review',
+            notes=f'Stock Transfer {sto.transfer_number} submitted for review'
+        )
+        db.session.add(history)
+
+        sto.status = 'pending_approval'
+        db.session.commit()
+
+        return jsonify({'message': 'Transfer submitted for approval', 'workflow_id': workflow.id}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
 @wms_advanced_bp.route('/transfers/<int:sto_id>/execute', methods=['POST'])
 @jwt_required()
+@require_permission('warehouse.transfer')
 def execute_transfer(sto_id):
     """Execute an approved stock transfer"""
     try:
@@ -1084,6 +1170,72 @@ def execute_transfer(sto_id):
         for item in sto.items.all():
             item.quantity_transferred = item.quantity
             item.status = 'transferred'
+            qty = float(item.quantity)
+
+            # --- Update Inventory.quantity_on_hand (source: kurangi, tujuan: tambah/buat) ---
+            # Row-level lock (with_for_update) untuk hindari race condition,
+            # pola sama seperti utils/fifo_helper.py.
+            source_query = Inventory.query.filter(
+                Inventory.location_id == sto.from_location_id,
+                Inventory.batch_number == item.batch_number,
+            )
+            if item.product_id:
+                source_query = source_query.filter(Inventory.product_id == item.product_id)
+            else:
+                source_query = source_query.filter(Inventory.material_id == item.material_id)
+            source_inv = source_query.with_for_update().first()
+
+            if source_inv:
+                source_inv.quantity_on_hand = float(source_inv.quantity_on_hand or 0) - qty
+                source_inv.quantity_available = float(source_inv.quantity_on_hand) - float(source_inv.quantity_reserved or 0)
+            # else: no source Inventory row found — nothing to deduct (data
+            # inconsistency should not silently pass, but we don't hard-fail
+            # the transfer here since the transaction log itself is still
+            # valid; logged via txn.notes below)
+
+            dest_query = Inventory.query.filter(
+                Inventory.location_id == sto.to_location_id,
+                Inventory.batch_number == item.batch_number,
+            )
+            if item.product_id:
+                dest_query = dest_query.filter(Inventory.product_id == item.product_id)
+            else:
+                dest_query = dest_query.filter(Inventory.material_id == item.material_id)
+            dest_inv = dest_query.with_for_update().first()
+
+            if dest_inv:
+                dest_inv.quantity_on_hand = float(dest_inv.quantity_on_hand or 0) + qty
+                dest_inv.quantity_available = float(dest_inv.quantity_on_hand) - float(dest_inv.quantity_reserved or 0)
+            else:
+                # Inherit stock_status from source when transferring an existing batch
+                # (preserves quarantine/reject across locations); only resolve a fresh
+                # initial status via erp_approval in the edge case where there's no
+                # source inventory to inherit from.
+                if source_inv:
+                    dest_status = source_inv.stock_status
+                else:
+                    from utils.inventory_helpers import resolve_initial_stock_status
+                    dest_status = resolve_initial_stock_status(
+                        'available',
+                        product=db.session.get(Product, item.product_id) if item.product_id else None,
+                        material=db.session.get(Material, item.material_id) if item.material_id else None,
+                    )
+                dest_inv = Inventory(
+                    product_id=item.product_id,
+                    material_id=item.material_id,
+                    location_id=sto.to_location_id,
+                    quantity_on_hand=qty,
+                    quantity_reserved=0,
+                    quantity_available=qty,
+                    batch_number=item.batch_number,
+                    lot_number=source_inv.lot_number if source_inv else None,
+                    production_date=source_inv.production_date if source_inv else None,
+                    expiry_date=source_inv.expiry_date if source_inv else None,
+                    stock_status=dest_status,
+                    is_active=True,
+                    created_by=user_id,
+                )
+                db.session.add(dest_inv)
 
             # Record transaction
             txn = InventoryTransaction(
@@ -1122,6 +1274,7 @@ def execute_transfer(sto_id):
 # ============================================================
 @wms_advanced_bp.route('/cycle-counts', methods=['GET'])
 @jwt_required()
+@require_permission('warehouse.view')
 def get_cycle_counts():
     """List cycle count schedules"""
     try:
@@ -1140,6 +1293,7 @@ def get_cycle_counts():
 
 @wms_advanced_bp.route('/cycle-counts', methods=['POST'])
 @jwt_required()
+@require_permission('warehouse.create')
 def create_cycle_count():
     """Create a cycle count schedule"""
     try:
@@ -1174,6 +1328,7 @@ def create_cycle_count():
 # ============================================================
 @wms_advanced_bp.route('/reports/material-variance', methods=['GET'])
 @jwt_required()
+@require_permission('warehouse.view')
 def material_variance_report():
     """Material variance report - planned vs actual consumption"""
     try:
@@ -1223,6 +1378,7 @@ def material_variance_report():
 
 @wms_advanced_bp.route('/reports/stock-movement-summary', methods=['GET'])
 @jwt_required()
+@require_permission('warehouse.view')
 def stock_movement_summary():
     """Stock movement summary report"""
     try:
@@ -1259,6 +1415,7 @@ def stock_movement_summary():
 
 @wms_advanced_bp.route('/reports/batch-traceability/<batch_number>', methods=['GET'])
 @jwt_required()
+@require_permission('warehouse.view')
 def batch_traceability(batch_number):
     """Trace a batch number across all transactions"""
     try:
@@ -1291,4 +1448,274 @@ def batch_traceability(batch_number):
             'total_records': len(inv_items) + len(txns) + len(consumptions) + len(wip_mvs),
         }), 200
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# ============================================================
+# 8. INVENTORY ADJUSTMENT — Bagian 2 part 2 (2026-08-19)
+# Accurate Online pattern: system_quantity auto from Inventory, physical_quantity
+# user-entered, akun_penyesuaian_id mandatory and must differ from the item's
+# inventory account. Approval routed through the generic ApprovalWorkflow
+# system (same as stock_transfer/stock_opname in Bagian 2 part 1) since this
+# is the one warehouse document that auto-creates a GL journal entry.
+# ============================================================
+
+def _resolve_adjustment_inventory(data):
+    """Resolve the Inventory row an adjustment targets, from either an
+    explicit inventory_id or a (product_id|material_id, location_id) pair."""
+    inventory_id = data.get('inventory_id')
+    if inventory_id:
+        inv = db.session.get(Inventory, inventory_id)
+        if not inv:
+            raise ValueError(f'Inventory {inventory_id} not found')
+        return inv
+
+    location_id = data.get('location_id')
+    product_id = data.get('product_id')
+    material_id = data.get('material_id')
+    if not location_id or not (product_id or material_id):
+        raise ValueError('inventory_id, or (product_id|material_id + location_id), is required')
+
+    query = Inventory.query.filter_by(location_id=location_id)
+    query = query.filter_by(product_id=product_id) if product_id else query.filter_by(material_id=material_id)
+    inv = query.first()
+    if not inv:
+        raise ValueError('No matching Inventory row found for the given item/location')
+    return inv
+
+
+@wms_advanced_bp.route('/adjustments', methods=['GET'])
+@jwt_required()
+@require_permission('warehouse.view')
+def get_adjustments():
+    """List inventory adjustments"""
+    try:
+        status = request.args.get('status')
+        query = InventoryAdjustment.query
+        if status:
+            query = query.filter_by(status=status)
+        query = query.order_by(InventoryAdjustment.created_at.desc())
+        adjustments = query.limit(200).all()
+        return jsonify({'adjustments': [a.to_dict() for a in adjustments]}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@wms_advanced_bp.route('/adjustments/<int:id>', methods=['GET'])
+@jwt_required()
+@require_permission('warehouse.view')
+def get_adjustment_detail(id):
+    """Get a single inventory adjustment"""
+    adj = db.session.get(InventoryAdjustment, id)
+    if not adj:
+        return jsonify({'error': 'Adjustment not found'}), 404
+    return jsonify({'adjustment': adj.to_dict()}), 200
+
+
+@wms_advanced_bp.route('/adjustments', methods=['POST'])
+@jwt_required()
+@require_permission('warehouse.create')
+def create_adjustment():
+    """Create a draft inventory adjustment. system_quantity is always taken
+    from Inventory.quantity_on_hand at creation time - not user-editable.
+
+    Quantity mode (is_value_adjustment=False, default): body must include
+    physical_quantity; adjustment_quantity = physical - system, and this is
+    what gets applied to Inventory on approval.
+
+    Value mode (is_value_adjustment=True): quantity is untouched on approval;
+    body must include total_cost_impact directly (a pure cost/value revaluation,
+    e.g. a landed-cost correction), physical_quantity mirrors system_quantity.
+    """
+    try:
+        from utils import generate_number
+        user_id = get_jwt_identity()
+        data = request.get_json()
+
+        inv = _resolve_adjustment_inventory(data)
+        is_value_adjustment = bool(data.get('is_value_adjustment', False))
+        reason = data.get('reason')
+        if not reason:
+            return jsonify({'error': 'reason is required'}), 400
+
+        system_quantity = inv.quantity_on_hand
+
+        if is_value_adjustment:
+            total_cost_impact = data.get('total_cost_impact')
+            if total_cost_impact is None:
+                return jsonify({'error': 'total_cost_impact is required when is_value_adjustment=true'}), 400
+            physical_quantity = system_quantity
+            adjustment_quantity = 0
+            unit_cost = data.get('unit_cost')
+            adjustment_type = 'positive' if float(total_cost_impact) > 0 else 'negative'
+        else:
+            physical_quantity = data.get('physical_quantity')
+            if physical_quantity is None:
+                return jsonify({'error': 'physical_quantity is required'}), 400
+            adjustment_quantity = float(physical_quantity) - float(system_quantity)
+            unit_cost = data.get('unit_cost')
+            total_cost_impact = (adjustment_quantity * float(unit_cost)) if unit_cost is not None else None
+            adjustment_type = 'positive' if adjustment_quantity > 0 else ('negative' if adjustment_quantity < 0 else 'recount')
+
+        adjustment_number = generate_number('ADJ', InventoryAdjustment, 'adjustment_number')
+
+        adj = InventoryAdjustment(
+            adjustment_number=adjustment_number,
+            product_id=inv.product_id,
+            material_id=inv.material_id,
+            inventory_id=inv.id,
+            location_id=inv.location_id,
+            adjustment_type=adjustment_type,
+            reason=reason,
+            is_value_adjustment=is_value_adjustment,
+            system_quantity=system_quantity,
+            physical_quantity=physical_quantity,
+            adjustment_quantity=adjustment_quantity,
+            akun_penyesuaian_id=data.get('akun_penyesuaian_id'),
+            batch_number=inv.batch_number,
+            lot_number=inv.lot_number,
+            serial_number=inv.serial_number,
+            unit_cost=unit_cost,
+            total_cost_impact=total_cost_impact,
+            status='pending',
+            requested_by=user_id,
+            notes=data.get('notes'),
+            reference_document=data.get('reference_document'),
+        )
+        db.session.add(adj)
+        db.session.commit()
+
+        return jsonify({'message': 'Adjustment created', 'adjustment': adj.to_dict()}), 201
+    except ValueError as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@wms_advanced_bp.route('/adjustments/<int:id>/submit-approval', methods=['POST'])
+@jwt_required()
+@require_permission('warehouse.create')
+def submit_adjustment_for_approval(id):
+    """Submit an inventory adjustment for approval via the generic
+    ApprovalWorkflow system. Resolves and validates akun_penyesuaian_id
+    up front (must differ from the item's inventory account, Accurate's
+    rule) and builds the PendingJournalEntry that gets auto-posted when
+    the workflow is approved (see routes/approval_workflow.py approve_workflow()).
+    """
+    try:
+        from utils.finance_helpers import resolve_account
+        from models.finance import InventoryAccountSettings, Account
+        from models.approval_workflow import ApprovalWorkflow, ApprovalHistory, PendingJournalEntry
+
+        user_id = get_jwt_identity()
+        adj = db.session.get(InventoryAdjustment, id)
+        if not adj:
+            return jsonify({'error': 'Adjustment not found'}), 404
+        if adj.status != 'pending':
+            return jsonify({'error': f'Cannot submit adjustment with status: {adj.status}'}), 400
+
+        # Resolve akun_penyesuaian_id: per-row override first, else the
+        # global InventoryAccountSettings singleton.
+        akun_penyesuaian_id = adj.akun_penyesuaian_id
+        if not akun_penyesuaian_id:
+            settings = InventoryAccountSettings.query.first()
+            akun_penyesuaian_id = settings.akun_penyesuaian_id if settings else None
+        if not akun_penyesuaian_id:
+            return jsonify({'error': (
+                'Akun Penyesuaian Stok belum diatur - isi dulu di Pengaturan > '
+                'Preferensi Akun > Inventory, atau isi akun_penyesuaian_id manual '
+                'saat membuat adjustment ini.'
+            )}), 400
+
+        # Resolve the item's inventory account (same slot used elsewhere for
+        # GL posting, e.g. purchasing/material issue).
+        try:
+            akun_persediaan_id = resolve_account('akun_persediaan_id', product_id=adj.product_id)
+        except ValueError as e:
+            return jsonify({'error': str(e)}), 400
+
+        # Accurate's rule: adjustment account must differ from the inventory
+        # account itself, or the "adjustment" is a no-op journal-wise.
+        if akun_penyesuaian_id == akun_persediaan_id:
+            return jsonify({'error': (
+                'Akun Penyesuaian Stok tidak boleh sama dengan akun Persediaan '
+                'barang ini - pilih akun lain untuk Akun Penyesuaian.'
+            )}), 400
+
+        amount = None
+        if adj.total_cost_impact is not None:
+            amount = abs(float(adj.total_cost_impact))
+        elif adj.unit_cost is not None:
+            amount = abs(float(adj.adjustment_quantity) * float(adj.unit_cost))
+        if not amount:
+            return jsonify({'error': (
+                'unit_cost atau total_cost_impact wajib diisi pada adjustment ini '
+                'agar jurnal bisa dibuat.'
+            )}), 400
+
+        adj.akun_penyesuaian_id = akun_penyesuaian_id
+
+        is_gain = (float(adj.total_cost_impact) if adj.total_cost_impact is not None
+                   else float(adj.adjustment_quantity)) > 0
+
+        persediaan_acc = db.session.get(Account, akun_persediaan_id)
+        penyesuaian_acc = db.session.get(Account, akun_penyesuaian_id)
+
+        if is_gain:
+            lines = [
+                {'account_id': akun_persediaan_id, 'debit': amount, 'credit': 0,
+                 'description': f'Penyesuaian stok (naik) - {adj.adjustment_number}'},
+                {'account_id': akun_penyesuaian_id, 'debit': 0, 'credit': amount,
+                 'description': f'Penyesuaian stok (naik) - {adj.adjustment_number}'},
+            ]
+        else:
+            lines = [
+                {'account_id': akun_penyesuaian_id, 'debit': amount, 'credit': 0,
+                 'description': f'Penyesuaian stok (turun) - {adj.adjustment_number}'},
+                {'account_id': akun_persediaan_id, 'debit': 0, 'credit': amount,
+                 'description': f'Penyesuaian stok (turun) - {adj.adjustment_number}'},
+            ]
+
+        workflow = ApprovalWorkflow(
+            transaction_type='inventory_adjustment',
+            transaction_id=adj.id,
+            transaction_number=adj.adjustment_number,
+            status='pending_review',
+            current_step='review',
+            submitted_by=user_id,
+            submitted_at=get_local_now()
+        )
+        db.session.add(workflow)
+        db.session.flush()
+
+        pending_journal = PendingJournalEntry(
+            workflow_id=workflow.id,
+            entry_date=get_local_today(),
+            description=f'Penyesuaian Stok {adj.adjustment_number} ({persediaan_acc.account_name if persediaan_acc else ""} vs {penyesuaian_acc.account_name if penyesuaian_acc else ""})',
+            reference=adj.adjustment_number,
+            lines=lines,
+            total_debit=amount,
+            total_credit=amount,
+            created_by=user_id,
+        )
+        db.session.add(pending_journal)
+
+        history = ApprovalHistory(
+            workflow_id=workflow.id,
+            action='submit',
+            action_by=user_id,
+            old_status='pending',
+            new_status='pending_review',
+            notes=f'Inventory Adjustment {adj.adjustment_number} submitted for review'
+        )
+        db.session.add(history)
+
+        adj.status = 'pending_approval'
+        db.session.commit()
+
+        return jsonify({'message': 'Adjustment submitted for approval', 'workflow_id': workflow.id}), 200
+    except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500

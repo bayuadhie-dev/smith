@@ -103,11 +103,11 @@ const ProductionPlanningList: React.FC = () => {
         woGenerateOptions
       );
 
-      alert(`${response.data.data.work_orders.length} work orders generated successfully!`);
+      alert(`${response.data.data.work_orders.length} SPK generated successfully!`);
       setGenerateModal({ show: false, planId: null, planNumber: '' });
       fetchPlans();
     } catch (err: any) {
-      alert(err.response?.data?.error || 'Failed to generate work orders');
+      alert(err.response?.data?.error || 'Failed to generate SPK');
     }
   };
 
@@ -310,7 +310,7 @@ const ProductionPlanningList: React.FC = () => {
                         <button
                           onClick={() => setGenerateModal({ show: true, planId: plan.id, planNumber: plan.plan_number })}
                           className="text-blue-600 hover:text-blue-800"
-                          title="Generate Work Orders"
+                          title="Generate SPK"
                         >
                           <Play size={18} />
                         </button>
@@ -343,7 +343,7 @@ const ProductionPlanningList: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-              Generate Work Orders
+              Generate SPK
             </h2>
             <p className="text-gray-600 dark:text-gray-300 mb-4">
               Plan: {generateModal.planNumber}
@@ -358,7 +358,7 @@ const ProductionPlanningList: React.FC = () => {
                 onChange={(e) => setWoGenerateOptions({ ...woGenerateOptions, split_by: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
               >
-                <option value="single">Single Work Order</option>
+                <option value="single">Single SPK</option>
                 <option value="week">Split by Week</option>
                 <option value="batch">Split by Batch Size</option>
               </select>

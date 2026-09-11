@@ -5,13 +5,14 @@ Handles production planning, MPS, and work order generation
 
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from datetime import datetime, date, timedelta
 from sqlalchemy import and_, or_, func
 from decimal import Decimal
 
 from models import db
 from models.production import ProductionPlan, WorkOrder, Machine
-from models.sales import SalesForecast, SalesOrder, SalesOrderItem
+from models.sales import SalesOrder, SalesOrderItem
 from models.product import Product
 from models.user import User
 from utils.i18n import success_response, error_response
@@ -26,6 +27,7 @@ planning_bp = Blueprint('production_planning', __name__)
 
 @planning_bp.route('/production-plans', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_production_plans():
     """Get all production plans with filters"""
     try:
@@ -92,6 +94,7 @@ def get_production_plans():
 
 @planning_bp.route('/production-plans/<int:plan_id>', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_production_plan(plan_id):
     """Get single production plan details"""
     try:
@@ -108,6 +111,16 @@ def get_production_plan(plan_id):
             'scheduled_start_date': wo.scheduled_start_date.isoformat() if wo.scheduled_start_date else None,
             'scheduled_end_date': wo.scheduled_end_date.isoformat() if wo.scheduled_end_date else None,
         } for wo in plan.work_orders]
+
+        # Computed on-the-fly from linked WorkOrders rather than reading
+        # plan.actual_quantity/completion_percentage, which are never kept
+        # in sync as WOs report production (confirmed: no code writes to
+        # these fields after WO generation). This mirrors the pattern
+        # WeeklyProductionPlanItem already uses (compute from linked WO,
+        # don't duplicate/cache the number).
+        actual_quantity = sum(float(wo.quantity_produced or 0) for wo in plan.work_orders)
+        planned_qty_float = float(plan.planned_quantity)
+        completion_percentage = (actual_quantity / planned_qty_float * 100) if planned_qty_float else 0
         
         return jsonify({
             'plan': {
@@ -121,8 +134,8 @@ def get_production_plan(plan_id):
                 'product_name': plan.product.name,
                 'product_code': plan.product.code,
                 'planned_quantity': float(plan.planned_quantity),
-                'actual_quantity': float(plan.actual_quantity),
-                'completion_percentage': float(plan.completion_percentage) if plan.completion_percentage else 0,
+                'actual_quantity': actual_quantity,
+                'completion_percentage': round(completion_percentage, 2),
                 'uom': plan.uom,
                 'machine_id': plan.machine_id,
                 'machine_name': plan.machine.name if plan.machine else None,
@@ -147,6 +160,7 @@ def get_production_plan(plan_id):
 
 @planning_bp.route('/production-plans', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def create_production_plan():
     """Create new production plan"""
     try:
@@ -194,6 +208,7 @@ def create_production_plan():
 
 @planning_bp.route('/production-plans/<int:plan_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('production.edit')
 def update_production_plan(plan_id):
     """Update production plan"""
     try:
@@ -229,6 +244,7 @@ def update_production_plan(plan_id):
 
 @planning_bp.route('/production-plans/<int:plan_id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('production.delete')
 def delete_production_plan(plan_id):
     """Delete production plan"""
     try:
@@ -250,6 +266,7 @@ def delete_production_plan(plan_id):
 
 @planning_bp.route('/production-plans/<int:plan_id>/approve', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def approve_production_plan(plan_id):
     """Approve production plan"""
     try:
@@ -259,9 +276,17 @@ def approve_production_plan(plan_id):
         plan.status = 'approved'
         plan.approved_by = user_id
         plan.approved_at = get_local_now()
-        
+
         db.session.commit()
-        
+
+        # AUTO-RESERVE (Bagian 1 / B): process the full FIFO-by-document-date
+        # backlog now that this Plan is approved. Never blocks approval.
+        try:
+            from utils.auto_reserve import process_auto_reserve_queue
+            process_auto_reserve_queue()
+        except Exception as auto_reserve_error:
+            print(f"Auto-reserve queue warning: {auto_reserve_error}")
+
         return success_response('Production plan approved successfully'), 200
         
     except Exception as e:
@@ -275,6 +300,7 @@ def approve_production_plan(plan_id):
 
 @planning_bp.route('/production-plans/<int:plan_id>/generate-work-orders', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def generate_work_orders_from_plan(plan_id):
     """Auto-generate work orders from production plan"""
     try:
@@ -345,6 +371,7 @@ def _create_work_order(plan, quantity, scheduled_date, user_id):
         wo_number=wo_number,
         product_id=plan.product_id,
         production_plan_id=plan.id,
+        sales_order_id=plan.sales_order_id,
         quantity=quantity,
         uom=plan.uom,
         required_date=plan.period_end,
@@ -363,43 +390,66 @@ def _create_work_order(plan, quantity, scheduled_date, user_id):
 # PLANNING FROM FORECAST
 # ===============================
 
-@planning_bp.route('/production-plans/from-forecast/<int:forecast_id>', methods=['POST'])
+@planning_bp.route('/production-plans/from-forecast/<int:line_id>', methods=['POST'])
 @jwt_required()
-def create_plan_from_forecast(forecast_id):
-    """Create production plan from sales forecast"""
+@require_permission('production.create')
+def create_plan_from_forecast(line_id):
+    """Create production plan from 1 Sales Forecast Matrix line (1 product row).
+    Adapted 2026-08-24 for ForecastHeader/ForecastLine (the old 1-row-per-period
+    SalesForecast is retired) - no frontend caller found for this endpoint at the time
+    of the change (CLAUDE.md already flags ProductionPlan/this planning module as
+    largely unadopted), so this is a minimal compatibility adaptation, not a redesign.
+    Body: {"period": "YYYY-MM"} - bulan kalender mana yang qty-nya dipakai sebagai
+    planned_quantity; defaults ke bulan pertama yang qty-nya > 0 kalau tidak diisi.
+    2026-08-25 (rombak putaran 6): qty sekarang di ForecastLineMonth per bulan kalender
+    asli (bukan slot 1-12 relatif ke header lagi)."""
+    from calendar import monthrange
+    from datetime import date as _date
+    from models.sales import ForecastLine, ForecastLineMonth
     try:
-        forecast = db.session.get(SalesForecast, forecast_id)
-        if not forecast:
-            return error_response('Forecast not found'), 404
-        user_id = int(get_jwt_identity())       
-        # Check if forecast is approved
-        if forecast.status != 'approved':
+        line = db.session.get(ForecastLine, line_id)
+        if not line:
+            return error_response('Forecast line not found'), 404
+        user_id = int(get_jwt_identity())
+        if line.header.status != 'approved':
             return error_response('Forecast must be approved'), 400
-        
-        # Use most_likely as planned quantity
-        planned_qty = forecast.most_likely
-        
+
+        data = request.get_json(silent=True) or {}
+        period_raw = data.get('period')
+        if period_raw:
+            parts = str(period_raw).split('-')
+            period_start = _date(int(parts[0]), int(parts[1]), 1)
+            flm = next((m for m in line.months if m.period == period_start), None)
+        else:
+            flm = next((m for m in sorted(line.months, key=lambda m: m.period) if m.quantity and m.quantity > 0), None)
+            if flm is None:
+                return error_response('Baris forecast ini tidak punya qty di bulan manapun'), 400
+            period_start = flm.period
+
+        planned_qty = flm.quantity if flm else 0
+        period_end = period_start.replace(day=monthrange(period_start.year, period_start.month)[1])
+
         plan_number = generate_number('PP', ProductionPlan, 'plan_number')
-        
+
         plan = ProductionPlan(
             plan_number=plan_number,
-            plan_name=f"Plan from {forecast.forecast_number}",
+            plan_name=f"Plan from Forecast {period_start.strftime('%b %Y')}",
             plan_type='monthly',
-            period_start=forecast.period_start,
-            period_end=forecast.period_end,
-            sales_forecast_id=forecast.id,
+            period_start=period_start,
+            period_end=period_end,
+            sales_forecast_id=line.id,
             based_on='forecast',
-            product_id=forecast.product_id,
+            product_id=line.product_id,
             planned_quantity=planned_qty,
-            uom=forecast.product.primary_uom,
+            uom=line.product.primary_uom,
             status='draft',
             priority='normal',
             created_by=user_id
         )
-        
+
         db.session.add(plan)
         db.session.commit()
-        
+
         return success_response('Production plan created from forecast', {
             'plan_id': plan.id,
             'plan_number': plan.plan_number
@@ -416,6 +466,7 @@ def create_plan_from_forecast(forecast_id):
 
 @planning_bp.route('/production-plans/dashboard', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_planning_dashboard():
     """Get production planning dashboard data"""
     try:
@@ -449,15 +500,24 @@ def get_planning_dashboard():
         ).group_by(ProductionPlan.priority).all()
         
         # Total planned vs actual
-        totals = db.session.query(
-            func.sum(ProductionPlan.planned_quantity).label('total_planned'),
-            func.sum(ProductionPlan.actual_quantity).label('total_actual')
-        ).filter(
+        # total_actual is computed from linked WorkOrders' quantity_produced
+        # rather than ProductionPlan.actual_quantity, which is never kept in
+        # sync as WOs report production (no code writes to it after WO
+        # generation - confirmed by grepping routes/production.py). Same
+        # fix as get_production_plan() above.
+        plans_in_range = ProductionPlan.query.filter(
             and_(
                 ProductionPlan.period_start >= start,
                 ProductionPlan.period_end <= end
             )
-        ).first()
+        ).all()
+        total_planned = sum(float(p.planned_quantity) for p in plans_in_range)
+        plan_ids_in_range = [p.id for p in plans_in_range]
+        total_actual = float(
+            db.session.query(func.sum(WorkOrder.quantity_produced))
+            .filter(WorkOrder.production_plan_id.in_(plan_ids_in_range))
+            .scalar() or 0
+        ) if plan_ids_in_range else 0.0
         
         # Upcoming plans
         upcoming_plans = ProductionPlan.query.filter(
@@ -469,9 +529,9 @@ def get_planning_dashboard():
         
         return jsonify({
             'summary': {
-                'total_planned': float(totals.total_planned) if totals.total_planned else 0,
-                'total_actual': float(totals.total_actual) if totals.total_actual else 0,
-                'completion_rate': (float(totals.total_actual) / float(totals.total_planned) * 100) if totals.total_planned else 0
+                'total_planned': total_planned,
+                'total_actual': total_actual,
+                'completion_rate': (total_actual / total_planned * 100) if total_planned else 0
             },
             'by_status': {status: count for status, count in plans_by_status},
             'by_priority': {priority: count for priority, count in plans_by_priority},
@@ -498,6 +558,7 @@ def get_planning_dashboard():
 
 @planning_bp.route('/production-plans/products', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_products_for_planning():
     """Get products for production planning"""
     try:
@@ -531,24 +592,27 @@ def get_products_for_planning():
 
 @planning_bp.route('/production-plans/forecasts', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_forecasts_for_planning():
-    """Get approved forecasts for planning"""
+    """Get approved forecasts for planning - 1 row per (product, month) cell now
+    (Sales Forecast Matrix), 'id' below is actually the ForecastLine id, matching what
+    POST .../from-forecast/<line_id> expects."""
     try:
-        forecasts = SalesForecast.query.filter(
-            SalesForecast.status == 'approved'
-        ).order_by(SalesForecast.period_start.desc()).all()
-        
+        from utils.forecast_helper import iter_forecast_month_rows
+        rows = sorted(iter_forecast_month_rows(status_filter=('approved',)),
+                       key=lambda r: r.period_start, reverse=True)
+
         return jsonify({
             'forecasts': [{
-                'id': f.id,
+                'id': f.line_id,
                 'forecast_number': f.forecast_number,
                 'name': f.name,
-                'product_name': f.product.name if f.product else 'All Products',
+                'product_name': f.product.name if f.product else 'Unknown',
                 'period_start': f.period_start.isoformat(),
                 'period_end': f.period_end.isoformat(),
-                'most_likely': float(f.most_likely)
-            } for f in forecasts]
+                'most_likely': f.most_likely
+            } for f in rows]
         }), 200
-        
+
     except Exception as e:
         return error_response(str(e)), 500

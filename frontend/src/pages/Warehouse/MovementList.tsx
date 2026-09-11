@@ -180,7 +180,7 @@ const MovementList: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Inventory Movements</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pemindahan Barang</h1>
           <p className="text-gray-600 dark:text-gray-300">Track all inventory movements and transactions</p>
         </div>
         <div className="flex items-center gap-3">

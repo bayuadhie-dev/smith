@@ -89,7 +89,7 @@ const TransactionsPage: React.FC = () => {
       <div>
         <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
           <ArrowsRightLeftIcon className="h-7 w-7 text-green-600" />
-          Transaksi Inventori
+          Transaksi Stok
         </h1>
         <p className="text-gray-500 mt-1">Log semua pergerakan stok — terintegrasi dengan Produksi, PO, SO, dan Transfer</p>
       </div>

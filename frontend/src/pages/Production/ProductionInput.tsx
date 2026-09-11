@@ -74,6 +74,18 @@ interface ShiftProductionForm {
   supervisor_id: string;
   notes: string;
   issues: string;
+  production_batch_id: string;
+}
+
+interface ScheduledBatch {
+  id: number;
+  batch_number: string;
+  wo_number: string | null;
+  product_id: number | null;
+  product_name: string | null;
+  planned_qty: number | null;
+  remaining_qty: number | null;
+  status: string;
 }
 
 // Downtime category limits
@@ -120,15 +132,37 @@ const ProductionInput: React.FC = () => {
     operator_id: '',
     supervisor_id: '',
     notes: '',
-    issues: ''
+    issues: '',
+    production_batch_id: ''
   });
-  
+
   // Downtime entries list
   const [downtimeEntries, setDowntimeEntries] = useState<DowntimeEntry[]>([]);
+
+  // Batch Scheduling (Fase 5, §8): batch terjadwal untuk mesin+tanggal+shift yang dipilih
+  const [scheduledBatches, setScheduledBatches] = useState<ScheduledBatch[]>([]);
+  const [loadingBatches, setLoadingBatches] = useState(false);
 
   useEffect(() => {
     fetchMasterData();
   }, []);
+
+  // Fase 5 (§8): tiap machine_id/production_date/shift berubah, muat ulang batch terjadwal yang cocok
+  useEffect(() => {
+    const shiftMap: Record<string, number> = { shift_1: 1, shift_2: 2, shift_3: 3 };
+    const shiftNumber = shiftMap[formData.shift];
+    if (!formData.machine_id || !formData.production_date || !shiftNumber) {
+      setScheduledBatches([]);
+      return;
+    }
+    setLoadingBatches(true);
+    axiosInstance.get('/api/batch-scheduling/batches/available-for-shift', {
+      params: { machine_id: formData.machine_id, date: formData.production_date, shift_number: shiftNumber }
+    })
+      .then((res) => setScheduledBatches(res.data.batches || []))
+      .catch(() => setScheduledBatches([]))
+      .finally(() => setLoadingBatches(false));
+  }, [formData.machine_id, formData.production_date, formData.shift]);
 
   const fetchMasterData = async () => {
     try {
@@ -327,7 +361,8 @@ const ProductionInput: React.FC = () => {
         machine_id: parseInt(formData.machine_id),
         product_id: parseInt(formData.product_id),
         operator_id: formData.operator_id ? parseInt(formData.operator_id) : null,
-        supervisor_id: formData.supervisor_id ? parseInt(formData.supervisor_id) : null
+        supervisor_id: formData.supervisor_id ? parseInt(formData.supervisor_id) : null,
+        production_batch_id: formData.production_batch_id ? parseInt(formData.production_batch_id) : null
       };
 
       await axiosInstance.post('/api/production-input/shift-productions', payload);
@@ -359,7 +394,8 @@ const ProductionInput: React.FC = () => {
         operator_id: '',
         supervisor_id: '',
         notes: '',
-        issues: ''
+        issues: '',
+        production_batch_id: ''
       });
       setDowntimeEntries([]);
     } catch (error: any) {
@@ -514,6 +550,40 @@ const ProductionInput: React.FC = () => {
                 {validationErrors.product_id && (
                   <p className="text-red-500 text-sm mt-1">{validationErrors.product_id}</p>
                 )}
+              </div>
+
+              <div>
+                <label htmlFor="production_batch_id" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  Batch Terjadwal
+                </label>
+                <select
+                  id="production_batch_id"
+                  value={formData.production_batch_id}
+                  onChange={(e) => {
+                    const batchId = e.target.value;
+                    const batch = scheduledBatches.find((b) => String(b.id) === batchId);
+                    setFormData((prev) => ({
+                      ...prev,
+                      production_batch_id: batchId,
+                      product_id: batch ? String(batch.product_id) : prev.product_id
+                    }));
+                    setIsDirty(true);
+                  }}
+                  disabled={!formData.machine_id || !formData.production_date || !formData.shift}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 dark:disabled:bg-gray-800"
+                >
+                  <option value="">
+                    {loadingBatches ? 'Memuat...' : (!formData.machine_id || !formData.production_date || !formData.shift)
+                      ? 'Pilih mesin, tanggal, shift dulu'
+                      : scheduledBatches.length === 0 ? 'Tidak ada batch terjadwal (opsional)' : 'Pilih batch (opsional)'}
+                  </option>
+                  {scheduledBatches.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.batch_number} — {b.product_name} (sisa {b.remaining_qty})
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-400 mt-1">Isi kalau produksi ini bagian dari batch yang sudah di-approve PPIC (Batch Scheduling).</p>
               </div>
             </div>
           </div>
@@ -983,7 +1053,8 @@ const ProductionInput: React.FC = () => {
                     operator_id: '',
                     supervisor_id: '',
                     notes: '',
-                    issues: ''
+                    issues: '',
+                    production_batch_id: ''
                   });
                   setDowntimeEntries([]);
                   setIsDirty(false);

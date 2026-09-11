@@ -145,7 +145,7 @@ const TransactionDetail: React.FC = () => {
           <InfoRow label="Tipe Referensi" value={txn.reference_type} />
           <InfoRow label="No. Referensi" value={txn.reference_number} />
           {txn.wo_number && (
-            <InfoRow label="Work Order" value={
+            <InfoRow label="SPK" value={
               <button
                 onClick={() => navigate(`/app/wms/stock-by-wo/${txn.work_order_id}`)}
                 className="text-blue-600 hover:underline"

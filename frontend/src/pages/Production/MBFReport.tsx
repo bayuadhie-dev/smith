@@ -283,7 +283,7 @@ const MBFReportPage: React.FC = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (response.data.synced === false) {
-        toast.error(response.data.message || 'No work orders found for this period');
+        toast.error(response.data.message || 'Tidak ada SPK ditemukan untuk periode ini');
       } else {
         toast.success(response.data.message || 'Production data synced successfully');
       }

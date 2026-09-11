@@ -25,6 +25,7 @@ interface WorkOrderFormData {
   notes?: string
   supervisor_id?: number
   shift_count?: number
+  sales_order_id?: number
 }
 
 interface Product {
@@ -67,6 +68,13 @@ interface Employee {
   department?: string
 }
 
+interface SalesOrderOption {
+  id: number
+  order_number: string
+  customer_name: string
+  status: string
+}
+
 interface BOM {
   id: number
   bom_number: string
@@ -102,6 +110,7 @@ const navigate = useNavigate()
   const [bomProducts, setBomProducts] = useState<BOMProduct[]>([])
   const [machines, setMachines] = useState<Machine[]>([])
   const [employees, setEmployees] = useState<Employee[]>([])
+  const [salesOrders, setSalesOrders] = useState<SalesOrderOption[]>([])
   const [loadingData, setLoadingData] = useState(true)
   const [bom, setBom] = useState<BOM | null>(null)
   const [loadingBOM, setLoadingBOM] = useState(false)
@@ -287,10 +296,11 @@ const navigate = useNavigate()
       
       // Load BOM products, machines, and employees in parallel
       // Use Promise.allSettled so one failure doesn't block others
-      const [bomsResult, machinesResult, employeesResult] = await Promise.allSettled([
+      const [bomsResult, machinesResult, employeesResult, salesOrdersResult] = await Promise.allSettled([
         axiosInstance.get('/api/production/boms', { params: { all: true } }),
         axiosInstance.get('/api/production/machines'),
-        axiosInstance.get('/api/hr/employees')
+        axiosInstance.get('/api/hr/employees'),
+        axiosInstance.get('/api/sales/orders', { params: { per_page: 200 } })
       ])
       
       // Extract products from active BOMs
@@ -320,6 +330,12 @@ const navigate = useNavigate()
       setBomProducts(bomProductsList)
       setMachines(machinesResult.status === 'fulfilled' ? machinesResult.value.data.machines?.filter((m: Machine) => m.status !== 'broken') || [] : [])
       setEmployees(employeesResult.status === 'fulfilled' ? employeesResult.value.data.employees || [] : [])
+      setSalesOrders(salesOrdersResult.status === 'fulfilled' ? (salesOrdersResult.value.data.orders || []).map((o: any) => ({
+        id: o.id,
+        order_number: o.order_number,
+        customer_name: o.customer_name,
+        status: o.status
+      })) : [])
     } catch (error) {
       console.error('Error loading form data:', error)
     } finally {
@@ -339,6 +355,7 @@ const navigate = useNavigate()
       setValue('machine_id', wo.machine_id)
       setValue('supervisor_id', wo.supervisor_id)
       setValue('notes', wo.notes)
+      setValue('sales_order_id', wo.sales_order_id)
       
       if (wo.scheduled_start_date) {
         setValue('scheduled_start_date', new Date(wo.scheduled_start_date).toISOString().slice(0, 16))
@@ -352,8 +369,8 @@ const navigate = useNavigate()
         setTargetCalc(prev => ({ ...prev, pack_per_karton: String(wo.pack_per_carton) }))
       }
     } catch (error) {
-      console.error('Error loading work order:', error)
-      alert('Failed to load work order')
+      console.error('Error loading SPK:', error)
+      alert('Failed to load SPK')
     }
   }
 
@@ -380,25 +397,26 @@ const navigate = useNavigate()
         product_id: parseInt(data.product_id.toString()),
         machine_id: data.machine_id ? parseInt(data.machine_id.toString()) : undefined,
         supervisor_id: data.supervisor_id ? parseInt(data.supervisor_id.toString()) : undefined,
+        sales_order_id: data.sales_order_id ? parseInt(data.sales_order_id.toString()) : null,
         quantity: parseFloat(data.quantity.toString()),
         uom: uom,
         pack_per_carton: packPerKarton || 1
       }
       
-      console.log('Work Order Payload:', payload);
+      console.log('SPK Payload:', payload);
 
       if (isEdit) {
         await axiosInstance.put(`/api/production/work-orders/${id}`, payload)
-        alert('Work Order updated successfully!')
+        alert('SPK updated successfully!')
       } else {
         await axiosInstance.post('/api/production/work-orders', payload)
-        alert('Work Order created successfully!')
+        alert('SPK created successfully!')
       }
       
       navigate('/app/production/work-orders')
     } catch (error: any) {
-      console.error('Error saving work order:', error)
-      alert(error.response?.data?.error || 'Failed to save work order')
+      console.error('Error saving SPK:', error)
+      alert(error.response?.data?.error || 'Failed to save SPK')
     } finally {
       setIsLoading(false)
     }
@@ -423,10 +441,10 @@ const navigate = useNavigate()
           </button>
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              {isEdit ? '✏️ Edit Work Order' : '📋 Create Work Order'}
+              {isEdit ? '✏️ Edit SPK' : '📋 Create SPK'}
             </h1>
             <p className="text-gray-600 dark:text-gray-300 mt-1">
-              {isEdit ? 'Update work order details' : 'Schedule production for a specific product'}
+              {isEdit ? 'Update SPK details' : 'Schedule production for a specific product'}
             </p>
           </div>
         </div>
@@ -470,6 +488,24 @@ const navigate = useNavigate()
               {errors.product_id && (
                 <p className="mt-1 text-sm text-red-600">{errors.product_id.message}</p>
               )}
+            </div>
+
+            {/* Sales Order Link (optional) */}
+            <div className="lg:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                Terkait Sales Order (Opsional)
+              </label>
+              <select {...register('sales_order_id')} className="input">
+                <option value="">Tidak terkait SO (produksi untuk stok)</option>
+                {salesOrders.map((so) => (
+                  <option key={so.id} value={so.id}>
+                    {so.order_number} - {so.customer_name} ({so.status})
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Hubungkan WO ini ke Sales Order agar bisa ditelusuri dari SO sampai pengiriman &amp; omset. Kosongkan jika produksi untuk stok umum.
+              </p>
             </div>
 
             {/* Product Info Display */}
@@ -947,7 +983,7 @@ const navigate = useNavigate()
               {selectedPriority && (
                 <div className={`mt-2 p-2 rounded-lg ${selectedPriority.bg}`}>
                   <p className={`text-sm font-medium ${selectedPriority.color}`}>
-                    {selectedPriority.label} Priority Work Order
+                    {selectedPriority.label} Priority SPK
                   </p>
                 </div>
               )}
@@ -1057,7 +1093,7 @@ const navigate = useNavigate()
             className="btn-primary"
             disabled={isLoading || !selectedProduct}
           >
-            {isLoading ? (isEdit ? 'Updating...' : 'Creating...') : (isEdit ? 'Update Work Order' : 'Create Work Order')}
+            {isLoading ? (isEdit ? 'Updating...' : 'Creating...') : (isEdit ? 'Update SPK' : 'Create SPK')}
           </button>
         </div>
       </form>
@@ -1071,7 +1107,7 @@ const navigate = useNavigate()
             <ul className="text-sm text-amber-800 space-y-1">
               <li>• Only producible and active products can be selected</li>
               <li>• Machine assignment is optional - system will auto-assign if available</li>
-              <li>• Higher priority work orders will be scheduled first</li>
+              <li>• Higher priority SPK will be scheduled first</li>
               <li>• Consider material availability and machine capacity when planning</li>
               <li>• Supervisor assignment helps with production accountability</li>
             </ul>

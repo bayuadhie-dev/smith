@@ -240,7 +240,7 @@ const DailyController: React.FC<DailyControllerProps> = ({
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
             <ChartBarIcon className="h-7 w-7 text-blue-600" />
-            Daily Controller
+            Controller Harian
           </h1>
           <p className="text-slate-500 dark:text-gray-400 mt-1">Monitoring produksi semua mesin per hari</p>
         </div>

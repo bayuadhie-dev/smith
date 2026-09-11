@@ -94,7 +94,7 @@ const WMSDashboard: React.FC = () => {
   ];
 
   const quickActions = [
-    { name: 'Stok per WO', icon: DocumentMagnifyingGlassIcon, href: '/app/wms/stock-by-wo', desc: 'Lihat stok berdasarkan Work Order' },
+    { name: 'Stok per WO', icon: DocumentMagnifyingGlassIcon, href: '/app/wms/stock-by-wo', desc: 'Lihat stok berdasarkan SPK' },
     { name: 'Konsumsi Material', icon: CubeIcon, href: '/app/wms/material-consumption', desc: 'Tracking pemakaian bahan baku' },
     { name: 'Transaksi Stok', icon: ArrowsRightLeftIcon, href: '/app/wms/transactions', desc: 'Log transaksi inventori' },
     { name: 'Pick List', icon: ClipboardDocumentListIcon, href: '/app/wms/pick-lists', desc: 'Daftar pengambilan barang' },
@@ -109,7 +109,7 @@ const WMSDashboard: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <BuildingStorefrontIcon className="h-8 w-8 text-blue-600" />
-            WMS Advanced Dashboard
+            Dashboard WMS
           </h1>
           <p className="text-gray-500 mt-1">Warehouse Management System — Terintegrasi penuh dengan Produksi & Material</p>
         </div>

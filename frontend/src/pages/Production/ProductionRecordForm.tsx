@@ -100,7 +100,7 @@ const navigate = useNavigate()
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Set default product when work order changes
+  // Set default product when SPK changes
   useEffect(() => {
     if (selectedWorkOrderId) {
       const wo = workOrders.find(w => w.id === Number(selectedWorkOrderId));
@@ -167,7 +167,7 @@ const navigate = useNavigate()
     p.code.toLowerCase().includes(productSearch.toLowerCase())
   ).slice(0, 10);
 
-  // Get selected work order
+  // Get selected SPK
   const selectedWO = workOrders.find(w => w.id === Number(selectedWorkOrderId));
 
   const shifts = [
@@ -247,13 +247,13 @@ const navigate = useNavigate()
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Work Order *
+                SPK *
               </label>
               <select
-                {...register('work_order_id', { required: 'Work order is required' })}
+                {...register('work_order_id', { required: 'SPK is required' })}
                 className="input"
               >
-                <option value="">Select work order</option>
+                <option value="">Select SPK</option>
                 {workOrders.map((wo) => (
                   <option key={wo.id} value={wo.id}>
                     {wo.wo_number} - {wo.product_name}

@@ -112,7 +112,7 @@ const ProductionScheduleForm: React.FC = () => {
         setWorkOrders(data.work_orders || []);
       }
     } catch (error) {
-      console.error('Failed to fetch work orders:', error);
+      console.error('Failed to fetch SPK:', error);
     }
   };
 
@@ -235,7 +235,7 @@ const ProductionScheduleForm: React.FC = () => {
             {isEdit ? 'Edit Production Schedule' : 'New Production Schedule'}
           </h1>
           <p className="text-gray-600 dark:text-gray-300">
-            {isEdit ? 'Update production schedule details' : 'Schedule production work order on machine'}
+            {isEdit ? 'Update production schedule details' : 'Schedule production SPK on machine'}
           </p>
         </div>
       </div>
@@ -250,12 +250,12 @@ const ProductionScheduleForm: React.FC = () => {
             </div>
           )}
 
-          {/* Work Order and Machine Selection */}
+          {/* SPK and Machine Selection */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 <DocumentTextIcon className="inline h-4 w-4 mr-1" />
-                Work Order *
+                SPK *
               </label>
               <select
                 name="work_order_id"
@@ -264,7 +264,7 @@ const ProductionScheduleForm: React.FC = () => {
                 required
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="">Select Work Order</option>
+                <option value="">Select SPK</option>
                 {workOrders.map(wo => (
                   <option key={wo.id} value={wo.id}>
                     {wo.wo_number} - {wo.product.name} ({wo.quantity} pcs)
@@ -311,7 +311,7 @@ const ProductionScheduleForm: React.FC = () => {
               <h4 className="font-medium text-blue-900 mb-2">Schedule Summary</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div>
-                  <span className="text-blue-600">Work Order:</span>
+                  <span className="text-blue-600">SPK:</span>
                   <div className="font-medium">{selectedWorkOrder.wo_number}</div>
                 </div>
                 <div>

@@ -211,7 +211,7 @@ const [records, setRecords] = useState<ProductionRecord[]>([])
         
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Work Order</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">SPK</label>
             <input
               type="text"
               placeholder="Enter WO number..."
@@ -277,7 +277,7 @@ const [records, setRecords] = useState<ProductionRecord[]>([])
                   Date & Shift
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Work Order
+                  SPK
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('production.machine')}</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('production.operator')}</th>

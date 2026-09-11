@@ -153,7 +153,7 @@ const FGConversionList: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Konversi WIP ke Finish Good</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Konversi Barang Jadi (FG)</h1>
           <p className="text-gray-600 dark:text-gray-300">Kelola proses konversi dari WIP menjadi Finish Good</p>
         </div>
         <div className="flex gap-2">
@@ -290,7 +290,7 @@ const FGConversionList: React.FC = () => {
               <thead className="bg-gray-50 dark:bg-gray-900 sticky top-0">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Konversi</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Work Order</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">SPK</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Batch Number</th>
                   <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">QC Status</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">WIP Qty</th>

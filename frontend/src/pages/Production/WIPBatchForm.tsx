@@ -31,7 +31,7 @@ const WIPBatchForm: React.FC = () => {
 
   const fetchWorkOrders = async () => {
     try {
-      // Fetch work orders yang belum punya WIP batch
+      // Fetch SPK yang belum punya WIP batch
       const response = await axiosInstance.get('/api/production/work-orders', {
         params: { status: 'in_progress,pending' }
       });
@@ -46,7 +46,7 @@ const WIPBatchForm: React.FC = () => {
       
       setWorkOrders(availableWOs);
     } catch (error) {
-      console.error('Error fetching work orders:', error);
+      console.error('Error fetching SPK:', error);
     }
   };
 
@@ -60,7 +60,7 @@ const WIPBatchForm: React.FC = () => {
     e.preventDefault();
     
     if (!formData.work_order_id) {
-      toast.error('Pilih Work Order terlebih dahulu');
+      toast.error('Pilih SPK terlebih dahulu');
       return;
     }
 
@@ -95,33 +95,33 @@ const WIPBatchForm: React.FC = () => {
         </button>
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Buat WIP Batch</h1>
-          <p className="text-gray-600 dark:text-gray-300">Buat batch Work in Progress dari Work Order</p>
+          <p className="text-gray-600 dark:text-gray-300">Buat batch Work in Progress dari SPK</p>
         </div>
       </div>
 
       {/* Info */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
         <p className="text-sm text-blue-800">
-          <strong>Info:</strong> WIP Batch akan otomatis dibuat saat Work Order dimulai. 
+          <strong>Info:</strong> WIP Batch akan otomatis dibuat saat SPK dimulai. 
           Form ini untuk membuat WIP Batch secara manual jika diperlukan.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-          <h2 className="text-lg font-medium mb-4">Pilih Work Order</h2>
+          <h2 className="text-lg font-medium mb-4">Pilih SPK</h2>
           
           {workOrders.length === 0 ? (
             <div className="text-center py-8 text-gray-500 dark:text-gray-400">
               <CubeIcon className="h-12 w-12 mx-auto text-gray-300 mb-2" />
-              <p>Tidak ada Work Order yang tersedia</p>
-              <p className="text-sm">Semua Work Order sudah memiliki WIP Batch atau belum ada Work Order aktif</p>
+              <p>Tidak ada SPK yang tersedia</p>
+              <p className="text-sm">Semua SPK sudah memiliki WIP Batch atau belum ada SPK aktif</p>
             </div>
           ) : (
             <>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                  Work Order <span className="text-red-500">*</span>
+                  SPK <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={formData.work_order_id}
@@ -129,7 +129,7 @@ const WIPBatchForm: React.FC = () => {
                   className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   required
                 >
-                  <option value="">-- Pilih Work Order --</option>
+                  <option value="">-- Pilih SPK --</option>
                   {workOrders.map((wo) => (
                     <option key={wo.id} value={wo.id}>
                       {wo.wo_number} - {wo.product_name} ({wo.quantity} pcs) - {wo.status}
@@ -140,7 +140,7 @@ const WIPBatchForm: React.FC = () => {
 
               {selectedWO && (
                 <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 mb-4">
-                  <h3 className="font-medium text-gray-900 dark:text-white mb-2">Detail Work Order</h3>
+                  <h3 className="font-medium text-gray-900 dark:text-white mb-2">Detail SPK</h3>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <span className="text-gray-500 dark:text-gray-400">No. WO:</span>

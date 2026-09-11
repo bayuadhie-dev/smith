@@ -102,7 +102,7 @@ function MachineDetailModal({ machineId, onClose }: { machineId: number; onClose
             <>
               <div>
                 <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
-                  {detail.work_order?.is_current ? 'Work Order Sedang Berjalan' : 'Work Order Terakhir'}
+                  {detail.work_order?.is_current ? 'SPK Sedang Berjalan' : 'SPK Terakhir'}
                 </div>
                 {detail.work_order ? (
                   <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
@@ -110,7 +110,7 @@ function MachineDetailModal({ machineId, onClose }: { machineId: number; onClose
                     <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{detail.work_order.product_name ?? '-'}</div>
                   </div>
                 ) : (
-                  <div className="text-sm text-gray-400">Belum ada Work Order tercatat.</div>
+                  <div className="text-sm text-gray-400">Belum ada SPK tercatat.</div>
                 )}
               </div>
 
@@ -198,7 +198,7 @@ export default function WorkCenterDashboard() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">🏭 Work Center</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Work Center</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">
             Ringkasan status mesin dan downtime harian
           </p>

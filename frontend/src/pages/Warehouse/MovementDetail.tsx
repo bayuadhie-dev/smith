@@ -67,7 +67,7 @@ const movementTypeColors: Record<string, string> = {
 const referenceTypeLabels: Record<string, string> = {
   sales_order: 'Sales Order',
   purchase_order: 'Purchase Order',
-  work_order: 'Work Order',
+  work_order: 'SPK',
   stock_take: 'Stock Take',
   manual_input: 'Manual Input'
 };

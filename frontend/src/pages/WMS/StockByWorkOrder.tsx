@@ -74,9 +74,9 @@ const StockByWorkOrder: React.FC = () => {
       <div>
         <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
           <DocumentTextIcon className="h-7 w-7 text-blue-600" />
-          Stok per Work Order
+          Stok per SPK
         </h1>
-        <p className="text-gray-500 mt-1">Lihat inventori, WIP, dan konsumsi material per Work Order</p>
+        <p className="text-gray-500 mt-1">Lihat inventori, WIP, dan konsumsi material per SPK</p>
       </div>
 
       {/* Filters */}
@@ -120,7 +120,7 @@ const StockByWorkOrder: React.FC = () => {
         ) : data.length === 0 ? (
           <div className="text-center py-12 text-gray-400">
             <CubeIcon className="h-12 w-12 mx-auto mb-3" />
-            <p>Tidak ada data Work Order ditemukan</p>
+            <p>Tidak ada data SPK ditemukan</p>
           </div>
         ) : (
           <div className="overflow-x-auto">

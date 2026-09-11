@@ -74,13 +74,76 @@ export default function StockOpnameDetail() {
   const [countedQty, setCountedQty] = useState('');
   const [countNotes, setCountNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [pendingWorkflowId, setPendingWorkflowId] = useState<number | null>(null);
+  const [pendingWorkflowStep, setPendingWorkflowStep] = useState<string | null>(null);
+  const [showApprovalModal, setShowApprovalModal] = useState(false);
+  const [approvalNotes, setApprovalNotes] = useState('');
+  const [approvalSubmitting, setApprovalSubmitting] = useState(false);
+  const [approvalError, setApprovalError] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
       fetchOrder();
       fetchItems();
+      fetchPendingWorkflow();
     }
   }, [id]);
+
+  const fetchPendingWorkflow = async () => {
+    try {
+      const response = await axiosInstance.get('/api/approval/workflows', {
+        params: { transaction_type: 'stock_opname' },
+      });
+      const workflows = response.data.workflows || [];
+      const active = workflows.find(
+        (w: any) =>
+          w.transaction_id === Number(id) &&
+          (w.status === 'pending_review' || w.status === 'pending_approval')
+      );
+      setPendingWorkflowId(active ? active.id : null);
+      setPendingWorkflowStep(active ? active.current_step : null);
+    } catch (error) {
+      // Non-critical - approval status just won't show if this fails
+      setPendingWorkflowId(null);
+      setPendingWorkflowStep(null);
+    }
+  };
+
+  // Temuan 3 (UX_AUDIT_REPORT.md): approve/reject inline di halaman ini sendiri, tanpa
+  // redirect ke Approval Dashboard generik - staf tetap lihat detail item/lokasi opname
+  // yang sedang diproses. Panggil endpoint approval generik (/review atau /approve
+  // tergantung current_step) di background, sama seperti Approval Dashboard lakukan.
+  const handleInlineDecision = async (decision: 'approve' | 'reject') => {
+    if (!pendingWorkflowId) return;
+    setApprovalSubmitting(true);
+    setApprovalError(null);
+    try {
+      if (decision === 'reject') {
+        await axiosInstance.post(`/api/approval/workflows/${pendingWorkflowId}/reject`, {
+          reason: approvalNotes,
+        });
+        toast.success('Opname ditolak');
+      } else if (pendingWorkflowStep === 'review') {
+        await axiosInstance.post(`/api/approval/workflows/${pendingWorkflowId}/review`, {
+          notes: approvalNotes,
+        });
+        toast.success('Opname direview, lanjut ke tahap approval');
+      } else {
+        await axiosInstance.post(`/api/approval/workflows/${pendingWorkflowId}/approve`, {
+          notes: approvalNotes,
+        });
+        toast.success('Opname disetujui');
+      }
+      setShowApprovalModal(false);
+      setApprovalNotes('');
+      fetchOrder();
+      fetchPendingWorkflow();
+    } catch (error: any) {
+      setApprovalError(error.response?.data?.error || 'Gagal memproses keputusan');
+    } finally {
+      setApprovalSubmitting(false);
+    }
+  };
 
   const fetchOrder = async () => {
     try {
@@ -134,17 +197,16 @@ export default function StockOpnameDetail() {
     }
   };
 
-  const handleApprove = async () => {
-    if (!window.confirm('Approve hasil opname dan buat penyesuaian stok?')) return;
+  const handleSubmitApproval = async () => {
+    if (!window.confirm('Ajukan hasil opname ini untuk persetujuan?')) return;
 
     try {
-      await axiosInstance.put(`/api/stock-opname/orders/${id}/approve`, {
-        create_adjustments: true,
-      });
-      toast.success('Stok opname diapprove dan penyesuaian dibuat');
-      fetchOrder();
+      const response = await axiosInstance.post(`/api/stock-opname/orders/${id}/submit-approval`);
+      toast.success('Opname diajukan untuk persetujuan');
+      setPendingWorkflowId(response.data?.workflow_id || null);
+      setPendingWorkflowStep('review');
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Gagal approve');
+      toast.error(error.response?.data?.error || 'Gagal mengajukan persetujuan');
     }
   };
 
@@ -298,13 +360,22 @@ export default function StockOpnameDetail() {
             Selesaikan Opname
           </button>
         )}
-        {order.status === 'completed' && !order.approved_by_name && (
+        {order.status === 'completed' && !order.approved_by_name && !pendingWorkflowId && (
           <button
-            onClick={handleApprove}
+            onClick={handleSubmitApproval}
             className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
           >
             <CheckCircleIcon className="h-5 w-5" />
-            Approve & Buat Penyesuaian
+            Ajukan Persetujuan
+          </button>
+        )}
+        {order.status === 'completed' && !order.approved_by_name && pendingWorkflowId && (
+          <button
+            onClick={() => { setApprovalError(null); setApprovalNotes(''); setShowApprovalModal(true); }}
+            className="flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200"
+          >
+            <CheckCircleIcon className="h-5 w-5" />
+            Menunggu Approval ({pendingWorkflowStep === 'review' ? 'Review' : 'Approval'}) — Proses di Sini
           </button>
         )}
         {order.approved_by_name && (
@@ -469,6 +540,54 @@ export default function StockOpnameDetail() {
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
               >
                 {submitting ? 'Menyimpan...' : 'Simpan'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showApprovalModal && order && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+              {pendingWorkflowStep === 'review' ? 'Review' : 'Approval'} Stok Opname
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              {order.opname_number} — {order.zone_name} — {order.variance_items} item selisih,
+              total nilai selisih Rp {order.total_variance_value?.toLocaleString('id-ID') || 0}
+            </p>
+            {approvalError && (
+              <div className="mb-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 p-3 rounded">{approvalError}</div>
+            )}
+            <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Catatan</label>
+            <textarea
+              value={approvalNotes}
+              onChange={(e) => setApprovalNotes(e.target.value)}
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-sm"
+              placeholder="Catatan approval/alasan tolak (opsional untuk approve, disarankan untuk tolak)"
+            />
+            <div className="flex justify-end gap-2 mt-5">
+              <button
+                onClick={() => setShowApprovalModal(false)}
+                disabled={approvalSubmitting}
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => handleInlineDecision('reject')}
+                disabled={approvalSubmitting}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+              >
+                Tolak
+              </button>
+              <button
+                onClick={() => handleInlineDecision('approve')}
+                disabled={approvalSubmitting}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+              >
+                {approvalSubmitting ? 'Memproses...' : (pendingWorkflowStep === 'review' ? 'Setujui (Review)' : 'Setujui')}
               </button>
             </div>
           </div>

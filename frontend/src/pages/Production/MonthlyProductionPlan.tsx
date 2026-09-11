@@ -302,7 +302,7 @@ const MonthlyProductionPlan: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Rencana Produksi Bulanan</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Jadwal Produksi Bulanan</h1>
           <p className="text-gray-500 dark:text-gray-400">Kelola target produksi per bulan sebagai sumber jadwal mingguan</p>
         </div>
         <div className="flex items-center gap-3">

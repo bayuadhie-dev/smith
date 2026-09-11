@@ -78,7 +78,7 @@ const BreakdownSummary: React.FC = () => {
             </Link>
             <h1 className="text-2xl font-bold text-slate-800">Machine Breakdown Impact</h1>
           </div>
-          <p className="text-slate-500">Work orders affected by machine breakdowns</p>
+          <p className="text-slate-500">SPK affected by machine breakdowns</p>
         </div>
       </div>
 
@@ -90,7 +90,7 @@ const BreakdownSummary: React.FC = () => {
               <ExclamationTriangleIcon className="h-6 w-6 text-red-600" />
             </div>
             <div>
-              <p className="text-sm text-slate-500">Affected Work Orders</p>
+              <p className="text-sm text-slate-500">Affected SPK</p>
               <p className="text-3xl font-bold text-red-600">{data.total_affected_wos}</p>
             </div>
           </div>
@@ -127,10 +127,10 @@ const BreakdownSummary: React.FC = () => {
         </div>
       </div>
 
-      {/* Affected Work Orders Table */}
+      {/* Affected SPK Table */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-200">
-          <h2 className="text-lg font-semibold text-slate-800">Top 20 Most Affected Work Orders</h2>
+          <h2 className="text-lg font-semibold text-slate-800">Top 20 Most Affected SPK</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -215,7 +215,7 @@ const BreakdownSummary: React.FC = () => {
                     <div className="flex flex-col items-center gap-2">
                       <ExclamationTriangleIcon className="h-12 w-12 text-green-500" />
                       <p className="text-green-600 font-medium">No breakdowns detected!</p>
-                      <p className="text-sm text-slate-500">All work orders are running smoothly</p>
+                      <p className="text-sm text-slate-500">All SPK are running smoothly</p>
                     </div>
                   </td>
                 </tr>

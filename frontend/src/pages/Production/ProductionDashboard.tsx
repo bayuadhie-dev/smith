@@ -66,7 +66,7 @@ const ProductionDashboard = () => {
 
   const quickStats: QuickStat[] = [
     {
-      name: 'Active Work Orders',
+      name: 'Active SPK',
       value: dashboardData?.work_orders.active || 0,
       icon: PlayIcon,
       color: 'bg-blue-500'
@@ -93,8 +93,8 @@ const ProductionDashboard = () => {
 
   const moduleCards = [
     {
-      title: 'Work Orders',
-      description: 'Create, manage and track production work orders',
+      title: 'SPK',
+      description: 'Create, manage and track production SPK',
       icon: ClipboardDocumentListIcon,
       href: '/app/production/work-orders',
       color: 'bg-blue-500',
@@ -184,7 +184,7 @@ const ProductionDashboard = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">🏭 Production Dashboard</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard Produksi</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Monitor and manage your production operations</p>
         </div>
         <button
@@ -270,7 +270,7 @@ const ProductionDashboard = () => {
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
         <div className="flex flex-wrap gap-3">
           <Link to="/app/production/work-orders/new" className="btn-primary">
-            + New Work Order
+            + New SPK
           </Link>
           <Link to="/app/production/scheduling" className="btn-secondary">
             📅 View Schedule

@@ -77,7 +77,7 @@ const MaterialConsumptionPage: React.FC = () => {
           <CubeIcon className="h-7 w-7 text-purple-600" />
           Konsumsi Material
         </h1>
-        <p className="text-gray-500 mt-1">Tracking pemakaian bahan baku per Work Order — Planned vs Actual</p>
+        <p className="text-gray-500 mt-1">Tracking pemakaian bahan baku per SPK — Planned vs Actual</p>
       </div>
 
       {/* Filters */}
@@ -86,7 +86,7 @@ const MaterialConsumptionPage: React.FC = () => {
           <form onSubmit={handleSearch} className="flex items-center gap-2">
             <input
               type="number"
-              placeholder="Work Order ID"
+              placeholder="SPK ID"
               value={woId}
               onChange={(e) => setWoId(e.target.value)}
               className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-40"

@@ -1,13 +1,25 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db, Material, Inventory, InventoryMovement
 from datetime import datetime
 from utils.timezone import get_local_now, get_local_today
+from utils.master_data_usage import get_usage
 
 materials_crud_bp = Blueprint('materials_crud', __name__)
 
+@materials_crud_bp.route('/<int:material_id>/usage', methods=['GET'])
+@jwt_required()
+@require_permission('materials.view')
+def get_material_usage(material_id):
+    """Where-used report: which tables across the whole schema reference this material,
+    discovered dynamically via FK introspection (not a hardcoded per-module list)."""
+    material = db.session.get(Material, material_id) or abort(404)
+    return jsonify({'usage': get_usage('materials', material_id)}), 200
+
 @materials_crud_bp.route('/<int:material_id>', methods=['GET'])
 @jwt_required()
+@require_permission('materials.view')
 def get_material(material_id):
     """Get single material by ID for viewing"""
     try:
@@ -32,8 +44,23 @@ def get_material(material_id):
                 'is_hazardous': material.is_hazardous,
                 'storage_conditions': material.storage_conditions,
                 'expiry_days': material.expiry_days,
+                'safety_stock_qty': float(material.safety_stock_qty) if material.safety_stock_qty is not None else None,
+                'safety_stock_days': material.safety_stock_days,
+                'is_excluded_from_mrp': material.is_excluded_from_mrp,
                 'supplier_id': material.supplier_id,
                 'supplier': material.supplier.name if material.supplier else None,
+                'kelompok': material.kelompok,
+                'ppn_code': material.ppn_code,
+                'erp_approval': material.erp_approval,
+                'akun_persediaan_id': material.akun_persediaan_id,
+                'akun_penjualan_id': material.akun_penjualan_id,
+                'akun_retur_penjualan_id': material.akun_retur_penjualan_id,
+                'akun_diskon_penjualan_id': material.akun_diskon_penjualan_id,
+                'akun_barang_terkirim_id': material.akun_barang_terkirim_id,
+                'akun_hpp_id': material.akun_hpp_id,
+                'akun_retur_pembelian_id': material.akun_retur_pembelian_id,
+                'akun_beban_id': material.akun_beban_id,
+                'akun_pembelian_belum_tertagih_id': material.akun_pembelian_belum_tertagih_id,
                 'created_at': material.created_at.isoformat() if material.created_at else None,
                 'updated_at': material.updated_at.isoformat() if material.updated_at else None
             }
@@ -43,6 +70,7 @@ def get_material(material_id):
 
 @materials_crud_bp.route('/<int:material_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('materials.edit')
 def update_material(material_id):
     """Update material"""
     try:
@@ -90,9 +118,26 @@ def update_material(material_id):
             material.storage_conditions = data['storage_conditions']
         if 'expiry_days' in data:
             material.expiry_days = data['expiry_days']
+        if 'safety_stock_qty' in data:
+            material.safety_stock_qty = data['safety_stock_qty'] if data['safety_stock_qty'] not in ('', None) else None
+        if 'safety_stock_days' in data:
+            material.safety_stock_days = data['safety_stock_days'] if data['safety_stock_days'] not in ('', None) else None
+        if 'is_excluded_from_mrp' in data:
+            material.is_excluded_from_mrp = bool(data['is_excluded_from_mrp'])
         if 'supplier_id' in data:
             material.supplier_id = data['supplier_id']
-        
+        if 'kelompok' in data:
+            material.kelompok = data['kelompok']
+        if 'ppn_code' in data:
+            material.ppn_code = data['ppn_code']
+        if 'erp_approval' in data:
+            material.erp_approval = data['erp_approval']
+        for akun_field in ('akun_persediaan_id', 'akun_penjualan_id', 'akun_retur_penjualan_id',
+                           'akun_diskon_penjualan_id', 'akun_barang_terkirim_id', 'akun_hpp_id',
+                           'akun_retur_pembelian_id', 'akun_beban_id', 'akun_pembelian_belum_tertagih_id'):
+            if akun_field in data:
+                setattr(material, akun_field, data[akun_field])
+
         material.updated_at = get_local_now()
         db.session.commit()
         
@@ -106,6 +151,7 @@ def update_material(material_id):
 
 @materials_crud_bp.route('/<int:material_id>', methods=['DELETE'])
 @jwt_required()
+@require_permission('materials.delete')
 def delete_material(material_id):
     """Delete material with safety checks"""
     try:
@@ -171,6 +217,7 @@ def delete_material(material_id):
 
 @materials_crud_bp.route('/', methods=['POST'])
 @jwt_required()
+@require_permission('materials.create')
 def create_material():
     """Create new material"""
     try:
@@ -205,6 +252,9 @@ def create_material():
             is_hazardous=data.get('is_hazardous', False),
             storage_conditions=data.get('storage_conditions'),
             expiry_days=data.get('expiry_days'),
+            safety_stock_qty=data.get('safety_stock_qty') if data.get('safety_stock_qty') not in ('', None) else None,
+            safety_stock_days=data.get('safety_stock_days') if data.get('safety_stock_days') not in ('', None) else None,
+            is_excluded_from_mrp=bool(data.get('is_excluded_from_mrp', False)),
             supplier_id=data.get('supplier_id')
         )
         

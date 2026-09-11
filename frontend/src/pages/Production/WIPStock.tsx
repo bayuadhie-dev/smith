@@ -147,7 +147,7 @@ export default function WIPStock() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">📦 WIP Stock</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">WIP Stock</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">Work In Progress - Stok hasil produksi sebelum packing</p>
         </div>
         <Link
@@ -203,7 +203,7 @@ export default function WIPStock() {
           <div className="flex flex-col items-center justify-center h-64 text-gray-500 dark:text-gray-400">
             <ArchiveBoxIcon className="h-16 w-16 mb-4 text-gray-300" />
             <p>Tidak ada stok WIP</p>
-            <p className="text-sm">Selesaikan Work Order untuk menambah stok WIP</p>
+            <p className="text-sm">Selesaikan SPK untuk menambah stok WIP</p>
           </div>
         ) : (
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">

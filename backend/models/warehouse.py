@@ -117,6 +117,15 @@ class InventoryMovement(db.Model):
     total_cost = db.Column(db.Numeric(15, 2), nullable=True)
     quantity_before = db.Column(db.Numeric(15, 2), nullable=True)
     quantity_after = db.Column(db.Numeric(15, 2), nullable=True)
+    # QC status transitions (2026-09-11) - populated when movement_type is
+    # 'qc_disposition' (or similar status-changing type): the batch's
+    # stock_status before/after this specific quantity split. Mirrors SAP's
+    # MB1A/MB1B pattern - a partial quantity of a batch can move to a
+    # different status independently of the rest (e.g. 9900 pcs of a 10000pcs
+    # quarantined batch gets released while 100 pcs gets rejected - 2 separate
+    # movement rows, not one whole-batch status flip).
+    status_before = db.Column(db.String(20), nullable=True)
+    status_after = db.Column(db.String(20), nullable=True)
     notes = db.Column(db.Text, nullable=True)
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)

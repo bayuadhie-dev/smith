@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from models import db
 from models.warehouse import Inventory, InventoryMovement, WarehouseLocation
 from models.product import Product, Material
@@ -14,6 +15,7 @@ stock_input_bp = Blueprint('stock_input', __name__)
 
 @stock_input_bp.route('/stock-input', methods=['POST'])
 @jwt_required()
+@require_permission('inventory.create')
 def create_stock_input():
     """Create manual stock input with multiple items"""
     try:
@@ -81,6 +83,7 @@ def create_stock_input():
                 ).first()
                 
                 if not inventory:
+                    from utils.inventory_helpers import resolve_initial_stock_status
                     # Create new inventory record for material
                     inventory = Inventory(
                         material_id=material_id,
@@ -91,7 +94,7 @@ def create_stock_input():
                         min_stock_level=0,
                         max_stock_level=0,
                         batch_number=item_data.get('batch_number'),
-                        stock_status='available',  # Material default status
+                        stock_status=resolve_initial_stock_status('available', material=db.session.get(Material, material_id)),  # Material default status
                         supplier_batch=item_data.get('supplier_batch'),
                         is_active=True,
                         created_by=user_id
@@ -147,6 +150,7 @@ def create_stock_input():
 
 @stock_input_bp.route('/stock-input/history', methods=['GET'])
 @jwt_required()
+@require_permission('inventory.view')
 def get_stock_input_history():
     """Get stock input history with pagination"""
     try:
@@ -223,6 +227,7 @@ def get_stock_input_history():
 
 @stock_input_bp.route('/stock-input/validate-location', methods=['POST'])
 @jwt_required()
+@require_permission('inventory.create')
 def validate_location_capacity():
     """Validate if location has enough capacity for stock input"""
     try:
@@ -260,6 +265,7 @@ def validate_location_capacity():
 
 @stock_input_bp.route('/stock-input/quick-add', methods=['POST'])
 @jwt_required()
+@require_permission('inventory.create')
 def quick_stock_add():
     """Quick add single item to stock"""
     try:
@@ -354,6 +360,7 @@ def quick_stock_add():
 
 @stock_input_bp.route('/stock-input/templates', methods=['GET'])
 @jwt_required()
+@require_permission('inventory.view')
 def get_stock_input_templates():
     """Get common stock input templates"""
     try:

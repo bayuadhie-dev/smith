@@ -23,6 +23,9 @@ interface MaterialIssueItem {
   issued_quantity: number
   returned_quantity: number
   pending_quantity: number
+  received_quantity: number | null
+  receive_note: string | null
+  reservation_status: string
   uom: string
   warehouse_location_id: number
   location_code: string
@@ -37,6 +40,11 @@ interface MaterialIssue {
   issue_number: string
   work_order_id: number
   wo_number: string
+  sales_order_id: number | null
+  so_number: string | null
+  production_plan_id: number | null
+  plan_number: string | null
+  trigger_source: string
   product_name: string
   issue_date: string
   required_date: string
@@ -51,7 +59,29 @@ interface MaterialIssue {
   issued_by: string
   approved_date: string
   issued_date: string
+  received_confirmed_by: string | null
+  received_confirmed_at: string | null
   items: MaterialIssueItem[]
+}
+
+const triggerSourceLabels: Record<string, string> = {
+  manual: 'Manual',
+  auto_reserve: 'Auto-Reserve',
+}
+
+const reservationStatusBadge = (status: string) => {
+  switch (status) {
+    case 'full':
+      return <span className="px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Full</span>
+    case 'partial':
+      return <span className="px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">Partial</span>
+    case 'insufficient':
+      return <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">Insufficient</span>
+    case 'none':
+      return <span className="px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">-</span>
+    default:
+      return <span className="px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">{status || '-'}</span>
+  }
 }
 
 const MaterialIssueDetail: React.FC = () => {
@@ -60,6 +90,9 @@ const MaterialIssueDetail: React.FC = () => {
   const [issue, setIssue] = useState<MaterialIssue | null>(null)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
+  const [showReceiptModal, setShowReceiptModal] = useState(false)
+  const [receiptQuantities, setReceiptQuantities] = useState<Record<number, string>>({})
+  const [receiptNotes, setReceiptNotes] = useState<Record<number, string>>({})
 
   useEffect(() => {
     fetchIssue()
@@ -114,6 +147,38 @@ const MaterialIssueDetail: React.FC = () => {
       fetchIssue()
     } catch (error: any) {
       alert(error.response?.data?.message || 'Gagal membatalkan')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const openReceiptModal = () => {
+    if (!issue) return
+    const qtys: Record<number, string> = {}
+    const notes: Record<number, string> = {}
+    issue.items.forEach((item) => {
+      qtys[item.id] = item.received_quantity !== null ? String(item.received_quantity) : String(item.issued_quantity)
+      notes[item.id] = item.receive_note || ''
+    })
+    setReceiptQuantities(qtys)
+    setReceiptNotes(notes)
+    setShowReceiptModal(true)
+  }
+
+  const handleConfirmReceipt = async () => {
+    if (!issue) return
+    try {
+      setActionLoading(true)
+      const items = issue.items.map((item) => ({
+        item_id: item.id,
+        received_quantity: Number(receiptQuantities[item.id] ?? item.issued_quantity),
+        receive_note: receiptNotes[item.id] || undefined,
+      }))
+      await axiosInstance.put(`/api/production/material-issues/${id}/confirm-receipt`, { items })
+      setShowReceiptModal(false)
+      fetchIssue()
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Gagal konfirmasi penerimaan')
     } finally {
       setActionLoading(false)
     }
@@ -208,13 +273,52 @@ const MaterialIssueDetail: React.FC = () => {
           </button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{issue.issue_number}</h1>
-            <p className="text-gray-600 dark:text-gray-300">Detail Pengeluaran Material</p>
+            <p className="text-gray-600 dark:text-gray-300 flex items-center gap-2">
+              Detail Pengeluaran Material
+              <span className="px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-700">
+                {triggerSourceLabels[issue.trigger_source] || issue.trigger_source || 'Manual'}
+              </span>
+            </p>
+            {(issue.so_number || issue.plan_number) && (
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                {issue.so_number && (
+                  <>Dari Sales Order: <Link to={`/app/sales/orders/${issue.sales_order_id}`} className="text-blue-600 hover:underline">{issue.so_number}</Link></>
+                )}
+                {issue.plan_number && (
+                  <>Dari Production Plan: <span className="font-medium">{issue.plan_number}</span></>
+                )}
+              </p>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-3">
           {getStatusBadge(issue.status)}
         </div>
       </div>
+
+      {/* Receipt confirmation banner */}
+      {issue.status === 'issued' && (
+        <div className={`card p-4 mb-6 ${issue.received_confirmed_at ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'}`}>
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className={`font-medium ${issue.received_confirmed_at ? 'text-green-900' : 'text-amber-900'}`}>
+                {issue.received_confirmed_at ? 'Penerimaan Terkonfirmasi' : 'Menunggu Konfirmasi Diterima'}
+              </h3>
+              <p className={`text-sm ${issue.received_confirmed_at ? 'text-green-700' : 'text-amber-700'}`}>
+                {issue.received_confirmed_at
+                  ? `Dikonfirmasi oleh ${issue.received_confirmed_by} pada ${new Date(issue.received_confirmed_at).toLocaleString('id-ID')}`
+                  : 'Produksi belum melakukan checklist penerimaan fisik material ini.'}
+              </p>
+            </div>
+            {!issue.received_confirmed_at && (
+              <button onClick={openReceiptModal} className="btn btn-primary flex items-center gap-2">
+                <CheckCircleIcon className="h-5 w-5" />
+                Konfirmasi Diterima
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Action Buttons */}
       {issue.status !== 'issued' && issue.status !== 'cancelled' && (
@@ -285,7 +389,7 @@ const MaterialIssueDetail: React.FC = () => {
               <span className="font-medium">{issue.issue_number}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-300">Work Order</span>
+              <span className="text-gray-600 dark:text-gray-300">SPK</span>
               <Link to={`/app/production/work-orders/${issue.work_order_id}`} className="font-medium text-blue-600 hover:underline">
                 {issue.wo_number}
               </Link>
@@ -376,6 +480,8 @@ const MaterialIssueDetail: React.FC = () => {
               <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Dibutuhkan</th>
               <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Dikeluarkan</th>
               <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Sisa</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Reservasi</th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Diterima</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
             </tr>
           </thead>
@@ -414,6 +520,15 @@ const MaterialIssueDetail: React.FC = () => {
                   {item.pending_quantity.toLocaleString()} {item.uom}
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
+                  {reservationStatusBadge(item.reservation_status)}
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap text-right text-gray-700 dark:text-gray-300">
+                  {item.received_quantity !== null ? `${item.received_quantity.toLocaleString()} ${item.uom}` : '-'}
+                  {item.receive_note && (
+                    <p className="text-xs text-gray-400">{item.receive_note}</p>
+                  )}
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap">
                   {getItemStatusBadge(item.status)}
                 </td>
               </tr>
@@ -421,6 +536,56 @@ const MaterialIssueDetail: React.FC = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Receipt Confirmation Modal */}
+      {showReceiptModal && issue && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[85vh] overflow-y-auto">
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Konfirmasi Diterima</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Isi jumlah yang benar-benar diterima per item, dan catatan kalau ada selisih.</p>
+            </div>
+            <div className="p-6 space-y-4">
+              {issue.items.map((item) => (
+                <div key={item.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-medium text-gray-900 dark:text-white">{item.material_name}</span>
+                    <span className="text-sm text-gray-500">Dikeluarkan: {item.issued_quantity} {item.uom}</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Jumlah Diterima</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={receiptQuantities[item.id] ?? ''}
+                        onChange={(e) => setReceiptQuantities((prev) => ({ ...prev, [item.id]: e.target.value }))}
+                        className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Catatan (kalau beda)</label>
+                      <input
+                        type="text"
+                        value={receiptNotes[item.id] ?? ''}
+                        onChange={(e) => setReceiptNotes((prev) => ({ ...prev, [item.id]: e.target.value }))}
+                        className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm"
+                        placeholder="mis. 2 pcs rusak"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+              <button onClick={() => setShowReceiptModal(false)} className="btn btn-secondary">Batal</button>
+              <button onClick={handleConfirmReceipt} disabled={actionLoading} className="btn btn-primary">
+                {actionLoading ? 'Menyimpan...' : 'Simpan Konfirmasi'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

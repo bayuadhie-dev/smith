@@ -263,7 +263,7 @@ const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedD
         <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl p-4 text-white">
           <div className="flex items-center gap-2 mb-2">
             <DocumentTextIcon className="h-5 w-5 opacity-80" />
-            <span className="text-sm opacity-80">Work Orders</span>
+            <span className="text-sm opacity-80">SPK</span>
           </div>
           <p className="text-3xl font-bold">{totalWOs}</p>
         </div>
@@ -307,7 +307,7 @@ const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedD
               }`}
           >
             <DocumentTextIcon className="h-4 w-4 inline mr-2" />
-            Detail Work Orders
+            Detail SPK
           </button>
         </div>
 
@@ -593,7 +593,7 @@ const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedD
           </div>
         )}
 
-        {/* Work Orders Tab */}
+        {/* SPK Tab */}
         {activeSubTab === 'workorders' && (
           <div className="space-y-4">
             {/* Derive WO data from summaryData if workOrders is empty */}
@@ -661,7 +661,7 @@ const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedD
               if (!displayWOs && !displayDerivedWOs) {
                 return (
                   <div className="text-center py-8 text-slate-500">
-                    Tidak ada Work Order pada tanggal ini
+                    Tidak ada SPK pada tanggal ini
                   </div>
                 );
               }

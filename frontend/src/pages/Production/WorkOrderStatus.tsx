@@ -43,7 +43,7 @@ const STATUS_CONFIG = {
     bgColor: 'bg-gray-100',
     borderColor: 'border-gray-300',
     icon: DocumentPlusIcon,
-    description: 'Work Order belum ada input produksi'
+    description: 'SPK belum ada input produksi'
   },
   in_progress: {
     label: 'Sedang Diisi',
@@ -51,7 +51,7 @@ const STATUS_CONFIG = {
     bgColor: 'bg-blue-100',
     borderColor: 'border-blue-300',
     icon: PencilSquareIcon,
-    description: 'Work Order sedang dalam proses input'
+    description: 'SPK sedang dalam proses input'
   },
   completed: {
     label: 'Selesai',
@@ -59,7 +59,7 @@ const STATUS_CONFIG = {
     bgColor: 'bg-green-100',
     borderColor: 'border-green-300',
     icon: CheckCircleIcon,
-    description: 'Work Order sudah selesai diinput'
+    description: 'SPK sudah selesai diinput'
   }
 };
 
@@ -115,7 +115,7 @@ export default function WorkOrderStatus() {
         completed
       });
     } catch (error) {
-      console.error('Error fetching work order status:', error);
+      console.error('Error fetching SPK status:', error);
       toast.error('Gagal memuat data status');
     } finally {
       setLoading(false);
@@ -192,7 +192,7 @@ export default function WorkOrderStatus() {
             <ClipboardDocumentListIcon className="h-7 w-7 text-blue-600" />
             Status Pengerjaan
           </h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-1">Pantau status input produksi Work Order</p>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Pantau status input produksi SPK</p>
         </div>
         <button
           onClick={handleRefresh}
@@ -300,7 +300,7 @@ export default function WorkOrderStatus() {
         </div>
       </div>
 
-      {/* Work Order List */}
+      {/* SPK List */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -410,7 +410,7 @@ export default function WorkOrderStatus() {
                 <tr>
                   <td colSpan={9} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                     <ClipboardDocumentListIcon className="h-12 w-12 mx-auto mb-2 text-gray-400" />
-                    <p>Tidak ada Work Order ditemukan</p>
+                    <p>Tidak ada SPK ditemukan</p>
                   </td>
                 </tr>
               )}

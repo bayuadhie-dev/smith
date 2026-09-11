@@ -84,11 +84,11 @@ export default function WorkOrderTimeline() {
     try {
       setLoading(true);
       
-      // Fetch work order details
+      // Fetch SPK details
       const woRes = await axiosInstance.get(`/api/production/work-orders/${id}`);
       setWorkOrder(woRes.data.work_order);
       
-      // Fetch shift productions for this work order
+      // Fetch shift productions for this SPK
       const spRes = await axiosInstance.get(`/api/production-input/shift-productions`, {
         params: { work_order_id: id }
       });
@@ -116,7 +116,7 @@ export default function WorkOrderTimeline() {
         date: wo.start_date,
         shift: '-',
         type: 'start',
-        title: 'Work Order Dimulai',
+        title: 'SPK Dimulai',
         description: `Target: ${wo.quantity?.toLocaleString()} pcs`,
         data: wo,
         color: 'bg-blue-500',
@@ -172,7 +172,7 @@ export default function WorkOrderTimeline() {
         date: wo.end_date,
         shift: '-',
         type: 'complete',
-        title: 'Work Order Selesai',
+        title: 'SPK Selesai',
         description: `Total: ${wo.quantity_good?.toLocaleString() || 0} pcs (${((wo.quantity_good / wo.quantity) * 100).toFixed(1)}%)`,
         data: wo,
         color: 'bg-green-600',
@@ -242,7 +242,7 @@ export default function WorkOrderTimeline() {
   if (!workOrder) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-800">Work Order tidak ditemukan</p>
+        <p className="text-red-800">SPK tidak ditemukan</p>
       </div>
     );
   }

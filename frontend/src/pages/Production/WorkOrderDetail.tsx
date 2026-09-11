@@ -1,5 +1,5 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeftIcon, CalendarIcon, ClockIcon, CubeIcon, PlayIcon, PlusIcon, ChartBarIcon, PencilIcon, TrashIcon, ExclamationTriangleIcon, DocumentCheckIcon, ClipboardDocumentListIcon, WrenchScrewdriverIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, ArrowUturnLeftIcon, CalendarIcon, ClockIcon, CubeIcon, PlayIcon, PlusIcon, ChartBarIcon, PencilIcon, TrashIcon, ExclamationTriangleIcon, DocumentCheckIcon, ClipboardDocumentListIcon, WrenchScrewdriverIcon, DocumentTextIcon, XMarkIcon, Squares2X2Icon } from '@heroicons/react/24/outline';
 import DocumentGenerateButton from '../../components/DocumentGenerateButton';
 import { useGetWorkOrderByIdQuery } from '../../services/api';
 import { useState, useEffect } from 'react';
@@ -33,25 +33,86 @@ export default function WorkOrderDetail() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [forceDelete, setForceDelete] = useState(false);
+  const [showBatchPanel, setShowBatchPanel] = useState(false);
+  const [relatedBatches, setRelatedBatches] = useState<any[]>([]);
+  const [loadingBatches, setLoadingBatches] = useState(false);
+
+  // Native SPK data (replaces Accurate EJO sync - see routes/spk.py)
+  const [spkWarehouseHistory, setSpkWarehouseHistory] = useState<any[]>([]);
+  const [loadingSpkHistory, setLoadingSpkHistory] = useState(false);
+  const [spkCompletionRecords, setSpkCompletionRecords] = useState<any[]>([]);
+  const [loadingSpkCompletion, setLoadingSpkCompletion] = useState(false);
+  const [spkMaterialTree, setSpkMaterialTree] = useState<any[]>([]);
+  const [loadingSpkMaterial, setLoadingSpkMaterial] = useState(false);
+
+  // Temuan 2 (UX_AUDIT_REPORT.md): panel batch/SPK terkait WO ini, tanpa staf harus
+  // pindah ke Batch Planning dan cari WO-nya manual.
+  const openBatchPanel = async () => {
+    setShowBatchPanel(true);
+    setLoadingBatches(true);
+    try {
+      const res = await axiosInstance.get('/api/batch-scheduling/batches', { params: { work_order_id: id } });
+      setRelatedBatches(res.data.batches || []);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingBatches(false);
+    }
+  };
   const [wipBatch, setWipBatch] = useState<any>(null);
-  const [bomItems, setBomItems] = useState<any[]>([]);
-  const [bomSource, setBomSource] = useState<string>('none');
-  const [bomPackPerCarton, setBomPackPerCarton] = useState<number>(1);
-  const [bomEditMode, setBomEditMode] = useState(false);
-  const [bomSaving, setBomSaving] = useState(false);
   const [approvalStatus, setApprovalStatus] = useState<any>(null);
   const [submittingApproval, setSubmittingApproval] = useState(false);
   const [showActivityLog, setShowActivityLog] = useState(false);
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [completing, setCompleting] = useState(false);
+  const [reverting, setReverting] = useState(false);
+  const [showRevertModal, setShowRevertModal] = useState(false);
 
   useEffect(() => {
     if (id) {
       fetchProductionRecords();
       fetchWIPBatch();
-      fetchBOMItems();
+      fetchSpkWarehouseHistory();
+      fetchSpkCompletionRecords();
+      fetchSpkMaterialBreakdown();
     }
   }, [id]);
+
+  const fetchSpkWarehouseHistory = async () => {
+    try {
+      setLoadingSpkHistory(true);
+      const response = await axiosInstance.get(`/api/spk/${id}/warehouse-history`);
+      setSpkWarehouseHistory(response.data.history || []);
+    } catch (error) {
+      console.error('Error fetching SPK warehouse history:', error);
+    } finally {
+      setLoadingSpkHistory(false);
+    }
+  };
+
+  const fetchSpkCompletionRecords = async () => {
+    try {
+      setLoadingSpkCompletion(true);
+      const response = await axiosInstance.get(`/api/spk/${id}/completion-records`);
+      setSpkCompletionRecords(response.data.records || []);
+    } catch (error) {
+      console.error('Error fetching SPK completion records:', error);
+    } finally {
+      setLoadingSpkCompletion(false);
+    }
+  };
+
+  const fetchSpkMaterialBreakdown = async () => {
+    try {
+      setLoadingSpkMaterial(true);
+      const response = await axiosInstance.get(`/api/spk/${id}/material-breakdown`);
+      setSpkMaterialTree(response.data.tree || []);
+    } catch (error) {
+      console.error('Error fetching SPK material breakdown:', error);
+    } finally {
+      setLoadingSpkMaterial(false);
+    }
+  };
 
   const fetchWIPBatch = async () => {
     try {
@@ -87,7 +148,7 @@ export default function WorkOrderDetail() {
     try {
       setSubmittingApproval(true);
       const response = await axiosInstance.post(`/api/production/work-orders/${id}/submit-for-approval`);
-      toast.success('Work Order berhasil disubmit untuk approval');
+      toast.success('SPK berhasil disubmit untuk approval');
       setApprovalStatus(response.data.approval);
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Gagal submit approval');
@@ -102,45 +163,27 @@ export default function WorkOrderDetail() {
       await axiosInstance.put(`/api/production/work-orders/${id}/status`, {
         status: 'completed'
       });
-      toast.success('Work Order berhasil diselesaikan!');
+      toast.success('SPK berhasil diselesaikan!');
       setShowCompleteModal(false);
       refetch();
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Gagal menyelesaikan Work Order');
+      toast.error(error.response?.data?.error || 'Gagal menyelesaikan SPK');
     } finally {
       setCompleting(false);
     }
   };
 
-  const fetchBOMItems = async () => {
+  const handleRevertToReleased = async () => {
     try {
-      const res = await axiosInstance.get(`/api/production/work-orders/${id}/bom`);
-      setBomSource(res.data.source || 'none');
-      // Prefer WO's pack_per_carton (always current), fall back to BOM's
-      setBomPackPerCarton(workOrder?.pack_per_carton || res.data.pack_per_carton || 1);
-      setBomItems((res.data.bom_items || []).map((item: any) => ({
-        ...item,
-        actual_input: item.quantity_actual > 0 ? item.quantity_actual.toString() : '',
-      })));
-    } catch {
-      setBomItems([]);
-    }
-  };
-
-  const saveBOMActuals = async () => {
-    try {
-      setBomSaving(true);
-      const items = bomItems
-        .filter(item => item.actual_input !== '')
-        .map(item => ({ item_id: item.id, quantity_actual: parseFloat(item.actual_input) || 0 }));
-      await axiosInstance.put(`/api/production/work-orders/${id}/bom/actual`, { items });
-      toast.success('Konsumsi material berhasil disimpan');
-      setBomEditMode(false);
-      fetchBOMItems();
+      setReverting(true);
+      const response = await axiosInstance.put(`/api/production/work-orders/${id}/revert-to-released`);
+      toast.success(response.data.message || 'SPK berhasil dibatalkan');
+      setShowRevertModal(false);
+      refetch();
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Gagal menyimpan konsumsi material');
+      toast.error(error.response?.data?.error || 'Gagal membatalkan SPK');
     } finally {
-      setBomSaving(false);
+      setReverting(false);
     }
   };
 
@@ -164,14 +207,14 @@ export default function WorkOrderDetail() {
         : `/api/production/work-orders/${id}`;
 
       await axiosInstance.delete(url);
-      toast.success('Work Order berhasil dihapus');
+      toast.success('SPK berhasil dihapus');
       navigate('/app/production/work-orders');
     } catch (error: any) {
-      console.error('Error deleting work order:', error);
+      console.error('Error deleting SPK:', error);
       if (error.response?.data?.has_production) {
-        toast.error('Work Order memiliki data produksi. Centang "Hapus beserta data produksi" untuk menghapus.');
+        toast.error('SPK memiliki data produksi. Centang "Hapus beserta data produksi" untuk menghapus.');
       } else {
-        toast.error(error.response?.data?.error || 'Gagal menghapus Work Order');
+        toast.error(error.response?.data?.error || 'Gagal menghapus SPK');
       }
     } finally {
       setDeleting(false);
@@ -189,7 +232,7 @@ export default function WorkOrderDetail() {
   if (error || !workOrder) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-800">Failed to load work order details.</p>
+        <p className="text-red-800">Failed to load SPK details.</p>
       </div>
     );
   }
@@ -209,13 +252,13 @@ export default function WorkOrderDetail() {
     return colors[status] || 'bg-gray-100 text-gray-800';
   };
 
-  // Use production records if available, otherwise fall back to work order totals
+  // Use production records if available, otherwise fall back to SPK totals
   const recordsProduced = productionRecords.reduce((sum, r) => sum + r.quantity_produced, 0);
   const recordsGood = productionRecords.reduce((sum, r) => sum + r.quantity_good, 0);
   const recordsReject = productionRecords.reduce((sum, r) => sum + r.quantity_reject, 0);
   const recordsDowntime = productionRecords.reduce((sum, r) => sum + r.downtime_minutes, 0);
 
-  // Use work order totals as primary source (updated by backend), fall back to records sum
+  // Use SPK totals as primary source (updated by backend), fall back to records sum
   const totalProduced = workOrder.quantity_produced || recordsProduced;
   const totalGood = workOrder.quantity_good || recordsGood;
   const totalReject = workOrder.quantity_scrap || recordsReject;
@@ -234,14 +277,63 @@ export default function WorkOrderDetail() {
             <ArrowLeftIcon className="h-5 w-5" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Work Order Detail</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Detail SPK</h1>
             <p className="text-gray-600 dark:text-gray-300">{workOrder.wo_number}</p>
           </div>
         </div>
-        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(workOrder.status)}`}>
-          {workOrder.status?.replace('_', ' ').toUpperCase()}
-        </span>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={openBatchPanel}
+            className="inline-flex items-center gap-2 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+          >
+            <Squares2X2Icon className="h-4 w-4" />
+            Batch/SPK Terkait
+          </button>
+          <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(workOrder.status)}`}>
+            {workOrder.status?.replace('_', ' ').toUpperCase()}
+          </span>
+        </div>
       </div>
+
+      {showBatchPanel && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowBatchPanel(false)} />
+          <div className="relative w-full max-w-md h-full bg-white dark:bg-gray-800 shadow-xl p-6 overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Batch/SPK untuk {workOrder.wo_number}</h2>
+              <button onClick={() => setShowBatchPanel(false)} className="text-gray-400 hover:text-gray-600">
+                <XMarkIcon className="h-5 w-5" />
+              </button>
+            </div>
+            {loadingBatches ? (
+              <div className="text-gray-400 text-sm">Memuat...</div>
+            ) : relatedBatches.length === 0 ? (
+              <div className="text-gray-400 text-sm">Belum ada batch untuk SPK ini.</div>
+            ) : (
+              <div className="space-y-3">
+                {relatedBatches.map((b: any) => (
+                  <div key={b.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-sm">{b.batch_number}</span>
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{b.status}</span>
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      Mesin: {b.machine_code || '-'} · Jadwal: {b.scheduled_date || '-'} shift {b.shift_number ?? '-'}
+                    </div>
+                    <div className="text-xs text-gray-500">Qty: {b.planned_qty ?? '-'}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <Link
+              to={`/app/production/batch-planning?work_order_id=${id}`}
+              className="mt-6 inline-flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              Buka di Batch Planning &rarr;
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Documents Section */}
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
@@ -260,7 +352,7 @@ export default function WorkOrderDetail() {
           </div>
           <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-sm text-blue-800">
-              <strong>Tip:</strong> SPK akan otomatis terisi dengan data dari Work Order ini termasuk:
+              <strong>Tip:</strong> SPK akan otomatis terisi dengan data dari SPK ini termasuk:
             </p>
             <ul className="list-disc list-inside text-sm text-blue-700 mt-2 space-y-1">
               <li>Informasi produk dan quantity</li>
@@ -367,9 +459,9 @@ export default function WorkOrderDetail() {
         </div>
       )}
 
-      {/* Work Order Info */}
+      {/* SPK Info */}
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-        <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Work Order Information</h2>
+        <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">SPK Information</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Product</label>
@@ -608,147 +700,6 @@ export default function WorkOrderDetail() {
         )}
       </div>
 
-      {/* Material Consumption Section */}
-      {bomItems.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-medium text-gray-900 dark:text-white flex items-center">
-              <svg className="h-5 w-5 mr-2 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
-              Konsumsi Material
-              {bomSource === 'master_bom' && (() => {
-                const ppc = workOrder.pack_per_carton || bomPackPerCarton || 1;
-                const ctns = Math.ceil((workOrder.quantity || 0) / ppc);
-                return (
-                  <span className="ml-2 text-xs font-normal text-gray-400">
-                    (estimasi dari Master BOM · {ctns} CTN @ {ppc} pcs/ctn)
-                  </span>
-                );
-              })()}
-            </h2>
-            <div className="flex gap-2">
-              {bomEditMode ? (
-                <>
-                  <button
-                    onClick={() => { setBomEditMode(false); fetchBOMItems(); }}
-                    disabled={bomSaving}
-                    className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    onClick={saveBOMActuals}
-                    disabled={bomSaving}
-                    className="px-4 py-1.5 text-sm bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 flex items-center gap-1.5"
-                  >
-                    {bomSaving ? (
-                      <><span className="animate-spin h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full inline-block" />Menyimpan...</>
-                    ) : 'Simpan Aktual'}
-                  </button>
-                </>
-              ) : (
-                <button
-                  onClick={() => setBomEditMode(true)}
-                  className="px-4 py-1.5 text-sm border border-orange-400 text-orange-600 dark:text-orange-400 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900/20 flex items-center gap-1.5"
-                >
-                  <PencilIcon className="h-3.5 w-3.5" />
-                  Input Aktual
-                </button>
-              )}
-            </div>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-900">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Material / Bahan</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipe</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Rencana</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Aktual Terpakai</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Selisih</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
-                {bomItems.map((item: any, idx: number) => {
-                  // Always use WO's pack_per_carton — it's up-to-date; BOM field may be stale
-                  const ppc = workOrder.pack_per_carton || bomPackPerCarton || 1;
-                  const totalCartons = ppc > 0
-                    ? Math.ceil((workOrder.quantity || 0) / ppc)
-                    : 0;
-                  const planned = bomSource === 'work_order'
-                    ? (item.quantity_planned || 0)
-                    : (item.quantity || 0) * totalCartons;
-                  const actual = bomEditMode
-                    ? (parseFloat(item.actual_input) || 0)
-                    : (item.quantity_actual || 0);
-                  const variance = actual > 0 ? actual - planned : null;
-                  const hasActual = actual > 0;
-                  return (
-                    <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                      <td className="px-4 py-3">
-                        <div className="font-medium text-gray-900 dark:text-white">{item.item_name}</div>
-                        {item.item_code && <div className="text-xs text-gray-400">{item.item_code}</div>}
-                      </td>
-                      <td className="px-4 py-3">
-                        {item.item_type && (
-                          <span className="text-xs bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 px-2 py-0.5 rounded">{item.item_type}</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-right text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
-                        {planned > 0 ? planned.toLocaleString('id-ID', { maximumFractionDigits: 2 }) : '—'} {item.uom}
-                      </td>
-                      <td className="px-4 py-3 text-right whitespace-nowrap">
-                        {bomEditMode ? (
-                          <div className="flex items-center justify-end gap-1">
-                            <input
-                              type="number"
-                              step="0.01"
-                              min="0"
-                              value={item.actual_input}
-                              onChange={(e) => setBomItems(prev => prev.map((bi: any, i: number) =>
-                                i === idx ? { ...bi, actual_input: e.target.value } : bi
-                              ))}
-                              className="w-28 px-2 py-1 text-right border border-orange-300 dark:border-orange-600 rounded focus:ring-1 focus:ring-orange-500 bg-white dark:bg-gray-800 text-sm"
-                              placeholder="0"
-                            />
-                            <span className="text-xs text-gray-400 w-8 text-left">{item.uom}</span>
-                          </div>
-                        ) : (
-                          hasActual
-                            ? <span className="text-sm font-medium text-gray-900 dark:text-white">{actual.toLocaleString('id-ID', { maximumFractionDigits: 2 })} {item.uom}</span>
-                            : <span className="text-xs text-gray-400 italic">Belum diisi</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-right text-sm whitespace-nowrap">
-                        {variance !== null ? (
-                          <span className={variance > 0 ? 'text-red-500 font-medium' : variance < 0 ? 'text-green-600 font-medium' : 'text-gray-400'}>
-                            {variance > 0 ? '+' : ''}{variance.toLocaleString('id-ID', { maximumFractionDigits: 2 })} {item.uom}
-                          </span>
-                        ) : <span className="text-gray-300">—</span>}
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        {!hasActual ? (
-                          <span className="text-xs bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400 px-2 py-0.5 rounded">Menunggu input</span>
-                        ) : variance !== null && variance > 0 ? (
-                          <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded">Over</span>
-                        ) : variance !== null && variance < 0 ? (
-                          <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">Efisien</span>
-                        ) : (
-                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">Sesuai</span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-          {bomEditMode && (
-            <p className="text-xs text-orange-400 mt-3">Selisih merah (+) = pemakaian melebihi rencana BOM. Selisih hijau (−) = lebih hemat dari rencana.</p>
-          )}
-        </div>
-      )}
-
       {/* Packing List Section - Per Shift */}
       {totalGood > 0 && (() => {
         // Check if this is WIP ALFA multi-variant (requires 3 variants per carton)
@@ -962,6 +913,98 @@ export default function WorkOrderDetail() {
         );
       })()}
 
+      {/* SPK - Histori Tahap Gudang (native replacement for Accurate EJO MS/FGS stages) */}
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+          <Squares2X2Icon className="h-5 w-5 mr-2 text-indigo-600" />
+          Histori Tahap Gudang (SPK)
+        </h2>
+        {loadingSpkHistory ? (
+          <div className="text-sm text-gray-400">Memuat...</div>
+        ) : spkWarehouseHistory.length === 0 ? (
+          <div className="text-sm text-gray-400">Belum ada histori tahap gudang untuk SPK ini.</div>
+        ) : (
+          <div className="space-y-2">
+            {spkWarehouseHistory.map((h: any, idx: number) => (
+              <div key={idx} className="flex items-center justify-between border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                <div>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${h.stage === 'fg' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'}`}>
+                    {h.stage_label}
+                  </span>
+                  <span className="ml-2 text-sm text-gray-600 dark:text-gray-300">Qty: {h.quantity}</span>
+                </div>
+                <span className="text-xs text-gray-400">{h.recorded_at ? new Date(h.recorded_at).toLocaleString('id-ID') : '-'}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* SPK - Riwayat Penyelesaian (native replacement for Accurate EJO's Finished Good Slip) */}
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+          <ClipboardDocumentListIcon className="h-5 w-5 mr-2 text-emerald-600" />
+          Riwayat Penyelesaian (Completion Record)
+        </h2>
+        {loadingSpkCompletion ? (
+          <div className="text-sm text-gray-400">Memuat...</div>
+        ) : spkCompletionRecords.length === 0 ? (
+          <div className="text-sm text-gray-400">Belum ada record penyelesaian untuk SPK ini.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="text-left text-gray-500 dark:text-gray-400">
+                  <th className="py-1 pr-4">Tanggal</th>
+                  <th className="py-1 pr-4">Mesin</th>
+                  <th className="py-1 pr-4">Operator</th>
+                  <th className="py-1 pr-4">Shift</th>
+                  <th className="py-1 pr-4">Qty Baik</th>
+                  <th className="py-1 pr-4">Reject</th>
+                  <th className="py-1 pr-4">Downtime</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                {spkCompletionRecords.map((r: any) => (
+                  <tr key={r.id} className={r.is_waste ? 'text-red-600' : ''}>
+                    <td className="py-2 pr-4">{r.production_date ? new Date(r.production_date).toLocaleDateString('id-ID') : '-'}</td>
+                    <td className="py-2 pr-4">{r.machine_name || '-'}</td>
+                    <td className="py-2 pr-4">{r.operator_name || '-'}</td>
+                    <td className="py-2 pr-4">{r.shift || '-'}</td>
+                    <td className="py-2 pr-4">{r.quantity_good}</td>
+                    <td className="py-2 pr-4">{r.quantity_scrap}</td>
+                    <td className="py-2 pr-4">{r.downtime_minutes} menit</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* SPK - Rincian Bahan Bertingkat (native replacement for Accurate EJO's multi-level material tree) */}
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white flex items-center">
+            <CubeIcon className="h-5 w-5 mr-2 text-amber-600" />
+            Rincian Bahan Bertingkat (Rencana)
+          </h2>
+          <Link to={`/app/production/work-orders/${id}/close`} className="text-sm text-primary-600 hover:underline">
+            Lihat & isi pemakaian aktual per batch →
+          </Link>
+        </div>
+        <p className="text-xs text-gray-400 mb-3">
+          Ini rencana kebutuhan bahan dari BOM (total seluruh SPK). Pemakaian aktual diisi per batch di Tutup SPK.
+        </p>
+        {loadingSpkMaterial ? (
+          <div className="text-sm text-gray-400">Memuat...</div>
+        ) : spkMaterialTree.length === 0 ? (
+          <div className="text-sm text-gray-400">Tidak ada BOM/bahan untuk SPK ini.</div>
+        ) : (
+          <SpkMaterialTreeView nodes={spkMaterialTree} />
+        )}
+      </div>
+
       {/* Action Buttons */}
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
         <div className="flex flex-wrap gap-3">
@@ -980,7 +1023,7 @@ export default function WorkOrderDetail() {
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 inline-flex items-center"
             >
               <PencilIcon className="h-4 w-4 mr-2" />
-              Edit Work Order
+              Edit SPK
             </Link>
           )}
           {(workOrder.status === 'in_progress' || workOrder.status === 'released') && (
@@ -1001,13 +1044,23 @@ export default function WorkOrderDetail() {
                 </svg>
                 Ganti Produk
               </Link>
-              <button
-                onClick={() => setShowCompleteModal(true)}
-                className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 inline-flex items-center"
-              >
-                <DocumentCheckIcon className="h-4 w-4 mr-2" />
-                Selesaikan Work Order
-              </button>
+              {(workOrder.product_material_type || '').toLowerCase() === 'finished_goods' ? (
+                <Link
+                  to={`/app/production/work-orders/${id}/close`}
+                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 inline-flex items-center"
+                >
+                  <DocumentCheckIcon className="h-4 w-4 mr-2" />
+                  Tutup SPK
+                </Link>
+              ) : (
+                <button
+                  onClick={() => setShowCompleteModal(true)}
+                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 inline-flex items-center"
+                >
+                  <DocumentCheckIcon className="h-4 w-4 mr-2" />
+                  Selesaikan SPK
+                </button>
+              )}
             </>
           )}
           {/* Submit for Approval - Only for completed WO without approval */}
@@ -1019,6 +1072,19 @@ export default function WorkOrderDetail() {
             >
               <DocumentCheckIcon className="h-4 w-4 mr-2" />
               {submittingApproval ? 'Submitting...' : 'Submit for Approval'}
+            </button>
+          )}
+
+          {/* Batalkan SPK - reverts a completed WO back to released, undoing
+              the finished-goods transfer to warehouse (2026-09-11). Blocked
+              server-side if already shipped or partially consumed. */}
+          {workOrder.status === 'completed' && (
+            <button
+              onClick={() => setShowRevertModal(true)}
+              className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 inline-flex items-center"
+            >
+              <ArrowUturnLeftIcon className="h-4 w-4 mr-2" />
+              Batalkan SPK
             </button>
           )}
 
@@ -1045,7 +1111,7 @@ export default function WorkOrderDetail() {
             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 inline-flex items-center"
           >
             <TrashIcon className="h-4 w-4 mr-2" />
-            Hapus Work Order
+            Hapus SPK
           </button>
           <Link
             to="/app/production/work-orders"
@@ -1065,17 +1131,17 @@ export default function WorkOrderDetail() {
                 <div className="p-3 bg-red-100 rounded-full">
                   <ExclamationTriangleIcon className="h-6 w-6 text-red-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Hapus Work Order</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Hapus SPK</h3>
               </div>
 
               <p className="text-gray-600 dark:text-gray-300 mb-4">
-                Apakah Anda yakin ingin menghapus Work Order <strong>{workOrder.wo_number}</strong>?
+                Apakah Anda yakin ingin menghapus SPK <strong>{workOrder.wo_number}</strong>?
               </p>
 
               {productionRecords.length > 0 && (
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
                   <p className="text-sm text-yellow-800">
-                    <strong>Perhatian:</strong> Work Order ini memiliki {productionRecords.length} record produksi.
+                    <strong>Perhatian:</strong> SPK ini memiliki {productionRecords.length} record produksi.
                   </p>
                   <label className="flex items-center gap-2 mt-2">
                     <input
@@ -1125,7 +1191,50 @@ export default function WorkOrderDetail() {
         </div>
       )}
 
-      {/* Complete Work Order Modal */}
+      {/* Batalkan SPK (revert completed -> released) Modal */}
+      {showRevertModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full">
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-3 bg-orange-100 rounded-full">
+                  <ArrowUturnLeftIcon className="h-6 w-6 text-orange-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Batalkan SPK</h3>
+              </div>
+
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
+                Batalkan SPK <strong>{workOrder.wo_number}</strong>? Barang jadi akan dikembalikan ke Area Produksi berstatus quarantine, dan SPK kembali ke status <strong>released</strong>.
+              </p>
+
+              <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-3 mb-4">
+                <p className="text-sm text-orange-800 dark:text-orange-300">
+                  Tidak bisa dilakukan kalau barang jadi sudah dikirim ke pelanggan, atau sebagian sudah terpakai/berkurang.
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setShowRevertModal(false)}
+                  disabled={reverting}
+                  className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg disabled:opacity-50"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={handleRevertToReleased}
+                  disabled={reverting}
+                  className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center"
+                >
+                  {reverting ? 'Membatalkan...' : 'Ya, Batalkan SPK'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Complete SPK Modal */}
       {showCompleteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full">
@@ -1134,11 +1243,11 @@ export default function WorkOrderDetail() {
                 <div className="p-3 bg-emerald-100 rounded-full">
                   <DocumentCheckIcon className="h-6 w-6 text-emerald-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Selesaikan Work Order</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Selesaikan SPK</h3>
               </div>
 
               <p className="text-gray-600 dark:text-gray-300 mb-4">
-                Apakah Anda yakin ingin menyelesaikan Work Order <strong>{workOrder.wo_number}</strong>?
+                Apakah Anda yakin ingin menyelesaikan SPK <strong>{workOrder.wo_number}</strong>?
               </p>
 
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
@@ -1205,5 +1314,29 @@ export default function WorkOrderDetail() {
         title={`Log Aktivitas WO ${workOrder?.wo_number || ''}`}
       />
     </div>
+  );
+}
+
+// Recursive renderer for the SPK multi-level material tree (Barang Jadi -> WIP -> Mixing),
+// from GET /api/spk/<id>/material-breakdown (routes/spk.py).
+function SpkMaterialTreeView({ nodes, depth = 0 }: { nodes: any[]; depth?: number }) {
+  return (
+    <ul className={depth === 0 ? 'space-y-1' : 'space-y-1 border-l border-gray-200 dark:border-gray-700 pl-4 mt-1'}>
+      {nodes.map((node, idx) => (
+        <li key={`${node.type}-${node.material_id || node.product_id}-${idx}`}>
+          <div className="flex items-center justify-between text-sm py-1">
+            <span className={node.type === 'sub_assembly' ? 'font-medium text-gray-800 dark:text-gray-100' : 'text-gray-600 dark:text-gray-300'}>
+              {node.type === 'sub_assembly' ? '📦 ' : '• '}{node.name}
+            </span>
+            <span className="text-gray-500 dark:text-gray-400 ml-4 whitespace-nowrap">
+              {node.quantity?.toLocaleString?.() ?? node.quantity} {node.uom || ''}
+            </span>
+          </div>
+          {node.children && node.children.length > 0 && (
+            <SpkMaterialTreeView nodes={node.children} depth={depth + 1} />
+          )}
+        </li>
+      ))}
+    </ul>
   );
 }

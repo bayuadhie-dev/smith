@@ -217,7 +217,7 @@ const WIPBatchList: React.FC = () => {
                 <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search WIP batches, work orders, products..."
+                  placeholder="Search WIP batches, SPK, products..."
                   value={filters.search}
                   onChange={(e) => handleFilterChange('search', e.target.value)}
                   className="input-field pl-10"
@@ -347,7 +347,7 @@ const WIPBatchList: React.FC = () => {
                 <thead>
                   <tr>
                     <th>WIP Batch No</th>
-                    <th>Work Order</th>
+                    <th>SPK</th>
                     <th>{t('production.product')}</th>
                     <th>Current Stage</th>
                     <th>Progress</th>

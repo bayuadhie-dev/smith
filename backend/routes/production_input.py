@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.auth_decorators import require_permission
 from datetime import datetime, date, time
 from sqlalchemy import func, and_, or_
 from models import db
@@ -11,12 +12,84 @@ from models.user import User
 
 production_input_bp = Blueprint('production_input', __name__)
 
+
+def _recalc_batch_progress(batch_id):
+    """Batch Scheduling §8: hitung ulang realized_qty dari SUM ShiftProduction terkait,
+    auto-complete kalau sudah tercapai. Dihitung sinkron di request yang sama (bukan lewat
+    event listener ORM) - sesuai keputusan desain karena listener after_commit pernah bikin
+    bug nyata di codebase ini akibat query ulang session yang sama."""
+    if not batch_id:
+        return
+    from models.batch_scheduling import ProductionBatch
+
+    batch = db.session.get(ProductionBatch, batch_id)
+    if not batch:
+        return
+
+    total = db.session.query(func.coalesce(func.sum(ShiftProduction.actual_quantity), 0)).filter(
+        ShiftProduction.production_batch_id == batch_id
+    ).scalar()
+    batch.realized_qty = total
+
+    if batch.status == 'approved' and total > 0:
+        batch.status = 'in_progress'
+    if batch.status in ('approved', 'in_progress') and batch.planned_qty is not None and total >= batch.planned_qty:
+        batch.status = 'completed'
+
+    db.session.commit()
+
+    _notify_if_wo_ready_to_close(batch.work_order_id)
+
+
+def _notify_if_wo_ready_to_close(work_order_id):
+    """Notifikasi role 'Admin Closing SPK' begitu SEMUA ProductionBatch milik satu
+    WorkOrder barang jadi sudah completed - sinyal bahwa produksi sudah selesai
+    (semua shift dari Admin 1 sudah tercatat) dan siap ditutup (halaman Tutup SPK:
+    bahan aktual + waste + packing list). Guard anti-spam: tidak kirim ulang kalau
+    sudah pernah dinotifikasi untuk WO ini, dan tidak kirim kalau WO sudah completed."""
+    if not work_order_id:
+        return
+    from models.batch_scheduling import ProductionBatch
+    from models.production import WorkOrder
+    from models.notification import Notification
+    from utils.send_notification import notify_users_by_role
+
+    wo = db.session.get(WorkOrder, work_order_id)
+    if not wo or wo.status == 'completed':
+        return
+    if not wo.product or (wo.product.material_type or '').strip().lower() != 'finished_goods':
+        return
+
+    batches = ProductionBatch.query.filter_by(work_order_id=work_order_id).all()
+    if not batches or any(b.status != 'completed' for b in batches):
+        return
+
+    already_notified = Notification.query.filter_by(
+        reference_type='work_order_ready_to_close', reference_id=work_order_id
+    ).first()
+    if already_notified:
+        return
+
+    notify_users_by_role(
+        'Admin Closing SPK',
+        title=f'SPK {wo.wo_number} siap ditutup',
+        message=f'Semua batch produksi untuk SPK {wo.wo_number} sudah selesai. Silakan input bahan aktual, waste, dan packing list untuk menyelesaikan SPK ini.',
+        category='production',
+        notification_type='info',
+        priority='normal',
+        reference_type='work_order_ready_to_close',
+        reference_id=work_order_id,
+        action_url=f'/app/production/work-orders/{work_order_id}/close',
+    )
+
+
 # ===============================
 # SHIFT PRODUCTION ENDPOINTS
 # ===============================
 
 @production_input_bp.route('/shift-productions', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_shift_productions():
     """Get shift production records with filtering"""
     try:
@@ -208,6 +281,7 @@ def calculate_oee_with_downtime_categories(data, planned_runtime):
 
 @production_input_bp.route('/shift-productions', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def create_shift_production():
     """Create new shift production record"""
     try:
@@ -249,17 +323,25 @@ def create_shift_production():
         
         # Calculate OEE with downtime categories
         oee_data = calculate_oee_with_downtime_categories(data, planned_runtime)
-        
-        # Get efficiency rate from category calculation
-        efficiency_rate = oee_data['efficiency_rate']
-        
+
+        # calculate_oee_with_downtime_categories()'s own 'efficiency_rate' is
+        # actually 100% minus downtime-category losses - that's the
+        # Availability factor (Run Time / Planned Time), not Efficiency
+        # (Actual/Target output). Storing it straight into efficiency_rate
+        # silently dropped the real performance factor from oee_score and
+        # gave the efficiency_rate column a different meaning here than
+        # everywhere else that reads it (standard 3-factor OEE below).
+        availability_rate = oee_data['efficiency_rate']
+
         # Total downtime
         total_downtime = oee_data['total_downtime']
         actual_runtime = planned_runtime - total_downtime
-        
-        # Calculate OEE score (Efficiency * Quality / 100)
-        # Note: Availability is already factored into efficiency_rate
-        oee_score = (efficiency_rate * quality_rate) / 100
+
+        # Real Efficiency/Performance factor: Actual Quantity / Target Quantity
+        efficiency_rate = (actual_quantity / target_quantity * 100) if target_quantity > 0 else 100
+
+        # Calculate OEE score = Availability x Efficiency x Quality (standard 3-factor OEE)
+        oee_score = (availability_rate * efficiency_rate * quality_rate) / 10000
         
         # Create shift production record
         shift_production = ShiftProduction(
@@ -270,6 +352,7 @@ def create_shift_production():
             machine_id=data['machine_id'],
             product_id=data['product_id'],
             work_order_id=data.get('work_order_id'),
+            production_batch_id=data.get('production_batch_id'),
             target_quantity=target_quantity,
             actual_quantity=actual_quantity,
             good_quantity=good_quantity,
@@ -309,7 +392,10 @@ def create_shift_production():
         
         db.session.add(shift_production)
         db.session.commit()
-        
+
+        if shift_production.production_batch_id:
+            _recalc_batch_progress(shift_production.production_batch_id)
+
         return jsonify({
             'message': 'Shift production record created successfully',
             'id': shift_production.id,
@@ -333,14 +419,18 @@ def create_shift_production():
 
 @production_input_bp.route('/shift-productions/<int:production_id>', methods=['PUT'])
 @jwt_required()
+@require_permission('production.edit')
 def update_shift_production(production_id):
     """Update shift production record"""
     try:
         data = request.get_json()
         
         shift_production = db.session.get(ShiftProduction, production_id) or abort(404)
-        
+        old_batch_id = shift_production.production_batch_id
+
         # Update fields
+        if 'production_batch_id' in data:
+            shift_production.production_batch_id = data['production_batch_id']
         if 'production_date' in data and data['production_date']:
             if isinstance(data['production_date'], str):
                 from datetime import datetime
@@ -380,9 +470,15 @@ def update_shift_production(production_id):
         shift_production.quality_rate = quality_rate
         shift_production.efficiency_rate = efficiency_rate
         shift_production.oee_score = (availability_rate * efficiency_rate * quality_rate) / 10000
-        
+
         db.session.commit()
-        
+
+        new_batch_id = shift_production.production_batch_id
+        if old_batch_id and old_batch_id != new_batch_id:
+            _recalc_batch_progress(old_batch_id)
+        if new_batch_id:
+            _recalc_batch_progress(new_batch_id)
+
         return jsonify(success_response('api.success')), 200
         
     except Exception as e:
@@ -395,6 +491,7 @@ def update_shift_production(production_id):
 
 @production_input_bp.route('/downtime-records', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_downtime_records():
     """Get downtime records with filtering"""
     try:
@@ -460,6 +557,7 @@ def get_downtime_records():
 
 @production_input_bp.route('/downtime-records', methods=['POST'])
 @jwt_required()
+@require_permission('production.create')
 def create_downtime_record():
     """Create new downtime record"""
     try:
@@ -540,6 +638,7 @@ def create_downtime_record():
 
 @production_input_bp.route('/machines/active', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_active_machines():
     """Get list of active machines for production input"""
     try:
@@ -563,6 +662,7 @@ def get_active_machines():
 
 @production_input_bp.route('/products/active', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_active_products():
     """Get list of active products for production input"""
     try:
@@ -585,6 +685,7 @@ def get_active_products():
 
 @production_input_bp.route('/employees/operators', methods=['GET'])
 @jwt_required()
+@require_permission('production.view')
 def get_operators():
     """Get list of operators for production input"""
     try:
