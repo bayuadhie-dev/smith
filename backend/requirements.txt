@@ -45,7 +45,7 @@ black==23.12.1
 pylint==3.0.3
 
 # Security
-cryptography==48.0.1
+cryptography==50.0.0
 bcrypt==4.1.2  # Password hashing
 
 # API Documentation
@@ -61,7 +61,7 @@ Pillow==12.3.0  # Image processing if needed
 
 # PDF Generation
 reportlab==4.0.7
-weasyprint==69.0  # Print Template Designer render engine (utils/template_render_engine.py). Needs system libs
+weasyprint==70.0  # Print Template Designer render engine (utils/template_render_engine.py). Needs system libs
                   # pango/cairo/gdk-pixbuf2/harfbuzz/fontconfig/freetype2/libffi via pacman BEFORE pip install
                   # (all already present on the EndeavourOS dev machine as of 2026-08-23 - verify on prod too).
 
