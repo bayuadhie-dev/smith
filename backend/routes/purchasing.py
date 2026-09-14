@@ -37,9 +37,11 @@ def get_suppliers():
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 50, type=int)
         search = request.args.get('search', '')
-        
+        supplier_type = request.args.get('supplier_type', '')
+        is_active_raw = request.args.get('is_active', '')
+
         # Try cache
-        cache_key = f'purchasing_suppliers_page{page}_per{per_page}_search{search}'
+        cache_key = f'purchasing_suppliers_page{page}_per{per_page}_search{search}_type{supplier_type}_active{is_active_raw}'
         try:
             redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
             r = redis.from_url(redis_url)
@@ -48,9 +50,9 @@ def get_suppliers():
                 return jsonify(json.loads(cached_data)), 200
         except Exception as cache_error:
             print(f"Redis cache error (using fallback): {cache_error}")
-            
+
         query = Supplier.query
-        
+
         if search:
             query = query.filter(
                 db.or_(
@@ -59,8 +61,18 @@ def get_suppliers():
                     Supplier.contact_person.ilike(f'%{search}%')
                 )
             )
-        
-        suppliers = query.filter_by(is_active=True).paginate(
+
+        if supplier_type:
+            query = query.filter(Supplier.supplier_type == supplier_type)
+
+        if is_active_raw == 'true':
+            query = query.filter(Supplier.is_active == True)
+        elif is_active_raw == 'false':
+            query = query.filter(Supplier.is_active == False)
+        else:
+            query = query.filter(Supplier.is_active == True)
+
+        suppliers = query.paginate(
             page=page, per_page=per_page, error_out=False
         )
         
@@ -97,6 +109,20 @@ def get_suppliers():
         return jsonify(response_data), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@purchasing_bp.route('/suppliers/types', methods=['GET'])
+@jwt_required()
+@require_permission('suppliers.view')
+def get_supplier_types():
+    """Distinct supplier_type values actually in use - the filter dropdown
+    used to hardcode manufacturer/distributor/trader/service, which never
+    matched the real category values imported from Accurate's vendor export."""
+    rows = db.session.query(Supplier.supplier_type).filter(
+        Supplier.supplier_type.isnot(None), Supplier.supplier_type != ''
+    ).distinct().order_by(Supplier.supplier_type).all()
+    return jsonify({'types': [r[0] for r in rows]}), 200
+
 
 @purchasing_bp.route('/suppliers', methods=['POST'])
 @jwt_required()

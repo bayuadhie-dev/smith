@@ -496,6 +496,10 @@ export const purchasingApi = api.injectEndpoints({
       query: (id) => `/purchasing/suppliers/${id}`,
       providesTags: ['Suppliers'],
     }),
+    getSupplierTypes: builder.query({
+      query: () => '/purchasing/suppliers/types',
+      providesTags: ['Suppliers'],
+    }),
     createSupplier: builder.mutation({
       query: (data) => ({
         url: '/purchasing/suppliers',
@@ -708,6 +712,7 @@ export const purchasingApi = api.injectEndpoints({
 export const {
   // Supplier Management
   useGetSuppliersQuery,
+  useGetSupplierTypesQuery,
   useGetSupplierQuery,
   useCreateSupplierMutation,
   useUpdateSupplierMutation,

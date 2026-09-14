@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { useGetSuppliersQuery, useDeleteSupplierMutation, useGetAllSupplierScorecardsQuery } from '../../services/api'
+import { useGetSuppliersQuery, useGetSupplierTypesQuery, useDeleteSupplierMutation, useGetAllSupplierScorecardsQuery } from '../../services/api'
 import toast from 'react-hot-toast'
 import {
   EyeIcon,
@@ -11,7 +11,9 @@ import {
   PencilIcon
 ,
   PlusIcon,
-  TrashIcon
+  TrashIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon
 } from '@heroicons/react/24/outline';
 export default function SupplierList() {
     const { t } = useLanguage();
@@ -27,6 +29,7 @@ const [search, setSearch] = useState('')
     supplier_type: supplierType,
     is_active: status === 'active' ? true : status === 'inactive' ? false : undefined
   })
+  const { data: supplierTypesData } = useGetSupplierTypesQuery(undefined)
 
   // Vendor Scorecard (SAP MM concept, 2026-09-14) - real score from PO/GRN/Invoice
   // history, shown alongside the old manual A/B/C rating. Bulk-fetched once for the
@@ -100,10 +103,9 @@ const [search, setSearch] = useState('')
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">All Types</option>
-              <option value="manufacturer">Manufacturer</option>
-              <option value="distributor">Distributor</option>
-              <option value="trader">Trader</option>
-              <option value="service">Service Provider</option>
+              {(supplierTypesData?.types || []).map((tp: string) => (
+                <option key={tp} value={tp}>{tp}</option>
+              ))}
             </select>
           </div>
           
@@ -277,14 +279,16 @@ const [search, setSearch] = useState('')
                 <button
                   onClick={() => setPage(page - 1)}
                   disabled={page <= 1}
-                  className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
+                  className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 flex items-center gap-1"
                 >
+                  <ChevronLeftIcon className="h-4 w-4" /> Previous
                 </button>
                 <button
                   onClick={() => setPage(page + 1)}
                   disabled={page >= data.pages}
-                  className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
+                  className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 flex items-center gap-1"
                 >
+                  Next <ChevronRightIcon className="h-4 w-4" />
                 </button>
               </div>
             </div>
