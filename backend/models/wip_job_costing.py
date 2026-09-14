@@ -11,7 +11,15 @@ class WIPBatch(db.Model):
     wip_batch_no = db.Column(db.String(50), unique=True, nullable=False)
     work_order_id = db.Column(db.Integer, db.ForeignKey('work_orders.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
-    
+    # Link to Batch Scheduling's real per-machine/day/shift ProductionBatch
+    # (2026-09-12) - NULL means legacy behavior: one WIPBatch per WorkOrder
+    # total (pre-Batch-Scheduling companies/WOs). When set, this WIPBatch
+    # tracks cost/quantity for just THIS scheduled batch (one machine, one
+    # shift-slot), closing the gap where job costing stayed WO-level-flat
+    # even after Batch Scheduling made the schedule itself granular - see
+    # project_sap_alignment_survey memory ("WO is flat" follow-up).
+    production_batch_id = db.Column(db.Integer, db.ForeignKey('production_batches.id'), nullable=True)
+
     # Production Stage Tracking
     current_stage = db.Column(db.String(50), nullable=False)  # cutting, filling, sealing, packing
     machine_id = db.Column(db.Integer, db.ForeignKey('machines.id'), nullable=True)

@@ -1699,6 +1699,20 @@ def create_work_order_production_record(id):
         machine_id = wo.machine_id or data.get('machine_id')
         if not machine_id:
             return jsonify({'error': 'Machine ID is required for production record'}), 400
+
+        # Optional link to a Batch Scheduling ProductionBatch (2026-09-12) -
+        # NULL/omitted preserves the exact legacy behavior (one WIPBatch per
+        # WorkOrder total) for WOs/companies not using Batch Scheduling yet.
+        # When given, this shift's output is attributed to that specific
+        # scheduled batch (one machine, one shift-slot) instead of the WO as
+        # a whole - see project_sap_alignment_survey memory.
+        production_batch_id = data.get('production_batch_id')
+        production_batch = None
+        if production_batch_id:
+            from models.batch_scheduling import ProductionBatch
+            production_batch = db.session.get(ProductionBatch, production_batch_id)
+            if not production_batch or production_batch.work_order_id != id:
+                return jsonify({'error': 'production_batch_id tidak valid untuk work order ini'}), 400
         
         # Create production record
         # Use product_id from request if provided (for multi-product per shift)
@@ -1853,6 +1867,7 @@ def create_work_order_production_record(id):
                 shift_end=shift_end,
                 machine_id=machine_id,
                 product_id=product_id,
+                production_batch_id=production_batch_id,
                 work_order_id=id,
                 batch_number=data.get('batch_number') or wo.batch_number,  # From request or fallback to WO
                 target_quantity=wo.quantity,
@@ -1974,28 +1989,47 @@ def create_work_order_production_record(id):
             machine.status = 'running' if wo.status == 'in_progress' else machine.status
         
         # ============= JOB COSTING INTEGRATION =============
-        # Get or create WIP batch for this work order
-        wip_batch = WIPBatch.query.filter_by(work_order_id=id).first()
+        # Get or create WIP batch - scoped to the specific ProductionBatch
+        # when one was given (granular, one WIPBatch per scheduled
+        # machine/shift batch), else the legacy WO-wide single WIPBatch
+        # (production_batch_id IS NULL keeps old WOs behaving exactly as
+        # before - never matches a batch-scoped row and vice versa).
+        wip_batch = WIPBatch.query.filter_by(work_order_id=id, production_batch_id=production_batch_id).first()
         if not wip_batch:
+            batch_qty = float(production_batch.planned_qty) if production_batch else float(wo.quantity)
             wip_batch = WIPBatch(
-                wip_batch_no=f"WIP-{wo.wo_number}",
+                wip_batch_no=f"WIP-{wo.wo_number}" + (f"-B{production_batch_id}" if production_batch_id else ""),
                 work_order_id=id,
+                production_batch_id=production_batch_id,
                 product_id=wo.product_id,
                 current_stage='production',
-                qty_started=float(wo.quantity),
-                qty_in_process=float(wo.quantity),
+                qty_started=batch_qty,
+                qty_in_process=batch_qty,
                 status='in_progress',
-                machine_id=machine_id,
+                machine_id=production_batch.machine_id if production_batch else machine_id,
                 shift=data.get('shift', '1'),
                 created_by=int(user_id)
             )
             db.session.add(wip_batch)
             db.session.flush()
-        
-        # Update WIP batch quantities
-        wip_batch.qty_completed = float(wo.quantity_good or 0)
-        wip_batch.qty_rejected = float(wo.quantity_scrap or 0)
-        wip_batch.qty_in_process = float(wo.quantity) - wip_batch.qty_completed - wip_batch.qty_rejected
+
+        # Update WIP batch quantities. Legacy (no production_batch_id): use
+        # the WO's own cumulative totals, exactly as before. Batch-scoped:
+        # aggregate from ShiftProduction rows for THIS batch only, so
+        # multiple batches on the same WO never share or double-count each
+        # other's quantities.
+        if production_batch_id:
+            batch_good, batch_reject = db.session.query(
+                func.coalesce(func.sum(ShiftProduction.good_quantity), 0),
+                func.coalesce(func.sum(ShiftProduction.reject_quantity), 0),
+            ).filter(ShiftProduction.production_batch_id == production_batch_id).one()
+            wip_batch.qty_completed = float(batch_good)
+            wip_batch.qty_rejected = float(batch_reject)
+            wip_batch.qty_in_process = float(wip_batch.qty_started) - wip_batch.qty_completed - wip_batch.qty_rejected
+        else:
+            wip_batch.qty_completed = float(wo.quantity_good or 0)
+            wip_batch.qty_rejected = float(wo.quantity_scrap or 0)
+            wip_batch.qty_in_process = float(wo.quantity) - wip_batch.qty_completed - wip_batch.qty_rejected
         
         # Calculate labor cost (based on actual runtime and labor rate)
         from utils.helpers import get_setting_value
@@ -2163,6 +2197,11 @@ def create_work_order_production_record(id):
             ))
 
         db.session.commit()
+
+        if production_batch_id:
+            from routes.production_input import _recalc_batch_progress
+            _recalc_batch_progress(production_batch_id)
+
         from models.warehouse import Inventory as _Inv
         print(f"[DEBUG BUFFER STOCK] after commit - checking inventory count: {_Inv.query.filter_by(product_id=wo.product_id, stock_status='released').count()}")
 

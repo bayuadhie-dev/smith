@@ -336,7 +336,9 @@ export default function WorkOrderProductionInput() {
     reassignment_notes: '',
     batch_number: '',
     batch_number_2: '',
+    production_batch_id: '', // optional link to Batch Scheduling's ProductionBatch (2026-09-12)
   });
+  const [productionBatches, setProductionBatches] = useState<any[]>([]);
 
   // Downtime entries list
   const [downtimeEntries, setDowntimeEntries] = useState<DowntimeEntry[]>([]);
@@ -733,13 +735,15 @@ export default function WorkOrderProductionInput() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [woRes, empRes, recordsRes, productsRes, bomRes] = await Promise.all([
+      const [woRes, empRes, recordsRes, productsRes, bomRes, batchesRes] = await Promise.all([
         axiosInstance.get(`/api/production/work-orders/${id}`),
         axiosInstance.get('/api/hr/employees'),
         axiosInstance.get(`/api/production/work-orders/${id}/production-records`),
         axiosInstance.get('/api/products-new/?per_page=1000'),
-        axiosInstance.get(`/api/production/work-orders/${id}/bom`).catch(() => ({ data: { source: 'none', bom_items: [] } }))
+        axiosInstance.get(`/api/production/work-orders/${id}/bom`).catch(() => ({ data: { source: 'none', bom_items: [] } })),
+        axiosInstance.get(`/api/batch-scheduling/batches?work_order_id=${id}`).catch(() => ({ data: { batches: [] } }))
       ]);
+      setProductionBatches(batchesRes.data.batches || batchesRes.data || []);
 
       const workOrderData = woRes.data.work_order;
       const recordsData = recordsRes.data.records || [];
@@ -1120,6 +1124,7 @@ export default function WorkOrderProductionInput() {
         product_id: selectedProduct?.id || workOrder?.product_id,  // Use selected product or WO default
         production_date: formData.production_date,
         shift: formData.shift,
+        production_batch_id: formData.production_batch_id ? parseInt(formData.production_batch_id) : undefined,
         sub_shift: subShift,  // 'a', 'b', 'c' or null for single product shift
         quantity_produced: parseFloat(formData.quantity_produced),  // Auto: A+B+C
         quantity_good: parseFloat(formData.quantity_good),          // Grade A - user input
@@ -1571,6 +1576,28 @@ export default function WorkOrderProductionInput() {
               </p>
             )}
           </div>
+          {productionBatches.length > 0 && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                Batch (Batch Scheduling)
+              </label>
+              <select
+                value={formData.production_batch_id}
+                onChange={(e) => handleChange('production_batch_id', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">Tidak terikat batch tertentu</option>
+                {productionBatches.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.batch_number} — {b.machine_code || `Mesin #${b.machine_id}`}, {b.scheduled_date} shift {b.shift_number}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-gray-500">
+                Opsional — kalau dipilih, hasil shift ini masuk ke batch ini (biaya &amp; progress batch ter-update otomatis).
+              </p>
+            </div>
+          )}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Average Time (menit)
