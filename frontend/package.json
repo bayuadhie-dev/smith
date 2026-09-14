@@ -63,17 +63,30 @@
     "@typescript-eslint/eslint-plugin": "^8.64.0",
     "@typescript-eslint/parser": "^8.64.0",
     "@vitejs/plugin-react": "^5.2.0",
-    "@vitest/coverage-v8": "^4.1.9",
-    "@vitest/ui": "^4.0.8",
+    "@vitest/coverage-v8": "^4.1.11",
+    "@vitest/ui": "^4.1.11",
     "autoprefixer": "^10.4.16",
     "eslint": "^8.55.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
     "jsdom": "^27.1.0",
-    "postcss": "^8.4.32",
+    "postcss": "^8.5.23",
     "tailwindcss": "^3.3.6",
     "typescript": "^5.2.2",
     "vite": "^8.1.5",
-    "vitest": "^4.0.8"
+    "vitest": "^4.1.11"
+  },
+  "overrides": {
+    "dompurify": "^3.4.15",
+    "nanoid": "^3.3.18",
+    "js-yaml": "^4.3.2",
+    "browserslist": "^4.28.7",
+    "baseline-browser-mapping": "^2.11.0",
+    "minimatch@3.1.5": {
+      "brace-expansion": "^1.1.18"
+    },
+    "minimatch@10.2.5": {
+      "brace-expansion": "^5.0.9"
+    }
   }
 }
