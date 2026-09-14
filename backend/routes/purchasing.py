@@ -1098,7 +1098,25 @@ def submit_for_approval(po_id):
         if po.status != 'draft':
             return jsonify(error_response('api.error', error_code=400)), 400
 
-        from models.approval_workflow import ApprovalWorkflow, ApprovalHistory
+        from models.approval_workflow import ApprovalWorkflow, ApprovalHistory, ApprovalConfiguration
+
+        # Release strategy by value (SAP MM concept, 2026-09-14) - uses the
+        # ApprovalConfiguration.amount_threshold field, which existed but was never
+        # actually enforced anywhere (found during the MM gap audit). A PO at or
+        # below the configured threshold for 'purchase_order' auto-approves with no
+        # review/approval step at all - a real, single-tier release strategy. Above
+        # threshold (or when no threshold is configured, preserving old behavior)
+        # still goes through the full review->approve ApprovalWorkflow as before.
+        config = ApprovalConfiguration.query.filter_by(transaction_type='purchase_order', is_active=True).first()
+        if config and config.amount_threshold is not None and float(po.total_amount or 0) <= float(config.amount_threshold):
+            po.status = 'approved'
+            po.approved_by = user_id
+            po.approved_at = get_local_now()
+            db.session.commit()
+            return jsonify(success_response('api.success', data={
+                'auto_approved': True,
+                'reason': f'Total PO Rp{float(po.total_amount or 0):,.0f} di bawah batas release strategy Rp{float(config.amount_threshold):,.0f}, disetujui otomatis.',
+            })), 200
 
         workflow = ApprovalWorkflow(
             transaction_type='purchase_order',
