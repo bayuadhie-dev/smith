@@ -236,6 +236,80 @@ export const salesApi = api.injectEndpoints({
       }),
       invalidatesTags: ['SalesOrders'],
     }),
+    getAtpPreview: builder.query({
+      query: (id) => `/sales/orders/${id}/atp-preview`,
+      providesTags: ['SalesOrders'],
+    }),
+
+    // Pricing Procedure
+    calculatePricing: builder.query({
+      query: (params) => ({
+        url: '/sales/pricing/calculate',
+        params,
+      }),
+    }),
+    getPricingConditions: builder.query({
+      query: (params) => ({
+        url: '/sales/pricing-conditions',
+        params,
+      }),
+      providesTags: ['PricingConditions'],
+    }),
+    createPricingCondition: builder.mutation({
+      query: (data) => ({
+        url: '/sales/pricing-conditions',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['PricingConditions'],
+    }),
+    updatePricingCondition: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/sales/pricing-conditions/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ['PricingConditions'],
+    }),
+    deletePricingCondition: builder.mutation({
+      query: (id) => ({
+        url: `/sales/pricing-conditions/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['PricingConditions'],
+    }),
+
+    // Customer-Material Info Record
+    getCustomerMaterialInfo: builder.query({
+      query: (params) => ({
+        url: '/sales/customer-material-info',
+        params,
+      }),
+      providesTags: ['CustomerMaterialInfo'],
+    }),
+    createCustomerMaterialInfo: builder.mutation({
+      query: (data) => ({
+        url: '/sales/customer-material-info',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['CustomerMaterialInfo'],
+    }),
+    updateCustomerMaterialInfo: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/sales/customer-material-info/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ['CustomerMaterialInfo'],
+    }),
+    deleteCustomerMaterialInfo: builder.mutation({
+      query: (id) => ({
+        url: `/sales/customer-material-info/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['CustomerMaterialInfo'],
+    }),
   }),
 })
 
@@ -386,6 +460,16 @@ export const {
   useCreateSalesOrderMutation,
   useUpdateSalesOrderMutation,
   useConfirmSalesOrderMutation,
+  useGetAtpPreviewQuery,
+  useLazyCalculatePricingQuery,
+  useGetPricingConditionsQuery,
+  useCreatePricingConditionMutation,
+  useUpdatePricingConditionMutation,
+  useDeletePricingConditionMutation,
+  useGetCustomerMaterialInfoQuery,
+  useCreateCustomerMaterialInfoMutation,
+  useUpdateCustomerMaterialInfoMutation,
+  useDeleteCustomerMaterialInfoMutation,
 } = salesApi
 
 export const {
@@ -576,6 +660,48 @@ export const purchasingApi = api.injectEndpoints({
       }),
       invalidatesTags: ['Contracts'],
     }),
+
+    // Vendor Scorecard - real score computed from PO/GRN/Invoice history
+    getSupplierScorecard: builder.query({
+      query: (id) => `/purchasing/suppliers/${id}/scorecard`,
+      providesTags: ['Suppliers'],
+    }),
+    getAllSupplierScorecards: builder.query({
+      query: () => '/purchasing/suppliers/scorecards',
+      providesTags: ['Suppliers'],
+    }),
+
+    // Source List (Approved Vendors) - drill-down by material_id or supplier_id
+    getApprovedVendors: builder.query({
+      query: (params) => ({
+        url: '/purchasing/approved-vendors',
+        params,
+      }),
+      providesTags: ['ApprovedVendors'],
+    }),
+    createApprovedVendor: builder.mutation({
+      query: (data) => ({
+        url: '/purchasing/approved-vendors',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['ApprovedVendors'],
+    }),
+    updateApprovedVendor: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/purchasing/approved-vendors/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ['ApprovedVendors'],
+    }),
+    deleteApprovedVendor: builder.mutation({
+      query: (id) => ({
+        url: `/purchasing/approved-vendors/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['ApprovedVendors'],
+    }),
   }),
 })
 
@@ -617,6 +743,16 @@ export const {
   useCreateContractMutation,
   useActivateContractMutation,
   useUpdateContractMutation,
+
+  // Vendor Scorecard
+  useGetSupplierScorecardQuery,
+  useGetAllSupplierScorecardsQuery,
+
+  // Source List (Approved Vendors)
+  useGetApprovedVendorsQuery,
+  useCreateApprovedVendorMutation,
+  useUpdateApprovedVendorMutation,
+  useDeleteApprovedVendorMutation,
 } = purchasingApi
 
 // Shipping API moved to separate file: services/shippingApi.ts
