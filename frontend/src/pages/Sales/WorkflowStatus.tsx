@@ -66,6 +66,16 @@ interface WorkflowData {
 // SO_APPROVE_FLOW_TRACE.md) - makanya selalu tampil kosong ("cacat, tidak ada
 // detail"). Halaman ini sekarang MURNI read-only: riwayat WO/QC/Shipping/Invoice
 // per SO. Aksi approve SO sepenuhnya ada di SalesOrderDetails.tsx / List.
+//
+// 2026-09-12: removed a leftover "Complete Production" button/handler that
+// contradicted the read-only intent above - it set a WorkOrder straight to
+// 'completed' with zero gate (no batch/packing-list check like the real
+// Tutup SPK flow requires), confirmed via real data to have actually been
+// used at least twice (2 completed WOs with zero ShiftProduction ever
+// recorded). Its backend endpoint (workflow-complete/production/.../complete)
+// was also removed - it wrote to two more dead models (QualityInspection,
+// WorkflowStep) on top of the missing gate. See project_sap_alignment_survey
+// memory ("status lifecycle validation" finding).
 const WorkflowStatus: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [workflowData, setWorkflowData] = useState<WorkflowData | null>(null);
@@ -85,21 +95,6 @@ const WorkflowStatus: React.FC = () => {
       setError(error.response?.data?.error || 'Failed to fetch workflow status');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const completeProduction = async (workOrderId: number) => {
-    try {
-      const actualQuantity = prompt('Enter actual quantity produced:');
-      if (actualQuantity) {
-        await axiosInstance.post(`/api/workflow-complete/production/${workOrderId}/complete`, {
-          actual_quantity: parseFloat(actualQuantity)
-        });
-        alert('Production completed successfully!');
-        fetchWorkflowStatus();
-      }
-    } catch (error: any) {
-      alert(error.response?.data?.error || 'Failed to complete production');
     }
   };
 
@@ -231,14 +226,6 @@ const WorkflowStatus: React.FC = () => {
                   Quantity: {wo.quantity_to_produce}
                   {wo.actual_quantity && ` / Actual: ${wo.actual_quantity}`}
                 </p>
-                {wo.status === 'planned' && (
-                  <button
-                    onClick={() => completeProduction(wo.id)}
-                    className="mt-2 px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
-                  >
-                    Complete Production
-                  </button>
-                )}
               </div>
             ))}
           </div>

@@ -95,58 +95,6 @@ def trigger_complete_workflow(sales_order_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
-@workflow_complete_bp.route('/production/<int:work_order_id>/complete', methods=['POST'])
-@jwt_required()
-@require_permission('approval.view')
-def complete_production(work_order_id):
-    """Complete production and trigger quality control"""
-    try:
-        user_id = get_jwt_identity()
-        data = request.get_json()
-        
-        work_order = db.session.get(WorkOrder, work_order_id) or abort(404)
-        
-        # Update work order status
-        work_order.status = 'completed'
-        work_order.quantity_produced = data.get('actual_quantity', work_order.quantity)
-        work_order.actual_end_date = get_local_now()
-
-        # Create Quality Inspection
-        quality_inspection = QualityInspection(
-            inspection_number=generate_number('QI', QualityInspection, 'inspection_number'),
-            work_order_id=work_order_id,
-            product_id=work_order.product_id,
-            quantity_inspected=work_order.quantity_produced,
-            inspection_date=get_local_now(),
-            inspector_id=user_id,
-            status='pending'
-        )
-        db.session.add(quality_inspection)
-        
-        # Create workflow step
-        workflow_step = WorkflowStep(
-            workflow_type='order_to_cash',
-            reference_type='work_order',
-            reference_id=work_order_id,
-            step_name='Quality Control',
-            step_order=3,
-            status='pending'
-        )
-        db.session.add(workflow_step)
-        
-        db.session.commit()
-        
-        return jsonify({
-            'message': 'Production completed, quality inspection created',
-            'work_order_id': work_order_id,
-            'quality_inspection_id': quality_inspection.id,
-            'next_step': 'Quality inspection required'
-        }), 200
-        
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
-
 @workflow_complete_bp.route('/quality/<int:inspection_id>/approve', methods=['POST'])
 @jwt_required()
 @require_permission('approval.approve')
