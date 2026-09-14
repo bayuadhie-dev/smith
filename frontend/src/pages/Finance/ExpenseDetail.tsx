@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
+import toast from 'react-hot-toast';
 
 interface ExpenseDetailData {
   id: number;
@@ -16,6 +17,10 @@ interface ExpenseDetailData {
   reference_number: string | null;
   status: string;
   status_display: string;
+  manager_status: string;
+  required_manager_id: number | null;
+  required_manager_name: string | null;
+  manager_approved_at: string | null;
   submitted_at: string | null;
   approved_at: string | null;
   approval_notes: string | null;
@@ -42,8 +47,9 @@ const ExpenseDetail: React.FC = () => {
   const [data, setData] = useState<ExpenseDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [approving, setApproving] = useState(false);
 
-  useEffect(() => {
+  const load = () => {
     axiosInstance
       .get(`/api/expenses/${id}`)
       .then((res) => {
@@ -54,7 +60,22 @@ const ExpenseDetail: React.FC = () => {
         setError('Gagal memuat detail expense.');
         setLoading(false);
       });
-  }, [id]);
+  };
+
+  useEffect(() => { load(); }, [id]);
+
+  const handleManagerApprove = async (decision: 'approved' | 'rejected') => {
+    setApproving(true);
+    try {
+      await axiosInstance.post(`/api/expenses/${id}/manager-approve`, { decision });
+      toast.success(decision === 'approved' ? 'Disetujui sebagai manager' : 'Ditolak sebagai manager');
+      load();
+    } catch (e: any) {
+      toast.error(e?.response?.data?.error || 'Gagal memproses approval');
+    } finally {
+      setApproving(false);
+    }
+  };
 
   if (loading) {
     return <div className="p-6 text-gray-500">Memuat...</div>;
@@ -79,6 +100,45 @@ const ExpenseDetail: React.FC = () => {
 
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">{data.expense_number}</h1>
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{data.employee_name}</p>
+
+      {data.required_manager_id && (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6 mb-6">
+          <h2 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Alur Approval</h2>
+          <div className="flex items-center gap-3 text-sm">
+            <div className="flex items-center gap-2">
+              <span className={`w-2.5 h-2.5 rounded-full ${data.manager_status === 'approved' ? 'bg-green-500' : data.manager_status === 'rejected' ? 'bg-red-500' : 'bg-yellow-400'}`} />
+              <span>
+                Manager ({data.required_manager_name || '-'}):{' '}
+                <strong>{data.manager_status === 'approved' ? 'Disetujui' : data.manager_status === 'rejected' ? 'Ditolak' : 'Menunggu'}</strong>
+                {data.manager_approved_at && <> pada {new Date(data.manager_approved_at).toLocaleString('id-ID')}</>}
+              </span>
+            </div>
+            <span className="text-gray-300">&rarr;</span>
+            <div className="flex items-center gap-2">
+              <span className={`w-2.5 h-2.5 rounded-full ${data.status === 'approved' || data.status === 'paid' ? 'bg-green-500' : data.status === 'rejected' ? 'bg-red-500' : 'bg-yellow-400'}`} />
+              <span>Final (HR/Finance): <strong>{data.status_display}</strong></span>
+            </div>
+          </div>
+          {data.manager_status === 'pending' && data.status === 'submitted' && (
+            <div className="flex gap-2 mt-4">
+              <button
+                className="btn-primary text-sm"
+                disabled={approving}
+                onClick={() => handleManagerApprove('approved')}
+              >
+                Approve sebagai Manager
+              </button>
+              <button
+                className="btn-outline text-sm"
+                disabled={approving}
+                onClick={() => handleManagerApprove('rejected')}
+              >
+                Tolak sebagai Manager
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6 mb-6">
         <div className="grid grid-cols-2 gap-4 text-sm">

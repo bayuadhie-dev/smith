@@ -1039,6 +1039,14 @@ export const hrApi = api.injectEndpoints({
       }),
       invalidatesTags: ['Leaves'],
     }),
+    managerApproveLeave: builder.mutation({
+      query: ({ leaveId, decision }) => ({
+        url: `/hr/leaves/${leaveId}/manager-approve`,
+        method: 'POST',
+        body: { decision },
+      }),
+      invalidatesTags: ['Leaves'],
+    }),
     rejectLeave: builder.mutation({
       query: ({ leaveId, ...data }) => ({
         url: `/hr/leaves/${leaveId}/reject`,

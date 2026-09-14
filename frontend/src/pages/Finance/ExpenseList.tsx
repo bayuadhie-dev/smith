@@ -27,6 +27,8 @@ interface Expense {
   amount_base: number;
   status: string;
   status_display: string;
+  manager_status: string;
+  required_manager_id: number | null;
   receipt_file_name: string | null;
   submitted_at: string | null;
   approved_at: string | null;
@@ -76,6 +78,7 @@ const ExpenseList: React.FC = () => {
     const actionConfig: Record<string, { url: string; body?: any; confirm?: string; success: string }> = {
       submit: { url: `/api/expenses/${expenseId}/submit`, success: 'Expense berhasil disubmit' },
       approve: { url: `/api/expenses/${expenseId}/approve`, success: 'Expense berhasil disetujui' },
+      'manager-approve': { url: `/api/expenses/${expenseId}/manager-approve`, body: { decision: 'approved' }, success: 'Disetujui sebagai manager' },
       delete: { url: `/api/expenses/${expenseId}`, confirm: 'Hapus expense ini?', success: 'Expense berhasil dihapus' },
     };
 
@@ -279,6 +282,11 @@ const ExpenseList: React.FC = () => {
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(expense.status)}`}>
                         {expense.status_display}
                       </span>
+                      {expense.required_manager_id && (
+                        <div className="mt-1 text-xs text-gray-500">
+                          Manager: {expense.manager_status === 'approved' ? '✓ Disetujui' : expense.manager_status === 'rejected' ? '✗ Ditolak' : '⏳ Menunggu'}
+                        </div>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
                       {expense.receipt_file_name ? (
@@ -298,12 +306,21 @@ const ExpenseList: React.FC = () => {
                             <Send className="w-4 h-4" />
                           </button>
                         )}
+                        {expense.status === 'submitted' && expense.manager_status === 'pending' && (
+                          <button
+                            onClick={() => handleStatusChange(expense.id, 'manager-approve')}
+                            className="p-1 text-blue-600 hover:text-blue-800"
+                            title="Approve sebagai Manager Departemen"
+                          >
+                            <CheckCircle className="w-4 h-4" />
+                          </button>
+                        )}
                         {expense.status === 'submitted' && hasPermission('expense.approve') && (
                           <>
                             <button
                               onClick={() => handleStatusChange(expense.id, 'approve')}
                               className="p-1 text-green-600 hover:text-green-800"
-                              title="Approve"
+                              title={expense.manager_status === 'pending' ? 'Approve (menunggu manager approve dulu)' : 'Approve'}
                             >
                               <CheckCircle className="w-4 h-4" />
                             </button>

@@ -118,6 +118,8 @@ def get_expenses():
                 'vendor_name': exp.vendor_name,
                 'status': exp.status,
                 'status_display': exp.status_display,
+                'manager_status': exp.manager_status,
+                'required_manager_id': exp.required_manager_id,
                 'submitted_at': exp.submitted_at.isoformat() if exp.submitted_at else None,
                 'approved_at': exp.approved_at.isoformat() if exp.approved_at else None,
                 'reimbursement_id': exp.reimbursement_id,
@@ -184,6 +186,10 @@ def get_expense(expense_id):
                 'vendor_name': expense.vendor_name,
                 'status': expense.status,
                 'status_display': expense.status_display,
+                'manager_status': expense.manager_status,
+                'required_manager_id': expense.required_manager_id,
+                'required_manager_name': expense.required_manager.full_name if expense.required_manager else None,
+                'manager_approved_at': expense.manager_approved_at.isoformat() if expense.manager_approved_at else None,
                 'submitted_at': expense.submitted_at.isoformat() if expense.submitted_at else None,
                 'submitted_by': expense.submitted_by,
                 'approved_by': expense.approved_by,
@@ -501,14 +507,58 @@ def submit_expense(expense_id):
         expense.status = 'submitted'
         expense.submitted_at = datetime.utcnow()
         expense.submitted_by = user_id
-        
+
+        # Multi-level approval routing (2026-09-14) - route to the employee's
+        # department manager first, same pattern as Leave.manager_status. Skipped
+        # (auto-pass) when no manager is configured or the employee IS the manager.
+        expense.required_manager_id = None
+        expense.manager_status = 'skipped'
+        if employee.department and employee.department.manager_id and employee.department.manager_id != employee.id:
+            expense.required_manager_id = employee.department.manager_id
+            expense.manager_status = 'pending'
+
         db.session.commit()
-        
+
         return jsonify({
             'success': True,
             'message': 'Expense submitted for approval'
         }), 200
-        
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@expense_bp.route('/<int:expense_id>/manager-approve', methods=['POST'])
+@jwt_required()
+def manager_approve_expense(expense_id):
+    """First step of the multi-level approval chain (2026-09-14) - only the
+    employee's actual department manager (required_manager_id, resolved from
+    Department.manager_id at submit time) or an admin may act here."""
+    try:
+        user_id = get_jwt_identity()
+        expense = Expense.query.get_or_404(expense_id)
+
+        if expense.manager_status != 'pending':
+            return jsonify({'success': False, 'error': 'Expense ini tidak sedang menunggu approval manager'}), 400
+
+        manager_employee = db.session.get(Employee, expense.required_manager_id) if expense.required_manager_id else None
+        is_the_manager = manager_employee and manager_employee.user_id == int(user_id)
+        if not (is_the_manager or can_view_all(user_id)):
+            return jsonify({'success': False, 'error': 'Hanya manager departemen karyawan ini yang bisa approve'}), 403
+
+        data = request.get_json() or {}
+        decision = data.get('decision', 'approved')
+        expense.manager_status = 'approved' if decision == 'approved' else 'rejected'
+        expense.manager_approved_at = datetime.utcnow()
+        if expense.manager_status == 'rejected':
+            expense.status = 'rejected'
+            expense.rejected_by = user_id
+            expense.rejected_at = datetime.utcnow()
+            expense.rejection_reason = data.get('reason', 'Ditolak oleh manager')
+
+        db.session.commit()
+        return jsonify({'success': True}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -521,11 +571,11 @@ def approve_expense(expense_id):
     """Approve expense"""
     try:
         user_id = get_jwt_identity()
-        
+
         # Check permission
         # if not check_permission('expense.approve'):
         #     return jsonify({'success': False, 'error': 'Permission denied'}), 403
-        
+
         # Only admins may approve expenses
         if not can_view_all(user_id):
             return jsonify({'success': False, 'error': 'Permission denied'}), 403
@@ -538,7 +588,9 @@ def approve_expense(expense_id):
 
         if expense.status != 'submitted':
             return jsonify({'success': False, 'error': 'Only submitted expenses can be approved'}), 400
-        
+        if expense.manager_status not in ('approved', 'skipped'):
+            return jsonify({'success': False, 'error': 'Menunggu approval manager terlebih dahulu'}), 400
+
         data = request.get_json() or {}
         
         expense.status = 'approved'

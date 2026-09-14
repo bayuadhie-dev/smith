@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.auth_decorators import require_permission
-from models import db, Employee, Department, ShiftSchedule, Attendance, Leave, EmployeeRoster, Machine
+from models import db, Employee, Department, ShiftSchedule, Attendance, Leave, EmployeeRoster, Machine, User
 from utils.i18n import success_response, error_response, get_message
 from utils import generate_number
 from datetime import datetime, date, timedelta
@@ -489,24 +489,61 @@ def create_leave_request():
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
+@hr_extended_bp.route('/leaves/<int:leave_id>/manager-approve', methods=['POST'])
+@jwt_required()
+def manager_approve_leave(leave_id):
+    """First step of the multi-level approval chain (2026-09-14) - only the
+    employee's actual department manager (required_manager_id, resolved from
+    Department.manager_id at submit time) or an admin may act here."""
+    try:
+        user_id = int(get_jwt_identity())
+        leave = db.session.get(Leave, leave_id) or abort(404)
+
+        if leave.manager_status != 'pending':
+            return jsonify({'error': 'Leave ini tidak sedang menunggu approval manager'}), 400
+
+        manager_employee = db.session.get(Employee, leave.required_manager_id) if leave.required_manager_id else None
+        is_the_manager = manager_employee and manager_employee.user_id == user_id
+        user = db.session.get(User, user_id)
+        is_admin = user and (user.is_admin or getattr(user, 'is_super_admin', False))
+        if not (is_the_manager or is_admin):
+            return jsonify({'error': 'Hanya manager departemen karyawan ini yang bisa approve'}), 403
+
+        data = request.get_json() or {}
+        decision = data.get('decision', 'approved')
+        leave.manager_status = 'approved' if decision == 'approved' else 'rejected'
+        leave.manager_approved_at = get_local_now()
+        if leave.manager_status == 'rejected':
+            leave.status = 'rejected'
+
+        db.session.commit()
+        return jsonify(success_response('api.success'))
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
 @hr_extended_bp.route('/leaves/<int:leave_id>/approve', methods=['POST'])
 @jwt_required()
 @require_permission('hr.create')
 def approve_leave(leave_id):
-    """Approve leave request"""
+    """Final approval - requires the manager step to have already cleared
+    (approved or skipped, e.g. no manager configured) since 2026-09-14."""
     try:
         user_id = get_jwt_identity()
         leave = db.session.get(Leave, leave_id) or abort(404)
-        
+
         if leave.status != 'pending':
             return jsonify(error_response('api.error', error_code=400)), 400
-        
+        if leave.manager_status not in ('approved', 'skipped'):
+            return jsonify({'error': 'Menunggu approval manager terlebih dahulu'}), 400
+
         leave.status = 'approved'
         leave.approved_by = int(user_id)
         leave.approved_at = get_local_now()
-        
+
         db.session.commit()
-        
+
         return jsonify(success_response('api.success'))
     except Exception as e:
         db.session.rollback()

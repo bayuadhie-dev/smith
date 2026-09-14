@@ -52,6 +52,14 @@ class Expense(db.Model):
     rejected_by = db.Column(db.Integer, db.ForeignKey('users.id'))
     rejected_at = db.Column(db.DateTime)
     rejection_reason = db.Column(db.Text)
+
+    # Multi-level approval routing (SAP HCM concept, 2026-09-14) - same pattern as
+    # Leave.manager_status: a real manager-first step derived from the employee's
+    # Department.manager_id at submit time, before the existing final approval.
+    # 'skipped' when no manager is configured, preserving old single-step behavior.
+    required_manager_id = db.Column(db.Integer, db.ForeignKey('employees.id'))
+    manager_status = db.Column(db.String(20), default='skipped')  # pending, approved, rejected, skipped
+    manager_approved_at = db.Column(db.DateTime)
     
     # Reimbursement
     reimbursement_id = db.Column(db.Integer, db.ForeignKey('reimbursements.id'))
@@ -71,7 +79,8 @@ class Expense(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
-    employee = db.relationship('Employee', backref='expenses')
+    employee = db.relationship('Employee', backref='expenses', foreign_keys=[employee_id])
+    required_manager = db.relationship('Employee', foreign_keys=[required_manager_id])
     submitter = db.relationship('User', foreign_keys=[submitted_by], backref='submitted_expenses')
     approver = db.relationship('User', foreign_keys=[approved_by], backref='approved_expenses')
     rejector = db.relationship('User', foreign_keys=[rejected_by], backref='rejected_expenses')

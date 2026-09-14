@@ -465,12 +465,17 @@ def get_leaves():
             'leaves': [{
                 'id': l.id,
                 'leave_number': l.leave_number,
+                'employee_id': l.employee_id,
                 'employee_name': l.employee.full_name,
                 'leave_type': l.leave_type,
                 'start_date': l.start_date.isoformat(),
                 'end_date': l.end_date.isoformat(),
                 'total_days': l.total_days,
-                'status': l.status
+                'status': l.status,
+                'manager_status': l.manager_status,
+                'required_manager_id': l.required_manager_id,
+                'required_manager_name': l.required_manager.full_name if l.required_manager else None,
+                'manager_approved_at': l.manager_approved_at.isoformat() if l.manager_approved_at else None,
             } for l in leaves]
         }), 200
     except Exception as e:
@@ -484,7 +489,18 @@ def create_leave():
         data = request.get_json()
         
         leave_number = generate_number('LV', Leave, 'leave_number')
-        
+
+        # Multi-level approval routing (2026-09-14) - route to the employee's
+        # department manager first, unless there is none configured or the
+        # employee IS the manager (can't approve their own leave).
+        employee = db.session.get(Employee, data['employee_id'])
+        manager_id = None
+        manager_status = 'skipped'
+        if employee and employee.department and employee.department.manager_id:
+            if employee.department.manager_id != employee.id:
+                manager_id = employee.department.manager_id
+                manager_status = 'pending'
+
         leave = Leave(
             leave_number=leave_number,
             employee_id=data['employee_id'],
@@ -492,9 +508,11 @@ def create_leave():
             start_date=datetime.fromisoformat(data['start_date']),
             end_date=datetime.fromisoformat(data['end_date']),
             total_days=data['total_days'],
-            reason=data.get('reason')
+            reason=data.get('reason'),
+            required_manager_id=manager_id,
+            manager_status=manager_status,
         )
-        
+
         db.session.add(leave)
         db.session.commit()
         return jsonify({'message': 'Leave request created', 'leave_id': leave.id}), 201

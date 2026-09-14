@@ -231,13 +231,24 @@ class Leave(db.Model):
     status = db.Column(db.String(50), nullable=False, default='pending')  # pending, approved, rejected, cancelled
     approved_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     approved_at = db.Column(db.DateTime, nullable=True)
+    # Multi-level approval routing (SAP HCM concept, 2026-09-14) - previously a
+    # single fixed `approved_by`/permission-gated approval with zero org-hierarchy
+    # routing (confirmed during the HR gap audit). Adds a real manager-first step,
+    # derived from the employee's Department.manager_id at submit time.
+    # manager_status: 'skipped' when the employee's department has no manager
+    # configured (or the employee IS the manager) - preserves old single-step
+    # behavior rather than blocking leave nobody can route.
+    required_manager_id = db.Column(db.Integer, db.ForeignKey('employees.id'), nullable=True)
+    manager_status = db.Column(db.String(20), nullable=False, default='skipped')  # pending, approved, rejected, skipped
+    manager_approved_at = db.Column(db.DateTime, nullable=True)
     notes = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     # Relationships
-    employee = db.relationship('Employee', back_populates='leaves')
+    employee = db.relationship('Employee', back_populates='leaves', foreign_keys=[employee_id])
     approved_by_user = db.relationship('User')
+    required_manager = db.relationship('Employee', foreign_keys=[required_manager_id])
 
 
 class StaffLeaveRequest(db.Model):

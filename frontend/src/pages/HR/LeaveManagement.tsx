@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../../contexts/LanguageContext';
-import { useGetLeavesQuery, useApproveLeaveMutation, useRejectLeaveMutation } from '../../services/api'
+import { useGetLeavesQuery, useApproveLeaveMutation, useRejectLeaveMutation, useManagerApproveLeaveMutation } from '../../services/api'
+import toast from 'react-hot-toast'
 import {
   CheckIcon,
   EyeIcon,
@@ -22,6 +23,17 @@ const navigate = useNavigate()
   
   const [approveLeave] = useApproveLeaveMutation()
   const [rejectLeave] = useRejectLeaveMutation()
+  const [managerApproveLeave] = useManagerApproveLeaveMutation()
+
+  const handleManagerApprove = async (leaveId: number, decision: 'approved' | 'rejected') => {
+    try {
+      await managerApproveLeave({ leaveId, decision }).unwrap()
+      refetch()
+      toast.success(decision === 'approved' ? 'Disetujui sebagai manager' : 'Ditolak sebagai manager')
+    } catch (error: any) {
+      toast.error(error?.data?.error || 'Gagal memproses approval manager')
+    }
+  }
 
   const handleApprove = async (leaveId: number) => {
     try {
@@ -205,6 +217,7 @@ const navigate = useNavigate()
                   <th>Period</th>
                   <th>Days</th>
                   <th>Reason</th>
+                  <th>Approval Manager</th>
                   <th>{t('common.status')}</th>
                   <th>Approved By</th>
                   <th>{t('common.actions')}</th>
@@ -215,11 +228,7 @@ const navigate = useNavigate()
                   <tr key={leave.id}>
                     <td className="font-medium">{leave.leave_number}</td>
                     <td>
-                      <div>
-                        <div className="font-medium">{leave.employee.full_name}</div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">{leave.employee.employee_number}</div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">{leave.employee.department}</div>
-                      </div>
+                      <div className="font-medium">{leave.employee_name}</div>
                     </td>
                     <td>
                       <span className={`badge ${getTypeBadge(leave.leave_type)}`}>
@@ -241,6 +250,18 @@ const navigate = useNavigate()
                       <div className="max-w-xs truncate" title={leave.reason}>
                         {leave.reason}
                       </div>
+                    </td>
+                    <td>
+                      {leave.required_manager_id ? (
+                        <div className="text-sm">
+                          <div>{leave.required_manager_name}</div>
+                          <span className={`badge ${leave.manager_status === 'approved' ? 'badge-success' : leave.manager_status === 'rejected' ? 'badge-danger' : 'badge-warning'}`}>
+                            {leave.manager_status === 'approved' ? 'Disetujui' : leave.manager_status === 'rejected' ? 'Ditolak' : 'Menunggu'}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-sm text-gray-400">Tidak perlu (skip)</span>
+                      )}
                     </td>
                     <td>
                       <span className={`badge ${getStatusBadge(leave.status)}`}>
@@ -265,12 +286,30 @@ const navigate = useNavigate()
                         >
                           <EyeIcon className="h-4 w-4" />
                         </button>
-                        {leave.status === 'pending' && (
+                        {leave.status === 'pending' && leave.manager_status === 'pending' && (
+                          <>
+                            <button
+                              onClick={() => handleManagerApprove(leave.id, 'approved')}
+                              className="btn-sm btn-outline inline-flex items-center gap-1"
+                              title="Approve sebagai Manager Departemen"
+                            >
+                              <CheckIcon className="h-4 w-4" /> Manager
+                            </button>
+                            <button
+                              onClick={() => handleManagerApprove(leave.id, 'rejected')}
+                              className="btn-sm btn-danger inline-flex items-center gap-1"
+                              title="Tolak sebagai Manager"
+                            >
+                              <XMarkIcon className="h-4 w-4" />
+                            </button>
+                          </>
+                        )}
+                        {leave.status === 'pending' && leave.manager_status !== 'pending' && (
                           <>
                             <button
                               onClick={() => handleApprove(leave.id)}
                               className="btn-sm btn-success inline-flex items-center gap-1"
-                              title="Approve Leave"
+                              title="Approve Leave (Final)"
                             >
                               <CheckIcon className="h-4 w-4" />
                             </button>
