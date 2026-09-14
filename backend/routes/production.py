@@ -2478,7 +2478,7 @@ def start_work_order(id):
                     )
                     db.session.add(item)
         
-        wo.status = 'in_progress'
+        _log_wo_status_change(wo, 'in_progress', user_id=user_id, notes='Batch dikonfirmasi / produksi dimulai')
         wo.actual_start_date = datetime.utcnow()
         
         if wo.machine:
@@ -2722,7 +2722,7 @@ def cancel_batch_confirmation(batch_id):
                 ProductionBatch.status == 'in_progress'
             ).first()
             if not other_active:
-                wo.status = 'released'
+                _log_wo_status_change(wo, 'released', user_id=user_id, notes=f'Batalkan konfirmasi batch {batch.batch_number}')
 
         db.session.commit()
 
@@ -2776,6 +2776,125 @@ def _check_closing_requirements(wo):
     return len(missing) == 0, missing
 
 
+def _log_wo_status_change(wo, new_status, user_id=None, notes=None):
+    """Write a WorkOrderStatusHistory row and apply the new status
+    (2026-09-12). Every real status-changing site already has its own
+    business-rule guard (closing requirements, other-batch-status checks,
+    etc. - see project_sap_alignment_survey memory, "status lifecycle
+    validation" finding) - this only adds the missing AUDIT TRAIL, which
+    had a real model (WorkOrderStatusHistory) that literally zero code
+    ever wrote to before this. Call this instead of `wo.status = ...`
+    directly at every site that changes it."""
+    from models.production import WorkOrderStatusHistory
+
+    old_status = wo.status
+    if old_status == new_status:
+        return
+    db.session.add(WorkOrderStatusHistory(
+        work_order_id=wo.id,
+        from_status=old_status,
+        to_status=new_status,
+        changed_by=user_id,
+        notes=notes,
+    ))
+    wo.status = new_status
+
+
+def _check_incoming_qc_warnings(wo):
+    """Traces every raw-material batch actually consumed by this WO (via
+    WorkOrderBOMItem.actual_batch_number, filled in during 'Tutup Batch')
+    back to that batch's own incoming QC/stock-status history - closing the
+    SAP-QM gap where outgoing/finished-goods QC never cross-checks the
+    incoming QC of the materials that went into it (audited 2026-09-12, see
+    project_sap_alignment_survey memory). This is a WARNING gate only, not
+    a hard block, per explicit product decision - shown twice (an inline
+    banner + a confirm-to-proceed modal on the frontend) so it's hard to
+    miss, but never prevents closing the WO outright.
+
+    NOTE (2026-09-12): originally designed against QualityInspection/
+    QualityTest.result, but both turned out to be dead ends for this - real
+    production data (erp_db) has ZERO QualityInspection rows at all, and
+    QualityTest's 466 real rows are 100% test_type='final' (outgoing QC on
+    finished goods only, never incoming). The system's REAL incoming
+    batch-status mechanism is Inventory.stock_status + qc_notes, changed
+    directly via routes/qc_batch_status.py (MSC2N-style, built earlier this
+    session) - so this checks THAT instead: the batch's current
+    stock_status/qc_notes, plus its AuditLog history (resource_type=
+    'inventory_batch') for ever having been flagged quarantine/reject, even
+    if it was later corrected/released.
+
+    Return a list of {material_name, material_code, batch_number,
+    stock_status, qc_notes, was_previously_flagged, history_reason}."""
+    from models.warehouse import Inventory
+    from models.settings_extended import AuditLog
+    import json as _json
+
+    items = WorkOrderBOMItem.query.filter(
+        WorkOrderBOMItem.work_order_id == wo.id,
+        WorkOrderBOMItem.item_type == 'material',
+        WorkOrderBOMItem.material_id.isnot(None),
+        WorkOrderBOMItem.actual_batch_number.isnot(None),
+    ).all()
+
+    BAD_STOCK_STATUSES = ('quarantine', 'reject', 'on_hold')
+
+    seen = set()
+    warnings = []
+    for item in items:
+        key = (item.material_id, item.actual_batch_number)
+        if key in seen:
+            continue
+        seen.add(key)
+
+        inv = Inventory.query.filter_by(
+            material_id=item.material_id, batch_number=item.actual_batch_number
+        ).order_by(Inventory.id.desc()).first()
+        if not inv:
+            continue
+
+        bad_now = inv.stock_status in BAD_STOCK_STATUSES
+
+        was_previously_flagged = False
+        history_reason = None
+        logs = AuditLog.query.filter_by(resource_type='inventory_batch', resource_id=str(inv.id)).all()
+        for log in logs:
+            try:
+                new_vals = _json.loads(log.new_values) if log.new_values else {}
+            except (ValueError, TypeError):
+                continue
+            if new_vals.get('stock_status') in BAD_STOCK_STATUSES:
+                was_previously_flagged = True
+                history_reason = new_vals.get('reason') or history_reason
+
+        if not (bad_now or was_previously_flagged):
+            continue
+
+        warnings.append({
+            'material_id': item.material_id,
+            'material_name': item.item_name,
+            'material_code': item.item_code,
+            'batch_number': item.actual_batch_number,
+            'stock_status': inv.stock_status,
+            'qc_notes': inv.qc_notes,
+            'was_previously_flagged': was_previously_flagged,
+            'history_reason': history_reason,
+        })
+
+    return warnings
+
+
+@production_bp.route('/work-orders/<int:wo_id>/qc-warnings', methods=['GET'])
+@jwt_required()
+@require_permission('work_orders.view')
+def get_work_order_qc_warnings(wo_id):
+    """Incoming-QC cross-check warnings for 'Tutup SPK' - see
+    _check_incoming_qc_warnings for the full rationale."""
+    wo = db.session.get(WorkOrder, wo_id)
+    if not wo:
+        return jsonify({'error': 'Work order not found'}), 404
+    return jsonify({'warnings': _check_incoming_qc_warnings(wo)}), 200
+
+
 @production_bp.route('/work-orders/<int:id>/complete', methods=['PUT'])
 @jwt_required()
 @require_permission('work_orders.complete')
@@ -2799,8 +2918,8 @@ def complete_work_order(id):
 
         data = request.get_json() or {}
         user_id = int(get_jwt_identity())
-        
-        wo.status = 'completed'
+
+        _log_wo_status_change(wo, 'completed', user_id=user_id, notes='Tutup SPK')
         wo.actual_end_date = datetime.utcnow()
         
         if wo.machine:
@@ -2946,7 +3065,7 @@ def revert_completed_work_order(id):
         primary.stock_status = 'quarantine'
         primary.updated_at = get_local_now()
 
-        wo.status = 'released'
+        _log_wo_status_change(wo, 'released', user_id=user_id, notes=f'Batalkan SPK {wo.wo_number} - kembali ke released')
         wo.actual_end_date = None
 
         db.session.commit()
@@ -2992,9 +3111,9 @@ def bulk_complete_work_orders():
                     })
                     continue
 
-                wo.status = 'completed'
+                _log_wo_status_change(wo, 'completed', user_id=user_id, notes='Bulk complete work orders')
                 wo.actual_end_date = datetime.utcnow()
-                
+
                 if wo.machine:
                     wo.machine.status = 'idle'
                 

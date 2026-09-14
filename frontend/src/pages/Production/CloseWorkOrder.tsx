@@ -37,6 +37,17 @@ interface MaterialIssueRow {
   issue_date: string;
 }
 
+interface QcWarning {
+  material_id: number;
+  material_name: string;
+  material_code: string | null;
+  batch_number: string;
+  stock_status: string;
+  qc_notes: string | null;
+  was_previously_flagged: boolean;
+  history_reason: string | null;
+}
+
 export default function CloseWorkOrder() {
   const { id: workOrderId } = useParams();
   const navigate = useNavigate();
@@ -54,6 +65,8 @@ export default function CloseWorkOrder() {
 
   const [completing, setCompleting] = useState(false);
   const [missingRequirements, setMissingRequirements] = useState<string[]>([]);
+  const [qcWarnings, setQcWarnings] = useState<QcWarning[]>([]);
+  const [showQcConfirm, setShowQcConfirm] = useState(false);
 
   useEffect(() => {
     fetchAll();
@@ -66,12 +79,21 @@ export default function CloseWorkOrder() {
       const woRes = await axiosInstance.get(`/api/production/work-orders/${workOrderId}`);
       setWorkOrder(woRes.data.work_order);
 
-      await Promise.all([fetchWaste(), fetchWasteCategories(), fetchBatches(), fetchMaterialIssues()]);
+      await Promise.all([fetchWaste(), fetchWasteCategories(), fetchBatches(), fetchMaterialIssues(), fetchQcWarnings()]);
     } catch (error) {
       console.error(error);
       toast.error('Gagal memuat data SPK');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchQcWarnings = async () => {
+    try {
+      const res = await axiosInstance.get(`/api/production/work-orders/${workOrderId}/qc-warnings`);
+      setQcWarnings(res.data.warnings || []);
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -122,7 +144,16 @@ export default function CloseWorkOrder() {
     }
   };
 
+  const handleCompleteSpkClick = () => {
+    if (qcWarnings.length > 0) {
+      setShowQcConfirm(true);
+      return;
+    }
+    handleCompleteSpk();
+  };
+
   const handleCompleteSpk = async () => {
+    setShowQcConfirm(false);
     setCompleting(true);
     setMissingRequirements([]);
     try {
@@ -176,6 +207,30 @@ export default function CloseWorkOrder() {
           <ul className="list-disc pl-6 text-sm text-red-600 dark:text-red-400">
             {missingRequirements.map((m, i) => <li key={i}>{m}</li>)}
           </ul>
+        </div>
+      )}
+
+      {qcWarnings.length > 0 && (
+        <div className="bg-orange-50 dark:bg-orange-900/20 border-2 border-orange-400 dark:border-orange-700 rounded-lg p-4">
+          <div className="flex items-center gap-2 text-orange-800 dark:text-orange-300 font-bold mb-2">
+            <ExclamationTriangleIcon className="h-5 w-5" />
+            PERINGATAN: {qcWarnings.length} bahan baku bermasalah QC incoming dipakai di SPK ini
+          </div>
+          <ul className="list-disc pl-6 text-sm text-orange-700 dark:text-orange-300 space-y-1">
+            {qcWarnings.map((w, i) => (
+              <li key={i}>
+                <strong>{w.material_code} - {w.material_name}</strong>, batch <strong>{w.batch_number}</strong> —
+                {' '}status stok saat ini: <strong>{w.stock_status}</strong>
+                {w.qc_notes && <> ({w.qc_notes})</>}
+                {w.was_previously_flagged && (
+                  <> — <strong>pernah di-quarantine/reject QC sebelumnya</strong>{w.history_reason && <>: {w.history_reason}</>}</>
+                )}
+              </li>
+            ))}
+          </ul>
+          <p className="text-xs text-orange-600 dark:text-orange-400 mt-2">
+            SPK tetap bisa diselesaikan, tapi pastikan sudah dicek ulang sebelum barang jadi ini dikirim ke customer.
+          </p>
         </div>
       )}
 
@@ -368,12 +423,35 @@ export default function CloseWorkOrder() {
         <button
           className="btn-primary inline-flex items-center gap-2"
           disabled={completing}
-          onClick={handleCompleteSpk}
+          onClick={handleCompleteSpkClick}
         >
           <CheckCircleIcon className="h-5 w-5" />
           {completing ? 'Menyelesaikan...' : 'Selesaikan SPK'}
         </button>
       </div>
+
+      {showQcConfirm && (
+        <div className="fixed inset-0 bg-black/40 flex items-start justify-center z-50 p-4 overflow-y-auto">
+          <div className="card w-full max-w-lg p-6 space-y-4 my-16 bg-white dark:bg-gray-800 rounded-lg shadow-xl">
+            <div className="flex items-center gap-2 text-orange-700 dark:text-orange-400 font-bold text-lg">
+              <ExclamationTriangleIcon className="h-6 w-6" />
+              Konfirmasi: ada masalah QC bahan baku
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              SPK ini memakai {qcWarnings.length} batch bahan baku yang bermasalah di QC incoming (lihat daftar di atas).
+              Barang jadi dari SPK ini <strong>tetap bisa diselesaikan</strong>, tapi pastikan sudah benar-benar dicek sebelum lanjut - terutama sebelum barang ini dikirim ke customer.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button className="btn-secondary" onClick={() => setShowQcConfirm(false)}>
+                Batal, cek dulu
+              </button>
+              <button className="btn-primary bg-orange-600 hover:bg-orange-700" onClick={handleCompleteSpk}>
+                Saya paham risikonya, tetap lanjutkan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

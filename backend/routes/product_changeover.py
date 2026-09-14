@@ -230,7 +230,8 @@ def complete_changeover(id):
             changeover.notes = (changeover.notes or '') + '\n' + data.get('notes')
         
         # Start the new work order
-        to_wo.status = 'in_progress'
+        from routes.production import _log_wo_status_change
+        _log_wo_status_change(to_wo, 'in_progress', user_id=user_id, notes=f'Changeover selesai dari WO lama, mesin {changeover.machine_id}')
         to_wo.machine_id = changeover.machine_id  # Assign same machine
         if not to_wo.actual_start_date:
             to_wo.actual_start_date = get_local_now()
@@ -318,7 +319,8 @@ def cancel_changeover(id):
         # Resume original work order
         from_wo = changeover.from_work_order
         if from_wo:
-            from_wo.status = 'in_progress'
+            from routes.production import _log_wo_status_change
+            _log_wo_status_change(from_wo, 'in_progress', user_id=user_id, notes='Changeover dibatalkan - lanjutkan WO semula')
             from_wo.updated_at = get_local_now()
         
         # Calculate cancelled changeover duration
