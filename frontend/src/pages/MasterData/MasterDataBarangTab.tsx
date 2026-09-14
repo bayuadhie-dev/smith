@@ -19,6 +19,11 @@ import {
   useCreateUomConversionMutation,
   useUpdateUomConversionMutation,
   useDeleteUomConversionMutation,
+  useGetSuppliersQuery,
+  useGetApprovedVendorsQuery,
+  useCreateApprovedVendorMutation,
+  useUpdateApprovedVendorMutation,
+  useDeleteApprovedVendorMutation,
 } from '../../services/api';
 import { TrashIcon } from '@heroicons/react/24/outline';
 
@@ -172,6 +177,8 @@ export default function MasterDataBarangTab() {
         ppn_code: form.ppn_code || null,
         erp_approval: form.erp_approval,
         lead_time_days: form.lead_time_days,
+        min_order_qty: form.min_order_qty ?? null,
+        reorder_point: form.reorder_point ?? null,
       };
       for (const { key } of AKUN_FIELDS) {
         payload[key] = form[key] || null;
@@ -182,6 +189,8 @@ export default function MasterDataBarangTab() {
         await updateProduct({ id: editingRow.id, ...payload }).unwrap();
       } else {
         payload.expiry_days = form.expiry_days;
+        payload.safety_stock_qty = form.safety_stock_qty ?? null;
+        payload.safety_stock_days = form.safety_stock_days ?? null;
         await updateMaterialDetail({ id: editingRow.id, ...payload }).unwrap();
       }
       toast.success('Item berhasil diupdate');
@@ -314,8 +323,8 @@ export default function MasterDataBarangTab() {
       )}
 
       {showModal && editingRow && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="card w-full max-w-2xl p-6 space-y-4 my-8">
+        <div className="fixed inset-0 bg-black/40 flex items-start justify-center z-50 p-4 overflow-y-auto">
+          <div className="card w-full max-w-2xl p-6 space-y-4 my-8 mt-16">
             <h2 className="text-lg font-bold">
               Edit {editingRow.source === 'product' ? 'Product' : 'Material'}: {editingRow.code} - {editingRow.name}
             </h2>
@@ -451,6 +460,56 @@ export default function MasterDataBarangTab() {
                 </div>
 
                 <div className="border-t pt-4 dark:border-gray-700">
+                  <h3 className="font-semibold mb-3">Parameter MRP</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm mb-1">Minimum Order Qty (MOQ)</label>
+                      <input
+                        type="number"
+                        className="input-field"
+                        value={form.min_order_qty ?? ''}
+                        onChange={(e) => setForm({ ...form, min_order_qty: e.target.value === '' ? null : Number(e.target.value) })}
+                        placeholder="Kosongkan jika lot-for-lot"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">MRP membulatkan shortage ke angka ini bila lebih kecil.</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm mb-1">Reorder Point</label>
+                      <input
+                        type="number"
+                        className="input-field"
+                        value={form.reorder_point ?? ''}
+                        onChange={(e) => setForm({ ...form, reorder_point: e.target.value === '' ? null : Number(e.target.value) })}
+                      />
+                    </div>
+                    {editingRow.source === 'material' && (
+                      <div>
+                        <label className="block text-sm mb-1">Safety Stock Qty</label>
+                        <input
+                          type="number"
+                          className="input-field"
+                          value={form.safety_stock_qty ?? ''}
+                          onChange={(e) => setForm({ ...form, safety_stock_qty: e.target.value === '' ? null : Number(e.target.value) })}
+                          placeholder="Kosongkan jika tidak dipakai"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">MRP menahan buffer ini, tidak netting sampai ke nol.</p>
+                      </div>
+                    )}
+                    {editingRow.source === 'material' && (
+                      <div>
+                        <label className="block text-sm mb-1">Safety Stock Horizon (hari)</label>
+                        <input
+                          type="number"
+                          className="input-field"
+                          value={form.safety_stock_days ?? ''}
+                          onChange={(e) => setForm({ ...form, safety_stock_days: e.target.value === '' ? null : Number(e.target.value) })}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="border-t pt-4 dark:border-gray-700">
                   <h3 className="font-semibold mb-3">Akun Perkiraan (Chart of Accounts)</h3>
                   <div className="grid grid-cols-2 gap-4">
                     {AKUN_FIELDS.map(({ key, label }) => (
@@ -475,6 +534,13 @@ export default function MasterDataBarangTab() {
                     baseUom={form.primary_uom}
                   />
                 </div>
+
+                {editingRow.source === 'material' && (
+                  <div className="border-t pt-4 dark:border-gray-700">
+                    <h3 className="font-semibold mb-3">Source List (Supplier Disetujui)</h3>
+                    <ApprovedVendorsManager materialId={editingRow.id} />
+                  </div>
+                )}
 
                 <div className="flex justify-end gap-2 pt-2">
                   <button className="btn-secondary" onClick={() => setShowModal(false)}>Batal</button>
@@ -665,6 +731,118 @@ function ItemUomConversions({ materialId, productId, baseUom }: { materialId?: n
           value={toUnitCode}
           onChange={(e) => setToUnitCode(e.target.value)}
         />
+        <button className="btn-secondary" disabled={creating} onClick={handleAdd}>
+          Tambah
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Source List (SAP MM concept) - supplier mana saja yang boleh dipakai untuk material ini.
+// Opt-in: material tanpa baris di sini tetap tidak dibatasi (routes/purchasing.py::create_purchase_order
+// baru menolak PO kalau material SUDAH punya minimal 1 baris approved_vendors di sini).
+function ApprovedVendorsManager({ materialId }: { materialId: number }) {
+  const { data: vendorsData, refetch } = useGetApprovedVendorsQuery({ material_id: materialId });
+  const { data: suppliersData } = useGetSuppliersQuery({ per_page: 1000 });
+  const [createVendor, { isLoading: creating }] = useCreateApprovedVendorMutation();
+  const [updateVendor] = useUpdateApprovedVendorMutation();
+  const [deleteVendor] = useDeleteApprovedVendorMutation();
+
+  const [supplierId, setSupplierId] = useState<number | null>(null);
+  const [isPreferred, setIsPreferred] = useState(false);
+
+  const approved: any[] = vendorsData?.approved_vendors || vendorsData?.data || [];
+  const suppliers: any[] = suppliersData?.suppliers || suppliersData?.data || [];
+  const supplierOptions = suppliers.map((s) => ({ id: s.id, name: `${s.code} - ${s.name}` }));
+  const alreadyApprovedIds = new Set(approved.map((a) => a.supplier_id));
+
+  const handleAdd = async () => {
+    if (!supplierId) {
+      toast.error('Pilih supplier dulu');
+      return;
+    }
+    if (alreadyApprovedIds.has(supplierId)) {
+      toast.error('Supplier ini sudah ada di source list');
+      return;
+    }
+    try {
+      await createVendor({ material_id: materialId, supplier_id: supplierId, is_preferred: isPreferred }).unwrap();
+      toast.success('Supplier ditambahkan ke source list');
+      setSupplierId(null);
+      setIsPreferred(false);
+      refetch();
+    } catch (e: any) {
+      toast.error(e?.data?.error || e?.data?.message || 'Gagal menambah supplier');
+    }
+  };
+
+  const handleTogglePreferred = async (row: any) => {
+    try {
+      await updateVendor({ id: row.id, is_preferred: !row.is_preferred }).unwrap();
+      refetch();
+    } catch (e: any) {
+      toast.error(e?.data?.error || 'Gagal memperbarui');
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      await deleteVendor(id).unwrap();
+      toast.success('Supplier dihapus dari source list');
+      refetch();
+    } catch (e: any) {
+      toast.error(e?.data?.error || 'Gagal menghapus');
+    }
+  };
+
+  return (
+    <div>
+      {approved.length === 0 ? (
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+          Belum dibatasi - material ini bisa dibeli dari supplier manapun. Tambahkan supplier di bawah untuk mulai membatasi (opt-in).
+        </p>
+      ) : (
+        <p className="text-xs text-amber-600 dark:text-amber-400 mb-2">
+          Dibatasi - PO untuk material ini hanya bisa dibuat ke {approved.length} supplier di bawah.
+        </p>
+      )}
+      {approved.length > 0 && (
+        <div className="space-y-1 mb-3">
+          {approved.map((a) => (
+            <div key={a.id} className="flex items-center justify-between text-sm border border-gray-200 dark:border-gray-700 rounded px-3 py-1.5">
+              <span>
+                {a.supplier_name || a.supplier?.name || `Supplier #${a.supplier_id}`}
+                {a.is_preferred && <span className="ml-2 text-xs text-primary-600 font-medium">Preferred</span>}
+              </span>
+              <div className="flex items-center gap-3">
+                <button
+                  className="text-xs text-gray-500 hover:text-primary-600"
+                  onClick={() => handleTogglePreferred(a)}
+                >
+                  {a.is_preferred ? 'Batal preferred' : 'Jadikan preferred'}
+                </button>
+                <button onClick={() => handleDelete(a.id)} className="text-red-500 hover:text-red-700">
+                  <TrashIcon className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      <div className="flex items-center gap-2 text-sm flex-wrap">
+        <div className="w-64">
+          <SearchableSelect
+            options={supplierOptions}
+            value={supplierId}
+            onChange={(v) => setSupplierId(v === null ? null : Number(v))}
+            placeholder="Pilih supplier..."
+          />
+        </div>
+        <label className="flex items-center gap-1 text-xs">
+          <input type="checkbox" checked={isPreferred} onChange={(e) => setIsPreferred(e.target.checked)} />
+          Preferred
+        </label>
         <button className="btn-secondary" disabled={creating} onClick={handleAdd}>
           Tambah
         </button>

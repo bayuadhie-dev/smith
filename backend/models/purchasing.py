@@ -500,3 +500,40 @@ class PRItem(db.Model):
 
     def __repr__(self):
         return f'<PRItem {self.pr_id} Line:{self.line_number} - {self.item_name}>'
+
+
+class ApprovedVendor(db.Model):
+    """Source List (SAP MM concept) - which suppliers are allowed to supply
+    a given material, added 2026-09-14 while preparing Purchasing for
+    eventual migration off Accurate (see project_accurate_vs_custom_erp_scope
+    memory - Purchasing has zero real transactions in this ERP yet, this is
+    a readiness build, not a live-bug fix).
+
+    Enforcement rule (routes/purchasing.py::create_purchase_order): if a
+    material has ANY active row here, a PO for that material may ONLY use
+    one of the listed suppliers - hard block, not a warning, matching SAP's
+    real source-list behavior. A material with NO rows here at all is
+    unrestricted (opt-in per material, so existing/未-configured materials
+    are never retroactively blocked)."""
+    __tablename__ = 'approved_vendors'
+
+    id = db.Column(db.Integer, primary_key=True)
+    material_id = db.Column(db.Integer, db.ForeignKey('materials.id'), nullable=False)
+    supplier_id = db.Column(db.Integer, db.ForeignKey('suppliers.id'), nullable=False)
+    is_preferred = db.Column(db.Boolean, default=False, nullable=False)
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
+    notes = db.Column(db.Text, nullable=True)
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    material = db.relationship('Material')
+    supplier = db.relationship('Supplier')
+    creator = db.relationship('User')
+
+    __table_args__ = (
+        db.UniqueConstraint('material_id', 'supplier_id', name='unique_approved_vendor'),
+    )
+
+    def __repr__(self):
+        return f'<ApprovedVendor material={self.material_id} supplier={self.supplier_id}>'

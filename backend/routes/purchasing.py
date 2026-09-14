@@ -335,8 +335,32 @@ def create_purchase_order():
             except Exception as supplier_error:
                 print(f"Supplier validation warning: {supplier_error}")
         
+        # Source List enforcement (2026-09-14, readiness build - see
+        # project_accurate_vs_custom_erp_scope memory) - a material with ANY
+        # active ApprovedVendor row restricts which supplier a PO for it can
+        # use; a material with none is unrestricted (opt-in, never
+        # retroactively blocks materials nobody has configured yet).
+        from models.purchasing import ApprovedVendor
+        source_list_errors = []
+        for item_data in data.get('items', []):
+            material_id = item_data.get('material_id')
+            if not material_id:
+                continue
+            has_source_list = ApprovedVendor.query.filter_by(material_id=material_id, is_active=True).first()
+            if has_source_list:
+                approved = ApprovedVendor.query.filter_by(
+                    material_id=material_id, supplier_id=supplier_id, is_active=True
+                ).first()
+                if not approved:
+                    material = db.session.get(Material, material_id)
+                    source_list_errors.append(
+                        f"{material.name if material else f'Material #{material_id}'} tidak ada di source list supplier ini"
+                    )
+        if source_list_errors:
+            return jsonify({'error': 'Source list violation', 'details': source_list_errors}), 400
+
         po_number = generate_number_v2('purchase_order', 'PO', PurchaseOrder, 'po_number')
-        
+
         po = PurchaseOrder(
             po_number=po_number,
             supplier_id=data['supplier_id'],
@@ -358,7 +382,8 @@ def create_purchase_order():
             item = PurchaseOrderItem(
                 po_id=po.id,
                 line_number=idx,
-                product_id=item_data['product_id'],
+                product_id=item_data.get('product_id'),
+                material_id=item_data.get('material_id'),
                 quantity=item_data['quantity'],
                 uom=item_data.get('uom', 'PCS'),  # Default to PCS if not provided
                 unit_price=item_data['unit_price'],
@@ -1820,6 +1845,125 @@ def activate_contract(id):
         db.session.commit()
         
         return jsonify(success_response('api.success')), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+# ============================================================
+# SOURCE LIST (Approved Vendor per Material) - 2026-09-14
+# Readiness build ahead of Purchasing's eventual migration off
+# Accurate - see project_accurate_vs_custom_erp_scope memory.
+# Drill-down both ways: filter by material_id (from a material's
+# detail page - "which vendors can supply this") or supplier_id
+# (from a vendor's detail page - "what can this vendor supply").
+# ============================================================
+
+@purchasing_bp.route('/approved-vendors', methods=['GET'])
+@jwt_required()
+@require_permission('purchasing.view')
+def get_approved_vendors():
+    try:
+        from models.purchasing import ApprovedVendor
+        material_id = request.args.get('material_id', type=int)
+        supplier_id = request.args.get('supplier_id', type=int)
+
+        query = ApprovedVendor.query
+        if material_id:
+            query = query.filter_by(material_id=material_id)
+        if supplier_id:
+            query = query.filter_by(supplier_id=supplier_id)
+
+        rows = query.order_by(ApprovedVendor.is_preferred.desc(), ApprovedVendor.id).all()
+        return jsonify({
+            'approved_vendors': [{
+                'id': r.id,
+                'material_id': r.material_id,
+                'material_code': r.material.code if r.material else None,
+                'material_name': r.material.name if r.material else None,
+                'supplier_id': r.supplier_id,
+                'supplier_name': r.supplier.company_name if r.supplier else None,
+                'is_preferred': r.is_preferred,
+                'is_active': r.is_active,
+                'notes': r.notes,
+                'created_at': r.created_at.isoformat() if r.created_at else None,
+            } for r in rows]
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@purchasing_bp.route('/approved-vendors', methods=['POST'])
+@jwt_required()
+@require_permission('purchasing.create')
+def create_approved_vendor():
+    try:
+        from models.purchasing import ApprovedVendor
+        data = request.get_json() or {}
+        material_id = data.get('material_id')
+        supplier_id = data.get('supplier_id')
+        if not material_id or not supplier_id:
+            return jsonify({'error': 'material_id dan supplier_id wajib diisi'}), 400
+
+        existing = ApprovedVendor.query.filter_by(material_id=material_id, supplier_id=supplier_id).first()
+        if existing:
+            existing.is_active = True
+            existing.is_preferred = data.get('is_preferred', existing.is_preferred)
+            existing.notes = data.get('notes', existing.notes)
+            db.session.commit()
+            return jsonify({'message': 'Approved vendor diaktifkan kembali', 'id': existing.id}), 200
+
+        user_id = get_jwt_identity()
+        row = ApprovedVendor(
+            material_id=material_id,
+            supplier_id=supplier_id,
+            is_preferred=bool(data.get('is_preferred', False)),
+            notes=data.get('notes'),
+            created_by=user_id,
+        )
+        db.session.add(row)
+        db.session.commit()
+        return jsonify({'message': 'Approved vendor ditambahkan', 'id': row.id}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@purchasing_bp.route('/approved-vendors/<int:id>', methods=['PUT'])
+@jwt_required()
+@require_permission('purchasing.create')
+def update_approved_vendor(id):
+    try:
+        from models.purchasing import ApprovedVendor
+        row = db.session.get(ApprovedVendor, id)
+        if not row:
+            return jsonify({'error': 'Not found'}), 404
+        data = request.get_json() or {}
+        if 'is_preferred' in data:
+            row.is_preferred = bool(data['is_preferred'])
+        if 'is_active' in data:
+            row.is_active = bool(data['is_active'])
+        if 'notes' in data:
+            row.notes = data['notes']
+        db.session.commit()
+        return jsonify({'message': 'Approved vendor diupdate'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@purchasing_bp.route('/approved-vendors/<int:id>', methods=['DELETE'])
+@jwt_required()
+@require_permission('purchasing.create')
+def delete_approved_vendor(id):
+    try:
+        from models.purchasing import ApprovedVendor
+        row = db.session.get(ApprovedVendor, id)
+        if not row:
+            return jsonify({'error': 'Not found'}), 404
+        db.session.delete(row)
+        db.session.commit()
+        return jsonify({'message': 'Approved vendor dihapus'}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
