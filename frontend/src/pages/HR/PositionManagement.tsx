@@ -74,7 +74,7 @@ export default function PositionManagement() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Master Data Jabatan</h1>
-          <p className="text-gray-600 dark:text-gray-300">Entitas Position asli (SAP HCM) - dipakai sebagai pilihan &quot;Jabatan (Terstruktur)&quot; di form karyawan.</p>
+          <p className="text-gray-600 dark:text-gray-300">Kelola daftar jabatan resmi perusahaan - dipakai sebagai pilihan &quot;Jabatan (Terstruktur)&quot; di form karyawan.</p>
         </div>
         <button onClick={openAdd} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
           <PlusIcon className="h-5 w-5" /> Tambah Jabatan

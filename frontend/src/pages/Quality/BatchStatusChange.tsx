@@ -115,7 +115,7 @@ export default function BatchStatusChange() {
           Ubah Status Batch
         </h1>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Pecah quantity satu batch ke satu atau lebih status tujuan (release / quarantine / reject) — analog SAP MB1A/MB1B, bukan whole-batch flip.
+          Pecah quantity satu batch ke satu atau lebih status tujuan (release / quarantine / reject), bukan ubah status seluruh batch sekaligus.
         </p>
       </div>
 
