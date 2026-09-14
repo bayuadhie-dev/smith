@@ -196,6 +196,14 @@ export default function InvoiceList() {
                     </td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-0.5 rounded text-xs font-medium ${status.color}`}>{status.label}</span>
+                      {inv.on_hold && (
+                        <span
+                          title={inv.hold_reason || ''}
+                          className="ml-1 px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                        >
+                          On Hold
+                        </span>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-0.5 rounded text-xs font-medium ${pay.color}`}>{pay.label}</span>

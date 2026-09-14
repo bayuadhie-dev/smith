@@ -61,6 +61,8 @@ def _serialize_invoice_list_item(inv):
         # Kept for old frontend callers still reading payment_status - derived
         # from the unified status field rather than stored separately.
         'payment_status': _status_to_legacy_payment_status(inv.status),
+        'on_hold': inv.on_hold,
+        'hold_reason': inv.hold_reason,
         'currency': inv.currency,
         'exchange_rate': float(inv.exchange_rate) if inv.exchange_rate else None,
         'subtotal': float(inv.subtotal) if inv.subtotal else 0,
@@ -226,6 +228,8 @@ def get_purchase_invoice(id):
             'supplier_invoice_date': invoice.supplier_invoice_date.isoformat() if invoice.supplier_invoice_date else None,
             'status': invoice.status,
             'payment_status': _status_to_legacy_payment_status(invoice.status),
+            'on_hold': invoice.on_hold,
+            'hold_reason': invoice.hold_reason,
             'currency': invoice.currency,
             'exchange_rate': float(invoice.exchange_rate) if invoice.exchange_rate else None,
             'payment_terms': invoice.payment_terms,
@@ -475,10 +479,17 @@ def create_purchase_invoice():
             })
             total_debit_amount += float(line_amount)
 
-        # Auto-post price variance vs PO, per Accurate's pattern (variance is
-        # posted automatically when the invoice is created, not via a
-        # separate manual step). Uses the same three-way-match computation
-        # exposed by the /three-way-match endpoint.
+        # Invoice blocking (SAP MM concept, 2026-09-14) - a 3-way-match discrepancy
+        # bigger than the configured tolerance now HOLDS the invoice's journal entry
+        # for manual review instead of always silently auto-posting the variance
+        # (the direction found inverted vs real SAP during the MM gap audit -
+        # see project_sap_alignment_survey memory). Small/no variance still
+        # auto-posts exactly as before - this only changes behavior for genuine
+        # discrepancies past the tolerance.
+        from models.finance import PurchaseAccountSettings
+        from utils.finance_helpers import get_or_create_singleton
+        purchase_settings = get_or_create_singleton(PurchaseAccountSettings)
+        hold_reason = None
         try:
             match_result = _compute_three_way_match(invoice)
             total_price_variance = sum(
@@ -486,11 +497,18 @@ def create_purchase_invoice():
                 for line in match_result['lines']
                 if abs(line['price_variance']) > 0.01
             )
-            if abs(total_price_variance) > 0.01:
-                from models.finance import PurchaseAccountSettings
-                from utils.finance_helpers import get_or_create_singleton
-
-                purchase_settings = get_or_create_singleton(PurchaseAccountSettings)
+            variance_percent = (abs(total_price_variance) / total_debit_amount * 100) if total_debit_amount else 0
+            tolerance = float(purchase_settings.invoice_variance_tolerance_percent or 0)
+            if abs(total_price_variance) > 0.01 and variance_percent > tolerance:
+                discrepancy_lines = [
+                    f"{l.get('description', l.get('product_id') or l.get('material_id'))}: PO Rp{l['po_price']:,.0f} vs Invoice Rp{l['inv_price']:,.0f}"
+                    for l in match_result['lines'] if abs(l['price_variance']) > 0.01
+                ]
+                hold_reason = (
+                    f"Selisih harga {variance_percent:.1f}% melebihi toleransi {tolerance:.1f}%. " +
+                    '; '.join(discrepancy_lines)
+                )
+            if abs(total_price_variance) > 0.01 and not hold_reason:
                 if purchase_settings.akun_selisih_pembelian_id:
                     if total_price_variance > 0:
                         journal_lines.append({
@@ -543,15 +561,27 @@ def create_purchase_invoice():
         db.session.add(pending)
         db.session.flush()
 
-        post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='purchase_invoice', reference_id=invoice.id)
+        invoice.pending_journal_entry_id = pending.id
+        if hold_reason:
+            # Held for review - journal deliberately left UNPOSTED (see
+            # POST /purchase-invoices/<id>/release-hold). The invoice row itself
+            # still exists so nothing is lost, but no GL entries exist yet.
+            invoice.on_hold = True
+            invoice.hold_reason = hold_reason
+            invoice.posted_by = None
+            invoice.posted_at = None
+        else:
+            post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='purchase_invoice', reference_id=invoice.id)
 
         db.session.commit()
 
         return jsonify({
-            'message': 'Purchase invoice created successfully',
+            'message': 'Purchase invoice ditahan untuk review (selisih harga melebihi toleransi)' if hold_reason else 'Purchase invoice created successfully',
             'invoice': {
                 'id': invoice.id,
-                'invoice_number': invoice.invoice_number
+                'invoice_number': invoice.invoice_number,
+                'on_hold': bool(hold_reason),
+                'hold_reason': hold_reason,
             }
         }), 201
 
@@ -860,6 +890,38 @@ def three_way_match(id):
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@purchase_invoice_bp.route('/purchase-invoices/<int:id>/release-hold', methods=['POST'])
+@jwt_required()
+@require_permission('purchasing.create')
+def release_invoice_hold(id):
+    """Release an invoice held by the invoice-blocking check (3-way-match discrepancy
+    beyond tolerance, see create_purchase_invoice) - posts its previously-unposted
+    PendingJournalEntry to the real ledger now that a human has reviewed it."""
+    try:
+        invoice = db.session.get(Invoice, id)
+        if not invoice or invoice.invoice_type != 'purchase':
+            return jsonify({'error': 'Invoice not found'}), 404
+        if not invoice.on_hold:
+            return jsonify({'error': 'Invoice ini tidak sedang ditahan'}), 400
+        if not invoice.pending_journal_entry_id:
+            return jsonify({'error': 'Tidak ada jurnal tertunda untuk invoice ini'}), 400
+
+        from utils.finance_helpers import post_pending_journal
+        user_id = get_jwt_identity()
+        post_pending_journal(invoice.pending_journal_entry_id, posted_by_user_id=user_id,
+                              reference_type='purchase_invoice', reference_id=invoice.id)
+
+        invoice.on_hold = False
+        invoice.posted_by = user_id
+        invoice.posted_at = get_local_now()
+        db.session.commit()
+
+        return jsonify({'message': 'Invoice dilepas dari hold dan jurnal diposting'}), 200
+    except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
 

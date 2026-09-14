@@ -44,6 +44,14 @@ class Invoice(db.Model):
     received_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     posted_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     posted_at = db.Column(db.DateTime, nullable=True)
+    # Invoice blocking (SAP MM concept, 2026-09-14) - set when a purchase invoice's
+    # 3-way-match price variance exceeds PurchaseAccountSettings.invoice_variance_tolerance_percent.
+    # While True, the invoice's journal entry (pending_journal_entry_id) is deliberately left
+    # UNPOSTED (see routes/purchase_invoice.py::create_purchase_invoice) until a human reviews
+    # and calls POST /purchase-invoices/<id>/release-hold. Not used for sales invoices.
+    on_hold = db.Column(db.Boolean, nullable=False, default=False)
+    hold_reason = db.Column(db.Text, nullable=True)
+    pending_journal_entry_id = db.Column(db.Integer, db.ForeignKey('pending_journal_entries.id'), nullable=True)
     internal_notes = db.Column(db.Text, nullable=True)
     notes = db.Column(db.Text, nullable=True)
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
@@ -427,6 +435,11 @@ class PurchaseAccountSettings(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     akun_selisih_pembelian_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
     akun_perintah_pembayaran_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
+    # Invoice blocking (SAP MM concept, 2026-09-14) - a 3-way-match price
+    # discrepancy bigger than this % of the invoice's total debit amount now
+    # holds the invoice's GL posting for manual review instead of always
+    # auto-posting the variance (routes/purchase_invoice.py::create_purchase_invoice).
+    invoice_variance_tolerance_percent = db.Column(db.Numeric(5, 2), nullable=False, default=5.0)
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

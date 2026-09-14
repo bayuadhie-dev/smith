@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
+import toast from 'react-hot-toast';
 
 interface PurchaseInvoiceItem {
   id: number;
@@ -23,6 +24,8 @@ interface PurchaseInvoiceDetailData {
   supplier_invoice_number: string | null;
   status: string;
   payment_status: string;
+  on_hold: boolean;
+  hold_reason: string | null;
   currency: string;
   subtotal: number;
   tax_amount: number;
@@ -47,8 +50,9 @@ const PurchaseInvoiceDetail: React.FC = () => {
   const [data, setData] = useState<PurchaseInvoiceDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [releasing, setReleasing] = useState(false);
 
-  useEffect(() => {
+  const load = () => {
     axiosInstance
       .get(`/api/purchasing/purchase-invoices/${id}`)
       .then((res) => {
@@ -59,7 +63,22 @@ const PurchaseInvoiceDetail: React.FC = () => {
         setError('Gagal memuat detail faktur pembelian.');
         setLoading(false);
       });
-  }, [id]);
+  };
+
+  useEffect(() => { load(); }, [id]);
+
+  const handleReleaseHold = async () => {
+    setReleasing(true);
+    try {
+      await axiosInstance.post(`/api/purchasing/purchase-invoices/${id}/release-hold`);
+      toast.success('Invoice dilepas dari hold, jurnal diposting');
+      load();
+    } catch (e: any) {
+      toast.error(e?.response?.data?.error || 'Gagal melepas hold');
+    } finally {
+      setReleasing(false);
+    }
+  };
 
   if (loading) {
     return <div className="p-6 text-gray-500">Memuat...</div>;
@@ -84,6 +103,23 @@ const PurchaseInvoiceDetail: React.FC = () => {
 
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">{data.invoice_number}</h1>
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{data.supplier_name || '-'}</p>
+
+      {data.on_hold && (
+        <div className="mb-6 border border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-800 rounded-lg p-4">
+          <p className="font-semibold text-red-700 dark:text-red-400 mb-1">Invoice Ditahan (On Hold)</p>
+          <p className="text-sm text-red-600 dark:text-red-300 mb-3">{data.hold_reason}</p>
+          <p className="text-xs text-red-500 dark:text-red-400 mb-3">
+            Jurnal akuntansi belum diposting sampai hold ini dilepas.
+          </p>
+          <button
+            className="btn-primary text-sm"
+            disabled={releasing}
+            onClick={handleReleaseHold}
+          >
+            {releasing ? 'Memproses...' : 'Lepas Hold & Posting Jurnal'}
+          </button>
+        </div>
+      )}
 
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6 mb-6">
         <div className="grid grid-cols-2 gap-4 text-sm">
