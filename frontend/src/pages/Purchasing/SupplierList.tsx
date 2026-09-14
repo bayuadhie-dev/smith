@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { useGetSuppliersQuery, useDeleteSupplierMutation } from '../../services/api'
+import { useGetSuppliersQuery, useDeleteSupplierMutation, useGetAllSupplierScorecardsQuery } from '../../services/api'
 import toast from 'react-hot-toast'
 import {
   EyeIcon,
@@ -27,7 +27,15 @@ const [search, setSearch] = useState('')
     supplier_type: supplierType,
     is_active: status === 'active' ? true : status === 'inactive' ? false : undefined
   })
-  
+
+  // Vendor Scorecard (SAP MM concept, 2026-09-14) - real score from PO/GRN/Invoice
+  // history, shown alongside the old manual A/B/C rating. Bulk-fetched once for the
+  // whole list rather than per-row, to avoid N+1 requests.
+  const { data: scorecardsData } = useGetAllSupplierScorecardsQuery(undefined)
+  const scorecardBySupplierId = new Map(
+    (scorecardsData?.scorecards || []).map((sc: any) => [sc.supplier_id, sc])
+  )
+
   const [deleteSupplier] = useDeleteSupplierMutation()
 
   const handleDelete = async (id: number, name: string) => {
@@ -204,6 +212,21 @@ const [search, setSearch] = useState('')
                         }`}>
                           Rating: {supplier.rating || 'Unrated'}
                         </span>
+                        {(() => {
+                          const sc = scorecardBySupplierId.get(supplier.id) as any;
+                          if (!sc) return null;
+                          if (!sc.has_data) {
+                            return <div className="text-xs text-gray-400">Scorecard: belum ada transaksi</div>;
+                          }
+                          return (
+                            <div
+                              className="text-xs text-gray-500 dark:text-gray-400"
+                              title={`Tepat waktu ${sc.on_time_delivery_rate ?? '-'}% | Reject ${sc.quality_reject_rate ?? '-'}% | Selisih harga ${sc.price_variance_percent ?? '-'}%`}
+                            >
+                              Scorecard: {sc.overall_score}/100
+                            </div>
+                          );
+                        })()}
                         <div>
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                             supplier.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'

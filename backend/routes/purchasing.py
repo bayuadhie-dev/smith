@@ -182,6 +182,40 @@ def get_supplier(id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
+@purchasing_bp.route('/suppliers/<int:id>/scorecard', methods=['GET'])
+@jwt_required()
+@require_permission('suppliers.view')
+def get_supplier_scorecard(id):
+    """Vendor Scorecard (SAP MM concept) - real score computed from this supplier's
+    actual PO/GRN/Invoice history, not the manual/unused-elsewhere A/B/C `rating`
+    field. See utils/vendor_scorecard.py for the calculation."""
+    try:
+        supplier = db.session.get(Supplier, id)
+        if not supplier:
+            return jsonify(error_response('api.error', error_code=404)), 404
+        from utils.vendor_scorecard import compute_vendor_scorecard
+        return jsonify(compute_vendor_scorecard(id)), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@purchasing_bp.route('/suppliers/scorecards', methods=['GET'])
+@jwt_required()
+@require_permission('suppliers.view')
+def get_all_supplier_scorecards():
+    """Bulk vendor scorecards for every active supplier - powers a list/dashboard view
+    without N+1 requests from the frontend."""
+    try:
+        from utils.vendor_scorecard import compute_vendor_scorecard
+        suppliers = Supplier.query.filter_by(is_active=True).all()
+        return jsonify({
+            'scorecards': [compute_vendor_scorecard(s.id) for s in suppliers]
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @purchasing_bp.route('/suppliers/<int:id>', methods=['PUT'])
 @jwt_required()
 @require_permission('suppliers.edit')
