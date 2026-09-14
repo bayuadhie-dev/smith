@@ -18,6 +18,7 @@ export default function DocumentGenerateButton({
 }: DocumentGenerateButtonProps) {
   const [loading, setLoading] = useState(false);
   const [generatedDocId, setGeneratedDocId] = useState<number | null>(null);
+  const [previewHtml, setPreviewHtml] = useState<string | null>(null);
 
   const getDocumentType = () => {
     switch (transactionType) {
@@ -57,14 +58,7 @@ export default function DocumentGenerateButton({
     
     try {
       const res = await axiosInstance.get(`/api/documents/${generatedDocId}/preview`);
-      const htmlContent = res.data.document.html_content;
-      
-      // Open preview in new window
-      const previewWindow = window.open('', '_blank');
-      if (previewWindow) {
-        previewWindow.document.write(htmlContent);
-        previewWindow.document.close();
-      }
+      setPreviewHtml(res.data.document.html_content);
     } catch (error) {
       console.error('Error previewing document:', error);
       toast.error('Gagal preview dokumen');
@@ -171,6 +165,25 @@ export default function DocumentGenerateButton({
             New
           </button>
         </>
+      )}
+
+      {previewHtml && (
+        <div className="fixed inset-0 bg-black/50 flex items-start justify-center z-50 p-4 overflow-y-auto" onClick={() => setPreviewHtml(null)}>
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl my-8" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+              <h3 className="font-semibold text-gray-900">Preview Dokumen</h3>
+              <button onClick={() => setPreviewHtml(null)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">
+                &times;
+              </button>
+            </div>
+            <iframe
+              title="Document preview"
+              srcDoc={previewHtml}
+              className="w-full"
+              style={{ height: '75vh', border: 'none' }}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

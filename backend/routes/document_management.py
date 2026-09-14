@@ -1027,19 +1027,27 @@ def get_categories():
 @jwt_required()
 @require_permission('documents.create')
 def generate_from_sales_order(sales_order_id):
-    """Auto-generate Surat Jalan from Sales Order (like Accurate)"""
+    """Auto-generate Surat Jalan from Sales Order (like Accurate) - now with
+    real FIFO stock allocation/deduction (2026-09-12), see
+    project_surat_jalan_shipping memory. Optional body: {"items": [{"so_item_id":
+    int, "quantity": number}, ...]} for a partial shipment; omit to ship the
+    full remaining unshipped quantity of every line."""
     try:
         current_user_id = get_jwt_identity()
-        
+        data = request.get_json(silent=True) or {}
+        items_to_ship = data.get('items')
+
         from utils.document_generator import generate_surat_jalan_from_sales_order
-        document = generate_surat_jalan_from_sales_order(sales_order_id, current_user_id)
-        
+        document = generate_surat_jalan_from_sales_order(sales_order_id, current_user_id, items_to_ship=items_to_ship)
+
         return jsonify({
             'message': 'Surat Jalan generated successfully',
             'document_id': document.id,
             'document_number': document.document_number
         }), 201
-        
+
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

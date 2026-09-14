@@ -112,15 +112,44 @@ def _company_header_objects():
     ]
 
 
-def generate_surat_jalan_from_sales_order(sales_order_id, user_id):
+def generate_surat_jalan_from_sales_order(sales_order_id, user_id, items_to_ship=None):
     """
-    Generate Surat Jalan from Sales Order
-    Like Accurate: Sales Order → Surat Jalan
+    Generate Surat Jalan from Sales Order - Like Accurate: Sales Order → Surat Jalan.
+
+    Real stock allocation added 2026-09-12 (see project_surat_jalan_shipping
+    memory) - previously this just printed whatever the SO said was ordered
+    with ZERO connection to actual Inventory (no check, no deduction, no
+    partial-shipment awareness). Now uses the same FIFO deduction every
+    other real stock-consuming flow in this codebase uses
+    (utils.fifo_helper.fifo_deduct_stock - excludes quarantine/reject stock).
+
+    items_to_ship: optional list of {'so_item_id': int, 'quantity': float}
+    for a partial shipment. Omit to ship the full remaining unshipped
+    quantity (ordered - SalesOrderItem.quantity_shipped) for every line.
+    Raises ValueError (caught by the except below, which rolls back
+    everything) if any line's stock is insufficient or the requested
+    quantity exceeds what's still unshipped - the whole Surat Jalan is
+    atomic, never partially deducted.
     """
+    from utils.fifo_helper import fifo_deduct_stock
+
     try:
         sales_order = db.session.get(SalesOrder, sales_order_id)
         if not sales_order:
             raise ValueError('Sales Order not found')
+
+        to_ship_by_item = {}
+        if items_to_ship:
+            for entry in items_to_ship:
+                to_ship_by_item[int(entry['so_item_id'])] = float(entry['quantity'])
+        else:
+            for item in sales_order.items:
+                remaining = float(item.quantity) - float(item.quantity_shipped or 0)
+                if remaining > 1e-9:
+                    to_ship_by_item[item.id] = remaining
+
+        if not to_ship_by_item:
+            raise ValueError('Tidak ada quantity yang perlu dikirim untuk Sales Order ini (sudah terkirim semua)')
 
         template = _get_default_template('surat_jalan')
         if not template:
@@ -129,23 +158,63 @@ def generate_surat_jalan_from_sales_order(sales_order_id, user_id):
         doc_number = generate_number('SJ', Document, 'document_number')
 
         items_data = []
+        total_qty = 0.0
         for item in sales_order.items:
+            qty_to_ship = to_ship_by_item.get(item.id)
+            if not qty_to_ship or qty_to_ship <= 0:
+                continue
+
+            remaining_orderable = float(item.quantity) - float(item.quantity_shipped or 0)
+            if qty_to_ship > remaining_orderable + 1e-9:
+                raise ValueError(
+                    f"Qty kirim untuk {item.product.name if item.product else item.description} "
+                    f"({qty_to_ship}) melebihi sisa yang belum dikirim ({remaining_orderable})"
+                )
+
+            result = fifo_deduct_stock(
+                product_id=item.product_id,
+                quantity_needed=qty_to_ship,
+                reference_number=doc_number,
+                reference_type='surat_jalan',
+                notes=f'Surat Jalan {doc_number} - SO {sales_order.order_number}',
+                user_id=user_id,
+            )
+            if not result['success']:
+                raise ValueError(
+                    f"Stok tidak cukup untuk {item.product.name if item.product else item.description}: {result['error']}"
+                )
+
+            item.quantity_shipped = float(item.quantity_shipped or 0) + qty_to_ship
+            total_qty += qty_to_ship
+
             items_data.append({
                 'product_name': item.product.name if item.product else item.description,
-                'quantity': float(item.quantity),
+                'quantity': qty_to_ship,
                 'uom': item.uom,
-                'description': item.description or ''
+                'description': item.description or '',
+                'batches': [
+                    {'batch_number': m['batch_number'], 'quantity': m['quantity_deducted']}
+                    for m in result['movements']
+                ],
             })
+
+        # Fully shipped once every line's quantity_shipped reaches its
+        # ordered quantity - SalesOrder.status already has a real 'shipped'
+        # value (confirmed in the SD audit); no 'partial' status exists so a
+        # partial shipment intentionally leaves status untouched rather than
+        # inventing one.
+        if all(float(i.quantity_shipped or 0) >= float(i.quantity) - 1e-9 for i in sales_order.items):
+            sales_order.status = 'shipped'
 
         document_data = {
             'document_number': doc_number,
             'document_date': datetime.utcnow().strftime('%d %B %Y'),
             'sales_order_number': sales_order.order_number,
             'customer_name': sales_order.customer.company_name if sales_order.customer else '',
-            'customer_address': sales_order.delivery_address or (sales_order.customer.address if sales_order.customer else ''),
+            'customer_address': sales_order.delivery_address or (sales_order.customer.billing_address if sales_order.customer else ''),
             'customer_phone': sales_order.customer.phone if sales_order.customer else '',
             'items': items_data,
-            'total_quantity': sum(float(item.quantity) for item in sales_order.items),
+            'total_quantity': total_qty,
             'notes': sales_order.notes or '',
             'prepared_by': '',
             'received_by': '',

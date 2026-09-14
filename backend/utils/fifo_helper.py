@@ -203,7 +203,14 @@ def fifo_deduct_stock(material_id=None, product_id=None, quantity_needed=0,
     
     # When deducting reserved stock, filter by quantity_reserved > 0
     # When deducting unreserved stock, filter by quantity_on_hand > 0
-    filters = [Inventory.is_active == True]
+    #
+    # Quarantined/rejected stock must never be deducted/consumed - this
+    # function built its own filter list instead of reusing
+    # _build_fifo_query() and missed the quarantine/reject exclusion that
+    # was added there on 2026-09-11, leaving this specific function (used by
+    # material_issue.py, fg_conversion.py, waste.py, rd_materials.py,
+    # warehouse.py) still able to deduct bad stock. Fixed 2026-09-12.
+    filters = [Inventory.is_active == True, Inventory.stock_status.notin_(['quarantine', 'reject'])]
     if from_reserved:
         filters.append(Inventory.quantity_reserved > 0)
     else:

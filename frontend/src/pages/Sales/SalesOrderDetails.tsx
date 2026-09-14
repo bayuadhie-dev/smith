@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useGetSalesOrderQuery } from '../../services/api';
 import axiosInstance from '../../utils/axiosConfig';
@@ -34,60 +34,9 @@ const SalesOrderDetails: React.FC = () => {
   const { t } = useLanguage();
 
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const { data: order, isLoading, error, refetch } = useGetSalesOrderQuery(id!);
   const [isTriggeringProduction, setIsTriggeringProduction] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-
-  const [showShipModal, setShowShipModal] = useState(false);
-  const [shipDate, setShipDate] = useState(new Date().toISOString().split('T')[0]);
-  const [shipQty, setShipQty] = useState<Record<number, string>>({});
-  const [isShipping, setIsShipping] = useState(false);
-  const [shipError, setShipError] = useState<string | null>(null);
-
-  const openShipModal = () => {
-    const defaults: Record<number, string> = {};
-    (order?.items || []).forEach((item: any) => {
-      const remaining = Number(item.quantity) - Number(item.quantity_shipped || 0);
-      if (remaining > 0) defaults[item.id] = String(remaining);
-    });
-    setShipQty(defaults);
-    setShipDate(new Date().toISOString().split('T')[0]);
-    setShipError(null);
-    setShowShipModal(true);
-  };
-
-  const handleCreateShipment = async () => {
-    setShipError(null);
-    const itemsToShip = (order?.items || [])
-      .filter((item: any) => Number(shipQty[item.id]) > 0)
-      .map((item: any) => ({
-        product_id: item.product_id,
-        quantity: Number(shipQty[item.id]),
-        uom: item.uom,
-      }));
-    if (itemsToShip.length === 0) {
-      setShipError('Isi minimal 1 item dengan qty > 0.');
-      return;
-    }
-    setIsShipping(true);
-    try {
-      const res = await axiosInstance.post('/api/shipping/orders', {
-        sales_order_id: Number(id),
-        customer_id: order.customer_id,
-        shipping_date: shipDate,
-        shipping_address: order.delivery_address,
-        items: itemsToShip,
-      });
-      toast.success('Pengiriman dibuat');
-      setShowShipModal(false);
-      navigate(`/app/shipping/orders/${res.data.shipping_id}`);
-    } catch (err: any) {
-      setShipError(err.response?.data?.error || 'Gagal membuat pengiriman');
-    } finally {
-      setIsShipping(false);
-    }
-  };
 
   // Fallback pemulihan untuk kasus langka: SO nyangkut di status 'confirmed' tanpa
   // produksi jalan (mis. endpoint confirm lama dipanggil terpisah dari luar UI ini).
@@ -328,6 +277,9 @@ const SalesOrderDetails: React.FC = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.description')}</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.quantity')}</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Terkirim
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Unit Price
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -351,6 +303,21 @@ const SalesOrderDetails: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {item.quantity} {item.uom}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    {(() => {
+                      const shipped = Number(item.quantity_shipped || 0);
+                      const qty = Number(item.quantity || 0);
+                      const full = qty > 0 && shipped >= qty;
+                      const none = shipped <= 0;
+                      return (
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          full ? 'bg-green-100 text-green-800' : none ? 'bg-gray-100 text-gray-600' : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {shipped} / {qty} {item.uom}
+                        </span>
+                      );
+                    })()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     Rp {item.unit_price?.toLocaleString('id-ID') || '0'}
@@ -381,7 +348,10 @@ const SalesOrderDetails: React.FC = () => {
 
       {/* Documents Section */}
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-        <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Documents</h2>
+        <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-1">Documents</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+          Ini satu-satunya jalur pengiriman barang untuk SO ini. Generate akan mengirim seluruh sisa qty yang belum terkirim (lihat kolom "Terkirim" di atas) dan otomatis memotong stok gudang (FIFO) begitu dibuat.
+        </p>
         <div className="space-y-4">
           <div>
             <label className="text-sm font-medium text-gray-500 dark:text-gray-400 block mb-2">Surat Jalan (Delivery Note)</label>
@@ -434,11 +404,6 @@ const SalesOrderDetails: React.FC = () => {
               Buat Invoice
             </Link>
           )}
-          {order.status !== 'draft' && (
-            <button className="btn-secondary" onClick={openShipModal}>
-              Buat Pengiriman
-            </button>
-          )}
           <Link to={`/app/sales/orders/${id}/edit`} className="btn-secondary">
             Edit Order
           </Link>
@@ -458,56 +423,6 @@ const SalesOrderDetails: React.FC = () => {
         />
       )}
 
-      {showShipModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Buat Pengiriman</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-              {order.order_number} — {order.customer_name} — isi qty yang mau dikirim sekarang (default = sisa belum dikirim).
-            </p>
-            {shipError && (
-              <div className="mb-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 p-3 rounded">{shipError}</div>
-            )}
-            <div className="mb-3">
-              <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Tanggal Kirim</label>
-              <input
-                type="date"
-                value={shipDate}
-                onChange={(e) => setShipDate(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-sm"
-              />
-            </div>
-            <div className="space-y-2 max-h-64 overflow-y-auto">
-              {(order.items || []).map((item: any) => {
-                const remaining = Number(item.quantity) - Number(item.quantity_shipped || 0);
-                return (
-                  <div key={item.id} className="flex items-center justify-between gap-3 border border-gray-200 dark:border-gray-700 rounded-lg p-2">
-                    <div className="text-sm">
-                      <div className="font-medium">{item.product_name}</div>
-                      <div className="text-gray-400 text-xs">Sisa belum dikirim: {remaining} {item.uom}</div>
-                    </div>
-                    <input
-                      type="number"
-                      min={0}
-                      max={remaining}
-                      value={shipQty[item.id] ?? ''}
-                      onChange={(e) => setShipQty({ ...shipQty, [item.id]: e.target.value })}
-                      disabled={remaining <= 0}
-                      className="w-24 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-sm text-right disabled:bg-gray-100 dark:disabled:bg-gray-800"
-                    />
-                  </div>
-                );
-              })}
-            </div>
-            <div className="flex justify-end gap-2 mt-5">
-              <button className="btn-outline" onClick={() => setShowShipModal(false)} disabled={isShipping}>Batal</button>
-              <button className="btn-primary" onClick={handleCreateShipment} disabled={isShipping}>
-                {isShipping ? 'Memproses...' : 'Buat Pengiriman'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
