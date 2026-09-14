@@ -11,6 +11,17 @@ interface PackingListItem {
   is_batch_start: boolean;
 }
 
+interface OcrRow {
+  carton_number_full: number | null;
+  gross_kg: number | null;
+  netto_kg: number | null;
+  netto_note?: string;
+  batch_number: string | null;
+  confidence: string;
+  item_id: number | null;
+  will_create: boolean;
+}
+
 interface PackingList {
   id: number;
   work_order_id: number;
@@ -51,6 +62,12 @@ export default function PackingListTab({
   
   const [startCartonNumber, setStartCartonNumber] = useState<number>(1);
   const [showStartNumberModal, setShowStartNumberModal] = useState(false);
+
+  const [showOcrModal, setShowOcrModal] = useState(false);
+  const [ocrPhoto, setOcrPhoto] = useState<File | null>(null);
+  const [ocrProcessing, setOcrProcessing] = useState(false);
+  const [ocrRows, setOcrRows] = useState<OcrRow[]>([]);
+  const [ocrSubmitting, setOcrSubmitting] = useState(false);
 
   useEffect(() => {
     fetchPackingList();
@@ -171,6 +188,70 @@ export default function PackingListTab({
     }
   };
 
+  const handleOcrUpload = async () => {
+    if (!ocrPhoto) {
+      toast.error('Pilih foto packing list dulu');
+      return;
+    }
+    setOcrProcessing(true);
+    try {
+      const formData = new FormData();
+      formData.append('photo', ocrPhoto);
+      const res = await axiosInstance.post(
+        `/api/production/work-orders/${workOrderId}/packing-list/ocr-weigh-preview`,
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
+      setOcrRows(res.data.rows || []);
+      if (!res.data.rows?.length) {
+        toast.error('Tidak ada baris yang terbaca dari foto');
+      }
+    } catch (error: any) {
+      toast.error(error?.response?.data?.error || 'Gagal memproses OCR');
+    } finally {
+      setOcrProcessing(false);
+    }
+  };
+
+  const handleOcrConfirm = async () => {
+    // Every row with a readable carton number is submitted - matched rows
+    // update the existing carton, unmatched rows create a brand new one.
+    // This is the point of OCR here: Aida scans the physical slip once and
+    // every carton on it lands in the system, not just ones that happened
+    // to already exist from a prior Sinkronkan/manual step.
+    const usable = ocrRows.filter((r) => r.carton_number_full != null);
+    if (usable.length === 0) {
+      toast.error('Tidak ada nomor karton yang terbaca dari foto');
+      return;
+    }
+    setOcrSubmitting(true);
+    try {
+      const res = await axiosInstance.put(
+        `/api/production/work-orders/${workOrderId}/packing-list/items`,
+        {
+          product_name: productName,
+          items: usable.map((r) => ({
+            id: r.item_id || undefined,
+            carton_number: r.item_id ? undefined : r.carton_number_full,
+            weight_kg: r.netto_kg,
+            weight_gross_kg: r.gross_kg,
+            batch_mixing: r.batch_number || undefined,
+          })),
+        }
+      );
+      const createdCount = res.data.created_count || 0;
+      toast.success(`${usable.length} karton disimpan dari OCR${createdCount ? ` (${createdCount} baru dibuat)` : ''}`);
+      setShowOcrModal(false);
+      setOcrRows([]);
+      setOcrPhoto(null);
+      fetchPackingList();
+    } catch (error: any) {
+      toast.error(error?.response?.data?.error || 'Gagal menyimpan hasil OCR');
+    } finally {
+      setOcrSubmitting(false);
+    }
+  };
+
   const openBatchModal = (cartonNumber?: number) => {
     setBatchStartCarton(cartonNumber || null);
     setNewBatchMixing(packingList?.current_batch_mixing || '');
@@ -219,6 +300,12 @@ export default function PackingListTab({
           >
             <PlusIcon className="h-4 w-4" />
             Ganti Batch Mixing
+          </button>
+          <button
+            onClick={() => setShowOcrModal(true)}
+            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+          >
+            📷 Input OCR
           </button>
           <button
             onClick={handleOpenSyncModal}
@@ -434,6 +521,96 @@ export default function PackingListTab({
                 {saving ? 'Menyinkronkan...' : 'Sinkronkan'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showOcrModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 overflow-y-auto p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-3xl my-8">
+            <h3 className="text-lg font-semibold mb-1">📷 Input OCR Packing List</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              Foto form "Status Pengiriman Barang" tulisan tangan - sistem baca nomor karton, berat, dan batch, lalu dicocokkan ke karton yang sudah ada di packing list ini.
+            </p>
+
+            {ocrRows.length === 0 ? (
+              <div className="space-y-3">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setOcrPhoto(e.target.files?.[0] || null)}
+                  className="w-full text-sm"
+                />
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => { setShowOcrModal(false); setOcrPhoto(null); }}
+                    className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    onClick={handleOcrUpload}
+                    disabled={ocrProcessing || !ocrPhoto}
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
+                  >
+                    {ocrProcessing ? 'Memproses...' : 'Proses OCR'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="max-h-96 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+                    <thead className="bg-gray-50 dark:bg-gray-900 sticky top-0">
+                      <tr>
+                        <th className="px-3 py-2 text-left">No. Karton</th>
+                        <th className="px-3 py-2 text-left">Gross (kg)</th>
+                        <th className="px-3 py-2 text-left">Netto (kg)</th>
+                        <th className="px-3 py-2 text-left">Batch</th>
+                        <th className="px-3 py-2 text-left">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                      {ocrRows.map((r, i) => (
+                        <tr key={i} className={r.carton_number_full == null ? 'bg-red-50 dark:bg-red-900/10' : ''}>
+                          <td className="px-3 py-2">{r.carton_number_full ?? '-'}</td>
+                          <td className="px-3 py-2">{r.gross_kg ?? '-'}</td>
+                          <td className="px-3 py-2">{r.netto_kg ?? '-'}</td>
+                          <td className="px-3 py-2">{r.batch_number || '-'}</td>
+                          <td className="px-3 py-2">
+                            {r.carton_number_full == null ? (
+                              <span className="text-red-600">✗ Nomor karton tidak terbaca</span>
+                            ) : r.will_create ? (
+                              <span className="text-blue-600">+ Karton baru</span>
+                            ) : (
+                              <span className="text-green-600">✓ Update karton lama</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="text-xs text-gray-500">
+                  "Karton baru" akan ditambahkan ke packing list ini langsung dari hasil scan - tidak perlu Sinkronkan atau input manual dulu. Periksa angka gross/netto/batch dulu sebelum konfirmasi.
+                </p>
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => { setOcrRows([]); setOcrPhoto(null); }}
+                    className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300"
+                  >
+                    Ulangi Foto
+                  </button>
+                  <button
+                    onClick={handleOcrConfirm}
+                    disabled={ocrSubmitting}
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
+                  >
+                    {ocrSubmitting ? 'Menyimpan...' : `Konfirmasi ${ocrRows.filter(r => r.carton_number_full != null).length} Karton`}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -308,7 +308,6 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
             { name: 'Sisa Order', href: '/app/production/remaining-stock', icon: ArchiveBoxIcon },
             {
               name: 'Packing List', icon: ArchiveBoxIcon, isSubMenu: true, subChildren: [
-                { name: 'Daftar Packing', href: '/app/production/packing-list' },
                 { name: 'WIP Stock', href: '/app/production/wip-stock' },
               ]
             },
@@ -341,7 +340,6 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
             { name: 'QC Barang Masuk', href: '/app/quality/incoming', icon: ArrowDownTrayIcon },
             { name: 'QC Dalam Proses', href: '/app/quality/in-process', icon: CogIcon },
             { name: 'QC Barang Jadi', href: '/app/quality/finish-good', icon: ClipboardDocumentCheckIcon },
-            { name: 'QC Packing List', href: '/app/quality/packing-list', icon: ArchiveBoxIcon },
             { name: 'Ubah Status Batch', href: '/app/quality/batch-status', icon: ArrowPathIcon },
             { name: 'Analytics', href: '/app/quality/analytics', icon: ChartPieIcon },
             { name: 'SPC', href: '/app/quality/spc', icon: ChartBarIcon },

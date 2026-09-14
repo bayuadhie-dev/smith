@@ -4037,18 +4037,82 @@ def sync_packing_list(wo_id):
         return jsonify({'error': str(e)}), 500
 
 
+@production_bp.route('/work-orders/<int:wo_id>/packing-list/ocr-weigh-preview', methods=['POST'])
+@jwt_required()
+@require_permission('work_orders.create')
+def ocr_preview_wo_packing_list(wo_id):
+    """OCR the handwritten packing slip - this IS the intended data-entry
+    path for Tutup SPK's packing list (2026-09-12), replacing Aida's
+    one-carton-at-a-time manual typing, not just topping up cartons that
+    'Sinkronkan' already pre-generated. Rows matching an existing
+    PackingListItem (by carton number) will update it; rows with no match
+    are flagged 'will_create' - a brand new carton straight from the photo,
+    no prior Sinkronkan/manual step required at all. Preview only, no DB
+    write (confirm via update_packing_list_items below)."""
+    try:
+        from utils.ocr_packing_list import process_packing_list_photo
+
+        wo = db.session.get(WorkOrder, wo_id)
+        if not wo:
+            return jsonify({'error': 'Work order not found'}), 404
+        packing_list = PackingList.query.filter_by(work_order_id=wo_id).first()
+        # No packing list yet? That's fine - OCR itself can be the very
+        # first thing that creates one, so Aida never needs to click
+        # Sinkronkan or type anything by hand first.
+        packing_list_id_for_log = packing_list.id if packing_list else None
+
+        photo = request.files.get('photo') or request.files.get('image')
+        if not photo or not photo.filename:
+            return jsonify({'success': False, 'error': 'File photo wajib diunggah (field: photo atau image)'}), 400
+        image_bytes = photo.read()
+        if not image_bytes:
+            return jsonify({'success': False, 'error': 'File photo kosong (0 bytes)'}), 400
+
+        result = process_packing_list_photo(
+            image_bytes=image_bytes,
+            product_name=wo.product.name if wo.product else '',
+            product_id=wo.product_id,
+            packing_list_id=packing_list_id_for_log,
+            mime_type=photo.mimetype or 'image/jpeg'
+        )
+
+        existing_items = {item.carton_number: item.id for item in packing_list.items.all()} if packing_list else {}
+        for row in result.get('rows', []):
+            full_num = row.get('carton_number_full')
+            row['item_id'] = existing_items.get(full_num)
+            row['will_create'] = row['item_id'] is None and full_num is not None
+
+        return jsonify({'success': True, **result}), 200
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @production_bp.route('/work-orders/<int:wo_id>/packing-list/items', methods=['PUT'])
 @jwt_required()
 @require_permission('work_orders.edit')
 def update_packing_list_items(wo_id):
-    """Update packing list items (weight, batch mixing)"""
+    """Update packing list items (weight, batch mixing) - and CREATE new
+    cartons straight from OCR when no matching row exists yet (2026-09-12).
+    This is the real intended data-entry path: Aida scans the physical
+    packing slip and every carton on it lands in the system, whether or
+    not 'Sinkronkan' happened to pre-generate that carton number - not
+    just a top-up for cartons that already existed. See
+    project_packing_list_consolidation memory."""
     try:
+        wo = db.session.get(WorkOrder, wo_id)
+        if not wo:
+            return jsonify({'error': 'Work order not found'}), 404
+
         # Get product_name from request body
         data = request.get_json()
-        product_name = data.get('product_name', '').strip()
+        product_name = (data.get('product_name') or '').strip() or (wo.product.name if wo.product else None)
         items_data = data.get('items', [])
-        
-        # Find packing list with specific product name if provided
+
+        # Find packing list with specific product name if provided, else
+        # get-or-create - OCR can be the very first action on this WO's
+        # packing list, no prior manual/Sinkronkan step required.
         if product_name:
             packing_list = PackingList.query.filter_by(
                 work_order_id=wo_id,
@@ -4056,27 +4120,82 @@ def update_packing_list_items(wo_id):
             ).first()
         else:
             packing_list = PackingList.query.filter_by(work_order_id=wo_id).first()
-        
+
         if not packing_list:
-            return jsonify({'error': 'Packing list not found'}), 404
-        
+            packing_list = PackingList(
+                work_order_id=wo_id,
+                product_name=product_name or (wo.product.name if wo.product else 'Unknown'),
+                total_karton=0,
+                start_carton_number=1,
+                last_carton_number=0,
+            )
+            db.session.add(packing_list)
+            db.session.flush()
+
+        user_id = get_jwt_identity()
+        today = get_local_today()
+        now_time = get_local_now().time()
+        created_count = 0
+
         for item_data in items_data:
             item_id = item_data.get('id')
+            carton_number = item_data.get('carton_number')
+            item = None
             if item_id:
                 item = db.session.get(PackingListItem, item_id)
-                if item and item.packing_list_id == packing_list.id:
-                    if 'weight_kg' in item_data:
-                        item.weight_kg = item_data['weight_kg']
-                    if 'batch_mixing' in item_data:
-                        item.batch_mixing = item_data['batch_mixing']
-                    if 'is_batch_start' in item_data:
-                        item.is_batch_start = item_data['is_batch_start']
-        
+                if item and item.packing_list_id != packing_list.id:
+                    item = None
+            elif carton_number:
+                item = PackingListItem.query.filter_by(
+                    packing_list_id=packing_list.id, carton_number=carton_number
+                ).first()
+                if not item:
+                    item = PackingListItem(packing_list_id=packing_list.id, carton_number=carton_number)
+                    db.session.add(item)
+                    db.session.flush()
+                    created_count += 1
+
+            if not item:
+                continue
+
+            if 'weight_kg' in item_data:
+                item.weight_kg = item_data['weight_kg']
+                # Manual or OCR-confirmed weigh event (2026-09-12) -
+                # see project_packing_list_consolidation memory.
+                item.weighed_by = user_id
+                weigh_date = item_data.get('weigh_date')
+                parsed_date = None
+                if weigh_date and isinstance(weigh_date, str):
+                    try:
+                        parsed_date = datetime.strptime(weigh_date, '%Y-%m-%d').date()
+                    except (ValueError, TypeError):
+                        parsed_date = None
+                item.weigh_date = parsed_date or today
+                item.weigh_time = now_time
+            if 'weight_gross_kg' in item_data:
+                item.weight_gross_kg = item_data['weight_gross_kg']
+            if 'qc_status' in item_data:
+                item.qc_status = item_data['qc_status']
+            if 'batch_mixing' in item_data:
+                item.batch_mixing = item_data['batch_mixing']
+            if 'is_batch_start' in item_data:
+                item.is_batch_start = item_data['is_batch_start']
+
+        if created_count:
+            packing_list.total_karton = PackingListItem.query.filter_by(packing_list_id=packing_list.id).count()
+            max_carton = db.session.query(func.max(PackingListItem.carton_number)).filter_by(
+                packing_list_id=packing_list.id
+            ).scalar()
+            if max_carton:
+                packing_list.last_carton_number = max_carton
+
         db.session.commit()
-        
+
         return jsonify({
             'success': True,
-            'message': 'Items updated successfully'
+            'message': 'Items updated successfully',
+            'created_count': created_count,
+            'packing_list_id': packing_list.id,
         }), 200
     except Exception as e:
         db.session.rollback()

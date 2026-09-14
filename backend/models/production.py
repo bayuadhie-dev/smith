@@ -972,19 +972,35 @@ class PackingListItem(db.Model):
     
     # Batch mixing
     batch_mixing = db.Column(db.String(100), nullable=True)
-    
+
     # Flag untuk menandai awal batch mixing baru
     is_batch_start = db.Column(db.Boolean, default=False)
-    
+
+    # Timbang & OCR (2026-09-12) - digabung dari PackingListNew yang nyaris
+    # tidak pernah kepakai (1 packing list asli vs 656 di sini) supaya OCR
+    # dilakukan sekali, saat karton ini benar-benar dibuat (Tutup SPK),
+    # bukan diulang lagi di tahap shipping - lihat
+    # project_packing_list_consolidation memory untuk rasionalnya.
+    weight_kg = db.Column(db.Numeric(10, 3), nullable=True)  # Netto, dihitung dari gross - potongan
+    weight_gross_kg = db.Column(db.Numeric(10, 3), nullable=True)
+    weigh_date = db.Column(db.Date, nullable=True)
+    weigh_time = db.Column(db.Time, nullable=True)
+    weighed_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    qc_status = db.Column(db.String(50), nullable=True)  # passed, failed, pending
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     def to_dict(self):
         return {
             'id': self.id,
             'packing_list_id': self.packing_list_id,
             'carton_number': self.carton_number,
             'weight_kg': float(self.weight_kg) if self.weight_kg else None,
+            'weight_gross_kg': float(self.weight_gross_kg) if self.weight_gross_kg else None,
+            'weigh_date': self.weigh_date.isoformat() if self.weigh_date else None,
+            'weigh_time': self.weigh_time.isoformat() if self.weigh_time else None,
+            'qc_status': self.qc_status,
             'batch_mixing': self.batch_mixing,
             'is_batch_start': self.is_batch_start,
             'created_at': self.created_at.isoformat() if self.created_at else None
@@ -1087,195 +1103,6 @@ class WIPStockMovement(db.Model):
             'balance_carton': self.balance_carton,
             'notes': self.notes,
             'created_by': self.user.username if self.user else None,
-            'created_at': self.created_at.isoformat() if self.created_at else None
-        }
-
-
-# ===========================================
-# NEW PACKING LIST - Separate from Work Order
-# ===========================================
-
-class PackingListNew(db.Model):
-    """New Packing List - Separate from Work Order, based on Sales Order"""
-    __tablename__ = 'packing_lists_new'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    packing_number = db.Column(db.String(100), unique=True, nullable=False, index=True)
-    
-    # Link to Sales Order (optional)
-    sales_order_id = db.Column(db.Integer, db.ForeignKey('sales_orders.id'), nullable=True)
-    
-    # Product being packed
-    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
-    
-    # Customer info (can be from SO or manual)
-    customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'), nullable=True)
-    customer_name = db.Column(db.String(200), nullable=True)
-    
-    # Packing details
-    pack_per_carton = db.Column(db.Integer, default=1)
-    total_carton = db.Column(db.Integer, default=0)
-    total_pcs = db.Column(db.Integer, default=0)
-    
-    # Carton numbering
-    start_carton_number = db.Column(db.Integer, default=1)
-    end_carton_number = db.Column(db.Integer, default=0)
-    highest_carton_number_used = db.Column(db.Integer, nullable=True)
-    
-    # Current batch mixing
-    current_batch_mixing = db.Column(db.String(100), nullable=True)
-    
-    # Status: draft, in_progress, completed, quarantine, released, rejected, cancelled
-    status = db.Column(db.String(50), default='draft')
-    
-    # Dates
-    packing_date = db.Column(db.Date, nullable=True)
-    completed_at = db.Column(db.DateTime, nullable=True)
-    
-    # QC fields
-    qc_status = db.Column(db.String(50), nullable=True)  # quarantine, released, rejected
-    qc_date = db.Column(db.DateTime, nullable=True)
-    qc_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
-    qc_notes = db.Column(db.Text, nullable=True)
-    released_at = db.Column(db.DateTime, nullable=True)
-    
-    notes = db.Column(db.Text, nullable=True)
-    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # Relationships
-    sales_order = db.relationship('SalesOrder', backref='packing_lists')
-    product = db.relationship('Product', backref='packing_lists_new')
-    customer = db.relationship('Customer', backref='packing_lists')
-    items = db.relationship('PackingListNewItem', backref='packing_list', lazy='dynamic', cascade='all, delete-orphan')
-    creator = db.relationship('User', foreign_keys=[created_by])
-    qc_reviewer = db.relationship('User', foreign_keys=[qc_by])
-    
-    def to_dict(self, include_items=False):
-        result = {
-            'id': self.id,
-            'packing_number': self.packing_number,
-            'sales_order_id': self.sales_order_id,
-            'so_number': self.sales_order.so_number if self.sales_order else None,
-            'product_id': self.product_id,
-            'product_name': self.product.name if self.product else None,
-            'product_code': self.product.code if self.product else None,
-            'customer_id': self.customer_id,
-            'customer_name': self.customer_name or (self.customer.name if self.customer else None),
-            'pack_per_carton': self.pack_per_carton,
-            'total_carton': self.total_carton,
-            'total_pcs': self.total_pcs,
-            'start_carton_number': self.start_carton_number,
-            'end_carton_number': self.end_carton_number,
-            'highest_carton_number_used': self.highest_carton_number_used,
-            'current_batch_mixing': self.current_batch_mixing,
-            'status': self.status,
-            'packing_date': self.packing_date.isoformat() if self.packing_date else None,
-            'completed_at': self.completed_at.isoformat() if self.completed_at else None,
-            'qc_status': self.qc_status,
-            'qc_date': self.qc_date.isoformat() if self.qc_date else None,
-            'qc_by': self.qc_reviewer.username if self.qc_reviewer else None,
-            'qc_notes': self.qc_notes,
-            'released_at': self.released_at.isoformat() if self.released_at else None,
-            'notes': self.notes,
-            'created_by': self.creator.username if self.creator else None,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
-            'items_count': self.items.count(),
-            'weighed_count': self.items.filter(PackingListNewItem.weight_kg.isnot(None)).count()
-        }
-        
-        # Calculate batch summary & weight stats
-        batch_summary = []
-        weight_list = []
-        if self.items.count() > 0:
-            all_items = self.items.order_by(PackingListNewItem.carton_number).all()
-            batch_map = {}
-            for item in all_items:
-                bname = item.batch_mixing or 'UNASSIGNED'
-                if bname not in batch_map:
-                    batch_map[bname] = {
-                        'batch_mixing': bname,
-                        'total_carton': 0,
-                        'start_carton': item.carton_number,
-                        'end_carton': item.carton_number,
-                        'weighed_count': 0
-                    }
-                batch_map[bname]['total_carton'] += 1
-                batch_map[bname]['end_carton'] = item.carton_number
-                if item.weight_kg is not None:
-                    batch_map[bname]['weighed_count'] += 1
-                    weight_list.append(float(item.weight_kg))
-            batch_summary = list(batch_map.values())
-            
-        result['batch_summary'] = batch_summary
-        result['weight_stats'] = {
-            'min_weight': min(weight_list) if weight_list else None,
-            'max_weight': max(weight_list) if weight_list else None,
-            'avg_weight': round(sum(weight_list) / len(weight_list), 3) if weight_list else None,
-            'total_weight': round(sum(weight_list), 3) if weight_list else None,
-            'is_octenic': 'octenic' in (self.product.name.lower() if self.product and self.product.name else '')
-        }
-        
-        if include_items:
-            result['items'] = [item.to_dict() for item in self.items.order_by(PackingListNewItem.carton_number).all()]
-        return result
-
-
-class PackingListNewItem(db.Model):
-    """Item dalam Packing List - Detail per karton dengan tanggal timbang"""
-    __tablename__ = 'packing_list_new_items'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    packing_list_id = db.Column(db.Integer, db.ForeignKey('packing_lists_new.id', ondelete='CASCADE'), nullable=False)
-    
-    # Nomor karton
-    carton_number = db.Column(db.Integer, nullable=False)
-    
-    # Berat karton dalam kg
-    weight_kg = db.Column(db.Numeric(10, 3), nullable=True)
-    weight_gross_kg = db.Column(db.Numeric(10, 3), nullable=True)  # Berat kotor dari OCR/input manual
-    
-    # Tanggal timbang (weighing date) - IMPORTANT NEW FIELD
-    weigh_date = db.Column(db.Date, nullable=True)
-    weigh_time = db.Column(db.Time, nullable=True)
-    
-    # Batch mixing
-    batch_mixing = db.Column(db.String(100), nullable=True)
-    
-    # Flag untuk menandai awal batch mixing baru
-    is_batch_start = db.Column(db.Boolean, default=False)
-    cartons_per_pallet = db.Column(db.Integer, nullable=True)
-    
-    # QC status
-    qc_status = db.Column(db.String(50), nullable=True)  # passed, failed, pending
-    qc_notes = db.Column(db.Text, nullable=True)
-    
-    # Who weighed
-    weighed_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
-    
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # Relationships
-    weigher = db.relationship('User', foreign_keys=[weighed_by])
-    
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'packing_list_id': self.packing_list_id,
-            'carton_number': self.carton_number,
-            'weight_kg': float(self.weight_kg) if self.weight_kg else None,
-            'weight_gross_kg': float(self.weight_gross_kg) if self.weight_gross_kg else None,
-            'weigh_date': self.weigh_date.isoformat() if self.weigh_date else None,
-            'weigh_time': self.weigh_time.isoformat() if self.weigh_time else None,
-            'batch_mixing': self.batch_mixing,
-            'is_batch_start': self.is_batch_start,
-            'cartons_per_pallet': self.cartons_per_pallet,
-            'qc_status': self.qc_status,
-            'qc_notes': self.qc_notes,
-            'weighed_by': self.weigher.username if self.weigher else None,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 

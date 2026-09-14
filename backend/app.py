@@ -832,13 +832,6 @@ def create_app(config_class=Config):
 
     
 
-    # Import and register Packing List blueprint (new separate module)
-
-    from routes.packing_list import packing_list_bp
-
-    app.register_blueprint(packing_list_bp, url_prefix='/api/packing-list')
-
-    
 
     # Import and register Live Monitoring blueprint
 
@@ -949,7 +942,7 @@ def create_app(config_class=Config):
     def system_status():
         try:
             from models import User, Product, Customer, Supplier, WorkOrder, SalesOrder
-            from models.production import ShiftProduction, PackingListNew, Machine, BillOfMaterials, WIPStock, WIPStockMovement
+            from models.production import ShiftProduction, PackingList, Machine, BillOfMaterials, WIPStock, WIPStockMovement
             from models.product import Material
             from models.purchasing import PurchaseOrder
 
@@ -962,7 +955,7 @@ def create_app(config_class=Config):
             total_sales_orders = SalesOrder.query.count()
             total_purchase_orders = PurchaseOrder.query.count()
             total_shift_productions = ShiftProduction.query.count()
-            total_packing_lists = PackingListNew.query.count()
+            total_packing_lists = PackingList.query.count()
             total_machines = Machine.query.count()
             total_boms = BillOfMaterials.query.count()
             total_wip_stocks = WIPStock.query.count()

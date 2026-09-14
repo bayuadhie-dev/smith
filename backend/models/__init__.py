@@ -15,7 +15,7 @@ from .production import (
     Machine, WorkOrder, ProductionRecord, BillOfMaterials, BOMItem, 
     ProductionSchedule, ShiftProduction, DowntimeRecord, WeeklyProductionPlan, 
     WeeklyProductionPlanItem, ProductChangeover, PackingList, PackingListItem,
-    WIPStock, WIPStockMovement, PackingListNew, PackingListNewItem,
+    WIPStock, WIPStockMovement,
     LiveMonitoringCheck, LiveMonitoringChecklistAnswer
 )
 from .quality import QualityTest, QualityInspection, CAPA, QualityStandard
@@ -121,7 +121,7 @@ __all__ = [
     'Supplier', 'PurchaseOrder', 'PurchaseOrderItem', 'GoodsReceivedNote', 'GRNItem',
     # Production models
     'Machine', 'WorkOrder', 'ProductionRecord', 'BillOfMaterials', 'BOMItem', 'ProductionSchedule', 'ShiftProduction', 'DowntimeRecord', 'WeeklyProductionPlan', 'WeeklyProductionPlanItem', 'ProductChangeover',
-    'PackingList', 'PackingListItem', 'WIPStock', 'WIPStockMovement', 'PackingListNew', 'PackingListNewItem', 'LiveMonitoringCheck',
+    'PackingList', 'PackingListItem', 'WIPStock', 'WIPStockMovement', 'LiveMonitoringCheck',
     # Quality models
     'QualityTest', 'QualityInspection', 'CAPA', 'QualityStandard',
     # Shipping models

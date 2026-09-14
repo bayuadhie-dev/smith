@@ -163,7 +163,6 @@ import SPCDashboard from './pages/Quality/SPC/SPCDashboard'
 import InProcessQC from './pages/Quality/InProcessQC'
 import FinishGoodQC from './pages/Quality/FinishGoodQC'
 import FinishGoodDetail from './pages/Quality/FinishGoodDetail'
-import QCPackingList from './pages/Quality/QCPackingList'
 import BatchStatusChange from './pages/Quality/BatchStatusChange'
 import QualityObjectiveProduction from './pages/Quality/QualityObjectiveProduction'
 import DowntimeAnalysis from './pages/Quality/DowntimeAnalysis'
@@ -296,8 +295,6 @@ import MaterialIssueForm from './pages/Production/MaterialIssueForm'
 import WIPDashboard from './pages/Production/WIPDashboard'
 import WIPBatchList from './pages/Production/WIPBatchList'
 import RemainingStock from './pages/Production/RemainingStock'
-import PackingListNew from './pages/Production/PackingListNew'
-import PackingListDetail from './pages/Production/PackingListDetail'
 import WIPStock from './pages/Production/WIPStock'
 import Reports from './pages/Reports/ReportsFixed'
 import AdvancedReportBuilder from './pages/Reports/AdvancedReportBuilder'
@@ -816,7 +813,6 @@ function App() {
                 <Route path="quality/spc" element={<SPCDashboard />} />
                 <Route path="quality/in-process" element={<InProcessQC />} />
                 <Route path="quality/finish-good" element={<FinishGoodQC />} />
-                <Route path="quality/packing-list" element={<QCPackingList />} />
                 <Route path="quality/batch-status" element={<BatchStatusChange />} />
                 <Route path="quality/finish-good/:woId/input" element={<WorkOrderQCForm />} />
                 <Route path="quality/finish-good/:woId/detail" element={<FinishGoodDetail />} />
@@ -1059,8 +1055,6 @@ function App() {
                 <Route path="production/job-costs" element={<WIPBatchList />} />
 
                 {/* Packing List (New - Separate from WO) */}
-                <Route path="production/packing-list" element={<PackingListNew />} />
-                <Route path="production/packing-list/:id" element={<PackingListDetail />} />
                 <Route path="production/wip-stock" element={<WIPStock />} />
 
                 {/* Production Approval */}
