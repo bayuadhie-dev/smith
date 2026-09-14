@@ -240,6 +240,7 @@ import OutsourcingVendorList from './pages/HR/OutsourcingVendorList'
 import PieceworkLogList from './pages/HR/PieceworkLogList'
 import AppraisalForm from './pages/HR/AppraisalForm'
 import Departments from './pages/HR/Departments'
+import PositionManagement from './pages/HR/PositionManagement'
 import HRReports from './pages/HR/Reports'
 import MaintenanceList from './pages/Maintenance/MaintenanceList'
 import MaintenanceWorkOrderForm from './pages/Maintenance/MaintenanceWorkOrderForm'
@@ -913,6 +914,7 @@ function App() {
                 <Route path="hr/employees/:id" element={<EmployeeForm />} />
                 <Route path="hr/employees/:id/edit" element={<EmployeeForm />} />
                 <Route path="hr/departments" element={<Departments />} />
+                <Route path="hr/positions" element={<PositionManagement />} />
                 <Route path="hr/reports" element={<HRReports />} />
                 <Route path="hr/attendance" element={<AttendanceManagement />} />
                 <Route path="hr/attendance-admin" element={<AttendanceAdmin />} />

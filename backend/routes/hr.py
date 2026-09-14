@@ -138,6 +138,7 @@ def get_employees():
                 'employee_number': e.employee_number,
                 'full_name': e.full_name,
                 'department': e.department.name if e.department else None,
+                'department_id': e.department_id,
                 'position': e.position,
                 'employment_type': e.employment_type,
                 'status': e.status
@@ -253,6 +254,7 @@ def create_employee():
             postal_code=data.get('postal_code'),
             department_id=data.get('department_id'),
             position=data.get('position'),
+            position_id=data.get('position_id'),
             employment_type=data.get('employment_type'),
             pay_type=data.get('pay_type', 'monthly'),
             pay_rate=data.get('pay_rate'),
@@ -297,11 +299,103 @@ def get_departments():
                 'id': d.id,
                 'code': d.code,
                 'name': d.name,
+                'parent_department_id': d.parent_department_id,
+                'parent_department_name': d.parent_department.name if d.parent_department else None,
+                'manager_id': d.manager_id,
+                'manager_name': d.manager.full_name if d.manager else None,
                 'employee_count': len(d.employees)
             } for d in departments]
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@hr_bp.route('/job-positions', methods=['GET'])
+@jwt_required()
+@require_permission('hr.view')
+def get_positions_list():
+    """Real Position/JobTitle list (SAP HCM concept) - NOTE: a DIFFERENT, older
+    endpoint at the same base path may exist returning RBAC Roles under this name
+    by mistake (see Position model docstring for context) - this is the real one,
+    backed by the actual `positions` table."""
+    try:
+        from models.hr import Position
+        department_id = request.args.get('department_id', type=int)
+        query = Position.query.filter_by(is_active=True)
+        if department_id:
+            query = query.filter_by(department_id=department_id)
+        positions = query.all()
+        return jsonify({
+            'positions': [{
+                'id': p.id,
+                'title': p.title,
+                'department_id': p.department_id,
+                'department_name': p.department.name if p.department else None,
+                'grade': p.grade,
+            } for p in positions]
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@hr_bp.route('/job-positions', methods=['POST'])
+@jwt_required()
+@require_permission('hr.create')
+def create_position():
+    try:
+        from models.hr import Position
+        data = request.get_json() or {}
+        if not data.get('title'):
+            return jsonify({'error': 'title wajib diisi'}), 400
+        position = Position(
+            title=data['title'],
+            department_id=data.get('department_id'),
+            grade=data.get('grade'),
+        )
+        db.session.add(position)
+        db.session.commit()
+        return jsonify({'message': 'Position ditambahkan', 'id': position.id}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@hr_bp.route('/job-positions/<int:id>', methods=['PUT'])
+@jwt_required()
+@require_permission('hr.create')
+def update_position(id):
+    try:
+        from models.hr import Position
+        position = db.session.get(Position, id)
+        if not position:
+            return jsonify({'error': 'Not found'}), 404
+        data = request.get_json() or {}
+        for field in ('title', 'department_id', 'grade', 'is_active'):
+            if field in data:
+                setattr(position, field, data[field])
+        db.session.commit()
+        return jsonify({'message': 'Position diupdate'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@hr_bp.route('/job-positions/<int:id>', methods=['DELETE'])
+@jwt_required()
+@require_permission('hr.create')
+def delete_position(id):
+    try:
+        from models.hr import Position
+        position = db.session.get(Position, id)
+        if not position:
+            return jsonify({'error': 'Not found'}), 404
+        db.session.delete(position)
+        db.session.commit()
+        return jsonify({'message': 'Position dihapus'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
 
 @hr_bp.route('/shifts', methods=['GET'])
 @jwt_required()

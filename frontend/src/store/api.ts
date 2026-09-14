@@ -57,6 +57,8 @@ export const api = createApi({
     'ApprovedVendors',
     'PricingConditions',
     'CustomerMaterialInfo',
+    'JobPositions',
+    'FunctionalLocations',
     'Customers',
     'SalesOrders',
     'PurchaseOrders',

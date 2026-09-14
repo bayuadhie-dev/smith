@@ -13,6 +13,7 @@ import {
 import {
   useGetDepartmentsQuery,
   useGetPositionsQuery,
+  useGetJobPositionsQuery,
   useCreateEmployeeMutation
 } from '../../services/api'
 import axiosInstance from '../../utils/axiosConfig'
@@ -35,6 +36,7 @@ interface EmployeeFormData {
   postal_code: string
   department_id: string
   position: string
+  position_id: string
   employment_type: string
   pay_type: string
   pay_rate: string
@@ -61,7 +63,7 @@ export default function EmployeeForm() {
   const { data: departments } = useGetDepartmentsQuery({})
   const { data: positions } = useGetPositionsQuery({})
   const [createEmployee] = useCreateEmployeeMutation()
-  
+
   const [outsourcingVendors, setOutsourcingVendors] = useState<any[]>([])
   const { register, handleSubmit, formState: { errors }, reset, watch } = useForm<EmployeeFormData>({
     defaultValues: {
@@ -77,6 +79,8 @@ export default function EmployeeForm() {
   })
   const watchPayType = watch('pay_type')
   const watchHasAllowance = watch('has_allowance')
+  const watchedDepartmentId = watch('department_id')
+  const { data: jobPositions } = useGetJobPositionsQuery(watchedDepartmentId ? { department_id: watchedDepartmentId } : undefined)
 
   // Fetch outsourcing vendors
   useEffect(() => {
@@ -109,6 +113,7 @@ export default function EmployeeForm() {
             postal_code: emp.postal_code || '',
             department_id: emp.department_id?.toString() || '',
             position: emp.position || '',
+            position_id: emp.position_id?.toString() || '',
             employment_type: emp.employment_type || 'full_time',
             pay_type: emp.pay_type || 'monthly',
             pay_rate: emp.pay_rate?.toString() || '',
@@ -168,6 +173,7 @@ export default function EmployeeForm() {
       const payload = {
         ...data,
         department_id: data.department_id ? parseInt(data.department_id) : null,
+        position_id: data.position_id ? parseInt(data.position_id) : null,
         salary: data.salary ? parseFloat(data.salary) : null,
         pay_rate: data.pay_rate ? parseFloat(data.pay_rate) : null,
         outsourcing_vendor_id: data.outsourcing_vendor_id ? parseInt(data.outsourcing_vendor_id) : null,
@@ -354,13 +360,24 @@ export default function EmployeeForm() {
             </div>
 
             <div>
-              <label className={labelClass}>Jabatan</label>
+              <label className={labelClass}>Jabatan (bebas)</label>
               <select {...register('position')} className={inputClass}>
                 <option value="">Pilih jabatan</option>
                 {positions?.positions?.map((pos: any) => (
                   <option key={pos.id} value={pos.name}>{pos.name}</option>
                 ))}
               </select>
+            </div>
+
+            <div>
+              <label className={labelClass}>Jabatan (Terstruktur)</label>
+              <select {...register('position_id')} className={inputClass}>
+                <option value="">Tidak diatur</option>
+                {jobPositions?.positions?.map((pos: any) => (
+                  <option key={pos.id} value={pos.id}>{pos.title}{pos.grade ? ` (${pos.grade})` : ''}</option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500 mt-1">Opsional - entitas Position asli, dikelola di Master Data Jabatan.</p>
             </div>
 
             <div className="md:col-span-3">

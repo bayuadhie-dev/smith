@@ -3,19 +3,48 @@ from . import db
 
 class Department(db.Model):
     __tablename__ = 'departments'
-    
+
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String(50), unique=True, nullable=False, index=True)
     name = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text, nullable=True)
     manager_id = db.Column(db.Integer, db.ForeignKey('employees.id'), nullable=True)
+    # Org Unit hierarchy (SAP HCM concept, 2026-09-14) - a Department was flat with
+    # no parent, confirmed during the HR gap audit. NULL means top-level (e.g. a
+    # Direktorat), so existing departments are unaffected until someone opts in
+    # and sets a parent.
+    parent_department_id = db.Column(db.Integer, db.ForeignKey('departments.id'), nullable=True)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     # Relationships
     employees = db.relationship('Employee', back_populates='department', foreign_keys='Employee.department_id')
     manager = db.relationship('Employee', foreign_keys=[manager_id], post_update=True)
+    parent_department = db.relationship('Department', remote_side=[id], foreign_keys=[parent_department_id])
+
+
+class Position(db.Model):
+    """Real Position/JobTitle entity (SAP HCM concept, 2026-09-14) - Employee.position
+    was a plain free-text string with zero validation (confirmed during the HR gap
+    audit; routes/hr.py's GET /positions endpoint was actually returning RBAC Roles
+    under a misleading name, not real positions). Employee.position is left as-is
+    for backward compatibility with existing data/display - this is an additive,
+    opt-in structured alternative, not a replacement."""
+    __tablename__ = 'positions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    department_id = db.Column(db.Integer, db.ForeignKey('departments.id'), nullable=True)
+    grade = db.Column(db.String(50), nullable=True)  # free-text job grade/level, e.g. "Staff", "Supervisor", "Manager"
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    department = db.relationship('Department')
+
+    def __repr__(self):
+        return f'<Position {self.title}>'
 
 class Employee(db.Model):
     __tablename__ = 'employees'
@@ -38,6 +67,10 @@ class Employee(db.Model):
     postal_code = db.Column(db.String(20), nullable=True)
     department_id = db.Column(db.Integer, db.ForeignKey('departments.id'), nullable=True)
     position = db.Column(db.String(200), nullable=True)
+    # Structured Position FK (see Position model docstring) - nullable, opt-in;
+    # `position` (free-text) stays authoritative for display until an employee
+    # is explicitly assigned a real Position.
+    position_id = db.Column(db.Integer, db.ForeignKey('positions.id'), nullable=True)
     employment_type = db.Column(db.String(50), nullable=True)  # permanent, contract, temporary
     pay_type = db.Column(db.String(50), nullable=True, default='monthly')  # fixed, monthly, weekly, daily, piecework, outsourcing
     pay_rate = db.Column(db.Numeric(15, 2), nullable=True)  # Rate per unit: daily rate, weekly rate, or per-piece rate
@@ -61,8 +94,9 @@ class Employee(db.Model):
     # Relationships
     user = db.relationship('User')
     department = db.relationship('Department', back_populates='employees', foreign_keys=[department_id])
+    position_ref = db.relationship('Position', foreign_keys=[position_id])
     attendances = db.relationship('Attendance', back_populates='employee')
-    leaves = db.relationship('Leave', back_populates='employee')
+    leaves = db.relationship('Leave', back_populates='employee', foreign_keys='Leave.employee_id')
     rosters = db.relationship('EmployeeRoster', back_populates='employee')
     outsourcing_vendor = db.relationship('OutsourcingVendor', back_populates='employees')
 

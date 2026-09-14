@@ -872,6 +872,47 @@ export const hrApi = api.injectEndpoints({
       }),
       invalidatesTags: ['Departments'],
     }),
+    updateDepartment: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/hr/departments/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ['Departments'],
+    }),
+
+    // Real Position/JobTitle entity (SAP HCM concept) - distinct from the legacy
+    // getPositions above (which actually returns RBAC Roles under a misleading name)
+    getJobPositions: builder.query({
+      query: (params) => ({
+        url: '/hr/job-positions',
+        params,
+      }),
+      providesTags: ['JobPositions'],
+    }),
+    createJobPosition: builder.mutation({
+      query: (data) => ({
+        url: '/hr/job-positions',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['JobPositions'],
+    }),
+    updateJobPosition: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/hr/job-positions/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ['JobPositions'],
+    }),
+    deleteJobPosition: builder.mutation({
+      query: (id) => ({
+        url: `/hr/job-positions/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['JobPositions'],
+    }),
     getShifts: builder.query({
       query: () => '/hr/shifts',
       providesTags: ['Shifts'],
@@ -1250,6 +1291,12 @@ export const {
   useCreateTrainingRequestMutation,
   useApproveTrainingRequestMutation,
   useRejectTrainingRequestMutation,
+  useUpdateDepartmentMutation,
+  useGetJobPositionsQuery,
+  useCreateJobPositionMutation,
+  useUpdateJobPositionMutation,
+  useDeleteJobPositionMutation,
+  useManagerApproveLeaveMutation,
 } = hrApi
 
 // Export alias for backward compatibility

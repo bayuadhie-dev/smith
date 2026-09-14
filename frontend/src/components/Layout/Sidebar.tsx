@@ -392,6 +392,8 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
           children: [
             { name: 'Dashboard', href: '/app/hr/dashboard', icon: PresentationChartLineIcon },
             { name: 'Employees', href: '/app/hr/employees', icon: UserGroupIcon, permission: 'employees' },
+            { name: 'Departemen (Org Unit)', href: '/app/hr/departments', icon: UserGroupIcon, permission: 'employees' },
+            { name: 'Master Data Jabatan', href: '/app/hr/positions', icon: UserGroupIcon, permission: 'employees' },
             { name: 'Absensi (Foto)', href: '/app/hr/absensi', icon: CameraIcon, permission: 'attendance' },
             { name: 'Laporan Absensi', href: '/app/hr/attendance-report', icon: ClockIcon, permission: 'attendance' },
             { name: 'Belum Clock Out', href: '/app/hr/attendance-not-clocked-out', icon: ClockIcon, permission: 'attendance' },

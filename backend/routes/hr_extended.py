@@ -49,6 +49,7 @@ def get_employee_detail(employee_id):
                 } if employee.department else None,
                 'department_id': employee.department_id,
                 'position': employee.position,
+                'position_id': employee.position_id,
                 'employment_type': employee.employment_type,
                 'pay_type': employee.pay_type or 'monthly',
                 'pay_rate': float(employee.pay_rate) if employee.pay_rate else None,
@@ -122,6 +123,8 @@ def update_employee(employee_id):
             employee.department_id = data['department_id']
         if 'position' in data:
             employee.position = data['position']
+        if 'position_id' in data:
+            employee.position_id = data['position_id']
         if 'employment_type' in data:
             employee.employment_type = data['employment_type']
         if 'pay_type' in data:
@@ -719,7 +722,8 @@ def create_department():
             code=data['code'],
             name=data['name'],
             description=data.get('description'),
-            manager_id=data.get('manager_id')
+            manager_id=data.get('manager_id'),
+            parent_department_id=data.get('parent_department_id'),
         )
         
         db.session.add(department)
@@ -736,6 +740,28 @@ def create_department():
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+
+@hr_extended_bp.route('/departments/<int:id>', methods=['PUT'])
+@jwt_required()
+@require_permission('hr.create')
+def update_department(id):
+    try:
+        department = db.session.get(Department, id)
+        if not department:
+            return jsonify({'error': 'Not found'}), 404
+        data = request.get_json() or {}
+        if data.get('parent_department_id') == id:
+            return jsonify({'error': 'Department tidak bisa menjadi parent dari dirinya sendiri'}), 400
+        for field in ('code', 'name', 'description', 'manager_id', 'parent_department_id', 'is_active'):
+            if field in data:
+                setattr(department, field, data[field])
+        db.session.commit()
+        return jsonify({'message': 'Department diupdate'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
 
 @hr_extended_bp.route('/shifts', methods=['POST'])
 @jwt_required()

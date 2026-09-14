@@ -17,15 +17,30 @@ interface Department {
   description?: string;
   is_active: boolean;
   employee_count?: number;
+  parent_department_id?: number | null;
+  parent_department_name?: string | null;
+  manager_id?: number | null;
+  manager_name?: string | null;
 }
 
 export default function Departments() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingDept, setEditingDept] = useState<Department | null>(null);
-  const [formData, setFormData] = useState({ code: '', name: '', description: '' });
+  const [formData, setFormData] = useState<{ code: string; name: string; description: string; parent_department_id: string; manager_id: string }>({ code: '', name: '', description: '', parent_department_id: '', manager_id: '' });
   const [departments, setDepartments] = useState<Department[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [employees, setEmployees] = useState<any[]>([]);
+  const [drillDownDept, setDrillDownDept] = useState<Department | null>(null);
+
+  const fetchEmployees = async () => {
+    try {
+      const response = await axiosInstance.get('/api/hr/employees', { params: { per_page: 2000 } });
+      setEmployees(response.data.employees || []);
+    } catch (error) {
+      console.error('Error fetching employees:', error);
+    }
+  };
 
   const fetchDepartments = async () => {
     setIsLoading(true);
@@ -41,6 +56,7 @@ export default function Departments() {
 
   useEffect(() => {
     fetchDepartments();
+    fetchEmployees();
   }, []);
 
   const filteredDepartments = departments.filter(dept =>
@@ -50,24 +66,35 @@ export default function Departments() {
 
   const openAddModal = () => {
     setEditingDept(null);
-    setFormData({ code: '', name: '', description: '' });
+    setFormData({ code: '', name: '', description: '', parent_department_id: '', manager_id: '' });
     setShowModal(true);
   };
 
   const openEditModal = (dept: Department) => {
     setEditingDept(dept);
-    setFormData({ code: dept.code, name: dept.name, description: dept.description || '' });
+    setFormData({
+      code: dept.code, name: dept.name, description: dept.description || '',
+      parent_department_id: dept.parent_department_id ? String(dept.parent_department_id) : '',
+      manager_id: dept.manager_id ? String(dept.manager_id) : '',
+    });
     setShowModal(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const payload = {
+      code: formData.code,
+      name: formData.name,
+      description: formData.description,
+      parent_department_id: formData.parent_department_id ? Number(formData.parent_department_id) : null,
+      manager_id: formData.manager_id ? Number(formData.manager_id) : null,
+    };
     try {
       if (editingDept) {
-        await axiosInstance.put(`/api/hr/departments/${editingDept.id}`, formData);
+        await axiosInstance.put(`/api/hr/departments/${editingDept.id}`, payload);
         toast.success('Departemen berhasil diupdate');
       } else {
-        await axiosInstance.post('/api/hr/departments', formData);
+        await axiosInstance.post('/api/hr/departments', payload);
         toast.success('Departemen berhasil ditambahkan');
       }
       setShowModal(false);
@@ -76,6 +103,9 @@ export default function Departments() {
       toast.error(error.response?.data?.error || 'Gagal menyimpan departemen');
     }
   };
+
+  const departmentEmployees = (deptId: number) => employees.filter((e) => e.department_id === deptId || (e.department && departments.find((d) => d.id === deptId)?.name === e.department));
+  const childDepartments = (deptId: number) => departments.filter((d) => d.parent_department_id === deptId);
 
   const handleDelete = async (dept: Department) => {
     if (!confirm(`Hapus departemen ${dept.name}?`)) return;
@@ -142,6 +172,9 @@ export default function Departments() {
                   <div>
                     <h3 className="font-semibold text-gray-900 dark:text-white">{dept.name}</h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400">{dept.code}</p>
+                    {dept.parent_department_name && (
+                      <p className="text-xs text-gray-400 dark:text-gray-500">di bawah {dept.parent_department_name}</p>
+                    )}
                   </div>
                 </div>
                 <div className="flex gap-1">
@@ -162,10 +195,19 @@ export default function Departments() {
               {dept.description && (
                 <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{dept.description}</p>
               )}
-              <div className="mt-3 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+              {dept.manager_name && (
+                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">Manager: <span className="font-medium">{dept.manager_name}</span></p>
+              )}
+              {childDepartments(dept.id).length > 0 && (
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{childDepartments(dept.id).length} sub-departemen</p>
+              )}
+              <button
+                onClick={() => setDrillDownDept(dept)}
+                className="mt-3 flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 hover:underline"
+              >
                 <UserGroupIcon className="h-4 w-4" />
-                <span>{dept.employee_count || 0} karyawan</span>
-              </div>
+                <span>{dept.employee_count || 0} karyawan &rarr;</span>
+              </button>
               <span className={`mt-2 inline-block px-2 py-1 text-xs rounded-full ${
                 dept.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
               }`}>
@@ -216,6 +258,33 @@ export default function Departments() {
                   placeholder="Deskripsi departemen (opsional)"
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Induk Departemen (Org Unit)</label>
+                <select
+                  value={formData.parent_department_id}
+                  onChange={(e) => setFormData({ ...formData, parent_department_id: e.target.value })}
+                  className="w-full border rounded-lg px-3 py-2"
+                >
+                  <option value="">Tidak ada (top-level)</option>
+                  {departments.filter((d) => d.id !== editingDept?.id).map((d) => (
+                    <option key={d.id} value={d.id}>{d.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Manager Departemen</label>
+                <select
+                  value={formData.manager_id}
+                  onChange={(e) => setFormData({ ...formData, manager_id: e.target.value })}
+                  className="w-full border rounded-lg px-3 py-2"
+                >
+                  <option value="">Belum ditentukan</option>
+                  {employees.map((e) => (
+                    <option key={e.id} value={e.id}>{e.full_name}</option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">Dipakai sebagai approver pertama untuk cuti/reimbursement karyawan di departemen ini.</p>
+              </div>
               <div className="flex justify-end gap-2 pt-4">
                 <button
                   type="button"
@@ -232,6 +301,52 @@ export default function Departments() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Drill-down: employees + sub-departments in this department */}
+      {drillDownDept && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-lg p-6 max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h3 className="text-lg font-semibold">{drillDownDept.name}</h3>
+                <p className="text-sm text-gray-500">{drillDownDept.code}{drillDownDept.manager_name && ` — Manager: ${drillDownDept.manager_name}`}</p>
+              </div>
+              <button onClick={() => setDrillDownDept(null)} className="text-gray-400 hover:text-gray-600">&times;</button>
+            </div>
+
+            {childDepartments(drillDownDept.id).length > 0 && (
+              <div className="mb-4">
+                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Sub-departemen</h4>
+                <div className="space-y-1">
+                  {childDepartments(drillDownDept.id).map((d) => (
+                    <button
+                      key={d.id}
+                      onClick={() => setDrillDownDept(d)}
+                      className="w-full text-left text-sm px-3 py-1.5 border rounded hover:bg-gray-50 dark:hover:bg-gray-700"
+                    >
+                      {d.name} <span className="text-gray-400">({d.employee_count || 0} karyawan)</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Karyawan ({departmentEmployees(drillDownDept.id).length})</h4>
+            {departmentEmployees(drillDownDept.id).length === 0 ? (
+              <p className="text-sm text-gray-500">Belum ada karyawan di departemen ini.</p>
+            ) : (
+              <div className="space-y-1">
+                {departmentEmployees(drillDownDept.id).map((e) => (
+                  <div key={e.id} className="text-sm px-3 py-1.5 border rounded flex justify-between">
+                    <span>{e.full_name}</span>
+                    <span className="text-gray-400">{e.position}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
