@@ -7,6 +7,7 @@ import toast from 'react-hot-toast'
 import {
   useCreateInvoiceMutation,
   useGetSalesOrdersQuery,
+  useGetSalesOrderQuery,
   useGetCustomersQuery,
   useGetPurchaseOrdersQuery,
   useGetSuppliersQuery
@@ -50,6 +51,7 @@ const navigate = useNavigate()
   const [loadingInvoice, setLoadingInvoice] = useState(false)
   
   const { data: salesOrders } = useGetSalesOrdersQuery({})
+  const { data: prefillOrderDetail } = useGetSalesOrderQuery(prefillSalesOrderId!, { skip: !prefillSalesOrderId })
   const { data: purchaseOrders } = useGetPurchaseOrdersQuery({})
   const { data: customers } = useGetCustomersQuery({})
   const { data: suppliers } = useGetSuppliersQuery({})
@@ -66,7 +68,7 @@ const navigate = useNavigate()
     }
   })
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, replace } = useFieldArray({
     control,
     name: 'items'
   })
@@ -94,6 +96,24 @@ const navigate = useNavigate()
       if (order.customer_id) setValue('customer_id', order.customer_id)
     }
   }, [prefillSalesOrderId, isViewMode, salesOrders, setValue])
+
+  // 2026-09-14: the prefill above only ever set sales_order_id/customer_id -
+  // staff still had to re-type every line item by hand from the SO, which
+  // was the actual tedious part "prefill" was supposed to save. Now also
+  // replaces the default blank item row with the SO's real line items
+  // (product name -> description, quantity, unit_price, discount/tax) once
+  // the full SO detail (with items) loads - the list query above only has
+  // summary rows, not items, hence the separate single-order fetch.
+  useEffect(() => {
+    if (!prefillSalesOrderId || isViewMode || !prefillOrderDetail?.items?.length) return
+    replace(prefillOrderDetail.items.map((item: any) => ({
+      description: item.product_name || item.description || '',
+      quantity: Number(item.quantity) || 1,
+      unit_price: Number(item.unit_price) || 0,
+      discount_percent: Number(item.discount_percent) || 0,
+      tax_amount: Number(item.tax_amount) || 0,
+    })))
+  }, [prefillSalesOrderId, isViewMode, prefillOrderDetail, replace])
 
   const fetchInvoiceData = async () => {
     try {
