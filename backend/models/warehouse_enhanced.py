@@ -88,52 +88,6 @@ class ProductABCClassification(db.Model):
         db.Index('idx_product_warehouse', 'product_id', 'warehouse_id'),
     )
 
-class InventoryReorderPoint(db.Model):
-    """Smart reorder points and inventory optimization"""
-    __tablename__ = 'inventory_reorder_points'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    product_id = db.Column(db.Integer, db.ForeignKey('products.id', ondelete='CASCADE'), nullable=False)
-    warehouse_id = db.Column(db.Integer, nullable=True)
-    location_id = db.Column(db.Integer, db.ForeignKey('warehouse_locations.id'), nullable=True)
-    
-    # Reorder Parameters
-    reorder_point = db.Column(db.Numeric(15, 2), nullable=False, default=0)
-    reorder_quantity = db.Column(db.Numeric(15, 2), nullable=False, default=0)
-    safety_stock = db.Column(db.Numeric(15, 2), nullable=False, default=0)
-    maximum_stock = db.Column(db.Numeric(15, 2), nullable=False, default=0)
-    
-    # Lead Time
-    lead_time_days = db.Column(db.Integer, default=0)
-    lead_time_variance = db.Column(db.Numeric(5, 2), default=0)
-    
-    # Demand Forecasting
-    average_daily_demand = db.Column(db.Numeric(15, 2), default=0)
-    demand_variance = db.Column(db.Numeric(15, 4), default=0)
-    seasonal_factor = db.Column(db.Numeric(5, 4), default=1.0)
-    
-    # Service Level
-    service_level_target = db.Column(db.Numeric(5, 2), default=95.0)  # Percentage
-    
-    # Status
-    is_active = db.Column(db.Boolean, default=True, nullable=False)
-    auto_reorder_enabled = db.Column(db.Boolean, default=False, nullable=False)
-    
-    # Audit
-    last_calculated = db.Column(db.DateTime, default=datetime.utcnow)
-    calculation_method = db.Column(db.String(50), default='statistical')  # statistical, manual, ml
-    
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # Relationships
-    product = db.relationship('Product')
-    location = db.relationship('WarehouseLocation')
-    
-    __table_args__ = (
-        db.UniqueConstraint('product_id', 'warehouse_id', 'location_id', name='unique_reorder_point'),
-    )
-
 class WarehouseAlert(db.Model):
     """Warehouse alerts and notifications"""
     __tablename__ = 'warehouse_alerts'

@@ -36,7 +36,6 @@ import WarehouseLocations from './pages/Warehouse/WarehouseLocations'
 import WarehouseDashboardEnhanced from './pages/Warehouse/WarehouseDashboardEnhanced'
 import WarehouseAnalytics from './pages/Warehouse/WarehouseAnalytics'
 import ABCAnalysis from './pages/Warehouse/ABCAnalysis'
-import ReorderPoints from './pages/Warehouse/ReorderPoints'
 import InventoryList from './pages/Warehouse/InventoryList'
 import InventoryListEnhanced from './pages/Warehouse/InventoryListEnhanced'
 import RawMaterialStockPage from './pages/Warehouse/RawMaterialStockPage'
@@ -52,7 +51,6 @@ import TransferForm from './pages/Warehouse/TransferForm'
 import LocationList from './pages/Warehouse/LocationList'
 import LocationDetail from './pages/Warehouse/LocationDetail'
 import MovementList from './pages/Warehouse/MovementList'
-import ReorderList from './pages/Warehouse/ReorderList'
 import StockInput from './pages/Warehouse/StockInput'
 import WarehouseZones from './pages/Warehouse/WarehouseZones'
 import MaterialsDashboard from './pages/Warehouse/MaterialsDashboard'
@@ -357,6 +355,7 @@ import TVDisplayOverview from './pages/TVDisplay/TVDisplayOverview'
 import MRP from './pages/MRP/MRP'
 import WhatIfSimulation from './pages/MRP/WhatIfSimulation'
 import MRPDashboard from './pages/MRP/MRPDashboard'
+import MRPRun from './pages/MRP/MRPRun'
 import DemandPlanning from './pages/MRP/DemandPlanning'
 import CapacityPlanning from './pages/MRP/CapacityPlanning'
 import MaterialRequirements from './pages/MRP/MaterialRequirements'
@@ -619,7 +618,6 @@ function App() {
                 <Route path="warehouse/dashboard" element={<WarehouseDashboardEnhanced />} />
                 <Route path="warehouse/analytics" element={<WarehouseAnalytics />} />
                 <Route path="warehouse/abc-analysis" element={<ABCAnalysis />} />
-                <Route path="warehouse/reorder-points" element={<ReorderPoints />} />
                 <Route path="warehouse/zones" element={<WarehouseZones />} />
                 <Route path="warehouse/zones/:id" element={<WarehouseZones />} />
                 <Route path="warehouse/zones/:id/locations" element={<WarehouseLocations />} />
@@ -645,7 +643,6 @@ function App() {
                 <Route path="warehouse/adjustments/new" element={<AdjustmentForm />} />
                 <Route path="warehouse/adjustments/:id" element={<AdjustmentDetail />} />
                 <Route path="warehouse/transfers/new" element={<TransferForm />} />
-                <Route path="warehouse/reorder-points" element={<ReorderList />} />
                 <Route path="warehouse/transfers/:id/edit" element={<TransferForm />} />
                 <Route path="warehouse/reports" element={<InventoryList />} />
                 <Route path="warehouse/materials" element={<MaterialsDashboard />} />
@@ -795,6 +792,7 @@ function App() {
 
                 {/* Production MRP Integration */}
                 <Route path="production/mrp" element={<MRPDashboard />} />
+                <Route path="production/mrp-run" element={<MRPRun />} />
                 <Route path="production/demand-planning" element={<DemandPlanning />} />
                 <Route path="production/capacity-planning" element={<CapacityPlanning />} />
                 <Route path="production/material-requirements" element={<MaterialRequirements />} />

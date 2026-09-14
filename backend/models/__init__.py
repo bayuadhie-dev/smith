@@ -45,7 +45,7 @@ from .quality_enhanced import (
     QualityAudit, QualityTraining, QualityCompetency
 )
 from .warehouse_enhanced import (
-    WarehouseAnalytics, ProductABCClassification, InventoryReorderPoint,
+    WarehouseAnalytics, ProductABCClassification,
     WarehouseAlert, WarehouseOptimization, StockMovementForecast
 )
 from .stock_opname import StockOpnameOrder, StockOpnameItem

@@ -278,7 +278,6 @@ class SparePart(db.Model):
     uom = db.Column(db.String(20), nullable=False)
     current_stock = db.Column(db.Numeric(15, 2), default=0, nullable=False)
     min_stock = db.Column(db.Numeric(15, 2), default=0)
-    reorder_point = db.Column(db.Numeric(15, 2), default=0)
     max_stock = db.Column(db.Numeric(15, 2), nullable=True)
     
     # Cost
@@ -302,11 +301,6 @@ class SparePart(db.Model):
     # Relationships
     supplier = db.relationship('Supplier')
     movements = db.relationship('SparePartMovement', back_populates='spare_part', cascade='all, delete-orphan')
-    
-    @property
-    def needs_reorder(self):
-        """Check if stock is below reorder point"""
-        return float(self.current_stock) <= float(self.reorder_point or 0)
     
     def __repr__(self):
         return f'<SparePart {self.part_number} - {self.part_name}>'

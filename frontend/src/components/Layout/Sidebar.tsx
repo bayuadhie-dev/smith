@@ -318,9 +318,14 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
             { name: 'Quality Objective', href: '/app/quality/objective/production', icon: ChartBarIcon },
             { name: 'Batch Scheduling', href: '/app/production/batch-scheduling', icon: CalendarDaysIcon },
             { name: 'Batch Planning', href: '/app/production/batch-planning', icon: CalendarDaysIcon },
-            { name: 'MRP', href: '/app/production/mrp', icon: CalculatorIcon, permission: 'mrp' },
-            { name: 'Demand Planning', href: '/app/production/demand-planning', icon: ChartBarIcon, permission: 'mrp' },
-            { name: 'Capacity', href: '/app/production/capacity-planning', icon: ScaleIcon, permission: 'mrp' },
+            {
+              name: 'MRP', icon: CalculatorIcon, isSubMenu: true, permission: 'mrp', subChildren: [
+                { name: 'MRP Run (Time-Phased)', href: '/app/production/mrp-run' },
+                { name: 'Requirement Report (Lama)', href: '/app/production/mrp' },
+                { name: 'Demand Planning', href: '/app/production/demand-planning' },
+                { name: 'Capacity', href: '/app/production/capacity-planning' },
+              ]
+            },
             { name: 'Efficiency', href: '/app/production/efficiency', icon: SparklesIcon },
             { name: 'Traceability', href: '/app/production/traceability', icon: DocumentCheckIcon },
             { name: 'MBF Report', href: '/app/production/mbf-report', icon: DocumentTextIcon },

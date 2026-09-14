@@ -13,6 +13,114 @@ from utils.timezone import get_local_now, get_local_today
 
 mrp_bp = Blueprint('mrp', __name__)
 
+
+@mrp_bp.route('/run', methods=['GET'])
+@jwt_required()
+@require_permission('mrp.view')
+def run_mrp_calculation():
+    """Real time-phased MRP run (2026-09-11) - weekly buckets, running
+    projected balance against scheduled receipts (open POs + in-progress
+    WOs for internally-made sub-assemblies), lead-time-offset planned
+    orders. Replaces the old flat-window /requirements report's role as
+    the "what do we need to buy and when" answer - see utils/mrp_engine.py
+    for the full design rationale."""
+    try:
+        horizon_weeks = request.args.get('horizon_weeks', 12, type=int)
+        include_forecasts = request.args.get('include_forecasts', 'true').lower() == 'true'
+
+        from utils.mrp_engine import run_mrp
+        result = run_mrp(horizon_weeks=horizon_weeks, include_forecasts=include_forecasts)
+
+        materials_out = []
+        for entry in result['materials'].values():
+            materials_out.append({
+                'entity_kind': entry['kind'],
+                'material_id': entry['id'],
+                'material_code': entry['code'],
+                'material_name': entry['name'],
+                'uom': entry['uom'],
+                'procurement_type': entry['procurement_type'],
+                'buckets': entry['buckets'],
+            })
+
+        return jsonify({
+            'buckets': result['buckets'],
+            'materials': materials_out,
+            'planned_orders': result['planned_orders'],
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@mrp_bp.route('/run/convert-to-pr', methods=['POST'])
+@jwt_required()
+@require_permission('purchase_requests.create')
+def convert_planned_orders_to_pr():
+    """Converts one or more Planned Orders from an MRP run into a single
+    draft Purchase Requisition - stays inside the existing PR approval
+    flow (draft -> submitted -> approved -> converted to PO) rather than
+    creating a PO directly, so nothing bypasses the approval gate that
+    already exists for real purchases.
+
+    Only 'buy' planned orders are accepted here (2026-09-11) - a 'make'
+    order is a WIP shortfall that needs a Work Order, not a purchase, and
+    routing it into a PR would silently tell PPIC to buy something that's
+    actually supposed to be produced in-house. The frontend already hides
+    the PR checkbox for 'make' rows; this is the server-side backstop."""
+    try:
+        from models.purchasing import PurchaseRequisition, PRItem
+        from utils import generate_number
+
+        data = request.get_json() or {}
+        orders = data.get('orders') or []
+        if not orders:
+            return jsonify({'error': 'orders wajib diisi'}), 400
+
+        make_orders = [o for o in orders if o.get('procurement_type') == 'make']
+        if make_orders:
+            return jsonify({'error': f"{len(make_orders)} order adalah item 'make' (WIP) - tidak bisa dijadikan PR, butuh Work Order"}), 400
+
+        user_id = int(get_jwt_identity())
+        pr_number = generate_number('PR', PurchaseRequisition, 'pr_number')
+
+        need_dates = [o.get('need_date') for o in orders if o.get('need_date')]
+        earliest_need = min(need_dates) if need_dates else None
+
+        pr = PurchaseRequisition(
+            pr_number=pr_number,
+            requested_by=user_id,
+            request_date=get_local_today(),
+            required_date=datetime.strptime(earliest_need, '%Y-%m-%d').date() if earliest_need else None,
+            purpose='Auto-generated dari MRP Run (Planned Order)',
+            status='draft',
+        )
+        db.session.add(pr)
+        db.session.flush()
+
+        for idx, order in enumerate(orders, 1):
+            entity_id = order.get('material_id')
+            is_product = order.get('entity_kind') == 'product'
+            entity = db.session.get(Product, entity_id) if is_product else db.session.get(Material, entity_id) if entity_id else None
+            db.session.add(PRItem(
+                pr_id=pr.id,
+                line_number=idx,
+                material_id=None if is_product else entity_id,
+                product_id=entity_id if is_product else None,
+                item_name=order.get('material_name') or (entity.name if entity else 'Unknown'),
+                item_code=order.get('material_code') or (entity.code if entity else None),
+                quantity=order.get('quantity', 0),
+                uom=order.get('uom') or (entity.primary_uom if entity else 'PCS'),
+                notes=f"MRP: butuh {order.get('need_date')}, pesan {order.get('order_date')}",
+            ))
+
+        db.session.commit()
+
+        return jsonify({'message': f'PR {pr_number} berhasil dibuat dari {len(orders)} planned order', 'pr_id': pr.id, 'pr_number': pr_number}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
 @mrp_bp.route('/materials', methods=['GET'])
 @jwt_required()
 @require_permission('mrp.view')

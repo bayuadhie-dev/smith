@@ -288,6 +288,7 @@ def get_product(id):
             'is_purchasable': product.is_purchasable,
             'is_producible': product.is_producible,
             'lead_time_days': product.lead_time_days,
+            'min_order_qty': float(product.min_order_qty) if product.min_order_qty is not None else None,
             'kelompok': product.kelompok,
             'ppn_code': product.ppn_code,
             'erp_approval': product.erp_approval,
@@ -512,6 +513,10 @@ def update_product(id):
             product.erp_approval = data['erp_approval']
         if 'lead_time_days' in data:
             product.lead_time_days = data['lead_time_days']
+        if 'min_order_qty' in data:
+            product.min_order_qty = data['min_order_qty'] if data['min_order_qty'] not in ('', None) else None
+        if 'reorder_point' in data:
+            product.reorder_point = data['reorder_point']
         if 'self_life_days' in data:
             product.self_life_days = data['self_life_days']
         if 'retest_period_days' in data:

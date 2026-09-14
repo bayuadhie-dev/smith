@@ -46,6 +46,7 @@ def get_material(material_id):
                 'expiry_days': material.expiry_days,
                 'safety_stock_qty': float(material.safety_stock_qty) if material.safety_stock_qty is not None else None,
                 'safety_stock_days': material.safety_stock_days,
+                'min_order_qty': float(material.min_order_qty) if material.min_order_qty is not None else None,
                 'is_excluded_from_mrp': material.is_excluded_from_mrp,
                 'supplier_id': material.supplier_id,
                 'supplier': material.supplier.name if material.supplier else None,
@@ -122,6 +123,8 @@ def update_material(material_id):
             material.safety_stock_qty = data['safety_stock_qty'] if data['safety_stock_qty'] not in ('', None) else None
         if 'safety_stock_days' in data:
             material.safety_stock_days = data['safety_stock_days'] if data['safety_stock_days'] not in ('', None) else None
+        if 'min_order_qty' in data:
+            material.min_order_qty = data['min_order_qty'] if data['min_order_qty'] not in ('', None) else None
         if 'is_excluded_from_mrp' in data:
             material.is_excluded_from_mrp = bool(data['is_excluded_from_mrp'])
         if 'supplier_id' in data:

@@ -4,7 +4,7 @@ from utils.auth_decorators import require_permission
 from models import db, Product, WarehouseZone, WarehouseLocation, Inventory, InventoryMovement
 from utils.i18n import success_response, error_response, get_message
 from models.warehouse_enhanced import (
-    WarehouseAnalytics, ProductABCClassification, InventoryReorderPoint,
+    WarehouseAnalytics, ProductABCClassification,
     WarehouseAlert, WarehouseOptimization, StockMovementForecast
 )
 from sqlalchemy import func, desc, asc, and_, or_
@@ -232,57 +232,6 @@ def get_abc_analysis():
         
         return jsonify({
             'classifications': abc_data
-        }), 200
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@warehouse_enhanced_bp.route('/reorder-points', methods=['GET'])
-@jwt_required()
-@require_permission('warehouse.view')
-def get_reorder_points():
-    """Get inventory reorder points and recommendations"""
-    try:
-        status = request.args.get('status', 'all')  # all, below_reorder, auto_enabled
-        
-        query = InventoryReorderPoint.query.options(joinedload(InventoryReorderPoint.product))
-        
-        if status == 'below_reorder':
-            # Get items below reorder point
-            query = query.join(Inventory, InventoryReorderPoint.product_id == Inventory.product_id).filter(
-                Inventory.quantity_available <= InventoryReorderPoint.reorder_point
-            )
-        elif status == 'auto_enabled':
-            query = query.filter_by(auto_reorder_enabled=True)
-        
-        reorder_points = query.filter_by(is_active=True).all()
-        
-        reorder_data = []
-        for rp in reorder_points:
-            # Get current stock
-            current_stock = db.session.query(func.sum(Inventory.quantity_available)).filter_by(
-                product_id=rp.product_id
-            ).scalar() or 0
-            
-            reorder_data.append({
-                'id': rp.id,
-                'product_id': rp.product_id,
-                'product_name': rp.product.name,
-                'current_stock': float(current_stock),
-                'reorder_point': float(rp.reorder_point),
-                'reorder_quantity': float(rp.reorder_quantity),
-                'safety_stock': float(rp.safety_stock),
-                'maximum_stock': float(rp.maximum_stock),
-                'lead_time_days': rp.lead_time_days,
-                'average_daily_demand': float(rp.average_daily_demand),
-                'service_level_target': float(rp.service_level_target),
-                'auto_reorder_enabled': rp.auto_reorder_enabled,
-                'status': 'below_reorder' if current_stock <= rp.reorder_point else 'normal',
-                'days_until_stockout': int((current_stock / rp.average_daily_demand)) if rp.average_daily_demand > 0 else None
-            })
-        
-        return jsonify({
-            'reorder_points': reorder_data
         }), 200
         
     except Exception as e:

@@ -463,14 +463,14 @@ def get_spare_parts():
     """Get spare parts inventory"""
     try:
         low_stock_only = request.args.get('low_stock', 'false').lower() == 'true'
-        
+
         query = SparePart.query.filter_by(is_active=True)
-        
+
         if low_stock_only:
-            query = query.filter(SparePart.current_stock <= SparePart.reorder_point)
-        
+            query = query.filter(SparePart.current_stock <= SparePart.min_stock)
+
         parts = query.order_by(SparePart.part_number).all()
-        
+
         return jsonify({
             'spare_parts': [{
                 'id': p.id,
@@ -479,10 +479,9 @@ def get_spare_parts():
                 'category': p.category,
                 'current_stock': float(p.current_stock),
                 'min_stock': float(p.min_stock),
-                'reorder_point': float(p.reorder_point),
                 'uom': p.uom,
                 'unit_cost': float(p.unit_cost) if p.unit_cost else 0,
-                'needs_reorder': p.needs_reorder,
+                'needs_reorder': float(p.current_stock) <= float(p.min_stock or 0),
             } for p in parts]
         }), 200
     except Exception as e:

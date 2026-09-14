@@ -1953,13 +1953,6 @@ export const warehouseEnhancedApi = api.injectEndpoints({
       }),
       providesTags: ['WarehouseEnhanced'],
     }),
-    getReorderPoints: builder.query({
-      query: (params) => ({
-        url: '/warehouse-enhanced/reorder-points',
-        params,
-      }),
-      providesTags: ['WarehouseEnhanced'],
-    }),
     getWarehouseAlerts: builder.query({
       query: (params) => ({
         url: '/warehouse-enhanced/alerts',
@@ -2007,7 +2000,6 @@ export const {
   useGetWarehouseDashboardQuery,
   useGetWarehouseAnalyticsQuery,
   useGetABCAnalysisQuery,
-  useGetReorderPointsQuery,
   useGetWarehouseAlertsQuery,
   useAcknowledgeWarehouseAlertMutation,
   useResolveWarehouseAlertMutation,

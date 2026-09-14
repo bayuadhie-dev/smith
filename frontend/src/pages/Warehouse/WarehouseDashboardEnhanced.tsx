@@ -521,11 +521,11 @@ const [alertFilter, setAlertFilter] = useState('active')
             <span className="text-sm font-medium">ABC Analysis</span>
           </Link>
           <Link
-            to="/app/warehouse/reorder-points"
+            to="/app/production/mrp-run"
             className="flex flex-col items-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
           >
             <ExclamationTriangleIcon className="h-8 w-8 text-orange-500 mb-2" />
-            <span className="text-sm font-medium">Reorder Points</span>
+            <span className="text-sm font-medium">MRP Run (Reorder Point)</span>
           </Link>
           
           {/* Traditional Features */}

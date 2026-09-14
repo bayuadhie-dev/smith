@@ -18,6 +18,11 @@ class Material(db.Model):
     max_stock_level = db.Column(db.Numeric(15, 2), default=0)
     reorder_point = db.Column(db.Numeric(15, 2), default=0)
     lead_time_days = db.Column(db.Integer, default=0)
+    # "Minimum Beli" from the standard Accurate master data export (2026-09-11) -
+    # previously present in the source Excel (100% filled) but never imported
+    # anywhere; used by the MRP engine's lot-sizing (rounds a shortage up to
+    # this quantity) instead of the sparser per-supplier-contract MOQ.
+    min_order_qty = db.Column(db.Numeric(15, 2), nullable=True)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     is_hazardous = db.Column(db.Boolean, default=False, nullable=False)
     storage_conditions = db.Column(db.Text, nullable=True)  # temperature, humidity requirements
@@ -97,6 +102,9 @@ class Product(db.Model):
     is_purchasable = db.Column(db.Boolean, default=True, nullable=False)
     is_producible = db.Column(db.Boolean, default=False, nullable=False)
     lead_time_days = db.Column(db.Integer, default=0)  # order-to-delivery lead time to customer
+    # "Minimum Beli" from the standard Accurate master data export - see the
+    # same field on Material for the full rationale.
+    min_order_qty = db.Column(db.Numeric(15, 2), nullable=True)
 
     # ===== Master Data page fields =====
     kelompok = db.Column(db.String(100), nullable=True)  # free-text tag from Excel "Kelompok" column

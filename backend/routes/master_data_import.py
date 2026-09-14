@@ -25,7 +25,7 @@ CATEGORY_MAP = {
 COL = dict(
     kategori=1, kode=2, nama=3, jenis=4, satuan=5,
     satuan_2=6, rasio_satuan_2=7, satuan_3=8, rasio_satuan_3=9,
-    harga_beli=32, ppn=35,
+    harga_beli=32, min_beli=33, ppn=35,
     gl_persediaan=47, gl_hpp=48, gl_barang_terkirim=49, gl_pembelian_belum_tertagih=50,
     gl_penjualan=51, gl_diskon_penjualan=52, gl_retur_penjualan=53, gl_retur_pembelian=54,
     kelompok=56, erp_approval=57,
@@ -87,6 +87,11 @@ def import_items():
             name = (r[COL['nama']] or '').strip()
             uom = (r[COL['satuan']] or 'PCS').strip() or 'PCS'
             harga_beli = r[COL['harga_beli']] or 0
+            min_beli = r[COL['min_beli']]
+            # 0 in this column means "not actually set" in practice (743/745
+            # rows in the real source file are a template default of 0, only
+            # 2 have a genuine value) - store as None, not a real MOQ of 0.
+            min_beli = float(min_beli) if isinstance(min_beli, (int, float)) and min_beli > 0 else None
             ppn_raw = r[COL['ppn']]
             ppn_code = ppn_raw.strip().upper() if isinstance(ppn_raw, str) and ppn_raw.strip() and ppn_raw.strip().upper() in ('Y', 'A', 'B', 'L') else None
             kelompok = r[COL['kelompok']]
@@ -132,6 +137,7 @@ def import_items():
                     price=0, cost=harga_beli, material_type=mat_type,
                     kelompok=kelompok, erp_approval=erp_approval, ppn_code=ppn_code,
                     lead_time_days=lead_time or 0,
+                    min_order_qty=min_beli,
                     is_active=is_active,
                     **akun_kwargs,
                 )
@@ -155,6 +161,7 @@ def import_items():
                     primary_uom=uom, cost_per_unit=harga_beli,
                     kelompok=kelompok, erp_approval=erp_approval, ppn_code=ppn_code,
                     lead_time_days=lead_time or 0,
+                    min_order_qty=min_beli,
                     expiry_days=self_life_retest,
                     is_active=is_active,
                     **akun_kwargs,
