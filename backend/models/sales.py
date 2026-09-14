@@ -827,3 +827,78 @@ class CustomerDepositUsage(db.Model):
     applied_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
     deposit = db.relationship('CustomerDeposit')
+
+
+# ===============================
+# SD GAP-CLOSING: PRICING PROCEDURE + CUSTOMER-MATERIAL INFO RECORD (2026-09-14)
+# ===============================
+
+class PricingCondition(db.Model):
+    """Pricing Procedure (SAP SD concept) - a simplified condition-type stack replacing
+    the flat unit_price/discount/tax fields SalesOrderItem has today. Real SAP uses
+    access sequences + condition tables; this is a scoped-and-ordered equivalent:
+    every active condition whose scope matches (customer/product/both/all) and whose
+    validity window covers "now" applies, in `sequence` order, on top of a running
+    price that starts from Product.price (or CustomerMaterialInfo.special_price if one
+    exists for that customer+product - see utils/pricing_procedure.py). Not persisted
+    onto SalesOrderItem directly - the /sales/pricing/calculate endpoint returns a
+    breakdown the frontend uses to fill the EXISTING unit_price/discount_percent/
+    tax_percent fields, so nothing about SalesOrderItem's schema or other readers of
+    it needs to change."""
+    __tablename__ = 'pricing_conditions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    condition_type = db.Column(db.String(20), nullable=False)  # discount, surcharge, tax
+    calculation_type = db.Column(db.String(20), nullable=False, default='percentage')  # percentage, fixed_amount
+    value = db.Column(db.Numeric(10, 4), nullable=False)
+    sequence = db.Column(db.Integer, nullable=False, default=10)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'), nullable=True)  # NULL = applies to all customers
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=True)  # NULL = applies to all products
+    valid_from = db.Column(db.Date, nullable=True)
+    valid_to = db.Column(db.Date, nullable=True)
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
+    notes = db.Column(db.Text, nullable=True)
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    customer = db.relationship('Customer')
+    product = db.relationship('Product')
+
+    def __repr__(self):
+        return f'<PricingCondition {self.name} ({self.condition_type})>'
+
+
+class CustomerMaterialInfo(db.Model):
+    """Customer-Material Info Record (SAP SD concept) - customer-specific data for a
+    given product: their own article/SKU code for it, a negotiated special price
+    (takes priority over Product.price as the pricing-procedure base, see
+    utils/pricing_procedure.py), minimum order quantity, and a delivery lead-time
+    override. Added 2026-09-14 - Sales already has real live usage (unlike
+    Purchasing), so this is read-only informational + a soft MOQ warning, never a
+    hard block, at Sales Order entry time."""
+    __tablename__ = 'customer_material_info'
+
+    id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
+    customer_material_code = db.Column(db.String(100), nullable=True)
+    special_price = db.Column(db.Numeric(15, 2), nullable=True)
+    min_order_qty = db.Column(db.Numeric(15, 2), nullable=True)
+    lead_time_days = db.Column(db.Integer, nullable=True)
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
+    notes = db.Column(db.Text, nullable=True)
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    customer = db.relationship('Customer')
+    product = db.relationship('Product')
+
+    __table_args__ = (
+        db.UniqueConstraint('customer_id', 'product_id', name='unique_customer_material_info'),
+    )
+
+    def __repr__(self):
+        return f'<CustomerMaterialInfo customer={self.customer_id} product={self.product_id}>'

@@ -10,7 +10,8 @@ import {
   useCreateSalesOrderMutation,
   useUpdateSalesOrderMutation,
   useGetSalesOrderQuery,
-  useGetCustomersQuery
+  useGetCustomersQuery,
+  useLazyCalculatePricingQuery
 } from '../../services/api'
 import {
   PlusIcon,
@@ -88,6 +89,7 @@ const navigate = useNavigate()
   const { data: existingOrder, isLoading: isLoadingOrder } = useGetSalesOrderQuery(id!, { skip: !isEdit })
   const [createOrder] = useCreateSalesOrderMutation()
   const [updateOrder] = useUpdateSalesOrderMutation()
+  const [fetchPricing] = useLazyCalculatePricingQuery()
 
   const { register, control, handleSubmit, watch, reset, setValue, formState: { errors } } = useForm<SalesOrderFormData>({
     defaultValues: {
@@ -384,6 +386,31 @@ const navigate = useNavigate()
 
   const selectedCustomer = customers?.customers?.find((c: any) => c.id == watch('customer_id'))
 
+  // Pricing Procedure (SAP SD concept, 2026-09-14) - previously unit_price was
+  // manually typed with zero server-side lookup. Now, when a product is picked
+  // (or already-picked and the customer changes), fetch the calculated price
+  // (customer special price if one exists via Customer-Material Info Record,
+  // else Product.price, with any active PricingCondition discounts/surcharges/tax
+  // applied) and prefill unit_price/discount_percent - still fully editable after.
+  const handleProductPricing = async (index: number, productId: number) => {
+    if (!productId) return
+    const customerId = watch('customer_id')
+    const quantity = watch(`items.${index}.quantity`) || 1
+    try {
+      const result = await fetchPricing({ product_id: productId, customer_id: customerId || undefined, quantity }).unwrap()
+      setValue(`items.${index}.unit_price`, result.unit_price)
+      setValue(`items.${index}.discount_percent`, result.discount_percent || 0)
+      if (result.moq_warning) {
+        toast.error(result.moq_warning)
+      }
+      if (result.customer_material_code) {
+        toast.success(`Kode barang customer: ${result.customer_material_code}`)
+      }
+    } catch (e) {
+      // Silent - pricing lookup is a convenience prefill, not a required step
+    }
+  }
+
   if (isEdit && isLoadingOrder) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -558,7 +585,10 @@ const navigate = useNavigate()
                           name: product.product_name
                         }))}
                         value={watchedItems[index]?.product_id || null}
-                        onChange={(value) => setValue(`items.${index}.product_id`, value as any, { shouldValidate: true })}
+                        onChange={(value) => {
+                          setValue(`items.${index}.product_id`, value as any, { shouldValidate: true })
+                          if (value) handleProductPricing(index, value as number)
+                        }}
                         placeholder="Select product"
                         className="w-full"
                         required

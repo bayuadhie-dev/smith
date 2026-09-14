@@ -3445,6 +3445,252 @@ def report_sales_charts():
             
         else:
             return jsonify({'error': 'Invalid chart_type. Use "trend" or "proportion"'}), 400
-        
+
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# ===============================
+# SD GAP-CLOSING: PRICING PROCEDURE + CUSTOMER-MATERIAL INFO RECORD (2026-09-14)
+# ===============================
+
+@sales_bp.route('/pricing/calculate', methods=['GET'])
+@jwt_required()
+@require_permission('sales_orders.view')
+def calculate_pricing():
+    """Pricing Procedure (SAP SD concept) - computes unit_price/discount_percent/
+    tax_percent for a product+customer+quantity combo from the active
+    PricingCondition stack (+ CustomerMaterialInfo.special_price as base if one
+    exists). See utils/pricing_procedure.py for the calculation. Does not write
+    anything - the frontend applies the result onto its own SalesOrderItem fields."""
+    try:
+        from utils.pricing_procedure import calculate_price
+        product_id = request.args.get('product_id', type=int)
+        customer_id = request.args.get('customer_id', type=int)
+        quantity = request.args.get('quantity', 1, type=float)
+        if not product_id:
+            return jsonify({'error': 'product_id wajib diisi'}), 400
+        return jsonify(calculate_price(product_id, customer_id, quantity)), 200
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@sales_bp.route('/pricing-conditions', methods=['GET'])
+@jwt_required()
+@require_permission('sales_orders.view')
+def get_pricing_conditions():
+    try:
+        from models.sales import PricingCondition
+        customer_id = request.args.get('customer_id', type=int)
+        product_id = request.args.get('product_id', type=int)
+        query = PricingCondition.query
+        if customer_id:
+            query = query.filter_by(customer_id=customer_id)
+        if product_id:
+            query = query.filter_by(product_id=product_id)
+        rows = query.order_by(PricingCondition.sequence).all()
+        return jsonify({
+            'pricing_conditions': [{
+                'id': c.id,
+                'name': c.name,
+                'condition_type': c.condition_type,
+                'calculation_type': c.calculation_type,
+                'value': float(c.value),
+                'sequence': c.sequence,
+                'customer_id': c.customer_id,
+                'customer_name': c.customer.company_name if c.customer else None,
+                'product_id': c.product_id,
+                'product_name': c.product.name if c.product else None,
+                'valid_from': c.valid_from.isoformat() if c.valid_from else None,
+                'valid_to': c.valid_to.isoformat() if c.valid_to else None,
+                'is_active': c.is_active,
+                'notes': c.notes,
+            } for c in rows]
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@sales_bp.route('/pricing-conditions', methods=['POST'])
+@jwt_required()
+@require_permission('sales_orders.create')
+def create_pricing_condition():
+    try:
+        from models.sales import PricingCondition
+        data = request.get_json() or {}
+        if not data.get('name') or not data.get('condition_type') or data.get('value') is None:
+            return jsonify({'error': 'name, condition_type, dan value wajib diisi'}), 400
+        user_id = get_jwt_identity()
+        row = PricingCondition(
+            name=data['name'],
+            condition_type=data['condition_type'],
+            calculation_type=data.get('calculation_type', 'percentage'),
+            value=data['value'],
+            sequence=data.get('sequence', 10),
+            customer_id=data.get('customer_id'),
+            product_id=data.get('product_id'),
+            valid_from=datetime.strptime(data['valid_from'], '%Y-%m-%d').date() if data.get('valid_from') else None,
+            valid_to=datetime.strptime(data['valid_to'], '%Y-%m-%d').date() if data.get('valid_to') else None,
+            notes=data.get('notes'),
+            created_by=user_id,
+        )
+        db.session.add(row)
+        db.session.commit()
+        return jsonify({'message': 'Pricing condition ditambahkan', 'id': row.id}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@sales_bp.route('/pricing-conditions/<int:id>', methods=['PUT'])
+@jwt_required()
+@require_permission('sales_orders.create')
+def update_pricing_condition(id):
+    try:
+        from models.sales import PricingCondition
+        row = db.session.get(PricingCondition, id)
+        if not row:
+            return jsonify({'error': 'Not found'}), 404
+        data = request.get_json() or {}
+        for field in ('name', 'condition_type', 'calculation_type', 'value', 'sequence', 'notes', 'is_active'):
+            if field in data:
+                setattr(row, field, data[field])
+        if 'valid_from' in data:
+            row.valid_from = datetime.strptime(data['valid_from'], '%Y-%m-%d').date() if data['valid_from'] else None
+        if 'valid_to' in data:
+            row.valid_to = datetime.strptime(data['valid_to'], '%Y-%m-%d').date() if data['valid_to'] else None
+        db.session.commit()
+        return jsonify({'message': 'Pricing condition diupdate'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@sales_bp.route('/pricing-conditions/<int:id>', methods=['DELETE'])
+@jwt_required()
+@require_permission('sales_orders.create')
+def delete_pricing_condition(id):
+    try:
+        from models.sales import PricingCondition
+        row = db.session.get(PricingCondition, id)
+        if not row:
+            return jsonify({'error': 'Not found'}), 404
+        db.session.delete(row)
+        db.session.commit()
+        return jsonify({'message': 'Pricing condition dihapus'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@sales_bp.route('/customer-material-info', methods=['GET'])
+@jwt_required()
+@require_permission('sales_orders.view')
+def get_customer_material_info():
+    try:
+        from models.sales import CustomerMaterialInfo
+        customer_id = request.args.get('customer_id', type=int)
+        product_id = request.args.get('product_id', type=int)
+        query = CustomerMaterialInfo.query
+        if customer_id:
+            query = query.filter_by(customer_id=customer_id)
+        if product_id:
+            query = query.filter_by(product_id=product_id)
+        rows = query.all()
+        return jsonify({
+            'customer_material_info': [{
+                'id': r.id,
+                'customer_id': r.customer_id,
+                'customer_name': r.customer.company_name if r.customer else None,
+                'product_id': r.product_id,
+                'product_name': r.product.name if r.product else None,
+                'customer_material_code': r.customer_material_code,
+                'special_price': float(r.special_price) if r.special_price is not None else None,
+                'min_order_qty': float(r.min_order_qty) if r.min_order_qty is not None else None,
+                'lead_time_days': r.lead_time_days,
+                'is_active': r.is_active,
+                'notes': r.notes,
+            } for r in rows]
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@sales_bp.route('/customer-material-info', methods=['POST'])
+@jwt_required()
+@require_permission('sales_orders.create')
+def create_customer_material_info():
+    try:
+        from models.sales import CustomerMaterialInfo
+        data = request.get_json() or {}
+        customer_id = data.get('customer_id')
+        product_id = data.get('product_id')
+        if not customer_id or not product_id:
+            return jsonify({'error': 'customer_id dan product_id wajib diisi'}), 400
+
+        existing = CustomerMaterialInfo.query.filter_by(customer_id=customer_id, product_id=product_id).first()
+        if existing:
+            existing.is_active = True
+            existing.customer_material_code = data.get('customer_material_code', existing.customer_material_code)
+            existing.special_price = data.get('special_price', existing.special_price)
+            existing.min_order_qty = data.get('min_order_qty', existing.min_order_qty)
+            existing.lead_time_days = data.get('lead_time_days', existing.lead_time_days)
+            db.session.commit()
+            return jsonify({'message': 'Customer material info diaktifkan kembali', 'id': existing.id}), 200
+
+        user_id = get_jwt_identity()
+        row = CustomerMaterialInfo(
+            customer_id=customer_id,
+            product_id=product_id,
+            customer_material_code=data.get('customer_material_code'),
+            special_price=data.get('special_price'),
+            min_order_qty=data.get('min_order_qty'),
+            lead_time_days=data.get('lead_time_days'),
+            notes=data.get('notes'),
+            created_by=user_id,
+        )
+        db.session.add(row)
+        db.session.commit()
+        return jsonify({'message': 'Customer material info ditambahkan', 'id': row.id}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@sales_bp.route('/customer-material-info/<int:id>', methods=['PUT'])
+@jwt_required()
+@require_permission('sales_orders.create')
+def update_customer_material_info(id):
+    try:
+        from models.sales import CustomerMaterialInfo
+        row = db.session.get(CustomerMaterialInfo, id)
+        if not row:
+            return jsonify({'error': 'Not found'}), 404
+        data = request.get_json() or {}
+        for field in ('customer_material_code', 'special_price', 'min_order_qty', 'lead_time_days', 'notes', 'is_active'):
+            if field in data:
+                setattr(row, field, data[field])
+        db.session.commit()
+        return jsonify({'message': 'Customer material info diupdate'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@sales_bp.route('/customer-material-info/<int:id>', methods=['DELETE'])
+@jwt_required()
+@require_permission('sales_orders.create')
+def delete_customer_material_info(id):
+    try:
+        from models.sales import CustomerMaterialInfo
+        row = db.session.get(CustomerMaterialInfo, id)
+        if not row:
+            return jsonify({'error': 'Not found'}), 404
+        db.session.delete(row)
+        db.session.commit()
+        return jsonify({'message': 'Customer material info dihapus'}), 200
+    except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500
