@@ -33,10 +33,29 @@ const [costAnalysis, setCostAnalysis] = useState<CostAnalysis[]>([])
   }, [selectedPeriod])
 
   const loadCostAnalysis = async () => {
+    // Backed by the real, event-driven WIP job costing data (routes/wip_job_costing.py -
+    // material/labor/overhead cost per batch, auto-populated from actual production and
+    // payroll events) instead of the old /api/finance/costing, which was a pure manual-entry
+    // form that had zero real usage (0 rows in production) and no create UI anywhere - removed
+    // 2026-09-12 in favor of this page reading the system that was actually being used.
     try {
       setLoading(true)
-      const response = await axiosInstance.get('/api/finance/costing')
-      setCostAnalysis(response.data.cost_analysis || [])
+      const response = await axiosInstance.get('/api/wip/wip-batches', { params: { status: 'completed,in_progress' } })
+      const batches = response.data.wip_batches || []
+      const mapped: CostAnalysis[] = batches.map((b: any) => {
+        const totalCost = (b.material_cost || 0) + (b.labor_cost || 0) + (b.overhead_cost || 0)
+        const units = b.qty_completed || 0
+        return {
+          cost_center: b.product_name || b.work_order_no,
+          direct_materials: b.material_cost || 0,
+          direct_labor: b.labor_cost || 0,
+          overhead: b.overhead_cost || 0,
+          total_cost: totalCost,
+          units_produced: units,
+          cost_per_unit: units > 0 ? totalCost / units : 0,
+        }
+      })
+      setCostAnalysis(mapped)
     } catch (error) {
       console.error('Error loading cost analysis:', error)
       setCostAnalysis([])

@@ -330,57 +330,6 @@ class TaxTransaction(db.Model):
     created_by_user = db.relationship('User')
 
 
-class CostAnalysis(db.Model):
-    __tablename__ = 'cost_analysis'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    analysis_code = db.Column(db.String(50), unique=True, nullable=False, index=True)
-    analysis_name = db.Column(db.String(200), nullable=False)
-    analysis_type = db.Column(db.String(50), nullable=False)  # product, project, department, activity
-    
-    # Period
-    period_start = db.Column(db.Date, nullable=False)
-    period_end = db.Column(db.Date, nullable=False)
-    
-    # Reference
-    reference_type = db.Column(db.String(50), nullable=True)  # product, work_order, project
-    reference_id = db.Column(db.Integer, nullable=True)
-    reference_name = db.Column(db.String(200), nullable=True)
-    
-    # Cost Breakdown
-    direct_material_cost = db.Column(db.Numeric(15, 2), default=0)
-    direct_labor_cost = db.Column(db.Numeric(15, 2), default=0)
-    manufacturing_overhead = db.Column(db.Numeric(15, 2), default=0)
-    indirect_costs = db.Column(db.Numeric(15, 2), default=0)
-    total_cost = db.Column(db.Numeric(15, 2), default=0)
-    
-    # Units & Unit Cost
-    quantity = db.Column(db.Numeric(15, 2), nullable=True)
-    unit_cost = db.Column(db.Numeric(15, 2), nullable=True)
-    
-    # Comparison
-    budgeted_cost = db.Column(db.Numeric(15, 2), nullable=True)
-    variance_amount = db.Column(db.Numeric(15, 2), nullable=True)
-    variance_percentage = db.Column(db.Numeric(5, 2), nullable=True)
-    
-    # Department/Cost Center
-    department_id = db.Column(db.Integer, db.ForeignKey('departments.id'), nullable=True)
-    cost_center_id = db.Column(db.Integer, db.ForeignKey('cost_centers.id'), nullable=True)
-    
-    status = db.Column(db.String(50), nullable=False, default='draft')  # draft, approved, closed
-    notes = db.Column(db.Text, nullable=True)
-    
-    # Audit
-    analyzed_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
-    approved_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # Relationships
-    department = db.relationship('Department')
-    cost_center = db.relationship('CostCenter')
-    analyzed_by_user = db.relationship('User', foreign_keys=[analyzed_by])
-    approved_by_user = db.relationship('User', foreign_keys=[approved_by])
 
 
 class ConsolidationEntity(db.Model):
