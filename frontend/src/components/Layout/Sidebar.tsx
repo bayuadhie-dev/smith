@@ -444,6 +444,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
             { name: 'Spare Parts', href: '/app/assets/spare-parts', icon: WrenchScrewdriverIcon },
             { name: 'Penyusutan', href: '/app/assets/depreciation', icon: CurrencyDollarIcon },
             { name: 'Tambah Aset', href: '/app/assets/new', icon: ClipboardDocumentCheckIcon },
+            { name: 'Functional Location', href: '/app/assets/functional-locations', icon: WrenchScrewdriverIcon },
           ]
         },
         {

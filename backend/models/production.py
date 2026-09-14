@@ -13,6 +13,11 @@ class Machine(db.Model):
     serial_number = db.Column(db.String(100), nullable=True)
     status = db.Column(db.String(50), nullable=False, default='idle')  # idle, running, maintenance, breakdown, offline
     location = db.Column(db.String(200), nullable=True)
+    # Structured functional-location FK (SAP PM concept, see
+    # models/asset_management.py::FunctionalLocation) - nullable, opt-in;
+    # `location` (free-text) stays authoritative for display until a machine is
+    # explicitly placed in the hierarchy.
+    functional_location_id = db.Column(db.Integer, db.ForeignKey('functional_locations.id'), nullable=True)
     department = db.Column(db.String(100), nullable=True)
     capacity_per_hour = db.Column(db.Numeric(15, 2), nullable=True)
     capacity_uom = db.Column(db.String(20), nullable=True)
@@ -33,6 +38,7 @@ class Machine(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
+    functional_location = db.relationship('FunctionalLocation')
     work_orders = db.relationship('WorkOrder', back_populates='machine')
     production_records = db.relationship('ProductionRecord', back_populates='machine')
     maintenance_records = db.relationship('MaintenanceRecord', back_populates='machine')

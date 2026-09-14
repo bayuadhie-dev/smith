@@ -30,6 +30,9 @@ interface AssetDetail {
   is_under_warranty: boolean;
   installation_date: string;
   location: string;
+  functional_location_id: number | null;
+  functional_location_name: string | null;
+  functional_location_path: string | null;
   depreciation_method: string;
   useful_life_years: number;
   salvage_value: number;
@@ -38,6 +41,10 @@ interface AssetDetail {
   annual_depreciation: number;
   monthly_depreciation: number;
   age_years: number;
+  tax_depreciation_method: string | null;
+  tax_useful_life_years: number | null;
+  tax_accumulated_depreciation: number;
+  has_fiscal_schedule: boolean;
   is_production_machine: boolean;
   machine_code: string;
   capacity: number;
@@ -72,12 +79,20 @@ const AssetDetail: React.FC = () => {
   const [asset, setAsset] = useState<AssetDetail | null>(null);
   const [maintenanceHistory, setMaintenanceHistory] = useState<MaintenanceHistory[]>([]);
   const [depreciationSchedule, setDepreciationSchedule] = useState<DepreciationSchedule[]>([]);
+  const [scheduleBook, setScheduleBook] = useState<'commercial' | 'fiscal'>('commercial');
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'depreciation' | 'maintenance'>('overview');
 
   useEffect(() => {
     fetchAssetDetail();
   }, [id]);
+
+  useEffect(() => {
+    if (scheduleBook === 'commercial') return; // already loaded from asset detail
+    axiosInstance.get(`/api/assets/${id}/depreciation-schedule`, { params: { book_type: 'fiscal' } })
+      .then((res) => setDepreciationSchedule(res.data.schedules || []))
+      .catch(() => toast.error('Gagal memuat jadwal fiskal'));
+  }, [scheduleBook, id]);
 
   const fetchAssetDetail = async () => {
     try {
@@ -231,6 +246,9 @@ const AssetDetail: React.FC = () => {
                     <MapPinIcon className="h-4 w-4" />
                     {asset.location || '-'}
                   </p>
+                  {asset.functional_location_path && (
+                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">{asset.functional_location_path}</p>
+                  )}
                 </div>
                 <div>
                   <p className="text-sm text-slate-500 dark:text-gray-400">Umur Aset</p>
@@ -365,9 +383,30 @@ const AssetDetail: React.FC = () => {
       {/* Depreciation Tab */}
       {activeTab === 'depreciation' && (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 overflow-hidden">
-          <div className="p-6 border-b border-slate-200 dark:border-gray-700">
+          <div className="p-6 border-b border-slate-200 dark:border-gray-700 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-slate-800 dark:text-white">Jadwal Penyusutan</h2>
+            {asset.has_fiscal_schedule && (
+              <div className="flex rounded-lg border border-slate-300 dark:border-gray-600 overflow-hidden text-sm">
+                <button
+                  onClick={() => setScheduleBook('commercial')}
+                  className={`px-3 py-1.5 ${scheduleBook === 'commercial' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-700 text-slate-600 dark:text-gray-300'}`}
+                >
+                  Komersial
+                </button>
+                <button
+                  onClick={() => setScheduleBook('fiscal')}
+                  className={`px-3 py-1.5 ${scheduleBook === 'fiscal' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-700 text-slate-600 dark:text-gray-300'}`}
+                >
+                  Fiskal (Pajak)
+                </button>
+              </div>
+            )}
           </div>
+          {scheduleBook === 'fiscal' && (
+            <div className="px-6 py-2 bg-amber-50 dark:bg-amber-900/20 text-xs text-amber-700 dark:text-amber-400">
+              Jadwal fiskal hanya untuk pelaporan pajak - tidak diposting ke GL.
+            </div>
+          )}
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-slate-50 dark:bg-gray-700/50">

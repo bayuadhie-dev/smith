@@ -19,6 +19,9 @@ interface FormData {
   depreciation_method: string;
   useful_life_years: string;
   salvage_value: string;
+  tax_depreciation_method: string;
+  tax_useful_life_years: string;
+  functional_location_id: string;
   is_production_machine: boolean;
   machine_code: string;
   capacity: string;
@@ -45,6 +48,9 @@ const AssetForm: React.FC = () => {
     depreciation_method: 'straight_line',
     useful_life_years: '',
     salvage_value: '0',
+    tax_depreciation_method: '',
+    tax_useful_life_years: '',
+    functional_location_id: '',
     is_production_machine: false,
     machine_code: '',
     capacity: '',
@@ -53,11 +59,15 @@ const AssetForm: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [functionalLocations, setFunctionalLocations] = useState<any[]>([]);
 
   useEffect(() => {
     if (isEdit) {
       fetchAsset();
     }
+    axiosInstance.get('/api/assets/functional-locations').then((res) => {
+      setFunctionalLocations(res.data.functional_locations || []);
+    }).catch(() => {});
   }, [id]);
 
   const fetchAsset = async () => {
@@ -80,6 +90,9 @@ const AssetForm: React.FC = () => {
         depreciation_method: asset.depreciation_method || 'straight_line',
         useful_life_years: asset.useful_life_years?.toString() || '',
         salvage_value: asset.salvage_value?.toString() || '0',
+        tax_depreciation_method: asset.tax_depreciation_method || '',
+        tax_useful_life_years: asset.tax_useful_life_years?.toString() || '',
+        functional_location_id: asset.functional_location_id?.toString() || '',
         is_production_machine: asset.is_production_machine || false,
         machine_code: asset.machine_code || '',
         capacity: asset.capacity?.toString() || '',
@@ -103,6 +116,9 @@ const AssetForm: React.FC = () => {
         purchase_cost: parseFloat(formData.purchase_cost) || 0,
         useful_life_years: parseInt(formData.useful_life_years) || 0,
         salvage_value: parseFloat(formData.salvage_value) || 0,
+        tax_useful_life_years: formData.tax_useful_life_years ? parseInt(formData.tax_useful_life_years) : null,
+        tax_depreciation_method: formData.tax_depreciation_method || null,
+        functional_location_id: formData.functional_location_id ? parseInt(formData.functional_location_id) : null,
         capacity: formData.capacity ? parseFloat(formData.capacity) : null,
         speed: formData.speed ? parseInt(formData.speed) : null,
         supplier_id: formData.supplier_id ? parseInt(formData.supplier_id) : null,
@@ -240,7 +256,7 @@ const AssetForm: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">
-                Lokasi
+                Lokasi (bebas)
               </label>
               <input
                 type="text"
@@ -249,6 +265,26 @@ const AssetForm: React.FC = () => {
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">
+                Functional Location (Terstruktur)
+              </label>
+              <select
+                name="functional_location_id"
+                value={formData.functional_location_id}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              >
+                <option value="">Tidak diatur</option>
+                {functionalLocations.map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.parent_location_name ? `${l.parent_location_name} / ` : ''}{l.name}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500 mt-1">Opsional - hierarki Plant/Building/Line, dikelola di Master Data Functional Location.</p>
             </div>
 
             <div className="md:col-span-2">
@@ -349,6 +385,38 @@ const AssetForm: React.FC = () => {
                 step="0.01"
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
+            </div>
+          </div>
+
+          <div className="border-t border-slate-200 dark:border-gray-700 mt-4 pt-4">
+            <h3 className="text-sm font-semibold text-slate-700 dark:text-gray-300 mb-1">Penyusutan Fiskal (Pajak) - Opsional</h3>
+            <p className="text-xs text-gray-500 mb-3">Kalau diisi, sistem membuat jadwal penyusutan paralel untuk pelaporan pajak - tidak diposting ke GL, hanya untuk pelaporan (buku komersial di atas tetap yang diposting).</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Metode Penyusutan Fiskal</label>
+                <select
+                  name="tax_depreciation_method"
+                  value={formData.tax_depreciation_method}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="">Ikuti metode komersial</option>
+                  <option value="straight_line">Straight Line</option>
+                  <option value="declining_balance">Declining Balance</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Masa Manfaat Fiskal (Tahun)</label>
+                <input
+                  type="number"
+                  name="tax_useful_life_years"
+                  value={formData.tax_useful_life_years}
+                  onChange={handleChange}
+                  min="1"
+                  placeholder="Kosongkan jika sama dengan komersial"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
             </div>
           </div>
         </div>

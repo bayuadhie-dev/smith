@@ -38,10 +38,16 @@ class Asset(db.Model):
     installation_date = db.Column(db.Date, nullable=True)
     commissioning_date = db.Column(db.Date, nullable=True)
     location = db.Column(db.String(200), nullable=True)
+    # Structured functional-location FK (see FunctionalLocation model docstring) -
+    # nullable, opt-in; `location` (free-text) stays authoritative for display
+    # until an asset is explicitly placed in the hierarchy.
+    functional_location_id = db.Column(db.Integer, db.ForeignKey('functional_locations.id'), nullable=True)
     department_id = db.Column(db.Integer, db.ForeignKey('departments.id'), nullable=True)
     responsible_person_id = db.Column(db.Integer, db.ForeignKey('employees.id'), nullable=True)
     
     # ========== FINANCIAL (DEPRECIATION) ==========
+    # This is the COMMERCIAL/book depreciation - the one that posts to the real
+    # GL (see DepreciationSchedule.book_type='commercial').
     depreciation_method = db.Column(db.String(50), nullable=True, default='straight_line')
     # straight_line, declining_balance, units_of_production
     useful_life_years = db.Column(db.Integer, nullable=True)
@@ -49,6 +55,18 @@ class Asset(db.Model):
     salvage_value = db.Column(db.Numeric(15, 2), default=0)
     accumulated_depreciation = db.Column(db.Numeric(15, 2), default=0)
     last_depreciation_date = db.Column(db.Date, nullable=True)
+
+    # Parallel FISCAL/tax depreciation (SAP FI-AA "parallel depreciation areas"
+    # concept, 2026-09-14) - tax law often mandates a different method/useful life
+    # than the commercial book. All nullable/opt-in: when tax_useful_life_years is
+    # not set, the fiscal book simply mirrors the commercial one (no behavior
+    # change for existing assets). Fiscal depreciation is a REPORTING-ONLY parallel
+    # ledger, matching real practice - it does NOT post to the operational GL
+    # (only commercial does), so there's no double-posting risk.
+    tax_depreciation_method = db.Column(db.String(50), nullable=True)
+    tax_useful_life_years = db.Column(db.Integer, nullable=True)
+    tax_accumulated_depreciation = db.Column(db.Numeric(15, 2), default=0)
+    tax_last_depreciation_date = db.Column(db.Date, nullable=True)
     
     # ========== PRODUCTION MACHINE SPECIFIC ==========
     is_production_machine = db.Column(db.Boolean, default=False, nullable=False)
@@ -83,6 +101,7 @@ class Asset(db.Model):
     purchase_order = db.relationship('PurchaseOrder', foreign_keys=[purchase_order_id])
     supplier = db.relationship('Supplier')
     department = db.relationship('Department')
+    functional_location = db.relationship('FunctionalLocation')
     responsible_person = db.relationship('Employee', foreign_keys=[responsible_person_id])
     created_by_user = db.relationship('User', foreign_keys=[created_by])
     updated_by_user = db.relationship('User', foreign_keys=[updated_by])
@@ -118,6 +137,27 @@ class Asset(db.Model):
     def monthly_depreciation(self):
         """Monthly depreciation amount"""
         return self.annual_depreciation / 12
+
+    @property
+    def tax_annual_depreciation(self):
+        """Parallel fiscal/tax-book annual depreciation - falls back to the
+        commercial method/useful life when no separate tax values are configured
+        (i.e. behaves identically to annual_depreciation for existing assets)."""
+        method = self.tax_depreciation_method or self.depreciation_method
+        useful_life = self.tax_useful_life_years or self.useful_life_years
+        if not self.purchase_cost or not useful_life:
+            return 0
+        if method == 'straight_line':
+            return (float(self.purchase_cost) - float(self.salvage_value or 0)) / useful_life
+        elif method == 'declining_balance':
+            rate = 2 / useful_life
+            net_book_value = float(self.purchase_cost) - float(self.tax_accumulated_depreciation or 0)
+            return net_book_value * rate
+        return 0
+
+    @property
+    def tax_monthly_depreciation(self):
+        return self.tax_annual_depreciation / 12
     
     @property
     def is_under_warranty(self):
@@ -149,30 +189,59 @@ class DepreciationSchedule(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     asset_id = db.Column(db.Integer, db.ForeignKey('assets.id', ondelete='CASCADE'), nullable=False)
-    
+
     period_date = db.Column(db.Date, nullable=False, index=True)  # First day of month
+    # Parallel depreciation areas (SAP FI-AA concept, 2026-09-14) - 'commercial'
+    # (the real book, posts to GL) or 'fiscal' (tax-law parallel book, reporting
+    # only, never posted). Default 'commercial' keeps every pre-existing row's
+    # meaning unchanged.
+    book_type = db.Column(db.String(20), nullable=False, default='commercial')
     depreciation_amount = db.Column(db.Numeric(15, 2), nullable=False)
     accumulated_depreciation = db.Column(db.Numeric(15, 2), nullable=False)
     net_book_value = db.Column(db.Numeric(15, 2), nullable=False)
-    
+
     # Posting to accounting
     is_posted = db.Column(db.Boolean, default=False, nullable=False)
     posted_date = db.Column(db.DateTime, nullable=True)
     accounting_entry_id = db.Column(db.Integer, db.ForeignKey('accounting_entries.id'), nullable=True)
-    
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    
+
     # Relationships
     asset = db.relationship('Asset', back_populates='depreciation_schedules')
     accounting_entry = db.relationship('AccountingEntry')
-    
+
     __table_args__ = (
-        db.UniqueConstraint('asset_id', 'period_date', name='unique_asset_period'),
+        db.UniqueConstraint('asset_id', 'period_date', 'book_type', name='unique_asset_period_book'),
         db.Index('idx_depreciation_period', 'period_date'),
     )
     
     def __repr__(self):
         return f'<DepreciationSchedule Asset:{self.asset_id} Period:{self.period_date}>'
+
+
+class FunctionalLocation(db.Model):
+    """Functional Location hierarchy (SAP PM concept, 2026-09-14) - both Asset.location
+    and Machine.location were plain free-text strings with zero hierarchy (confirmed
+    during the PM gap audit). Self-referential parent/child so a real Plant -> Building
+    -> Line -> Machine-position structure can be modeled, opt-in: Asset/Machine's
+    existing free-text `location` fields are left untouched for backward compatibility,
+    this is an additive `functional_location_id` FK alongside them."""
+    __tablename__ = 'functional_locations'
+
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(50), unique=True, nullable=False, index=True)
+    name = db.Column(db.String(200), nullable=False)
+    location_type = db.Column(db.String(50), nullable=True)  # plant, building, line, position - free-text, not enforced
+    parent_location_id = db.Column(db.Integer, db.ForeignKey('functional_locations.id'), nullable=True)
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    parent_location = db.relationship('FunctionalLocation', remote_side=[id], foreign_keys=[parent_location_id])
+
+    def __repr__(self):
+        return f'<FunctionalLocation {self.code} - {self.name}>'
 
 
 class AssetTransfer(db.Model):

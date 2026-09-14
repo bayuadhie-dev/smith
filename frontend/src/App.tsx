@@ -256,6 +256,7 @@ import AssetDashboard from './pages/AssetManagement/AssetDashboard'
 import AssetList from './pages/AssetManagement/AssetList'
 import AssetDetail from './pages/AssetManagement/AssetDetail'
 import AssetForm from './pages/AssetManagement/AssetForm'
+import FunctionalLocations from './pages/AssetManagement/FunctionalLocations'
 import SparePartsList from './pages/AssetManagement/SparePartsList'
 import DepreciationReport from './pages/AssetManagement/DepreciationReport'
 import ProjectList from './pages/RD/ProjectList'
@@ -954,6 +955,7 @@ function App() {
                 <Route path="assets/dashboard" element={<AssetDashboard />} />
                 <Route path="assets/list" element={<AssetList />} />
                 <Route path="assets/new" element={<AssetForm />} />
+                <Route path="assets/functional-locations" element={<FunctionalLocations />} />
                 <Route path="assets/:id" element={<AssetDetail />} />
                 <Route path="assets/:id/edit" element={<AssetForm />} />
                 <Route path="assets/spare-parts" element={<SparePartsList />} />
