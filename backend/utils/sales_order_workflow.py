@@ -13,6 +13,7 @@ from models.sales import SalesOrder, SalesOrderItem
 from utils.business_rules import BusinessRules, SALES_ORDER_TRANSITIONS
 from utils.timezone import get_local_now, get_local_today
 from utils import generate_number
+from utils.atp_helper import check_atp
 
 # Nama header forecast otomatis dipakai _bump_forecast_for_so_item() sebagai wadah demand
 # yang murni datang dari SO tanpa forecast yang cocok sama sekali - lihat docstring fungsi itu.
@@ -163,17 +164,25 @@ def confirm_order_core(order, user_id):
     inventory_warnings = []
     for item in order.items:
         try:
-            inv_check = BusinessRules.validate_inventory_availability(
-                product_id=item.product_id,
-                quantity=item.quantity
-            )
-            if not inv_check['available']:
+            # ATP (SAP SD concept, 2026-09-14) - the old validate_inventory_availability()
+            # check only looked at Inventory.quantity_available, blind to OTHER open SOs
+            # for the same product confirmed earlier (FG stock is never actually reserved
+            # anywhere on SO confirm - see utils/atp_helper.py docstring for the full
+            # finding). Still warning-only for now (Sales already has real live usage,
+            # unlike Purchasing's Source List - flipping this into a hard block is a
+            # separate decision, not made yet), but now the warning is actually accurate
+            # about competing commitments instead of silently blind to them.
+            atp = check_atp(product_id=item.product_id, quantity_needed=item.quantity, exclude_order_id=order.id)
+            if not atp['available']:
                 inventory_warnings.append({
                     'product_id': item.product_id,
                     'product_name': item.product.name if item.product else 'Unknown',
-                    'required': inv_check['required'],
-                    'available': inv_check['current_stock'],
-                    'shortage': inv_check['shortage']
+                    'required': atp['required'],
+                    'available': atp['free_to_promise'],
+                    'shortage': atp['shortage'],
+                    'on_hand': atp['on_hand'],
+                    'committed_elsewhere': atp['committed_elsewhere'],
+                    'competing_orders': atp['competing_orders'],
                 })
         except Exception as inv_error:
             print(f"Inventory check warning: {inv_error}")

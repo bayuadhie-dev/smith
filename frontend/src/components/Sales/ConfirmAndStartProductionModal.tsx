@@ -22,6 +22,25 @@ interface CapacityPreviewItem {
   existing_wo_qty: number;
 }
 
+interface CompetingOrder {
+  order_id: number;
+  order_number: string;
+  customer_name: string | null;
+  quantity: number;
+}
+
+interface AtpPreviewItem {
+  product_id: number;
+  product_name: string | null;
+  required: number;
+  on_hand: number;
+  committed_elsewhere: number;
+  free_to_promise: number;
+  available: boolean;
+  shortage: number;
+  competing_orders: CompetingOrder[];
+}
+
 interface Props {
   orderId: number | string;
   orderNumber: string;
@@ -39,6 +58,7 @@ const ConfirmAndStartProductionModal: React.FC<Props> = ({ orderId, orderNumber,
   const [confirmResult, setConfirmResult] = useState<ConfirmResult | null>(null);
   const [confirmError, setConfirmError] = useState<string | null>(null);
   const [capacityPreview, setCapacityPreview] = useState<CapacityPreviewItem[] | null>(null);
+  const [atpPreview, setAtpPreview] = useState<AtpPreviewItem[] | null>(null);
 
   // Sinyal proaktif: cek beban mesin default tiap produk SEBELUM user klik konfirmasi,
   // supaya kelihatan kalau mesin itu sudah punya WO lain (dari Forecast atau SO lain)
@@ -50,7 +70,20 @@ const ConfirmAndStartProductionModal: React.FC<Props> = ({ orderId, orderNumber,
       .catch(() => setCapacityPreview(null));
   }, [orderId]);
 
+  // ATP (Available to Promise, 2026-09-14) - cek SEBELUM konfirmasi apakah stok yang
+  // "kelihatan tersedia" sebenarnya sudah dijanjikan ke SO lain yang masih open
+  // (confirmed/in_production/ready). Bukan blocking, tapi drill-down ke SO mana saja
+  // yang sedang memegang komitmen itu - lihat utils/atp_helper.py untuk kenapa ini
+  // perlu (FG stock tidak pernah otomatis direservasi saat SO dikonfirmasi).
+  useEffect(() => {
+    axiosInstance
+      .get(`/api/sales/orders/${orderId}/atp-preview`)
+      .then((res) => setAtpPreview(res.data.items || []))
+      .catch(() => setAtpPreview(null));
+  }, [orderId]);
+
   const loadedItems = (capacityPreview || []).filter((i) => i.existing_wo_count > 0);
+  const shortItems = (atpPreview || []).filter((i) => !i.available);
 
   const handleConfirm = async () => {
     setIsConfirming(true);
@@ -82,6 +115,29 @@ const ConfirmAndStartProductionModal: React.FC<Props> = ({ orderId, orderNumber,
             {confirmError && (
               <div className="mb-4 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 p-3 rounded">
                 {confirmError}
+              </div>
+            )}
+            {shortItems.length > 0 && (
+              <div className="mb-4 text-sm text-red-700 bg-red-50 dark:bg-red-900/20 p-3 rounded">
+                <p className="font-medium mb-1">Stok kemungkinan tidak cukup (ATP):</p>
+                <ul className="list-disc list-inside space-y-1">
+                  {shortItems.map((it) => (
+                    <li key={it.product_id}>
+                      {it.product_name}: butuh {it.required.toLocaleString('id-ID')}, sisa bisa dijanjikan{' '}
+                      {it.free_to_promise.toLocaleString('id-ID')} (stok {it.on_hand.toLocaleString('id-ID')}
+                      {it.committed_elsewhere > 0 && `, sudah dijanjikan ${it.committed_elsewhere.toLocaleString('id-ID')} ke SO lain`})
+                      {it.competing_orders.length > 0 && (
+                        <ul className="list-[circle] list-inside ml-4 text-xs text-red-600">
+                          {it.competing_orders.map((c) => (
+                            <li key={c.order_id}>
+                              {c.order_number} ({c.customer_name || 'customer?'}): {c.quantity.toLocaleString('id-ID')}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </li>
+                  ))}
+                </ul>
               </div>
             )}
             {loadedItems.length > 0 && (

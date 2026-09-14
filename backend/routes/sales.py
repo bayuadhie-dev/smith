@@ -798,6 +798,37 @@ def production_capacity_preview(id):
     }), 200
 
 
+@sales_bp.route('/orders/<int:id>/atp-preview', methods=['GET'])
+@jwt_required()
+@require_permission('sales_orders.view')
+def atp_preview(id):
+    """Pratinjau ATP (Available to Promise) SEBELUM confirm-and-start-production - sama pola
+    dengan production_capacity_preview di atas. Per item, tampilkan stok on-hand, berapa yang
+    sudah "dijanjikan" ke SO lain yang masih open (confirmed/in_production/ready), sisa yang
+    benar-benar bisa dijanjikan, dan drill-down SO mana saja yang sedang memegang komitmen itu
+    (lihat utils/atp_helper.py untuk penjelasan lengkap kenapa ini perlu dibangun - FG stock
+    tidak pernah direservasi otomatis saat SO dikonfirmasi). Tidak memblokir, cuma info.
+    """
+    from utils.atp_helper import check_atp
+
+    order = db.session.get(SalesOrder, id)
+    if not order:
+        return jsonify(error_response('api.error', error_code=404)), 404
+
+    items = SalesOrderItem.query.filter_by(order_id=order.id).all()
+    preview = []
+    for item in items:
+        atp = check_atp(product_id=item.product_id, quantity_needed=item.quantity, exclude_order_id=order.id)
+        preview.append({
+            'product_id': item.product_id,
+            'product_name': item.product.name if item.product else None,
+            'required': float(item.quantity or 0),
+            **atp,
+        })
+
+    return jsonify({'items': preview}), 200
+
+
 @sales_bp.route('/orders/<int:id>/confirm-and-start-production', methods=['POST'])
 @jwt_required()
 @require_permission('sales_orders.confirm')
