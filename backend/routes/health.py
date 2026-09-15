@@ -63,6 +63,94 @@ def _quick_checks():
     return checks
 
 
+def _load_uptime_history(hours=24, buckets=90):
+    """Reads the real health_history log files (written every ~2 minutes by
+    a scheduled job, already used by GET /health/history for the in-app
+    charts) and reduces them to what a public status page actually needs:
+    an evenly-bucketed uptime strip, a real uptime percentage, and average
+    resource/response-time numbers - all computed from genuine recorded
+    checks, not synthesized."""
+    import glob
+    from datetime import timedelta
+
+    history_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logs', 'health_history')
+    now = get_local_now()
+    cutoff = now - timedelta(hours=hours)
+
+    points = []
+    if os.path.isdir(history_dir):
+        for file_path in sorted(glob.glob(os.path.join(history_dir, 'health_*.json'))):
+            file_date_str = os.path.basename(file_path)[7:17]
+            try:
+                file_date = datetime.strptime(file_date_str, '%Y-%m-%d')
+            except ValueError:
+                continue
+            if file_date.replace(tzinfo=None) < (cutoff.replace(tzinfo=None) - timedelta(days=1)):
+                continue
+            try:
+                with open(file_path, 'r') as f:
+                    day_data = json.load(f)
+            except (json.JSONDecodeError, IOError):
+                continue
+            for point in day_data:
+                try:
+                    ts = datetime.fromisoformat(point['timestamp'])
+                except (KeyError, ValueError):
+                    continue
+                if ts.replace(tzinfo=None) >= cutoff.replace(tzinfo=None):
+                    points.append(point)
+
+    points.sort(key=lambda p: p['timestamp'])
+
+    if not points:
+        return {'bars': [], 'uptime_pct': None, 'avg_cpu': None, 'avg_mem': None, 'avg_disk': None, 'avg_response_ms': None, 'sample_count': 0}
+
+    healthy_count = sum(1 for p in points if p.get('database_status') == 'healthy')
+    uptime_pct = round((healthy_count / len(points)) * 100, 2)
+
+    cpu_vals, mem_vals, disk_vals, resp_vals = [], [], [], []
+    for p in points:
+        res = p.get('resources') or {}
+        if res.get('cpu_percent') is not None:
+            cpu_vals.append(res['cpu_percent'])
+        if res.get('memory_percent') is not None:
+            mem_vals.append(res['memory_percent'])
+        if res.get('disk_percent') is not None:
+            disk_vals.append(res['disk_percent'])
+        for stats in (p.get('response_times') or {}).values():
+            if stats.get('avg_ms') is not None:
+                resp_vals.append(stats['avg_ms'])
+
+    def _avg(vals):
+        return round(sum(vals) / len(vals), 1) if vals else None
+
+    # Downsample into `buckets` even time-slices, each bucket's "health" is
+    # the fraction of its points that were healthy (partial outages inside
+    # a bucket render as a partially-dimmed bar, not a hard on/off flip).
+    bars = []
+    if len(points) <= buckets:
+        for p in points:
+            bars.append(1.0 if p.get('database_status') == 'healthy' else 0.0)
+    else:
+        step = len(points) / buckets
+        for i in range(buckets):
+            start = int(i * step)
+            end = int((i + 1) * step) or 1
+            chunk = points[start:end] or [points[min(start, len(points) - 1)]]
+            healthy = sum(1 for p in chunk if p.get('database_status') == 'healthy')
+            bars.append(healthy / len(chunk))
+
+    return {
+        'bars': bars,
+        'uptime_pct': uptime_pct,
+        'avg_cpu': _avg(cpu_vals),
+        'avg_mem': _avg(mem_vals),
+        'avg_disk': _avg(disk_vals),
+        'avg_response_ms': _avg(resp_vals),
+        'sample_count': len(points),
+    }
+
+
 _STATUS_PAGE_TEMPLATE = """<!doctype html>
 <html lang="id">
 <head>
@@ -122,25 +210,43 @@ _STATUS_PAGE_TEMPLATE = """<!doctype html>
     0%, 100% {{ transform: translate(0,0) scale(1); }}
     50% {{ transform: translate(30px,-20px) scale(1.08); }}
   }}
-  .wrap {{ position: relative; z-index: 1; width: 100%; max-width: 640px; }}
+  .noise {{
+    position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .5; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+  }}
+  .wrap {{ position: relative; z-index: 1; width: 100%; max-width: 720px; }}
   .card {{
+    position: relative;
     background: var(--card-bg);
     border: 1px solid var(--card-border);
-    border-radius: 24px;
-    backdrop-filter: blur(20px) saturate(140%);
-    -webkit-backdrop-filter: blur(20px) saturate(140%);
-    box-shadow: 0 20px 60px -20px rgba(0,0,0,0.35);
-    padding: 40px 36px 32px;
+    border-radius: 28px;
+    backdrop-filter: blur(24px) saturate(150%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    box-shadow: 0 24px 70px -24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06);
+    padding: 40px 40px 30px;
     animation: rise .6s cubic-bezier(.2,.9,.25,1) both;
+    overflow: hidden;
+  }}
+  .card::before {{
+    content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    background: linear-gradient(120deg, rgba(255,255,255,0.10), transparent 35%);
   }}
   @keyframes rise {{ from {{ opacity: 0; transform: translateY(14px); }} to {{ opacity: 1; transform: translateY(0); }} }}
+  .brand-row {{ display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; gap: 12px; flex-wrap: wrap; }}
   .brand {{
     display: flex; align-items: center; gap: 10px;
     color: var(--text-3); font-size: 13px; font-weight: 600;
     letter-spacing: .06em; text-transform: uppercase;
-    margin-bottom: 28px;
   }}
   .brand svg {{ width: 18px; height: 18px; flex-shrink: 0; }}
+  .uptime-badge {{
+    display: flex; align-items: center; gap: 6px;
+    background: var(--tile-bg); border: 1px solid var(--card-border);
+    border-radius: 999px; padding: 5px 12px 5px 10px;
+    font-size: 12.5px; font-weight: 600; color: var(--text-2);
+  }}
+  .uptime-badge b {{ color: var(--ok); font-weight: 700; }}
+  .uptime-badge svg {{ width: 13px; height: 13px; color: var(--ok); }}
   .status-row {{ display: flex; align-items: center; gap: 16px; margin-bottom: 6px; }}
   .dot {{
     position: relative;
@@ -172,6 +278,45 @@ _STATUS_PAGE_TEMPLATE = """<!doctype html>
   .tile .value.ok {{ color: var(--ok); }}
   .tile .value.bad {{ color: var(--bad); }}
   .tile .ms {{ font-size: 12px; color: var(--text-3); font-weight: 400; margin-left: 4px; }}
+  .section-label {{
+    font-size: 12px; font-weight: 600; color: var(--text-3);
+    text-transform: uppercase; letter-spacing: .05em;
+    display: flex; align-items: center; justify-content: space-between;
+    margin: 30px 0 10px;
+  }}
+  .uptime-strip {{
+    display: flex; align-items: flex-end; gap: 2.5px;
+    height: 44px; margin-bottom: 6px;
+  }}
+  .uptime-strip .bar {{
+    flex: 1; min-width: 2px; border-radius: 2px;
+    background: var(--bar-color, var(--ok));
+    opacity: var(--bar-op, 1);
+    height: var(--bar-h, 100%);
+    transition: transform .15s ease;
+    transform-origin: bottom;
+  }}
+  .uptime-strip .bar:hover {{ transform: scaleY(1.08); }}
+  .strip-labels {{
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: var(--text-3); margin-bottom: 24px;
+  }}
+  .res-grid {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 8px; }}
+  .gauge {{
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    background: var(--tile-bg); border: 1px solid var(--card-border);
+    border-radius: 16px; padding: 16px 8px 14px;
+  }}
+  .gauge svg {{ transform: rotate(-90deg); width: 64px; height: 64px; }}
+  .gauge circle {{ fill: none; stroke-width: 5.5; }}
+  .gauge .bg {{ stroke: var(--card-border); }}
+  .gauge .fg {{ stroke-linecap: round; transition: stroke-dashoffset .8s cubic-bezier(.2,.9,.25,1); }}
+  .gauge-wrap {{ position: relative; width: 64px; height: 64px; }}
+  .gauge-pct {{
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 13.5px; font-weight: 700;
+  }}
+  .gauge .g-label {{ font-size: 11.5px; color: var(--text-3); text-transform: uppercase; letter-spacing: .04em; }}
   .meta {{
     display: flex; flex-wrap: wrap; gap: 6px 18px;
     font-size: 13px; color: var(--text-2);
@@ -194,13 +339,17 @@ _STATUS_PAGE_TEMPLATE = """<!doctype html>
 </style>
 </head>
 <body>
+  <div class="noise"></div>
   <div class="orb a"></div>
   <div class="orb b"></div>
   <div class="wrap">
     <div class="card">
-      <div class="brand">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 3 7v6c0 5 4 8.5 9 9 5-.5 9-4 9-9V7l-9-5Z"/></svg>
-        SMITH ERP &middot; System Status
+      <div class="brand-row">
+        <div class="brand">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 3 7v6c0 5 4 8.5 9 9 5-.5 9-4 9-9V7l-9-5Z"/></svg>
+          SMITH ERP &middot; System Status
+        </div>
+        {uptime_badge}
       </div>
       <div class="status-row">
         <span class="dot"></span>
@@ -212,9 +361,21 @@ _STATUS_PAGE_TEMPLATE = """<!doctype html>
         {tiles}
       </div>
 
+      <div class="section-label"><span>Riwayat 24 Jam Terakhir</span><span>{sample_count} sampel</span></div>
+      <div class="uptime-strip">
+        {uptime_bars}
+      </div>
+      <div class="strip-labels"><span>24 jam lalu</span><span>sekarang</span></div>
+
+      <div class="section-label"><span>Sumber Daya Server</span><span>rata-rata 24 jam</span></div>
+      <div class="res-grid">
+        {resource_gauges}
+      </div>
+
       <div class="meta">
         <div>Versi <b>{version}</b></div>
-        <div>Uptime <b>{uptime}</b></div>
+        <div>Proses aktif <b>{uptime}</b></div>
+        <div>Rata-rata respons <b>{avg_response_ms}</b></div>
         <div>Waktu server <b id="server-time">{timestamp}</b> WIB</div>
       </div>
 
@@ -312,6 +473,61 @@ def health_check():
           <div class="value {cls}">{value_text}{ms_html}</div>
         </div>""")
 
+    history = _load_uptime_history(hours=24, buckets=90)
+
+    if history['uptime_pct'] is not None:
+        uptime_badge = f"""<div class="uptime-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+          <b>{history['uptime_pct']}%</b>&nbsp;uptime (24j)
+        </div>"""
+    else:
+        uptime_badge = ""
+
+    bars_html = []
+    if history['bars']:
+        for ratio in history['bars']:
+            if ratio >= 0.999:
+                color, op = 'var(--ok)', 1
+            elif ratio >= 0.5:
+                color, op = '#fbbf24', 0.9
+            else:
+                color, op = 'var(--bad)', 1
+            height_pct = max(18, round(ratio * 100))
+            bars_html.append(
+                f'<span class="bar" style="--bar-color:{color};--bar-op:{op};--bar-h:{height_pct}%"></span>'
+            )
+    else:
+        bars_html.append('<span style="color:var(--text-3);font-size:12px;">Belum ada data histori</span>')
+
+    def _gauge(label, pct):
+        if pct is None:
+            pct = 0
+            display = "N/A"
+        else:
+            display = f"{pct:.0f}%"
+        circumference = 2 * 3.14159265 * 26
+        offset = circumference * (1 - min(pct, 100) / 100)
+        color = 'var(--bad)' if pct > 85 else ('#fbbf24' if pct > 65 else 'var(--ok)')
+        return f"""<div class="gauge">
+          <div class="gauge-wrap">
+            <svg viewBox="0 0 64 64">
+              <circle class="bg" cx="32" cy="32" r="26"></circle>
+              <circle class="fg" cx="32" cy="32" r="26" stroke="{color}"
+                stroke-dasharray="{circumference:.2f}" stroke-dashoffset="{offset:.2f}"></circle>
+            </svg>
+            <div class="gauge-pct">{display}</div>
+          </div>
+          <div class="g-label">{label}</div>
+        </div>"""
+
+    resource_gauges = "\n        ".join([
+        _gauge("CPU", history['avg_cpu']),
+        _gauge("Memory", history['avg_mem']),
+        _gauge("Disk", history['avg_disk']),
+    ])
+
+    avg_response_display = f"{history['avg_response_ms']}ms" if history['avg_response_ms'] is not None else "N/A"
+
     from urllib.parse import quote as _urlquote
     favicon_emoji = "\U0001F7E2" if overall_healthy else "\U0001F534"
     favicon_svg = (
@@ -330,8 +546,13 @@ def health_check():
             "Salah satu atau lebih layanan pendukung sedang tidak dapat dijangkau. Tim teknis sudah diberi tahu."
         ),
         tiles="\n        ".join(tiles_html),
+        uptime_badge=uptime_badge,
+        uptime_bars="".join(bars_html),
+        sample_count=history['sample_count'],
+        resource_gauges=resource_gauges,
         version=payload['version'],
         uptime=payload['uptime'],
+        avg_response_ms=avg_response_display,
         timestamp=get_local_now().strftime('%d %b %Y, %H:%M:%S'),
     )
     return Response(html, status=200 if overall_healthy else 503, mimetype='text/html')
