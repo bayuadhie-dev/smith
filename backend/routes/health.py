@@ -103,7 +103,11 @@ def _load_uptime_history(hours=24, buckets=90):
     points.sort(key=lambda p: p['timestamp'])
 
     if not points:
-        return {'bars': [], 'uptime_pct': None, 'avg_cpu': None, 'avg_mem': None, 'avg_disk': None, 'avg_response_ms': None, 'sample_count': 0}
+        return {
+            'bars': [], 'cpu_series': [], 'mem_series': [], 'disk_series': [],
+            'uptime_pct': None, 'avg_cpu': None, 'avg_mem': None, 'avg_disk': None,
+            'avg_response_ms': None, 'sample_count': 0, 'streak_human': None,
+        }
 
     healthy_count = sum(1 for p in points if p.get('database_status') == 'healthy')
     uptime_pct = round((healthy_count / len(points)) * 100, 2)
@@ -127,28 +131,94 @@ def _load_uptime_history(hours=24, buckets=90):
     # Downsample into `buckets` even time-slices, each bucket's "health" is
     # the fraction of its points that were healthy (partial outages inside
     # a bucket render as a partially-dimmed bar, not a hard on/off flip).
+    # The same time-slices also produce a per-bucket average for CPU/mem/
+    # disk, so the trend line charts share the exact same x-axis as the
+    # uptime strip above them.
     bars = []
+    cpu_series, mem_series, disk_series = [], [], []
     if len(points) <= buckets:
-        for p in points:
-            bars.append(1.0 if p.get('database_status') == 'healthy' else 0.0)
+        chunks = [[p] for p in points]
     else:
         step = len(points) / buckets
+        chunks = []
         for i in range(buckets):
             start = int(i * step)
             end = int((i + 1) * step) or 1
             chunk = points[start:end] or [points[min(start, len(points) - 1)]]
-            healthy = sum(1 for p in chunk if p.get('database_status') == 'healthy')
-            bars.append(healthy / len(chunk))
+            chunks.append(chunk)
+
+    for chunk in chunks:
+        healthy = sum(1 for p in chunk if p.get('database_status') == 'healthy')
+        bars.append(healthy / len(chunk))
+        c = [p['resources']['cpu_percent'] for p in chunk if (p.get('resources') or {}).get('cpu_percent') is not None]
+        m = [p['resources']['memory_percent'] for p in chunk if (p.get('resources') or {}).get('memory_percent') is not None]
+        d = [p['resources']['disk_percent'] for p in chunk if (p.get('resources') or {}).get('disk_percent') is not None]
+        cpu_series.append(_avg(c))
+        mem_series.append(_avg(m))
+        disk_series.append(_avg(d))
+
+    # Longest unbroken healthy streak, in points - converted to a human
+    # duration using the actual average spacing between real samples
+    # (~2 minutes in practice) rather than assuming a fixed interval.
+    longest_streak = cur_streak = 0
+    for p in points:
+        if p.get('database_status') == 'healthy':
+            cur_streak += 1
+            longest_streak = max(longest_streak, cur_streak)
+        else:
+            cur_streak = 0
+    if len(points) > 1:
+        span_secs = (datetime.fromisoformat(points[-1]['timestamp']) - datetime.fromisoformat(points[0]['timestamp'])).total_seconds()
+        avg_interval = span_secs / (len(points) - 1) if span_secs > 0 else 120
+    else:
+        avg_interval = 120
+    streak_secs = int(longest_streak * avg_interval)
+    if streak_secs >= 86400:
+        streak_human = f"{streak_secs // 86400} hari"
+    elif streak_secs >= 3600:
+        streak_human = f"{streak_secs // 3600} jam"
+    else:
+        streak_human = f"{max(streak_secs // 60, 1)} menit"
 
     return {
         'bars': bars,
+        'cpu_series': cpu_series,
+        'mem_series': mem_series,
+        'disk_series': disk_series,
         'uptime_pct': uptime_pct,
         'avg_cpu': _avg(cpu_vals),
         'avg_mem': _avg(mem_vals),
         'avg_disk': _avg(disk_vals),
         'avg_response_ms': _avg(resp_vals),
         'sample_count': len(points),
+        'streak_human': streak_human,
     }
+
+
+def _smooth_path(values, width=300, height=64, pad=4):
+    """Converts a list of 0-100 values (None allowed, gaps are skipped) into
+    a smoothed SVG path string using quadratic-through-midpoints - simple
+    enough to not need a charting library, smooth enough not to look like a
+    jagged sensor readout."""
+    pts = [(i, v) for i, v in enumerate(values) if v is not None]
+    if len(pts) < 2:
+        return '', ''
+    n = len(values)
+    xs = [pad + (i / max(n - 1, 1)) * (width - 2 * pad) for i, _ in pts]
+    ys = [height - pad - (v / 100) * (height - 2 * pad) for _, v in pts]
+    coords = list(zip(xs, ys))
+
+    d = f"M {coords[0][0]:.1f},{coords[0][1]:.1f} "
+    for i in range(1, len(coords)):
+        if i == len(coords) - 1:
+            d += f"L {coords[i][0]:.1f},{coords[i][1]:.1f} "
+        else:
+            midx = (coords[i][0] + coords[i + 1][0]) / 2
+            midy = (coords[i][1] + coords[i + 1][1]) / 2
+            d += f"Q {coords[i][0]:.1f},{coords[i][1]:.1f} {midx:.1f},{midy:.1f} "
+
+    area = d + f"L {coords[-1][0]:.1f},{height} L {coords[0][0]:.1f},{height} Z"
+    return d.strip(), area
 
 
 _STATUS_PAGE_TEMPLATE = """<!doctype html>
@@ -158,6 +228,9 @@ _STATUS_PAGE_TEMPLATE = """<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SMITH ERP — Status Sistem</title>
 <link rel="icon" href="data:image/svg+xml,{favicon}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
   :root {{
     --bg-1: #0b1220; --bg-2: #0e1a2e;
@@ -181,7 +254,8 @@ _STATUS_PAGE_TEMPLATE = """<!doctype html>
   * {{ box-sizing: border-box; }}
   html, body {{ height: 100%; margin: 0; }}
   body {{
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-feature-settings: "cv11", "ss01";
     color: var(--text-1);
     background: radial-gradient(1200px 600px at 15% -10%, rgba(96,165,250,0.16), transparent 60%),
                 radial-gradient(1000px 500px at 110% 10%, rgba(52,211,153,0.10), transparent 60%),
@@ -245,24 +319,34 @@ _STATUS_PAGE_TEMPLATE = """<!doctype html>
     border-radius: 999px; padding: 5px 12px 5px 10px;
     font-size: 12.5px; font-weight: 600; color: var(--text-2);
   }}
-  .uptime-badge b {{ color: var(--ok); font-weight: 700; }}
-  .uptime-badge svg {{ width: 13px; height: 13px; color: var(--ok); }}
-  .status-row {{ display: flex; align-items: center; gap: 16px; margin-bottom: 6px; }}
+  .uptime-badge b {{ color: var(--ok); font-weight: 700; font-variant-numeric: tabular-nums; }}
+  .uptime-badge svg {{ width: 13px; height: 13px; color: var(--ok); flex-shrink: 0; }}
+  .badge-group {{ display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }}
+  .streak-badge {{
+    display: flex; align-items: center; gap: 6px;
+    color: var(--text-3); font-size: 12px; font-weight: 500;
+  }}
+  .streak-badge svg {{ width: 13px; height: 13px; color: #fbbf24; flex-shrink: 0; }}
+  .status-row {{ display: flex; align-items: center; gap: 16px; margin-bottom: 8px; }}
+  .dot-wrap {{ position: relative; width: 16px; height: 16px; flex-shrink: 0; }}
   .dot {{
-    position: relative;
-    width: 14px; height: 14px; border-radius: 50%;
+    position: absolute; inset: 3px;
+    border-radius: 50%;
     background: var({status_color});
-    box-shadow: 0 0 0 0 var({status_glow});
-    animation: pulse 2.2s ease-out infinite;
-    flex-shrink: 0;
+    box-shadow: 0 0 16px 1px var({status_glow});
   }}
-  @keyframes pulse {{
-    0% {{ box-shadow: 0 0 0 0 var({status_glow}); }}
-    70% {{ box-shadow: 0 0 0 14px rgba(0,0,0,0); }}
-    100% {{ box-shadow: 0 0 0 0 rgba(0,0,0,0); }}
+  .dot-ping {{
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    background: var({status_color});
+    animation: ping 2.4s cubic-bezier(0,0,0.2,1) infinite;
   }}
-  h1 {{ font-size: 26px; font-weight: 700; margin: 0; letter-spacing: -0.01em; }}
-  .subtitle {{ color: var(--text-2); font-size: 14.5px; margin: 8px 0 28px; line-height: 1.5; }}
+  @keyframes ping {{
+    0% {{ transform: scale(0.6); opacity: 0.8; }}
+    75%, 100% {{ transform: scale(2); opacity: 0; }}
+  }}
+  h1 {{ font-size: 29px; font-weight: 800; margin: 0; letter-spacing: -0.02em; line-height: 1.15; }}
+  .subtitle {{ color: var(--text-2); font-size: 15px; margin: 10px 0 30px; line-height: 1.55; max-width: 46ch; }}
   .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap: 12px; margin-bottom: 26px; }}
   .tile {{
     background: var(--tile-bg);
@@ -301,22 +385,20 @@ _STATUS_PAGE_TEMPLATE = """<!doctype html>
     display: flex; justify-content: space-between;
     font-size: 11px; color: var(--text-3); margin-bottom: 24px;
   }}
-  .res-grid {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 8px; }}
-  .gauge {{
-    display: flex; flex-direction: column; align-items: center; gap: 10px;
+  .res-grid {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 8px; }}
+  .chart-card {{
     background: var(--tile-bg); border: 1px solid var(--card-border);
-    border-radius: 16px; padding: 16px 8px 14px;
+    border-radius: 16px; padding: 14px 14px 10px;
+    transition: border-color .2s ease, transform .2s ease;
   }}
-  .gauge svg {{ transform: rotate(-90deg); width: 64px; height: 64px; }}
-  .gauge circle {{ fill: none; stroke-width: 5.5; }}
-  .gauge .bg {{ stroke: var(--card-border); }}
-  .gauge .fg {{ stroke-linecap: round; transition: stroke-dashoffset .8s cubic-bezier(.2,.9,.25,1); }}
-  .gauge-wrap {{ position: relative; width: 64px; height: 64px; }}
-  .gauge-pct {{
-    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-    font-size: 13.5px; font-weight: 700;
-  }}
-  .gauge .g-label {{ font-size: 11.5px; color: var(--text-3); text-transform: uppercase; letter-spacing: .04em; }}
+  .chart-card:hover {{ transform: translateY(-2px); border-color: var(--chart-color, var(--ok)); }}
+  .chart-head {{ display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }}
+  .chart-head .c-label {{ font-size: 11.5px; color: var(--text-3); text-transform: uppercase; letter-spacing: .05em; font-weight: 600; }}
+  .chart-head .c-value {{ font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }}
+  .chart-card svg {{ display: block; width: 100%; height: 52px; overflow: visible; }}
+  .chart-card .area {{ opacity: .22; }}
+  .chart-card .line {{ fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }}
+  .chart-empty {{ font-size: 11.5px; color: var(--text-3); text-align: center; padding: 14px 0; }}
   .meta {{
     display: flex; flex-wrap: wrap; gap: 6px 18px;
     font-size: 13px; color: var(--text-2);
@@ -349,10 +431,13 @@ _STATUS_PAGE_TEMPLATE = """<!doctype html>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 3 7v6c0 5 4 8.5 9 9 5-.5 9-4 9-9V7l-9-5Z"/></svg>
           SMITH ERP &middot; System Status
         </div>
-        {uptime_badge}
+        <div class="badge-group">
+          {streak_badge}
+          {uptime_badge}
+        </div>
       </div>
       <div class="status-row">
-        <span class="dot"></span>
+        <span class="dot-wrap"><span class="dot-ping"></span><span class="dot"></span></span>
         <h1>{status_title}</h1>
       </div>
       <p class="subtitle">{status_subtitle}</p>
@@ -367,9 +452,9 @@ _STATUS_PAGE_TEMPLATE = """<!doctype html>
       </div>
       <div class="strip-labels"><span>24 jam lalu</span><span>sekarang</span></div>
 
-      <div class="section-label"><span>Sumber Daya Server</span><span>rata-rata 24 jam</span></div>
+      <div class="section-label"><span>Sumber Daya Server</span><span>tren 24 jam</span></div>
       <div class="res-grid">
-        {resource_gauges}
+        {resource_charts}
       </div>
 
       <div class="meta">
@@ -483,6 +568,14 @@ def health_check():
     else:
         uptime_badge = ""
 
+    if history.get('streak_human'):
+        streak_badge = f"""<div class="streak-badge">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 3 7v6c0 5 4 8.5 9 9 5-.5 9-4 9-9V7l-9-5Z" fill-opacity=".15" stroke="currentColor" stroke-width="1.5"/></svg>
+          {history['streak_human']} tanpa gangguan
+        </div>"""
+    else:
+        streak_badge = ""
+
     bars_html = []
     if history['bars']:
         for ratio in history['bars']:
@@ -499,31 +592,40 @@ def health_check():
     else:
         bars_html.append('<span style="color:var(--text-3);font-size:12px;">Belum ada data histori</span>')
 
-    def _gauge(label, pct):
-        if pct is None:
-            pct = 0
+    def _chart(label, series, current_avg, gradient_id):
+        if current_avg is None:
             display = "N/A"
         else:
-            display = f"{pct:.0f}%"
-        circumference = 2 * 3.14159265 * 26
-        offset = circumference * (1 - min(pct, 100) / 100)
-        color = 'var(--bad)' if pct > 85 else ('#fbbf24' if pct > 65 else 'var(--ok)')
-        return f"""<div class="gauge">
-          <div class="gauge-wrap">
-            <svg viewBox="0 0 64 64">
-              <circle class="bg" cx="32" cy="32" r="26"></circle>
-              <circle class="fg" cx="32" cy="32" r="26" stroke="{color}"
-                stroke-dasharray="{circumference:.2f}" stroke-dashoffset="{offset:.2f}"></circle>
-            </svg>
-            <div class="gauge-pct">{display}</div>
+            display = f"{current_avg:.0f}%"
+        color = 'var(--bad)' if (current_avg or 0) > 85 else ('#fbbf24' if (current_avg or 0) > 65 else 'var(--ok)')
+
+        line_path, area_path = _smooth_path(series, width=260, height=52, pad=2)
+        if not line_path:
+            body = '<div class="chart-empty">Belum ada data</div>'
+        else:
+            body = f"""<svg viewBox="0 0 260 52" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="{gradient_id}" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="{color}" stop-opacity="0.55"/>
+                  <stop offset="100%" stop-color="{color}" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <path class="area" d="{area_path}" fill="url(#{gradient_id})"></path>
+              <path class="line" d="{line_path}" stroke="{color}"></path>
+            </svg>"""
+
+        return f"""<div class="chart-card" style="--chart-color:{color}">
+          <div class="chart-head">
+            <span class="c-label">{label}</span>
+            <span class="c-value" style="color:{color}">{display}</span>
           </div>
-          <div class="g-label">{label}</div>
+          {body}
         </div>"""
 
-    resource_gauges = "\n        ".join([
-        _gauge("CPU", history['avg_cpu']),
-        _gauge("Memory", history['avg_mem']),
-        _gauge("Disk", history['avg_disk']),
+    resource_charts = "\n        ".join([
+        _chart("CPU", history['cpu_series'], history['avg_cpu'], "gradCpu"),
+        _chart("Memory", history['mem_series'], history['avg_mem'], "gradMem"),
+        _chart("Disk", history['disk_series'], history['avg_disk'], "gradDisk"),
     ])
 
     avg_response_display = f"{history['avg_response_ms']}ms" if history['avg_response_ms'] is not None else "N/A"
@@ -547,9 +649,10 @@ def health_check():
         ),
         tiles="\n        ".join(tiles_html),
         uptime_badge=uptime_badge,
+        streak_badge=streak_badge,
         uptime_bars="".join(bars_html),
         sample_count=history['sample_count'],
-        resource_gauges=resource_gauges,
+        resource_charts=resource_charts,
         version=payload['version'],
         uptime=payload['uptime'],
         avg_response_ms=avg_response_display,
