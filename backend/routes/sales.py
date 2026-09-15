@@ -10,6 +10,7 @@ from models.sales import (
 from models.user import User
 from utils import generate_number, generate_number_v2
 from utils.business_rules import BusinessRules, ValidationError, SALES_ORDER_TRANSITIONS
+from utils.tax_helpers import resolve_item_tax_percent
 from datetime import datetime, date
 from decimal import Decimal
 from sqlalchemy import or_, func, and_
@@ -20,6 +21,28 @@ import redis
 import os
 
 sales_bp = Blueprint('sales', __name__)
+
+
+def _apply_item_amounts(item, item_total, discount_percent, tax_percent):
+    """Fills in an order/quotation line item's discount_amount/tax_amount/
+    total_price from its own discount_percent/tax_percent, and returns the
+    net (post-discount, post-tax) line total - the single source of truth
+    both the item row and the order/quotation header total should use.
+
+    Before this helper, create/update paths only stored discount_percent/
+    tax_percent as opaque input fields and set total_price = gross item_total
+    (quantity*unit_price) with no discount or tax applied at all - so the
+    resolved PPN rate from resolve_item_tax_percent() had a place to live on
+    the item, but the ORDER TOTAL never actually reflected it (same root
+    cause as the sibling PO total_amount drift fixed earlier this project -
+    see _calculate_po_total in routes/purchasing.py)."""
+    discount_amount = item_total * (float(discount_percent or 0) / 100)
+    net = item_total - discount_amount
+    tax_amount = net * (float(tax_percent or 0) / 100)
+    item.discount_amount = discount_amount
+    item.tax_amount = tax_amount
+    item.total_price = net + tax_amount
+    return item.total_price
 
 # Customers
 @sales_bp.route('/customers', methods=['GET'])
@@ -536,9 +559,12 @@ def create_order():
         
         # Add items
         subtotal = 0
+        grand_total = 0
         for idx, item_data in enumerate(data.get('items', []), 1):
             item_total = item_data['quantity'] * item_data['unit_price']
-            
+            discount_percent = item_data.get('discount_percent', 0)
+            tax_percent = resolve_item_tax_percent(item_data.get('tax_percent', 0), product_id=item_data['product_id'])
+
             item = SalesOrderItem(
                 order_id=order.id,
                 line_number=idx,
@@ -547,15 +573,15 @@ def create_order():
                 quantity=item_data['quantity'],
                 uom=item_data.get('uom', 'PCS'),  # Default to PCS if not provided
                 unit_price=item_data['unit_price'],
-                discount_percent=item_data.get('discount_percent', 0),
-                tax_percent=item_data.get('tax_percent', 0),
-                total_price=item_total
+                discount_percent=discount_percent,
+                tax_percent=tax_percent,
             )
+            grand_total += _apply_item_amounts(item, item_total, discount_percent, tax_percent)
             db.session.add(item)
             subtotal += item_total
-        
+
         order.subtotal = subtotal
-        order.total_amount = subtotal
+        order.total_amount = grand_total
 
         db.session.commit()
 
@@ -1146,8 +1172,11 @@ def update_order(id):
 
             SalesOrderItem.query.filter_by(order_id=order.id).delete()
             subtotal = 0
+            grand_total = 0
             for idx, item_data in enumerate(new_items_data, 1):
                 item_total = float(item_data['quantity']) * float(item_data['unit_price'])
+                discount_percent = item_data.get('discount_percent', 0)
+                tax_percent = resolve_item_tax_percent(item_data.get('tax_percent', 0), product_id=item_data['product_id'])
                 item = SalesOrderItem(
                     order_id=order.id,
                     line_number=idx,
@@ -1156,15 +1185,15 @@ def update_order(id):
                     quantity=item_data['quantity'],
                     uom=item_data.get('uom', 'PCS'),
                     unit_price=item_data['unit_price'],
-                    discount_percent=item_data.get('discount_percent', 0),
-                    tax_percent=item_data.get('tax_percent', 0),
-                    total_price=item_total
+                    discount_percent=discount_percent,
+                    tax_percent=tax_percent,
                 )
+                grand_total += _apply_item_amounts(item, item_total, discount_percent, tax_percent)
                 db.session.add(item)
                 subtotal += item_total
 
             order.subtotal = subtotal
-            order.total_amount = subtotal
+            order.total_amount = grand_total
             db.session.flush()
 
         if items_changed:
@@ -1898,9 +1927,12 @@ def create_quotation():
         
         # Add items
         subtotal = 0
+        grand_total = 0
         for idx, item_data in enumerate(data.get('items', []), 1):
             item_total = float(item_data['quantity']) * float(item_data['unit_price'])
-            
+            discount_percent = item_data.get('discount_percent', 0)
+            tax_percent = resolve_item_tax_percent(item_data.get('tax_percent', 0), product_id=item_data['product_id'])
+
             item = QuotationItem(
                 quotation_id=quotation.id,
                 line_number=idx,
@@ -1909,16 +1941,16 @@ def create_quotation():
                 quantity=item_data['quantity'],
                 uom=item_data.get('uom', 'PCS'),
                 unit_price=item_data['unit_price'],
-                discount_percent=item_data.get('discount_percent', 0),
-                tax_percent=item_data.get('tax_percent', 0),
-                total_price=item_total
+                discount_percent=discount_percent,
+                tax_percent=tax_percent,
             )
+            grand_total += _apply_item_amounts(item, item_total, discount_percent, tax_percent)
             db.session.add(item)
             subtotal += item_total
         
         quotation.subtotal = subtotal
-        quotation.total_amount = subtotal
-        
+        quotation.total_amount = grand_total
+
         db.session.commit()
         
         return jsonify({
@@ -2012,8 +2044,11 @@ def update_quotation(id):
             QuotationItem.query.filter_by(quotation_id=quotation.id).delete()
 
             subtotal = 0
+            grand_total = 0
             for idx, item_data in enumerate(data.get('items', []), 1):
                 item_total = float(item_data['quantity']) * float(item_data['unit_price'])
+                discount_percent = item_data.get('discount_percent', 0)
+                tax_percent = resolve_item_tax_percent(item_data.get('tax_percent', 0), product_id=item_data['product_id'])
                 item = QuotationItem(
                     quotation_id=quotation.id,
                     line_number=idx,
@@ -2022,15 +2057,15 @@ def update_quotation(id):
                     quantity=item_data['quantity'],
                     uom=item_data.get('uom', 'PCS'),
                     unit_price=item_data['unit_price'],
-                    discount_percent=item_data.get('discount_percent', 0),
-                    tax_percent=item_data.get('tax_percent', 0),
-                    total_price=item_total
+                    discount_percent=discount_percent,
+                    tax_percent=tax_percent,
                 )
+                grand_total += _apply_item_amounts(item, item_total, discount_percent, tax_percent)
                 db.session.add(item)
                 subtotal += item_total
 
             quotation.subtotal = subtotal
-            quotation.total_amount = subtotal
+            quotation.total_amount = grand_total
 
         db.session.commit()
 
@@ -2077,8 +2112,10 @@ def convert_quotation_to_order(id):
         db.session.flush()
 
         subtotal = 0
+        grand_total = 0
         for idx, qitem in enumerate(quotation.items, 1):
             item_total = float(qitem.quantity) * float(qitem.unit_price)
+            tax_percent = resolve_item_tax_percent(qitem.tax_percent, product_id=qitem.product_id)
             item = SalesOrderItem(
                 order_id=order.id,
                 line_number=idx,
@@ -2088,14 +2125,14 @@ def convert_quotation_to_order(id):
                 uom=qitem.uom,
                 unit_price=qitem.unit_price,
                 discount_percent=qitem.discount_percent,
-                tax_percent=qitem.tax_percent,
-                total_price=item_total
+                tax_percent=tax_percent,
             )
+            grand_total += _apply_item_amounts(item, item_total, qitem.discount_percent, tax_percent)
             db.session.add(item)
             subtotal += item_total
 
         order.subtotal = subtotal
-        order.total_amount = subtotal
+        order.total_amount = grand_total
 
         quotation.status = 'converted'
         quotation.converted_to_order_id = order.id

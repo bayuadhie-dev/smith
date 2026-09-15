@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import func, extract
 from utils.timezone import get_local_now, get_local_today
 from utils.auth_decorators import require_permission
+from utils.tax_helpers import resolve_item_tax_percent
 import os
 import io
 import openpyxl
@@ -355,14 +356,27 @@ def create_invoice():
         db.session.flush()
         
         subtotal = 0
-        tax_amount = 0
         discount_amount = data.get('discount_amount', 0)
         tax_rate = data.get('tax_rate', 0)
+        items_tax_amount = 0
+        any_item_ppn_resolved = False
 
         for idx, item_data in enumerate(data.get('items', []), 1):
             line_total = item_data['quantity'] * item_data['unit_price']
             line_discount = line_total * (item_data.get('discount_percent', 0) / 100)
             line_net = line_total - line_discount
+
+            explicit_item_tax = item_data.get('tax_amount', 0)
+            item_tax = explicit_item_tax
+            if not explicit_item_tax and item_data.get('product_id'):
+                # No manual tax_amount given for this line - derive the rate from
+                # the product's own ppn_code (Y/A/B/L = 11%/1.1%/1.2%/12%) instead
+                # of silently leaving it at 0 or applying one flat rate to every
+                # item regardless of its real PPN classification.
+                item_rate = resolve_item_tax_percent(0, product_id=item_data['product_id'])
+                if item_rate:
+                    item_tax = line_net * (item_rate / 100)
+                    any_item_ppn_resolved = True
 
             item = InvoiceItem(
                 invoice_id=invoice.id,
@@ -373,14 +387,22 @@ def create_invoice():
                 unit_price=item_data['unit_price'],
                 discount_percent=item_data.get('discount_percent', 0),
                 total_amount=line_net,
-                tax_amount=item_data.get('tax_amount', 0)
+                tax_amount=item_tax
             )
             db.session.add(item)
             subtotal += line_net
+            items_tax_amount += item_tax
 
-        # Calculate total tax
-        taxable_amount = subtotal - discount_amount
-        tax_amount = taxable_amount * (tax_rate / 100) if tax_rate else 0
+        # Total tax: prefer the sum of real per-item PPN (derived from each
+        # item's own ppn_code) whenever at least one line resolved one -
+        # otherwise fall back to the old flat header-level tax_rate, for
+        # invoices with no product-linked items to derive a rate from (e.g.
+        # the manual free-text Invoice form, which has no product selector).
+        if any_item_ppn_resolved:
+            tax_amount = items_tax_amount
+        else:
+            taxable_amount = subtotal - discount_amount
+            tax_amount = taxable_amount * (tax_rate / 100) if tax_rate else 0
         
         invoice.subtotal = subtotal
         invoice.discount_amount = discount_amount
