@@ -121,7 +121,7 @@ const [costAnalysis, setCostAnalysis] = useState<CostAnalysis[]>([])
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">📊 Costing & Controlling</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Costing & Controlling</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Analyze cost structures and control manufacturing expenses</p>
         </div>
         <div className="flex gap-3">

@@ -205,7 +205,7 @@ const ActivityForm = () => {
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">📋 {t('sales.new_activity')}</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('sales.new_activity')}</h1>
             <p className="text-gray-600 dark:text-gray-300 mt-1">Create a new sales activity</p>
           </div>
         </div>
