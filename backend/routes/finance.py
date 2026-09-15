@@ -1,12 +1,17 @@
-from flask import Blueprint, request, jsonify, abort
+from flask import Blueprint, request, jsonify, abort, send_file
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, Invoice, InvoiceItem, Payment, AccountingEntry, CostCenter, Account
+from models.sales import Customer
+from models.settings import CompanyProfile
 from utils.i18n import success_response, error_response, get_message
 from utils import generate_number, generate_number_v2
 from datetime import datetime, timedelta
 from sqlalchemy import func, extract
 from utils.timezone import get_local_now, get_local_today
 from utils.auth_decorators import require_permission
+import os
+import io
+import openpyxl
 
 finance_bp = Blueprint('finance', __name__)
 
@@ -236,6 +241,89 @@ def delete_invoice(id):
         return jsonify({'error': str(e)}), 500
 
 
+# DJP-provided "Faktur Keluaran" Excel-to-XML converter template. Copied
+# verbatim from https://www.pajak.go.id (Coretax > Template XML dan
+# Converter Excel ke XML), sample rows cleared - the reference sheets
+# (Trx Type/Trx Detail/Trx Doc/AddInfo) are DJP's own lookup tables and
+# must ship untouched for their converter tool to recognize the file.
+EFAKTUR_TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), '..', 'templates', 'efaktur_faktur_keluaran_template.xlsx')
+
+
+@finance_bp.route('/invoices/efaktur-export', methods=['GET'])
+@jwt_required()
+@require_permission('finance.view')
+def export_efaktur_keluaran():
+    """Export sales invoices in a date range into DJP's official 'Faktur
+    Keluaran' Excel template (Coretax Excel-to-XML converter input format).
+    User runs DJP's own free converter on the downloaded file to get the
+    XML for manual upload to Coretax - we don't call any tax API directly,
+    since no self-service API access to Coretax exists yet.
+
+    TransactionType/TransactionDetail default to '01'/'01' (ordinary
+    domestic delivery to a non-VAT-collector buyer) - the most common case -
+    left editable in the exported file since only Finance knows which rows
+    need a different classification (export, government buyer, VAT-exempt,
+    etc)."""
+    try:
+        start_date = request.args.get('start_date')
+        end_date = request.args.get('end_date')
+        if not start_date or not end_date:
+            return jsonify({'error': 'start_date dan end_date wajib diisi (format YYYY-MM-DD)'}), 400
+
+        query = Invoice.query.filter(
+            Invoice.invoice_type == 'sales',
+            Invoice.invoice_date >= start_date,
+            Invoice.invoice_date <= end_date,
+            Invoice.status != 'cancelled',
+        ).order_by(Invoice.invoice_date, Invoice.invoice_number)
+        invoices = query.all()
+
+        company = CompanyProfile.query.first()
+        company_npwp = (company.tax_id if company else None) or ''
+
+        wb = openpyxl.load_workbook(EFAKTUR_TEMPLATE_PATH)
+        ws = wb['DATA']
+        ws.cell(row=1, column=2, value=company_npwp)
+
+        row_idx = 4
+        skipped_no_npwp = []
+        for inv in invoices:
+            customer = db.session.get(Customer, inv.customer_id) if inv.customer_id else None
+            buyer_npwp = (customer.tax_id if customer else None) or ''
+            if not buyer_npwp:
+                skipped_no_npwp.append(inv.invoice_number)
+                continue
+            ws.cell(row=row_idx, column=1, value='01')   # TransactionType: domestic delivery
+            ws.cell(row=row_idx, column=2, value='01')   # TransactionDetail: to non-VAT-collector
+            ws.cell(row=row_idx, column=5, value=inv.invoice_number)
+            ws.cell(row=row_idx, column=6, value=inv.invoice_date)
+            ws.cell(row=row_idx, column=8, value=buyer_npwp)
+            ws.cell(row=row_idx, column=9, value=customer.company_name if customer else '')
+            ws.cell(row=row_idx, column=10, value=(customer.billing_address if customer else '') or '')
+            ws.cell(row=row_idx, column=11, value=float(inv.subtotal or 0))
+            ws.cell(row=row_idx, column=12, value=float(inv.tax_amount or 0))
+            ws.cell(row=row_idx, column=13, value=0)
+            row_idx += 1
+
+        buf = io.BytesIO()
+        wb.save(buf)
+        buf.seek(0)
+
+        filename = f"efaktur_keluaran_{start_date}_{end_date}.xlsx"
+        response = send_file(
+            buf,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name=filename,
+        )
+        if skipped_no_npwp:
+            response.headers['X-Skipped-No-NPWP'] = ','.join(skipped_no_npwp[:20])
+        return response
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @finance_bp.route('/invoices', methods=['POST'])
 @jwt_required()
 @require_permission('finance.create')
@@ -270,12 +358,12 @@ def create_invoice():
         tax_amount = 0
         discount_amount = data.get('discount_amount', 0)
         tax_rate = data.get('tax_rate', 0)
-        
+
         for idx, item_data in enumerate(data.get('items', []), 1):
             line_total = item_data['quantity'] * item_data['unit_price']
             line_discount = line_total * (item_data.get('discount_percent', 0) / 100)
             line_net = line_total - line_discount
-            
+
             item = InvoiceItem(
                 invoice_id=invoice.id,
                 line_number=idx,
@@ -289,7 +377,7 @@ def create_invoice():
             )
             db.session.add(item)
             subtotal += line_net
-        
+
         # Calculate total tax
         taxable_amount = subtotal - discount_amount
         tax_amount = taxable_amount * (tax_rate / 100) if tax_rate else 0
@@ -1450,6 +1538,73 @@ def get_tax_management():
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@finance_bp.route('/tax-management/report', methods=['GET'])
+@jwt_required()
+@require_permission('finance.view')
+def export_tax_report():
+    """Excel export of the Tax Management summary + transaction list for a
+    given period - the 'Tax Report' button on that page used to just show
+    an alert('will be implemented soon'), this makes it real."""
+    try:
+        from models.finance import TaxTransaction
+
+        period = request.args.get('period')
+        if not period:
+            now = get_local_now()
+            period = f"{now.year}-{now.month:02d}"
+
+        tax_transactions = TaxTransaction.query.filter_by(
+            reporting_period=period
+        ).order_by(TaxTransaction.transaction_date.asc()).all()
+
+        vat_out = sum(float(t.tax_amount) for t in tax_transactions if t.transaction_type == 'vat_out')
+        vat_in = sum(float(t.tax_amount) for t in tax_transactions if t.transaction_type == 'vat_in')
+        income_tax = sum(float(t.tax_amount) for t in tax_transactions if t.transaction_type == 'income_tax')
+        withholding_tax = sum(float(t.tax_amount) for t in tax_transactions if 'PPh' in (t.tax_type or ''))
+
+        wb = openpyxl.Workbook()
+        ws_summary = wb.active
+        ws_summary.title = 'Ringkasan'
+        ws_summary.append(['Laporan Pajak', period])
+        ws_summary.append([])
+        ws_summary.append(['VAT Payable', vat_out])
+        ws_summary.append(['VAT Receivable', vat_in])
+        ws_summary.append(['Net VAT', vat_out - vat_in])
+        ws_summary.append(['Income Tax', income_tax])
+        ws_summary.append(['Withholding Tax', withholding_tax])
+        ws_summary.append(['Total Tax Liability', vat_out - vat_in + income_tax])
+        for col in ('A', 'B'):
+            ws_summary.column_dimensions[col].width = 22
+
+        ws_tx = wb.create_sheet('Transaksi')
+        ws_tx.append(['No. Transaksi', 'Tanggal', 'Tipe Transaksi', 'Jenis Pajak', 'Dasar Pengenaan', 'Jumlah Pajak', 'Status'])
+        for t in tax_transactions:
+            ws_tx.append([
+                t.transaction_number,
+                t.transaction_date.isoformat() if t.transaction_date else '',
+                t.transaction_type,
+                t.tax_type,
+                float(t.base_amount or 0),
+                float(t.tax_amount or 0),
+                t.status,
+            ])
+        for col, w in zip('ABCDEFG', (18, 14, 16, 16, 16, 14, 12)):
+            ws_tx.column_dimensions[col].width = w
+
+        buf = io.BytesIO()
+        wb.save(buf)
+        buf.seek(0)
+        return send_file(
+            buf,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name=f"tax_report_{period}.xlsx",
+        )
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 
 # ============ CONSOLIDATION ============
 @finance_bp.route('/consolidation', methods=['GET'])

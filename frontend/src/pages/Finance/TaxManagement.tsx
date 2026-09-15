@@ -46,6 +46,64 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
   const [loading, setLoading] = useState(true)
   const [period, setPeriod] = useState('')
   const [showAddModal, setShowAddModal] = useState(false)
+  const [efakturStart, setEfakturStart] = useState('')
+  const [efakturEnd, setEfakturEnd] = useState('')
+  const [efakturExporting, setEfakturExporting] = useState(false)
+  const [taxReportExporting, setTaxReportExporting] = useState(false)
+
+  const handleExportTaxReport = async () => {
+    setTaxReportExporting(true)
+    try {
+      const now = new Date()
+      const currentPeriod = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+      const response = await axiosInstance.get('/api/finance/tax-management/report', {
+        params: { period: currentPeriod },
+        responseType: 'blob',
+      })
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `tax_report_${currentPeriod}.xlsx`)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+    } catch (err: any) {
+      alert(err?.response?.data?.error || 'Gagal export laporan pajak')
+    } finally {
+      setTaxReportExporting(false)
+    }
+  }
+
+  const handleExportEfaktur = async () => {
+    if (!efakturStart || !efakturEnd) {
+      alert('Pilih tanggal mulai dan akhir dulu')
+      return
+    }
+    setEfakturExporting(true)
+    try {
+      const response = await axiosInstance.get('/api/finance/invoices/efaktur-export', {
+        params: { start_date: efakturStart, end_date: efakturEnd },
+        responseType: 'blob',
+      })
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `efaktur_keluaran_${efakturStart}_${efakturEnd}.xlsx`)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+      const skipped = response.headers['x-skipped-no-npwp']
+      if (skipped) {
+        alert(`Beberapa invoice dilewati karena customer belum punya NPWP: ${skipped}`)
+      }
+    } catch (err: any) {
+      alert(err?.response?.data?.error || 'Gagal export e-Faktur')
+    } finally {
+      setEfakturExporting(false)
+    }
+  }
 
   useEffect(() => {
     loadTaxData()
@@ -177,21 +235,13 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
           <p className="text-gray-600 dark:text-gray-300 mt-1">Monitor VAT, income tax, and withholding tax obligations</p>
         </div>
         <div className="flex gap-3">
-          <button 
-            onClick={() => {
-              const reportData = {
-                vat_summary: taxSummary,
-                transactions: taxTransactions,
-                period: period,
-                generated_at: new Date().toISOString()
-              }
-              console.log('Generating tax report:', reportData)
-              alert('Tax report generation will be implemented soon!')
-            }}
-            className="btn-secondary inline-flex items-center gap-2"
+          <button
+            onClick={handleExportTaxReport}
+            disabled={taxReportExporting}
+            className="btn-secondary inline-flex items-center gap-2 disabled:opacity-50"
           >
             <ArrowDownTrayIcon className="h-5 w-5" />
-            Tax Report
+            {taxReportExporting ? 'Mengunduh...' : 'Tax Report'}
           </button>
           <button 
             onClick={() => setShowAddModal(true)}
@@ -199,6 +249,42 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
           >
             <PlusIcon className="h-5 w-5" />
             Record Tax
+          </button>
+        </div>
+      </div>
+
+      {/* e-Faktur Export (Coretax) */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Export e-Faktur Keluaran (Coretax)</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+          Unduh data invoice penjualan dalam format Excel resmi DJP (template "Faktur Keluaran"). File hasil unduhan dapat langsung diproses lewat Converter Excel-ke-XML resmi DJP untuk diunggah ke Coretax.
+        </p>
+        <div className="flex flex-wrap items-end gap-3">
+          <div>
+            <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Tanggal Mulai</label>
+            <input
+              type="date"
+              className="input-field"
+              value={efakturStart}
+              onChange={(e) => setEfakturStart(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Tanggal Akhir</label>
+            <input
+              type="date"
+              className="input-field"
+              value={efakturEnd}
+              onChange={(e) => setEfakturEnd(e.target.value)}
+            />
+          </div>
+          <button
+            onClick={handleExportEfaktur}
+            disabled={efakturExporting}
+            className="btn-primary inline-flex items-center gap-2 disabled:opacity-50"
+          >
+            <ArrowDownTrayIcon className="h-5 w-5" />
+            {efakturExporting ? 'Mengunduh...' : 'Unduh Excel'}
           </button>
         </div>
       </div>
