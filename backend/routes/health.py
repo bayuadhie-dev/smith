@@ -554,6 +554,290 @@ def health_check():
 
 
 
+_DATABASE_PAGE_TEMPLATE = """<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SMITH ERP — Status Database</title>
+<link rel="icon" href="data:image/svg+xml,{favicon}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {{
+    --bg: #08090b; --surface: #0d0f13; --line: rgba(255,255,255,0.09); --line-soft: rgba(255,255,255,0.05);
+    --text-1: #f2f3f5; --text-2: #9a9ea6; --text-3: #5c6068;
+    --ok: #2dd4a7; --bad: #f0475a; --warn: #f2a93b;
+    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  }}
+  @media (prefers-color-scheme: light) {{
+    :root {{
+      --bg: #f4f5f7; --surface: #ffffff; --line: rgba(15,23,42,0.10); --line-soft: rgba(15,23,42,0.05);
+      --text-1: #101215; --text-2: #5b6068; --text-3: #9296a0;
+    }}
+  }}
+  * {{ box-sizing: border-box; }}
+  html {{ background: var(--bg); }}
+  body {{
+    margin: 0; min-height: 100vh;
+    background: linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0 / 100% 34px, var(--bg);
+    color: var(--text-1); font-family: var(--sans); -webkit-font-smoothing: antialiased;
+  }}
+  .page {{ max-width: 760px; margin: 0 auto; padding: 56px 24px 40px; }}
+  a {{ color: inherit; text-decoration: none; }}
+
+  .topbar {{ display: flex; align-items: center; justify-content: space-between; margin-bottom: 44px; }}
+  .mark {{ display: flex; align-items: center; gap: 11px; }}
+  .mark .sq {{
+    width: 26px; height: 26px; border: 1.5px solid var(--text-1); border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-weight: 700; font-size: 13px;
+  }}
+  .mark .name {{ font-weight: 700; font-size: 14.5px; letter-spacing: -0.01em; }}
+  .mark .div {{ width: 1px; height: 14px; background: var(--line); margin: 0 2px; }}
+  .mark .sub {{ font-family: var(--mono); font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: .1em; }}
+  .mark .sub a:hover {{ color: var(--text-1); }}
+  .clock {{ font-family: var(--mono); font-size: 12.5px; color: var(--text-2); font-variant-numeric: tabular-nums; }}
+
+  .hero {{ border-bottom: 1px solid var(--line); padding-bottom: 28px; margin-bottom: 28px; }}
+  .hero-top {{ display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }}
+  .dot {{ width: 8px; height: 8px; border-radius: 50%; background: var({status_color}); flex-shrink: 0; }}
+  .dot.live::after {{
+    content: ""; display: block; width: 8px; height: 8px; border-radius: 50%;
+    background: var({status_color}); animation: fade 1.8s ease-in-out infinite;
+  }}
+  @keyframes fade {{ 0%,100% {{ opacity: .35; transform: scale(2.4); }} 50% {{ opacity: 0; transform: scale(3.4); }} }}
+  .hero-eyebrow {{ font-family: var(--mono); font-size: 11.5px; color: var(--text-3); text-transform: uppercase; letter-spacing: .12em; }}
+  h1 {{ font-size: 34px; font-weight: 800; margin: 0 0 10px; letter-spacing: -0.025em; line-height: 1.1; }}
+  .hero p {{ margin: 0; color: var(--text-2); font-size: 15px; line-height: 1.6; max-width: 52ch; }}
+
+  .stat-row {{ display: flex; flex-wrap: wrap; gap: 0; margin-top: 24px; border-top: 1px solid var(--line); }}
+  .stat {{ flex: 1; min-width: 130px; padding: 14px 18px 0 0; border-right: 1px solid var(--line); }}
+  .stat:last-child {{ border-right: none; }}
+  .stat .k {{ font-family: var(--mono); font-size: 10.5px; color: var(--text-3); text-transform: uppercase; letter-spacing: .09em; margin-bottom: 5px; }}
+  .stat .v {{ font-family: var(--mono); font-size: 19px; font-weight: 600; letter-spacing: -0.01em; }}
+  .stat .v.ok {{ color: var(--ok); }}
+
+  .section {{ margin-bottom: 34px; }}
+  .section-head {{
+    display: flex; align-items: baseline; justify-content: space-between;
+    font-family: var(--mono); font-size: 11px; color: var(--text-3);
+    text-transform: uppercase; letter-spacing: .1em; margin-bottom: 12px;
+  }}
+
+  .kv-list {{ border-top: 1px solid var(--line); }}
+  .kv-row {{
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 2px; border-bottom: 1px solid var(--line);
+  }}
+  .kv-row .k {{ font-size: 14px; color: var(--text-2); }}
+  .kv-row .v {{ font-family: var(--mono); font-size: 13.5px; font-weight: 500; }}
+
+  .strip {{ display: flex; gap: 2px; height: 30px; align-items: stretch; }}
+  .strip .seg {{ flex: 1; background: var(--seg-color, var(--ok)); opacity: var(--seg-op, 1); border-radius: 1px; }}
+  .strip-foot {{ display: flex; justify-content: space-between; font-family: var(--mono); font-size: 10.5px; color: var(--text-3); margin-top: 7px; }}
+
+  .foot {{
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
+    border-top: 1px solid var(--line); padding-top: 18px; margin-top: 8px;
+    font-family: var(--mono); font-size: 11.5px; color: var(--text-3);
+  }}
+  .foot b {{ color: var(--text-2); font-weight: 500; }}
+  .refresh-txt {{ display: flex; align-items: center; gap: 7px; }}
+  .refresh-txt .rdot {{ width: 5px; height: 5px; border-radius: 50%; background: var(--text-3); animation: blink 1.4s steps(1) infinite; }}
+  @keyframes blink {{ 0%,49% {{ opacity: 1; }} 50%,100% {{ opacity: .25; }} }}
+
+  @media (max-width: 560px) {{
+    h1 {{ font-size: 27px; }}
+    .stat {{ min-width: 45%; padding-bottom: 12px; }}
+  }}
+</style>
+</head>
+<body>
+  <div class="page">
+
+    <div class="topbar">
+      <div class="mark">
+        <span class="sq">S</span>
+        <span class="name">SMITH ERP</span>
+        <span class="div"></span>
+        <span class="sub"><a href="/api/health">Status</a> &middot; Database</span>
+      </div>
+      <div class="clock">{timestamp}</div>
+    </div>
+
+    <div class="hero">
+      <div class="hero-top">
+        <span class="dot live"></span>
+        <span class="hero-eyebrow">{hero_eyebrow}</span>
+      </div>
+      <h1>{status_title}</h1>
+      <p>{status_subtitle}</p>
+
+      <div class="stat-row">
+        <div class="stat"><div class="k">Latensi</div><div class="v ok">{latency_ms}</div></div>
+        <div class="stat"><div class="k">Ukuran Data</div><div class="v">{db_size}</div></div>
+        <div class="stat"><div class="k">Jumlah Tabel</div><div class="v">{table_count}</div></div>
+        <div class="stat"><div class="k">Koneksi Aktif</div><div class="v">{active_connections}</div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head"><span>Detail Mesin Database</span></div>
+      <div class="kv-list">
+        {detail_rows}
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head"><span>Riwayat 24 Jam</span><span>setiap ~16 menit</span></div>
+      <div class="strip">
+        {uptime_segments}
+      </div>
+      <div class="strip-foot"><span>−24j</span><span>sekarang</span></div>
+    </div>
+
+    <div class="foot">
+      <div>Uptime 24 jam <b>{uptime_pct}</b> &nbsp;·&nbsp; {sample_count} sampel</div>
+      <div class="refresh-txt"><span class="rdot"></span><span id="countdown">memperbarui dalam 15dtk</span></div>
+    </div>
+
+  </div>
+<script>
+  (function () {{
+    var el = document.getElementById('countdown');
+    var n = 15;
+    setInterval(function () {{
+      n -= 1;
+      if (n < 0) {{ location.reload(); return; }}
+      el.textContent = 'memperbarui dalam ' + n + 'dtk';
+    }}, 1000);
+  }})();
+</script>
+</body>
+</html>"""
+
+
+@health_bp.route('/database', methods=['GET'])
+def database_status_page():
+    """Public-safe database status page, same content-negotiation pattern
+    as /health: JSON for monitoring tools, styled HTML for browsers. Never
+    exposes the connection string, raw exception text, or which physical
+    database is live (erp_db vs erp_db_v2) - only structural, safe-to-share
+    numbers (size, table count, connection count, latency)."""
+    from models import db as _db
+    from sqlalchemy import text as _sql_text
+
+    info = {'connected': False, 'latency_ms': None, 'engine': None, 'size_bytes': None,
+            'table_count': None, 'active_connections': None, 'max_connections': None}
+
+    t0 = time.perf_counter()
+    try:
+        _db.session.execute(_sql_text('SELECT 1'))
+        info['connected'] = True
+        info['latency_ms'] = round((time.perf_counter() - t0) * 1000, 1)
+
+        version_row = _db.session.execute(_sql_text("SHOW server_version")).scalar()
+        info['engine'] = f"PostgreSQL {version_row}" if version_row else "PostgreSQL"
+
+        info['size_bytes'] = _db.session.execute(_sql_text("SELECT pg_database_size(current_database())")).scalar()
+
+        info['table_count'] = _db.session.execute(_sql_text(
+            "SELECT count(*) FROM information_schema.tables WHERE table_schema='public'"
+        )).scalar()
+
+        info['active_connections'] = _db.session.execute(_sql_text(
+            "SELECT count(*) FROM pg_stat_activity WHERE datname = current_database()"
+        )).scalar()
+
+        max_conn_row = _db.session.execute(_sql_text("SHOW max_connections")).scalar()
+        info['max_connections'] = int(max_conn_row) if max_conn_row else None
+    except Exception:
+        info['connected'] = False
+
+    def _human_size(num_bytes):
+        if num_bytes is None:
+            return None
+        size = float(num_bytes)
+        for unit in ('B', 'KB', 'MB', 'GB', 'TB'):
+            if size < 1024:
+                return f"{size:.1f} {unit}" if unit != 'B' else f"{int(size)} {unit}"
+            size /= 1024
+        return f"{size:.1f} PB"
+
+    payload = {
+        'status': 'healthy' if info['connected'] else 'unhealthy',
+        'timestamp': get_local_now().isoformat(),
+        'connected': info['connected'],
+        'latency_ms': info['latency_ms'],
+        'engine': info['engine'],
+        'size_human': _human_size(info['size_bytes']),
+        'table_count': info['table_count'],
+        'active_connections': info['active_connections'],
+        'max_connections': info['max_connections'],
+    }
+
+    if not _wants_html():
+        return jsonify(payload), 200 if info['connected'] else 503
+
+    history = _load_uptime_history(hours=24, buckets=90)
+
+    seg_html = []
+    if history['bars']:
+        for ratio in history['bars']:
+            if ratio >= 0.999:
+                color, op = 'var(--ok)', 1
+            elif ratio >= 0.5:
+                color, op = 'var(--warn)', 1
+            else:
+                color, op = 'var(--bad)', 1
+            seg_html.append(f'<span class="seg" style="--seg-color:{color};--seg-op:{op}"></span>')
+    else:
+        seg_html.append('<span style="color:var(--text-3);font-family:var(--mono);font-size:11px;">belum ada data</span>')
+
+    detail_defs = [
+        ('Engine', info['engine'] or 'N/A'),
+        ('Latensi koneksi', f"{info['latency_ms']}ms" if info['latency_ms'] is not None else 'N/A'),
+        ('Ukuran data', payload['size_human'] or 'N/A'),
+        ('Jumlah tabel', info['table_count'] if info['table_count'] is not None else 'N/A'),
+        ('Koneksi aktif', f"{info['active_connections']} / {info['max_connections']}" if info['active_connections'] is not None and info['max_connections'] else (info['active_connections'] if info['active_connections'] is not None else 'N/A')),
+    ]
+    detail_rows = "\n        ".join([
+        f'<div class="kv-row"><span class="k">{k}</span><span class="v">{v}</span></div>'
+        for k, v in detail_defs
+    ])
+
+    from urllib.parse import quote as _urlquote
+    favicon_emoji = "\U0001F7E2" if info['connected'] else "\U0001F534"
+    favicon_svg = (
+        "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>"
+        f"<text y='.9em' font-size='90'>{favicon_emoji}</text></svg>"
+    )
+    html = _DATABASE_PAGE_TEMPLATE.format(
+        favicon=_urlquote(favicon_svg),
+        status_color="--ok" if info['connected'] else "--bad",
+        hero_eyebrow="Database tersambung" if info['connected'] else "Database tidak dapat dijangkau",
+        status_title="Database Operational" if info['connected'] else "Database Unreachable",
+        status_subtitle=(
+            "Koneksi ke database utama berjalan normal, query dasar merespons dalam batas wajar."
+            if info['connected'] else
+            "Backend tidak dapat menyambung ke database saat ini. Tim teknis sudah diberi tahu."
+        ),
+        latency_ms=(f"{info['latency_ms']}ms" if info['latency_ms'] is not None else "N/A"),
+        db_size=payload['size_human'] or "N/A",
+        table_count=(info['table_count'] if info['table_count'] is not None else "N/A"),
+        active_connections=(info['active_connections'] if info['active_connections'] is not None else "N/A"),
+        detail_rows=detail_rows,
+        uptime_segments="".join(seg_html),
+        uptime_pct=(f"{history['uptime_pct']}%" if history['uptime_pct'] is not None else "N/A"),
+        sample_count=history['sample_count'],
+        timestamp=get_local_now().strftime('%d %b %Y, %H:%M:%S'),
+    )
+    return Response(html, status=200 if info['connected'] else 503, mimetype='text/html')
+
+
 @health_bp.route('/health/detailed', methods=['GET'])
 def detailed_health_check():
     """
