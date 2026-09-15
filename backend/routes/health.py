@@ -226,271 +226,194 @@ _STATUS_PAGE_TEMPLATE = """<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SMITH ERP — Status Sistem</title>
+<title>SMITH ERP — Status</title>
 <link rel="icon" href="data:image/svg+xml,{favicon}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {{
-    --bg-1: #0b1220; --bg-2: #0e1a2e;
-    --card-bg: rgba(255,255,255,0.04);
-    --card-border: rgba(255,255,255,0.08);
-    --text-1: #eef2f7; --text-2: #9aa7bd; --text-3: #6b7688;
-    --ok: #34d399; --ok-glow: rgba(52,211,153,0.35);
-    --bad: #f87171; --bad-glow: rgba(248,113,113,0.35);
-    --accent: #60a5fa;
-    --tile-bg: rgba(255,255,255,0.03);
+    --bg: #08090b; --surface: #0d0f13; --line: rgba(255,255,255,0.09); --line-soft: rgba(255,255,255,0.05);
+    --text-1: #f2f3f5; --text-2: #9a9ea6; --text-3: #5c6068;
+    --ok: #2dd4a7; --bad: #f0475a; --warn: #f2a93b;
+    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
   }}
   @media (prefers-color-scheme: light) {{
     :root {{
-      --bg-1: #eef2f9; --bg-2: #dde6f5;
-      --card-bg: rgba(255,255,255,0.75);
-      --card-border: rgba(15,23,42,0.08);
-      --text-1: #0f172a; --text-2: #475569; --text-3: #94a3b8;
-      --tile-bg: rgba(15,23,42,0.03);
+      --bg: #f4f5f7; --surface: #ffffff; --line: rgba(15,23,42,0.10); --line-soft: rgba(15,23,42,0.05);
+      --text-1: #101215; --text-2: #5b6068; --text-3: #9296a0;
     }}
   }}
   * {{ box-sizing: border-box; }}
-  html, body {{ height: 100%; margin: 0; }}
+  html {{ background: var(--bg); }}
   body {{
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    font-feature-settings: "cv11", "ss01";
+    margin: 0; min-height: 100vh;
+    background:
+      linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0 / 100% 34px,
+      var(--bg);
     color: var(--text-1);
-    background: radial-gradient(1200px 600px at 15% -10%, rgba(96,165,250,0.16), transparent 60%),
-                radial-gradient(1000px 500px at 110% 10%, rgba(52,211,153,0.10), transparent 60%),
-                linear-gradient(160deg, var(--bg-1), var(--bg-2));
-    background-attachment: fixed;
-    min-height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 32px 16px;
-    overflow-x: hidden;
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
   }}
-  .orb {{
-    position: fixed;
-    width: 42vw; height: 42vw;
-    max-width: 520px; max-height: 520px;
-    border-radius: 50%;
-    filter: blur(90px);
-    opacity: 0.35;
-    z-index: 0;
-    animation: float 18s ease-in-out infinite;
+  .page {{ max-width: 760px; margin: 0 auto; padding: 56px 24px 40px; }}
+  a {{ color: inherit; }}
+
+  .topbar {{ display: flex; align-items: center; justify-content: space-between; margin-bottom: 44px; }}
+  .mark {{ display: flex; align-items: center; gap: 11px; }}
+  .mark .sq {{
+    width: 26px; height: 26px; border: 1.5px solid var(--text-1); border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-weight: 700; font-size: 13px;
   }}
-  .orb.a {{ background: #60a5fa; top: -10%; left: -10%; }}
-  .orb.b {{ background: {orb_b_color}; bottom: -15%; right: -8%; animation-delay: -9s; }}
-  @keyframes float {{
-    0%, 100% {{ transform: translate(0,0) scale(1); }}
-    50% {{ transform: translate(30px,-20px) scale(1.08); }}
+  .mark .name {{ font-weight: 700; font-size: 14.5px; letter-spacing: -0.01em; }}
+  .mark .div {{ width: 1px; height: 14px; background: var(--line); margin: 0 2px; }}
+  .mark .sub {{ font-family: var(--mono); font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: .1em; }}
+  .clock {{ font-family: var(--mono); font-size: 12.5px; color: var(--text-2); font-variant-numeric: tabular-nums; }}
+
+  .hero {{ border-bottom: 1px solid var(--line); padding-bottom: 28px; margin-bottom: 28px; }}
+  .hero-top {{ display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }}
+  .dot {{ width: 8px; height: 8px; border-radius: 50%; background: var({status_color}); flex-shrink: 0; }}
+  .dot.live::after {{
+    content: ""; display: block; width: 8px; height: 8px; border-radius: 50%;
+    background: var({status_color}); animation: fade 1.8s ease-in-out infinite;
   }}
-  .noise {{
-    position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .5; mix-blend-mode: overlay;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+  @keyframes fade {{ 0%,100% {{ opacity: .35; transform: scale(2.4); }} 50% {{ opacity: 0; transform: scale(3.4); }} }}
+  .hero-eyebrow {{ font-family: var(--mono); font-size: 11.5px; color: var(--text-3); text-transform: uppercase; letter-spacing: .12em; }}
+  h1 {{ font-size: 34px; font-weight: 800; margin: 0 0 10px; letter-spacing: -0.025em; line-height: 1.1; }}
+  .hero p {{ margin: 0; color: var(--text-2); font-size: 15px; line-height: 1.6; max-width: 52ch; }}
+
+  .stat-row {{ display: flex; flex-wrap: wrap; gap: 0; margin-top: 24px; border-top: 1px solid var(--line); }}
+  .stat {{ flex: 1; min-width: 120px; padding: 14px 18px 0 0; border-right: 1px solid var(--line); }}
+  .stat:last-child {{ border-right: none; }}
+  .stat .k {{ font-family: var(--mono); font-size: 10.5px; color: var(--text-3); text-transform: uppercase; letter-spacing: .09em; margin-bottom: 5px; }}
+  .stat .v {{ font-family: var(--mono); font-size: 19px; font-weight: 600; letter-spacing: -0.01em; }}
+  .stat .v.ok {{ color: var(--ok); }}
+
+  .section {{ margin-bottom: 34px; }}
+  .section-head {{
+    display: flex; align-items: baseline; justify-content: space-between;
+    font-family: var(--mono); font-size: 11px; color: var(--text-3);
+    text-transform: uppercase; letter-spacing: .1em; margin-bottom: 12px;
   }}
-  .wrap {{ position: relative; z-index: 1; width: 100%; max-width: 720px; }}
-  .card {{
-    position: relative;
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 28px;
-    backdrop-filter: blur(24px) saturate(150%);
-    -webkit-backdrop-filter: blur(24px) saturate(150%);
-    box-shadow: 0 24px 70px -24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06);
-    padding: 40px 40px 30px;
-    animation: rise .6s cubic-bezier(.2,.9,.25,1) both;
-    overflow: hidden;
-  }}
-  .card::before {{
-    content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
-    background: linear-gradient(120deg, rgba(255,255,255,0.10), transparent 35%);
-  }}
-  @keyframes rise {{ from {{ opacity: 0; transform: translateY(14px); }} to {{ opacity: 1; transform: translateY(0); }} }}
-  .brand-row {{ display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; gap: 12px; flex-wrap: wrap; }}
-  .brand {{
-    display: flex; align-items: center; gap: 10px;
-    color: var(--text-3); font-size: 13px; font-weight: 600;
-    letter-spacing: .06em; text-transform: uppercase;
-  }}
-  .brand svg {{ width: 18px; height: 18px; flex-shrink: 0; }}
-  .uptime-badge {{
-    display: flex; align-items: center; gap: 6px;
-    background: var(--tile-bg); border: 1px solid var(--card-border);
-    border-radius: 999px; padding: 5px 12px 5px 10px;
-    font-size: 12.5px; font-weight: 600; color: var(--text-2);
-  }}
-  .uptime-badge b {{ color: var(--ok); font-weight: 700; font-variant-numeric: tabular-nums; }}
-  .uptime-badge svg {{ width: 13px; height: 13px; color: var(--ok); flex-shrink: 0; }}
-  .badge-group {{ display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }}
-  .streak-badge {{
-    display: flex; align-items: center; gap: 6px;
-    color: var(--text-3); font-size: 12px; font-weight: 500;
-  }}
-  .streak-badge svg {{ width: 13px; height: 13px; color: #fbbf24; flex-shrink: 0; }}
-  .status-row {{ display: flex; align-items: center; gap: 16px; margin-bottom: 8px; }}
-  .dot-wrap {{ position: relative; width: 16px; height: 16px; flex-shrink: 0; }}
-  .dot {{
-    position: absolute; inset: 3px;
-    border-radius: 50%;
-    background: var({status_color});
-    box-shadow: 0 0 16px 1px var({status_glow});
-  }}
-  .dot-ping {{
-    position: absolute; inset: 0;
-    border-radius: 50%;
-    background: var({status_color});
-    animation: ping 2.4s cubic-bezier(0,0,0.2,1) infinite;
-  }}
-  @keyframes ping {{
-    0% {{ transform: scale(0.6); opacity: 0.8; }}
-    75%, 100% {{ transform: scale(2); opacity: 0; }}
-  }}
-  h1 {{ font-size: 29px; font-weight: 800; margin: 0; letter-spacing: -0.02em; line-height: 1.15; }}
-  .subtitle {{ color: var(--text-2); font-size: 15px; margin: 10px 0 30px; line-height: 1.55; max-width: 46ch; }}
-  .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap: 12px; margin-bottom: 26px; }}
-  .tile {{
-    background: var(--tile-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 14px;
-    padding: 14px 16px;
-    transition: transform .2s ease, background .2s ease;
-  }}
-  .tile:hover {{ transform: translateY(-2px); }}
-  .tile .label {{ display:flex; align-items:center; gap:7px; font-size: 12px; color: var(--text-3); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }}
-  .tile .mini-dot {{ width: 7px; height: 7px; border-radius: 50%; flex-shrink:0; }}
-  .tile .value {{ font-size: 15px; font-weight: 600; }}
-  .tile .value.ok {{ color: var(--ok); }}
-  .tile .value.bad {{ color: var(--bad); }}
-  .tile .ms {{ font-size: 12px; color: var(--text-3); font-weight: 400; margin-left: 4px; }}
-  .section-label {{
-    font-size: 12px; font-weight: 600; color: var(--text-3);
-    text-transform: uppercase; letter-spacing: .05em;
+
+  .comp-list {{ border-top: 1px solid var(--line); }}
+  .comp-row {{
     display: flex; align-items: center; justify-content: space-between;
-    margin: 30px 0 10px;
+    padding: 13px 2px; border-bottom: 1px solid var(--line);
   }}
-  .uptime-strip {{
-    display: flex; align-items: flex-end; gap: 2.5px;
-    height: 44px; margin-bottom: 6px;
-  }}
-  .uptime-strip .bar {{
-    flex: 1; min-width: 2px; border-radius: 2px;
-    background: var(--bar-color, var(--ok));
-    opacity: var(--bar-op, 1);
-    height: var(--bar-h, 100%);
-    transition: transform .15s ease;
-    transform-origin: bottom;
-  }}
-  .uptime-strip .bar:hover {{ transform: scaleY(1.08); }}
-  .strip-labels {{
-    display: flex; justify-content: space-between;
-    font-size: 11px; color: var(--text-3); margin-bottom: 24px;
-  }}
-  .res-grid {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 8px; }}
-  .chart-card {{
-    background: var(--tile-bg); border: 1px solid var(--card-border);
-    border-radius: 16px; padding: 14px 14px 10px;
-    transition: border-color .2s ease, transform .2s ease;
-  }}
-  .chart-card:hover {{ transform: translateY(-2px); border-color: var(--chart-color, var(--ok)); }}
-  .chart-head {{ display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }}
-  .chart-head .c-label {{ font-size: 11.5px; color: var(--text-3); text-transform: uppercase; letter-spacing: .05em; font-weight: 600; }}
-  .chart-head .c-value {{ font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }}
-  .chart-card svg {{ display: block; width: 100%; height: 52px; overflow: visible; }}
-  .chart-card .area {{ opacity: .22; }}
-  .chart-card .line {{ fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }}
-  .chart-empty {{ font-size: 11.5px; color: var(--text-3); text-align: center; padding: 14px 0; }}
-  .meta {{
-    display: flex; flex-wrap: wrap; gap: 6px 18px;
-    font-size: 13px; color: var(--text-2);
-    border-top: 1px solid var(--card-border);
-    padding-top: 20px;
-  }}
-  .meta b {{ color: var(--text-1); font-weight: 600; }}
+  .comp-left {{ display: flex; align-items: center; gap: 11px; }}
+  .comp-dot {{ width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }}
+  .comp-name {{ font-size: 14px; font-weight: 500; }}
+  .comp-right {{ display: flex; align-items: center; gap: 10px; }}
+  .comp-ms {{ font-family: var(--mono); font-size: 12px; color: var(--text-3); }}
+  .comp-state {{ font-family: var(--mono); font-size: 12px; font-weight: 600; }}
+  .comp-state.ok {{ color: var(--ok); }}
+  .comp-state.bad {{ color: var(--bad); }}
+
+  .strip {{ display: flex; gap: 2px; height: 30px; align-items: stretch; }}
+  .strip .seg {{ flex: 1; background: var(--seg-color, var(--ok)); opacity: var(--seg-op, 1); border-radius: 1px; }}
+  .strip-foot {{ display: flex; justify-content: space-between; font-family: var(--mono); font-size: 10.5px; color: var(--text-3); margin-top: 7px; }}
+
+  .chart-box {{ border: 1px solid var(--line); border-radius: 8px; padding: 18px 18px 14px; background: var(--surface); }}
+  .legend {{ display: flex; gap: 20px; margin-bottom: 14px; flex-wrap: wrap; }}
+  .legend-item {{ display: flex; align-items: center; gap: 7px; font-family: var(--mono); font-size: 12px; color: var(--text-2); }}
+  .legend-item .sw {{ width: 8px; height: 8px; border-radius: 2px; }}
+  .legend-item b {{ color: var(--text-1); font-weight: 600; }}
+  .chart-box svg {{ display: block; width: 100%; height: 120px; overflow: visible; }}
+  .grid-line {{ stroke: var(--line); stroke-width: 1; }}
+  .series-line {{ fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }}
+
   .foot {{
-    display: flex; align-items: center; justify-content: space-between;
-    margin-top: 22px; font-size: 12px; color: var(--text-3);
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
+    border-top: 1px solid var(--line); padding-top: 18px; margin-top: 8px;
+    font-family: var(--mono); font-size: 11.5px; color: var(--text-3);
   }}
-  .refresh {{ display: flex; align-items: center; gap: 8px; }}
-  .ring {{ width: 14px; height: 14px; position: relative; }}
-  .ring svg {{ transform: rotate(-90deg); width: 100%; height: 100%; }}
-  .ring circle {{ fill: none; stroke-width: 2.5; }}
-  .ring .bg {{ stroke: var(--card-border); }}
-  .ring .fg {{ stroke: var(--accent); stroke-linecap: round; transition: stroke-dashoffset 1s linear; }}
-  a {{ color: var(--accent); text-decoration: none; }}
-  a:hover {{ text-decoration: underline; }}
+  .foot b {{ color: var(--text-2); font-weight: 500; }}
+  .foot-links a {{ text-decoration: none; color: var(--text-3); }}
+  .foot-links a:hover {{ color: var(--text-1); }}
+  .refresh-txt {{ display: flex; align-items: center; gap: 7px; }}
+  .refresh-txt .rdot {{ width: 5px; height: 5px; border-radius: 50%; background: var(--text-3); animation: blink 1.4s steps(1) infinite; }}
+  @keyframes blink {{ 0%,49% {{ opacity: 1; }} 50%,100% {{ opacity: .25; }} }}
+
+  @media (max-width: 560px) {{
+    h1 {{ font-size: 27px; }}
+    .stat {{ min-width: 45%; padding-bottom: 12px; }}
+    .legend {{ gap: 12px; }}
+  }}
 </style>
 </head>
 <body>
-  <div class="noise"></div>
-  <div class="orb a"></div>
-  <div class="orb b"></div>
-  <div class="wrap">
-    <div class="card">
-      <div class="brand-row">
-        <div class="brand">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 3 7v6c0 5 4 8.5 9 9 5-.5 9-4 9-9V7l-9-5Z"/></svg>
-          SMITH ERP &middot; System Status
-        </div>
-        <div class="badge-group">
-          {streak_badge}
-          {uptime_badge}
-        </div>
-      </div>
-      <div class="status-row">
-        <span class="dot-wrap"><span class="dot-ping"></span><span class="dot"></span></span>
-        <h1>{status_title}</h1>
-      </div>
-      <p class="subtitle">{status_subtitle}</p>
+  <div class="page">
 
-      <div class="grid">
-        {tiles}
+    <div class="topbar">
+      <div class="mark">
+        <span class="sq">S</span>
+        <span class="name">SMITH ERP</span>
+        <span class="div"></span>
+        <span class="sub">Status</span>
       </div>
+      <div class="clock" id="clock">{timestamp}</div>
+    </div>
 
-      <div class="section-label"><span>Riwayat 24 Jam Terakhir</span><span>{sample_count} sampel</span></div>
-      <div class="uptime-strip">
-        {uptime_bars}
+    <div class="hero">
+      <div class="hero-top">
+        <span class="dot live"></span>
+        <span class="hero-eyebrow">{hero_eyebrow}</span>
       </div>
-      <div class="strip-labels"><span>24 jam lalu</span><span>sekarang</span></div>
+      <h1>{status_title}</h1>
+      <p>{status_subtitle}</p>
 
-      <div class="section-label"><span>Sumber Daya Server</span><span>tren 24 jam</span></div>
-      <div class="res-grid">
-        {resource_charts}
-      </div>
-
-      <div class="meta">
-        <div>Versi <b>{version}</b></div>
-        <div>Proses aktif <b>{uptime}</b></div>
-        <div>Rata-rata respons <b>{avg_response_ms}</b></div>
-        <div>Waktu server <b id="server-time">{timestamp}</b> WIB</div>
-      </div>
-
-      <div class="foot">
-        <span>Diperbarui otomatis setiap 15 detik</span>
-        <span class="refresh">
-          <span class="ring">
-            <svg viewBox="0 0 20 20">
-              <circle class="bg" cx="10" cy="10" r="8"></circle>
-              <circle class="fg" id="ring-fg" cx="10" cy="10" r="8" stroke-dasharray="50.24" stroke-dashoffset="0"></circle>
-            </svg>
-          </span>
-          <span id="countdown">15s</span>
-        </span>
+      <div class="stat-row">
+        <div class="stat"><div class="k">Uptime 24 Jam</div><div class="v ok">{uptime_pct}</div></div>
+        <div class="stat"><div class="k">Tanpa Gangguan</div><div class="v">{streak_human}</div></div>
+        <div class="stat"><div class="k">Latensi Rata²</div><div class="v">{avg_response_ms}</div></div>
+        <div class="stat"><div class="k">Sampel</div><div class="v">{sample_count}</div></div>
       </div>
     </div>
+
+    <div class="section">
+      <div class="section-head"><span>Komponen</span></div>
+      <div class="comp-list">
+        {component_rows}
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head"><span>Riwayat 24 Jam</span><span>setiap ~16 menit</span></div>
+      <div class="strip">
+        {uptime_segments}
+      </div>
+      <div class="strip-foot"><span>−24j</span><span>sekarang</span></div>
+    </div>
+
+    <div class="section">
+      <div class="section-head"><span>Sumber Daya Server</span><span>tren 24 jam</span></div>
+      <div class="chart-box">
+        <div class="legend">
+          <span class="legend-item"><span class="sw" style="background:#60a5fa"></span>CPU <b>{cpu_now}</b></span>
+          <span class="legend-item"><span class="sw" style="background:#2dd4a7"></span>Memory <b>{mem_now}</b></span>
+          <span class="legend-item"><span class="sw" style="background:#f2a93b"></span>Disk <b>{disk_now}</b></span>
+        </div>
+        {resource_chart_svg}
+      </div>
+    </div>
+
+    <div class="foot">
+      <div>v{version} &nbsp;·&nbsp; proses aktif <b>{uptime}</b></div>
+      <div class="refresh-txt"><span class="rdot"></span><span id="countdown">memperbarui dalam 15dtk</span></div>
+    </div>
+
   </div>
 <script>
   (function () {{
-    var total = 15, remaining = total;
-    var ring = document.getElementById('ring-fg');
-    var countdown = document.getElementById('countdown');
-    var circumference = 50.24;
-    function tick() {{
-      remaining -= 1;
-      if (remaining < 0) {{ location.reload(); return; }}
-      countdown.textContent = remaining + 's';
-      ring.setAttribute('stroke-dashoffset', circumference * (1 - remaining / total));
-    }}
-    setInterval(tick, 1000);
+    var el = document.getElementById('countdown');
+    var n = 15;
+    setInterval(function () {{
+      n -= 1;
+      if (n < 0) {{ location.reload(); return; }}
+      el.textContent = 'memperbarui dalam ' + n + 'dtk';
+    }}, 1000);
   }})();
 </script>
 </body>
@@ -542,93 +465,59 @@ def health_check():
     if not _wants_html():
         return jsonify(payload), 200 if overall_healthy else 503
 
-    tile_defs = [
-        ('API', checks.get('database') is not None, None),  # API itself is always up if we got this far
+    component_defs = [
+        ('API Backend', checks.get('database') is not None, None),
         ('Database', checks['database']['healthy'], checks['database']['ms']),
-        ('Cache', checks['cache']['healthy'], checks['cache']['ms']),
+        ('Cache (Redis)', checks['cache']['healthy'], checks['cache']['ms']),
     ]
-    tiles_html = []
-    for label, healthy, ms in tile_defs:
-        cls = 'ok' if healthy else 'bad'
+    component_rows = []
+    for name, healthy, ms in component_defs:
         dot_color = 'var(--ok)' if healthy else 'var(--bad)'
-        value_text = 'Operasional' if healthy else 'Gangguan'
-        ms_html = f'<span class="ms">{ms}ms</span>' if ms is not None else ''
-        tiles_html.append(f"""<div class="tile">
-          <div class="label"><span class="mini-dot" style="background:{dot_color}"></span>{label}</div>
-          <div class="value {cls}">{value_text}{ms_html}</div>
+        state_cls = 'ok' if healthy else 'bad'
+        state_text = 'OPERATIONAL' if healthy else 'DOWN'
+        ms_html = f'<span class="comp-ms">{ms}ms</span>' if ms is not None else ''
+        component_rows.append(f"""<div class="comp-row">
+          <div class="comp-left"><span class="comp-dot" style="background:{dot_color}"></span><span class="comp-name">{name}</span></div>
+          <div class="comp-right">{ms_html}<span class="comp-state {state_cls}">{state_text}</span></div>
         </div>""")
 
     history = _load_uptime_history(hours=24, buckets=90)
 
-    if history['uptime_pct'] is not None:
-        uptime_badge = f"""<div class="uptime-badge">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
-          <b>{history['uptime_pct']}%</b>&nbsp;uptime (24j)
-        </div>"""
-    else:
-        uptime_badge = ""
-
-    if history.get('streak_human'):
-        streak_badge = f"""<div class="streak-badge">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 3 7v6c0 5 4 8.5 9 9 5-.5 9-4 9-9V7l-9-5Z" fill-opacity=".15" stroke="currentColor" stroke-width="1.5"/></svg>
-          {history['streak_human']} tanpa gangguan
-        </div>"""
-    else:
-        streak_badge = ""
-
-    bars_html = []
+    seg_html = []
     if history['bars']:
         for ratio in history['bars']:
             if ratio >= 0.999:
                 color, op = 'var(--ok)', 1
             elif ratio >= 0.5:
-                color, op = '#fbbf24', 0.9
+                color, op = 'var(--warn)', 1
             else:
                 color, op = 'var(--bad)', 1
-            height_pct = max(18, round(ratio * 100))
-            bars_html.append(
-                f'<span class="bar" style="--bar-color:{color};--bar-op:{op};--bar-h:{height_pct}%"></span>'
-            )
+            seg_html.append(f'<span class="seg" style="--seg-color:{color};--seg-op:{op}"></span>')
     else:
-        bars_html.append('<span style="color:var(--text-3);font-size:12px;">Belum ada data histori</span>')
+        seg_html.append('<span style="color:var(--text-3);font-family:var(--mono);font-size:11px;">belum ada data</span>')
 
-    def _chart(label, series, current_avg, gradient_id):
-        if current_avg is None:
-            display = "N/A"
-        else:
-            display = f"{current_avg:.0f}%"
-        color = 'var(--bad)' if (current_avg or 0) > 85 else ('#fbbf24' if (current_avg or 0) > 65 else 'var(--ok)')
+    def _fmt_pct(v):
+        return f"{v:.0f}%" if v is not None else "N/A"
 
-        line_path, area_path = _smooth_path(series, width=260, height=52, pad=2)
-        if not line_path:
-            body = '<div class="chart-empty">Belum ada data</div>'
-        else:
-            body = f"""<svg viewBox="0 0 260 52" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="{gradient_id}" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="{color}" stop-opacity="0.55"/>
-                  <stop offset="100%" stop-color="{color}" stop-opacity="0"/>
-                </linearGradient>
-              </defs>
-              <path class="area" d="{area_path}" fill="url(#{gradient_id})"></path>
-              <path class="line" d="{line_path}" stroke="{color}"></path>
-            </svg>"""
+    chart_width, chart_height = 700, 120
+    cpu_line, _ = _smooth_path(history['cpu_series'], width=chart_width, height=chart_height, pad=4)
+    mem_line, _ = _smooth_path(history['mem_series'], width=chart_width, height=chart_height, pad=4)
+    disk_line, _ = _smooth_path(history['disk_series'], width=chart_width, height=chart_height, pad=4)
 
-        return f"""<div class="chart-card" style="--chart-color:{color}">
-          <div class="chart-head">
-            <span class="c-label">{label}</span>
-            <span class="c-value" style="color:{color}">{display}</span>
-          </div>
-          {body}
-        </div>"""
-
-    resource_charts = "\n        ".join([
-        _chart("CPU", history['cpu_series'], history['avg_cpu'], "gradCpu"),
-        _chart("Memory", history['mem_series'], history['avg_mem'], "gradMem"),
-        _chart("Disk", history['disk_series'], history['avg_disk'], "gradDisk"),
+    grid_lines = "".join([
+        f'<line class="grid-line" x1="0" y1="{chart_height * f:.1f}" x2="{chart_width}" y2="{chart_height * f:.1f}"></line>'
+        for f in (0, 0.25, 0.5, 0.75, 1.0)
     ])
 
-    avg_response_display = f"{history['avg_response_ms']}ms" if history['avg_response_ms'] is not None else "N/A"
+    if cpu_line or mem_line or disk_line:
+        resource_chart_svg = f"""<svg viewBox="0 0 {chart_width} {chart_height}" preserveAspectRatio="none">
+          {grid_lines}
+          <path class="series-line" d="{cpu_line}" stroke="#60a5fa"></path>
+          <path class="series-line" d="{mem_line}" stroke="#2dd4a7"></path>
+          <path class="series-line" d="{disk_line}" stroke="#f2a93b"></path>
+        </svg>"""
+    else:
+        resource_chart_svg = '<div style="font-family:var(--mono);font-size:12px;color:var(--text-3);padding:20px 0;">Belum ada data histori</div>'
 
     from urllib.parse import quote as _urlquote
     favicon_emoji = "\U0001F7E2" if overall_healthy else "\U0001F534"
@@ -638,27 +527,31 @@ def health_check():
     )
     html = _STATUS_PAGE_TEMPLATE.format(
         favicon=_urlquote(favicon_svg),
-        orb_b_color="#34d399" if overall_healthy else "#f87171",
         status_color="--ok" if overall_healthy else "--bad",
-        status_glow="--ok-glow" if overall_healthy else "--bad-glow",
-        status_title="All Systems Operational" if overall_healthy else "Sebagian Layanan Bermasalah",
+        hero_eyebrow="Semua sistem berjalan" if overall_healthy else "Gangguan terdeteksi",
+        status_title="All Systems Operational" if overall_healthy else "Partial System Outage",
         status_subtitle=(
-            "Semua layanan inti berjalan normal. Tidak ada gangguan terdeteksi saat ini."
+            "Backend, database, dan layanan cache berjalan normal. Tidak ada insiden yang sedang berlangsung."
             if overall_healthy else
             "Salah satu atau lebih layanan pendukung sedang tidak dapat dijangkau. Tim teknis sudah diberi tahu."
         ),
-        tiles="\n        ".join(tiles_html),
-        uptime_badge=uptime_badge,
-        streak_badge=streak_badge,
-        uptime_bars="".join(bars_html),
+        uptime_pct=(f"{history['uptime_pct']}%" if history['uptime_pct'] is not None else "N/A"),
+        streak_human=history['streak_human'] or "—",
+        avg_response_ms=(f"{history['avg_response_ms']}ms" if history['avg_response_ms'] is not None else "N/A"),
         sample_count=history['sample_count'],
-        resource_charts=resource_charts,
+        component_rows="\n        ".join(component_rows),
+        uptime_segments="".join(seg_html),
+        cpu_now=_fmt_pct(history['avg_cpu']),
+        mem_now=_fmt_pct(history['avg_mem']),
+        disk_now=_fmt_pct(history['avg_disk']),
+        resource_chart_svg=resource_chart_svg,
         version=payload['version'],
         uptime=payload['uptime'],
-        avg_response_ms=avg_response_display,
         timestamp=get_local_now().strftime('%d %b %Y, %H:%M:%S'),
     )
     return Response(html, status=200 if overall_healthy else 503, mimetype='text/html')
+
+
 
 
 @health_bp.route('/health/detailed', methods=['GET'])
