@@ -558,7 +558,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
   }
 
   return (
-    <div className="sidebar-scroll flex grow flex-col gap-y-3 overflow-y-auto bg-gradient-to-b from-[#F15D2C] to-[#8C2A1B] px-4 pb-4">
+    <div className="sidebar-scroll flex grow flex-col gap-y-3 overflow-y-auto bg-white dark:bg-gray-900 px-4 pb-4 border-r border-gray-200 dark:border-gray-800">
       <style>{`
         .sidebar-scroll::-webkit-scrollbar { width: 5px; }
         .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
@@ -566,22 +566,22 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
         .sidebar-scroll::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.35); }
       `}</style>
       {/* Brand */}
-      <div className={clsx('flex h-16 shrink-0 items-center border-b border-white/10 mb-1', collapsed ? 'justify-center' : 'justify-between')}>
+      <div className={clsx('flex h-16 shrink-0 items-center border-b border-gray-200 dark:border-gray-800 mb-1', collapsed ? 'justify-center' : 'justify-between')}>
         <div className={clsx('flex items-center gap-2.5 min-w-0', collapsed && 'justify-center')}>
-          <div className="w-8 h-8 rounded-md bg-white flex items-center justify-center shrink-0">
-            <span className="text-[#F15D2C] text-xs font-bold tracking-tight">{companyInitials}</span>
+          <div className="w-8 h-8 rounded-md bg-[#F15D2C] flex items-center justify-center shrink-0">
+            <span className="text-white text-xs font-bold tracking-tight">{companyInitials}</span>
           </div>
           {!collapsed && (
             <div className="min-w-0">
-              <p className="text-white text-sm font-semibold leading-none truncate" title={companyName || undefined}>{companyName || 'ERP System'}</p>
-              <p className="text-[11px] text-white/60 truncate mt-1">{user?.full_name || 'User'}</p>
+              <p className="text-gray-900 dark:text-white text-sm font-semibold leading-none truncate" title={companyName || undefined}>{companyName || 'ERP System'}</p>
+              <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate mt-1">{user?.full_name || 'User'}</p>
             </div>
           )}
         </div>
         {onToggleCollapse && !collapsed && (
           <button
             onClick={() => { setAutoExpandedFromCollapse(false); onToggleCollapse?.() }}
-            className="w-6 h-6 flex items-center justify-center rounded-full text-white/80 bg-white/10 border border-white/20 hover:bg-white/20 hover:text-white transition-colors shrink-0"
+            className="w-6 h-6 flex items-center justify-center rounded-full text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-colors shrink-0"
             title="Ciutkan sidebar"
           >
             <ChevronLeftIcon className="w-3.5 h-3.5" />
@@ -591,7 +591,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
       {onToggleCollapse && collapsed && (
         <button
           onClick={() => { setAutoExpandedFromCollapse(false); onToggleCollapse?.() }}
-          className="mx-auto w-6 h-6 flex items-center justify-center rounded-full text-white/80 bg-white/10 border border-white/20 hover:bg-white/20 hover:text-white transition-colors shrink-0 -mt-3 mb-1"
+          className="mx-auto w-6 h-6 flex items-center justify-center rounded-full text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-colors shrink-0 -mt-3 mb-1"
           title="Lebarkan sidebar"
         >
           <ChevronRightIcon className="w-3.5 h-3.5" />
@@ -601,13 +601,13 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
       {/* Search menu */}
       {!collapsed && (
         <div className="relative shrink-0">
-          <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
+          <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
           <input
             type="text"
             value={menuSearch}
             onChange={(e) => setMenuSearch(e.target.value)}
             placeholder="Cari menu..."
-            className="w-full pl-8 pr-2 py-2 text-sm bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:border-white/50 focus:bg-white/15"
+            className="w-full pl-8 pr-2 py-2 text-sm bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:border-[#F15D2C]/50 focus:bg-gray-50 dark:focus:bg-gray-700"
           />
         </div>
       )}
@@ -635,7 +635,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                   {/* Group Label */}
                   {group.groupName !== 'MAIN' && !collapsed && (
                     <div className="px-3 mb-1.5 mt-1">
-                      <span className="text-[11px] font-medium text-white/50">
+                      <span className="text-[11px] font-medium text-gray-400 dark:text-gray-500">
                         {group.groupName}
                       </span>
                     </div>
@@ -658,8 +658,8 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                               title={collapsed ? item.name : undefined}
                               className={clsx(
                                 isExpanded(item.name.toLowerCase()) && !collapsed
-                                  ? 'bg-white text-[#F15D2C] shadow-sm'
-                                  : 'text-white/70 hover:text-white hover:bg-white/10',
+                                  ? 'bg-[#F15D2C] text-white shadow-sm'
+                                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800',
                                 'group flex w-full items-center gap-x-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-150',
                                 collapsed && 'justify-center px-0'
                               )}
@@ -667,22 +667,22 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                               <item.icon className={clsx(
                                 'h-5 w-5 shrink-0 transition-colors duration-150',
                                 isExpanded(item.name.toLowerCase()) && !collapsed
-                                  ? 'text-[#F15D2C]'
-                                  : 'text-white/50 group-hover:text-white/80'
+                                  ? 'text-white'
+                                  : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-200'
                               )} aria-hidden="true" strokeWidth={isExpanded(item.name.toLowerCase()) ? 2 : 1.5} />
                               {!collapsed && (
                                 <>
                                   <span className={clsx(
                                     'flex-1 text-left',
                                     isExpanded(item.name.toLowerCase())
-                                      ? 'text-[#F15D2C]'
-                                      : 'text-white/70'
+                                      ? 'text-white'
+                                      : 'text-gray-600 dark:text-gray-300'
                                   )}>{item.name}</span>
                                   <ChevronDownIcon className={clsx(
                                     'h-4 w-4 shrink-0 transition-transform duration-200',
                                     isExpanded(item.name.toLowerCase())
-                                      ? 'rotate-180 text-[#F15D2C]'
-                                      : 'text-white/40 group-hover:text-white/70'
+                                      ? 'rotate-180 text-white'
+                                      : 'text-gray-300 dark:text-gray-600 group-hover:text-gray-600 dark:group-hover:text-gray-300'
                                   )} />
                                 </>
                               )}
@@ -693,7 +693,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                               'overflow-hidden transition-all duration-200',
                               !collapsed && isExpanded(item.name.toLowerCase()) ? 'max-h-[800px] opacity-100 mt-1' : 'max-h-0 opacity-0'
                             )}>
-                              <ul className="ml-4 border-l border-slate-700/60 pl-3 space-y-0.5">
+                              <ul className="ml-4 border-l border-gray-200 dark:border-gray-700 pl-3 space-y-0.5">
                                 {item.children
                                   .filter((child: any) => !child.permission || canView(child.permission))
                                   .map((child: any) => (
@@ -705,8 +705,8 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                                             onClick={() => toggleExpanded(`${item.name}-${child.name}`.toLowerCase())}
                                             className={clsx(
                                               isExpanded(`${item.name}-${child.name}`.toLowerCase())
-                                                ? 'bg-white text-[#F15D2C] shadow-sm'
-                                                : 'text-white/60 hover:text-white hover:bg-white/10',
+                                                ? 'bg-[#F15D2C] text-white shadow-sm'
+                                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800',
                                               'group flex w-full items-center gap-x-2.5 rounded-lg py-2 px-2.5 text-sm transition-colors duration-150'
                                             )}
                                           >
@@ -714,14 +714,14 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                                             <span className="flex-1 text-left">{child.name}</span>
                                             <ChevronDownIcon className={clsx(
                                               'h-3.5 w-3.5 shrink-0 transition-transform duration-200',
-                                              isExpanded(`${item.name}-${child.name}`.toLowerCase()) ? 'rotate-180 text-white' : 'text-white/50'
+                                              isExpanded(`${item.name}-${child.name}`.toLowerCase()) ? 'rotate-180 text-white' : 'text-gray-400 dark:text-gray-500'
                                             )} />
                                           </button>
                                           <div className={clsx(
                                             'overflow-hidden transition-all duration-200',
                                             isExpanded(`${item.name}-${child.name}`.toLowerCase()) ? 'max-h-64 opacity-100 mt-0.5' : 'max-h-0 opacity-0'
                                           )}>
-                                            <ul className="ml-4 border-l border-slate-700/60 pl-3 space-y-0.5">
+                                            <ul className="ml-4 border-l border-gray-200 dark:border-gray-700 pl-3 space-y-0.5">
                                               {child.subChildren?.map((subChild: any) => (
                                                 <li key={subChild.name}>
                                                   <NavLink
@@ -729,8 +729,8 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                                                     className={({ isActive }) =>
                                                       clsx(
                                                         isActive
-                                                          ? 'bg-white text-[#F15D2C] shadow-sm'
-                                                          : 'text-white/60 hover:text-white hover:bg-white/10',
+                                                          ? 'bg-[#F15D2C] text-white shadow-sm'
+                                                          : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800',
                                                         'group flex items-center gap-x-2 rounded-lg py-1.5 px-2.5 text-sm transition-colors duration-150'
                                                       )
                                                     }
@@ -749,8 +749,8 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                                             onClick={() => navigate(child.href)}
                                             className={clsx(
                                               isActiveHref(child.href)
-                                                ? 'bg-white text-[#F15D2C] shadow-sm'
-                                                : 'text-white/60 hover:text-white hover:bg-white/10',
+                                                ? 'bg-[#F15D2C] text-white shadow-sm'
+                                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800',
                                               'group flex items-center gap-x-2.5 rounded-lg py-2 px-2.5 text-sm transition-colors duration-150 w-full text-left'
                                             )}
                                           >
@@ -763,8 +763,8 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                                             className={({ isActive }) =>
                                               clsx(
                                                 isActive
-                                                  ? 'bg-white text-[#F15D2C] shadow-sm'
-                                                  : 'text-white/60 hover:text-white hover:bg-white/10',
+                                                  ? 'bg-[#F15D2C] text-white shadow-sm'
+                                                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800',
                                                 'group flex items-center gap-x-2.5 rounded-lg py-2 px-2.5 text-sm transition-colors duration-150'
                                               )
                                             }
@@ -788,8 +788,8 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                             className={({ isActive }) =>
                               clsx(
                                 isActive
-                                  ? 'bg-white text-[#F15D2C] shadow-sm'
-                                  : 'text-white/70 hover:text-white hover:bg-white/10',
+                                  ? 'bg-[#F15D2C] text-white shadow-sm'
+                                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800',
                                 'group flex items-center gap-x-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-150',
                                 collapsed && 'justify-center px-0'
                               )
@@ -813,13 +813,13 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
       </nav>
 
       {/* Footer with Theme Toggle, Profile & Logout */}
-      <div className={clsx('mt-auto pt-4 border-t border-white/10 space-y-3', collapsed && 'flex flex-col items-center')}>
+      <div className={clsx('mt-auto pt-4 border-t border-gray-200 dark:border-gray-800 space-y-3', collapsed && 'flex flex-col items-center')}>
         {/* Theme Toggle */}
         {collapsed ? (
           <ThemeToggle />
         ) : (
           <div className="px-2 flex items-center justify-between">
-            <span className="text-xs font-medium text-white/60">Theme</span>
+            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Theme</span>
             <ThemeToggle />
           </div>
         )}
@@ -837,7 +837,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
           <div className="flex gap-2 px-2">
             <button
               onClick={() => navigate('/app/profile')}
-              className="flex-1 px-3 py-2 text-xs font-medium text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+              className="flex-1 px-3 py-2 text-xs font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
             >
               Profil
             </button>
