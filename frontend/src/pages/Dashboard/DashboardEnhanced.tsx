@@ -181,7 +181,7 @@ export default function DashboardEnhanced() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#F15D2C]"></div>
       </div>
     )
   }
@@ -278,7 +278,7 @@ export default function DashboardEnhanced() {
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Sales Today */}
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg">
+        <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-6 text-white shadow-lg">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-white/20 rounded-lg">
               <ShoppingCartIcon className="w-6 h-6" />
@@ -514,7 +514,7 @@ export default function DashboardEnhanced() {
               <h3 className="text-lg font-bold text-gray-900 dark:text-white">Sales Trend</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">Last 7 days</p>
             </div>
-            <ShoppingCartIcon className="w-5 h-5 text-blue-500" />
+            <ShoppingCartIcon className="w-5 h-5 text-[#F15D2C]" />
           </div>
           <div className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -540,7 +540,7 @@ export default function DashboardEnhanced() {
                 <Line
                   type="monotone"
                   dataKey="value"
-                  stroke="#3B82F6"
+                  stroke="#F15D2C"
                   strokeWidth={3}
                   dot={{ fill: '#3B82F6', r: 4 }}
                   activeDot={{ r: 6 }}
@@ -557,7 +557,7 @@ export default function DashboardEnhanced() {
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-300">
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg">
+              <div className="p-2 bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-lg">
                 <Package className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -577,7 +577,7 @@ export default function DashboardEnhanced() {
                 <div key={index} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3 flex-1">
-                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-sm font-bold">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] text-white text-sm font-bold">
                         {index + 1}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -619,7 +619,7 @@ export default function DashboardEnhanced() {
               activityLogs.slice(0, 8).map((log: any) => {
                 const actionStyle: Record<string, string> = {
                   CREATE: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-                  UPDATE: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+                  UPDATE: 'bg-orange-100 text-[#C73E1D] dark:bg-orange-900/30 dark:text-orange-400',
                   DELETE: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
                 }
                 return (
@@ -679,10 +679,10 @@ export default function DashboardEnhanced() {
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
           <button
             onClick={() => navigate('/app/production/work-orders/new')}
-            className="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all group"
+            className="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-[#F15D2C] hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all group"
           >
-            <CogIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 mx-auto mb-2" />
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400">New SPK</p>
+            <CogIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 group-hover:text-[#F15D2C] dark:group-hover:text-orange-400 mx-auto mb-2" />
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[#F15D2C] dark:group-hover:text-orange-400">New SPK</p>
           </button>
 
           <button
