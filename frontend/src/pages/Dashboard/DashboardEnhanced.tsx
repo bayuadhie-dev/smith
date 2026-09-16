@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useGetExecutiveDashboardQuery } from '../../services/api'
 import { formatRupiah } from '../../utils/currencyUtils'
@@ -6,7 +6,8 @@ import axiosInstance from '../../utils/axiosConfig'
 import { useQuery } from '@tanstack/react-query'
 import { Zap, Package, TrendingUp as TrendUp } from 'lucide-react'
 import ProductionOutputModal from '../../components/Production/ProductionOutputModal'
-import WelcomeBanner from '../../components/ui/WelcomeBanner'
+import { useAppSelector } from '../../hooks/redux'
+import { getDynamicLoginGreeting } from '../../utils/greetingHelper'
 import {
   LineChart, Line, Bar, ComposedChart,
   ResponsiveContainer, CartesianGrid, XAxis, YAxis, Tooltip, Legend
@@ -30,7 +31,8 @@ import {
   BeakerIcon,
   TruckIcon,
   TrophyIcon,
-  ClockIcon
+  ClockIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline'
 
 interface ActiveUsersData {
@@ -61,6 +63,16 @@ interface ActiveUsersData {
 
 export default function DashboardEnhanced() {
   const navigate = useNavigate()
+  const { user } = useAppSelector((state) => state.auth)
+  // Computed once per mount (like WelcomeBanner's own useEffect-based state) -
+  // getDynamicLoginGreeting() picks randomly among same-timeslot options via
+  // Math.random(), so calling it directly in the render body would re-roll on
+  // every re-render (this page re-renders every second from the ticking clock).
+  const greetingMsg = useMemo(() => {
+    const isFirstTime = (user as any)?.is_first_login || (user as any)?.login_count === 1
+    return getDynamicLoginGreeting(user?.full_name || user?.username, isFirstTime)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id])
   const { data: executiveData, isLoading, refetch } = useGetExecutiveDashboardQuery({})
   const [currentTime, setCurrentTime] = useState(new Date())
   const [activeUsers, setActiveUsers] = useState<ActiveUsersData | null>(null)
@@ -232,13 +244,12 @@ export default function DashboardEnhanced() {
 
   return (
     <div className="space-y-6 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
-      <WelcomeBanner />
-
-      {/* Header */}
-      <div className="flex items-center justify-between">
+      {/* Header - Axion-style plain header (no boxed banner), text is the same
+          dynamic time/day-aware greeting WelcomeBanner already generated */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-snug">{greetingMsg}</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
             {currentTime.toLocaleDateString('id-ID', {
               weekday: 'long',
               year: 'numeric',
@@ -247,13 +258,45 @@ export default function DashboardEnhanced() {
             })} • {currentTime.toLocaleTimeString('id-ID')}
           </p>
         </div>
-        <button
-          onClick={() => refetch()}
-          className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 text-gray-900 dark:text-white"
-        >
-          <ArrowPathIcon className="w-5 h-5" />
-          Refresh
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => refetch()}
+            className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-white"
+          >
+            <ArrowPathIcon className="w-4 h-4" />
+            Refresh
+          </button>
+          <button
+            onClick={() => {
+              const rows = [
+                ['Metrik', 'Nilai'],
+                ['Sales Today', String(executiveData?.financial?.sales_today || 0)],
+                ['Production Output', String(executiveData?.production?.output || 0)],
+                ['Quality Pass Rate (%)', String(executiveData?.quality?.pass_rate || 0)],
+                ['Average OEE (%)', String(executiveData?.oee?.average_oee || 0)],
+              ]
+              const csv = rows.map((r) => r.join(',')).join('\n')
+              const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+              const url = URL.createObjectURL(blob)
+              const a = document.createElement('a')
+              a.href = url
+              a.download = `dashboard-summary-${new Date().toISOString().slice(0, 10)}.csv`
+              a.click()
+              URL.revokeObjectURL(url)
+            }}
+            className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-white"
+          >
+            <ArrowDownIcon className="w-4 h-4" />
+            Export
+          </button>
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('open-ai-assistant'))}
+            className="px-4 py-2 bg-gradient-to-r from-[#F15D2C] to-[#C73E1D] rounded-lg hover:opacity-90 flex items-center gap-2 text-sm font-medium text-white shadow-sm"
+          >
+            <SparklesIcon className="w-4 h-4" />
+            Tanya AI
+          </button>
+        </div>
       </div>
 
       {/* Critical Alerts - most urgent, shown first */}
@@ -276,7 +319,7 @@ export default function DashboardEnhanced() {
       )}
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Sales Today */}
         <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-6 text-white shadow-lg">
           <div className="flex items-center justify-between mb-4">
@@ -300,7 +343,7 @@ export default function DashboardEnhanced() {
 
         {/* Production Output - Clickable */}
         <div
-          className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white shadow-lg cursor-pointer hover:shadow-2xl hover:scale-105 transition-all duration-300"
+          className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl p-6 text-white shadow-lg cursor-pointer hover:shadow-2xl hover:scale-105 transition-all duration-300"
           onClick={() => setShowProductionOutput(true)}
           title="Klik untuk lihat detail per mesin & produk"
         >
@@ -320,7 +363,7 @@ export default function DashboardEnhanced() {
         </div>
 
         {/* Quality Pass Rate */}
-        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white shadow-lg">
+        <div className="bg-gradient-to-br from-[#A83232] to-[#781F16] rounded-xl p-6 text-white shadow-lg">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-white/20 rounded-lg">
               <CheckCircleIcon className="w-6 h-6" />
@@ -336,39 +379,79 @@ export default function DashboardEnhanced() {
           </p>
         </div>
 
-        {/* OEE Average - health-score style radial gauge */}
-        <div
-          className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-6 text-white shadow-lg cursor-pointer hover:shadow-2xl transition-all duration-300"
-          onClick={() => navigate('/app/oee')}
-        >
-          <div className="flex items-center justify-between mb-1">
-            <p className="text-sm opacity-90">Average OEE</p>
-            <ChartBarIcon className="w-5 h-5 opacity-80" />
-          </div>
-          <div className="flex items-center gap-4 my-2">
-            <div className="relative w-20 h-20 shrink-0">
-              <svg viewBox="0 0 96 96" className="w-20 h-20 -rotate-90">
-                <circle cx="48" cy="48" r="40" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="8" />
-                <circle
-                  cx="48" cy="48" r="40" fill="none" stroke="#fff" strokeWidth="8" strokeLinecap="round"
-                  strokeDasharray={2 * Math.PI * 40}
-                  strokeDashoffset={2 * Math.PI * 40 * (1 - Math.min(executiveData?.oee?.average_oee || 0, 100) / 100)}
-                  style={{ transition: 'stroke-dashoffset 0.8s cubic-bezier(.2,.9,.25,1)' }}
-                />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-xl font-bold">{executiveData?.oee?.average_oee || 0}%</span>
+      </div>
+
+      {/* Business Health Score (semicircle gauge) + AI Quick Insight - Axion-style row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {(() => {
+          const oeeVal = Math.min(executiveData?.oee?.average_oee || 0, 100)
+          const statusLabel = oeeVal >= 75 ? 'SEHAT' : oeeVal >= 50 ? 'PERLU PERHATIAN' : 'BERISIKO'
+          const r = 90
+          const circumference = Math.PI * r // half circle length
+          const filled = circumference * (oeeVal / 100)
+          return (
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6">
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="font-semibold text-gray-900 dark:text-white">Business Health Score</h3>
+                <ChartBarIcon className="w-5 h-5 text-gray-400" />
               </div>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">Skor gabungan OEE seluruh mesin produksi</p>
+              <div className="relative w-full flex justify-center">
+                <svg viewBox="0 0 200 110" className="w-full max-w-[280px]">
+                  <path d="M 10 100 A 90 90 0 0 1 190 100" fill="none" stroke="#f1f5f9" className="dark:stroke-gray-700" strokeWidth="14" strokeLinecap="round" />
+                  <path
+                    d="M 10 100 A 90 90 0 0 1 190 100" fill="none" stroke="#F15D2C" strokeWidth="14" strokeLinecap="round"
+                    strokeDasharray={`${filled} ${circumference}`} strokeDashoffset={0}
+                    style={{ transition: 'stroke-dashoffset 0.8s cubic-bezier(.2,.9,.25,1)' }}
+                  />
+                  <text x="10" y="100" textAnchor="start" className="fill-gray-400 dark:fill-gray-500" style={{ fontSize: '9px' }}>BERISIKO</text>
+                  <text x="100" y="14" textAnchor="middle" className="fill-gray-400 dark:fill-gray-500" style={{ fontSize: '9px' }}>SEHAT</text>
+                  <text x="190" y="100" textAnchor="end" className="fill-gray-400 dark:fill-gray-500" style={{ fontSize: '9px' }}>OPTIMAL</text>
+                </svg>
+                <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center pb-1">
+                  <span className="text-3xl font-bold text-gray-900 dark:text-white">{oeeVal}/100</span>
+                  <span className="text-xs font-semibold text-[#F15D2C]">{statusLabel} &middot; {executiveData?.oee?.machine_utilization || 0}% utilisasi mesin</span>
+                </div>
+              </div>
+              <button
+                onClick={() => navigate('/app/oee')}
+                className="mt-4 w-full text-center text-sm font-medium border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors rounded-lg py-2.5 text-gray-700 dark:text-gray-200"
+              >
+                Lihat Detail
+              </button>
             </div>
-            <div>
-              <p className="text-xs uppercase tracking-wide opacity-75 mb-1">
-                {(executiveData?.oee?.average_oee || 0) >= 75 ? 'Healthy' : (executiveData?.oee?.average_oee || 0) >= 50 ? 'Perlu Perhatian' : 'At Risk'}
-              </p>
-              <p className="text-sm opacity-90">{executiveData?.oee?.machine_utilization || 0}% utilisasi mesin</p>
+          )
+        })()}
+
+        {/* AI Quick Insight - opens the real global AI Assistant widget, prefilled */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6 flex flex-col">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] flex items-center justify-center shrink-0">
+              <SparklesIcon className="w-5 h-5 text-white" />
             </div>
+            <p className="font-semibold text-gray-900 dark:text-white">Ada yang bisa saya bantu analisa hari ini?</p>
           </div>
-          <button className="mt-2 w-full text-center text-xs font-medium bg-white/20 hover:bg-white/30 transition-colors rounded-lg py-2">
-            Lihat Detail
+          <div className="flex flex-wrap gap-2 mb-4">
+            {[
+              'Ada risiko stok menipis?',
+              'Kenapa OEE turun minggu ini?',
+              'Produk apa yang paling laris?',
+            ].map((q) => (
+              <button
+                key={q}
+                onClick={() => window.dispatchEvent(new CustomEvent('open-ai-assistant', { detail: { prefill: q } }))}
+                className="px-3 py-1.5 text-xs rounded-full border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-[#F15D2C] hover:text-[#F15D2C] transition-colors"
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('open-ai-assistant'))}
+            className="mt-auto w-full flex items-center justify-between px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 text-sm text-gray-400 dark:text-gray-500 hover:border-[#F15D2C] transition-colors"
+          >
+            Tanya sesuatu...
+            <SparklesIcon className="w-4 h-4 text-[#F15D2C]" />
           </button>
         </div>
       </div>
@@ -430,7 +513,7 @@ export default function DashboardEnhanced() {
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl">
+              <div className="p-2.5 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl">
                 <BanknotesIcon className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -495,7 +578,7 @@ export default function DashboardEnhanced() {
               <h3 className="text-lg font-bold text-gray-900 dark:text-white">Production & OEE</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">Output vs efficiency</p>
             </div>
-            <TrendUp className="w-5 h-5 text-violet-500" />
+            <TrendUp className="w-5 h-5 text-[#A83232]" />
           </div>
           <ResponsiveContainer width="100%" height={280}>
             <ComposedChart data={trends?.production || []}>
@@ -512,15 +595,15 @@ export default function DashboardEnhanced() {
                 }}
               />
               <Legend />
-              <Bar yAxisId="left" dataKey="value" fill="#8b5cf6" radius={[4, 4, 0, 0]} name="Output" />
+              <Bar yAxisId="left" dataKey="value" fill="#F59E0B" radius={[4, 4, 0, 0]} name="Output" />
               <Line
                 yAxisId="right"
                 type="monotone"
                 dataKey={(d: any) => trends?.oee?.find((o: any) => o.period === d.period)?.value || 0}
-                stroke="#10b981"
+                stroke="#A83232"
                 strokeWidth={2}
                 name="OEE %"
-                dot={{ fill: '#10b981', r: 4 }}
+                dot={{ fill: '#A83232', r: 4 }}
               />
             </ComposedChart>
           </ResponsiveContainer>
@@ -726,10 +809,10 @@ export default function DashboardEnhanced() {
 
           <button
             onClick={() => navigate('/app/sales/orders/new')}
-            className="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all group"
+            className="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-[#F15D2C] hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all group"
           >
-            <ShoppingCartIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 group-hover:text-green-600 dark:group-hover:text-green-400 mx-auto mb-2" />
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-green-600 dark:group-hover:text-green-400">New Sales Order</p>
+            <ShoppingCartIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 group-hover:text-[#F15D2C] dark:group-hover:text-orange-400 mx-auto mb-2" />
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[#F15D2C] dark:group-hover:text-orange-400">New Sales Order</p>
           </button>
 
           <button
@@ -742,26 +825,26 @@ export default function DashboardEnhanced() {
 
           <button
             onClick={() => navigate('/app/quality/incoming')}
-            className="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all group"
+            className="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all group"
           >
-            <CheckCircleIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 group-hover:text-purple-600 dark:group-hover:text-purple-400 mx-auto mb-2" />
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-purple-600 dark:group-hover:text-purple-400">QC Inspection</p>
+            <CheckCircleIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 group-hover:text-amber-600 dark:group-hover:text-amber-400 mx-auto mb-2" />
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-amber-600 dark:group-hover:text-amber-400">QC Inspection</p>
           </button>
 
           <button
             onClick={() => navigate('/app/warehouse/material-issues/new')}
-            className="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-all group"
+            className="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-[#A83232] hover:bg-red-50 dark:hover:bg-red-900/20 transition-all group"
           >
-            <CubeIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 group-hover:text-teal-600 dark:group-hover:text-teal-400 mx-auto mb-2" />
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-teal-600 dark:group-hover:text-teal-400">Issue Material</p>
+            <CubeIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 group-hover:text-[#A83232] dark:group-hover:text-red-400 mx-auto mb-2" />
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[#A83232] dark:group-hover:text-red-400">Issue Material</p>
           </button>
 
           <button
             onClick={() => navigate('/app/reports')}
-            className="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all group"
+            className="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all group"
           >
-            <DocumentTextIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 mx-auto mb-2" />
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400">View Reports</p>
+            <DocumentTextIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 group-hover:text-orange-700 dark:group-hover:text-orange-400 mx-auto mb-2" />
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-orange-700 dark:group-hover:text-orange-400">View Reports</p>
           </button>
         </div>
       </div>

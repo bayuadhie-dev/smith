@@ -133,6 +133,19 @@ const AIAssistant = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Dashboard's "Analyze with AI" / quick-insight card dispatches this to open
+  // the widget from elsewhere on the page instead of needing its own chat UI.
+  useEffect(() => {
+    const handleOpenRequest = (e: Event) => {
+      setIsOpen(true);
+      setIsMinimized(false);
+      const detail = (e as CustomEvent<{ prefill?: string }>).detail;
+      if (detail?.prefill) setInput(detail.prefill);
+    };
+    window.addEventListener('open-ai-assistant', handleOpenRequest);
+    return () => window.removeEventListener('open-ai-assistant', handleOpenRequest);
+  }, []);
+
   useEffect(() => {
     if (isOpen && !isMinimized) {
       inputRef.current?.focus();
