@@ -784,12 +784,6 @@ def create_app(config_class=Config):
 
     
 
-    # Import and register AI Assistant blueprint
-
-    from routes.ai_assistant import ai_assistant_bp
-
-    app.register_blueprint(ai_assistant_bp, url_prefix='/api/ai-assistant')
-
     
 
     # Import and register User Manual blueprint

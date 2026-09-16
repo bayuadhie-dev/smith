@@ -190,10 +190,6 @@ MODULES = {
         'name': 'Integration',
         'actions': ['view', 'configure', 'sync']
     },
-    'ai_assistant': {
-        'name': 'AI Assistant',
-        'actions': ['view', 'use']
-    },
     'settings': {
         'name': 'Settings',
         'actions': ['view', 'edit']

@@ -590,19 +590,6 @@ const SystemOverviewEnhanced: React.FC = () => {
       category: 'hr'
     },
     {
-      id: 'ai_assistant',
-      name: 'AI Production Assistant',
-      description: 'Asisten kecerdasan buatan untuk analisis data & prediksi otomatis',
-      icon: SparklesIcon,
-      color: 'text-amber-400',
-      status: 'active',
-      metricKey: 'work_orders',
-      metricLabel: 'AI Prediction Log',
-      metricFallback: 506,
-      tag: 'Antigravity Copilot',
-      category: 'rnd'
-    },
-    {
       id: 'executive_portal',
       name: 'Executive Portal & TV Display',
       description: 'Dashboard TV Display publik & portal pemantauan manajemen puncak',

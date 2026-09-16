@@ -31,8 +31,7 @@ import {
   BeakerIcon,
   TruckIcon,
   TrophyIcon,
-  ClockIcon,
-  SparklesIcon
+  ClockIcon
 } from '@heroicons/react/24/outline'
 
 interface ActiveUsersData {
@@ -289,13 +288,6 @@ export default function DashboardEnhanced() {
             <ArrowDownIcon className="w-4 h-4" />
             Export
           </button>
-          <button
-            onClick={() => window.dispatchEvent(new CustomEvent('open-ai-assistant'))}
-            className="px-4 py-2 bg-gradient-to-r from-[#F15D2C] to-[#C73E1D] rounded-lg hover:opacity-90 flex items-center gap-2 text-sm font-medium text-white shadow-sm"
-          >
-            <SparklesIcon className="w-4 h-4" />
-            Tanya AI
-          </button>
         </div>
       </div>
 
@@ -381,7 +373,7 @@ export default function DashboardEnhanced() {
 
       </div>
 
-      {/* Business Health Score (semicircle gauge) + AI Quick Insight - Axion-style row */}
+      {/* Business Health Score (semicircle gauge) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {(() => {
           const oeeVal = Math.min(executiveData?.oee?.average_oee || 0, 100)
@@ -422,38 +414,6 @@ export default function DashboardEnhanced() {
             </div>
           )
         })()}
-
-        {/* AI Quick Insight - opens the real global AI Assistant widget, prefilled */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6 flex flex-col">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] flex items-center justify-center shrink-0">
-              <SparklesIcon className="w-5 h-5 text-white" />
-            </div>
-            <p className="font-semibold text-gray-900 dark:text-white">Ada yang bisa saya bantu analisa hari ini?</p>
-          </div>
-          <div className="flex flex-wrap gap-2 mb-4">
-            {[
-              'Ada risiko stok menipis?',
-              'Kenapa OEE turun minggu ini?',
-              'Produk apa yang paling laris?',
-            ].map((q) => (
-              <button
-                key={q}
-                onClick={() => window.dispatchEvent(new CustomEvent('open-ai-assistant', { detail: { prefill: q } }))}
-                className="px-3 py-1.5 text-xs rounded-full border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-[#F15D2C] hover:text-[#F15D2C] transition-colors"
-              >
-                {q}
-              </button>
-            ))}
-          </div>
-          <button
-            onClick={() => window.dispatchEvent(new CustomEvent('open-ai-assistant'))}
-            className="mt-auto w-full flex items-center justify-between px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 text-sm text-gray-400 dark:text-gray-500 hover:border-[#F15D2C] transition-colors"
-          >
-            Tanya sesuatu...
-            <SparklesIcon className="w-4 h-4 text-[#F15D2C]" />
-          </button>
-        </div>
       </div>
 
       {/* Performance Scorecard - actual vs target per KPI, last 30 days */}

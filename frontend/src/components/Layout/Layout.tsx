@@ -3,7 +3,6 @@ import { Outlet } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import Header from './Header'
 import Breadcrumb from '../ui/Breadcrumb'
-import AIAssistant from '../AIAssistant/AIAssistant'
 import SkipLink from '../ui/SkipLink'
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts'
 import KeyboardShortcutsModal from '../Common/KeyboardShortcutsModal'
@@ -103,9 +102,6 @@ export default function Layout() {
           </div>
         </main>
       </div>
-      
-      {/* AI Assistant Floating Widget */}
-      <AIAssistant />
       
       {/* Keyboard Shortcuts Modal */}
       <KeyboardShortcutsModal 
