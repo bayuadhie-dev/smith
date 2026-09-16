@@ -336,27 +336,46 @@ export default function DashboardEnhanced() {
           </p>
         </div>
 
-        {/* OEE Average */}
-        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white shadow-lg">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-white/20 rounded-lg">
-              <ChartBarIcon className="w-6 h-6" />
-            </div>
-            <ChartBarIcon className="w-5 h-5" />
+        {/* OEE Average - health-score style radial gauge */}
+        <div
+          className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-6 text-white shadow-lg cursor-pointer hover:shadow-2xl transition-all duration-300"
+          onClick={() => navigate('/app/oee')}
+        >
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-sm opacity-90">Average OEE</p>
+            <ChartBarIcon className="w-5 h-5 opacity-80" />
           </div>
-          <p className="text-sm opacity-90 mb-1">Average OEE</p>
-          <p className="text-3xl font-bold mb-2">
-            {executiveData?.oee?.average_oee || 0}%
-          </p>
-          <p className="text-sm opacity-75">
-            {executiveData?.oee?.machine_utilization || 0}% utilization
-          </p>
+          <div className="flex items-center gap-4 my-2">
+            <div className="relative w-20 h-20 shrink-0">
+              <svg viewBox="0 0 96 96" className="w-20 h-20 -rotate-90">
+                <circle cx="48" cy="48" r="40" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="8" />
+                <circle
+                  cx="48" cy="48" r="40" fill="none" stroke="#fff" strokeWidth="8" strokeLinecap="round"
+                  strokeDasharray={2 * Math.PI * 40}
+                  strokeDashoffset={2 * Math.PI * 40 * (1 - Math.min(executiveData?.oee?.average_oee || 0, 100) / 100)}
+                  style={{ transition: 'stroke-dashoffset 0.8s cubic-bezier(.2,.9,.25,1)' }}
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-xl font-bold">{executiveData?.oee?.average_oee || 0}%</span>
+              </div>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-wide opacity-75 mb-1">
+                {(executiveData?.oee?.average_oee || 0) >= 75 ? 'Healthy' : (executiveData?.oee?.average_oee || 0) >= 50 ? 'Perlu Perhatian' : 'At Risk'}
+              </p>
+              <p className="text-sm opacity-90">{executiveData?.oee?.machine_utilization || 0}% utilisasi mesin</p>
+            </div>
+          </div>
+          <button className="mt-2 w-full text-center text-xs font-medium bg-white/20 hover:bg-white/30 transition-colors rounded-lg py-2">
+            Lihat Detail
+          </button>
         </div>
       </div>
 
       {/* Performance Scorecard - actual vs target per KPI, last 30 days */}
       {scorecard && scorecard.kpis?.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="p-2.5 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl">
@@ -408,7 +427,7 @@ export default function DashboardEnhanced() {
 
       {/* Omzet & Margin Produk - HPP (material dari BOM) vs Harga Jual */}
       {marginData && (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-3">
               <div className="p-2.5 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl">
@@ -470,7 +489,7 @@ export default function DashboardEnhanced() {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Production & OEE Trend */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-lg p-6 border border-gray-200 dark:border-gray-700 transition-all duration-300">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-xl p-6 transition-all duration-300">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-lg font-bold text-gray-900 dark:text-white">Production & OEE</h3>
@@ -508,7 +527,7 @@ export default function DashboardEnhanced() {
         </div>
 
         {/* Sales Trend */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-lg p-6 border border-gray-200 dark:border-gray-700 transition-all duration-300">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-xl p-6 transition-all duration-300">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-lg font-bold text-gray-900 dark:text-white">Sales Trend</h3>
@@ -542,11 +561,31 @@ export default function DashboardEnhanced() {
                   dataKey="value"
                   stroke="#F15D2C"
                   strokeWidth={3}
-                  dot={{ fill: '#3B82F6', r: 4 }}
+                  dot={{ fill: '#F15D2C', r: 4 }}
                   activeDot={{ r: 6 }}
                 />
               </LineChart>
             </ResponsiveContainer>
+          </div>
+          <div className="grid grid-cols-3 divide-x divide-gray-100 dark:divide-gray-700 border-t border-gray-100 dark:border-gray-700 mt-5 pt-4">
+            <div className="pr-4">
+              <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">Total 7 Hari</p>
+              <p className="text-lg font-bold text-gray-900 dark:text-white">
+                {formatRupiah(salesTrend.reduce((sum: number, d: any) => sum + (d.value || 0), 0))}
+              </p>
+            </div>
+            <div className="px-4">
+              <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">Rata-rata Harian</p>
+              <p className="text-lg font-bold text-gray-900 dark:text-white">
+                {formatRupiah(salesTrend.length ? salesTrend.reduce((sum: number, d: any) => sum + (d.value || 0), 0) / salesTrend.length : 0)}
+              </p>
+            </div>
+            <div className="pl-4">
+              <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">Growth</p>
+              <p className={`text-lg font-bold ${(executiveData?.financial?.revenue_growth || 0) >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                {(executiveData?.financial?.revenue_growth || 0) >= 0 ? '+' : ''}{executiveData?.financial?.revenue_growth || 0}%
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -554,7 +593,7 @@ export default function DashboardEnhanced() {
       {/* Top Products & Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top Products */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-300">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-xl overflow-hidden transition-all duration-300">
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-lg">
@@ -597,7 +636,7 @@ export default function DashboardEnhanced() {
         </div>
 
         {/* Recent Activity - real audit log, not simulated */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-300">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-xl overflow-hidden transition-all duration-300">
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-gradient-to-br from-slate-600 to-slate-800 rounded-lg">
@@ -674,7 +713,7 @@ export default function DashboardEnhanced() {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
           <button
@@ -728,7 +767,7 @@ export default function DashboardEnhanced() {
       </div>
 
       {/* Team Activity - de-prioritized below the business data, single consolidated view (no duplicate counts) */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
