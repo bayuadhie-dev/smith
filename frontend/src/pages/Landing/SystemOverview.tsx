@@ -65,6 +65,30 @@ interface SystemMetrics {
   network: number;
 }
 
+// Real rolling history of polled metric values (not fabricated) - kept
+// client-side since the public metrics endpoint only returns a snapshot,
+// not a time series. Renders a tiny inline trend line per metric card.
+function MetricSparkline({ data, color }: { data: number[]; color: string }) {
+  if (!data || data.length < 2) return null;
+  const w = 100;
+  const h = 24;
+  const max = Math.max(...data, 1);
+  const min = Math.min(...data, 0);
+  const range = max - min || 1;
+  const points = data
+    .map((v, i) => {
+      const x = (i / (data.length - 1)) * w;
+      const y = h - ((v - min) / range) * h;
+      return `${x},${y}`;
+    })
+    .join(' ');
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-6" preserveAspectRatio="none">
+      <polyline points={points} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.9" />
+    </svg>
+  );
+}
+
 const SystemOverviewEnhanced: React.FC = () => {
   const { t } = useLanguage();
 
@@ -97,6 +121,11 @@ const SystemOverviewEnhanced: React.FC = () => {
     memory: 0,
     disk: 0,
     network: 0
+  });
+  // Rolling history of real polled values (last 20 samples, ~1 minute at the
+  // 3s poll interval below) - powers the inline sparklines, not fabricated.
+  const [metricsHistory, setMetricsHistory] = useState<Record<keyof SystemMetrics, number[]>>({
+    cpu: [], memory: [], disk: [], network: []
   });
 
   const [selectedView, setSelectedView] = useState<'overview' | 'performance' | 'modules'>('overview');
@@ -245,12 +274,19 @@ const SystemOverviewEnhanced: React.FC = () => {
       const response = await axiosInstance.get('/api/system/metrics/public');
       
       const data = response.data;
-      setSystemMetrics({
+      const next = {
         cpu: data.cpu?.usage_percent || 0,
         memory: data.memory?.usage_percent || 0,
         disk: data.disks && data.disks.length > 0 ? data.disks[0].usage_percent : 0,
         network: data.network?.usage_percent || 0
-      });
+      };
+      setSystemMetrics(next);
+      setMetricsHistory((prev) => ({
+        cpu: [...prev.cpu, next.cpu].slice(-20),
+        memory: [...prev.memory, next.memory].slice(-20),
+        disk: [...prev.disk, next.disk].slice(-20),
+        network: [...prev.network, next.network].slice(-20),
+      }));
     } catch (error) {
       // Fallback to 0 on error
       console.error('Error loading system metrics:', error);
@@ -779,49 +815,49 @@ const SystemOverviewEnhanced: React.FC = () => {
               </Link>
             </div>
 
-            {/* Hero Key Metrics Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-5xl mx-auto mb-16">
-              <div className="bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-slate-800 p-6 hover:border-blue-500/50 transition-all duration-300 shadow-xl group">
-                <div className="flex items-center justify-center mb-3">
-                  <div className="p-3 bg-blue-500/10 rounded-xl group-hover:scale-110 transition-transform">
-                    <UsersIcon className="h-7 w-7 text-blue-400" />
-                  </div>
+            {/* Hero Key Metrics Stats - bento: Total Record spans 2 cols (richest content) */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 max-w-5xl mx-auto mb-16">
+              <div className="lg:col-span-2 bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-slate-800 p-5 hover:border-emerald-500/50 transition-all duration-300 shadow-xl group flex items-center gap-4">
+                <div className="p-3 bg-emerald-500/10 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
+                  <ChartBarIcon className="h-7 w-7 text-emerald-400" />
                 </div>
-                <p className="text-3xl md:text-4xl font-extrabold text-white mb-1 tracking-tight">{systemStats.totalUsers}</p>
-                <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Pengguna Sistem</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-3xl font-extrabold text-white tracking-tight">{systemStats.totalRecords.toLocaleString()}</p>
+                  <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Total Record Data</p>
+                  <p className="text-[10px] text-emerald-300 font-medium mt-0.5 italic truncate">
+                    {systemStats.totalRecords >= 10000 ? "10K rekord, mangan sate sik ben semangat 🍡" : "Wah menuju 10.000 record, mantap pisan! 🚀"}
+                  </p>
+                </div>
               </div>
 
-              <div className="bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-slate-800 p-6 hover:border-emerald-500/50 transition-all duration-300 shadow-xl group">
-                <div className="flex items-center justify-center mb-3">
-                  <div className="p-3 bg-emerald-500/10 rounded-xl group-hover:scale-110 transition-transform">
-                    <CogIcon className="h-7 w-7 text-emerald-400" />
+              <div className="bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-slate-800 p-5 hover:border-emerald-500/50 transition-all duration-300 shadow-xl group">
+                <div className="flex items-center justify-center mb-2">
+                  <div className="p-2.5 bg-emerald-500/10 rounded-xl group-hover:scale-110 transition-transform">
+                    <UsersIcon className="h-6 w-6 text-emerald-400" />
                   </div>
                 </div>
-                <p className="text-3xl md:text-4xl font-extrabold text-white mb-1 tracking-tight">{systemStats.activeModules}</p>
-                <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Modul Aktif</p>
+                <p className="text-2xl font-extrabold text-white mb-0.5 tracking-tight text-center">{systemStats.totalUsers}</p>
+                <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider text-center">Pengguna</p>
               </div>
 
-              <div className="bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-slate-800 p-6 hover:border-purple-500/50 transition-all duration-300 shadow-xl group">
-                <div className="flex items-center justify-center mb-3">
-                  <div className="p-3 bg-purple-500/10 rounded-xl group-hover:scale-110 transition-transform">
-                    <ChartBarIcon className="h-7 w-7 text-purple-400" />
+              <div className="bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-slate-800 p-5 hover:border-[#F15D2C]/50 transition-all duration-300 shadow-xl group">
+                <div className="flex items-center justify-center mb-2">
+                  <div className="p-2.5 bg-[#F15D2C]/10 rounded-xl group-hover:scale-110 transition-transform">
+                    <CogIcon className="h-6 w-6 text-[#F15D2C]" />
                   </div>
                 </div>
-                <p className="text-3xl md:text-4xl font-extrabold text-white mb-1 tracking-tight">{systemStats.totalRecords.toLocaleString()}</p>
-                <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Total Record Data</p>
-                <p className="text-[10px] text-purple-300 font-medium mt-1.5 italic">
-                  {systemStats.totalRecords >= 10000 ? "10K rekord, mangan sate sik ben semangat 🍡" : "Wah menuju 10.000 record, mantap pisan! 🚀"}
-                </p>
+                <p className="text-2xl font-extrabold text-white mb-0.5 tracking-tight text-center">{systemStats.activeModules}</p>
+                <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider text-center">Modul Aktif</p>
               </div>
 
-              <div className="bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-slate-800 p-6 hover:border-cyan-500/50 transition-all duration-300 shadow-xl group">
-                <div className="flex items-center justify-center mb-3">
-                  <div className="p-3 bg-cyan-500/10 rounded-xl group-hover:scale-110 transition-transform">
-                    <CheckCircleIcon className="h-7 w-7 text-cyan-400" />
-                  </div>
+              <div className="lg:col-span-4 sm:col-span-2 bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-slate-800 p-5 hover:border-emerald-500/50 transition-all duration-300 shadow-xl group flex items-center gap-4">
+                <div className="p-2.5 bg-emerald-500/10 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
+                  <CheckCircleIcon className="h-6 w-6 text-emerald-400" />
                 </div>
-                <p className="text-3xl md:text-4xl font-extrabold text-white mb-1 tracking-tight">{systemStats.systemUptime}</p>
-                <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Waktu Aktif System</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Waktu Aktif System</p>
+                </div>
+                <p className="text-2xl font-extrabold text-white tracking-tight flex-shrink-0">{systemStats.systemUptime}</p>
               </div>
             </div>
           </div>
@@ -953,7 +989,7 @@ const SystemOverviewEnhanced: React.FC = () => {
           </div>
 
           {/* Modules Grid Rendering */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-16">
             {filteredModules.map((module) => {
               const countVal = module.metricKey && (systemStats.breakdown as any)?.[module.metricKey] 
                 ? (systemStats.breakdown as any)[module.metricKey]
@@ -1022,23 +1058,26 @@ const SystemOverviewEnhanced: React.FC = () => {
               </span>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               {[
-                { label: 'CPU Usage', value: systemMetrics.cpu, icon: CpuChipIcon, color: 'text-blue-400' },
-                { label: 'Memory Usage', value: systemMetrics.memory, icon: ComputerDesktopIcon, color: 'text-emerald-400' },
-                { label: 'Disk Storage', value: systemMetrics.disk, icon: ComputerDesktopIcon, color: 'text-amber-400' },
-                { label: 'Network I/O', value: systemMetrics.network, icon: SignalIcon, color: 'text-purple-400' }
+                { key: 'cpu' as const, label: 'CPU Usage', value: systemMetrics.cpu, icon: CpuChipIcon, color: 'text-blue-400', hex: '#60a5fa' },
+                { key: 'memory' as const, label: 'Memory Usage', value: systemMetrics.memory, icon: ComputerDesktopIcon, color: 'text-emerald-400', hex: '#34d399' },
+                { key: 'disk' as const, label: 'Disk Storage', value: systemMetrics.disk, icon: ComputerDesktopIcon, color: 'text-amber-400', hex: '#fbbf24' },
+                { key: 'network' as const, label: 'Network I/O', value: systemMetrics.network, icon: SignalIcon, color: 'text-purple-400', hex: '#c084fc' }
               ].map((metric, index) => (
-                <div key={index} className="bg-slate-950/80 rounded-2xl p-5 border border-slate-800/80 flex flex-col justify-between">
-                  <div className="flex items-center justify-between mb-3">
-                    <metric.icon className={`h-6 w-6 ${metric.color}`} />
-                    <span className={`text-xl font-black ${metric.color}`}>{metric.value}%</span>
+                <div key={index} className="bg-slate-950/80 rounded-2xl p-4 border border-slate-800/80 flex flex-col justify-between">
+                  <div className="flex items-center justify-between mb-2">
+                    <metric.icon className={`h-5 w-5 ${metric.color}`} />
+                    <span className={`text-lg font-black ${metric.color}`}>{metric.value}%</span>
                   </div>
-                  <p className="text-xs font-bold text-white mb-3">{metric.label}</p>
-                  <div className="bg-slate-800 rounded-full h-2 overflow-hidden">
-                    <div 
+                  <p className="text-[11px] font-bold text-white mb-2">{metric.label}</p>
+                  <div className="mb-2">
+                    <MetricSparkline data={metricsHistory[metric.key]} color={metric.hex} />
+                  </div>
+                  <div className="bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                    <div
                       className={`h-full rounded-full transition-all duration-500 ${
-                        metric.value >= 80 ? 'bg-red-400' : 
+                        metric.value >= 80 ? 'bg-red-400' :
                         metric.value >= 60 ? 'bg-amber-400' : 'bg-emerald-400'
                       }`}
                       style={{width: `${metric.value}%`}}
