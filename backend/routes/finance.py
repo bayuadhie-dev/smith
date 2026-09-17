@@ -2017,9 +2017,13 @@ def get_budget_list():
             budget_list = []
             for b in budgets:
                 total_actual = sum(float(line.actual_amount) for line in b.lines)
+                # Commitment/encumbrance (2026-09-17) - reserved by approved
+                # Purchase Orders but not yet invoiced/actual. See
+                # utils.finance_helpers.reserve_po_budget_commitment().
+                total_committed = sum(float(line.committed_amount or 0) for line in b.lines)
                 variance = total_actual - float(b.total_budget)
                 variance_percent = (variance / float(b.total_budget) * 100) if b.total_budget > 0 else 0
-                
+
                 budget_list.append({
                     'id': b.id,
                     'budget_name': b.budget_name,
@@ -2027,6 +2031,8 @@ def get_budget_list():
                     'budget_year': b.budget_year,
                     'total_budget': float(b.total_budget),
                     'total_actual': total_actual,
+                    'total_committed': total_committed,
+                    'total_available': float(b.total_budget) - total_committed - total_actual,
                     'variance': variance,
                     'variance_percent': variance_percent,
                     'status': b.status

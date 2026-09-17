@@ -453,6 +453,17 @@ def create_purchase_invoice():
             if po_item:
                 po_item.quantity_invoiced = (po_item.quantity_invoiced or 0) + (item_data.get('quantity') or 0)
 
+            # Release the matching budget commitment (reserved when the PO
+            # was approved) by exactly the amount now becoming actual -
+            # partial invoicing releases proportionally, not all-or-nothing.
+            if po:
+                from utils.finance_helpers import release_po_budget_commitment
+                release_po_budget_commitment(po, items=[{
+                    'product_id': item_data.get('product_id'),
+                    'material_id': item_data.get('material_id'),
+                    'amount': item_data.get('total_price') or 0,
+                }])
+
             # Determine debit account: inventory if this is a stocked item
             # (Material is always inventory; Product depends on material_type),
             # otherwise expense.

@@ -687,3 +687,116 @@ def get_cash_balance_as_of(as_of_date):
         AccountingEntry.entry_date <= as_of_date,
     ).scalar()
     return float(result or 0)
+
+
+def _resolve_po_item_account(item_data_or_model):
+    """Resolve the GL account a PurchaseOrderItem/line dict would eventually
+    post to (inventory vs expense) - the exact same logic
+    routes/purchase_invoice.py uses for the real posting, reused here so
+    budget commitment tracks the same account the actual will later hit.
+    Accepts either a PurchaseOrderItem model instance or a plain dict with
+    product_id/material_id keys.
+    """
+    from models.product import Product
+
+    if isinstance(item_data_or_model, dict):
+        product_id = item_data_or_model.get('product_id')
+        material_id = item_data_or_model.get('material_id')
+    else:
+        product_id = item_data_or_model.product_id
+        material_id = item_data_or_model.material_id
+
+    is_inventory_item = False
+    if material_id:
+        is_inventory_item = True
+    elif product_id:
+        product = db.session.get(Product, product_id)
+        if product and product.material_type in ('raw_materials', 'packaging_materials', 'chemical_materials', 'finished_goods'):
+            is_inventory_item = True
+
+    slot = 'akun_persediaan_id' if is_inventory_item else 'akun_beban_id'
+    return resolve_account(slot, product_id=product_id, category_id=None)
+
+
+def _find_active_budget_line(account_id, on_date):
+    """Find the BudgetLine for account_id whose parent Budget covers on_date
+    and is approved/active. Returns None if no budget control is configured
+    for that account - callers should treat that as 'no commitment tracked
+    for this line', not an error, since not every account needs budgeting."""
+    from models.finance import Budget, BudgetLine
+
+    return BudgetLine.query.join(Budget).filter(
+        BudgetLine.account_id == account_id,
+        Budget.status.in_(['approved', 'active']),
+        Budget.start_date <= on_date,
+        Budget.end_date >= on_date,
+    ).first()
+
+
+def reserve_po_budget_commitment(po):
+    """Reserve (encumber) budget for a PurchaseOrder being approved - SAP
+    FI-CO commitment accounting equivalent. For each PO line, resolves the
+    account it will eventually post to (same helper the real invoice posting
+    uses) and increments that account's active BudgetLine.committed_amount
+    by the line's total_price. Lines whose account has no active budget
+    configured are silently skipped (no budget control there, not an error).
+
+    Returns the total amount actually reserved (for logging/testing).
+    """
+    on_date = po.order_date.date() if hasattr(po.order_date, 'date') else po.order_date
+    total_reserved = 0.0
+
+    for item in po.items:
+        try:
+            account_id = _resolve_po_item_account(item)
+        except ValueError:
+            continue  # no account resolvable at all (no default configured) - skip, don't block PO approval
+
+        line = _find_active_budget_line(account_id, on_date)
+        if not line:
+            continue
+
+        amount = float(item.total_price or 0)
+        line.committed_amount = float(line.committed_amount or 0) + amount
+        total_reserved += amount
+
+    return total_reserved
+
+
+def release_po_budget_commitment(po, items=None):
+    """Release previously-reserved commitment for a PurchaseOrder - either
+    fully (PO cancelled, items=None uses po.items) or for a specific subset
+    of items being invoiced now (items=list of PurchaseOrderItem/dicts with
+    the invoiced amount already applied). Mirrors reserve_po_budget_commitment's
+    account resolution so it decrements the exact same BudgetLine that was
+    incremented - never goes below 0 (defensive, in case of drift/partial
+    double-releases rather than assuming perfect bookkeeping).
+
+    Returns the total amount released.
+    """
+    on_date = po.order_date.date() if hasattr(po.order_date, 'date') else po.order_date
+    total_released = 0.0
+    target_items = items if items is not None else po.items
+
+    for item in target_items:
+        if isinstance(item, dict):
+            account_hint = item
+            amount = float(item.get('amount') or 0)
+        else:
+            account_hint = item
+            amount = float(item.total_price or 0)
+
+        try:
+            account_id = _resolve_po_item_account(account_hint)
+        except ValueError:
+            continue
+
+        line = _find_active_budget_line(account_id, on_date)
+        if not line:
+            continue
+
+        release_amount = min(amount, float(line.committed_amount or 0))
+        line.committed_amount = float(line.committed_amount or 0) - release_amount
+        total_released += release_amount
+
+    return total_released

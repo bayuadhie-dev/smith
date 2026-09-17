@@ -197,11 +197,23 @@ class BudgetLine(db.Model):
     category = db.Column(db.String(100), nullable=False)
     budget_amount = db.Column(db.Numeric(15, 2), nullable=False)
     actual_amount = db.Column(db.Numeric(15, 2), default=0)
+    # Commitment/encumbrance (SAP FI-CO concept, 2026-09-17): reserved but not
+    # yet actual - incremented when a PurchaseOrder against this account is
+    # approved, decremented as it's invoiced (converted to actual_amount) or
+    # released on PO cancellation. See utils/finance_helpers.py's
+    # reserve_po_budget_commitment()/release_po_budget_commitment().
+    committed_amount = db.Column(db.Numeric(15, 2), default=0)
     variance_amount = db.Column(db.Numeric(15, 2), default=0)
     variance_percent = db.Column(db.Numeric(5, 2), default=0)
     notes = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    
+
+    @property
+    def available_amount(self):
+        """Budget remaining after both committed (reserved) and actual spend -
+        the real 'can I still spend this' number, not just budget-actual."""
+        return float(self.budget_amount or 0) - float(self.committed_amount or 0) - float(self.actual_amount or 0)
+
     # Relationships
     budget = db.relationship('Budget', back_populates='lines')
     account = db.relationship('Account')

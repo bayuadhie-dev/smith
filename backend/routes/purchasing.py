@@ -569,6 +569,13 @@ def update_purchase_order(id):
             if invoiced:
                 return jsonify({'error': 'Purchase Order tidak bisa dibatalkan karena sudah memiliki Faktur Pembelian'}), 400
 
+            # No GRN/Invoice exists yet (checked above), so any budget
+            # commitment reserved at approval is still fully outstanding -
+            # release it all now that the PO itself is being cancelled.
+            if po.status == 'approved':
+                from utils.finance_helpers import release_po_budget_commitment
+                release_po_budget_commitment(po)
+
         header_fields = ['priority', 'payment_terms', 'payment_method', 'delivery_address',
                           'shipping_method', 'notes', 'internal_notes', 'status']
         for field in header_fields:
@@ -635,6 +642,10 @@ def delete_purchase_order(id):
         ).first()
         if invoiced:
             return jsonify({'error': 'Purchase Order tidak bisa dihapus karena sudah memiliki Faktur Pembelian'}), 400
+
+        if po.status == 'approved':
+            from utils.finance_helpers import release_po_budget_commitment
+            release_po_budget_commitment(po)
 
         db.session.delete(po)
         db.session.commit()
@@ -1125,6 +1136,8 @@ def approve_purchase_order(po_id):
                 po.status = 'approved'
                 po.approved_by = user_id
                 po.approved_at = get_local_now()
+                from utils.finance_helpers import reserve_po_budget_commitment
+                reserve_po_budget_commitment(po)
         else:
             po.status = 'rejected'
 
@@ -1172,6 +1185,8 @@ def submit_for_approval(po_id):
             po.status = 'approved'
             po.approved_by = user_id
             po.approved_at = get_local_now()
+            from utils.finance_helpers import reserve_po_budget_commitment
+            reserve_po_budget_commitment(po)
             db.session.commit()
             return jsonify(success_response('api.success', data={
                 'auto_approved': True,

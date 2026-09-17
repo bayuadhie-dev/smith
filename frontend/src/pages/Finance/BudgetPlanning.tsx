@@ -21,6 +21,11 @@ interface Budget {
   budget_period: string;
   total_budget: number;
   total_actual: number;
+  // Commitment/encumbrance (2026-09-17): reserved by approved Purchase
+  // Orders but not yet invoiced. total_available = budget - committed - actual,
+  // the real "can I still spend this" number, not just budget-actual.
+  total_committed: number;
+  total_available: number;
   variance: number;
   variance_percent: number;
   status: string;
@@ -218,6 +223,16 @@ const BudgetPlanning: React.FC = () => {
                 <span className="text-sm text-gray-600 dark:text-gray-300">Actual:</span>
                 <span className="text-sm font-medium">{formatRupiah(budget.total_actual)}</span>
               </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-300" title="Dipesan oleh PO yang sudah disetujui tapi belum di-invoice">Committed (PO):</span>
+                <span className="text-sm font-medium text-amber-600 dark:text-amber-400">{formatRupiah(budget.total_committed || 0)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-300">Available:</span>
+                <span className={`text-sm font-medium ${(budget.total_available ?? budget.total_budget) < 0 ? 'text-red-600' : 'text-green-600'}`}>
+                  {formatRupiah(budget.total_available ?? budget.total_budget)}
+                </span>
+              </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600 dark:text-gray-300">Variance:</span>
                 <div className="flex items-center">
@@ -234,14 +249,18 @@ const BudgetPlanning: React.FC = () => {
             </div>
 
             <div className="mt-4">
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div 
-                  className="bg-blue-600 h-2 rounded-full" 
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 flex overflow-hidden">
+                <div
+                  className="bg-blue-600 h-2"
                   style={{ width: `${Math.min((budget.total_actual / budget.total_budget) * 100, 100)}%` }}
+                ></div>
+                <div
+                  className="bg-amber-400 h-2"
+                  style={{ width: `${Math.min(((budget.total_committed || 0) / budget.total_budget) * 100, 100 - (budget.total_actual / budget.total_budget) * 100)}%` }}
                 ></div>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                {((budget.total_actual / budget.total_budget) * 100).toFixed(1)}% of budget used
+                {((budget.total_actual / budget.total_budget) * 100).toFixed(1)}% actual, {(((budget.total_committed || 0) / budget.total_budget) * 100).toFixed(1)}% committed
               </p>
             </div>
           </div>

@@ -12,7 +12,7 @@ from models.finance import AccountingEntry
 from datetime import datetime
 from sqlalchemy import or_, and_
 from utils.timezone import get_local_now, get_local_today
-from utils.finance_helpers import post_pending_journal
+from utils.finance_helpers import post_pending_journal, reserve_po_budget_commitment
 
 approval_bp = Blueprint('approval', __name__, url_prefix='/api/approval')
 
@@ -34,6 +34,8 @@ def apply_workflow_side_effect(workflow, action, user_id):
         po = db.session.get(PurchaseOrder, workflow.transaction_id)
         if po:
             po.status = 'approved' if action == 'approve' else 'rejected'
+            if action == 'approve':
+                reserve_po_budget_commitment(po)
 
     elif workflow.transaction_type == 'sales_order':
         from models.sales import SalesOrder
