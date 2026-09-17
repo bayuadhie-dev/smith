@@ -263,7 +263,7 @@ export default function DashboardEnhanced() {
   }
 
   return (
-    <div className="space-y-6 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
+    <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
       {/* Header - Axion-style plain header (no boxed banner), text is the same
           dynamic time/day-aware greeting WelcomeBanner already generated */}
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -312,22 +312,15 @@ export default function DashboardEnhanced() {
         </div>
       </div>
 
-      {/* Critical Alerts - most urgent, shown first */}
+      {/* Critical Alerts - ringkas 1 baris; detail lengkapnya ada di kartu Sorotan & Peringatan di bawah */}
       {criticalIssues.length > 0 && (
-        <div className="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 p-4 rounded-lg">
-          <div className="flex items-start">
-            <ExclamationTriangleIcon className="w-6 h-6 text-red-500 dark:text-red-400 mr-3 flex-shrink-0" />
-            <div className="flex-1">
-              <h3 className="text-sm font-semibold text-red-800 dark:text-red-300 mb-2">Critical Issues Detected</h3>
-              <div className="space-y-1">
-                {criticalIssues.slice(0, 3).map((issue, index) => (
-                  <p key={index} className="text-sm text-red-700 dark:text-red-400">
-                    <span className="font-medium">{issue.module}:</span> {issue.message}
-                  </p>
-                ))}
-              </div>
-            </div>
-          </div>
+        <div className="flex items-center gap-2 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 px-4 py-2.5 rounded-lg">
+          <ExclamationTriangleIcon className="w-4 h-4 text-red-500 dark:text-red-400 flex-shrink-0" />
+          <p className="text-sm text-red-800 dark:text-red-300 truncate">
+            <span className="font-semibold">{criticalIssues.length} isu kritis</span>
+            {' '}&middot; {criticalIssues[0].module}: {criticalIssues[0].message}
+            {criticalIssues.length > 1 && ` (+${criticalIssues.length - 1} lainnya, lihat Sorotan & Peringatan)`}
+          </p>
         </div>
       )}
 
@@ -417,7 +410,7 @@ export default function DashboardEnhanced() {
           return (
             <div className="xl:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-md p-5">
               <div className="flex items-center justify-between mb-1">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Business Health Score</h3>
+                <h3 className="text-base font-bold text-gray-900 dark:text-white">Business Health Score</h3>
                 <ChartBarIcon className="w-5 h-5 text-gray-400" />
               </div>
               <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">Skor gabungan OEE seluruh mesin produksi</p>
@@ -454,7 +447,7 @@ export default function DashboardEnhanced() {
             from criticalIssues (already fetched above), not an AI feature */}
         <div className="xl:col-span-2 bg-gradient-to-br from-gray-900 to-slate-800 rounded-2xl shadow-md p-5 text-white flex flex-col">
           <div className="flex items-center justify-between mb-1">
-            <h3 className="text-lg font-bold text-white">Sorotan &amp; Peringatan</h3>
+            <h3 className="text-base font-bold text-white">Sorotan &amp; Peringatan</h3>
             <ExclamationTriangleIcon className="w-5 h-5 text-[#F15D2C]" />
           </div>
           <p className="text-xs text-gray-400 mb-4">Isu prioritas yang butuh perhatian hari ini</p>
@@ -598,12 +591,12 @@ export default function DashboardEnhanced() {
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Production & OEE Trend */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg p-5 transition-shadow duration-200">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Production & OEE</h3>
+              <h3 className="text-base font-bold text-gray-900 dark:text-white">Production & OEE</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">Output vs efficiency</p>
             </div>
             <TrendUp className="w-5 h-5 text-[#059669]" />
@@ -641,7 +634,7 @@ export default function DashboardEnhanced() {
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg p-5 transition-shadow duration-200">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Sales Trend</h3>
+              <h3 className="text-base font-bold text-gray-900 dark:text-white">Sales Trend</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">Last 7 days</p>
             </div>
             <ShoppingCartIcon className="w-5 h-5 text-[#059669]" />
@@ -702,7 +695,7 @@ export default function DashboardEnhanced() {
       </div>
 
       {/* Top Products & Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Top Products */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg overflow-hidden transition-shadow duration-200">
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
@@ -711,7 +704,7 @@ export default function DashboardEnhanced() {
                 <Package className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Top Products</h3>
+                <h3 className="text-base font-bold text-gray-900 dark:text-white">Top Products</h3>
                 <p className="text-xs text-gray-500 dark:text-gray-400">By quantity produced</p>
               </div>
             </div>
@@ -754,7 +747,7 @@ export default function DashboardEnhanced() {
                 <ClockIcon className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Recent Activity</h3>
+                <h3 className="text-base font-bold text-gray-900 dark:text-white">Recent Activity</h3>
                 <p className="text-xs text-gray-500 dark:text-gray-400">Live audit trail</p>
               </div>
             </div>
@@ -857,7 +850,7 @@ export default function DashboardEnhanced() {
               <SignalIcon className="w-5 h-5 text-green-600 dark:text-green-400" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Team Activity</h3>
+              <h3 className="text-base font-bold text-gray-900 dark:text-white">Team Activity</h3>
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 {activeUsers ? `${activeUsers.active_count} online • ${activeUsers.offline_count} offline • ${activeUsers.total_users} total` : 'Loading...'}
               </p>
