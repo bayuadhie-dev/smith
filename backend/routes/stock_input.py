@@ -124,18 +124,13 @@ def create_stock_input():
             
             db.session.add(movement)
             created_movements.append(movement)
-        
-        # Create main movement record for tracking
-        main_movement = InventoryMovement(
-            movement_type='stock_in',
-            movement_date=movement_date,
-            reference_number=reference_number,
-            reference_type='manual_input',
-            notes=data.get('notes', ''),
-            created_by=user_id
-        )
-        db.session.add(main_movement)
-        
+
+        # No separate "header" movement record - this endpoint always crashed
+        # (NotNullViolation on InventoryMovement.quantity) because that extra
+        # row never had a real quantity to give it. The per-item movements
+        # above already share reference_number, which is enough to look up
+        # the whole batch together - removed rather than faked with quantity=0.
+
         db.session.commit()
         
         return success_response('Stock input created successfully', {

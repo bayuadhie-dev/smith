@@ -309,6 +309,8 @@ def convert_pr_to_po(pr_id):
         if not supplier_id:
             return jsonify({'error': 'supplier_id wajib diisi'}), 400
 
+        from routes.purchasing import _calculate_po_total
+
         # Generate PO number
         po_number = generate_number_v2('purchase_order', 'PO', PurchaseOrder, 'po_number')
 
@@ -325,21 +327,34 @@ def convert_pr_to_po(pr_id):
         db.session.add(po)
         db.session.flush()
 
+        # Optional per-line price override (PR items carry an estimated
+        # price that's usually 0 - MRP-generated PRs don't estimate cost -
+        # so this lets the person doing the conversion supply a real price
+        # per pr_item_id without a separate "edit PR" round-trip).
+        item_prices = data.get('item_prices') or {}
+
+        subtotal = 0.0
         for idx, item in enumerate(pr.items, start=1):
+            unit_price = float(item_prices.get(str(item.id), item.estimated_unit_price or 0))
+            line_total = unit_price * float(item.quantity)
+            subtotal += line_total
+
             po_item = PurchaseOrderItem(
                 po_id=po.id,
                 line_number=idx,
                 material_id=item.material_id,
                 product_id=item.product_id,
-                item_name=item.item_name,
-                item_code=item.item_code,
+                description=item.item_name or item.item_code,
                 quantity=float(item.quantity),
                 uom=item.uom,
-                unit_price=float(item.estimated_unit_price or 0),
-                total_price=float(item.estimated_total or 0),
+                unit_price=unit_price,
+                total_price=line_total,
                 notes=item.notes,
             )
             db.session.add(po_item)
+
+        po.subtotal = subtotal
+        po.total_amount = _calculate_po_total(po, subtotal)
 
         pr.converted_to_po_id = po.id
         pr.status = 'converted'
