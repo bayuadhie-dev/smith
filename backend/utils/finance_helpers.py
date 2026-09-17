@@ -447,19 +447,22 @@ def apply_customer_deposit(invoice):
 
 def run_monthly_depreciation(period_year, period_month, posted_by_user_id=None):
     """
-    Compute and post monthly depreciation for all active FixedAssets,
-    mirroring Accurate's "Proses Akhir Bulan" (Period End) behavior of
-    auto-generating depreciation journals each month.
+    Compute and post monthly depreciation for all active Assets
+    (models.asset_management.Asset - consolidated 2026-09-17 from the old,
+    now-retired FixedAsset model, which this used to read from), mirroring
+    Accurate's "Proses Akhir Bulan" (Period End) behavior of auto-generating
+    depreciation journals each month.
 
-    For each active asset with straight_line depreciation (declining_balance
-    is not yet supported - FixedAsset.annual_depreciation returns 0 for it,
-    a pre-existing gap, not something newly introduced here), posts:
+    For each active asset (straight_line AND declining_balance both
+    supported - Asset.annual_depreciation computes both), posts:
         Debit: Beban Penyusutan (depreciation_expense)
         Credit: Akumulasi Penyusutan (accumulated_depreciation)
-    for 1/12th of the asset's annual depreciation, and increments the
-    asset's own accumulated_depreciation field to match. Skips (does not
-    post, does not error) any asset already fully depreciated (net book
-    value <= salvage value).
+    for 1/12th of the asset's annual depreciation, increments the asset's
+    own accumulated_depreciation field to match, and records one
+    DepreciationSchedule row per asset (book_type='commercial', is_posted=True,
+    linked to the AccountingEntry actually created) for traceability. Skips
+    (does not post, does not error) any asset already fully depreciated (net
+    book value <= salvage value).
 
     This does NOT check for a duplicate run in the same period - callers
     (the period-end endpoint) are responsible for guarding against running
@@ -467,8 +470,11 @@ def run_monthly_depreciation(period_year, period_month, posted_by_user_id=None):
 
     Returns a dict summary: {'assets_processed': int, 'total_depreciation': float, 'skipped': int}.
     """
+    from datetime import date
+    import calendar
     from models import db
-    from models.finance import FixedAsset, GlobalAccountDefault
+    from models.finance import GlobalAccountDefault
+    from models.asset_management import Asset, DepreciationSchedule
     from models.approval_workflow import PendingJournalEntry
 
     depreciation_default = GlobalAccountDefault.query.filter_by(transaction_key='depreciation_expense').first()
@@ -479,9 +485,12 @@ def run_monthly_depreciation(period_year, period_month, posted_by_user_id=None):
             "belum diatur di Preferensi Akun (GlobalAccountDefault)"
         )
 
-    assets = FixedAsset.query.filter_by(status='active').all()
+    assets = Asset.query.filter_by(status='active').all()
+    last_day = calendar.monthrange(period_year, period_month)[1]
+    period_end_date = date(period_year, period_month, last_day)
 
     journal_lines = []
+    posted_assets = []
     total_depreciation = 0
     assets_processed = 0
     skipped = 0
@@ -492,7 +501,7 @@ def run_monthly_depreciation(period_year, period_month, posted_by_user_id=None):
             skipped += 1
             continue
 
-        remaining_depreciable = asset.net_book_value - float(asset.salvage_value)
+        remaining_depreciable = asset.net_book_value - float(asset.salvage_value or 0)
         if remaining_depreciable <= 0:
             skipped += 1
             continue
@@ -500,9 +509,10 @@ def run_monthly_depreciation(period_year, period_month, posted_by_user_id=None):
         # Don't depreciate past salvage value in the final partial month.
         amount = min(monthly_depreciation, remaining_depreciable)
 
-        asset.accumulated_depreciation = float(asset.accumulated_depreciation) + amount
+        asset.accumulated_depreciation = float(asset.accumulated_depreciation or 0) + amount
         total_depreciation += amount
         assets_processed += 1
+        posted_assets.append((asset, amount))
 
         journal_lines.append({
             'account_id': depreciation_default.account_id,
@@ -518,11 +528,6 @@ def run_monthly_depreciation(period_year, period_month, posted_by_user_id=None):
         })
 
     if journal_lines:
-        from datetime import date
-        import calendar
-        last_day = calendar.monthrange(period_year, period_month)[1]
-        period_end_date = date(period_year, period_month, last_day)
-
         pending = PendingJournalEntry(
             workflow_id=None,
             entry_date=period_end_date,
@@ -535,7 +540,23 @@ def run_monthly_depreciation(period_year, period_month, posted_by_user_id=None):
         )
         db.session.add(pending)
         db.session.flush()
-        post_pending_journal(pending.id, posted_by_user_id=posted_by_user_id)
+        created_entries = post_pending_journal(pending.id, posted_by_user_id=posted_by_user_id)
+
+        # Each asset contributed 2 lines (debit, credit) in the same order as
+        # posted_assets - take the debit line's AccountingEntry for traceability.
+        for i, (asset, amount) in enumerate(posted_assets):
+            debit_entry = created_entries[i * 2] if len(created_entries) > i * 2 else None
+            db.session.add(DepreciationSchedule(
+                asset_id=asset.id,
+                period_date=period_end_date,
+                book_type='commercial',
+                depreciation_amount=amount,
+                accumulated_depreciation=asset.accumulated_depreciation,
+                net_book_value=asset.net_book_value,
+                is_posted=True,
+                posted_date=datetime.utcnow(),
+                accounting_entry_id=debit_entry.id if debit_entry else None,
+            ))
 
     db.session.commit()
 

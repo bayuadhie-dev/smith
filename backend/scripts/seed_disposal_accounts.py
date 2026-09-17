@@ -2,7 +2,8 @@
 
 erp_db: single generic chart -> generic keys.
 erp_db_v2: per-category accumulated-depreciation accounts -> category-specific keys
-(category_slug = FixedAsset.category.lower(), spaces->'_', ' & '->'_dan_'),
+(category_slug = Asset.category.lower(), spaces->'_', ' & '->'_dan_' - Asset is
+models.asset_management.Asset, which consolidated the old FixedAsset model 2026-09-17),
 falling back to a generic 'akumulasi_penyusutan' key if no per-category match at lookup time.
 
 Run once per database (pass DATABASE_URL env var to target erp_db_v2).

@@ -235,59 +235,10 @@ class AccountingEntry(db.Model):
     posted_by_user = db.relationship('User')
 
 
-class FixedAsset(db.Model):
-    __tablename__ = 'fixed_assets'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    asset_code = db.Column(db.String(50), unique=True, nullable=False, index=True)
-    asset_name = db.Column(db.String(200), nullable=False)
-    category = db.Column(db.String(100), nullable=False)  # Building, Equipment, Vehicle, Furniture, IT Equipment
-    description = db.Column(db.Text, nullable=True)
-    
-    # Acquisition
-    acquisition_date = db.Column(db.Date, nullable=False)
-    acquisition_cost = db.Column(db.Numeric(15, 2), nullable=False)
-    supplier_id = db.Column(db.Integer, db.ForeignKey('suppliers.id'), nullable=True)
-    invoice_number = db.Column(db.String(100), nullable=True)
-    
-    # Depreciation
-    depreciation_method = db.Column(db.String(50), nullable=False, default='straight_line')  # straight_line, declining_balance
-    useful_life_years = db.Column(db.Integer, nullable=False)  # in years
-    salvage_value = db.Column(db.Numeric(15, 2), default=0)
-    accumulated_depreciation = db.Column(db.Numeric(15, 2), default=0)
-    
-    # Location & Status
-    location = db.Column(db.String(200), nullable=True)
-    department_id = db.Column(db.Integer, db.ForeignKey('departments.id'), nullable=True)
-    responsible_person = db.Column(db.String(200), nullable=True)
-    status = db.Column(db.String(50), nullable=False, default='active')  # active, disposed, sold, damaged
-    
-    # Disposal
-    disposal_date = db.Column(db.Date, nullable=True)
-    disposal_amount = db.Column(db.Numeric(15, 2), nullable=True)
-    disposal_notes = db.Column(db.Text, nullable=True)
-    
-    # Audit
-    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # Relationships
-    supplier = db.relationship('Supplier')
-    department = db.relationship('Department')
-    created_by_user = db.relationship('User')
-    
-    @property
-    def net_book_value(self):
-        """Calculate Net Book Value (Cost - Accumulated Depreciation)"""
-        return float(self.acquisition_cost) - float(self.accumulated_depreciation)
-    
-    @property
-    def annual_depreciation(self):
-        """Calculate annual depreciation amount"""
-        if self.depreciation_method == 'straight_line':
-            return (float(self.acquisition_cost) - float(self.salvage_value)) / self.useful_life_years
-        return 0
+# FixedAsset retired 2026-09-17 - consolidated into models.asset_management.Asset
+# (richer superset schema: functional locations, spare parts, transfers, parallel
+# book/tax depreciation). See routes/asset_management.py for the equivalent
+# create/dispose GL-posting logic that used to live here.
 
 
 class TaxTransaction(db.Model):

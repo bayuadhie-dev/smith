@@ -246,7 +246,9 @@ const [accounts, setAccounts] = useState<Account[]>([])
       sales_invoice: `/app/sales/invoices/${referenceId}`,
       expense: `/app/finance/expenses/${referenceId}`,
       reimbursement: `/app/finance/reimbursements/${referenceId}`,
-      fixed_asset: `/app/accounting/fixed-assets/${referenceId}`,
+      fixed_asset: `/app/assets/${referenceId}`,
+      asset: `/app/assets/${referenceId}`,
+      asset_disposal: `/app/assets/${referenceId}`,
       recurring_payment: `/app/finance/recurring-payment-transactions/${referenceId}`,
       customer_deposit_usage: `/app/sales/invoices/${referenceId}`,
     }

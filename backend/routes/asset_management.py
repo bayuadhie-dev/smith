@@ -241,17 +241,165 @@ def create_asset():
         )
         
         db.session.add(asset)
+        db.session.flush()
+
+        # Optional GL posting (2026-09-17, ported from the retired FixedAsset/
+        # Finance "Fixed Assets" page) - only when explicitly requested, since
+        # asset acquisitions routed through Purchase Invoice already post their
+        # own journal. This is for manually-recorded assets that bypass PO/Invoice.
+        if data.get('post_journal') and asset.purchase_cost:
+            from models.finance import GlobalAccountDefault
+            from models.approval_workflow import PendingJournalEntry
+            from utils.finance_helpers import post_pending_journal, resolve_accounts_payable
+
+            aset_default = GlobalAccountDefault.query.filter_by(transaction_key='aset_tetap').first()
+            if not aset_default:
+                db.session.rollback()
+                return jsonify({'error': 'Akun Aset Tetap belum diatur di Preferensi Akun'}), 400
+
+            amount = float(asset.purchase_cost)
+            if asset.supplier_id:
+                credit_account_id = resolve_accounts_payable(asset.supplier_id)
+            else:
+                cash_default = GlobalAccountDefault.query.filter_by(transaction_key='cash').first()
+                if not cash_default:
+                    db.session.rollback()
+                    return jsonify({'error': 'Akun Kas belum diatur di Preferensi Akun'}), 400
+                credit_account_id = cash_default.account_id
+
+            journal_lines = [
+                {'account_id': aset_default.account_id, 'debit': amount, 'credit': 0,
+                 'description': f'Perolehan aset {asset.asset_code} - {asset.asset_name}'},
+                {'account_id': credit_account_id, 'debit': 0, 'credit': amount,
+                 'description': f'Perolehan aset {asset.asset_code}'},
+            ]
+            pending = PendingJournalEntry(
+                workflow_id=None,
+                entry_date=asset.purchase_date.date() if hasattr(asset.purchase_date, 'date') else asset.purchase_date,
+                description=f'Perolehan Aset Tetap {asset.asset_code}',
+                reference=asset.asset_code,
+                lines=journal_lines,
+                total_debit=amount,
+                total_credit=amount,
+                created_by=user_id,
+            )
+            db.session.add(pending)
+            db.session.flush()
+            post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='asset', reference_id=asset.id)
+
         db.session.commit()
-        
+
         # Generate depreciation schedule if applicable
         if asset.purchase_cost and asset.useful_life_years and asset.depreciation_method:
             generate_depreciation_schedule(asset.id)
-        
+
         return jsonify({
             'message': 'Asset created successfully',
             'asset_id': asset.id,
             'asset_code': asset.asset_code
         }), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@asset_bp.route('/<int:asset_id>/dispose', methods=['POST'])
+@jwt_required()
+@require_permission('maintenance.delete')
+def dispose_asset(asset_id):
+    """Mark an asset disposed and optionally post the disposal journal to GL
+    (gain/loss on disposal vs net book value) - ported from the retired
+    FixedAsset/Finance 'Fixed Assets' page (2026-09-17) so this real
+    accounting behavior isn't lost when consolidating onto this Asset model."""
+    try:
+        from models.finance import GlobalAccountDefault
+        from models.approval_workflow import PendingJournalEntry
+        from utils.finance_helpers import post_pending_journal, is_period_locked
+
+        asset = db.session.get(Asset, asset_id)
+        if not asset:
+            return jsonify({'error': 'Asset not found'}), 404
+        if asset.status == 'disposed':
+            return jsonify({'error': 'Aset ini sudah berstatus disposed'}), 400
+
+        today = get_local_today()
+        if is_period_locked(today):
+            return jsonify({'error': f'Periode {today.strftime("%Y-%m")} sudah ditutup (period-close). Tidak bisa dispose aset hari ini.'}), 400
+
+        data = request.get_json() or {}
+        user_id = get_jwt_identity()
+        disposal_amount = float(data.get('disposal_amount') or 0)
+        accumulated_depreciation = float(asset.accumulated_depreciation or 0)
+        purchase_cost = float(asset.purchase_cost or 0)
+        net_book_value = purchase_cost - accumulated_depreciation
+        gain_loss = disposal_amount - net_book_value
+
+        asset.status = 'disposed'
+        asset.disposal_date = today
+        asset.disposal_value = data.get('disposal_amount')
+        asset.disposal_method = data.get('disposal_method')
+        asset.disposal_notes = data.get('disposal_notes')
+        db.session.flush()
+
+        if data.get('post_journal', True) and purchase_cost:
+            aset_default = GlobalAccountDefault.query.filter_by(transaction_key='aset_tetap').first()
+            category_slug = (asset.category or '').strip().lower().replace(' & ', '_dan_').replace(' ', '_')
+            akumulasi_default = (
+                GlobalAccountDefault.query.filter_by(transaction_key=f'akumulasi_penyusutan_{category_slug}').first()
+                if category_slug else None
+            ) or GlobalAccountDefault.query.filter_by(transaction_key='akumulasi_penyusutan').first()
+            if not aset_default or not akumulasi_default:
+                db.session.rollback()
+                return jsonify({'error': 'Akun Aset Tetap dan/atau Akumulasi Penyusutan belum diatur di Preferensi Akun'}), 400
+
+            lines = [
+                {'account_id': akumulasi_default.account_id, 'debit': accumulated_depreciation, 'credit': 0,
+                 'description': f'Hapus akumulasi penyusutan - {asset.asset_code}'},
+                {'account_id': aset_default.account_id, 'debit': 0, 'credit': purchase_cost,
+                 'description': f'Pelepasan aset {asset.asset_code} - {asset.asset_name}'},
+            ]
+            total = accumulated_depreciation
+
+            if disposal_amount > 0:
+                cash_default = GlobalAccountDefault.query.filter_by(transaction_key='cash').first()
+                if not cash_default:
+                    db.session.rollback()
+                    return jsonify({'error': 'Akun Kas belum diatur di Preferensi Akun'}), 400
+                lines.append({'account_id': cash_default.account_id, 'debit': disposal_amount, 'credit': 0,
+                              'description': f'Hasil pelepasan aset {asset.asset_code}'})
+                total += disposal_amount
+
+            if abs(gain_loss) > 0.01:
+                key = 'laba_pelepasan_aset' if gain_loss > 0 else 'rugi_pelepasan_aset'
+                gain_loss_default = GlobalAccountDefault.query.filter_by(transaction_key=key).first()
+                if not gain_loss_default:
+                    db.session.rollback()
+                    label = 'Laba' if gain_loss > 0 else 'Rugi'
+                    return jsonify({'error': f'Akun {label} Pelepasan Aset belum diatur di Preferensi Akun'}), 400
+                if gain_loss > 0:
+                    lines.append({'account_id': gain_loss_default.account_id, 'debit': 0, 'credit': gain_loss,
+                                  'description': f'Laba pelepasan aset {asset.asset_code}'})
+                else:
+                    lines.append({'account_id': gain_loss_default.account_id, 'debit': abs(gain_loss), 'credit': 0,
+                                  'description': f'Rugi pelepasan aset {asset.asset_code}'})
+                    total += abs(gain_loss)
+
+            pending = PendingJournalEntry(
+                workflow_id=None,
+                entry_date=today,
+                description=f'Pelepasan Aset Tetap {asset.asset_code}',
+                reference=asset.asset_code,
+                lines=lines,
+                total_debit=total,
+                total_credit=total,
+                created_by=user_id,
+            )
+            db.session.add(pending)
+            db.session.flush()
+            post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='asset_disposal', reference_id=asset.id)
+
+        db.session.commit()
+        return jsonify({'message': 'Asset marked as disposed', 'asset_id': asset.id}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500

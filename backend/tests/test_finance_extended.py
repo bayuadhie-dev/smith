@@ -683,42 +683,38 @@ class TestFinanceTax:
 
 
 class TestFinanceFixedAssets:
-    def test_get_fixed_assets(self, client, auth_headers):
-        response = client.get('/api/finance/fixed-assets', headers=auth_headers)
+    """FixedAsset was retired 2026-09-17 and consolidated into
+    models.asset_management.Asset (routes/asset_management.py, /api/assets) -
+    these smoke tests were repointed there rather than removed, since the
+    underlying capability (asset CRUD + disposal GL posting) still exists."""
+
+    def test_get_assets(self, client, auth_headers):
+        response = client.get('/api/assets', headers=auth_headers)
         assert response.status_code in [200, 404, 500]
 
-    def test_create_fixed_asset(self, client, auth_headers):
-        response = client.post('/api/finance/fixed-assets', json={
+    def test_create_asset(self, client, auth_headers):
+        response = client.post('/api/assets', json={
             'asset_name': 'Test Asset',
             'asset_type': 'machinery',
             'purchase_date': '2024-01-15',
             'purchase_cost': 10000,
-            'useful_life': 10
+            'useful_life_years': 10
         }, headers=auth_headers)
         assert response.status_code in [200, 201, 400, 404, 500]
 
-    def test_get_fixed_asset_by_id(self, client, auth_headers):
-        response = client.get('/api/finance/fixed-assets/1', headers=auth_headers)
+    def test_get_asset_by_id(self, client, auth_headers):
+        response = client.get('/api/assets/1', headers=auth_headers)
         assert response.status_code in [200, 404, 500]
 
-    def test_update_fixed_asset(self, client, auth_headers):
-        response = client.put('/api/finance/fixed-assets/1', json={
+    def test_update_asset(self, client, auth_headers):
+        response = client.put('/api/assets/1', json={
             'asset_name': 'Updated Asset'
         }, headers=auth_headers)
         assert response.status_code in [200, 400, 404, 500]
 
-    def test_delete_fixed_asset(self, client, auth_headers):
-        response = client.delete('/api/finance/fixed-assets/1', headers=auth_headers)
-        assert response.status_code in [200, 400, 404, 500]
-
-    def test_calculate_depreciation(self, client, auth_headers):
-        response = client.post('/api/finance/fixed-assets/1/depreciation', headers=auth_headers)
-        assert response.status_code in [200, 400, 404, 500]
-
-    def test_dispose_fixed_asset(self, client, auth_headers):
-        response = client.post('/api/finance/fixed-assets/1/dispose', json={
-            'disposal_date': '2024-12-31',
-            'disposal_value': 5000
+    def test_dispose_asset(self, client, auth_headers):
+        response = client.post('/api/assets/1/dispose', json={
+            'disposal_amount': 5000
         }, headers=auth_headers)
         assert response.status_code in [200, 400, 404, 500]
 
