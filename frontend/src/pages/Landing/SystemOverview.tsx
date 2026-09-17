@@ -629,16 +629,16 @@ const SystemOverviewEnhanced: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-blue-950 to-slate-950 text-white overflow-hidden selection:bg-blue-500 selection:text-white">
+    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-emerald-950 to-slate-950 text-white overflow-hidden selection:bg-[#059669] selection:text-white">
       {/* Live System Activity Ticker Bar */}
-      <div className="bg-gradient-to-r from-blue-900/80 via-indigo-900/80 to-slate-900/80 border-b border-blue-500/20 py-2 px-4 text-xs backdrop-blur-md relative z-50">
+      <div className="bg-gradient-to-r from-emerald-900/80 via-emerald-800/80 to-slate-900/80 border-b border-emerald-500/20 py-2 px-4 text-xs backdrop-blur-md relative z-50">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-3 overflow-hidden">
             <span className="flex items-center gap-1.5 bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider text-[10px] border border-emerald-500/30 flex-shrink-0">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
               Live Sync
             </span>
-            <div className="flex items-center space-x-6 animate-marquee whitespace-nowrap text-blue-200">
+            <div className="flex items-center space-x-6 animate-marquee whitespace-nowrap text-emerald-200">
               <span>⚡ Mesin 8 Shift 2: 77 Karton (8.316 pcs) Indomaret Wipes Output</span>
               <span className="text-slate-600">•</span>
               <span>📦 Packing List #PL-2026-004 Released with Octenic Weighing Batch Summary</span>
@@ -657,9 +657,9 @@ const SystemOverviewEnhanced: React.FC = () => {
 
       {/* Animated Background Mesh Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-[600px] h-[600px] bg-blue-600/15 rounded-full mix-blend-screen filter blur-[120px] animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-[600px] h-[600px] bg-purple-600/15 rounded-full mix-blend-screen filter blur-[120px] animate-pulse animation-delay-2000"></div>
-        <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 w-[700px] h-[700px] bg-indigo-600/10 rounded-full mix-blend-screen filter blur-[140px]"></div>
+        <div className="absolute -top-40 -right-40 w-[600px] h-[600px] bg-[#059669]/15 rounded-full mix-blend-screen filter blur-[120px] animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-[600px] h-[600px] bg-[#F15D2C]/15 rounded-full mix-blend-screen filter blur-[120px] animate-pulse animation-delay-2000"></div>
+        <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 w-[700px] h-[700px] bg-emerald-600/10 rounded-full mix-blend-screen filter blur-[140px]"></div>
       </div>
 
       <div className="relative z-10">
@@ -679,12 +679,12 @@ const SystemOverviewEnhanced: React.FC = () => {
 
                 {/* Company Logo & Name */}
                 <div className="flex items-center space-x-3">
-                  <div className="h-10 w-10 bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 border border-blue-400/30">
+                  <div className="h-10 w-10 bg-gradient-to-tr from-[#059669] via-[#047857] to-[#065f46] rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 border border-emerald-400/30">
                     <SparklesIcon className="h-6 w-6 text-white" />
                   </div>
                   <div>
                     <h1 className="text-base md:text-xl font-extrabold text-white tracking-tight">{companyName}</h1>
-                    <p className="text-xs text-blue-300 font-medium hidden sm:block">{t('system.erp_system')}</p>
+                    <p className="text-xs text-emerald-300 font-medium hidden sm:block">{t('system.erp_system')}</p>
                   </div>
                 </div>
               </div>
@@ -702,7 +702,7 @@ const SystemOverviewEnhanced: React.FC = () => {
                       onClick={() => setSelectedView(view.id as any)}
                       className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 ${
                         selectedView === view.id
-                          ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
+                          ? 'bg-[#059669] text-white shadow-md shadow-emerald-600/30'
                           : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
                       }`}
                     >
@@ -729,7 +729,7 @@ const SystemOverviewEnhanced: React.FC = () => {
                 {/* Login Button */}
                 <Link
                   to="/login"
-                  className="px-4 py-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold rounded-xl transition-all duration-300 shadow-lg shadow-blue-600/30 hover:shadow-blue-500/50 text-xs md:text-sm whitespace-nowrap border border-blue-400/30 flex items-center gap-2"
+                  className="px-4 py-2 bg-gradient-to-r from-[#059669] to-[#047857] hover:from-emerald-500 hover:to-emerald-700 text-white font-bold rounded-xl transition-all duration-300 shadow-lg shadow-emerald-600/30 hover:shadow-emerald-500/50 text-xs md:text-sm whitespace-nowrap border border-emerald-400/30 flex items-center gap-2"
                 >
                   <BoltIcon className="w-4 h-4" />
                   <span>{t('auth.login_to_access')}</span>
@@ -743,8 +743,8 @@ const SystemOverviewEnhanced: React.FC = () => {
         <section className="pt-16 pb-12 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto text-center">
             {/* Top Pill Badge */}
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-300 text-xs font-semibold mb-6 shadow-inner">
-              <SparklesIcon className="w-4 h-4 text-blue-400 animate-spin" />
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold mb-6 shadow-inner">
+              <SparklesIcon className="w-4 h-4 text-emerald-400 animate-spin" />
               <span>Sistem ERP Manufaktur Terintegrasi Real-Time</span>
             </div>
 
@@ -752,7 +752,7 @@ const SystemOverviewEnhanced: React.FC = () => {
               <span className="text-white block mb-2 drop-shadow-md">
                 {companyName}
               </span>
-              <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent drop-shadow-sm">
+              <span className="bg-gradient-to-r from-emerald-400 via-emerald-300 to-[#F15D2C] bg-clip-text text-transparent drop-shadow-sm">
                 Sistem ERP Enterprise
               </span>
             </h1>
@@ -765,16 +765,16 @@ const SystemOverviewEnhanced: React.FC = () => {
             <div className="flex flex-wrap justify-center items-center gap-4 mb-12">
               <Link
                 to="/login"
-                className="px-8 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-2xl shadow-xl shadow-blue-600/30 hover:shadow-blue-500/50 transition-all duration-300 flex items-center gap-2 text-base border border-blue-400/30"
+                className="px-8 py-3.5 bg-gradient-to-r from-[#059669] to-[#047857] hover:from-emerald-500 hover:to-emerald-700 text-white font-bold rounded-2xl shadow-xl shadow-emerald-600/30 hover:shadow-emerald-500/50 transition-all duration-300 flex items-center gap-2 text-base border border-emerald-400/30"
               >
                 <span>Masuk untuk Mengakses</span>
                 <ArrowRightIcon className="w-5 h-5" />
               </Link>
               <Link
                 to="/public/production-monitoring"
-                className="px-8 py-3.5 bg-slate-800/80 hover:bg-slate-700/80 text-blue-300 font-bold rounded-2xl border border-slate-700/80 hover:border-blue-500/50 transition-all duration-300 flex items-center gap-2 text-base backdrop-blur-md shadow-lg"
+                className="px-8 py-3.5 bg-slate-800/80 hover:bg-slate-700/80 text-emerald-300 font-bold rounded-2xl border border-slate-700/80 hover:border-emerald-500/50 transition-all duration-300 flex items-center gap-2 text-base backdrop-blur-md shadow-lg"
               >
-                <TvIcon className="w-5 h-5 text-blue-400" />
+                <TvIcon className="w-5 h-5 text-emerald-400" />
                 <span>Portal TV Display Live</span>
               </Link>
             </div>
@@ -922,7 +922,7 @@ const SystemOverviewEnhanced: React.FC = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Cari modul atau fitur..."
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-900/90 border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-inner"
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-900/90 border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-400 focus:outline-none focus:border-[#059669] focus:ring-1 focus:ring-[#059669] transition-all shadow-inner"
               />
             </div>
 
@@ -942,7 +942,7 @@ const SystemOverviewEnhanced: React.FC = () => {
                   onClick={() => setSelectedCategory(cat.id)}
                   className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
                     selectedCategory === cat.id
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
+                      ? 'bg-[#059669] text-white shadow-lg shadow-emerald-600/30'
                       : 'bg-slate-900/80 text-slate-300 border border-slate-800 hover:border-slate-700 hover:text-white'
                   }`}
                 >
@@ -1008,8 +1008,8 @@ const SystemOverviewEnhanced: React.FC = () => {
           <div className="bg-slate-900/80 backdrop-blur-2xl rounded-3xl border border-slate-800 p-8 shadow-2xl">
             <div className="flex flex-col sm:flex-row items-center justify-between mb-8 pb-6 border-b border-slate-800 gap-4">
               <div className="flex items-center space-x-3">
-                <div className="p-3 bg-blue-500/10 rounded-2xl border border-blue-500/30">
-                  <CpuChipIcon className="h-8 w-8 text-blue-400" />
+                <div className="p-3 bg-emerald-500/10 rounded-2xl border border-emerald-500/30">
+                  <CpuChipIcon className="h-8 w-8 text-emerald-400" />
                 </div>
                 <div>
                   <h3 className="text-xl font-extrabold text-white">Status Infrastruktur Server</h3>

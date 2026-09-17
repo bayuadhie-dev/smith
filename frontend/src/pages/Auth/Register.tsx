@@ -242,16 +242,16 @@ export default function Register() {
   const selectedRole = getSelectedRoleInfo()
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-emerald-950 to-slate-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
-          <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-blue-600">
+          <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-[#059669]">
             <UserIcon className="h-8 w-8 text-white" />
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
             Create Account
           </h2>
-          <p className="mt-2 text-center text-sm text-blue-200">
+          <p className="mt-2 text-center text-sm text-emerald-200">
             Register for {companyName} ERP System
           </p>
         </div>
@@ -260,7 +260,7 @@ export default function Register() {
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="full_name" className="block text-sm font-medium text-blue-200">
+                <label htmlFor="full_name" className="block text-sm font-medium text-emerald-200">
                   Full Name *
                 </label>
                 <input
@@ -270,13 +270,13 @@ export default function Register() {
                   required
                   value={formData.full_name}
                   onChange={handleChange}
-                  className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-600 placeholder-gray-400 dark:placeholder-gray-500 dark:placeholder-gray-400 text-white bg-gray-800 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                  className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-600 placeholder-gray-400 dark:placeholder-gray-500 dark:placeholder-gray-400 text-white bg-gray-800 rounded-md focus:outline-none focus:ring-[#059669] focus:border-[#059669] focus:z-10 sm:text-sm"
                   placeholder="Enter your full name"
                 />
               </div>
 
               <div>
-                <label htmlFor="employee_number" className="block text-sm font-medium text-blue-200">
+                <label htmlFor="employee_number" className="block text-sm font-medium text-emerald-200">
                   Employee Number
                 </label>
                 <input
@@ -285,14 +285,14 @@ export default function Register() {
                   type="text"
                   value={formData.employee_number}
                   onChange={handleChange}
-                  className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-600 placeholder-gray-400 dark:placeholder-gray-500 dark:placeholder-gray-400 text-white bg-gray-800 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                  className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-600 placeholder-gray-400 dark:placeholder-gray-500 dark:placeholder-gray-400 text-white bg-gray-800 rounded-md focus:outline-none focus:ring-[#059669] focus:border-[#059669] focus:z-10 sm:text-sm"
                   placeholder="Employee ID (optional)"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-blue-200">
+              <label htmlFor="username" className="block text-sm font-medium text-emerald-200">
                 Username *
               </label>
               <input
@@ -302,13 +302,13 @@ export default function Register() {
                 required
                 value={formData.username}
                 onChange={handleChange}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-600 placeholder-gray-400 dark:placeholder-gray-500 dark:placeholder-gray-400 text-white bg-gray-800 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-600 placeholder-gray-400 dark:placeholder-gray-500 dark:placeholder-gray-400 text-white bg-gray-800 rounded-md focus:outline-none focus:ring-[#059669] focus:border-[#059669] focus:z-10 sm:text-sm"
                 placeholder="Choose a username"
               />
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-blue-200">
+              <label htmlFor="email" className="block text-sm font-medium text-emerald-200">
                 Email Address *
               </label>
               <input
@@ -318,14 +318,14 @@ export default function Register() {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-600 placeholder-gray-400 dark:placeholder-gray-500 dark:placeholder-gray-400 text-white bg-gray-800 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-600 placeholder-gray-400 dark:placeholder-gray-500 dark:placeholder-gray-400 text-white bg-gray-800 rounded-md focus:outline-none focus:ring-[#059669] focus:border-[#059669] focus:z-10 sm:text-sm"
                 placeholder="Enter your email"
               />
             </div>
 
             <div>
               <div>
-                <label htmlFor="department" className="block text-sm font-medium text-blue-200">
+                <label htmlFor="department" className="block text-sm font-medium text-emerald-200">
                   Department
                 </label>
                 <input
@@ -334,14 +334,14 @@ export default function Register() {
                   type="text"
                   value={formData.department}
                   onChange={handleChange}
-                  className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-600 placeholder-gray-400 dark:placeholder-gray-500 dark:placeholder-gray-400 text-white bg-gray-800 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                  className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-600 placeholder-gray-400 dark:placeholder-gray-500 dark:placeholder-gray-400 text-white bg-gray-800 rounded-md focus:outline-none focus:ring-[#059669] focus:border-[#059669] focus:z-10 sm:text-sm"
                   placeholder="Your department"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-blue-200">
+              <label htmlFor="phone" className="block text-sm font-medium text-emerald-200">
                 Phone Number
               </label>
               <input
@@ -350,14 +350,14 @@ export default function Register() {
                 type="tel"
                 value={formData.phone}
                 onChange={handleChange}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-600 placeholder-gray-400 dark:placeholder-gray-500 dark:placeholder-gray-400 text-white bg-gray-800 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-600 placeholder-gray-400 dark:placeholder-gray-500 dark:placeholder-gray-400 text-white bg-gray-800 rounded-md focus:outline-none focus:ring-[#059669] focus:border-[#059669] focus:z-10 sm:text-sm"
                 placeholder="Your phone number"
               />
             </div>
 
             {/* Role Selection */}
             <div>
-              <label htmlFor="role_id" className="block text-sm font-medium text-blue-200">
+              <label htmlFor="role_id" className="block text-sm font-medium text-emerald-200">
                 Role / Position *
               </label>
               <div className="mt-1 relative">
@@ -368,7 +368,7 @@ export default function Register() {
                   value={formData.role_id}
                   onChange={handleChange}
                   disabled={loadingRoles}
-                  className="appearance-none relative block w-full px-3 py-2 pr-10 border border-gray-600 text-white bg-gray-800 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                  className="appearance-none relative block w-full px-3 py-2 pr-10 border border-gray-600 text-white bg-gray-800 rounded-md focus:outline-none focus:ring-[#059669] focus:border-[#059669] focus:z-10 sm:text-sm"
                 >
                   <option value="">
                     {loadingRoles ? 'Loading roles...' : 'Select your role'}
@@ -417,14 +417,14 @@ export default function Register() {
                 <ChevronDownIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
               </div>
               {selectedRole && (
-                <p className="mt-1 text-xs text-blue-300">
+                <p className="mt-1 text-xs text-emerald-300">
                   {selectedRole.description}
                 </p>
               )}
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-blue-200">
+              <label htmlFor="password" className="block text-sm font-medium text-emerald-200">
                 Password *
               </label>
               <div className="mt-1 relative">
@@ -435,7 +435,7 @@ export default function Register() {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="appearance-none relative block w-full px-3 py-2 pr-10 border border-gray-600 placeholder-gray-400 dark:placeholder-gray-500 dark:placeholder-gray-400 text-white bg-gray-800 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                  className="appearance-none relative block w-full px-3 py-2 pr-10 border border-gray-600 placeholder-gray-400 dark:placeholder-gray-500 dark:placeholder-gray-400 text-white bg-gray-800 rounded-md focus:outline-none focus:ring-[#059669] focus:border-[#059669] focus:z-10 sm:text-sm"
                   placeholder="Create a password"
                 />
                 <button
@@ -455,10 +455,10 @@ export default function Register() {
               {passwordStrength && (
                 <div className="mt-2">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-blue-200">Password Strength:</span>
+                    <span className="text-xs text-emerald-200">Password Strength:</span>
                     <span className={`text-xs font-semibold ${
                       passwordStrength.strength === 'strong' ? 'text-green-400' :
-                      passwordStrength.strength === 'good' ? 'text-blue-400' :
+                      passwordStrength.strength === 'good' ? 'text-emerald-400' :
                       passwordStrength.strength === 'fair' ? 'text-yellow-400' :
                       'text-red-400'
                     }`}>
@@ -469,7 +469,7 @@ export default function Register() {
                     <div
                       className={`h-2 rounded-full transition-all duration-300 ${
                         passwordStrength.strength === 'strong' ? 'bg-green-500' :
-                        passwordStrength.strength === 'good' ? 'bg-blue-500' :
+                        passwordStrength.strength === 'good' ? 'bg-[#059669]' :
                         passwordStrength.strength === 'fair' ? 'bg-yellow-500' :
                         'bg-red-500'
                       }`}
@@ -479,7 +479,7 @@ export default function Register() {
                   {passwordStrength.feedback.length > 0 && (
                     <ul className="mt-2 space-y-1">
                       {passwordStrength.feedback.map((item, idx) => (
-                        <li key={idx} className="text-xs text-blue-300 flex items-start">
+                        <li key={idx} className="text-xs text-emerald-300 flex items-start">
                           <span className="mr-1">•</span>
                           <span>{item}</span>
                         </li>
@@ -491,14 +491,14 @@ export default function Register() {
               
               {/* Password Requirements */}
               {passwordRequirements && !passwordStrength && (
-                <p className="mt-1 text-xs text-blue-300">
+                <p className="mt-1 text-xs text-emerald-300">
                   {passwordRequirements.description}
                 </p>
               )}
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-blue-200">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-emerald-200">
                 Confirm Password *
               </label>
               <div className="mt-1 relative">
@@ -509,7 +509,7 @@ export default function Register() {
                   required
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="appearance-none relative block w-full px-3 py-2 pr-10 border border-gray-600 placeholder-gray-400 dark:placeholder-gray-500 dark:placeholder-gray-400 text-white bg-gray-800 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                  className="appearance-none relative block w-full px-3 py-2 pr-10 border border-gray-600 placeholder-gray-400 dark:placeholder-gray-500 dark:placeholder-gray-400 text-white bg-gray-800 rounded-md focus:outline-none focus:ring-[#059669] focus:border-[#059669] focus:z-10 sm:text-sm"
                   placeholder="Confirm your password"
                 />
                 <button
@@ -544,8 +544,8 @@ export default function Register() {
             {/* CAPTCHA */}
             <div className="bg-gray-700 rounded-lg p-4 border border-gray-600">
               <div className="flex items-center mb-3">
-                <ShieldCheckIcon className="h-5 w-5 text-blue-400 mr-2" />
-                <label className="text-sm font-medium text-blue-200">
+                <ShieldCheckIcon className="h-5 w-5 text-emerald-400 mr-2" />
+                <label className="text-sm font-medium text-emerald-200">
                   Security Verification *
                 </label>
               </div>
@@ -575,9 +575,9 @@ export default function Register() {
                 onChange={handleChange}
                 placeholder="Enter the code above"
                 required
-                className="mt-3 appearance-none relative block w-full px-3 py-2 border border-gray-600 placeholder-gray-400 dark:placeholder-gray-500 dark:placeholder-gray-400 text-white bg-gray-800 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className="mt-3 appearance-none relative block w-full px-3 py-2 border border-gray-600 placeholder-gray-400 dark:placeholder-gray-500 dark:placeholder-gray-400 text-white bg-gray-800 rounded-md focus:outline-none focus:ring-[#059669] focus:border-[#059669] sm:text-sm"
               />
-              <p className="mt-1 text-xs text-blue-300">
+              <p className="mt-1 text-xs text-emerald-300">
                 Enter the code shown above to verify you're human
               </p>
             </div>
@@ -587,7 +587,7 @@ export default function Register() {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#059669] hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#059669] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {loading ? (
                 <div className="flex items-center">
@@ -601,9 +601,9 @@ export default function Register() {
           </div>
 
           <div className="text-center">
-            <p className="text-sm text-blue-300">
+            <p className="text-sm text-emerald-300">
               Already have an account?{' '}
-              <Link to="/login" className="text-white hover:text-blue-200 font-medium transition-colors inline-flex items-center gap-1">
+              <Link to="/login" className="text-white hover:text-emerald-200 font-medium transition-colors inline-flex items-center gap-1">
                 <ArrowLeftIcon className="h-4 w-4" />
                 Back to Login
               </Link>

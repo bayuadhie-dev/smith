@@ -173,12 +173,12 @@ export default function Login() {
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 via-indigo-700 to-purple-800 relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#059669] via-[#047857] to-[#065f46] relative overflow-hidden">
         {/* Animated Background */}
         <div className="absolute inset-0">
           <div className="absolute top-20 left-20 w-72 h-72 bg-white dark:bg-gray-800/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-400/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-20 w-96 h-96 bg-[#F15D2C]/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-400/10 rounded-full blur-3xl"></div>
         </div>
         
         {/* Grid Pattern */}
@@ -201,9 +201,9 @@ export default function Login() {
             <h1 className="text-4xl xl:text-5xl font-bold text-white leading-tight mb-4">
               Enterprise Resource
               <br />
-              <span className="text-blue-200">Planning System</span>
+              <span className="text-emerald-200">Planning System</span>
             </h1>
-            <p className="text-lg text-blue-100/80 max-w-md">
+            <p className="text-lg text-emerald-50/80 max-w-md">
               Streamline your business operations with our comprehensive ERP solution. 
               Manage everything from inventory to finance in one place.
             </p>
@@ -228,15 +228,15 @@ export default function Login() {
           <div className="flex gap-8 mt-12 pt-8 border-t border-white/20">
             <div>
               <p className="text-3xl font-bold text-white">99.9%</p>
-              <p className="text-blue-200 text-sm">Uptime</p>
+              <p className="text-emerald-200 text-sm">Uptime</p>
             </div>
             <div>
               <p className="text-3xl font-bold text-white">24/7</p>
-              <p className="text-blue-200 text-sm">Support</p>
+              <p className="text-emerald-200 text-sm">Support</p>
             </div>
             <div>
               <p className="text-3xl font-bold text-white">100+</p>
-              <p className="text-blue-200 text-sm">Features</p>
+              <p className="text-emerald-200 text-sm">Features</p>
             </div>
           </div>
         </div>
@@ -248,7 +248,7 @@ export default function Login() {
           {/* Mobile Logo */}
           <div className="lg:hidden text-center mb-8">
             <div className="inline-flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+              <div className="w-12 h-12 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl flex items-center justify-center">
                 <CubeIcon className="w-7 h-7 text-white" />
               </div>
               <span className="text-2xl font-bold text-slate-900 dark:text-white">{companyName}</span>
@@ -335,7 +335,7 @@ export default function Login() {
                   name="username"
                   type="text"
                   required
-                  className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-transparent transition-all"
                   placeholder="Enter your username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
@@ -357,7 +357,7 @@ export default function Login() {
                   name="password"
                   type={showPassword ? 'text' : 'password'}
                   required
-                  className="w-full pl-11 pr-12 py-3.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className="w-full pl-11 pr-12 py-3.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-transparent transition-all"
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -384,11 +384,11 @@ export default function Login() {
                   id="remember-me"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                  className="w-4 h-4 rounded border-slate-300 text-[#059669] focus:ring-[#059669] cursor-pointer"
                 />
                 <span className="text-sm text-slate-600 dark:text-slate-400">Remember me</span>
               </label>
-              <Link to="/forgot-password" className="text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors">
+              <Link to="/forgot-password" className="text-sm font-medium text-[#059669] hover:text-emerald-700 transition-colors">
                 Forgot password?
               </Link>
             </div>
@@ -397,7 +397,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 py-3.5 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:-translate-y-0.5"
+              className="w-full flex items-center justify-center gap-2 py-3.5 px-4 bg-gradient-to-r from-[#059669] to-[#047857] hover:from-emerald-700 hover:to-emerald-800 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/40 focus:outline-none focus:ring-2 focus:ring-[#059669] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:-translate-y-0.5"
             >
               {loading ? (
                 <>
@@ -430,7 +430,7 @@ export default function Login() {
               type="button"
               onClick={handleGoogleLogin}
               disabled={!googleEnabled || googleLoading}
-              className={`w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-slate-700 dark:text-slate-200 font-medium hover:bg-slate-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 ${(!googleEnabled || googleLoading) ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-slate-700 dark:text-slate-200 font-medium hover:bg-slate-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-[#059669] focus:ring-offset-2 transition-all duration-300 ${(!googleEnabled || googleLoading) ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {googleLoading ? (
                 <>
@@ -456,7 +456,7 @@ export default function Login() {
           <div className="text-center mt-6">
             <p className="text-slate-600 dark:text-slate-400">
               Don't have an account?{' '}
-              <Link to="/register" className="font-semibold text-blue-600 hover:text-blue-500 transition-colors">
+              <Link to="/register" className="font-semibold text-[#059669] hover:text-emerald-700 transition-colors">
                 Create account
               </Link>
             </p>
