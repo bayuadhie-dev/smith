@@ -483,123 +483,124 @@ export default function DashboardEnhanced() {
         </div>
       </div>
 
-      {/* Performance Scorecard - actual vs target per KPI, last 30 days */}
-      {scorecard && scorecard.kpis?.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl">
-                <TrophyIcon className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Performance Scorecard</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Actual vs target, last 30 days</p>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{scorecard.overall_score}%</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Overall score</p>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {scorecard.kpis.map((kpi: any) => {
-              const statusStyle = kpi.status === 'good'
-                ? { badge: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400', bar: 'bg-green-500' }
-                : kpi.status === 'warning'
-                  ? { badge: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400', bar: 'bg-amber-500' }
-                  : { badge: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400', bar: 'bg-red-500' }
-              const displayActual = kpi.unit === 'IDR' ? formatRupiah(kpi.actual) : `${kpi.actual}${kpi.unit}`
-              const displayTarget = kpi.unit === 'IDR' ? formatRupiah(kpi.target) : `${kpi.target}${kpi.unit}`
-              return (
-                <div key={kpi.kpi_code} className="p-4 rounded-xl border border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${statusStyle.badge}`}>
-                      {kpi.status}
-                    </span>
-                    <span className="text-xs text-gray-400 dark:text-gray-500">{kpi.category}</span>
-                  </div>
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{kpi.kpi_name}</p>
-                  <p className="text-xl font-bold text-gray-900 dark:text-white mb-1">{displayActual}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Target: {displayTarget}</p>
-                  <div className="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full ${statusStyle.bar}`}
-                      style={{ width: `${Math.min(100, Math.max(0, kpi.achievement))}%` }}
-                    />
-                  </div>
-                  <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">{kpi.achievement}% of target</p>
+      {/* Performance Scorecard + Omzet & Margin - satu baris bento (2 kolom) */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        {/* Performance Scorecard - actual vs target per KPI, last 30 days */}
+        {scorecard && scorecard.kpis?.length > 0 && (
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl">
+                  <TrophyIcon className="w-5 h-5 text-white" />
                 </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Omzet & Margin Produk - HPP (material dari BOM) vs Harga Jual */}
-      {marginData && (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl">
-                <BanknotesIcon className="w-5 h-5 text-white" />
+                <div>
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white">Performance Scorecard</h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Actual vs target, 30 hari</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Omzet &amp; Margin Produk</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">HPP material (dari BOM) vs harga jual</p>
+              <div className="text-right">
+                <p className="text-xl font-bold text-gray-900 dark:text-white">{scorecard.overall_score}%</p>
+                <p className="text-[11px] text-gray-500 dark:text-gray-400">Overall score</p>
               </div>
             </div>
-            <div className="text-right">
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{marginData.summary.produk_data_lengkap}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">dari {marginData.summary.total_produk_ada_bom} produk siap dihitung</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {scorecard.kpis.map((kpi: any) => {
+                const statusStyle = kpi.status === 'good'
+                  ? { badge: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400', bar: 'bg-green-500' }
+                  : kpi.status === 'warning'
+                    ? { badge: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400', bar: 'bg-amber-500' }
+                    : { badge: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400', bar: 'bg-red-500' }
+                const displayActual = kpi.unit === 'IDR' ? formatRupiah(kpi.actual) : `${kpi.actual}${kpi.unit}`
+                const displayTarget = kpi.unit === 'IDR' ? formatRupiah(kpi.target) : `${kpi.target}${kpi.unit}`
+                return (
+                  <div key={kpi.kpi_code} className="p-3 rounded-lg bg-gray-50 dark:bg-gray-900/40">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase ${statusStyle.badge}`}>
+                        {kpi.status}
+                      </span>
+                      <span className="text-[10px] text-gray-400 dark:text-gray-500">{kpi.category}</span>
+                    </div>
+                    <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-0.5 truncate">{kpi.kpi_name}</p>
+                    <p className="text-lg font-bold text-gray-900 dark:text-white mb-0.5">{displayActual}</p>
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400 mb-1.5">Target: {displayTarget}</p>
+                    <div className="h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full ${statusStyle.bar}`}
+                        style={{ width: `${Math.min(100, Math.max(0, kpi.achievement))}%` }}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </div>
+        )}
 
-          <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 mb-4">
-            <p className="text-xs text-amber-800 dark:text-amber-300">{marginData.summary.catatan}</p>
-          </div>
-
-          {marginData.summary.produk_data_lengkap === 0 ? (
-            <div className="text-center py-10">
-              <BanknotesIcon className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Belum ada produk dengan data harga jual &amp; HPP lengkap</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Tabel margin akan otomatis terisi begitu harga jual disinkronkan dari Accurate Online.</p>
+        {/* Omzet & Margin Produk - HPP (material dari BOM) vs Harga Jual */}
+        {marginData && (
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-5">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl">
+                  <BanknotesIcon className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white">Omzet &amp; Margin Produk</h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">HPP (BOM) vs harga jual</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-xl font-bold text-gray-900 dark:text-white">{marginData.summary.produk_data_lengkap}</p>
+                <p className="text-[11px] text-gray-500 dark:text-gray-400">dari {marginData.summary.total_produk_ada_bom} produk</p>
+              </div>
             </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-                    <th className="pb-2 pr-4">Produk</th>
-                    <th className="pb-2 pr-4 text-right">HPP Material</th>
-                    <th className="pb-2 pr-4 text-right">Harga Jual</th>
-                    <th className="pb-2 text-right">Margin</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                  {marginData.rows.filter((r: any) => r.status === 'lengkap').slice(0, 10).map((r: any) => (
-                    <tr key={r.product_id}>
-                      <td className="py-2 pr-4">
-                        <p className="font-medium text-gray-900 dark:text-white">{r.product_name}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{r.product_code}</p>
-                      </td>
-                      <td className="py-2 pr-4 text-right tabular-nums">{formatRupiah(r.hpp_material)}</td>
-                      <td className="py-2 pr-4 text-right tabular-nums">{formatRupiah(r.selling_price)}</td>
-                      <td className={`py-2 text-right tabular-nums font-semibold ${r.margin >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                        {formatRupiah(r.margin)} <span className="text-xs font-normal">({r.margin_percent}%)</span>
-                      </td>
+
+            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-2.5 mb-3">
+              <p className="text-[11px] text-amber-800 dark:text-amber-300">{marginData.summary.catatan}</p>
+            </div>
+
+            {marginData.summary.produk_data_lengkap === 0 ? (
+              <div className="text-center py-8">
+                <BanknotesIcon className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Belum ada produk dengan data lengkap</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Terisi otomatis begitu harga jual disinkronkan dari Accurate.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto max-h-[220px]">
+                <table className="w-full text-xs">
+                  <thead className="sticky top-0 bg-white dark:bg-gray-800">
+                    <tr className="text-left text-[11px] text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                      <th className="pb-2 pr-3">Produk</th>
+                      <th className="pb-2 pr-3 text-right">HPP</th>
+                      <th className="pb-2 pr-3 text-right">Jual</th>
+                      <th className="pb-2 text-right">Margin</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      )}
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                    {marginData.rows.filter((r: any) => r.status === 'lengkap').slice(0, 10).map((r: any) => (
+                      <tr key={r.product_id}>
+                        <td className="py-1.5 pr-3">
+                          <p className="font-medium text-gray-900 dark:text-white truncate max-w-[140px]">{r.product_name}</p>
+                        </td>
+                        <td className="py-1.5 pr-3 text-right tabular-nums">{formatRupiah(r.hpp_material)}</td>
+                        <td className="py-1.5 pr-3 text-right tabular-nums">{formatRupiah(r.selling_price)}</td>
+                        <td className={`py-1.5 text-right tabular-nums font-semibold ${r.margin >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                          {r.margin_percent}%
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Production & OEE Trend */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-xl p-6 transition-all duration-300">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg p-5 transition-shadow duration-200">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-lg font-bold text-gray-900 dark:text-white">Production & OEE</h3>
@@ -637,7 +638,7 @@ export default function DashboardEnhanced() {
         </div>
 
         {/* Sales Trend */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-xl p-6 transition-all duration-300">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg p-5 transition-shadow duration-200">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-lg font-bold text-gray-900 dark:text-white">Sales Trend</h3>
@@ -703,7 +704,7 @@ export default function DashboardEnhanced() {
       {/* Top Products & Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top Products */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-xl overflow-hidden transition-all duration-300">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg overflow-hidden transition-shadow duration-200">
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-lg">
@@ -746,7 +747,7 @@ export default function DashboardEnhanced() {
         </div>
 
         {/* Recent Activity - real audit log, not simulated */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-xl overflow-hidden transition-all duration-300">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg overflow-hidden transition-shadow duration-200">
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-gradient-to-br from-slate-600 to-slate-800 rounded-lg">
@@ -758,7 +759,7 @@ export default function DashboardEnhanced() {
               </div>
             </div>
           </div>
-          <div className="divide-y divide-gray-200 dark:divide-gray-700 max-h-[360px] overflow-y-auto">
+          <div className="p-2 space-y-0.5 max-h-[360px] overflow-y-auto">
             {!activityLogs || activityLogs.length === 0 ? (
               <div className="p-8 text-center">
                 <ClockIcon className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
@@ -766,25 +767,24 @@ export default function DashboardEnhanced() {
               </div>
             ) : (
               activityLogs.slice(0, 8).map((log: any) => {
-                const actionStyle: Record<string, string> = {
-                  CREATE: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-                  UPDATE: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-                  DELETE: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+                const actionMeta: Record<string, { dot: string; verb: string }> = {
+                  CREATE: { dot: 'bg-green-500', verb: 'menambahkan' },
+                  UPDATE: { dot: 'bg-orange-500', verb: 'mengubah' },
+                  DELETE: { dot: 'bg-red-500', verb: 'menghapus' },
                 }
+                const meta = actionMeta[log.action] || { dot: 'bg-gray-400', verb: 'melakukan aksi pada' }
                 return (
-                  <div key={log.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${actionStyle[log.action] || 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'}`}>
-                            {log.action}
-                          </span>
-                          <span className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">{log.module}</span>
-                        </div>
-                        <p className="text-sm text-gray-900 dark:text-white truncate">{log.resource_name || log.description}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{log.user_name}</p>
-                      </div>
-                      <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap">{log.timestamp}</span>
+                  <div key={log.id} className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-white text-[10px] font-bold ${meta.dot}`}>
+                      {log.action?.charAt(0)}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm text-gray-900 dark:text-white truncate">
+                        <span className="font-semibold">{log.user_name}</span>{' '}
+                        <span className="text-gray-500 dark:text-gray-400">{meta.verb}</span>{' '}
+                        {log.resource_name || log.description}
+                      </p>
+                      <p className="text-[11px] text-gray-400 dark:text-gray-500">{log.module} &middot; {log.timestamp}</p>
                     </div>
                   </div>
                 )
@@ -794,90 +794,63 @@ export default function DashboardEnhanced() {
         </div>
       </div>
 
-      {/* Module Shortcuts */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {moduleCards.map((m) => {
-          const c = colorClasses[m.color]
-          const Icon = m.icon
-          return (
-            <Link
-              key={m.name}
-              to={m.href}
-              className={`bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6 hover:shadow-xl transition-all duration-300 border-l-4 ${c.border}`}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className={`p-3 ${c.bg} rounded-lg`}>
-                  <Icon className={`w-6 h-6 ${c.text}`} />
-                </div>
+      {/* Module Shortcuts - quick menu: tile padat, chip warna sebagai satu-satunya penanda modul */}
+      <div>
+        <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Quick Menu</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+          {moduleCards.map((m) => {
+            const c = colorClasses[m.color]
+            const Icon = m.icon
+            return (
+              <Link
+                key={m.name}
+                to={m.href}
+                className="relative bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md p-3.5 transition-shadow duration-200"
+              >
                 {m.stat !== undefined && (
-                  <span className="text-2xl font-bold text-gray-900 dark:text-white">
+                  <span className="absolute top-2 right-2 text-[11px] font-bold text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 rounded-full px-1.5 py-0.5">
                     {m.stat}{m.statSuffix || ''}
                   </span>
                 )}
-              </div>
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-1">{m.name}</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{m.label}</p>
-            </Link>
-          )
-        })}
+                <div className={`w-9 h-9 flex items-center justify-center ${c.bg} rounded-lg mb-2`}>
+                  <Icon className={`w-5 h-5 ${c.text}`} />
+                </div>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate">{m.name}</h3>
+                <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate">{m.label}</p>
+              </Link>
+            )
+          })}
+        </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          <button
-            onClick={() => navigate('/app/production/work-orders/new')}
-            className="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-[#059669] hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all group"
-          >
-            <CogIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 group-hover:text-[#059669] dark:group-hover:text-emerald-400 mx-auto mb-2" />
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[#059669] dark:group-hover:text-emerald-400">New SPK</p>
-          </button>
-
-          <button
-            onClick={() => navigate('/app/sales/orders/new')}
-            className="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-[#059669] hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all group"
-          >
-            <ShoppingCartIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 group-hover:text-[#059669] dark:group-hover:text-emerald-400 mx-auto mb-2" />
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[#059669] dark:group-hover:text-emerald-400">New Sales Order</p>
-          </button>
-
-          <button
-            onClick={() => navigate('/app/purchasing/orders/new')}
-            className="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all group"
-          >
-            <BuildingStorefrontIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 group-hover:text-orange-600 dark:group-hover:text-orange-400 mx-auto mb-2" />
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-orange-600 dark:group-hover:text-orange-400">New PO</p>
-          </button>
-
-          <button
-            onClick={() => navigate('/app/quality/incoming')}
-            className="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-[#F15D2C] hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all group"
-          >
-            <CheckCircleIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 group-hover:text-[#F15D2C] dark:group-hover:text-orange-400 mx-auto mb-2" />
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[#F15D2C] dark:group-hover:text-orange-400">QC Inspection</p>
-          </button>
-
-          <button
-            onClick={() => navigate('/app/warehouse/material-issues/new')}
-            className="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-all group"
-          >
-            <CubeIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 group-hover:text-teal-600 dark:group-hover:text-teal-400 mx-auto mb-2" />
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-teal-600 dark:group-hover:text-teal-400">Issue Material</p>
-          </button>
-
-          <button
-            onClick={() => navigate('/app/reports')}
-            className="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all group"
-          >
-            <DocumentTextIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 group-hover:text-emerald-700 dark:group-hover:text-emerald-400 mx-auto mb-2" />
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-emerald-700 dark:group-hover:text-emerald-400">View Reports</p>
-          </button>
+      {/* Quick Actions - tile senada dengan Quick Menu (chip warna + shadow, bukan border) */}
+      <div>
+        <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Quick Actions</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          {[
+            { label: 'New SPK', icon: CogIcon, href: '/app/production/work-orders/new', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-600 dark:text-emerald-400' },
+            { label: 'New Sales Order', icon: ShoppingCartIcon, href: '/app/sales/orders/new', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-600 dark:text-emerald-400' },
+            { label: 'New PO', icon: BuildingStorefrontIcon, href: '/app/purchasing/orders/new', bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-600 dark:text-orange-400' },
+            { label: 'QC Inspection', icon: CheckCircleIcon, href: '/app/quality/incoming', bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-[#F15D2C] dark:text-orange-400' },
+            { label: 'Issue Material', icon: CubeIcon, href: '/app/warehouse/material-issues/new', bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-600 dark:text-teal-400' },
+            { label: 'View Reports', icon: DocumentTextIcon, href: '/app/reports', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-700 dark:text-emerald-400' },
+          ].map((qa) => (
+            <button
+              key={qa.label}
+              onClick={() => navigate(qa.href)}
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md p-3.5 transition-shadow duration-200 text-left"
+            >
+              <div className={`w-9 h-9 flex items-center justify-center ${qa.bg} rounded-lg mb-2`}>
+                <qa.icon className={`w-5 h-5 ${qa.text}`} />
+              </div>
+              <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{qa.label}</p>
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Team Activity - de-prioritized below the business data, single consolidated view (no duplicate counts) */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-5">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
