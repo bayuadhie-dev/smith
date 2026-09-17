@@ -121,13 +121,13 @@ const ProductionOutputModal: React.FC<ProductionOutputModalProps> = ({
 
         <div className="inline-block w-full max-w-5xl my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-gray-800 rounded-xl shadow-xl">
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-purple-600 to-indigo-600">
+          <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-[#059669] to-[#047857]">
             <div className="flex items-center gap-3">
               <ChartBarIcon className="w-6 h-6 text-white" />
               <div>
                 <h3 className="text-lg font-semibold text-white">Detail Production Output</h3>
                 {data && (
-                  <p className="text-sm text-purple-200">
+                  <p className="text-sm text-emerald-200">
                     {data.period.start_date} s/d {data.period.end_date}
                   </p>
                 )}
@@ -146,11 +146,11 @@ const ProductionOutputModal: React.FC<ProductionOutputModalProps> = ({
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 dark:bg-gray-900">
               <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
                 <p className="text-sm text-gray-500 dark:text-gray-400">Total Pack</p>
-                <p className="text-2xl font-bold text-purple-600">{formatNumber(data.summary.total_pack)}</p>
+                <p className="text-2xl font-bold text-[#059669]">{formatNumber(data.summary.total_pack)}</p>
               </div>
               <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
                 <p className="text-sm text-gray-500 dark:text-gray-400">Total Karton</p>
-                <p className="text-2xl font-bold text-indigo-600">{formatNumber(Math.round(data.summary.total_carton))}</p>
+                <p className="text-2xl font-bold text-teal-600">{formatNumber(Math.round(data.summary.total_carton))}</p>
               </div>
               <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
                 <p className="text-sm text-gray-500 dark:text-gray-400">Total Mesin</p>
@@ -186,7 +186,7 @@ const ProductionOutputModal: React.FC<ProductionOutputModalProps> = ({
               onClick={() => setActiveTab('machine')}
               className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === 'machine'
-                  ? 'border-purple-600 text-purple-600'
+                  ? 'border-[#059669] text-[#059669]'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
@@ -197,7 +197,7 @@ const ProductionOutputModal: React.FC<ProductionOutputModalProps> = ({
               onClick={() => setActiveTab('product')}
               className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === 'product'
-                  ? 'border-purple-600 text-purple-600'
+                  ? 'border-[#059669] text-[#059669]'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
@@ -208,7 +208,7 @@ const ProductionOutputModal: React.FC<ProductionOutputModalProps> = ({
               onClick={() => setActiveTab('detail')}
               className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === 'detail'
-                  ? 'border-purple-600 text-purple-600'
+                  ? 'border-[#059669] text-[#059669]'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
@@ -221,7 +221,7 @@ const ProductionOutputModal: React.FC<ProductionOutputModalProps> = ({
           <div className="p-4 max-h-[400px] overflow-y-auto">
             {loading ? (
               <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#059669]"></div>
               </div>
             ) : error ? (
               <div className="text-center py-12 text-red-500">{error}</div>
