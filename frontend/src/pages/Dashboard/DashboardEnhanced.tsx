@@ -628,6 +628,29 @@ export default function DashboardEnhanced() {
               />
             </ComposedChart>
           </ResponsiveContainer>
+          {(() => {
+            const prod: any[] = trends?.production || []
+            const oee: any[] = trends?.oee || []
+            const totalOutput = prod.reduce((sum, d) => sum + (d.value || 0), 0)
+            const avgOee = oee.length ? oee.reduce((sum, d) => sum + (d.value || 0), 0) / oee.length : 0
+            const bestPeriod = prod.reduce((best: any, d: any) => (!best || (d.value || 0) > (best.value || 0) ? d : best), null)
+            return (
+              <div className="grid grid-cols-3 divide-x divide-gray-100 dark:divide-gray-700 border-t border-gray-100 dark:border-gray-700 mt-5 pt-4">
+                <div className="pr-4">
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">Total Output</p>
+                  <p className="text-lg font-bold text-gray-900 dark:text-white">{totalOutput.toLocaleString()}</p>
+                </div>
+                <div className="px-4">
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">Rata-rata OEE</p>
+                  <p className="text-lg font-bold text-[#059669]">{avgOee.toFixed(1)}%</p>
+                </div>
+                <div className="pl-4">
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">Periode Terbaik</p>
+                  <p className="text-lg font-bold text-gray-900 dark:text-white truncate">{bestPeriod?.period || '-'}</p>
+                </div>
+              </div>
+            )
+          })()}
         </div>
 
         {/* Sales Trend */}
@@ -716,25 +739,35 @@ export default function DashboardEnhanced() {
                 <p className="text-sm text-gray-500 dark:text-gray-400">No product data available</p>
               </div>
             ) : (
-              performers.top_products.slice(0, 5).map((product: any, index: number) => (
-                <div key={index} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 flex-1">
-                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-[#059669] to-[#047857] text-white text-sm font-bold">
-                        {index + 1}
+              (() => {
+                const top5 = performers.top_products.slice(0, 5)
+                const maxQty = Math.max(...top5.map((p: any) => p.quantity || 0), 1)
+                return top5.map((product: any, index: number) => (
+                  <div key={index} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-[#059669] to-[#047857] text-white text-sm font-bold flex-shrink-0">
+                          {index + 1}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-gray-900 dark:text-white truncate">{product.name}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{product.code}</p>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-900 dark:text-white truncate">{product.name}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{product.code}</p>
+                      <div className="text-right ml-4 flex-shrink-0">
+                        <p className="font-bold text-gray-900 dark:text-white">{product.quantity?.toLocaleString() || 0}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">units</p>
                       </div>
                     </div>
-                    <div className="text-right ml-4">
-                      <p className="font-bold text-gray-900 dark:text-white">{product.quantity?.toLocaleString() || 0}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">units</p>
+                    <div className="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden ml-11">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-[#059669] to-[#047857]"
+                        style={{ width: `${((product.quantity || 0) / maxQty) * 100}%` }}
+                      />
                     </div>
                   </div>
-                </div>
-              ))
+                ))
+              })()
             )}
           </div>
         </div>
@@ -863,26 +896,34 @@ export default function DashboardEnhanced() {
         </div>
         {activeUsers && (activeUsers.active_users.length > 0 || activeUsers.offline_users.length > 0) ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 max-h-72 overflow-y-auto">
-            {[...activeUsers.active_users, ...activeUsers.offline_users].map((u) => (
-              <div
-                key={u.id}
-                className={`flex items-center gap-2 p-2.5 rounded-lg border ${
-                  activeUsers.active_users.some(a => a.id === u.id)
-                    ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
-                    : 'bg-gray-50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600'
-                }`}
-              >
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold flex-shrink-0 ${
-                  activeUsers.active_users.some(a => a.id === u.id) ? 'bg-green-500 dark:bg-green-600' : 'bg-gray-400 dark:bg-gray-600'
-                }`}>
-                  {u.full_name?.charAt(0).toUpperCase() || u.username?.charAt(0).toUpperCase()}
+            {[...activeUsers.active_users, ...activeUsers.offline_users].map((u) => {
+              const isOnline = activeUsers.active_users.some(a => a.id === u.id)
+              return (
+                <div
+                  key={u.id}
+                  className={`flex items-center gap-2 p-2.5 rounded-lg border ${
+                    isOnline
+                      ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                      : 'bg-gray-50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600'
+                  }`}
+                >
+                  <div className="relative flex-shrink-0">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold ${
+                      isOnline ? 'bg-green-500 dark:bg-green-600' : 'bg-gray-400 dark:bg-gray-600'
+                    }`}>
+                      {u.full_name?.charAt(0).toUpperCase() || u.username?.charAt(0).toUpperCase()}
+                    </div>
+                    <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white dark:border-gray-800 ${
+                      isOnline ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-500'
+                    }`} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{u.full_name || u.username}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{u.time_since_activity_formatted}</p>
+                  </div>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{u.full_name || u.username}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{u.time_since_activity_formatted}</p>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         ) : (
           <div className="text-center py-6 text-gray-500 dark:text-gray-400">
