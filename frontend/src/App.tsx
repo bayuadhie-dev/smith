@@ -180,6 +180,7 @@ import FinanceDashboard from './pages/Finance/FinanceDashboard'
 import AccountingManagement from './pages/Finance/AccountingManagement'
 import JournalEntryPage from './pages/Finance/JournalEntryPage'
 import BudgetPlanning from './pages/Finance/BudgetPlanning'
+import BankReconciliation from './pages/Finance/BankReconciliation'
 import CashFlowManagement from './pages/Finance/CashFlowManagement'
 import FinancialReports from './pages/Finance/FinancialReports'
 import InvoiceList from './pages/Finance/InvoiceList'
@@ -843,6 +844,7 @@ function App() {
                 <Route path="finance/dashboard" element={<FinanceDashboard />} />
                 <Route path="finance/accounting" element={<AccountingManagement />} />
                 <Route path="finance/budget" element={<BudgetPlanning />} />
+                <Route path="accounting/bank-reconciliation" element={<BankReconciliation />} />
                 <Route path="finance/cash-flow" element={<CashFlowManagement />} />
                 <Route path="finance/invoices" element={<InvoiceList />} />
                 <Route path="finance/invoices/new" element={<FinanceInvoiceForm />} />

@@ -375,6 +375,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
             { name: 'Journal Entry', href: '/app/accounting/journal', icon: PencilSquareIcon },
             { name: 'Accounts Receivable', href: '/app/accounting/receivable', icon: ArrowDownTrayIcon },
             { name: 'Accounts Payable', href: '/app/accounting/payable', icon: ArrowUpTrayIcon },
+            { name: 'Bank Reconciliation', href: '/app/accounting/bank-reconciliation', icon: ArrowsRightLeftIcon },
             { name: 'Fixed Assets', href: '/app/assets', icon: BuildingOfficeIcon },
             { name: 'Proses Akhir Bulan', href: '/app/accounting/period-close', icon: CalculatorIcon },
             { name: 'Tax Management', href: '/app/accounting/tax', icon: ReceiptPercentIcon },

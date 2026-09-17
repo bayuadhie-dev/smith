@@ -549,3 +549,47 @@ class PeriodClose(db.Model):
     __table_args__ = (
         db.UniqueConstraint('period_year', 'period_month', name='uq_period_close_year_month'),
     )
+
+
+class BankStatement(db.Model):
+    """One imported bank mutation/statement file (2026-09-17, closes the SAP
+    FI bank-reconciliation gap - previously zero code anywhere matched GL
+    cash/bank postings against real bank transactions). Header row per
+    import; the actual mutation rows are BankStatementLine."""
+    __tablename__ = 'bank_statements'
+
+    id = db.Column(db.Integer, primary_key=True)
+    account_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=False)  # must be Account.is_cash_bank
+    period_start = db.Column(db.Date, nullable=False)
+    period_end = db.Column(db.Date, nullable=False)
+    source_filename = db.Column(db.String(255), nullable=True)
+    imported_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    imported_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    account = db.relationship('Account')
+    lines = db.relationship('BankStatementLine', back_populates='statement', cascade='all, delete-orphan')
+
+
+class BankStatementLine(db.Model):
+    """One row of an imported bank statement - a real bank mutation waiting
+    to be matched (manually, via the reconciliation UI) against the
+    AccountingEntry that recorded it internally. amount is signed: positive
+    = money in (credit/deposit), negative = money out (debit/withdrawal)."""
+    __tablename__ = 'bank_statement_lines'
+
+    id = db.Column(db.Integer, primary_key=True)
+    statement_id = db.Column(db.Integer, db.ForeignKey('bank_statements.id', ondelete='CASCADE'), nullable=False)
+    line_date = db.Column(db.Date, nullable=False, index=True)
+    description = db.Column(db.String(500), nullable=True)
+    reference_number = db.Column(db.String(100), nullable=True)
+    amount = db.Column(db.Numeric(15, 2), nullable=False)  # signed: +in, -out
+
+    is_matched = db.Column(db.Boolean, default=False, nullable=False)
+    matched_accounting_entry_id = db.Column(db.Integer, db.ForeignKey('accounting_entries.id'), nullable=True)
+    matched_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    matched_at = db.Column(db.DateTime, nullable=True)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    statement = db.relationship('BankStatement', back_populates='lines')
+    matched_accounting_entry = db.relationship('AccountingEntry')

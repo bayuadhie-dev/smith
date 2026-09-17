@@ -370,6 +370,8 @@ def create_app(config_class=Config):
 
     from routes.finance import finance_bp
 
+    from routes.bank_reconciliation import bank_reconciliation_bp
+
     from routes.hr import hr_bp
 
     from routes.hr_payroll import hr_payroll_bp
@@ -546,6 +548,8 @@ def create_app(config_class=Config):
     app.register_blueprint(downtime_actions_bp, url_prefix='/api/downtime-actions')
 
     app.register_blueprint(finance_bp, url_prefix='/api/finance')
+
+    app.register_blueprint(bank_reconciliation_bp, url_prefix='/api/finance/bank-reconciliation')
 
     app.register_blueprint(hr_bp, url_prefix='/api/hr')
 
