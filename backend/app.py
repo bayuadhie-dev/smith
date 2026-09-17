@@ -407,12 +407,6 @@ def create_app(config_class=Config):
 
     from routes.maintenance_extended import maintenance_extended_bp
 
-    from routes.rd import rd_bp
-
-    from routes.rd_extended import rd_extended_bp
-
-    from routes.rd_integration import rd_integration_bp
-
     from routes.rnd import rnd_bp
 
     from routes.waste import waste_bp
@@ -597,12 +591,6 @@ def create_app(config_class=Config):
     app.register_blueprint(asset_bp, url_prefix='/api/assets')
 
     app.register_blueprint(maintenance_extended_bp, url_prefix='/api/maintenance')
-
-    app.register_blueprint(rd_bp, url_prefix='/api/rd')
-
-    app.register_blueprint(rd_extended_bp, url_prefix='/api/rd')
-
-    app.register_blueprint(rd_integration_bp, url_prefix='/api/rd/integration')  # R&D integration with other modules
 
     app.register_blueprint(rnd_bp)  # New RND module with /api/rnd prefix
 

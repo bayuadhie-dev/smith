@@ -196,9 +196,7 @@ import ReimbursementDetail from './pages/Finance/ReimbursementDetail'
 import ExpenseDetail from './pages/Finance/ExpenseDetail'
 import PurchaseInvoiceDetail from './pages/Finance/PurchaseInvoiceDetail'
 import SalesInvoiceDetail from './pages/Finance/SalesInvoiceDetail'
-import FixedAssetDetail from './pages/Finance/FixedAssetDetail'
 import CashBankManagement from './pages/Finance/CashBankManagement'
-import FixedAssets from './pages/Finance/FixedAssets'
 import TaxManagement from './pages/Finance/TaxManagement'
 import CostingControlling from './pages/Finance/CostingControlling'
 import Consolidation from './pages/Finance/Consolidation'
@@ -259,18 +257,6 @@ import AssetForm from './pages/AssetManagement/AssetForm'
 import FunctionalLocations from './pages/AssetManagement/FunctionalLocations'
 import SparePartsList from './pages/AssetManagement/SparePartsList'
 import DepreciationReport from './pages/AssetManagement/DepreciationReport'
-import ProjectList from './pages/RD/ProjectList'
-import ProjectForm from './pages/RD/ProjectForm'
-import ProjectDetails from './pages/RD/ProjectDetails'
-import ProjectDetailsForm from './pages/RD/ProjectDetailsForm'
-import ResearchReportsForm from './pages/RD/ResearchReportsForm'
-import RDDashboard from './pages/RD/RDDashboard'
-import ExperimentList from './pages/RD/ExperimentList'
-import ExperimentForm from './pages/RD/ExperimentForm'
-import MaterialList from './pages/RD/MaterialList'
-import MaterialForm from './pages/RD/MaterialForm'
-import ProductDevelopmentList from './pages/RD/ProductDevelopmentList'
-import ProductDevelopmentForm from './pages/RD/ProductDevelopmentForm'
 import { RNDDashboard, RNDProjectList, RNDProjectDetail, RNDProjectForm, RNDApprovals } from './pages/RND'
 import WasteRecordList from './pages/Waste/WasteRecordList'
 import WasteRecordForm from './pages/Waste/WasteRecordForm'
@@ -889,8 +875,6 @@ function App() {
                 <Route path="accounting/journal" element={<JournalEntryPage />} />
                 <Route path="accounting/receivable" element={<AccountsReceivable />} />
                 <Route path="accounting/payable" element={<AccountsPayable />} />
-                <Route path="accounting/fixed-assets" element={<FixedAssets />} />
-                <Route path="accounting/fixed-assets/:id" element={<FixedAssetDetail />} />
                 <Route path="accounting/tax" element={<TaxManagement />} />
                 <Route path="accounting/reports" element={<FinancialReports />} />
 
@@ -994,26 +978,6 @@ function App() {
                 {/* DCC - Document Control Center */}
                 <Route path="dcc" element={<DocumentControlCenter />} />
 
-                {/* R&D */}
-                <Route path="rd" element={<RDDashboard />} />
-                <Route path="rd/dashboard" element={<RDDashboard />} />
-                <Route path="rd/projects" element={<ProjectList />} />
-                <Route path="rd/projects/new" element={<ProjectForm />} />
-                <Route path="rd/projects/:id" element={<ProjectDetails />} />
-                <Route path="rd/projects/:id/edit" element={<ProjectForm />} />
-                <Route path="rd/projects/:id/details" element={<ProjectDetailsForm />} />
-                <Route path="rd/experiments" element={<ExperimentList />} />
-                <Route path="rd/experiments/new" element={<ExperimentForm />} />
-                <Route path="rd/experiments/:id" element={<ExperimentForm />} />
-                <Route path="rd/experiments/:id/edit" element={<ExperimentForm />} />
-                <Route path="rd/materials" element={<MaterialList />} />
-                <Route path="rd/materials/new" element={<MaterialForm />} />
-                <Route path="rd/materials/:id/edit" element={<MaterialForm />} />
-                <Route path="rd/products" element={<ProductDevelopmentList />} />
-                <Route path="rd/products/new" element={<ProductDevelopmentForm />} />
-                <Route path="rd/products/:id" element={<ProductDevelopmentForm />} />
-                <Route path="rd/products/:id/edit" element={<ProductDevelopmentForm />} />
-                <Route path="rd/reports" element={<ResearchReportsForm />} />
 
                 {/* RND (New R&D Module) */}
                 <Route path="rnd" element={<RNDDashboard />} />
