@@ -391,11 +391,13 @@ export default function DashboardEnhanced() {
               <div className="relative w-full flex justify-center">
                 <svg viewBox="0 0 200 110" className="w-full max-w-[280px]">
                   <path d="M 10 100 A 90 90 0 0 1 190 100" fill="none" stroke="#f1f5f9" className="dark:stroke-gray-700" strokeWidth="14" strokeLinecap="round" />
-                  <path
-                    d="M 10 100 A 90 90 0 0 1 190 100" fill="none" stroke="#059669" strokeWidth="14" strokeLinecap="round"
-                    strokeDasharray={`${filled} ${circumference}`} strokeDashoffset={0}
-                    style={{ transition: 'stroke-dashoffset 0.8s cubic-bezier(.2,.9,.25,1)' }}
-                  />
+                  {filled > 0 && (
+                    <path
+                      d="M 10 100 A 90 90 0 0 1 190 100" fill="none" stroke="#059669" strokeWidth="14" strokeLinecap="round"
+                      strokeDasharray={`${filled} ${circumference}`} strokeDashoffset={0}
+                      style={{ transition: 'stroke-dashoffset 0.8s cubic-bezier(.2,.9,.25,1)' }}
+                    />
+                  )}
                   <text x="10" y="100" textAnchor="start" className="fill-gray-400 dark:fill-gray-500" style={{ fontSize: '9px' }}>BERISIKO</text>
                   <text x="100" y="14" textAnchor="middle" className="fill-gray-400 dark:fill-gray-500" style={{ fontSize: '9px' }}>SEHAT</text>
                   <text x="190" y="100" textAnchor="end" className="fill-gray-400 dark:fill-gray-500" style={{ fontSize: '9px' }}>OPTIMAL</text>
@@ -421,7 +423,7 @@ export default function DashboardEnhanced() {
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl">
+              <div className="p-2.5 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl">
                 <TrophyIcon className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -473,7 +475,7 @@ export default function DashboardEnhanced() {
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl">
+              <div className="p-2.5 bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl">
                 <BanknotesIcon className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -701,7 +703,7 @@ export default function DashboardEnhanced() {
               activityLogs.slice(0, 8).map((log: any) => {
                 const actionStyle: Record<string, string> = {
                   CREATE: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-                  UPDATE: 'bg-orange-100 text-[#C73E1D] dark:bg-orange-900/30 dark:text-orange-400',
+                  UPDATE: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
                   DELETE: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
                 }
                 return (
