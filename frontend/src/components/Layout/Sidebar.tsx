@@ -568,7 +568,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
       {/* Brand */}
       <div className={clsx('flex h-16 shrink-0 items-center border-b border-gray-200 dark:border-gray-800 mb-1', collapsed ? 'justify-center' : 'justify-between')}>
         <div className={clsx('flex items-center gap-2.5 min-w-0', collapsed && 'justify-center')}>
-          <div className="w-8 h-8 rounded-md bg-[#F15D2C] flex items-center justify-center shrink-0">
+          <div className="w-8 h-8 rounded-md bg-[#059669] flex items-center justify-center shrink-0">
             <span className="text-white text-xs font-bold tracking-tight">{companyInitials}</span>
           </div>
           {!collapsed && (
@@ -607,7 +607,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
             value={menuSearch}
             onChange={(e) => setMenuSearch(e.target.value)}
             placeholder="Cari menu..."
-            className="w-full pl-8 pr-2 py-2 text-sm bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:border-[#F15D2C]/50 focus:bg-gray-50 dark:focus:bg-gray-700"
+            className="w-full pl-8 pr-2 py-2 text-sm bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:border-[#059669]/50 focus:bg-gray-50 dark:focus:bg-gray-700"
           />
         </div>
       )}
@@ -658,7 +658,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                               title={collapsed ? item.name : undefined}
                               className={clsx(
                                 isExpanded(item.name.toLowerCase()) && !collapsed
-                                  ? 'bg-[#F15D2C] text-white shadow-sm'
+                                  ? 'bg-[#059669] text-white shadow-sm'
                                   : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800',
                                 'group flex w-full items-center gap-x-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-150',
                                 collapsed && 'justify-center px-0'
@@ -705,7 +705,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                                             onClick={() => toggleExpanded(`${item.name}-${child.name}`.toLowerCase())}
                                             className={clsx(
                                               isExpanded(`${item.name}-${child.name}`.toLowerCase())
-                                                ? 'bg-[#F15D2C] text-white shadow-sm'
+                                                ? 'bg-[#059669] text-white shadow-sm'
                                                 : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800',
                                               'group flex w-full items-center gap-x-2.5 rounded-lg py-2 px-2.5 text-sm transition-colors duration-150'
                                             )}
@@ -729,7 +729,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                                                     className={({ isActive }) =>
                                                       clsx(
                                                         isActive
-                                                          ? 'bg-[#F15D2C] text-white shadow-sm'
+                                                          ? 'bg-[#059669] text-white shadow-sm'
                                                           : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800',
                                                         'group flex items-center gap-x-2 rounded-lg py-1.5 px-2.5 text-sm transition-colors duration-150'
                                                       )
@@ -749,7 +749,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                                             onClick={() => navigate(child.href)}
                                             className={clsx(
                                               isActiveHref(child.href)
-                                                ? 'bg-[#F15D2C] text-white shadow-sm'
+                                                ? 'bg-[#059669] text-white shadow-sm'
                                                 : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800',
                                               'group flex items-center gap-x-2.5 rounded-lg py-2 px-2.5 text-sm transition-colors duration-150 w-full text-left'
                                             )}
@@ -763,7 +763,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                                             className={({ isActive }) =>
                                               clsx(
                                                 isActive
-                                                  ? 'bg-[#F15D2C] text-white shadow-sm'
+                                                  ? 'bg-[#059669] text-white shadow-sm'
                                                   : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800',
                                                 'group flex items-center gap-x-2.5 rounded-lg py-2 px-2.5 text-sm transition-colors duration-150'
                                               )
@@ -788,7 +788,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                             className={({ isActive }) =>
                               clsx(
                                 isActive
-                                  ? 'bg-[#F15D2C] text-white shadow-sm'
+                                  ? 'bg-[#059669] text-white shadow-sm'
                                   : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800',
                                 'group flex items-center gap-x-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-150',
                                 collapsed && 'justify-center px-0'

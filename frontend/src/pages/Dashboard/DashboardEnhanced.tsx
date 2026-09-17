@@ -192,7 +192,7 @@ export default function DashboardEnhanced() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#F15D2C]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#059669]"></div>
       </div>
     )
   }
@@ -313,7 +313,7 @@ export default function DashboardEnhanced() {
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Sales Today */}
-        <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-6 text-white shadow-lg">
+        <div className="bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl p-6 text-white shadow-lg">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-white/20 rounded-lg">
               <ShoppingCartIcon className="w-6 h-6" />
@@ -335,7 +335,7 @@ export default function DashboardEnhanced() {
 
         {/* Production Output - Clickable */}
         <div
-          className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl p-6 text-white shadow-lg cursor-pointer hover:shadow-2xl hover:scale-105 transition-all duration-300"
+          className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-6 text-white shadow-lg cursor-pointer hover:shadow-2xl hover:scale-105 transition-all duration-300"
           onClick={() => setShowProductionOutput(true)}
           title="Klik untuk lihat detail per mesin & produk"
         >
@@ -355,7 +355,7 @@ export default function DashboardEnhanced() {
         </div>
 
         {/* Quality Pass Rate */}
-        <div className="bg-gradient-to-br from-[#A83232] to-[#781F16] rounded-xl p-6 text-white shadow-lg">
+        <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-6 text-white shadow-lg">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-white/20 rounded-lg">
               <CheckCircleIcon className="w-6 h-6" />
@@ -384,7 +384,7 @@ export default function DashboardEnhanced() {
           return (
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6">
               <div className="flex items-center justify-between mb-1">
-                <h3 className="font-semibold text-gray-900 dark:text-white">Business Health Score</h3>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Business Health Score</h3>
                 <ChartBarIcon className="w-5 h-5 text-gray-400" />
               </div>
               <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">Skor gabungan OEE seluruh mesin produksi</p>
@@ -392,7 +392,7 @@ export default function DashboardEnhanced() {
                 <svg viewBox="0 0 200 110" className="w-full max-w-[280px]">
                   <path d="M 10 100 A 90 90 0 0 1 190 100" fill="none" stroke="#f1f5f9" className="dark:stroke-gray-700" strokeWidth="14" strokeLinecap="round" />
                   <path
-                    d="M 10 100 A 90 90 0 0 1 190 100" fill="none" stroke="#F15D2C" strokeWidth="14" strokeLinecap="round"
+                    d="M 10 100 A 90 90 0 0 1 190 100" fill="none" stroke="#059669" strokeWidth="14" strokeLinecap="round"
                     strokeDasharray={`${filled} ${circumference}`} strokeDashoffset={0}
                     style={{ transition: 'stroke-dashoffset 0.8s cubic-bezier(.2,.9,.25,1)' }}
                   />
@@ -538,7 +538,7 @@ export default function DashboardEnhanced() {
               <h3 className="text-lg font-bold text-gray-900 dark:text-white">Production & OEE</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">Output vs efficiency</p>
             </div>
-            <TrendUp className="w-5 h-5 text-[#A83232]" />
+            <TrendUp className="w-5 h-5 text-[#059669]" />
           </div>
           <ResponsiveContainer width="100%" height={280}>
             <ComposedChart data={trends?.production || []}>
@@ -560,10 +560,10 @@ export default function DashboardEnhanced() {
                 yAxisId="right"
                 type="monotone"
                 dataKey={(d: any) => trends?.oee?.find((o: any) => o.period === d.period)?.value || 0}
-                stroke="#A83232"
+                stroke="#059669"
                 strokeWidth={2}
                 name="OEE %"
-                dot={{ fill: '#A83232', r: 4 }}
+                dot={{ fill: '#059669', r: 4 }}
               />
             </ComposedChart>
           </ResponsiveContainer>
@@ -576,7 +576,7 @@ export default function DashboardEnhanced() {
               <h3 className="text-lg font-bold text-gray-900 dark:text-white">Sales Trend</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">Last 7 days</p>
             </div>
-            <ShoppingCartIcon className="w-5 h-5 text-[#F15D2C]" />
+            <ShoppingCartIcon className="w-5 h-5 text-[#059669]" />
           </div>
           <div className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -602,9 +602,9 @@ export default function DashboardEnhanced() {
                 <Line
                   type="monotone"
                   dataKey="value"
-                  stroke="#F15D2C"
+                  stroke="#059669"
                   strokeWidth={3}
-                  dot={{ fill: '#F15D2C', r: 4 }}
+                  dot={{ fill: '#059669', r: 4 }}
                   activeDot={{ r: 6 }}
                 />
               </LineChart>
@@ -639,11 +639,11 @@ export default function DashboardEnhanced() {
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-xl overflow-hidden transition-all duration-300">
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-lg">
+              <div className="p-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-lg">
                 <Package className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900 dark:text-white">Top Products</h3>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Top Products</h3>
                 <p className="text-xs text-gray-500 dark:text-gray-400">By quantity produced</p>
               </div>
             </div>
@@ -659,7 +659,7 @@ export default function DashboardEnhanced() {
                 <div key={index} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3 flex-1">
-                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] text-white text-sm font-bold">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-[#059669] to-[#047857] text-white text-sm font-bold">
                         {index + 1}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -686,7 +686,7 @@ export default function DashboardEnhanced() {
                 <ClockIcon className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900 dark:text-white">Recent Activity</h3>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Recent Activity</h3>
                 <p className="text-xs text-gray-500 dark:text-gray-400">Live audit trail</p>
               </div>
             </div>
@@ -736,7 +736,7 @@ export default function DashboardEnhanced() {
             <Link
               key={m.name}
               to={m.href}
-              className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border-l-4 ${c.border}`}
+              className={`bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6 hover:shadow-xl transition-all duration-300 border-l-4 ${c.border}`}
             >
               <div className="flex items-center justify-between mb-4">
                 <div className={`p-3 ${c.bg} rounded-lg`}>
@@ -757,22 +757,22 @@ export default function DashboardEnhanced() {
 
       {/* Quick Actions */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
+        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
           <button
             onClick={() => navigate('/app/production/work-orders/new')}
-            className="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-[#F15D2C] hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all group"
+            className="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-[#059669] hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all group"
           >
-            <CogIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 group-hover:text-[#F15D2C] dark:group-hover:text-orange-400 mx-auto mb-2" />
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[#F15D2C] dark:group-hover:text-orange-400">New SPK</p>
+            <CogIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 group-hover:text-[#059669] dark:group-hover:text-emerald-400 mx-auto mb-2" />
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[#059669] dark:group-hover:text-emerald-400">New SPK</p>
           </button>
 
           <button
             onClick={() => navigate('/app/sales/orders/new')}
-            className="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-[#F15D2C] hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all group"
+            className="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-[#059669] hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all group"
           >
-            <ShoppingCartIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 group-hover:text-[#F15D2C] dark:group-hover:text-orange-400 mx-auto mb-2" />
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[#F15D2C] dark:group-hover:text-orange-400">New Sales Order</p>
+            <ShoppingCartIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 group-hover:text-[#059669] dark:group-hover:text-emerald-400 mx-auto mb-2" />
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[#059669] dark:group-hover:text-emerald-400">New Sales Order</p>
           </button>
 
           <button
@@ -785,26 +785,26 @@ export default function DashboardEnhanced() {
 
           <button
             onClick={() => navigate('/app/quality/incoming')}
-            className="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all group"
+            className="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-[#F15D2C] hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all group"
           >
-            <CheckCircleIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 group-hover:text-amber-600 dark:group-hover:text-amber-400 mx-auto mb-2" />
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-amber-600 dark:group-hover:text-amber-400">QC Inspection</p>
+            <CheckCircleIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 group-hover:text-[#F15D2C] dark:group-hover:text-orange-400 mx-auto mb-2" />
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[#F15D2C] dark:group-hover:text-orange-400">QC Inspection</p>
           </button>
 
           <button
             onClick={() => navigate('/app/warehouse/material-issues/new')}
-            className="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-[#A83232] hover:bg-red-50 dark:hover:bg-red-900/20 transition-all group"
+            className="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-all group"
           >
-            <CubeIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 group-hover:text-[#A83232] dark:group-hover:text-red-400 mx-auto mb-2" />
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[#A83232] dark:group-hover:text-red-400">Issue Material</p>
+            <CubeIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 group-hover:text-teal-600 dark:group-hover:text-teal-400 mx-auto mb-2" />
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-teal-600 dark:group-hover:text-teal-400">Issue Material</p>
           </button>
 
           <button
             onClick={() => navigate('/app/reports')}
-            className="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all group"
+            className="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all group"
           >
-            <DocumentTextIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 group-hover:text-orange-700 dark:group-hover:text-orange-400 mx-auto mb-2" />
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-orange-700 dark:group-hover:text-orange-400">View Reports</p>
+            <DocumentTextIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 group-hover:text-emerald-700 dark:group-hover:text-emerald-400 mx-auto mb-2" />
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-emerald-700 dark:group-hover:text-emerald-400">View Reports</p>
           </button>
         </div>
       </div>
@@ -817,7 +817,7 @@ export default function DashboardEnhanced() {
               <SignalIcon className="w-5 h-5 text-green-600 dark:text-green-400" />
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900 dark:text-white">Team Activity</h3>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Team Activity</h3>
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 {activeUsers ? `${activeUsers.active_count} online • ${activeUsers.offline_count} offline • ${activeUsers.total_users} total` : 'Loading...'}
               </p>
