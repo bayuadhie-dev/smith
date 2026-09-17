@@ -89,6 +89,33 @@ function MetricSparkline({ data, color }: { data: number[]; color: string }) {
   );
 }
 
+// Per-category color harmonization for module cards (2026-09-17) - the tag
+// badge and hover-border used to be hardcoded blue regardless of the
+// module's own icon color, so a purple-icon card would still show a blue
+// tag/glow on hover. Written as literal class strings (not built via
+// template interpolation) so Tailwind's static scanner includes them in
+// the production build - a dynamically-interpolated `text-${x}-400` string
+// would get purged since Tailwind can't see it as a real class name.
+const MODULE_COLOR_STYLES: Record<string, { badge: string; hoverBorder: string }> = {
+  'text-blue-400': { badge: 'text-blue-300 bg-blue-500/10 border-blue-500/30', hoverBorder: 'hover:border-blue-500/50' },
+  'text-indigo-400': { badge: 'text-indigo-300 bg-indigo-500/10 border-indigo-500/30', hoverBorder: 'hover:border-indigo-500/50' },
+  'text-emerald-400': { badge: 'text-emerald-300 bg-emerald-500/10 border-emerald-500/30', hoverBorder: 'hover:border-emerald-500/50' },
+  'text-purple-400': { badge: 'text-purple-300 bg-purple-500/10 border-purple-500/30', hoverBorder: 'hover:border-purple-500/50' },
+  'text-orange-400': { badge: 'text-orange-300 bg-orange-500/10 border-orange-500/30', hoverBorder: 'hover:border-orange-500/50' },
+  'text-pink-400': { badge: 'text-pink-300 bg-pink-500/10 border-pink-500/30', hoverBorder: 'hover:border-pink-500/50' },
+  'text-cyan-400': { badge: 'text-cyan-300 bg-cyan-500/10 border-cyan-500/30', hoverBorder: 'hover:border-cyan-500/50' },
+  'text-amber-400': { badge: 'text-amber-300 bg-amber-500/10 border-amber-500/30', hoverBorder: 'hover:border-amber-500/50' },
+  'text-fuchsia-400': { badge: 'text-fuchsia-300 bg-fuchsia-500/10 border-fuchsia-500/30', hoverBorder: 'hover:border-fuchsia-500/50' },
+  'text-green-400': { badge: 'text-green-300 bg-green-500/10 border-green-500/30', hoverBorder: 'hover:border-green-500/50' },
+  'text-red-400': { badge: 'text-red-300 bg-red-500/10 border-red-500/30', hoverBorder: 'hover:border-red-500/50' },
+  'text-rose-400': { badge: 'text-rose-300 bg-rose-500/10 border-rose-500/30', hoverBorder: 'hover:border-rose-500/50' },
+  'text-sky-400': { badge: 'text-sky-300 bg-sky-500/10 border-sky-500/30', hoverBorder: 'hover:border-sky-500/50' },
+  'text-teal-400': { badge: 'text-teal-300 bg-teal-500/10 border-teal-500/30', hoverBorder: 'hover:border-teal-500/50' },
+  'text-violet-400': { badge: 'text-violet-300 bg-violet-500/10 border-violet-500/30', hoverBorder: 'hover:border-violet-500/50' },
+  'text-yellow-400': { badge: 'text-yellow-300 bg-yellow-500/10 border-yellow-500/30', hoverBorder: 'hover:border-yellow-500/50' },
+  'text-slate-400': { badge: 'text-slate-300 bg-slate-500/10 border-slate-500/30', hoverBorder: 'hover:border-slate-500/50' },
+};
+
 const SystemOverviewEnhanced: React.FC = () => {
   const { t } = useLanguage();
 
@@ -885,6 +912,9 @@ const SystemOverviewEnhanced: React.FC = () => {
                 </div>
               </div>
               <p className="text-xs text-slate-400 leading-relaxed">Dashboard TV display publik untuk jajaran manajemen & supervisor</p>
+              <div className="flex items-center gap-1 text-[11px] font-semibold text-blue-400 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                Buka <ArrowRightIcon className="w-3 h-3" />
+              </div>
             </Link>
 
             <Link
@@ -901,6 +931,9 @@ const SystemOverviewEnhanced: React.FC = () => {
                 </div>
               </div>
               <p className="text-xs text-slate-400 leading-relaxed">Pendaftaran biometrik wajah karyawan untuk sistem presensi AI</p>
+              <div className="flex items-center gap-1 text-[11px] font-semibold text-indigo-400 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                Buka <ArrowRightIcon className="w-3 h-3" />
+              </div>
             </Link>
 
             <Link
@@ -917,6 +950,9 @@ const SystemOverviewEnhanced: React.FC = () => {
                 </div>
               </div>
               <p className="text-xs text-slate-400 leading-relaxed">Pencatatan presensi kehadiran kerja harian seluruh staff pabrik</p>
+              <div className="flex items-center gap-1 text-[11px] font-semibold text-emerald-400 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                Buka <ArrowRightIcon className="w-3 h-3" />
+              </div>
             </Link>
 
             <Link
@@ -933,6 +969,9 @@ const SystemOverviewEnhanced: React.FC = () => {
                 </div>
               </div>
               <p className="text-xs text-slate-400 leading-relaxed">Formulir pengajuan izin, sakit, dan cuti karyawan secara digital</p>
+              <div className="flex items-center gap-1 text-[11px] font-semibold text-purple-400 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                Buka <ArrowRightIcon className="w-3 h-3" />
+              </div>
             </Link>
           </div>
         </section>
@@ -995,10 +1034,11 @@ const SystemOverviewEnhanced: React.FC = () => {
                 ? (systemStats.breakdown as any)[module.metricKey]
                 : module.metricFallback;
               
+              const styleSet = MODULE_COLOR_STYLES[module.color] || MODULE_COLOR_STYLES['text-blue-400'];
               return (
                 <div
                   key={module.id}
-                  className="p-6 bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-slate-800 hover:border-blue-500/50 hover:shadow-[0_0_25px_rgba(59,130,246,0.15)] transition-all duration-300 transform hover:-translate-y-1 cursor-default group min-h-[280px] flex flex-col justify-between"
+                  className={`p-6 bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-slate-800 ${styleSet.hoverBorder} hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-default group min-h-[280px] flex flex-col justify-between`}
                 >
                   <div>
                     {/* Header with Icon and Title */}
@@ -1011,7 +1051,7 @@ const SystemOverviewEnhanced: React.FC = () => {
 
                     {/* Tag & Status */}
                     <div className="flex items-center justify-between gap-2 mb-3">
-                      <span className="px-2.5 py-1 text-[11px] font-semibold text-blue-300 bg-blue-500/10 border border-blue-500/30 rounded-full">
+                      <span className={`px-2.5 py-1 text-[11px] font-semibold rounded-full border ${styleSet.badge}`}>
                         {module.tag}
                       </span>
                       <span className="flex items-center gap-1.5 text-xs text-green-400 font-medium bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20">
