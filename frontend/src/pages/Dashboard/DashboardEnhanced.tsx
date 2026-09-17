@@ -34,6 +34,27 @@ import {
   ClockIcon
 } from '@heroicons/react/24/outline'
 
+function Sparkline({ data, color }: { data: number[]; color: string }) {
+  if (!data || data.filter((v) => v !== null && v !== undefined).length < 2) return null
+  const w = 100
+  const h = 28
+  const max = Math.max(...data)
+  const min = Math.min(...data)
+  const range = max - min || 1
+  const points = data
+    .map((v, i) => {
+      const x = (i / (data.length - 1)) * w
+      const y = h - ((v - min) / range) * h
+      return `${x},${y}`
+    })
+    .join(' ')
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-7" preserveAspectRatio="none">
+      <polyline points={points} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
 interface ActiveUsersData {
   active_users: Array<{
     id: number
@@ -310,71 +331,83 @@ export default function DashboardEnhanced() {
         </div>
       )}
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Key Metrics - bento: Sales Today spans 2 cols (primary metric, has sparkline) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         {/* Sales Today */}
-        <div className="bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl p-6 text-white shadow-lg">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-white/20 rounded-lg">
-              <ShoppingCartIcon className="w-6 h-6" />
+        <div className="xl:col-span-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-white/20 rounded-lg">
+                <ShoppingCartIcon className="w-5 h-5" />
+              </div>
+              <p className="text-sm opacity-90">Sales Today</p>
             </div>
             {(executiveData?.financial?.revenue_growth || 0) >= 0 ? (
-              <ArrowUpIcon className="w-5 h-5" />
+              <ArrowUpIcon className="w-4 h-4" />
             ) : (
-              <ArrowDownIcon className="w-5 h-5" />
+              <ArrowDownIcon className="w-4 h-4" />
             )}
           </div>
-          <p className="text-sm opacity-90 mb-1">Sales Today</p>
-          <p className="text-3xl font-bold mb-2">
-            {formatRupiah(executiveData?.financial?.sales_today || 0)}
-          </p>
-          <p className="text-sm opacity-75">
-            {executiveData?.financial?.revenue_growth || 0}% from yesterday
-          </p>
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="text-2xl font-bold mb-1">
+                {formatRupiah(executiveData?.financial?.sales_today || 0)}
+              </p>
+              <p className="text-xs opacity-75">
+                {executiveData?.financial?.revenue_growth || 0}% from yesterday
+              </p>
+            </div>
+            <div className="w-24 flex-shrink-0">
+              <Sparkline data={salesTrend.map((d: any) => d.value || 0)} color="#ffffff" />
+            </div>
+          </div>
         </div>
 
         {/* Production Output - Clickable */}
         <div
-          className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-6 text-white shadow-lg cursor-pointer hover:shadow-2xl hover:scale-105 transition-all duration-300"
+          className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg cursor-pointer hover:shadow-2xl hover:scale-105 transition-all duration-300"
           onClick={() => setShowProductionOutput(true)}
           title="Klik untuk lihat detail per mesin & produk"
         >
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-white/20 rounded-lg">
-              <Package className="w-6 h-6" />
+          <div className="flex items-center justify-between mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <Package className="w-5 h-5" />
             </div>
-            <Zap className="w-5 h-5" />
+            <Zap className="w-4 h-4" />
           </div>
-          <p className="text-sm opacity-90 mb-1">Production Output</p>
-          <p className="text-3xl font-bold mb-2">
+          <p className="text-xs opacity-90 mb-1">Production Output</p>
+          <p className="text-2xl font-bold mb-1">
             {(executiveData?.production?.output || 0).toLocaleString()}
           </p>
-          <p className="text-sm opacity-75">
+          <div className="mb-1">
+            <Sparkline data={(trends?.production || []).map((d: any) => d.value || 0)} color="#ffffff" />
+          </div>
+          <p className="text-xs opacity-75">
             {executiveData?.production?.avg_oee || 0}% avg OEE • Click for details
           </p>
         </div>
 
         {/* Quality Pass Rate */}
-        <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-6 text-white shadow-lg">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-white/20 rounded-lg">
-              <CheckCircleIcon className="w-6 h-6" />
+        <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center justify-between mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <CheckCircleIcon className="w-5 h-5" />
             </div>
-            <CheckCircleIcon className="w-5 h-5" />
+            <CheckCircleIcon className="w-4 h-4" />
           </div>
-          <p className="text-sm opacity-90 mb-1">Quality Pass Rate</p>
-          <p className="text-3xl font-bold mb-2">
+          <p className="text-xs opacity-90 mb-1">Quality Pass Rate</p>
+          <p className="text-2xl font-bold mb-1">
             {executiveData?.quality?.pass_rate || 0}%
           </p>
-          <p className="text-sm opacity-75">
+          <p className="text-xs opacity-75">
             {executiveData?.quality?.inspections_today || 0} inspections today
           </p>
         </div>
 
       </div>
 
-      {/* Business Health Score (semicircle gauge) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Business Health Score (semicircle gauge) + Sorotan & Peringatan - bento, each spans 2/4 cols */}
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
         {(() => {
           const oeeVal = Math.min(executiveData?.oee?.average_oee || 0, 100)
           const statusLabel = oeeVal >= 75 ? 'SEHAT' : oeeVal >= 50 ? 'PERLU PERHATIAN' : 'BERISIKO'
@@ -382,7 +415,7 @@ export default function DashboardEnhanced() {
           const circumference = Math.PI * r // half circle length
           const filled = circumference * (oeeVal / 100)
           return (
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6">
+            <div className="xl:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-md p-5">
               <div className="flex items-center justify-between mb-1">
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">Business Health Score</h3>
                 <ChartBarIcon className="w-5 h-5 text-gray-400" />
@@ -419,7 +452,7 @@ export default function DashboardEnhanced() {
 
         {/* Sorotan & Peringatan - dark-contrast card (Axion composition pattern), real data
             from criticalIssues (already fetched above), not an AI feature */}
-        <div className="bg-gradient-to-br from-gray-900 to-slate-800 rounded-2xl shadow-md p-6 text-white flex flex-col">
+        <div className="xl:col-span-2 bg-gradient-to-br from-gray-900 to-slate-800 rounded-2xl shadow-md p-5 text-white flex flex-col">
           <div className="flex items-center justify-between mb-1">
             <h3 className="text-lg font-bold text-white">Sorotan &amp; Peringatan</h3>
             <ExclamationTriangleIcon className="w-5 h-5 text-[#F15D2C]" />
