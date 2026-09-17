@@ -416,6 +416,38 @@ export default function DashboardEnhanced() {
             </div>
           )
         })()}
+
+        {/* Sorotan & Peringatan - dark-contrast card (Axion composition pattern), real data
+            from criticalIssues (already fetched above), not an AI feature */}
+        <div className="bg-gradient-to-br from-gray-900 to-slate-800 rounded-2xl shadow-md p-6 text-white flex flex-col">
+          <div className="flex items-center justify-between mb-1">
+            <h3 className="text-lg font-bold text-white">Sorotan &amp; Peringatan</h3>
+            <ExclamationTriangleIcon className="w-5 h-5 text-[#F15D2C]" />
+          </div>
+          <p className="text-xs text-gray-400 mb-4">Isu prioritas yang butuh perhatian hari ini</p>
+          {criticalIssues.length === 0 ? (
+            <div className="flex-1 flex flex-col items-center justify-center text-center py-6">
+              <CheckCircleIcon className="w-10 h-10 text-emerald-400 mb-2" />
+              <p className="text-sm text-gray-300">Tidak ada isu kritis saat ini</p>
+            </div>
+          ) : (
+            <div className="space-y-3 flex-1">
+              {criticalIssues.slice(0, 3).map((issue, i) => (
+                <div key={i} className="flex items-start gap-3 bg-white/5 rounded-lg p-3">
+                  <span className="w-2 h-2 mt-1.5 rounded-full bg-[#F15D2C] flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-orange-300 uppercase tracking-wide">{issue.module}</p>
+                    <p className="text-sm text-gray-100 truncate">{issue.message}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between text-xs text-gray-400">
+            <span>{criticalIssues.length} isu terdeteksi</span>
+            <span>{executiveData?.summary?.total_modules || 0} modul aktif</span>
+          </div>
+        </div>
       </div>
 
       {/* Performance Scorecard - actual vs target per KPI, last 30 days */}
