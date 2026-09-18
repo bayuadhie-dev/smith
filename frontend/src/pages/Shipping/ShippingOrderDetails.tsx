@@ -33,15 +33,13 @@ interface ShippingOrderDetails {
   shipping_date: string;
   expected_delivery_date: string;
   actual_delivery_date: string;
-  shipping_method: string;
-  carrier: string;
+  delivery_method: string;
+  logistics_provider_name: string;
   tracking_number: string;
   status: string;
   shipping_cost: number;
-  insurance_cost: number;
   total_weight: number;
   total_volume: number;
-  special_instructions: string;
   notes: string;
   created_by: string;
   created_at: string;
@@ -54,10 +52,8 @@ interface ShippingItem {
   product_code: string;
   product_name: string;
   quantity: number;
-  weight: number;
-  dimensions: string;
-  packaging_type: string;
-  handling_instructions: string;
+  uom: string;
+  batch_number: string;
 }
 
 interface TrackingEvent {
@@ -339,18 +335,18 @@ const ShippingOrderDetails: React.FC = () => {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                    Shipping Method
+                    Delivery Method
                   </label>
                   <div className="flex items-center gap-2 text-gray-900 dark:text-white">
                     <Truck className="h-4 w-4 text-gray-400" />
-                    {order.shipping_method}
+                    {order.delivery_method}
                   </div>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   </label>
-                  <div className="text-gray-900 dark:text-white">{order.carrier || 'Not specified'}</div>
+                  <div className="text-gray-900 dark:text-white">{order.logistics_provider_name || 'Not specified'}</div>
                 </div>
                 
                 <div>
@@ -400,16 +396,10 @@ const ShippingOrderDetails: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        {item.quantity}
+                        {item.quantity} {item.uom}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        {item.weight} kg
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        {item.dimensions}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        {item.packaging_type}
+                        {item.batch_number || '-'}
                       </td>
                     </tr>
                   ))}
@@ -483,16 +473,11 @@ const ShippingOrderDetails: React.FC = () => {
                 <span className="text-gray-900 dark:text-white">{formatCurrency(order.shipping_cost)}</span>
               </div>
               
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-300">Insurance</span>
-                <span className="text-gray-900 dark:text-white">{formatCurrency(order.insurance_cost)}</span>
-              </div>
-              
               <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
                 <div className="flex justify-between font-medium">
                   <span className="text-gray-900 dark:text-white">{t('products.bom.total_cost')}</span>
                   <span className="text-gray-900 dark:text-white">
-                    {formatCurrency(order.shipping_cost + order.insurance_cost)}
+                    {formatCurrency(order.shipping_cost)}
                   </span>
                 </div>
               </div>
@@ -515,10 +500,10 @@ const ShippingOrderDetails: React.FC = () => {
               </div>
             </div>
             
-            {order.special_instructions && (
+            {order.notes && (
               <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Special Instructions</h4>
-                <p className="text-sm text-gray-600 dark:text-gray-300">{order.special_instructions}</p>
+                <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Notes</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-300">{order.notes}</p>
               </div>
             )}
           </div>
