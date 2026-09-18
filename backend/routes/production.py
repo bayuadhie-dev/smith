@@ -1215,8 +1215,7 @@ def create_work_order():
 
         # Invalidate WO list cache
         try:
-            import os, redis as _redis
-            r = _redis.from_url(os.getenv('REDIS_URL', 'redis://localhost:6379/0'))
+            r = redis.from_url(os.getenv('REDIS_URL', 'redis://localhost:6379/0'))
             for key in r.scan_iter('production_work_orders_*'):
                 r.delete(key)
         except Exception:

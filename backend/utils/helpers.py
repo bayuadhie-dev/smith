@@ -23,10 +23,22 @@ def generate_number(prefix, model=None, field_name='number'):
     from models import db
     year = datetime.now().strftime('%Y')
     month = datetime.now().strftime('%m')
-    
-    # Get last number using scalar query to avoid loading full ORM instance
+
+    # Get last number using scalar query to avoid loading full ORM instance.
+    # Must filter to THIS prefix+year+month before ordering - ordering the
+    # whole column as a string with no filter picks up any stray non-standard
+    # value (e.g. a manually-entered "WO-TEST-NOTIF-001") that sorts after
+    # every real "WO-202609-..." row purely because 'T' > '2' in ASCII,
+    # producing a wrong "last" number and duplicate/colliding sequences.
     field = getattr(model, field_name)
-    last_number = db.session.query(field).order_by(field.desc()).limit(1).scalar()
+    like_pattern = f"{prefix}-{year}{month}-%"
+    last_number = (
+        db.session.query(field)
+        .filter(field.like(like_pattern))
+        .order_by(field.desc())
+        .limit(1)
+        .scalar()
+    )
     
     if last_number:
         # Extract sequence number
