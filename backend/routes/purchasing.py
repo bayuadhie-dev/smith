@@ -857,7 +857,7 @@ def get_grn(grn_id):
                 'material_id': item.material_id,
                 'item_name': (
                     item.product.name if item.product else
-                    (item.po_item.item_name if item.po_item else f'Item #{item.id}')
+                    (item.po_item.description if item.po_item and item.po_item.description else f'Item #{item.id}')
                 ),
                 'quantity_ordered': float(item.quantity_ordered),
                 'quantity_received': float(item.quantity_received),

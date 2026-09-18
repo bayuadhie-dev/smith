@@ -632,8 +632,8 @@ def create_payment():
         invoice = None
         if data.get('invoice_id'):
             invoice = db.session.get(Invoice, data['invoice_id'])
-            invoice.paid_amount += data['amount']
-            invoice.balance_due -= data['amount']
+            invoice.paid_amount = float(invoice.paid_amount or 0) + float(data['amount'])
+            invoice.balance_due = float(invoice.balance_due or 0) - float(data['amount'])
             if invoice.balance_due <= 0:
                 invoice.status = 'paid'
             elif invoice.paid_amount > 0:
