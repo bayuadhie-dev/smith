@@ -89,6 +89,7 @@ import SupplierList from './pages/Purchasing/SupplierList'
 import SupplierForm from './pages/Purchasing/SupplierForm'
 import PurchaseOrderList from './pages/Purchasing/PurchaseOrderList'
 import PurchaseOrderForm from './pages/Purchasing/PurchaseOrderForm'
+import PODetail from './pages/Purchasing/PODetail'
 import Purchasing from './pages/Purchasing/Purchasing'
 import PriceComparison from './pages/Purchasing/PriceComparison'
 import ContractList from './pages/Purchasing/ContractList'
@@ -100,6 +101,7 @@ import GRNForm from './pages/Purchasing/GRNForm'
 import SupplierQuoteForm from './pages/Purchasing/SupplierQuoteForm'
 import PRList from './pages/Purchasing/PRList'
 import PRForm from './pages/Purchasing/PRForm'
+import PRDetail from './pages/Purchasing/PRDetail'
 import GRNList from './pages/Purchasing/GRNList'
 import GRNDetail from './pages/Purchasing/GRNDetail'
 import PurchaseInvoiceList from './pages/Purchasing/InvoiceList'
@@ -277,6 +279,7 @@ import WorkOrderEdit from './pages/Production/WorkOrderEdit'
 import WorkOrderBOMEdit from './pages/Production/WorkOrderBOMEdit'
 import CloseWorkOrder from './pages/Production/CloseWorkOrder'
 import BatchClose from './pages/Production/BatchClose'
+import BatchRecord from './pages/Production/BatchRecord'
 import BOMForm from './pages/Products/BOMForm'
 import ProductionScheduleForm from './pages/Production/ProductionScheduleForm'
 import QualityCheckForm from './pages/Production/QualityCheckForm'
@@ -682,7 +685,7 @@ function App() {
                 <Route path="purchasing/suppliers/:id/edit" element={<SupplierForm />} />
                 <Route path="purchasing/purchase-orders" element={<PurchaseOrderList />} />
                 <Route path="purchasing/purchase-orders/new" element={<PurchaseOrderForm />} />
-                <Route path="purchasing/purchase-orders/:id" element={<PurchaseOrderForm />} />
+                <Route path="purchasing/purchase-orders/:id" element={<PODetail />} />
                 <Route path="purchasing/purchase-orders/:id/edit" element={<PurchaseOrderForm />} />
                 <Route path="purchasing/orders" element={<PurchaseOrderList />} />
                 <Route path="purchasing/orders/new" element={<PurchaseOrderForm />} />
@@ -711,7 +714,7 @@ function App() {
                 <Route path="purchasing/invoices/:id" element={<PurchaseInvoiceDetail />} />
                 <Route path="purchasing/requisitions" element={<PRList />} />
                 <Route path="purchasing/requisitions/new" element={<PRForm />} />
-                <Route path="purchasing/requisitions/:id" element={<PRForm />} />
+                <Route path="purchasing/requisitions/:id" element={<PRDetail />} />
                 <Route path="purchasing/requisitions/:id/edit" element={<PRForm />} />
                 <Route path="purchasing/supplier-integration" element={<SupplierIntegration />} />
 
@@ -745,6 +748,7 @@ function App() {
                 <Route path="production/work-orders/:id/bom-edit" element={<WorkOrderBOMEdit />} />
                 <Route path="production/work-orders/:id/close" element={<CloseWorkOrder />} />
                 <Route path="production/batches/:id/close" element={<BatchClose />} />
+                <Route path="production/batches/:id/record" element={<BatchRecord />} />
                 <Route path="production/remaining-stock" element={<RemainingStock />} />
                 <Route path="production/scheduling" element={<WeeklyProductionPlan />} />
                 <Route path="production/monthly-schedule" element={<MonthlyProductionPlan />} />

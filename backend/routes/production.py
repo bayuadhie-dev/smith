@@ -12,6 +12,7 @@ from models.product import Material
 from models.product_excel_schema import ProductNew
 from models.notification import Notification
 from models.user import User
+from models.warehouse import Inventory
 from utils.i18n import success_response, error_response, get_message
 from utils import generate_number
 from utils.timezone import get_local_now, get_local_today, utc_to_local
@@ -4636,6 +4637,118 @@ def get_batch_bom(batch_id):
             'planned_qty': float(batch.planned_qty),
             'admin_closed': batch.admin_closed,
             'bom_items': items_json,
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@production_bp.route('/batches/<int:batch_id>/record', methods=['GET'])
+@jwt_required()
+@require_permission('work_orders.view')
+def get_batch_record(batch_id):
+    """Consolidated GMP-style Batch Record for one ProductionBatch (Catatan Pengolahan Bets).
+
+    Joins ProductionBatch + WorkOrder/Product/BOM version + WorkOrderBOMItem
+    (material actual-vs-planned) + ShiftProduction (operator/shift/output) +
+    Inventory QC status (matched by batch_number) into one printable payload.
+    """
+    try:
+        from models.batch_scheduling import ProductionBatch
+        from models.production import ShiftProduction
+
+        batch = db.session.get(ProductionBatch, batch_id)
+        if not batch:
+            return jsonify({'error': 'Batch not found'}), 404
+
+        wo = batch.work_order
+        product = wo.product if wo else None
+        bom_version = wo.bom.version if wo and wo.bom else None
+
+        # Bahan baku terpakai (planned vs actual), scoped to this batch
+        bom_items = WorkOrderBOMItem.query.filter_by(
+            work_order_id=batch.work_order_id, production_batch_id=batch_id
+        ).order_by(WorkOrderBOMItem.line_number).all()
+        materials = [{
+            'id': i.id,
+            'material_id': i.material_id,
+            'item_name': i.item_name,
+            'item_code': i.item_code,
+            'uom': i.uom,
+            'quantity_planned': float(i.quantity_planned) if i.quantity_planned else 0,
+            'quantity_actual': float(i.quantity_actual) if i.quantity_actual is not None else None,
+            'variance': float(i.quantity_actual - i.quantity_planned) if (i.quantity_actual is not None and i.quantity_planned is not None) else None,
+            'actual_batch_number': i.actual_batch_number,
+        } for i in bom_items if i.item_type == 'material']
+
+        # Parameter proses & hasil produksi per shift
+        shift_records = ShiftProduction.query.filter_by(production_batch_id=batch_id).order_by(ShiftProduction.production_date, ShiftProduction.shift).all()
+        shifts = [{
+            'id': s.id,
+            'production_date': s.production_date.isoformat() if s.production_date else None,
+            'shift': s.shift,
+            'sub_shift': s.sub_shift,
+            'machine_id': s.machine_id,
+            'machine_name': s.machine.name if s.machine else None,
+            'operator_id': s.operator_id,
+            'operator_name': s.operator.full_name if s.operator else None,
+            'supervisor_id': s.supervisor_id,
+            'supervisor_name': s.supervisor.full_name if s.supervisor else None,
+            'shift_start': s.shift_start.isoformat() if s.shift_start else None,
+            'shift_end': s.shift_end.isoformat() if s.shift_end else None,
+            'target_quantity': float(s.target_quantity) if s.target_quantity else 0,
+            'actual_quantity': float(s.actual_quantity) if s.actual_quantity else 0,
+            'good_quantity': float(s.good_quantity) if s.good_quantity else 0,
+            'reject_quantity': float(s.reject_quantity) if s.reject_quantity else 0,
+            'rework_quantity': float(s.rework_quantity) if s.rework_quantity else 0,
+            'uom': s.uom,
+        } for s in shift_records]
+
+        total_good = sum(s['good_quantity'] for s in shifts)
+        total_reject = sum(s['reject_quantity'] for s in shifts)
+        total_actual = sum(s['actual_quantity'] for s in shifts)
+        yield_percent = round((total_good / total_actual * 100), 2) if total_actual else None
+
+        # Status QC output batch ini - dicocokkan via Inventory.batch_number
+        qc_rows = Inventory.query.filter_by(batch_number=batch.batch_number).all() if batch.batch_number else []
+        qc_status = [{
+            'inventory_id': q.id,
+            'location': q.location.name if q.location else None,
+            'quantity_on_hand': float(q.quantity_on_hand),
+            'stock_status': q.stock_status,
+            'qc_date': q.qc_date.isoformat() if q.qc_date else None,
+            'qc_notes': q.qc_notes,
+        } for q in qc_rows]
+
+        return jsonify({
+            'batch_id': batch.id,
+            'batch_number': batch.batch_number,
+            'work_order_id': batch.work_order_id,
+            'wo_number': wo.wo_number if wo else None,
+            'product_id': product.id if product else None,
+            'product_name': product.name if product else None,
+            'product_code': product.code if product else None,
+            'bom_version': bom_version,
+            'scheduled_date': batch.scheduled_date.isoformat() if batch.scheduled_date else None,
+            'shift_number': batch.shift_number,
+            'machine_id': batch.machine_id,
+            'machine_name': batch.machine.name if batch.machine else None,
+            'planned_qty': float(batch.planned_qty),
+            'realized_qty': float(batch.realized_qty),
+            'status': batch.status,
+            'materials': materials,
+            'shifts': shifts,
+            'summary': {
+                'total_actual': total_actual,
+                'total_good': total_good,
+                'total_reject': total_reject,
+                'yield_percent': yield_percent,
+            },
+            'qc_status': qc_status,
+            'admin_closed': batch.admin_closed,
+            'admin_closed_at': batch.admin_closed_at.isoformat() if batch.admin_closed_at else None,
+            'admin_closed_by_name': batch.admin_closed_by and db.session.get(User, batch.admin_closed_by).full_name,
+            'approved_by_name': batch.approved_by_user.full_name if batch.approved_by_user else None,
+            'approved_at': batch.approved_at.isoformat() if batch.approved_at else None,
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500

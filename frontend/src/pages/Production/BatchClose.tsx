@@ -193,6 +193,14 @@ export default function BatchClose() {
             Target batch ini: {batch.planned_qty} · {batch.admin_closed ? 'Sudah ditutup' : 'Belum ditutup'}
           </p>
         </div>
+        {batch.admin_closed && (
+          <Link
+            to={`/app/production/batches/${batchId}/record`}
+            className="ml-auto flex items-center gap-2 px-4 py-2 bg-[#059669] text-white rounded-lg hover:bg-emerald-700 text-sm font-medium"
+          >
+            Lihat Batch Record
+          </Link>
+        )}
       </div>
 
       {missingRequirements.length > 0 && (
