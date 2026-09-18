@@ -50,8 +50,8 @@ def create_shipment():
             customer_id=data.get('customer_id'),
             shipping_date=datetime.fromisoformat(data['shipping_date']),
             expected_delivery_date=datetime.fromisoformat(data['expected_delivery_date']) if data.get('expected_delivery_date') else None,
-            shipping_method=data['shipping_method'],
-            carrier=data.get('carrier'),
+            delivery_method=data.get('delivery_method', 'expedition'),
+            logistics_provider_id=data.get('logistics_provider_id'),
             tracking_number=data.get('tracking_number'),
             driver_name=data.get('driver_name'),
             driver_phone=data.get('driver_phone'),
@@ -387,31 +387,31 @@ def get_shipping_order(order_id):
                 'shipping_date': order.shipping_date.isoformat(),
                 'expected_delivery_date': order.expected_delivery_date.isoformat() if order.expected_delivery_date else None,
                 'actual_delivery_date': order.actual_delivery_date.isoformat() if order.actual_delivery_date else None,
-                'shipping_method': order.shipping_method,
-                'carrier': order.carrier,
+                'delivery_method': order.delivery_method,
+                'logistics_provider_id': order.logistics_provider_id,
+                'logistics_provider_name': order.logistics_provider.company_name if order.logistics_provider else None,
                 'tracking_number': order.tracking_number,
                 'driver_name': order.driver_name,
                 'driver_phone': order.driver_phone,
                 'vehicle_number': order.vehicle_number,
+                'vehicle_type': order.vehicle_type,
                 'status': order.status,
                 'shipping_cost': float(order.shipping_cost) if order.shipping_cost else 0,
-                'insurance_cost': float(order.insurance_cost) if order.insurance_cost else 0,
                 'total_weight': float(order.total_weight) if order.total_weight else 0,
                 'total_volume': float(order.total_volume) if order.total_volume else 0,
-                'destination_address': order.destination_address,
-                'destination_city': order.destination_city,
-                'destination_postal_code': order.destination_postal_code,
-                'special_instructions': order.special_instructions,
+                'number_of_packages': order.number_of_packages,
+                'shipping_address': order.shipping_address,
                 'notes': order.notes,
                 'created_at': order.created_at.isoformat(),
                 'updated_at': order.updated_at.isoformat(),
                 'items': [{
                     'id': item.id,
-                    'product_name': item.product_name,
-                    'quantity': item.quantity,
-                    'unit_weight': float(item.unit_weight) if item.unit_weight else 0,
-                    'unit_volume': float(item.unit_volume) if item.unit_volume else 0,
-                    'description': item.description
+                    'product_id': item.product_id,
+                    'product_name': item.product.name if item.product else None,
+                    'quantity': float(item.quantity),
+                    'uom': item.uom,
+                    'batch_number': item.batch_number,
+                    'notes': item.notes
                 } for item in order.items] if order.items else []
             }
         }), 200
@@ -435,10 +435,10 @@ def update_shipping_order(order_id):
             order.expected_delivery_date = datetime.fromisoformat(data['expected_delivery_date']) if data['expected_delivery_date'] else None
         if 'actual_delivery_date' in data:
             order.actual_delivery_date = datetime.fromisoformat(data['actual_delivery_date']) if data['actual_delivery_date'] else None
-        if 'shipping_method' in data:
-            order.shipping_method = data['shipping_method']
-        if 'carrier' in data:
-            order.carrier = data['carrier']
+        if 'delivery_method' in data:
+            order.delivery_method = data['delivery_method']
+        if 'logistics_provider_id' in data:
+            order.logistics_provider_id = data['logistics_provider_id']
         if 'tracking_number' in data:
             order.tracking_number = data['tracking_number']
         if 'driver_name' in data:
@@ -447,24 +447,20 @@ def update_shipping_order(order_id):
             order.driver_phone = data['driver_phone']
         if 'vehicle_number' in data:
             order.vehicle_number = data['vehicle_number']
+        if 'vehicle_type' in data:
+            order.vehicle_type = data['vehicle_type']
         if 'status' in data:
             order.status = data['status']
         if 'shipping_cost' in data:
             order.shipping_cost = data['shipping_cost']
-        if 'insurance_cost' in data:
-            order.insurance_cost = data['insurance_cost']
         if 'total_weight' in data:
             order.total_weight = data['total_weight']
         if 'total_volume' in data:
             order.total_volume = data['total_volume']
-        if 'destination_address' in data:
-            order.destination_address = data['destination_address']
-        if 'destination_city' in data:
-            order.destination_city = data['destination_city']
-        if 'destination_postal_code' in data:
-            order.destination_postal_code = data['destination_postal_code']
-        if 'special_instructions' in data:
-            order.special_instructions = data['special_instructions']
+        if 'number_of_packages' in data:
+            order.number_of_packages = data['number_of_packages']
+        if 'shipping_address' in data:
+            order.shipping_address = data['shipping_address']
         if 'notes' in data:
             order.notes = data['notes']
         
