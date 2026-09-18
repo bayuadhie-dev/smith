@@ -4735,6 +4735,14 @@ def get_batch_record(batch_id):
 
         # Parameter proses & hasil produksi per shift
         shift_records = ShiftProduction.query.filter_by(production_batch_id=batch_id).order_by(ShiftProduction.production_date, ShiftProduction.shift).all()
+        if not shift_records:
+            # Shift input rarely sets production_batch_id explicitly. Fall
+            # back to the WO's shift records ONLY when this WO has exactly
+            # one ProductionBatch (unambiguous) - otherwise leave empty
+            # rather than misattribute another batch's shift to this one.
+            from models.batch_scheduling import ProductionBatch as _PB
+            if _PB.query.filter_by(work_order_id=batch.work_order_id).count() == 1:
+                shift_records = ShiftProduction.query.filter_by(work_order_id=batch.work_order_id).order_by(ShiftProduction.production_date, ShiftProduction.shift).all()
         shifts = [{
             'id': s.id,
             'production_date': s.production_date.isoformat() if s.production_date else None,
@@ -4761,11 +4769,16 @@ def get_batch_record(batch_id):
         total_actual = sum(s['actual_quantity'] for s in shifts)
         yield_percent = round((total_good / total_actual * 100), 2) if total_actual else None
 
-        # Status QC output batch ini - dicocokkan via Inventory.batch_number
-        qc_rows = Inventory.query.filter_by(batch_number=batch.batch_number).all() if batch.batch_number else []
+        # Status QC output batch ini - Inventory hasil produksi disimpan per
+        # WorkOrder (batch_number=wo_number, lihat auto_receive_finished_goods),
+        # bukan per ProductionBatch individual, jadi cocokkan lewat work_order_id
+        # + product_id. Catatan: kalau satu WO dipecah jadi beberapa
+        # ProductionBatch, baris QC ini mewakili keseluruhan output WO, bukan
+        # persis output batch ini saja.
+        qc_rows = Inventory.query.filter_by(work_order_id=batch.work_order_id, product_id=product.id).all() if product else []
         qc_status = [{
             'inventory_id': q.id,
-            'location': q.location.name if q.location else None,
+            'location': q.location.location_code if q.location else None,
             'quantity_on_hand': float(q.quantity_on_hand),
             'stock_status': q.stock_status,
             'qc_date': q.qc_date.isoformat() if q.qc_date else None,
