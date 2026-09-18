@@ -314,6 +314,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
             { name: 'Approval', href: '/app/production/approvals', icon: ClipboardDocumentCheckIcon },
             { name: 'Quality Objective', href: '/app/quality/objective/production', icon: ChartBarIcon },
             { name: 'Batch Scheduling', href: '/app/production/batch-scheduling', icon: CalendarDaysIcon },
+            { name: 'Batch Record', href: '/app/production/batch-records', icon: DocumentTextIcon },
             { name: 'Batch Planning', href: '/app/production/batch-planning', icon: CalendarDaysIcon },
             {
               name: 'MRP', icon: CalculatorIcon, isSubMenu: true, permission: 'mrp', subChildren: [

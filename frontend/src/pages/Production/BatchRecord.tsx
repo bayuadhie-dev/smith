@@ -24,7 +24,7 @@ export default function BatchRecord() {
     if (!mat.material_id) return;
     setMaterialModal({ open: true, loading: true, data: null, itemName: mat.item_name });
     try {
-      const res = await axiosInstance.get(`/api/material-stock/materials/${mat.material_id}/inventory`);
+      const res = await axiosInstance.get(`/api/materials/${mat.material_id}/inventory`);
       setMaterialModal({ open: true, loading: false, data: res.data, itemName: mat.item_name });
     } catch {
       setMaterialModal({ open: true, loading: false, data: null, itemName: mat.item_name });

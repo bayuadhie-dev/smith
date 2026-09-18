@@ -280,6 +280,7 @@ import WorkOrderBOMEdit from './pages/Production/WorkOrderBOMEdit'
 import CloseWorkOrder from './pages/Production/CloseWorkOrder'
 import BatchClose from './pages/Production/BatchClose'
 import BatchRecord from './pages/Production/BatchRecord'
+import BatchRecordList from './pages/Production/BatchRecordList'
 import BOMForm from './pages/Products/BOMForm'
 import ProductionScheduleForm from './pages/Production/ProductionScheduleForm'
 import QualityCheckForm from './pages/Production/QualityCheckForm'
@@ -748,6 +749,7 @@ function App() {
                 <Route path="production/work-orders/:id/bom-edit" element={<WorkOrderBOMEdit />} />
                 <Route path="production/work-orders/:id/close" element={<CloseWorkOrder />} />
                 <Route path="production/batches/:id/close" element={<BatchClose />} />
+                <Route path="production/batch-records" element={<BatchRecordList />} />
                 <Route path="production/batches/:id/record" element={<BatchRecord />} />
                 <Route path="production/remaining-stock" element={<RemainingStock />} />
                 <Route path="production/scheduling" element={<WeeklyProductionPlan />} />

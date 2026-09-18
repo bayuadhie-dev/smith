@@ -42,7 +42,7 @@ export default function PODetail() {
     if (!item.material_id) return;
     setMaterialModal({ open: true, loading: true, data: null, itemName: item.material_name || item.description });
     try {
-      const res = await axiosInstance.get(`/api/material-stock/materials/${item.material_id}/inventory`);
+      const res = await axiosInstance.get(`/api/materials/${item.material_id}/inventory`);
       setMaterialModal({ open: true, loading: false, data: res.data, itemName: item.material_name || item.description });
     } catch {
       setMaterialModal({ open: true, loading: false, data: null, itemName: item.material_name || item.description });

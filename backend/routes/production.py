@@ -4642,6 +4642,58 @@ def get_batch_bom(batch_id):
         return jsonify({'error': str(e)}), 500
 
 
+@production_bp.route('/batches/records', methods=['GET'])
+@jwt_required()
+@require_permission('work_orders.view')
+def list_batch_records():
+    """List batches available as a GMP Batch Record, newest first, with search + pagination."""
+    try:
+        from models.batch_scheduling import ProductionBatch
+
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 50, type=int)
+        search = request.args.get('search', '').strip()
+        admin_closed = request.args.get('admin_closed')
+
+        query = ProductionBatch.query.join(WorkOrder, ProductionBatch.work_order_id == WorkOrder.id).join(Product, WorkOrder.product_id == Product.id)
+
+        if search:
+            like = f'%{search}%'
+            query = query.filter(or_(
+                ProductionBatch.batch_number.ilike(like),
+                WorkOrder.wo_number.ilike(like),
+                Product.name.ilike(like),
+            ))
+        if admin_closed is not None:
+            query = query.filter(ProductionBatch.admin_closed == (admin_closed.lower() == 'true'))
+
+        query = query.order_by(ProductionBatch.scheduled_date.desc().nullslast(), ProductionBatch.id.desc())
+        pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+
+        items = [{
+            'id': b.id,
+            'batch_number': b.batch_number,
+            'wo_number': b.work_order.wo_number if b.work_order else None,
+            'product_name': b.work_order.product.name if b.work_order and b.work_order.product else None,
+            'scheduled_date': b.scheduled_date.isoformat() if b.scheduled_date else None,
+            'status': b.status,
+            'planned_qty': float(b.planned_qty),
+            'realized_qty': float(b.realized_qty),
+            'admin_closed': b.admin_closed,
+            'admin_closed_at': b.admin_closed_at.isoformat() if b.admin_closed_at else None,
+        } for b in pagination.items]
+
+        return jsonify({
+            'items': items,
+            'total': pagination.total,
+            'page': page,
+            'per_page': per_page,
+            'pages': pagination.pages,
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @production_bp.route('/batches/<int:batch_id>/record', methods=['GET'])
 @jwt_required()
 @require_permission('work_orders.view')
@@ -4673,12 +4725,13 @@ def get_batch_record(batch_id):
             'material_id': i.material_id,
             'item_name': i.item_name,
             'item_code': i.item_code,
+            'item_type': i.item_type,
             'uom': i.uom,
             'quantity_planned': float(i.quantity_planned) if i.quantity_planned else 0,
             'quantity_actual': float(i.quantity_actual) if i.quantity_actual is not None else None,
             'variance': float(i.quantity_actual - i.quantity_planned) if (i.quantity_actual is not None and i.quantity_planned is not None) else None,
             'actual_batch_number': i.actual_batch_number,
-        } for i in bom_items if i.item_type == 'material']
+        } for i in bom_items]
 
         # Parameter proses & hasil produksi per shift
         shift_records = ShiftProduction.query.filter_by(production_batch_id=batch_id).order_by(ShiftProduction.production_date, ShiftProduction.shift).all()
