@@ -1050,6 +1050,37 @@ def record_payment(id):
         else:
             invoice.status = 'partial'
 
+        db.session.flush()
+
+        # Post to GL: Dr Hutang Usaha, Cr Kas/Bank - this endpoint duplicated
+        # POST /api/finance/payments' AP-payment business function (updating
+        # Invoice.paid_amount/status) but was missing that endpoint's GL
+        # posting entirely, so an AP payment recorded here flipped the
+        # invoice to "paid" while zero journal entry was ever created.
+        from utils.finance_helpers import resolve_accounts_payable, post_pending_journal
+        from models.approval_workflow import PendingJournalEntry
+
+        ap_account_id = resolve_accounts_payable(invoice.supplier_id)
+        lines = [
+            {'account_id': ap_account_id, 'debit': amount, 'credit': 0,
+             'description': f'Pelunasan hutang - {invoice.invoice_number}'},
+            {'account_id': data['bank_account_id'], 'debit': 0, 'credit': amount,
+             'description': f'Pembayaran ke supplier - {payment.payment_number}'},
+        ]
+        pending = PendingJournalEntry(
+            workflow_id=None,
+            entry_date=payment.payment_date,
+            description=f'Payment {payment.payment_number} - {invoice.invoice_number}',
+            reference=payment.payment_number,
+            lines=lines,
+            total_debit=amount,
+            total_credit=amount,
+            created_by=user_id,
+        )
+        db.session.add(pending)
+        db.session.flush()
+        post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='payment', reference_id=payment.id)
+
         db.session.commit()
 
         return jsonify({

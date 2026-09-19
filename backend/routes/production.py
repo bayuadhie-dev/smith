@@ -2928,7 +2928,21 @@ def complete_work_order(id):
         # Auto-receive finished goods to warehouse
         integration_results = {}
         qty_good = float(data.get('quantity_good', 0)) or (float(wo.quantity_good) if wo.quantity_good else 0) or (float(wo.quantity_produced) if wo.quantity_produced else 0)
-        
+        if not qty_good:
+            # Neither the request nor the WO's own quantity_good/quantity_produced
+            # fields (which nothing populates automatically) had a value - fall
+            # back to summing the real ShiftProduction rows logged against this
+            # WO, so completing a WO whose output was only ever recorded via
+            # shift input doesn't silently skip finished-goods receipt (and
+            # leave the WO stuck 'completed' with zero inventory and no valid
+            # revert path, since revert-to-released requires an FG row to exist).
+            from models.production import ShiftProduction
+            qty_good = float(
+                db.session.query(func.coalesce(func.sum(ShiftProduction.good_quantity), 0))
+                .filter(ShiftProduction.work_order_id == id)
+                .scalar()
+            )
+
         if qty_good > 0:
             success, message, inventory_id = auto_receive_finished_goods(id, qty_good, user_id)
             integration_results['finished_goods_receipt'] = {
