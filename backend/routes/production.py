@@ -2951,7 +2951,24 @@ def complete_work_order(id):
                 'inventory_id': inventory_id,
                 'quantity_received': qty_good
             }
-        
+
+        # Persist real totals onto the WO row itself - WO Monitoring
+        # (routes/work_order_monitoring.py) reads wo.quantity_produced/
+        # quantity_good directly and nothing else ever populates them for
+        # WOs produced via Batch Scheduling/ShiftProduction (only the older
+        # ProductionRecord flow increments these inline). Without this, every
+        # WO closed through the batch/shift path shows 0/planned and 0%
+        # progress on Monitoring forever, even after real production.
+        from models.production import ShiftProduction
+        shift_totals = db.session.query(
+            func.coalesce(func.sum(ShiftProduction.actual_quantity), 0),
+            func.coalesce(func.sum(ShiftProduction.good_quantity), 0),
+        ).filter(ShiftProduction.work_order_id == id).first()
+        shift_produced, shift_good = float(shift_totals[0]), float(shift_totals[1])
+        if shift_produced > 0:
+            wo.quantity_produced = shift_produced
+            wo.quantity_good = shift_good
+
         db.session.commit()
         # Send WhatsApp notification (best-effort, won't affect completion if it fails)
         try:
