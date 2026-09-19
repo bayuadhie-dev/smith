@@ -200,8 +200,14 @@ class BusinessRules:
                     'message': 'Customer not found'
                 }
             
+            from models.finance import Invoice
+
             credit_limit = customer.credit_limit or 0
-            current_balance = customer.current_balance or 0
+            current_balance = db.session.query(func.coalesce(func.sum(Invoice.balance_due), 0)).filter(
+                Invoice.customer_id == customer_id,
+                Invoice.invoice_type == 'sales',
+                Invoice.status.in_(['sent', 'partial', 'overdue'])
+            ).scalar() or 0
             available_credit = credit_limit - current_balance
             
             approved = available_credit >= order_amount
@@ -212,7 +218,7 @@ class BusinessRules:
                 'current_balance': float(current_balance),
                 'available_credit': float(available_credit),
                 'order_amount': float(order_amount),
-                'customer_name': customer.name,
+                'customer_name': customer.company_name,
                 'message': 'Credit approved' if approved else f'Insufficient credit. Available: {available_credit}'
             }
             
@@ -240,19 +246,19 @@ class BusinessRules:
                 }
             
             # Check if customer is active
-            if not customer.active:
+            if not customer.is_active:
                 return {
                     'valid': False,
-                    'customer_name': customer.name,
+                    'customer_name': customer.company_name,
                     'message': 'Customer account is inactive'
                 }
-            
+
             # Check payment terms
-            payment_terms = customer.payment_terms or 'COD'
-            
+            payment_terms = customer.payment_terms_days or 30
+
             return {
                 'valid': True,
-                'customer_name': customer.name,
+                'customer_name': customer.company_name,
                 'payment_terms': payment_terms,
                 'credit_limit': float(customer.credit_limit or 0),
                 'message': f'Payment terms: {payment_terms}'

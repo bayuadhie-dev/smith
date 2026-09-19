@@ -75,11 +75,11 @@ def create_shipment():
         for item_data in data.get('items', []):
             item = ShippingItem(
                 shipping_id=order.id,
-                product_name=item_data['product_name'],
+                product_id=item_data['product_id'],
                 quantity=item_data['quantity'],
-                unit=item_data['unit'],
-                weight_kg=item_data.get('weight_kg'),
-                dimensions=item_data.get('dimensions')
+                uom=item_data.get('uom', 'PCS'),
+                batch_number=item_data.get('batch_number'),
+                notes=item_data.get('notes'),
             )
             db.session.add(item)
         
