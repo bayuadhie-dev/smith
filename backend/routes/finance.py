@@ -1387,46 +1387,114 @@ def get_consolidation():
 def get_income_statement():
     try:
         year = request.args.get('year', get_local_now().year, type=int)
-        
+
         # Calculate from actual accounting entries
         # Calculate income statement from actual data
         try:
-            from ..models.finance import Account
-            
+            from models.finance import Account
+
+            def year_balance(account):
+                """Account.balance scoped to `year` - the shared @property on
+                Account sums ALL posted entries regardless of date, which
+                made the year dropdown on this report a no-op. Entries are
+                summed per the account's own normal_balance convention,
+                same as Account.balance itself.
+                """
+                entries = AccountingEntry.query.filter(
+                    AccountingEntry.account_code == account.account_code,
+                    AccountingEntry.status == 'posted',
+                    func.extract('year', AccountingEntry.entry_date) == year,
+                ).all()
+                debit_total = sum(float(e.debit_amount or 0) for e in entries)
+                credit_total = sum(float(e.credit_amount or 0) for e in entries)
+                return debit_total - credit_total if account.normal_balance == 'debit' else credit_total - debit_total
+
             # Get revenue accounts (4000-4999)
             revenue_accounts = Account.query.filter(
                 Account.account_code.like('4%'),
                 Account.is_active == True
             ).all()
-            
+
             # Get expense accounts (5000-9999)
             expense_accounts = Account.query.filter(
-                Account.account_code.like('5%') | 
-                Account.account_code.like('6%') | 
-                Account.account_code.like('7%') | 
-                Account.account_code.like('8%') | 
+                Account.account_code.like('5%') |
+                Account.account_code.like('6%') |
+                Account.account_code.like('7%') |
+                Account.account_code.like('8%') |
                 Account.account_code.like('9%'),
                 Account.is_active == True
             ).all()
-            
-            # Calculate totals
-            total_revenue = sum(acc.balance for acc in revenue_accounts)
-            total_expenses = sum(acc.balance for acc in expense_accounts)
-            net_income = total_revenue - total_expenses
-            
+
+            # Chart of accounts convention (confirmed 2026-09-19): 5-xxxx = HPP/COGS
+            # (5-1100 bahan baku, 5-1200 tenaga kerja, 5-1300 overhead),
+            # 6/7-xxxx = beban operasional pabrik+gaji folded into selling/admin
+            # for this report, 8-1000/8-2000 = selling/admin, 9-xxxx = other.
+            cogs_accounts = [a for a in expense_accounts if a.account_code.startswith('5-1')]
+            direct_materials = sum(year_balance(a) for a in cogs_accounts if a.account_code == '5-1100')
+            direct_labor = sum(year_balance(a) for a in cogs_accounts if a.account_code == '5-1200')
+            manufacturing_overhead = sum(year_balance(a) for a in cogs_accounts if a.account_code == '5-1300')
+            # 5-1000 is the HPP header account itself - include it too in case
+            # postings land there directly instead of its 5-11xx/12xx/13xx children.
+            cogs_other = sum(year_balance(a) for a in expense_accounts if a.account_code == '5-1000')
+            total_cogs = direct_materials + direct_labor + manufacturing_overhead + cogs_other
+
+            selling_accounts = [a for a in expense_accounts if a.account_code.startswith('8-1') or a.account_code.startswith('6-')]
+            admin_accounts = [a for a in expense_accounts if a.account_code.startswith('8-2') or a.account_code.startswith('7-')]
+            selling_expenses = sum(year_balance(a) for a in selling_accounts)
+            administrative_expenses = sum(year_balance(a) for a in admin_accounts)
+            total_operating_expenses = selling_expenses + administrative_expenses
+
+            other_accounts = [a for a in expense_accounts if a.account_code.startswith('9-')]
+            interest_expense = sum(year_balance(a) for a in other_accounts if a.account_code == '9-1000')
+            other_other = sum(year_balance(a) for a in other_accounts if a.account_code != '9-1000')
+            total_other_expenses = interest_expense + other_other
+
+            sales_revenue = sum(year_balance(a) for a in revenue_accounts if a.account_code == '4-1000')
+            other_revenue_accounts = [a for a in revenue_accounts if a.account_code != '4-1000']
+            other_revenue = sum(year_balance(a) for a in other_revenue_accounts)
+            total_revenue = sales_revenue + other_revenue
+
+            gross_profit = total_revenue - total_cogs
+            operating_income = gross_profit - total_operating_expenses
+            net_income_before_tax = operating_income - total_other_expenses
+            income_tax = 0  # no tax-accrual posting exists yet in this system
+            net_income = net_income_before_tax - income_tax
+            total_expenses = total_cogs + total_operating_expenses + total_other_expenses + income_tax
+
             income_statement = {
                 'revenue': {
-                    'sales_revenue': total_revenue,
-                    'other_revenue': 0,
+                    'sales_revenue': sales_revenue,
+                    'other_income': other_revenue,
                     'total_revenue': total_revenue
                 },
-                'expenses': {
-                    'cost_of_goods_sold': sum(acc.balance for acc in expense_accounts if acc.account_code.startswith('5')),
-                    'operating_expenses': sum(acc.balance for acc in expense_accounts if acc.account_code.startswith(('6', '7', '8'))),
-                    'other_expenses': sum(acc.balance for acc in expense_accounts if acc.account_code.startswith('9')),
-                    'total_expenses': total_expenses
+                'cost_of_sales': {
+                    'direct_materials': direct_materials + cogs_other,
+                    'direct_labor': direct_labor,
+                    'manufacturing_overhead': manufacturing_overhead,
+                    'total_cogs': total_cogs
                 },
-                'net_income': net_income
+                'gross_profit': gross_profit,
+                'operating_expenses': {
+                    'selling_expenses': selling_expenses,
+                    'administrative_expenses': administrative_expenses,
+                    'total_operating_expenses': total_operating_expenses
+                },
+                'operating_income': operating_income,
+                'other_expenses': {
+                    'interest_expense': interest_expense,
+                    'depreciation': 0,
+                    'total_other_expenses': total_other_expenses
+                },
+                'net_income_before_tax': net_income_before_tax,
+                'income_tax': income_tax,
+                'net_income': net_income,
+                # kept for any other caller still reading the old flat shape
+                'expenses': {
+                    'cost_of_goods_sold': total_cogs,
+                    'operating_expenses': total_operating_expenses,
+                    'other_expenses': total_other_expenses,
+                    'total_expenses': total_expenses
+                }
             }
         except ImportError:
             # Fallback calculation
@@ -1471,50 +1539,89 @@ def get_income_statement():
 def get_balance_sheet():
     try:
         as_of_date = request.args.get('date', get_local_now().date().isoformat())
-        
-        # Calculate from actual accounting entries
-        # TODO: Implement proper balance sheet calculation from database
+
+        # Real balance-sheet calculation from posted accounting entries, per
+        # this system's actual chart of accounts convention (confirmed
+        # 2026-09-19): 1-1xxx current assets, 1-2xxx fixed assets, 2-1xxx
+        # current liabilities, 2-2xxx long-term liabilities, 3-xxxx equity.
+        # Previously this endpoint returned an all-zero hardcoded object
+        # with a "not implemented yet" TODO - the page never showed real
+        # numbers regardless of how much real GL activity existed.
+        from models.finance import Account
+
+        def code_balance(code):
+            acc = Account.query.filter_by(account_code=code).first()
+            return float(acc.balance) if acc else 0.0
+
+        def prefix_balance(prefix, exclude=()):
+            accs = Account.query.filter(Account.account_code.like(f'{prefix}%'), Account.is_active == True).all()
+            return sum(float(a.balance) for a in accs if a.account_code not in exclude)
+
+        cash = code_balance('1-1000') + code_balance('1-1010') + code_balance('1-1020')
+        accounts_receivable = code_balance('1-1100') - code_balance('1-1110')
+        inventory = code_balance('1-1200') + code_balance('1-1300') + code_balance('1-1400') + code_balance('1-1500')
+        prepaid_expenses = code_balance('1-1600')
+        total_current_assets = cash + accounts_receivable + inventory + prepaid_expenses
+
+        property_plant_equipment = code_balance('1-2000')
+        accumulated_depreciation = code_balance('1-2100')
+        net_fixed_assets = property_plant_equipment - accumulated_depreciation
+        total_assets = total_current_assets + net_fixed_assets
+
+        accounts_payable = code_balance('2-1000')
+        accrued_liabilities = prefix_balance('2-11')
+        short_term_debt = code_balance('2-1300')
+        total_current_liabilities = accounts_payable + accrued_liabilities + short_term_debt
+
+        long_term_debt = code_balance('2-2000')
+        total_long_term_liabilities = long_term_debt
+        total_liabilities = total_current_liabilities + total_long_term_liabilities
+
+        common_stock = code_balance('3-1000')
+        retained_earnings = code_balance('3-2000') + code_balance('3-3000')
+        total_equity = common_stock + retained_earnings
+
         balance_sheet = {
             'assets': {
                 'current_assets': {
-                    'cash': 0,
-                    'accounts_receivable': 0,
-                    'inventory': 0,
-                    'prepaid_expenses': 0,
-                    'total_current_assets': 0
+                    'cash': cash,
+                    'accounts_receivable': accounts_receivable,
+                    'inventory': inventory,
+                    'prepaid_expenses': prepaid_expenses,
+                    'total_current_assets': total_current_assets
                 },
                 'fixed_assets': {
-                    'property_plant_equipment': 0,
-                    'accumulated_depreciation': 0,
-                    'net_fixed_assets': 0
+                    'property_plant_equipment': property_plant_equipment,
+                    'accumulated_depreciation': accumulated_depreciation,
+                    'net_fixed_assets': net_fixed_assets
                 },
-                'total_assets': 0
+                'total_assets': total_assets
             },
             'liabilities': {
                 'current_liabilities': {
-                    'accounts_payable': 0,
-                    'accrued_liabilities': 0,
-                    'short_term_debt': 0,
-                    'total_current_liabilities': 0
+                    'accounts_payable': accounts_payable,
+                    'accrued_liabilities': accrued_liabilities,
+                    'short_term_debt': short_term_debt,
+                    'total_current_liabilities': total_current_liabilities
                 },
                 'long_term_liabilities': {
-                    'long_term_debt': 0,
-                    'total_long_term_liabilities': 0
+                    'long_term_debt': long_term_debt,
+                    'total_long_term_liabilities': total_long_term_liabilities
                 },
-                'total_liabilities': 0
+                'total_liabilities': total_liabilities
             },
             'equity': {
-                'common_stock': 0,
-                'retained_earnings': 0,
-                'total_equity': 0
+                'common_stock': common_stock,
+                'retained_earnings': retained_earnings,
+                'total_equity': total_equity
             },
-            'total_liabilities_equity': 0
+            'total_liabilities_equity': total_liabilities + total_equity
         }
-        
+
         return jsonify({
             'balance_sheet': balance_sheet,
             'as_of_date': as_of_date,
-            'message': 'Balance sheet will be calculated from your accounting entries. Please record transactions first.'
+            'message': 'Dihitung dari posting GL riil per tanggal saat ini - bukan estimasi. as_of_date belum memfilter per tanggal (menampilkan saldo terkini).'
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
