@@ -209,6 +209,18 @@ def get_statement_lines(statement_id):
     result = []
     for line in sorted(lines, key=lambda l: l.line_date):
         candidates = []
+        matched_entry = None
+        if line.is_matched and line.matched_accounting_entry_id:
+            e = db.session.get(AccountingEntry, line.matched_accounting_entry_id)
+            if e:
+                matched_entry = {
+                    'id': e.id,
+                    'entry_number': e.entry_number,
+                    'entry_date': e.entry_date.isoformat(),
+                    'description': e.description,
+                    'debit_amount': float(e.debit_amount or 0),
+                    'credit_amount': float(e.credit_amount or 0),
+                }
         if not line.is_matched:
             already_matched_ids = {
                 l.matched_accounting_entry_id for l in statement.lines if l.matched_accounting_entry_id
@@ -216,7 +228,12 @@ def get_statement_lines(statement_id):
             date_from = line.line_date - timedelta(days=3)
             date_to = line.line_date + timedelta(days=3)
             target_amount = abs(float(line.amount))
-            debit_or_credit = AccountingEntry.credit_amount if line.amount > 0 else AccountingEntry.debit_amount
+            # Cash/bank is an asset account - a debit increases its balance
+            # (money in, positive statement line) and a credit decreases it
+            # (money out, negative line). This was previously inverted, so
+            # every real match (e.g. a receipt line vs the AR-Cash debit
+            # side of its journal) was silently never found.
+            debit_or_credit = AccountingEntry.debit_amount if line.amount > 0 else AccountingEntry.credit_amount
 
             query = AccountingEntry.query.filter(
                 AccountingEntry.account_id == statement.account_id,
@@ -244,6 +261,7 @@ def get_statement_lines(statement_id):
             'amount': float(line.amount),
             'is_matched': line.is_matched,
             'matched_accounting_entry_id': line.matched_accounting_entry_id,
+            'matched_entry': matched_entry,
             'suggested_matches': candidates,
         })
 
@@ -255,6 +273,8 @@ def get_statement_lines(statement_id):
             'period_end': statement.period_end.isoformat(),
         },
         'lines': result,
+        'total_lines': len(statement.lines),
+        'matched_lines': len([l for l in statement.lines if l.is_matched]),
     }), 200
 
 

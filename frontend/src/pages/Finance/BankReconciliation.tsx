@@ -38,6 +38,7 @@ interface StatementLine {
   amount: number
   is_matched: boolean
   matched_accounting_entry_id: number | null
+  matched_entry: Candidate | null
   suggested_matches: Candidate[]
 }
 
@@ -53,7 +54,7 @@ export default function BankReconciliation() {
   const [accounts, setAccounts] = useState<Account[]>([])
   const [selectedStatementId, setSelectedStatementId] = useState<number | null>(null)
   const [lines, setLines] = useState<StatementLine[]>([])
-  const [onlyUnmatched, setOnlyUnmatched] = useState(true)
+  const [onlyUnmatched, setOnlyUnmatched] = useState(false)
   const [uploadAccountId, setUploadAccountId] = useState('')
   const [uploadFile, setUploadFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
@@ -226,7 +227,7 @@ export default function BankReconciliation() {
         </div>
 
         <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-md p-5">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-1">
             <h3 className="text-base font-bold text-gray-900 dark:text-white">
               {selectedStatement ? `Mutasi - ${selectedStatement.account_name}` : 'Pilih statement di kiri'}
             </h3>
@@ -237,6 +238,11 @@ export default function BankReconciliation() {
               </label>
             )}
           </div>
+          {selectedStatement && (
+            <p className={`text-xs mb-3 font-medium ${selectedStatement.matched_lines === selectedStatement.total_lines ? 'text-green-600' : 'text-amber-600'}`}>
+              {selectedStatement.matched_lines} dari {selectedStatement.total_lines} baris mutasi sudah dicocokkan ke jurnal akuntansi.
+            </p>
+          )}
 
           {!selectedStatement ? (
             <div className="text-center py-16 text-gray-400 dark:text-gray-500">
@@ -246,7 +252,11 @@ export default function BankReconciliation() {
           ) : lines.length === 0 ? (
             <div className="text-center py-16 text-gray-400 dark:text-gray-500">
               <CheckCircleIcon className="w-12 h-12 mx-auto mb-2 text-green-400" />
-              <p className="text-sm">Semua baris sudah cocok</p>
+              <p className="text-sm">
+                {onlyUnmatched
+                  ? 'Semua baris sudah cocok — centang "Tampilkan yang belum cocok saja" untuk melihat detail pasangannya'
+                  : 'Belum ada baris mutasi pada statement ini'}
+              </p>
             </div>
           ) : (
             <div className="space-y-3 max-h-[500px] overflow-y-auto">
@@ -264,10 +274,17 @@ export default function BankReconciliation() {
 
                   {line.is_matched ? (
                     <div className="mt-2 flex items-center justify-between bg-green-50 dark:bg-green-900/20 rounded px-2 py-1.5">
-                      <span className="text-xs text-green-700 dark:text-green-400 flex items-center gap-1">
-                        <CheckCircleIcon className="w-4 h-4" /> Cocok dengan AccountingEntry #{line.matched_accounting_entry_id}
+                      <span className="text-xs text-green-700 dark:text-green-400 flex items-center gap-2 min-w-0">
+                        <CheckCircleIcon className="w-4 h-4 flex-shrink-0" />
+                        {line.matched_entry ? (
+                          <span className="truncate">
+                            Cocok dengan <strong>{line.matched_entry.entry_number}</strong> · {line.matched_entry.entry_date} · {line.matched_entry.description || '(tanpa keterangan)'}
+                          </span>
+                        ) : (
+                          <span>Cocok dengan jurnal #{line.matched_accounting_entry_id} (jurnal tidak ditemukan / sudah dihapus)</span>
+                        )}
                       </span>
-                      <button onClick={() => handleUnmatch(line.id)} className="text-xs text-red-600 hover:underline flex items-center gap-1">
+                      <button onClick={() => handleUnmatch(line.id)} className="text-xs text-red-600 hover:underline flex items-center gap-1 flex-shrink-0 ml-2">
                         <XCircleIcon className="w-4 h-4" /> Batalkan
                       </button>
                     </div>
