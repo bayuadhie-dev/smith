@@ -191,12 +191,11 @@ def get_return(id):
 @returns_bp.route('/<int:return_id>/qc', methods=['POST'])
 @jwt_required()
 @require_permission('returns.create')
-def create_qc_inspection():
+def create_qc_inspection(return_id):
     """Create QC inspection for return"""
     try:
         data = request.get_json()
         user_id = get_jwt_identity()
-        return_id = request.view_args['return_id']
         
         customer_return = db.session.get(CustomerReturn, return_id) or abort(404)
         
@@ -257,12 +256,11 @@ def create_qc_inspection():
 @returns_bp.route('/<int:return_id>/disposition', methods=['POST'])
 @jwt_required()
 @require_permission('returns.create')
-def create_disposition():
+def create_disposition(return_id):
     """Create disposition for return items"""
     try:
         data = request.get_json()
         user_id = get_jwt_identity()
-        return_id = request.view_args['return_id']
         
         customer_return = db.session.get(CustomerReturn, return_id) or abort(404)
         

@@ -400,6 +400,20 @@ def create_purchase_return():
         # Add return items
         items_data = data.get('items', [])
         for idx, item_data in enumerate(items_data, 1):
+            quantity = item_data.get('quantity') or 0
+            unit_price = item_data.get('unit_price') or 0
+            discount_amount = item_data.get('discount_amount', 0)
+            tax_amount = item_data.get('tax_amount', 0)
+            # total_price is NOT NULL and was left entirely to the caller to
+            # compute and pass - any client that (reasonably) treats it as a
+            # derived field instead of sending it crashed the whole request
+            # on a NotNullViolation. Compute it the same way the other total
+            # fields on this row are combined (line total minus discount plus
+            # tax) when the caller doesn't supply it explicitly.
+            total_price = item_data.get('total_price')
+            if total_price is None:
+                total_price = float(quantity) * float(unit_price) - float(discount_amount) + float(tax_amount)
+
             item = PurchaseReturnItem(
                 return_id=return_obj.id,
                 invoice_item_id=item_data.get('invoice_item_id'),
@@ -407,14 +421,14 @@ def create_purchase_return():
                 product_id=item_data.get('product_id'),
                 material_id=item_data.get('material_id'),
                 description=item_data.get('description'),
-                quantity=item_data.get('quantity'),
+                quantity=quantity,
                 uom=item_data.get('uom'),
-                unit_price=item_data.get('unit_price'),
+                unit_price=unit_price,
                 discount_percent=item_data.get('discount_percent', 0),
-                discount_amount=item_data.get('discount_amount', 0),
+                discount_amount=discount_amount,
                 tax_percent=item_data.get('tax_percent', 0),
-                tax_amount=item_data.get('tax_amount', 0),
-                total_price=item_data.get('total_price'),
+                tax_amount=tax_amount,
+                total_price=total_price,
                 reason=item_data.get('reason'),
                 notes=item_data.get('notes'),
                 created_at=get_local_now()
