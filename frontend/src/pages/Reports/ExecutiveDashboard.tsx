@@ -13,30 +13,39 @@ import {
   UsersIcon
 } from '@heroicons/react/24/outline';
 
+// Field names match the real backend response from GET /api/executive/overview
+// (routes/executive_dashboard.py get_executive_overview) - the previous
+// version of this interface assumed metrics (profit, expenses, on_time_delivery,
+// capacity_utilization, turnover_rate, training_completion, turnover_ratio,
+// stockout_incidents, waste_percentage) that are never computed anywhere in
+// the backend. Rather than fabricate numbers for those, this page now only
+// shows real computed values and marks the rest "Belum tersedia".
 interface ExecutiveMetrics {
   financial: {
     revenue: number;
-    profit: number;
-    expenses: number;
     revenue_growth: number;
+    cash_collected: number;
+    outstanding_ar: number;
+    collection_rate: number;
   };
-  operations: {
-    production_output: number;
-    quality_rate: number;
-    on_time_delivery: number;
-    capacity_utilization: number;
+  production: {
+    output: number;
+    production_growth: number;
+    avg_oee: number;
+    wo_completion_rate: number;
+    fg_inventory_value: number;
+  };
+  quality: {
+    pass_rate: number;
+    total_inspections: number;
+    failed_inspections: number;
   };
   hr: {
-    total_employees: number;
-    attendance_rate: number;
-    turnover_rate: number;
-    training_completion: number;
+    active_employees: number;
   };
   inventory: {
     total_value: number;
-    turnover_ratio: number;
-    stockout_incidents: number;
-    waste_percentage: number;
+    low_stock_items: number;
   };
 }
 
@@ -61,12 +70,13 @@ const ExecutiveDashboard: React.FC = () => {
     try {
       setLoading(true);
       
-      const response = await axiosInstance.get('/api/reports/executive', {
-        params: { period: selectedPeriod }
-      });
-      
-      setMetrics(response.data?.metrics);
-      setAlerts(response.data?.alerts || []);
+      // Real endpoint is /api/executive/overview - the old /api/reports/executive
+      // path 404'd on every call since this page was built, and its response
+      // envelope is {success, data: {...}} not {metrics, alerts}.
+      const response = await axiosInstance.get('/api/executive/overview');
+
+      setMetrics(response.data?.data || null);
+      setAlerts([]); // this endpoint doesn't produce alerts yet
       
     } catch (error) {
       console.error('Failed to load executive metrics:', error);
@@ -197,23 +207,23 @@ const ExecutiveDashboard: React.FC = () => {
             <CogIcon className="h-8 w-8 text-blue-500" />
           </div>
           <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            {metrics.operations.production_output.toLocaleString()}
+            {metrics.production.output.toLocaleString()}
           </div>
           <div className="text-sm text-gray-500 dark:text-gray-400">
-            Units produced
+            Units produced &middot; OEE {formatPercentage(metrics.production.avg_oee)}
           </div>
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Quality Rate</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Quality Pass Rate</h3>
             <ChartBarIcon className="h-8 w-8 text-purple-500" />
           </div>
           <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            {formatPercentage(metrics.operations.quality_rate)}
+            {metrics.quality.total_inspections > 0 ? formatPercentage(metrics.quality.pass_rate) : 'Belum tersedia'}
           </div>
           <div className="text-sm text-gray-500 dark:text-gray-400">
-            Quality compliance
+            {metrics.quality.total_inspections} inspeksi periode ini
           </div>
         </div>
 
@@ -223,10 +233,10 @@ const ExecutiveDashboard: React.FC = () => {
             <UsersIcon className="h-8 w-8 text-indigo-500" />
           </div>
           <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            {metrics.hr.total_employees}
+            {metrics.hr.active_employees}
           </div>
           <div className="text-sm text-gray-500 dark:text-gray-400">
-            {formatPercentage(metrics.hr.attendance_rate)} attendance
+            Active employees
           </div>
         </div>
       </div>
@@ -245,20 +255,20 @@ const ExecutiveDashboard: React.FC = () => {
             </div>
             
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-300">Profit</span>
-              <span className="font-semibold text-green-600">{formatRupiah(metrics.financial.profit)}</span>
+              <span className="text-gray-600 dark:text-gray-300">Cash Collected</span>
+              <span className="font-semibold text-green-600">{formatRupiah(metrics.financial.cash_collected)}</span>
             </div>
-            
+
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-300">Expenses</span>
-              <span className="font-semibold text-red-600">{formatRupiah(metrics.financial.expenses)}</span>
+              <span className="text-gray-600 dark:text-gray-300">Outstanding AR</span>
+              <span className="font-semibold text-red-600">{formatRupiah(metrics.financial.outstanding_ar)}</span>
             </div>
-            
+
             <div className="border-t pt-4">
               <div className="flex justify-between items-center">
-                <span className="text-gray-600 dark:text-gray-300">Profit Margin</span>
+                <span className="text-gray-600 dark:text-gray-300">Collection Rate</span>
                 <span className="font-semibold">
-                  {formatPercentage((metrics.financial.profit / metrics.financial.revenue) * 100)}
+                  {formatPercentage(metrics.financial.collection_rate)}
                 </span>
               </div>
             </div>
@@ -268,26 +278,28 @@ const ExecutiveDashboard: React.FC = () => {
         {/* Operational Metrics */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Operational Excellence</h3>
-          
+
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-300">On-Time Delivery</span>
-              <span className="font-semibold">{formatPercentage(metrics.operations.on_time_delivery)}</span>
+              <span className="text-gray-600 dark:text-gray-300">Avg OEE</span>
+              <span className="font-semibold">{formatPercentage(metrics.production.avg_oee)}</span>
             </div>
-            
+
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-300">Capacity Utilization</span>
-              <span className="font-semibold">{formatPercentage(metrics.operations.capacity_utilization)}</span>
+              <span className="text-gray-600 dark:text-gray-300">WO Completion Rate</span>
+              <span className="font-semibold">{formatPercentage(metrics.production.wo_completion_rate)}</span>
             </div>
-            
+
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-300">Quality Rate</span>
-              <span className="font-semibold">{formatPercentage(metrics.operations.quality_rate)}</span>
+              <span className="text-gray-600 dark:text-gray-300">Quality Pass Rate</span>
+              <span className="font-semibold">
+                {metrics.quality.total_inspections > 0 ? formatPercentage(metrics.quality.pass_rate) : 'Belum tersedia'}
+              </span>
             </div>
-            
+
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-300">Waste Percentage</span>
-              <span className="font-semibold text-red-600">{formatPercentage(metrics.inventory.waste_percentage)}</span>
+              <span className="text-gray-600 dark:text-gray-300">FG Inventory Value</span>
+              <span className="font-semibold">{formatRupiah(metrics.production.fg_inventory_value)}</span>
             </div>
           </div>
         </div>
@@ -302,23 +314,23 @@ const ExecutiveDashboard: React.FC = () => {
           
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-300">Total Employees</span>
-              <span className="font-semibold">{metrics.hr.total_employees}</span>
+              <span className="text-gray-600 dark:text-gray-300">Active Employees</span>
+              <span className="font-semibold">{metrics.hr.active_employees}</span>
             </div>
-            
+
             <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-300">Attendance Rate</span>
-              <span className="font-semibold">{formatPercentage(metrics.hr.attendance_rate)}</span>
+              <span className="font-semibold text-gray-400 dark:text-gray-500">Belum tersedia</span>
             </div>
-            
+
             <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-300">Turnover Rate</span>
-              <span className="font-semibold text-yellow-600">{formatPercentage(metrics.hr.turnover_rate)}</span>
+              <span className="font-semibold text-gray-400 dark:text-gray-500">Belum tersedia</span>
             </div>
-            
+
             <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-300">Training Completion</span>
-              <span className="font-semibold">{formatPercentage(metrics.hr.training_completion)}</span>
+              <span className="font-semibold text-gray-400 dark:text-gray-500">Belum tersedia</span>
             </div>
           </div>
         </div>
@@ -326,26 +338,26 @@ const ExecutiveDashboard: React.FC = () => {
         {/* Inventory Metrics */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Inventory Management</h3>
-          
+
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-300">Total Value</span>
               <span className="font-semibold">{formatRupiah(metrics.inventory.total_value)}</span>
             </div>
-            
+
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600 dark:text-gray-300">Low Stock Items</span>
+              <span className="font-semibold text-red-600">{metrics.inventory.low_stock_items}</span>
+            </div>
+
             <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-300">Turnover Ratio</span>
-              <span className="font-semibold">{metrics.inventory.turnover_ratio.toFixed(1)}x</span>
+              <span className="font-semibold text-gray-400 dark:text-gray-500">Belum tersedia</span>
             </div>
-            
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-300">Stockout Incidents</span>
-              <span className="font-semibold text-red-600">{metrics.inventory.stockout_incidents}</span>
-            </div>
-            
+
             <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-300">Waste Percentage</span>
-              <span className="font-semibold text-red-600">{formatPercentage(metrics.inventory.waste_percentage)}</span>
+              <span className="font-semibold text-gray-400 dark:text-gray-500">Belum tersedia</span>
             </div>
           </div>
         </div>
