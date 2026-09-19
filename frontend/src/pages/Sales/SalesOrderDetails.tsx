@@ -114,7 +114,7 @@ const SalesOrderDetails: React.FC = () => {
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               Sales Order: {order.order_number}
             </h1>
-            <p className="text-gray-600 dark:text-gray-300">Customer: {order.customer_name}</p>
+            <p className="text-gray-600 dark:text-gray-300">Customer: {order.customer?.company_name || order.customer_name}</p>
           </div>
           <div className="flex space-x-3">
             <Link
@@ -194,7 +194,7 @@ const SalesOrderDetails: React.FC = () => {
           <div className="space-y-3">
             <div>
               <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Customer</label>
-              <p className="text-gray-900 dark:text-white">{order.customer_name}</p>
+              <p className="text-gray-900 dark:text-white">{order.customer?.company_name || order.customer_name}</p>
             </div>
             <div>
               <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Customer PO Number</label>
