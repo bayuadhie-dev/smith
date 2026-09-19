@@ -1019,6 +1019,23 @@ def get_warehouse_dashboard():
         # Combined inventory summary
         total_inventory_items = (product_inventory.total_items or 0) + (material_inventory.total_items or 0)
         total_inventory_quantity = (product_inventory.total_quantity or 0) + (material_inventory.total_quantity or 0)
+
+        # Inventory valuation - the response never included this key at all,
+        # so the dashboard's "Total Value" card always showed $0 via the
+        # frontend's `summary.total_value || 0` fallback, regardless of how
+        # much real inventory existed. Product.cost / Material.cost_per_unit
+        # are the real per-unit cost fields.
+        product_value = db.session.query(
+            func.coalesce(func.sum(Inventory.quantity_on_hand * Product.cost), 0)
+        ).join(Product, Inventory.product_id == Product.id).filter(
+            Inventory.is_active == True
+        ).scalar()
+        material_value = db.session.query(
+            func.coalesce(func.sum(Inventory.quantity_on_hand * Material.cost_per_unit), 0)
+        ).join(Material, Inventory.material_id == Material.id).filter(
+            Inventory.is_active == True
+        ).scalar()
+        total_inventory_value = float(product_value or 0) + float(material_value or 0)
         
         # Movement summary (last 30 days)
         try:
@@ -1110,6 +1127,7 @@ def get_warehouse_dashboard():
                 'total_products': int(product_inventory.total_items or 0),
                 'total_materials': int(material_inventory.total_items or 0),
                 'total_quantity': float(total_inventory_quantity),
+                'total_value': total_inventory_value,
                 'low_stock_count': len(low_stock_items)
             },
             'movements': {
