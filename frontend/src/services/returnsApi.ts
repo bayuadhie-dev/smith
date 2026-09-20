@@ -125,16 +125,23 @@ export interface ReturnAnalytics {
   }[]
 }
 
-// Auto-detect the correct API base URL
+// Auto-detect the correct API base URL - mirrors store/api.ts's logic
+// (VITE_API_URL override > production HTTPS subdomain > local/LAN port 5000)
+// which this file previously didn't, hardcoding plain http://<frontend-host>:5000
+// instead - that resolves to a nonexistent host in production (erp.graterp.my.id
+// has no port 5000 open publicly), so every Returns page request silently failed.
 const getApiBaseUrl = () => {
-  const hostname = window.location.hostname;
-  
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return 'http://localhost:5000/api/returns';
-  } else {
-    // Use same IP as frontend but port 5000 for backend
-    return `http://${hostname}:5000/api/returns`;
+  if (import.meta.env.VITE_API_URL) {
+    return `${import.meta.env.VITE_API_URL}/returns`;
   }
+
+  const hostname = window.location.hostname;
+
+  if (hostname === 'erp.graterp.my.id' || hostname.endsWith('.graterp.my.id')) {
+    return 'https://api.graterp.my.id/api/returns';
+  }
+
+  return `http://${hostname}:5000/api/returns`;
 };
 
 export const returnsApi = createApi({
