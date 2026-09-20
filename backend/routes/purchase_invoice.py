@@ -385,7 +385,7 @@ def create_purchase_invoice():
             supplier_invoice_number=data.get('supplier_invoice_number'),
             supplier_invoice_date=datetime.strptime(data.get('supplier_invoice_date'), '%Y-%m-%d').date() if data.get('supplier_invoice_date') else None,
             status=_resolve_incoming_status(data, default='sent'),
-            currency=data.get('currency', 'USD'),
+            currency=data.get('currency', 'IDR'),
             exchange_rate=data.get('exchange_rate', 1.0),
             payment_terms=data.get('payment_terms'),
             payment_method=data.get('payment_method'),

@@ -154,13 +154,13 @@ const PurchaseInvoiceDetail: React.FC = () => {
           <div>
             <div className="text-gray-500 dark:text-gray-400">Total</div>
             <div className="font-medium text-gray-900 dark:text-white">
-              {data.currency} {data.total_amount.toLocaleString('id-ID')}
+              {data.currency === 'IDR' ? 'Rp' : data.currency} {data.total_amount.toLocaleString('id-ID')}
             </div>
           </div>
           <div>
             <div className="text-gray-500 dark:text-gray-400">Sisa Tagihan</div>
             <div className="font-medium text-gray-900 dark:text-white">
-              {data.currency} {data.balance_due.toLocaleString('id-ID')}
+              {data.currency === 'IDR' ? 'Rp' : data.currency} {data.balance_due.toLocaleString('id-ID')}
             </div>
           </div>
           {data.notes && (
