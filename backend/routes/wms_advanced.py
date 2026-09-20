@@ -1175,10 +1175,20 @@ def execute_transfer(sto_id):
             # --- Update Inventory.quantity_on_hand (source: kurangi, tujuan: tambah/buat) ---
             # Row-level lock (with_for_update) untuk hindari race condition,
             # pola sama seperti utils/fifo_helper.py.
+            #
+            # batch_number filter hanya diterapkan kalau item transfer benar-benar
+            # menyebutkan batch tertentu. Sebelumnya filter ini selalu jalan
+            # (Inventory.batch_number == None saat item tidak isi batch), padahal
+            # baris Inventory sumber yang sesungguhnya nyaris selalu punya
+            # batch_number terisi (dari GRN/produksi) - jadi source_inv selalu
+            # None secara diam-diam, stok sumber tidak pernah berkurang, sementara
+            # baris tujuan tetap dibuat dengan qty penuh: transfer "menciptakan"
+            # stok dari udara alih-alih memindahkannya.
             source_query = Inventory.query.filter(
                 Inventory.location_id == sto.from_location_id,
-                Inventory.batch_number == item.batch_number,
             )
+            if item.batch_number:
+                source_query = source_query.filter(Inventory.batch_number == item.batch_number)
             if item.product_id:
                 source_query = source_query.filter(Inventory.product_id == item.product_id)
             else:
@@ -1193,9 +1203,12 @@ def execute_transfer(sto_id):
             # the transfer here since the transaction log itself is still
             # valid; logged via txn.notes below)
 
+            # Carry the real source batch forward when the transfer item itself
+            # didn't specify one - same reasoning as the source-lookup fix above.
+            effective_batch = item.batch_number or (source_inv.batch_number if source_inv else None)
             dest_query = Inventory.query.filter(
                 Inventory.location_id == sto.to_location_id,
-                Inventory.batch_number == item.batch_number,
+                Inventory.batch_number == effective_batch,
             )
             if item.product_id:
                 dest_query = dest_query.filter(Inventory.product_id == item.product_id)
@@ -1227,7 +1240,7 @@ def execute_transfer(sto_id):
                     quantity_on_hand=qty,
                     quantity_reserved=0,
                     quantity_available=qty,
-                    batch_number=item.batch_number,
+                    batch_number=effective_batch,
                     lot_number=source_inv.lot_number if source_inv else None,
                     production_date=source_inv.production_date if source_inv else None,
                     expiry_date=source_inv.expiry_date if source_inv else None,

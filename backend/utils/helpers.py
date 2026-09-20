@@ -32,24 +32,28 @@ def generate_number(prefix, model=None, field_name='number'):
     # producing a wrong "last" number and duplicate/colliding sequences.
     field = getattr(model, field_name)
     like_pattern = f"{prefix}-{year}{month}-%"
-    last_number = (
+    # Fetch ALL matches and take the numeric max in Python rather than
+    # ORDER BY on the string column - different call sites have historically
+    # zero-padded the sequence to different widths for the same prefix (e.g.
+    # "PR-202609-0010" vs "PR-202609-00011"), and string ordering ranks
+    # "...-0010" above "...-00011" (compares char-by-char: '1' > '0' at the
+    # first differing position) even though 10 < 11 numerically - producing
+    # a wrong "last" seq and a real duplicate-key collision on insert.
+    existing_numbers = (
         db.session.query(field)
         .filter(field.like(like_pattern))
-        .order_by(field.desc())
-        .limit(1)
-        .scalar()
+        .all()
     )
-    
-    if last_number:
-        # Extract sequence number
+
+    new_seq = 1
+    for (value,) in existing_numbers:
         try:
-            seq = int(last_number.split('-')[-1])
-            new_seq = seq + 1
-        except:
-            new_seq = 1
-    else:
-        new_seq = 1
-    
+            seq = int(value.split('-')[-1])
+            if seq >= new_seq:
+                new_seq = seq + 1
+        except (ValueError, AttributeError):
+            continue
+
     return f"{prefix}-{year}{month}-{new_seq:05d}"
 
 
