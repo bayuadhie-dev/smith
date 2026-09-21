@@ -11,6 +11,7 @@ def record_inventory_transaction(
     unit_cost=None, total_cost=None,
     balance_before=None, balance_after=None,
     status='completed', notes=None, created_by=None,
+    accounting_entry_number=None, accounting_entry_status=None,
 ):
     """Single entry point for writing to InventoryTransaction - the unified
     stock ledger (2026-09-21 migration, replaces the old per-module
@@ -21,6 +22,14 @@ def record_inventory_transaction(
     actual business action (e.g. 'goods_receipt', 'material_issue',
     'transfer', 'qc_disposition', 'wo_cancellation_reversal') rather than
     forcing everything into the handful of types the model docstring lists.
+
+    accounting_entry_number/status (Fase 2, 2026-09-21): ONLY pass these when
+    the caller posted (or queued) the real journal entry for this SAME
+    business event in the SAME function call, and therefore actually knows
+    the number - never guess or backfill it from reference_number matching
+    (proven unreliable, see plan.md). Leave both None (the default) for
+    every call site where the journal posts later from a separate document -
+    that's the normal case for most of this app's stock movements.
 
     Returns the created (uncommitted) InventoryTransaction - caller adds it
     to the session (this function does that) and commits as part of its own
@@ -57,6 +66,8 @@ def record_inventory_transaction(
         status=status,
         notes=notes,
         created_by=created_by,
+        accounting_entry_number=accounting_entry_number,
+        accounting_entry_status=accounting_entry_status,
     )
     db.session.add(txn)
     return txn

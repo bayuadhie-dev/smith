@@ -681,6 +681,7 @@ def approve_purchase_return(id):
         from utils.finance_helpers import post_pending_journal, resolve_accounts_payable
 
         items = PurchaseReturnItem.query.filter_by(return_id=return_obj.id).all()
+        stock_txns = []
         for item in items:
             if not (item.product_id or item.material_id):
                 continue
@@ -696,7 +697,7 @@ def approve_purchase_return(id):
             inv.quantity_on_hand = float(inv.quantity_on_hand) - quantity
             inv.quantity_available = float(inv.quantity_available) - quantity
             inv.updated_at = get_local_now()
-            record_inventory_transaction(
+            stock_txns.append(record_inventory_transaction(
                 transaction_type='stock_out',
                 direction='out',
                 quantity=quantity,
@@ -708,7 +709,7 @@ def approve_purchase_return(id):
                 reference_id=return_obj.id,
                 notes=f"Retur pembelian {return_obj.return_number}",
                 created_by=user_id
-            )
+            ))
 
         invoice = db.session.get(Invoice, return_obj.invoice_id) if return_obj.invoice_id else None
         return_total = float(return_obj.total_amount or 0)
@@ -739,7 +740,19 @@ def approve_purchase_return(id):
                 )
                 db.session.add(pending)
                 db.session.flush()
-                post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='purchase_return', reference_id=return_obj.id)
+                posted_entries = post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='purchase_return', reference_id=return_obj.id)
+                # Fase 2 (2026-09-21): journal posts synchronously right
+                # here, in the same function that wrote the stock
+                # movements above, so the number is genuinely known now -
+                # backfill it onto every InventoryTransaction row this
+                # approval created. entry_number carries a per-line "-01"/
+                # "-02" suffix (multiple AccountingEntry rows share one
+                # base journal) - strip it back to the shared base number.
+                if posted_entries:
+                    base_number = posted_entries[0].entry_number.rsplit('-', 1)[0]
+                    for txn in stock_txns:
+                        txn.accounting_entry_number = base_number
+                        txn.accounting_entry_status = 'posted'
             # If persediaan_default isn't configured, the stock/invoice effect
             # above still applies - GL posting is skipped rather than failing
             # the whole approval, and can be posted manually once configured.

@@ -60,6 +60,8 @@ interface Transaction {
   movement_type_code: string;
   movement_type_label: string;
   resolved_account: { code: string | null; name: string | null; source: string };
+  accounting_entry_number: string | null;
+  accounting_entry_status: string | null;
 }
 
 const ACCOUNT_SOURCE_LABEL: Record<string, string> = {
@@ -168,6 +170,7 @@ const TransactionsPage: React.FC = () => {
         ke_lokasi: txn.to_location || '',
         akun_coa: txn.resolved_account?.code ? `${txn.resolved_account.code} - ${txn.resolved_account.name}` : '',
         sumber_akun: txn.resolved_account?.source || '',
+        no_jurnal_aktual: txn.accounting_entry_number || '',
         referensi_tipe: txn.reference_type || '',
         referensi_nomor: txn.reference_number || '',
         batch: txn.batch_number || '',
@@ -355,7 +358,14 @@ const TransactionsPage: React.FC = () => {
                       {!txn.from_location && !txn.to_location && '-'}
                     </td>
                     <td className="px-4 py-3 text-sm">
-                      {txn.resolved_account?.code ? (
+                      {txn.accounting_entry_number ? (
+                        <>
+                          <div className="text-gray-900 font-mono text-xs">{txn.accounting_entry_number}</div>
+                          <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-50 text-green-700">
+                            Jurnal Aktual
+                          </span>
+                        </>
+                      ) : txn.resolved_account?.code ? (
                         <>
                           <div className="text-gray-900">{txn.resolved_account.code} - {txn.resolved_account.name}</div>
                           <span className={`inline-block mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium ${

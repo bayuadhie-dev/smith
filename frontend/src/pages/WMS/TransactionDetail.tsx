@@ -126,21 +126,39 @@ const TransactionDetail: React.FC = () => {
             <InfoRow label="Kode Gerakan" value={
               <span className="font-mono">{txn.movement_type_code} - {txn.movement_type_label}</span>
             } />
-            <InfoRow label="Akun COA (hasil resolve)" value={
-              txn.resolved_account?.code
-                ? `${txn.resolved_account.code} - ${txn.resolved_account.name}`
-                : <span className="text-amber-600">Belum resolve</span>
-            } />
-            {txn.resolved_account?.source && (
-              <InfoRow label="Sumber Resolusi" value={
-                { item_override: 'Item', category_default: 'Kategori', global_default: 'Global', unresolved: '-' }[txn.resolved_account.source] || txn.resolved_account.source
-              } />
+            {txn.accounting_entry_number ? (
+              <>
+                <InfoRow label="No. Jurnal (aktual)" value={
+                  <span className="font-mono px-2 py-0.5 rounded bg-green-50 text-green-700">{txn.accounting_entry_number}</span>
+                } />
+                <InfoRow label="Status Jurnal" value={txn.accounting_entry_status === 'posted' ? 'Sudah diposting' : txn.accounting_entry_status} />
+                <p className="text-xs text-gray-400 mt-2">
+                  Nomor jurnal ini benar-benar sudah diposting saat transaksi ini terjadi (bukan
+                  hasil resolve/estimasi) - lihat detail baris debit/kredit di modul Accounting &gt;
+                  Journal Entry.
+                </p>
+              </>
+            ) : (
+              <>
+                <InfoRow label="Akun COA (hasil resolve)" value={
+                  txn.resolved_account?.code
+                    ? `${txn.resolved_account.code} - ${txn.resolved_account.name}`
+                    : <span className="text-amber-600">Belum resolve</span>
+                } />
+                {txn.resolved_account?.source && (
+                  <InfoRow label="Sumber Resolusi" value={
+                    { item_override: 'Item', category_default: 'Kategori', global_default: 'Global', unresolved: '-' }[txn.resolved_account.source] || txn.resolved_account.source
+                  } />
+                )}
+                <p className="text-xs text-gray-400 mt-2">
+                  Belum ada nomor jurnal aktual tercatat untuk transaksi ini (jurnalnya, kalau ada,
+                  diposting terpisah dari dokumen lain) - akun di atas hasil resolve otomatis
+                  (item → kategori → global), bukan link ke jurnal yang sudah pernah diposting.
+                  Lihat Settings &gt; Preferensi Akun &gt; Default Akhir (Global) untuk mengubah
+                  konfigurasinya.
+                </p>
+              </>
             )}
-            <p className="text-xs text-gray-400 mt-2">
-              Akun ini hasil resolve otomatis (item → kategori → global), bukan nomor jurnal aktual
-              yang sudah pernah diposting - lihat Settings &gt; Preferensi Akun &gt; Default Akhir (Global)
-              untuk mengubah konfigurasinya.
-            </p>
           </div>
         )}
 

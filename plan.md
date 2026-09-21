@@ -136,11 +136,22 @@ Tidak ada file baru. Ditambah ke halaman yang sudah ada:
 ### Langkah 4 — Ekspor Excel/CSV
 1. Sambungkan ke `exportUtils.ts` yang sudah ada.
 
-### Fase 2 (terpisah, butuh approval eksplisit sebelum mulai — TIDAK dikerjakan dalam pass ini)
-Menambah field `accounting_entry_number` yang ditulis eksplisit di titik kode yang sama-sama tahu
-nomor jurnalnya saat itu juga (butuh menyentuh ulang sebagian dari 18 file yang sudah dimigrasi
-minggu lalu, plus titik-titik `post_pending_journal()` di modul Finance) — satu-satunya cara linking
-ini akurat, karena korelasi otomatis sudah dibuktikan tidak bisa diandalkan (lihat catatan revisi).
+### Fase 2 — SELESAI DIEKSEKUSI 2026-09-21 (cakupan terbatas, disengaja)
+Kolom `accounting_entry_number`/`accounting_entry_status` ditambah ke `InventoryTransaction`
+(migrasi Alembic `f3e34df7965f`) dan diisi HANYA di titik kode yang sudah diaudit benar-benar
+memposting stok + jurnal dalam fungsi yang sama secara sinkron.
+
+**Hasil audit**: dari 18 file yang dimigrasi minggu lalu, **cuma 1 titik** yang memenuhi kriteria —
+`routes/purchase_return.py:approve_purchase_return()`. Semua titik lain (GRN, Shipping, Production,
+dll) sengaja TIDAK ditautkan karena jurnalnya memang diposting belakangan oleh dokumen terpisah
+(Purchase Invoice, Sales Invoice, dll) — bukan bug, itu realitas proses bisnisnya. Menautkan titik
+lain butuh mendesain ulang alur (posting jurnal lebih awal, bersamaan dengan pergerakan stok) —
+perubahan struktural yang lebih besar, di luar scope pass ini.
+
+Terverifikasi ujung-ke-ujung lewat API nyata: retur pembelian PR260921410328 → approve →
+`InventoryTransaction` baris stok dapat `accounting_entry_number='JE-202609-00019'`,
+`status='posted'`, dan `JE-202609-00019-01`/`-02` terkonfirmasi ada di `accounting_entries`
+sebagai jurnal riil dan seimbang (Dr Hutang Usaha 2.500 / Cr Persediaan Bahan Baku 2.500).
 
 ---
 
@@ -149,6 +160,7 @@ ini akurat, karena korelasi otomatis sudah dibuktikan tidak bisa diandalkan (lih
 1. Nama modul: tetap **"Transaksi Stok"** (bukan modul baru "Mutasi Persediaan & Jurnal") — extend,
    bukan duplikasi.
 2. Penempatan: tetap di menu **WMS Advanced** (bukan pindah ke grup Laporan).
-3. Status: **Disetujui, dieksekusi 2026-09-21.**
-4. Fase 2 (link jurnal aktual per baris): **belum disetujui**, didokumentasikan sebagai rencana
-   lanjutan terpisah.
+3. Status: **Disetujui, dieksekusi 2026-09-21 (Fase 1 & Fase 2).**
+4. Fase 2 (link jurnal aktual per baris): **selesai untuk 1 titik yang valid** (Retur Pembelian).
+   Memperluas ke titik lain butuh keputusan desain baru (kapan jurnal diposting) — rencana lanjutan
+   terpisah, belum disetujui.

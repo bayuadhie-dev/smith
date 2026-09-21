@@ -140,6 +140,24 @@ class InventoryTransaction(db.Model):
     status = db.Column(db.String(20), nullable=False, default='completed')
     # completed, pending, cancelled
 
+    # Actual GL journal link (Fase 2, 2026-09-21) - populated ONLY when the
+    # SAME request/function that wrote this stock movement also posted (or
+    # queued) the accounting entry for the same business event, so the
+    # number is known at write time. NOT backfilled for historical rows and
+    # NOT computed later by matching reference_number (proven unreliable -
+    # see plan.md's Fase 1 revision note). Most call sites legitimately have
+    # no value here because the journal posts from a separate document later
+    # (e.g. GRN's stock receipt vs. the Purchase Invoice that posts the
+    # journal) - that's a real business-process gap, not a bug to paper over
+    # with an inferred link.
+    accounting_entry_number = db.Column(db.String(100), nullable=True, index=True)
+    accounting_entry_status = db.Column(db.String(20), nullable=True)
+    # 'posted' (AccountingEntry rows already exist, status='posted') or
+    # 'pending_approval' (only a PendingJournalEntry was queued so far - the
+    # accounting_entry_number is the PendingJournalEntry's own reference/
+    # entry_date-based label, not yet a real posted entry_number, until an
+    # approver posts it - see resolve at read time in the API layer).
+
     notes = db.Column(db.Text, nullable=True)
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
@@ -205,6 +223,8 @@ class InventoryTransaction(db.Model):
             'balance_after': float(self.balance_after or 0) if self.balance_after is not None else None,
             'status': self.status,
             'notes': self.notes,
+            'accounting_entry_number': self.accounting_entry_number,
+            'accounting_entry_status': self.accounting_entry_status,
             'created_by': self.created_by_user.full_name if self.created_by_user else None,
             'created_at': self.created_at.isoformat() if self.created_at else None,
         }
