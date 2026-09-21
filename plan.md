@@ -111,10 +111,15 @@ Tidak ada file baru. Ditambah ke halaman yang sudah ada:
    dengan badge kecil menunjukkan sumbernya (Item/Kategori/Global) atau "Belum resolve" (warna
    amber) kalau `source: 'unresolved'` — supaya langsung kelihatan kalau ada gap konfigurasi,
    konsisten dengan tab "Default Akhir (Global)" yang baru dibangun.
-3. Klik baris → buka drawer detail (bukan halaman terpisah `TransactionDetail.tsx` yang sudah ada,
-   cukup ditingkatkan) menampilkan `document_flow`.
-4. Ekspor Excel/CSV dari hasil filter aktif, pakai `frontend/src/utils/exportUtils.ts` yang sudah
-   ada di sistem (bukan bikin utility ekspor baru).
+3. Klik baris → navigasi ke `TransactionDetail.tsx` yang sudah ada (bukan drawer/slide-over seperti
+   rencana awal — halaman detail penuh sudah ada dan berfungsi baik, jadi ditingkatkan langsung
+   daripada membangun drawer terpisah yang akan tumpang tindih), menampilkan `document_flow`.
+4. Ekspor **CSV** (bukan Excel/.xlsx seperti rencana awal — `exportUtils.ts` yang sudah ada di sistem
+   cuma punya `exportToCSV`/`exportToJSON`, tidak ada writer `.xlsx`; menambah dependency baru untuk
+   itu di luar scope pass ini) dari hasil filter aktif, pakai utility yang sudah ada.
+
+**Status: SELESAI, terverifikasi lewat kode 2026-09-21** (kolom Kode Gerakan + Akun COA ada di
+`TransactionsPage.tsx`, ekspor CSV terpasang, klik baris menavigasi ke `TransactionDetail.tsx`).
 
 ---
 
