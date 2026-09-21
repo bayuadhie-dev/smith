@@ -837,13 +837,17 @@ def get_transactions():
         start_date = request.args.get('start_date')
         end_date = request.args.get('end_date')
         search = request.args.get('search', '')
+        account_code = request.args.get('account_code')
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 50, type=int)
 
         query = InventoryTransaction.query
 
         if txn_type:
-            query = query.filter_by(transaction_type=txn_type)
+            # Selection-screen multi-select (MB51-style): comma-separated
+            # list of transaction_type values, e.g. 'stock_in,transfer'.
+            types = [t.strip() for t in txn_type.split(',') if t.strip()]
+            query = query.filter(InventoryTransaction.transaction_type.in_(types)) if len(types) > 1 else query.filter_by(transaction_type=types[0])
         if wo_id:
             query = query.filter_by(work_order_id=wo_id)
         if product_id:
@@ -873,6 +877,27 @@ def get_transactions():
             ))
 
         query = query.order_by(desc(InventoryTransaction.transaction_date))
+
+        if account_code:
+            # Akun COA filter (MB51 selection screen): resolved_account isn't
+            # a DB column - it's computed per row the same way as GET
+            # /transactions/<id> (item override -> category -> global), so
+            # this can't be pushed down as SQL. Enrich a bounded batch
+            # (capped, not the whole table) then filter/paginate in Python.
+            # Acceptable for this app's actual data volume (low hundreds to
+            # low thousands of rows); revisit with a real SQL-side resolution
+            # if the ledger grows past that.
+            candidates = query.limit(5000).all()
+            matched = [t for t in candidates if (enrich_transaction_dict(t).get('resolved_account') or {}).get('code') == account_code]
+            total = len(matched)
+            start = (page - 1) * per_page
+            page_items = matched[start:start + per_page]
+            pages = max(1, (total + per_page - 1) // per_page)
+            return jsonify({
+                'transactions': [enrich_transaction_dict(t) for t in page_items],
+                'pagination': {'page': page, 'per_page': per_page, 'total': total, 'pages': pages},
+            }), 200
+
         pagination = query.paginate(page=page, per_page=per_page, error_out=False)
 
         return jsonify({
@@ -1894,11 +1919,13 @@ def get_transactions_summary():
             InventoryTransaction.transaction_type,
             InventoryTransaction.direction,
             func.sum(InventoryTransaction.quantity).label('total_qty'),
+            func.sum(InventoryTransaction.total_cost).label('total_amount'),
             func.count(InventoryTransaction.id).label('count'),
         )
 
         if txn_type:
-            query = query.filter(InventoryTransaction.transaction_type == txn_type)
+            types = [t.strip() for t in txn_type.split(',') if t.strip()]
+            query = query.filter(InventoryTransaction.transaction_type.in_(types)) if len(types) > 1 else query.filter(InventoryTransaction.transaction_type == types[0])
         if product_id:
             query = query.filter(InventoryTransaction.product_id == product_id)
         if material_id:
@@ -1923,16 +1950,22 @@ def get_transactions_summary():
 
         total_in = sum(float(r.total_qty or 0) for r in rows if r.direction == 'in')
         total_out = sum(float(r.total_qty or 0) for r in rows if r.direction == 'out')
+        total_amount_in = sum(float(r.total_amount or 0) for r in rows if r.direction == 'in')
+        total_amount_out = sum(float(r.total_amount or 0) for r in rows if r.direction == 'out')
 
         return jsonify({
             'total_in': total_in,
             'total_out': total_out,
             'net': total_in - total_out,
+            'total_amount_in': total_amount_in,
+            'total_amount_out': total_amount_out,
+            'net_amount': total_amount_in - total_amount_out,
             'by_type': [
                 {
                     'transaction_type': r.transaction_type,
                     'direction': r.direction,
                     'quantity': float(r.total_qty or 0),
+                    'amount': float(r.total_amount or 0),
                     'count': r.count,
                 }
                 for r in rows

@@ -116,6 +116,14 @@ Tidak ada file baru. Ditambah ke halaman yang sudah ada:
 4. Ekspor Excel/CSV dari hasil filter aktif, pakai `frontend/src/utils/exportUtils.ts` yang sudah
    ada di sistem (bukan bikin utility ekspor baru).
 
+**Status: SELESAI dibangun penuh 2026-09-21** — termasuk seluruh selection screen (rentang tanggal +
+shortcut Hari Ini/7 Hari/Bulan Ini, multi-select Kode Gerakan, filter Akun COA, filter Barang, filter
+Gudang/Lokasi), kartu ringkasan fisik+finansial (Rupiah), toolbar (cari di hasil, Mode Standar/Mode
+Audit Lengkap, Export Excel asli via `xlsx` — sama seperti pola di `ProductionMonitoringDashboard.tsx`
+— dan Export CSV), slide-over drawer 3-tab (Fisik Material, Jurnal Akuntansi, Document Flow) pada
+`TransactionsPage.tsx`. Gaya visual mengikuti design language aplikasi ini sendiri (bukan replika
+tampilan SAP), tapi struktur & fitur mengikuti rencana ini apa adanya — bukan versi dipotong.
+
 ---
 
 ## 5. Tahapan Eksekusi
