@@ -131,6 +131,12 @@ def create_shipping_order():
 
         from models import Inventory
         from utils.inventory_helpers import record_inventory_transaction
+        from utils.fifo_helper import _get_inventory_unit_cost
+        from utils.finance_helpers import resolve_account
+
+        stock_txns = []
+        cogs_journal_lines = []
+        total_cogs_amount = 0.0
 
         for item_data in data.get('items', []):
             item = ShippingItem(
@@ -164,6 +170,16 @@ def create_shipping_order():
                 ).first()
 
             if inv:
+                # Fase 3 (2026-09-21): capture the real FIFO cost of the
+                # batch being shipped BEFORE deducting it, for the COGS
+                # journal below - see plan.md section 7. No COGS/HPP journal
+                # existed anywhere in the system before this (confirmed by
+                # audit: neither this endpoint nor create_invoice() posted
+                # one), so this is a pure addition, not a redirect of an
+                # existing posting - nothing else needs to change to avoid
+                # double-counting.
+                unit_cost = _get_inventory_unit_cost(inv)
+
                 inv.quantity_on_hand = float(inv.quantity_on_hand) - quantity
                 inv.quantity_available = float(inv.quantity_available) - quantity
                 inv.updated_at = get_local_now()
@@ -178,9 +194,56 @@ def create_shipping_order():
                     reference_type='sales_order',
                     reference_id=order.id,
                     batch_number=batch_number,
+                    unit_cost=unit_cost or None,
+                    total_cost=(unit_cost * quantity) if unit_cost else None,
                     notes=f"Shipped via {shipping_number}",
                     created_by=user_id
                 )
+                stock_txns.append(movement)
+
+                if unit_cost and unit_cost > 0:
+                    cogs_amount = unit_cost * quantity
+                    try:
+                        hpp_account_id = resolve_account('akun_hpp_id', product_id=item_data['product_id'], category_id=None)
+                        persediaan_account_id = resolve_account('akun_persediaan_id', product_id=item_data['product_id'], category_id=None)
+                        cogs_journal_lines.append({
+                            'account_id': hpp_account_id, 'debit': cogs_amount, 'credit': 0,
+                            'description': f'HPP pengiriman {shipping_number} - {batch_number or ""}',
+                        })
+                        cogs_journal_lines.append({
+                            'account_id': persediaan_account_id, 'debit': 0, 'credit': cogs_amount,
+                            'description': f'Persediaan barang jadi keluar {shipping_number} - {batch_number or ""}',
+                        })
+                        total_cogs_amount += cogs_amount
+                    except ValueError:
+                        # akun_hpp_id / akun_persediaan_id not configured for
+                        # this product/category/global - stock effect above
+                        # still applies, COGS posting is skipped for this
+                        # line rather than failing the whole shipment.
+                        pass
+
+        if cogs_journal_lines and total_cogs_amount > 0:
+            from models.approval_workflow import PendingJournalEntry
+            from utils.finance_helpers import post_pending_journal
+
+            pending = PendingJournalEntry(
+                workflow_id=None,
+                entry_date=get_local_now().date(),
+                description=f'HPP Pengiriman {shipping_number}',
+                reference=shipping_number,
+                lines=cogs_journal_lines,
+                total_debit=total_cogs_amount,
+                total_credit=total_cogs_amount,
+                created_by=user_id,
+            )
+            db.session.add(pending)
+            db.session.flush()
+            posted_entries = post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='sales_delivery', reference_id=order.id)
+            if posted_entries:
+                base_number = posted_entries[0].entry_number.rsplit('-', 1)[0]
+                for txn in stock_txns:
+                    txn.accounting_entry_number = base_number
+                    txn.accounting_entry_status = 'posted'
 
         db.session.commit()
         return jsonify({'message': 'Shipping order created', 'shipping_id': order.id}), 201
@@ -794,6 +857,8 @@ def create_shipping_from_qc():
         # ============= INVENTORY INTEGRATION (A-004) =============
         from models import Inventory
         from utils.inventory_helpers import record_inventory_transaction
+        from utils.fifo_helper import _get_inventory_unit_cost
+        from utils.finance_helpers import resolve_account
 
         # Deduct from inventory (Finished Goods Warehouse, Location ID 3 is default for FG)
         # We try to find match by product and batch
@@ -817,11 +882,16 @@ def create_shipping_from_qc():
             ).first()
             
         if inv:
+            # Fase 3 (2026-09-21): capture FIFO cost before deducting, for
+            # the COGS journal below - same pattern as create_shipping_order,
+            # see plan.md section 7.
+            unit_cost = _get_inventory_unit_cost(inv)
+
             # Deduct quantity
             inv.quantity_on_hand = float(inv.quantity_on_hand) - quantity
             inv.quantity_available = float(inv.quantity_available) - quantity
             inv.updated_at = get_local_now()
-            
+
             # Record movement
             movement = record_inventory_transaction(
                 transaction_type='stock_out',
@@ -833,10 +903,47 @@ def create_shipping_from_qc():
                 reference_type='sales_order',
                 reference_id=shipping_order.id,
                 batch_number=shipping_item.batch_number,
+                unit_cost=unit_cost or None,
+                total_cost=(unit_cost * quantity) if unit_cost else None,
                 notes=f"Shipped from WO {work_order.wo_number}",
                 created_by=user_id
             )
-        
+
+            if unit_cost and unit_cost > 0:
+                cogs_amount = unit_cost * quantity
+                try:
+                    hpp_account_id = resolve_account('akun_hpp_id', product_id=work_order.product_id, category_id=None)
+                    persediaan_account_id = resolve_account('akun_persediaan_id', product_id=work_order.product_id, category_id=None)
+                    from models.approval_workflow import PendingJournalEntry
+                    from utils.finance_helpers import post_pending_journal
+
+                    pending = PendingJournalEntry(
+                        workflow_id=None,
+                        entry_date=get_local_now().date(),
+                        description=f'HPP Pengiriman {shipping_number}',
+                        reference=shipping_number,
+                        lines=[
+                            {'account_id': hpp_account_id, 'debit': cogs_amount, 'credit': 0,
+                             'description': f'HPP pengiriman {shipping_number} dari SPK {work_order.wo_number}'},
+                            {'account_id': persediaan_account_id, 'debit': 0, 'credit': cogs_amount,
+                             'description': f'Persediaan barang jadi keluar {shipping_number}'},
+                        ],
+                        total_debit=cogs_amount,
+                        total_credit=cogs_amount,
+                        created_by=user_id,
+                    )
+                    db.session.add(pending)
+                    db.session.flush()
+                    posted_entries = post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='sales_delivery', reference_id=shipping_order.id)
+                    if posted_entries:
+                        movement.accounting_entry_number = posted_entries[0].entry_number.rsplit('-', 1)[0]
+                        movement.accounting_entry_status = 'posted'
+                except ValueError:
+                    # akun_hpp_id / akun_persediaan_id not configured - stock
+                    # effect above still applies, COGS posting is skipped
+                    # rather than failing the whole shipment.
+                    pass
+
         db.session.commit()
         
         return jsonify({

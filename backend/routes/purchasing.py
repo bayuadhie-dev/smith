@@ -705,6 +705,12 @@ def create_grn():
         
         from models import Inventory
         from utils.inventory_helpers import record_inventory_transaction
+        from utils.finance_helpers import resolve_account
+        from models.finance import GlobalAccountDefault
+
+        stock_txns = []
+        journal_lines = []
+        total_gr_ir_amount = 0.0
 
         for item_data in data.get('items', []):
             product_id = item_data.get('product_id')
@@ -767,7 +773,17 @@ def create_grn():
                 
                 # Ensure the inventory record is saved so we can get its ID for movement
                 db.session.flush()
-                
+
+                # 2026-09-21: look up the PO item's price up front so it can
+                # be stamped onto the movement as unit_cost - fifo_helper.py's
+                # _get_inventory_unit_cost() reads this back later (via the
+                # most recent 'in' InventoryTransaction for the same batch)
+                # as the primary cost source for FIFO deduction/COGS, so a
+                # receipt with no unit_cost here silently falls through to a
+                # less accurate material/product-level fallback cost.
+                po_item = db.session.get(PurchaseOrderItem, item_data['po_item_id'])
+                receipt_unit_cost = float(po_item.unit_price) if po_item and po_item.unit_price else None
+
                 # Record movement
                 movement = record_inventory_transaction(
                     transaction_type='stock_in',
@@ -780,9 +796,80 @@ def create_grn():
                     reference_type='purchase_order',
                     reference_id=grn.id,
                     batch_number=batch_number,
+                    unit_cost=receipt_unit_cost,
+                    total_cost=(receipt_unit_cost * quantity_accepted) if receipt_unit_cost else None,
                     notes=f"Receipt from GRN {grn_number}",
                     created_by=user_id
                 )
+                stock_txns.append(movement)
+
+                # Fase 3 (2026-09-21): GR/IR clearing - post a provisional
+                # journal for the goods just received, valued at the PO
+                # price (the invoice hasn't arrived yet). Purchase Invoice's
+                # own journal construction (routes/purchase_invoice.py) is
+                # the counterpart that reverses this clearing balance when
+                # the real invoice posts - see plan.md section 7. Only
+                # stocked items go through GR/IR (service/expense lines on
+                # an invoice never receive goods via GRN in the first
+                # place), so this reuses the same "is it inventory" gate as
+                # the stock movement above (product_id/material_id present).
+                if po_item and quantity_accepted > 0:
+                    line_amount = quantity_accepted * float(po_item.unit_price or 0)
+                    if line_amount > 0:
+                        debit_slot = 'akun_persediaan_id'
+                        try:
+                            debit_account_id = resolve_account(debit_slot, product_id=product_id, category_id=None)
+                            journal_lines.append({
+                                'account_id': debit_account_id,
+                                'debit': line_amount,
+                                'credit': 0,
+                                'description': f'Penerimaan barang GRN {grn_number} - {batch_number or ""}',
+                            })
+                            total_gr_ir_amount += line_amount
+                        except ValueError:
+                            # Persediaan default not configured - stock/GRN
+                            # effect above still applies, GR/IR posting is
+                            # skipped for this line rather than failing the
+                            # whole GRN (same fallback pattern used
+                            # elsewhere - see purchase_return.py).
+                            pass
+
+        # Fase 3: post the GR/IR clearing journal for this GRN as a whole
+        # (one journal, credit side once) - only if at least one debit line
+        # resolved above.
+        if journal_lines and total_gr_ir_amount > 0:
+            gr_ir_default = GlobalAccountDefault.query.filter_by(transaction_key='gr_ir_clearing').first()
+            if gr_ir_default:
+                from models.approval_workflow import PendingJournalEntry
+                from utils.finance_helpers import post_pending_journal
+
+                journal_lines.append({
+                    'account_id': gr_ir_default.account_id,
+                    'debit': 0,
+                    'credit': total_gr_ir_amount,
+                    'description': f'GR/IR Clearing - GRN {grn_number}',
+                })
+                pending = PendingJournalEntry(
+                    workflow_id=None,
+                    entry_date=get_local_now().date(),
+                    description=f'Penerimaan Barang (GRN) {grn_number}',
+                    reference=grn_number,
+                    lines=journal_lines,
+                    total_debit=total_gr_ir_amount,
+                    total_credit=total_gr_ir_amount,
+                    created_by=user_id,
+                )
+                db.session.add(pending)
+                db.session.flush()
+                posted_entries = post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='goods_receipt', reference_id=grn.id)
+                if posted_entries:
+                    base_number = posted_entries[0].entry_number.rsplit('-', 1)[0]
+                    for txn in stock_txns:
+                        txn.accounting_entry_number = base_number
+                        txn.accounting_entry_status = 'posted'
+            # If gr_ir_clearing isn't configured yet, the stock/GRN effect
+            # above still applies - GR/IR posting is skipped rather than
+            # failing the whole receipt, same fallback pattern as elsewhere.
 
         # Advance PO status based on total received-vs-ordered across ALL
         # GRNs for this PO (not just this one) - previously create_grn()

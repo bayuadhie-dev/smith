@@ -2558,6 +2558,7 @@ _GLOBAL_DEFAULT_KEY_REFERENCE = [
     {'key': 'beban_operasional', 'label': 'Beban Operasional'},
     {'key': 'persediaan', 'label': 'Persediaan (alias lama, lihat juga akun_persediaan_id)'},
     {'key': 'hutang_karyawan', 'label': 'Hutang Karyawan'},
+    {'key': 'gr_ir_clearing', 'label': 'GR/IR Clearing - Barang Diterima Belum Ditagih'},
 ]
 
 

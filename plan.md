@@ -164,3 +164,63 @@ sebagai jurnal riil dan seimbang (Dr Hutang Usaha 2.500 / Cr Persediaan Bahan Ba
 4. Fase 2 (link jurnal aktual per baris): **selesai untuk 1 titik yang valid** (Retur Pembelian).
    Memperluas ke titik lain butuh keputusan desain baru (kapan jurnal diposting) — rencana lanjutan
    terpisah, belum disetujui.
+
+---
+
+## 7. Fase 3 — GR/IR Clearing (GRN & Shipping posting jurnal), disetujui 2026-09-21
+
+**Audit pra-desain** (lihat riwayat kerja) menemukan:
+- Purchase Invoice SEKARANG posting Dr Persediaan/Beban → Cr Hutang Usaha, nilai dari input manual
+  saat invoice dibuat (bukan qty GRN). GRN tidak posting jurnal apa pun saat ini.
+- Sales Invoice SEKARANG posting Dr Piutang → Cr Penjualan saja. **HPP/COGS tidak diposting di mana
+  pun** di seluruh sistem — celah nyata, bukan cuma "belum ada di Shipping".
+
+**Desain:**
+- **GRN**: posting Dr Persediaan / Cr akun baru "GR/IR Clearing" (kewajiban sementara, transaction_key
+  baru di `GlobalAccountDefault`) saat barang diterima — nilai dari harga PO.
+- **Purchase Invoice**: baris debit yang SEKARANG menyasar Persediaan/Beban diubah menyasar GR/IR
+  Clearing (membalik kewajiban sementara), Cr Hutang Usaha tetap seperti sekarang. Ini SATU-SATUNYA
+  modifikasi ke kode Invoice yang sudah live — wajib diverifikasi tidak dobel-hitung.
+- **Shipping**: posting Dr HPP (COGS) / Cr Persediaan Barang Jadi saat barang dikirim — PENAMBAHAN
+  murni (mengisi celah yang memang kosong), cost basis = FIFO `unit_cost` riil dari batch yang
+  dipakai `fifo_deduct_stock()`, bukan standard cost.
+- Sales Invoice TIDAK diubah (tidak pernah posting COGS, jadi tidak ada risiko dobel-hitung di sana).
+
+**Status: SELESAI DIEKSEKUSI & terverifikasi ujung-ke-ujung lewat API nyata 2026-09-21:**
+- Akun baru "2-1050 GR/IR Clearing - Barang Diterima Belum Ditagih" dibuat, didaftarkan sebagai
+  `gr_ir_clearing` di Default Akhir (Global).
+- Akun "5-1000 Harga Pokok Penjualan" (sudah ada, ternyata sudah jadi akun HPP gabungan yang tepat)
+  didaftarkan sebagai `akun_hpp_id`.
+- Bug tambahan ditemukan+diperbaiki sekalian: `fifo_helper.py:_get_inventory_unit_cost()` masih
+  query tabel `InventoryMovement` yang sudah berhenti menerima data sejak migrasi ledger minggu lalu
+  — jadi biaya asal (unit_cost) barang yang diterima setelah migrasi selalu jatuh ke fallback
+  material/product cost, bukan biaya penerimaan riil. Diperbaiki untuk query `InventoryTransaction`.
+  GRN & Shipping juga diperbaiki supaya keduanya benar-benar mengisi `unit_cost` saat mencatat
+  pergerakan stok (sebelumnya tidak pernah diisi).
+- Verifikasi GRN→GR/IR: GRN-202609-00010 (PO-202609-00007) → JE-202609-00020 Dr Persediaan Bahan
+  Baku 4.000.000 / Cr GR/IR Clearing 4.000.000.
+- Verifikasi Invoice→reversal: PI-202609-00003 (PO sama) → JE-202609-00021 Dr GR/IR Clearing
+  4.000.000 / Cr Hutang Usaha 4.000.000. Saldo GR/IR Clearing bersih = 0 (terbukti tidak dobel-hitung
+  Persediaan).
+- Verifikasi Shipping→COGS: SHP-202609-00016 (20 pcs @ Rp15.000) → JE-202609-00022 Dr HPP 300.000 /
+  Cr Persediaan 300.000.
+- **Temuan finansial nyata (belum diperbaiki, bukan keputusan sepihak saya)**: default global
+  `akun_persediaan_id` sekarang menyasar akun "1-1200 Persediaan Bahan Baku" untuk SEMUA item
+  (termasuk produk barang jadi tanpa override kategori/item sendiri) — jadi COGS shipment produk
+  jadi sekarang meng-kredit akun Persediaan Bahan Baku, bukan akun Persediaan Barang Jadi terpisah.
+  Ini konfigurasi yang sudah ada sebelumnya (bukan diperkenalkan Fase 3), tapi baru terlihat jelas
+  dampaknya sekarang karena Shipping mulai memposting jurnal. Solusinya: set `akun_persediaan_id` di
+  level Kategori untuk kategori Barang Jadi (lewat tab "Barang & Jasa"), atau buat akun Persediaan
+  Barang Jadi terpisah - keputusan ini diserahkan ke user/finance, bukan diputuskan sepihak di sini.
+
+---
+
+## 8. Catatan: Rencana Terpisah dari QA (belum dikerjakan, hanya dicatat 2026-09-21)
+
+QA meminta fitur **master data efektif-bertanggal + change number**, cakupan: SEMUA field master
+data Product & Material (termasuk Harga & Biaya, dan BOM/Formula Produksi) — bukan cuma yang
+dipakai Fase 3. Konsepnya: perubahan master data dibuat dengan tanggal berlaku di masa depan (mis.
+diubah hari Selasa untuk berlaku hari Jumat — data lama tetap berlaku Rabu-Kamis), dan **setiap**
+perubahan tercatat dengan nomor perubahan (change number) beserta detailnya. Ini fitur terpisah dan
+cukup besar (mirip Engineering Change Management/ECM di SAP) — belum disetujui untuk dieksekusi,
+perlu rencana tersendiri setelah Fase 3 selesai.

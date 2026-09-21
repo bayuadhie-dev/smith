@@ -479,8 +479,25 @@ def create_purchase_invoice():
                 if product and product.material_type in ('raw_materials', 'packaging_materials', 'chemical_materials', 'finished_goods'):
                     is_inventory_item = True
 
-            slot = 'akun_persediaan_id' if is_inventory_item else 'akun_beban_id'
-            debit_account_id = resolve_account(slot, product_id=product_id, category_id=None)
+            # Fase 3 (2026-09-21): for stocked items, GRN already posted a
+            # provisional Dr Persediaan / Cr GR/IR Clearing when the goods
+            # physically arrived (routes/purchasing.py:create_grn). This
+            # invoice's debit must therefore reverse GR/IR Clearing here,
+            # NOT debit Persediaan again - debiting Persediaan a second time
+            # would double the inventory value for every stocked line. Falls
+            # back to the old direct-Persediaan behavior only if gr_ir_clearing
+            # isn't configured yet (keeps invoices postable during rollout,
+            # matching this GRN/GR-IR pair's other fallback points).
+            gr_ir_default = None
+            if is_inventory_item:
+                from models.finance import GlobalAccountDefault
+                gr_ir_default = GlobalAccountDefault.query.filter_by(transaction_key='gr_ir_clearing').first()
+
+            if gr_ir_default:
+                debit_account_id = gr_ir_default.account_id
+            else:
+                slot = 'akun_persediaan_id' if is_inventory_item else 'akun_beban_id'
+                debit_account_id = resolve_account(slot, product_id=product_id, category_id=None)
 
             journal_lines.append({
                 'account_id': debit_account_id,

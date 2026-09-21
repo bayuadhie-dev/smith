@@ -383,19 +383,36 @@ def _get_inventory_unit_cost(inventory):
     """
     Get unit cost for an inventory record.
     Priority:
-    1. From the stock_in movement that created this inventory record
+    1. From the most recent 'in' InventoryTransaction for this exact
+       product/material + batch_number + location (2026-09-21 fix - this
+       used to query InventoryMovement.inventory_id, a table that stopped
+       receiving new stock_in rows once the ledger migrated to
+       InventoryTransaction; querying the retired table meant every batch
+       received after that migration silently fell through to the material/
+       product cost fallback below instead of its real receipt cost).
+       InventoryTransaction has no inventory_id FK (identity is
+       product/material + batch + location instead), so match on those.
     2. From the material's cost_per_unit
     3. From the product's cost/hpp
     4. Default 0
     """
-    last_in = InventoryMovement.query.filter_by(
-        inventory_id=inventory.id,
-        movement_type='stock_in'
-    ).order_by(InventoryMovement.created_at.desc()).first()
-    
+    from models.wms_advanced import InventoryTransaction
+
+    txn_query = InventoryTransaction.query.filter(
+        InventoryTransaction.direction == 'in',
+        InventoryTransaction.to_location_id == inventory.location_id,
+    )
+    if inventory.product_id:
+        txn_query = txn_query.filter(InventoryTransaction.product_id == inventory.product_id)
+    else:
+        txn_query = txn_query.filter(InventoryTransaction.material_id == inventory.material_id)
+    if inventory.batch_number:
+        txn_query = txn_query.filter(InventoryTransaction.batch_number == inventory.batch_number)
+    last_in = txn_query.order_by(InventoryTransaction.transaction_date.desc()).first()
+
     if last_in and last_in.unit_cost:
         return float(last_in.unit_cost)
-    
+
     if inventory.material_id and inventory.material:
         if hasattr(inventory.material, 'cost_per_unit') and inventory.material.cost_per_unit:
             return float(inventory.material.cost_per_unit)
