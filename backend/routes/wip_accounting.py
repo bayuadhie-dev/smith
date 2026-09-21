@@ -156,7 +156,7 @@ def create_wip_ledger_from_wo(work_order_id):
         # Create WIP Ledger
         wip_ledger = WIPLedger(
             work_order_id=work_order.id,
-            work_order_number=work_order.order_number,
+            work_order_number=work_order.wo_number,
             product_id=work_order.product_id,
             product_name=product.name if product else None,
             planned_quantity=work_order.quantity,
@@ -533,7 +533,7 @@ def auto_create_wip_ledger(work_order_id):
             'message': 'WIP Ledger created successfully',
             'wip_ledger_id': wip_ledger.id,
             'work_order_number': wip_ledger.work_order_number,
-            'total_standard_cost': float(wip_ledger.total_standard_cost)
+            'standard_total_cost': float(wip_ledger.standard_total_cost)
         }), 201
         
     except ValueError as e:

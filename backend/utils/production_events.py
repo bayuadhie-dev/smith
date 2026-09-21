@@ -54,14 +54,14 @@ def register_production_events(app):
                             # Create WIP Ledger
                             wip_ledger = WIPLedger(
                                 work_order_id=target.id,
-                                work_order_number=target.order_number,
+                                work_order_number=target.wo_number,
                                 product_id=target.product_id,
                                 product_name=product.name if product else None,
                                 planned_quantity=target.quantity,
                                 standard_material_cost=standard_material,
                                 standard_labor_cost=standard_labor,
                                 standard_overhead_cost=standard_overhead,
-                                total_standard_cost=standard_material + standard_labor + standard_overhead,
+                                standard_total_cost=standard_material + standard_labor + standard_overhead,
                                 status='active',
                                 start_date=datetime.utcnow()
                             )
@@ -150,7 +150,7 @@ def register_production_events(app):
                     wip_ledger.status = 'completed'
                     wip_ledger.end_date = datetime.utcnow()
                     wip_ledger.actual_quantity = target.quantity_produced or target.quantity
-                    print(f"✓ Auto-closed WIP Ledger for Work Order {target.order_number}")
+                    print(f"✓ Auto-closed WIP Ledger for Work Order {target.wo_number}")
                     
             except Exception as e:
                 print(f"✗ Failed to auto-close WIP Ledger: {str(e)}")
@@ -227,21 +227,20 @@ def create_wip_ledger_from_work_order(work_order_id):
     # Create WIP Ledger
     wip_ledger = WIPLedger(
         work_order_id=work_order.id,
-        work_order_number=work_order.order_number,
+        work_order_number=work_order.wo_number,
         product_id=work_order.product_id,
         product_name=product.name if product else None,
         planned_quantity=work_order.quantity,
         standard_material_cost=standard_material,
         standard_labor_cost=standard_labor,
         standard_overhead_cost=standard_overhead,
-        total_standard_cost=standard_material + standard_labor + standard_overhead,
+        standard_total_cost=standard_material + standard_labor + standard_overhead,
         status='active',
-        start_date=datetime.utcnow()
     )
-    
+
     db.session.add(wip_ledger)
     db.session.commit()
-    
+
     return wip_ledger
 
 

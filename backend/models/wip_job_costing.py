@@ -245,8 +245,8 @@ class WIPWorkflowIntegration:
             work_order_id=work_order_id,
             product_id=work_order.product_id,
             current_stage='ready_to_start',
-            qty_started=work_order.quantity_to_produce,
-            qty_in_process=work_order.quantity_to_produce,
+            qty_started=work_order.quantity,
+            qty_in_process=work_order.quantity,
             status='open',
             created_by=user_id
         )
@@ -348,7 +348,7 @@ class WIPWorkflowIntegration:
         
         # Simplified material cost calculation
         # In real implementation, this would calculate from BOM and material issues
-        estimated_material_cost = work_order.quantity_to_produce * mat_cost_per_unit
+        estimated_material_cost = float(work_order.quantity) * mat_cost_per_unit
         
         wip_batch.material_cost = estimated_material_cost
         wip_batch.update_wip_value()
@@ -361,7 +361,7 @@ class WIPWorkflowIntegration:
             cost_type='material',
             cost_category='raw_material',
             description='Material cost for production',
-            quantity=work_order.quantity_to_produce,
+            quantity=work_order.quantity,
             unit_cost=mat_cost_per_unit,
             total_cost=estimated_material_cost,
             created_by=user_id

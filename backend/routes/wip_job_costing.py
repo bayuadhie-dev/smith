@@ -113,7 +113,7 @@ def get_wip_batch_detail(wip_batch_id):
             'product': {
                 'id': wip_batch.product.id,
                 'name': wip_batch.product.name,
-                'sku': wip_batch.product.sku
+                'sku': wip_batch.product.code
             },
             'current_stage': wip_batch.current_stage,
             'machine': {
