@@ -2371,7 +2371,15 @@ def start_work_order(id):
                     ).order_by(Inventory.expiry_date.asc().nullslast()).all()
                     
                     remaining_to_issue = required_qty
-                    
+
+                    # 2026-09-21: resolve material cost up front so it can be
+                    # stamped on each batch's InventoryTransaction below
+                    # (previously computed AFTER the movements were created,
+                    # at line ~2464, and only ever used for MaterialIssueItem
+                    # - the ledger itself never got a cost value).
+                    material_for_cost = db.session.get(Material, bom_item.material_id)
+                    unit_cost = float(material_for_cost.cost_per_unit) if material_for_cost and material_for_cost.cost_per_unit else 0
+
                     # Find production zone for transfer (if exists)
                     from models.warehouse import WarehouseZone, WarehouseLocation
                     production_zone = WarehouseZone.query.filter_by(
@@ -2438,6 +2446,8 @@ def start_work_order(id):
                                 reference_number=issue_number,
                                 reference_type='material_issue',
                                 batch_number=inv.batch_number,
+                                unit_cost=unit_cost or None,
+                                total_cost=(unit_cost * issue_qty) if unit_cost else None,
                                 notes=f'Transfer to production for WO {wo.wo_number}',
                                 created_by=user_id
                             )
@@ -2452,16 +2462,16 @@ def start_work_order(id):
                                 reference_number=issue_number,
                                 reference_type='material_issue',
                                 batch_number=inv.batch_number,
+                                unit_cost=unit_cost or None,
+                                total_cost=(unit_cost * issue_qty) if unit_cost else None,
                                 notes=f'Transfer to production for WO {wo.wo_number}',
                                 created_by=user_id
                             )
 
                         remaining_to_issue -= issue_qty
-                    
+
                     # Calculate material cost
                     issued_qty = required_qty - remaining_to_issue
-                    material = db.session.get(Material, bom_item.material_id)
-                    unit_cost = float(material.cost_per_unit) if material and material.cost_per_unit else 0
                     item_cost = issued_qty * unit_cost
                     total_material_cost += item_cost
                     

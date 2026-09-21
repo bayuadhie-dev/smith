@@ -241,7 +241,55 @@ Production/WIP costing) butuh keputusan desain terpisah, belum dikerjakan.
 
 ---
 
-## 10. Catatan: Rencana Terpisah dari QA (belum dikerjakan, hanya dicatat 2026-09-21)
+## 11. Production/WIP — bug bypass ledger + cost riil + jurnal transformasi, disetujui & selesai 2026-09-21
+
+**Audit pra-desain menemukan 3 masalah bertumpuk** (bukan sekadar "belum posting jurnal" seperti
+GRN/Shipping):
+1. **Bug arsitektural nyata**: titik paling krusial — penerimaan barang jadi saat SPK selesai
+   (`complete_work_order` → `auto_receive_finished_goods()` di `routes/production_integration.py`)
+   sama sekali tidak lewat ledger `InventoryTransaction`. Masih pakai **raw SQL INSERT langsung** ke
+   tabel `inventory_movements` yang sudah retired sejak migrasi minggu lalu — kelewat saat migrasi 18
+   file itu. Akibat: FG receipt dari SPK selesai tidak muncul di halaman Transaksi Stok, tidak dapat
+   kode gerakan, tidak ada cost.
+2. Material issue ke SPK (`start_work_order`) **sudah menghitung** `unit_cost` riil dari
+   `material.cost_per_unit`, tapi dibuang — hanya dipakai untuk `MaterialIssueItem`, tidak pernah
+   diteruskan ke ledger stok.
+3. Dua sistem WIP costing paralel yang tidak nyambung: `wip_job_costing.py` (aktif dipakai, tapi cost
+   dari fallback settingan, bukan BOM riil) vs `wip_accounting.py` (GL-ready, pola sama seperti
+   Payroll yang terbukti jalan, tapi tidak pernah dipanggil dari alur produksi manapun).
+
+**Keputusan desain (per catatan user)**: kebanyakan produksi di perusahaan ini "inline" — langsung
+bahan baku → barang jadi tanpa tahap WIP tertahan; WIP multi-tahap penuh baru relevan untuk sebagian
+kecil produk nanti saat perpindahan perusahaan. Jadi TIDAK membangun ledger WIP multi-tahap penuh
+(tidak menyambungkan `wip_accounting.py`) — cukup:
+- Perbaiki bug bypass (poin 1) → `auto_receive_finished_goods()` sekarang pakai
+  `record_inventory_transaction()` sama seperti modul lain.
+- Sambungkan `unit_cost` yang sudah dihitung (poin 2) ke `record_inventory_transaction()` di
+  `start_work_order`.
+- **Satu jurnal transformasi per SPK selesai** (bukan ledger WIP bertahap): Dr Persediaan Barang Jadi
+  / Cr Persediaan Bahan Baku, nilai dari total biaya material yang sudah di-issue ke SPK itu (dijumlah
+  dari `MaterialIssueItem.total_cost`, bukan angka fallback dari `wip_job_costing.py`).
+
+**Verifikasi ujung-ke-ujung**: WO-202609-00011 (5 pcs, BOM material dengan cost Rp10.000/unit) →
+`start_work_order` menghitung `material_cost: 2254.0` (benar, unit_cost tertaut ke ledger) →
+`auto_receive_finished_goods()` (dipanggil langsung, gate "Tutup SPK" butuh rantai batch+packing list
+penuh yang di luar scope verifikasi ini) → `InventoryTransaction` untuk FG receipt + transfer
+Area Produksi→Gudang Barang Jadi **berhasil masuk ledger** (sebelumnya raw SQL, sekarang tidak) →
+JE-202609-00024 Dr 2.254 / Cr 2.254, seimbang.
+
+**Temuan yang sama seperti Fase 3 (bukan bug baru)**: karena `akun_persediaan_id` global belum
+punya override kategori, baris debit (Barang Jadi) dan kredit (Bahan Baku) jatuh ke akun yang **sama
+persis** ("1-1200 Persediaan Bahan Baku") — jurnal seimbang secara mekanis tapi net-effect nol sampai
+akun Persediaan Barang Jadi dikonfigurasi terpisah di level Kategori. Sama seperti temuan di bagian 7,
+ini keputusan konfigurasi, bukan bug kode.
+
+**Sengaja belum dikerjakan** (di luar keputusan hari ini): menyambungkan `wip_accounting.py` untuk
+produk yang benar-benar butuh WIP multi-tahap — nunggu sampai kebutuhan itu nyata (perpindahan
+perusahaan).
+
+---
+
+## 12. Catatan: Rencana Terpisah dari QA (belum dikerjakan, hanya dicatat 2026-09-21)
 
 QA meminta fitur **master data efektif-bertanggal + change number**, cakupan: SEMUA field master
 data Product & Material (termasuk Harga & Biaya, dan BOM/Formula Produksi) — bukan cuma yang

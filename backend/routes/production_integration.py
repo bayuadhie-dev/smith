@@ -288,26 +288,48 @@ def auto_receive_finished_goods(work_order_id, quantity_produced, user_id=None):
             current_on_hand = 0
             current_available = 0
         
-        # Create inventory movement using raw SQL
-        db.session.execute(text("""
-            INSERT INTO inventory_movements 
-            (inventory_id, product_id, location_id, movement_type, movement_date,
-             quantity, reference_type, reference_id, reference_number, notes, 
-             created_by, created_at)
-            VALUES (:inventory_id, :product_id, :location_id, 'production_receipt', 
-                    :movement_date, :quantity, 'work_order', :reference_id, 
-                    :reference_number, :notes, :created_by, CURRENT_TIMESTAMP)
-        """), {
-            'inventory_id': inventory_id,
-            'product_id': product_id,
-            'location_id': location_id,
-            'movement_date': movement_date,
-            'quantity': quantity_produced,
-            'reference_id': work_order_id,
-            'reference_number': wo_number,
-            'notes': f'Auto-receipt from WO {wo_number}',
-            'created_by': user_id
-        })
+        # 2026-09-21: this used to be a raw-SQL INSERT INTO inventory_movements
+        # (the retired table - see the comment at the top of this function,
+        # "pure SQL to avoid ORM foreign key validation issues", which only
+        # ever applied to the Inventory row itself, not the movement log).
+        # That meant FG receipt from a completed Work Order - the single
+        # most important stock-in event in the whole app - never made it
+        # into the unified InventoryTransaction ledger at all: invisible on
+        # the Transaksi Stok page, no movement_type_code, no cost. Switched
+        # to the same record_inventory_transaction() helper every other
+        # module uses; it only touches InventoryTransaction, not Inventory,
+        # so it doesn't run into whatever FK issue prompted raw SQL here
+        # (already imported at module level).
+
+        # Cost basis: real material cost already issued to this WO (summed
+        # from MaterialIssueItem, filled in at start_work_order as of
+        # 2026-09-21) rather than a per-unit guess - this IS the value being
+        # transformed from raw material into finished goods for this batch.
+        material_cost_total = db.session.execute(text("""
+            SELECT COALESCE(SUM(mii.total_cost), 0)
+            FROM material_issue_items mii
+            JOIN material_issues mi ON mii.material_issue_id = mi.id
+            WHERE mi.work_order_id = :work_order_id
+        """), {'work_order_id': work_order_id}).scalar()
+        material_cost_total = float(material_cost_total or 0)
+        fg_unit_cost = (material_cost_total / quantity_produced) if quantity_produced else 0
+
+        fg_movement = record_inventory_transaction(
+            transaction_type='production_receipt',
+            direction='in',
+            quantity=quantity_produced,
+            product_id=product_id,
+            to_location_id=location_id,
+            reference_type='work_order',
+            reference_id=work_order_id,
+            reference_number=wo_number,
+            work_order_id=work_order_id,
+            unit_cost=fg_unit_cost or None,
+            total_cost=material_cost_total or None,
+            notes=f'Auto-receipt from WO {wo_number}',
+            created_by=user_id,
+        )
+        db.session.flush()
         
         # Update inventory quantity using raw SQL
         new_on_hand = current_on_hand + quantity_produced
@@ -350,38 +372,78 @@ def auto_receive_finished_goods(work_order_id, quantity_produced, user_id=None):
             if fg_loc:
                 prod_area_loc_id = cur_loc[0]
                 fg_loc_id = fg_loc[0]
-                db.session.execute(text("""
-                    INSERT INTO inventory_movements
-                    (inventory_id, product_id, location_id, movement_type, movement_date,
-                     quantity, reference_type, reference_id, reference_number, notes,
-                     created_by, created_at)
-                    VALUES (:inventory_id, :product_id, :location_id, 'transfer_out',
-                            :movement_date, :quantity, 'work_order', :reference_id,
-                            :reference_number, :notes, :created_by, CURRENT_TIMESTAMP)
-                """), {
-                    'inventory_id': inventory_id, 'product_id': product_id, 'location_id': prod_area_loc_id,
-                    'movement_date': movement_date, 'quantity': new_on_hand,
-                    'reference_id': work_order_id, 'reference_number': wo_number,
-                    'notes': f'Tutup SPK {wo_number} - transfer ke Gudang Barang Jadi', 'created_by': user_id
-                })
-                db.session.execute(text("""
-                    INSERT INTO inventory_movements
-                    (inventory_id, product_id, location_id, movement_type, movement_date,
-                     quantity, reference_type, reference_id, reference_number, notes,
-                     created_by, created_at)
-                    VALUES (:inventory_id, :product_id, :location_id, 'transfer_in',
-                            :movement_date, :quantity, 'work_order', :reference_id,
-                            :reference_number, :notes, :created_by, CURRENT_TIMESTAMP)
-                """), {
-                    'inventory_id': inventory_id, 'product_id': product_id, 'location_id': fg_loc_id,
-                    'movement_date': movement_date, 'quantity': new_on_hand,
-                    'reference_id': work_order_id, 'reference_number': wo_number,
-                    'notes': f'Tutup SPK {wo_number} - transfer ke Gudang Barang Jadi', 'created_by': user_id
-                })
+                transfer_unit_cost = (material_cost_total / new_on_hand) if new_on_hand else 0
+                record_inventory_transaction(
+                    transaction_type='transfer',
+                    direction='out',
+                    quantity=new_on_hand,
+                    product_id=product_id,
+                    from_location_id=prod_area_loc_id,
+                    to_location_id=fg_loc_id,
+                    reference_type='work_order',
+                    reference_id=work_order_id,
+                    reference_number=wo_number,
+                    work_order_id=work_order_id,
+                    unit_cost=transfer_unit_cost or None,
+                    total_cost=material_cost_total or None,
+                    notes=f'Tutup SPK {wo_number} - transfer ke Gudang Barang Jadi',
+                    created_by=user_id,
+                )
                 db.session.execute(text("""
                     UPDATE inventory SET location_id = :fg_loc_id, updated_at = CURRENT_TIMESTAMP
                     WHERE id = :inventory_id
                 """), {'fg_loc_id': fg_loc_id, 'inventory_id': inventory_id})
+
+        # 2026-09-21: transformation journal - "inline" production (per
+        # 2026-09-21 decision: most products go straight raw-material ->
+        # finished-goods with no separate WIP holding account, so this posts
+        # ONE journal per WO completion instead of building out a full
+        # multi-stage WIP ledger) - Dr Persediaan Barang Jadi / Cr Persediaan
+        # Bahan Baku, valued at the real material cost already issued to
+        # this WO. Materials have no item-level account override
+        # (resolve_account only supports that via product_id), so every
+        # material in the BOM resolves to the same category/global
+        # akun_persediaan_id regardless of which specific material it is -
+        # one credit line for the total is equivalent to summing per-material
+        # lines that would all hit the same account anyway.
+        if material_cost_total > 0:
+            try:
+                from utils.finance_helpers import resolve_account
+                from models.approval_workflow import PendingJournalEntry
+                from utils.finance_helpers import post_pending_journal
+
+                fg_account_id = resolve_account('akun_persediaan_id', product_id=product_id, category_id=None)
+                rm_account_id = resolve_account('akun_persediaan_id', product_id=None, category_id=None)
+
+                journal_lines = [
+                    {'account_id': fg_account_id, 'debit': material_cost_total, 'credit': 0,
+                     'description': f'Penerimaan Barang Jadi WO {wo_number}'},
+                    {'account_id': rm_account_id, 'debit': 0, 'credit': material_cost_total,
+                     'description': f'Pemakaian bahan baku WO {wo_number}'},
+                ]
+
+                pending = PendingJournalEntry(
+                    workflow_id=None,
+                    entry_date=get_local_now().date(),
+                    description=f'Penerimaan Barang Jadi (Transformasi) WO {wo_number}',
+                    reference=wo_number,
+                    lines=journal_lines,
+                    total_debit=material_cost_total,
+                    total_credit=material_cost_total,
+                    created_by=user_id,
+                )
+                db.session.add(pending)
+                db.session.flush()
+                posted_entries = post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='work_order', reference_id=work_order_id)
+                if posted_entries:
+                    base_number = posted_entries[0].entry_number.rsplit('-', 1)[0]
+                    fg_movement.accounting_entry_number = base_number
+                    fg_movement.accounting_entry_status = 'posted'
+            except ValueError:
+                # akun_persediaan_id not resolvable (no override at any
+                # level) - stock effect above still applies, journal is
+                # skipped rather than failing WO completion.
+                pass
 
         db.session.commit()
 
