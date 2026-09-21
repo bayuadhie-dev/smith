@@ -215,7 +215,33 @@ sebagai jurnal riil dan seimbang (Dr Hutang Usaha 2.500 / Cr Persediaan Bahan Ba
 
 ---
 
-## 8. Catatan: Rencana Terpisah dari QA (belum dikerjakan, hanya dicatat 2026-09-21)
+## 9. Penutup Fase 2 — Stok Opname posting jurnal, disetujui & selesai 2026-09-21
+
+Titik kecil terakhir yang tersisa dari cakupan Fase 2 (setelah Fase 3 menutup 2 gap terbesar, GRN &
+Shipping): `apply_stock_opname_adjustments()` di `routes/stock_opname.py`, dipakai baik oleh endpoint
+approve langsung maupun alur ApprovalWorkflow generik.
+
+**Desain**: akun "6-7000 Selisih Persediaan" (sudah ada & sudah dikonfigurasi sebelumnya di
+`InventoryAccountSettings.akun_penyesuaian_id` — tidak perlu bikin akun baru) dipakai dua arah:
+varian lebih (ditemukan lebih banyak dari catatan) → Dr Persediaan / Cr Selisih Persediaan; varian
+kurang (ditemukan lebih sedikit, kerugian) → Dr Selisih Persediaan / Cr Persediaan. Nilai dari FIFO
+`unit_cost` riil batch yang disesuaikan.
+
+**Verifikasi ujung-ke-ujung lewat API nyata**: SO-202609-00002 (varian -5 pcs @ Rp15.000) →
+JE-202609-00023 Dr Selisih Persediaan 75.000 / Cr Persediaan Bahan Baku 75.000.
+
+**Bug tambahan ditemukan+diperbaiki (tak terkait, blocking saat verifikasi)**:
+`generate_opname_items()` di file yang sama memakai `product.uom`/`material.uom` — field yang tidak
+ada di kedua model (nama field asli `primary_uom`), jadi endpoint create-order selalu crash 500 untuk
+lokasi mana pun yang isinya campuran produk+material. Diperbaiki.
+
+**Fase 2 dinyatakan selesai** untuk cakupan yang realistis (Retur Pembelian, GRN, Shipping, Stok
+Opname) — titik-titik lain yang masih tanpa posting jurnal (Payroll sudah ada dari sebelumnya;
+Production/WIP costing) butuh keputusan desain terpisah, belum dikerjakan.
+
+---
+
+## 10. Catatan: Rencana Terpisah dari QA (belum dikerjakan, hanya dicatat 2026-09-21)
 
 QA meminta fitur **master data efektif-bertanggal + change number**, cakupan: SEMUA field master
 data Product & Material (termasuk Harga & Biaya, dan BOM/Formula Produksi) — bukan cuma yang

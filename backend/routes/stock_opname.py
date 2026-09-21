@@ -135,12 +135,12 @@ def generate_opname_items(order):
             product = db.session.get(Product, inv.product_id)
             item_code = product.code if product else f'P-{inv.product_id}'
             item_name = product.name if product else 'Unknown Product'
-            uom = product.uom if product else 'pcs'
+            uom = product.primary_uom if product else 'pcs'
         elif inv.material_id:
             material = db.session.get(Material, inv.material_id)
             item_code = material.code if material else f'M-{inv.material_id}'
             item_name = material.name if material else 'Unknown Material'
-            uom = material.uom if material else 'kg'
+            uom = material.primary_uom if material else 'kg'
         else:
             continue
         
@@ -375,10 +375,20 @@ def apply_stock_opname_adjustments(order, user_id, create_adjustments=True):
             StockOpnameItem.variance_qty != 0
         ).all()
 
+        stock_txns = []
+        journal_lines = []
+        total_variance_amount = 0.0
+
         for item in items_with_variance:
             if item.inventory_id:
                 inventory = db.session.get(Inventory, item.inventory_id)
                 if inventory:
+                    # Fase 3 follow-up (2026-09-21): capture cost BEFORE
+                    # mutating quantity, same pattern as GRN/Shipping - see
+                    # plan.md section 7/9.
+                    from utils.fifo_helper import _get_inventory_unit_cost
+                    unit_cost = _get_inventory_unit_cost(inventory)
+
                     inventory.quantity_on_hand = item.counted_qty
                     inventory.quantity_available = item.counted_qty - inventory.quantity_reserved
                     inventory.last_stock_check = get_local_now()
@@ -397,9 +407,63 @@ def apply_stock_opname_adjustments(order, user_id, create_adjustments=True):
                         reference_type='stock_opname',
                         reference_id=order.id,
                         batch_number=item.batch_number,
+                        unit_cost=unit_cost or None,
+                        total_cost=(unit_cost * abs(variance_qty)) if unit_cost else None,
                         notes=f'Penyesuaian dari Stok Opname {order.opname_number}',
                         created_by=user_id
                     )
+                    stock_txns.append(movement)
+
+                    if unit_cost and unit_cost > 0:
+                        variance_amount = unit_cost * abs(variance_qty)
+                        try:
+                            from utils.finance_helpers import resolve_account
+                            from models.finance import InventoryAccountSettings
+
+                            persediaan_account_id = resolve_account('akun_persediaan_id', product_id=inventory.product_id, category_id=None)
+                            settings = InventoryAccountSettings.query.first()
+                            selisih_account_id = settings.akun_penyesuaian_id if settings else None
+
+                            if selisih_account_id:
+                                desc = f'Selisih Stok Opname {order.opname_number} - {item.batch_number or ""}'
+                                if variance_direction == 'in':
+                                    # Found more than recorded: stock value up.
+                                    journal_lines.append({'account_id': persediaan_account_id, 'debit': variance_amount, 'credit': 0, 'description': desc})
+                                    journal_lines.append({'account_id': selisih_account_id, 'debit': 0, 'credit': variance_amount, 'description': desc})
+                                else:
+                                    # Found less than recorded: stock value down.
+                                    journal_lines.append({'account_id': selisih_account_id, 'debit': variance_amount, 'credit': 0, 'description': desc})
+                                    journal_lines.append({'account_id': persediaan_account_id, 'debit': 0, 'credit': variance_amount, 'description': desc})
+                                total_variance_amount += variance_amount
+                        except ValueError:
+                            # akun_persediaan_id not resolvable for this item
+                            # (no override at any level) - stock effect above
+                            # still applies, this line's journal is skipped
+                            # rather than failing the whole approval.
+                            pass
+
+        if journal_lines and total_variance_amount > 0:
+            from models.approval_workflow import PendingJournalEntry
+            from utils.finance_helpers import post_pending_journal
+
+            pending = PendingJournalEntry(
+                workflow_id=None,
+                entry_date=get_local_now().date(),
+                description=f'Penyesuaian Stok Opname {order.opname_number}',
+                reference=order.opname_number,
+                lines=journal_lines,
+                total_debit=total_variance_amount,
+                total_credit=total_variance_amount,
+                created_by=user_id,
+            )
+            db.session.add(pending)
+            db.session.flush()
+            posted_entries = post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='stock_opname', reference_id=order.id)
+            if posted_entries:
+                base_number = posted_entries[0].entry_number.rsplit('-', 1)[0]
+                for txn in stock_txns:
+                    txn.accounting_entry_number = base_number
+                    txn.accounting_entry_status = 'posted'
 
     order.approved_by = user_id
     order.approved_at = get_local_now()
