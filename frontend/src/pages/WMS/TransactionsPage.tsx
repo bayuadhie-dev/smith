@@ -8,7 +8,9 @@ import {
   ArrowUpIcon,
   ArrowDownIcon,
   FunnelIcon,
+  ArrowDownTrayIcon,
 } from '@heroicons/react/24/outline';
+import { exportToCSV } from '../../utils/exportUtils';
 
 const REFERENCE_TYPE_LABELS: Record<string, string> = {
   purchase_order: 'Purchase Order',
@@ -55,7 +57,17 @@ interface Transaction {
   status: string;
   created_by: string | null;
   created_at: string;
+  movement_type_code: string;
+  movement_type_label: string;
+  resolved_account: { code: string | null; name: string | null; source: string };
 }
+
+const ACCOUNT_SOURCE_LABEL: Record<string, string> = {
+  item_override: 'Item',
+  category_default: 'Kategori',
+  global_default: 'Global',
+  unresolved: 'Belum resolve',
+};
 
 const typeLabels: Record<string, string> = {
   production_output: 'Output Produksi',
@@ -136,14 +148,53 @@ const TransactionsPage: React.FC = () => {
     fetchData();
   };
 
+  const handleExportCSV = () => {
+    if (data.length === 0) {
+      toast.error('Tidak ada data untuk diekspor pada halaman ini');
+      return;
+    }
+    exportToCSV(
+      data.map((txn) => ({
+        no_transaksi: txn.transaction_number,
+        kode_gerakan: txn.movement_type_code,
+        label_gerakan: txn.movement_type_label,
+        tipe: typeLabels[txn.transaction_type] || txn.transaction_type,
+        arah: txn.direction === 'in' ? 'Masuk' : 'Keluar',
+        item_kode: txn.item_code,
+        item_nama: txn.item_name,
+        qty: txn.quantity,
+        uom: txn.uom || '',
+        dari_lokasi: txn.from_location || '',
+        ke_lokasi: txn.to_location || '',
+        akun_coa: txn.resolved_account?.code ? `${txn.resolved_account.code} - ${txn.resolved_account.name}` : '',
+        sumber_akun: txn.resolved_account?.source || '',
+        referensi_tipe: txn.reference_type || '',
+        referensi_nomor: txn.reference_number || '',
+        batch: txn.batch_number || '',
+        tanggal: txn.transaction_date,
+        dibuat_oleh: txn.created_by || '',
+      })),
+      'transaksi-stok'
+    );
+  };
+
   return (
     <div className="p-6 space-y-6">
-      <div>
+      <div className="flex items-start justify-between gap-4">
+        <div>
         <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
           <ArrowsRightLeftIcon className="h-7 w-7 text-green-600" />
           Transaksi Stok
         </h1>
         <p className="text-gray-500 mt-1">Log semua pergerakan stok — terintegrasi dengan Produksi, PO, SO, dan Transfer</p>
+        </div>
+        <button
+          onClick={handleExportCSV}
+          className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 whitespace-nowrap"
+        >
+          <ArrowDownTrayIcon className="h-4 w-4" />
+          Export CSV
+        </button>
       </div>
 
       {/* Summary strip */}
@@ -257,11 +308,13 @@ const TransactionsPage: React.FC = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Transaksi</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kode Gerakan</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipe</th>
                   <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Arah</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
                   <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">QTY</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lokasi</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Akun COA</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Referensi</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Oleh</th>
@@ -271,6 +324,12 @@ const TransactionsPage: React.FC = () => {
                 {data.map((txn) => (
                   <tr key={txn.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => navigate(`/app/wms/transactions/${txn.id}`)}>
                     <td className="px-4 py-3 text-sm font-mono text-gray-700">{txn.transaction_number}</td>
+                    <td className="px-4 py-3">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-semibold bg-gray-100 text-gray-700" title={txn.movement_type_label}>
+                        {txn.movement_type_code}
+                      </span>
+                      <div className="text-xs text-gray-400 mt-0.5">{txn.movement_type_label}</div>
+                    </td>
                     <td className="px-4 py-3">
                       <span className="text-sm">{typeLabels[txn.transaction_type] || txn.transaction_type}</span>
                     </td>
@@ -294,6 +353,24 @@ const TransactionsPage: React.FC = () => {
                       {txn.from_location && <div>Dari: {txn.from_location}</div>}
                       {txn.to_location && <div>Ke: {txn.to_location}</div>}
                       {!txn.from_location && !txn.to_location && '-'}
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      {txn.resolved_account?.code ? (
+                        <>
+                          <div className="text-gray-900">{txn.resolved_account.code} - {txn.resolved_account.name}</div>
+                          <span className={`inline-block mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                            txn.resolved_account.source === 'item_override' ? 'bg-blue-50 text-blue-600' :
+                            txn.resolved_account.source === 'category_default' ? 'bg-purple-50 text-purple-600' :
+                            'bg-gray-100 text-gray-500'
+                          }`}>
+                            {ACCOUNT_SOURCE_LABEL[txn.resolved_account.source] || txn.resolved_account.source}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-600">
+                          Belum resolve
+                        </span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-sm">
                       {txn.wo_number && <div className="text-blue-600">{txn.wo_number}</div>}

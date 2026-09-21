@@ -119,6 +119,49 @@ const TransactionDetail: React.FC = () => {
           <InfoRow label="Dibuat pada" value={txn.created_at ? new Date(txn.created_at).toLocaleString('id-ID') : '-'} />
         </div>
 
+        {/* Akun COA & Kode Gerakan */}
+        {(txn.movement_type_code || txn.resolved_account) && (
+          <div className="bg-white rounded-xl shadow-sm border p-5">
+            <h2 className="font-semibold text-gray-900 mb-3">Akun COA & Kode Gerakan</h2>
+            <InfoRow label="Kode Gerakan" value={
+              <span className="font-mono">{txn.movement_type_code} - {txn.movement_type_label}</span>
+            } />
+            <InfoRow label="Akun COA (hasil resolve)" value={
+              txn.resolved_account?.code
+                ? `${txn.resolved_account.code} - ${txn.resolved_account.name}`
+                : <span className="text-amber-600">Belum resolve</span>
+            } />
+            {txn.resolved_account?.source && (
+              <InfoRow label="Sumber Resolusi" value={
+                { item_override: 'Item', category_default: 'Kategori', global_default: 'Global', unresolved: '-' }[txn.resolved_account.source] || txn.resolved_account.source
+              } />
+            )}
+            <p className="text-xs text-gray-400 mt-2">
+              Akun ini hasil resolve otomatis (item → kategori → global), bukan nomor jurnal aktual
+              yang sudah pernah diposting - lihat Settings &gt; Preferensi Akun &gt; Default Akhir (Global)
+              untuk mengubah konfigurasinya.
+            </p>
+          </div>
+        )}
+
+        {/* Document Flow */}
+        {txn.document_flow && (
+          <div className="bg-white rounded-xl shadow-sm border p-5">
+            <h2 className="font-semibold text-gray-900 mb-3">Alur Dokumen</h2>
+            <InfoRow label="Tipe Dokumen Sumber" value={txn.document_flow.reference_type} />
+            <InfoRow label="No. Dokumen" value={txn.document_flow.reference_number} />
+            {txn.document_flow.resolved ? (
+              <InfoRow label="Status Dokumen" value={
+                <span>{txn.document_flow.label} {txn.document_flow.status && `(${txn.document_flow.status})`}</span>
+              } />
+            ) : (
+              <p className="text-xs text-gray-400 mt-2">
+                Dokumen sumber tercatat tapi belum bisa ditautkan otomatis ke halaman detailnya dari sini.
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Item & Quantity */}
         <div className="bg-white rounded-xl shadow-sm border p-5">
           <h2 className="font-semibold text-gray-900 mb-3">Item & Kuantitas</h2>

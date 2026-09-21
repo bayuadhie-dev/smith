@@ -36,6 +36,104 @@ def generate_txn_number(prefix='TXN'):
     return f"{prefix}-{get_local_now().strftime('%Y%m%d%H%M%S')}-{_txn_counter:04d}"
 
 
+def derive_movement_type_code(txn):
+    """Map an InventoryTransaction's (transaction_type, reference_type,
+    direction) onto a SAP-style 3-digit movement type code for display
+    purposes only (see plan.md section 2) - purely a presentation label
+    derived from data already on the row, not a stored column."""
+    t = (txn.transaction_type or '').lower()
+    ref = (txn.reference_type or '').lower()
+    direction = txn.direction
+
+    if t == 'stock_in' and ref == 'purchase_order':
+        return '101', 'Penerimaan Barang dari Vendor'
+    if ref in ('wo_cancellation_reversal', 'batch_confirmation_cancel', 'fg_conversion') and direction == 'in':
+        return '131', 'Penerimaan Barang Jadi Produksi'
+    if ref == 'material_issue' and direction == 'out':
+        return '261', 'Pengeluaran Bahan Baku ke SPK'
+    if t == 'transfer':
+        return '311', 'Transfer Antar Gudang/Lokasi'
+    if t == 'qc_disposition' and direction == 'out':
+        return '551', 'Barang Rusak / Reject / QC Disposition'
+    if ref == 'sales_order' and direction == 'out':
+        return '601', 'Pengiriman ke Pelanggan'
+    if t == 'adjustment':
+        return ('701', 'Penyesuaian Opname (Lebih)') if direction == 'in' else ('702', 'Penyesuaian Opname (Kurang)')
+    return '999', txn.transaction_type or 'Lainnya'
+
+
+def resolve_account_for_transaction(txn):
+    """Best-effort GL account resolution for display alongside a stock
+    movement row - NOT a stored/actual posted journal link (see plan.md's
+    2026-09-21 revision note: reference_number does not reliably correlate
+    InventoryTransaction to AccountingEntry across the codebase). Reuses the
+    same item -> category -> global fallback already used for real postings
+    (utils/finance_helpers.py:resolve_account), so what's shown here matches
+    what the system would actually use going forward once postings are made
+    for this item."""
+    from models.finance import Account, CategoryAccountDefault, GlobalAccountDefault
+    from models.product import Product
+
+    slot = 'akun_persediaan_id'
+    if (txn.direction == 'out') and (txn.transaction_type or '') in ('stock_out', 'material_issue'):
+        slot = 'akun_beban_id'
+
+    account_id = None
+    source = 'unresolved'
+
+    # Level 1: item override (product only - materials have no per-item slot)
+    if txn.product_id:
+        product = db.session.get(Product, txn.product_id)
+        if product:
+            account_id = getattr(product, slot, None)
+            if account_id:
+                source = 'item_override'
+            category_id = product.category_id if account_id is None else None
+        else:
+            category_id = None
+    else:
+        category_id = None
+
+    # Level 2: category default
+    if not account_id and category_id:
+        cat_default = CategoryAccountDefault.query.filter_by(category_id=category_id).first()
+        if cat_default:
+            account_id = getattr(cat_default, slot, None)
+            if account_id:
+                source = 'category_default'
+
+    # Level 3: global default
+    if not account_id:
+        global_default = GlobalAccountDefault.query.filter_by(transaction_key=slot).first()
+        if global_default:
+            account_id = global_default.account_id
+            source = 'global_default'
+
+    if not account_id:
+        return {'code': None, 'name': None, 'source': 'unresolved'}
+
+    account = db.session.get(Account, account_id)
+    if not account:
+        return {'code': None, 'name': None, 'source': 'unresolved'}
+
+    return {'code': account.account_code, 'name': account.account_name, 'source': source}
+
+
+def enrich_transaction_dict(txn):
+    """Attach display-only movement_type_code/label + resolved_account to a
+    to_dict() payload, swallowing any resolution error per-row so one bad
+    item never 500s the whole list (see plan.md Langkah 1)."""
+    data = txn.to_dict()
+    code, label = derive_movement_type_code(txn)
+    data['movement_type_code'] = code
+    data['movement_type_label'] = label
+    try:
+        data['resolved_account'] = resolve_account_for_transaction(txn)
+    except Exception:
+        data['resolved_account'] = {'code': None, 'name': None, 'source': 'unresolved'}
+    return data
+
+
 # ============================================================
 # 1. WMS DASHBOARD
 # ============================================================
@@ -778,7 +876,7 @@ def get_transactions():
         pagination = query.paginate(page=page, per_page=per_page, error_out=False)
 
         return jsonify({
-            'transactions': [t.to_dict() for t in pagination.items],
+            'transactions': [enrich_transaction_dict(t) for t in pagination.items],
             'pagination': {
                 'page': pagination.page, 'per_page': pagination.per_page,
                 'total': pagination.total, 'pages': pagination.pages,
@@ -798,7 +896,7 @@ def get_transaction_detail(txn_id):
         if not txn:
             return jsonify({'error': 'Transaction not found'}), 404
 
-        data = txn.to_dict()
+        data = enrich_transaction_dict(txn)
 
         # Enrich with extra detail
         if txn.work_order_id:
@@ -819,6 +917,32 @@ def get_transaction_detail(txn_id):
             if mat:
                 data['material_name'] = mat.name
                 data['material_code'] = mat.code
+
+        # Document flow - best-effort resolve of the source document this
+        # movement references, using the reference_type/reference_id pair
+        # that's been accurate since the InventoryMovement migration (see
+        # plan.md). Only the two document types this file already imports
+        # models for are resolved by id; everything else falls back to
+        # showing the raw reference_number/type as recorded on the row -
+        # still useful, just without a clickable/looked-up target.
+        document_flow = {
+            'reference_type': txn.reference_type,
+            'reference_id': txn.reference_id,
+            'reference_number': txn.reference_number,
+            'resolved': False,
+        }
+        try:
+            if txn.reference_type == 'work_order' and txn.reference_id:
+                wo = db.session.get(WorkOrder, txn.reference_id)
+                if wo:
+                    document_flow.update({'resolved': True, 'label': f'SPK {wo.wo_number}', 'status': wo.status})
+            elif txn.reference_type == 'transfer_order' and txn.reference_id:
+                sto = db.session.get(StockTransferOrder, txn.reference_id)
+                if sto:
+                    document_flow.update({'resolved': True, 'label': f'Transfer {sto.transfer_number}', 'status': sto.status})
+        except Exception:
+            pass
+        data['document_flow'] = document_flow
 
         return jsonify({'transaction': data}), 200
     except Exception as e:
