@@ -64,7 +64,8 @@ def apply_workflow_side_effect(workflow, action, user_id):
 
     elif workflow.transaction_type == 'inventory_adjustment':
         from models.warehouse_adjustment import InventoryAdjustment
-        from models.warehouse import Inventory, InventoryMovement
+        from models.warehouse import Inventory
+        from utils.inventory_helpers import record_inventory_transaction
         adj = db.session.get(InventoryAdjustment, workflow.transaction_id)
         if adj:
             if action == 'approve':
@@ -79,14 +80,16 @@ def apply_workflow_side_effect(workflow, action, user_id):
                         inv.quantity_available = adj.physical_quantity - inv.quantity_reserved
                         inv.last_stock_check = get_local_now()
 
-                        movement = InventoryMovement(
-                            inventory_id=inv.id,
+                        adj_qty = float(adj.adjustment_quantity)
+                        adj_direction = 'in' if adj_qty >= 0 else 'out'  # TODO: verify direction
+                        movement = record_inventory_transaction(
+                            transaction_type='adjustment',
+                            direction=adj_direction,
+                            quantity=abs(adj_qty),
                             product_id=inv.product_id,
                             material_id=inv.material_id,
-                            location_id=inv.location_id,
-                            movement_type='adjust',
-                            movement_date=get_local_now().date(),
-                            quantity=float(adj.adjustment_quantity),
+                            to_location_id=inv.location_id if adj_direction == 'in' else None,
+                            from_location_id=inv.location_id if adj_direction == 'out' else None,
                             reference_number=adj.adjustment_number,
                             reference_type='inventory_adjustment',
                             reference_id=adj.id,
@@ -94,7 +97,6 @@ def apply_workflow_side_effect(workflow, action, user_id):
                             notes=f'Penyesuaian stok - {adj.adjustment_number}',
                             created_by=user_id
                         )
-                        db.session.add(movement)
                 adj.status = 'applied'
                 adj.approved_by = user_id
                 adj.approved_at = get_local_now()

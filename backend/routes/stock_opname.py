@@ -6,7 +6,8 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.auth_decorators import require_permission
 from models import db
 from models.stock_opname import StockOpnameOrder, StockOpnameItem
-from models.warehouse import WarehouseZone, WarehouseLocation, Inventory, InventoryMovement
+from models.warehouse import WarehouseZone, WarehouseLocation, Inventory
+from utils.inventory_helpers import record_inventory_transaction
 from models.warehouse_adjustment import InventoryAdjustment
 from models.product import Product, Material
 from utils import generate_number
@@ -382,14 +383,16 @@ def apply_stock_opname_adjustments(order, user_id, create_adjustments=True):
                     inventory.quantity_available = item.counted_qty - inventory.quantity_reserved
                     inventory.last_stock_check = get_local_now()
 
-                    movement = InventoryMovement(
-                        inventory_id=inventory.id,
+                    variance_qty = float(item.variance_qty)
+                    variance_direction = 'in' if variance_qty >= 0 else 'out'
+                    movement = record_inventory_transaction(
+                        transaction_type='adjustment',
+                        direction=variance_direction,
+                        quantity=abs(variance_qty),
                         product_id=inventory.product_id,
                         material_id=inventory.material_id,
-                        location_id=inventory.location_id,
-                        movement_type='adjust',
-                        movement_date=get_local_now().date(),
-                        quantity=float(item.variance_qty),
+                        to_location_id=inventory.location_id if variance_direction == 'in' else None,
+                        from_location_id=inventory.location_id if variance_direction == 'out' else None,
                         reference_number=order.opname_number,
                         reference_type='stock_opname',
                         reference_id=order.id,
@@ -397,7 +400,6 @@ def apply_stock_opname_adjustments(order, user_id, create_adjustments=True):
                         notes=f'Penyesuaian dari Stok Opname {order.opname_number}',
                         created_by=user_id
                     )
-                    db.session.add(movement)
 
     order.approved_by = user_id
     order.approved_at = get_local_now()

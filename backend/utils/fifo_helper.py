@@ -7,8 +7,9 @@ IMPORTANT: All mutating functions use SELECT FOR UPDATE to prevent race conditio
 Two concurrent requests cannot read the same inventory rows simultaneously.
 """
 from models import db
-from models.warehouse import Inventory, InventoryMovement
+from models.warehouse import Inventory
 from utils.timezone import get_local_now
+from utils.inventory_helpers import record_inventory_transaction
 
 
 def _build_fifo_query(material_id=None, product_id=None, use_available=False):
@@ -284,26 +285,25 @@ def fifo_deduct_stock(material_id=None, product_id=None, quantity_needed=0,
             inv.quantity_available = 0
             inv.quantity_reserved = max(0, float(inv.quantity_reserved or 0))
         
-        # Create inventory movement record
-        movement = InventoryMovement(
-            inventory_id=inv.id,
+        # Create inventory transaction record
+        movement = record_inventory_transaction(
+            transaction_type='fifo_deduction',
+            direction='out',
+            quantity=deduct_qty,
             product_id=product_id,
             material_id=material_id,
-            location_id=inv.location_id,
-            movement_type='stock_out',
-            movement_date=get_local_now().date(),
-            quantity=deduct_qty,
+            from_location_id=inv.location_id,
+            batch_number=inv.batch_number,
+            lot_number=inv.lot_number,
             reference_number=reference_number,
             reference_type=reference_type,
             reference_id=reference_id,
-            batch_number=inv.batch_number,
-            lot_number=inv.lot_number,
             unit_cost=unit_cost,
             total_cost=round(deduct_qty * unit_cost, 2) if unit_cost else None,
+            balance_after=float(inv.quantity_on_hand),
             notes=notes,
-            created_by=user_id
+            created_by=user_id,
         )
-        db.session.add(movement)
         
         movements.append({
             'inventory_id': inv.id,

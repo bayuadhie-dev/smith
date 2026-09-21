@@ -13,7 +13,8 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.auth_decorators import require_permission
 from models import db
 from models.production import WorkOrder, ShiftProduction, Machine
-from models.warehouse import Inventory, InventoryMovement
+from models.warehouse import Inventory
+from utils.inventory_helpers import record_inventory_transaction
 from models.product import Product, Material
 from models.work_order_bom import WorkOrderBOMItem
 from datetime import datetime
@@ -82,23 +83,23 @@ def auto_deduct_materials(work_order_id, user_id=None):
                     continue
                 
                 # Create inventory movement (deduction)
-                movement = InventoryMovement(
-                    inventory_id=inventory.id,
-                    movement_type='production_issue',
-                    quantity=-required_qty,
+                movement = record_inventory_transaction(
+                    transaction_type='production_issue',
+                    direction='out',
+                    quantity=required_qty,
+                    material_id=bom_item.material_id,
+                    from_location_id=inventory.location_id,
                     reference_type='work_order',
                     reference_id=work_order_id,
                     notes=f'Auto-deduction for WO {wo.wo_number}',
                     created_by=user_id,
-                    created_at=get_local_now()
                 )
-                db.session.add(movement)
-                
+
                 # Update inventory quantity
                 inventory.quantity_on_hand = float(inventory.quantity_on_hand) - required_qty
                 inventory.quantity_available = float(inventory.quantity_available) - required_qty
                 inventory.updated_at = get_local_now()
-                
+
                 mat_name = bom_item.item_name if bom_item.item_name else (bom_item.material.name if bom_item.material else 'Unknown')
                 transactions.append({
                     'type': 'material',
@@ -126,23 +127,23 @@ def auto_deduct_materials(work_order_id, user_id=None):
                     continue
                 
                 # Create inventory movement (deduction)
-                movement = InventoryMovement(
-                    inventory_id=inventory.id,
-                    movement_type='production_issue',
-                    quantity=-required_qty,
+                movement = record_inventory_transaction(
+                    transaction_type='production_issue',
+                    direction='out',
+                    quantity=required_qty,
+                    product_id=bom_item.product_id,
+                    from_location_id=inventory.location_id,
                     reference_type='work_order',
                     reference_id=work_order_id,
                     notes=f'Auto-deduction for WO {wo.wo_number}',
                     created_by=user_id,
-                    created_at=get_local_now()
                 )
-                db.session.add(movement)
-                
+
                 # Update inventory quantity
                 inventory.quantity_on_hand = float(inventory.quantity_on_hand) - required_qty
                 inventory.quantity_available = float(inventory.quantity_available) - required_qty
                 inventory.updated_at = get_local_now()
-                
+
                 prod_name = bom_item.item_name if bom_item.item_name else (bom_item.product.name if bom_item.product else 'Unknown')
                 transactions.append({
                     'type': 'product',

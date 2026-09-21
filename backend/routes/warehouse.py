@@ -4,6 +4,7 @@ from utils.auth_decorators import require_permission
 from models import db, WarehouseZone, WarehouseLocation, Inventory, InventoryMovement, Product
 from models.product import Material
 from utils.i18n import success_response, error_response, get_message
+from utils.inventory_helpers import record_inventory_transaction
 from sqlalchemy import or_, func
 from sqlalchemy.orm import joinedload
 from datetime import datetime
@@ -539,24 +540,21 @@ def add_to_inventory():
         inventory.updated_at = get_local_now()
         
         # Create movement record
-        movement = InventoryMovement(
-            inventory_id=inventory.id,
+        movement = record_inventory_transaction(
+            transaction_type='stock_in',
+            direction='in',
+            quantity=quantity,
             product_id=product_id,
             material_id=material_id,
-            location_id=location_id,
-            movement_type='stock_in',
-            movement_date=get_local_now().date(),
-            quantity=quantity,
+            to_location_id=location_id,
             reference_number=data.get('reference_number'),
             reference_type=data.get('reference_type', 'manual_input'),
             reference_id=data.get('reference_id'),
             batch_number=data.get('batch_number'),
             lot_number=data.get('lot_number'),
-            expiry_date=datetime.fromisoformat(data['expiry_date']).date() if data.get('expiry_date') else None,
             notes=data.get('notes'),
             created_by=user_id
         )
-        db.session.add(movement)
         
         # Update location occupied
         location = db.session.get(WarehouseLocation, location_id)
@@ -579,25 +577,32 @@ def add_to_inventory():
 @jwt_required()
 @require_permission('warehouse.view')
 def get_movements():
-    """Get inventory movements with pagination and filters"""
+    """Get inventory movements with pagination and filters.
+
+    Reads from the unified InventoryTransaction ledger (2026-09-21 migration)
+    rather than the retired InventoryMovement table, but keeps this
+    endpoint's response shape exactly as before so MovementList.tsx and any
+    other existing caller keep working unmodified."""
     try:
+        from models.wms_advanced import InventoryTransaction
+
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 20, type=int)
         search = request.args.get('search', '')
         movement_type = request.args.get('movement_type', '')
-        status = request.args.get('status', '')
         date_from = request.args.get('date_from', '')
         date_to = request.args.get('date_to', '')
 
-        query = InventoryMovement.query
+        query = InventoryTransaction.query
 
         if search:
-            query = query.outerjoin(Product, InventoryMovement.product_id == Product.id)\
-                         .outerjoin(Material, InventoryMovement.material_id == Material.id)\
+            query = query.outerjoin(Product, InventoryTransaction.product_id == Product.id)\
+                         .outerjoin(Material, InventoryTransaction.material_id == Material.id)\
                          .filter(
                 db.or_(
-                    InventoryMovement.reference_number.ilike(f'%{search}%'),
-                    InventoryMovement.notes.ilike(f'%{search}%'),
+                    InventoryTransaction.reference_number.ilike(f'%{search}%'),
+                    InventoryTransaction.transaction_number.ilike(f'%{search}%'),
+                    InventoryTransaction.notes.ilike(f'%{search}%'),
                     Product.code.ilike(f'%{search}%'),
                     Product.name.ilike(f'%{search}%'),
                     Material.code.ilike(f'%{search}%'),
@@ -606,17 +611,15 @@ def get_movements():
             )
 
         if movement_type:
-            query = query.filter(InventoryMovement.movement_type == movement_type)
+            query = query.filter(InventoryTransaction.transaction_type == movement_type)
 
         if date_from:
-            from datetime import datetime
-            query = query.filter(InventoryMovement.movement_date >= datetime.strptime(date_from, '%Y-%m-%d').date())
+            query = query.filter(InventoryTransaction.transaction_date >= date_from)
 
         if date_to:
-            from datetime import datetime
-            query = query.filter(InventoryMovement.movement_date <= datetime.strptime(date_to, '%Y-%m-%d').date())
+            query = query.filter(InventoryTransaction.transaction_date <= f'{date_to} 23:59:59')
 
-        query = query.order_by(InventoryMovement.created_at.desc())
+        query = query.order_by(InventoryTransaction.created_at.desc())
         movements = query.paginate(page=page, per_page=per_page, error_out=False)
 
         result = []
@@ -630,16 +633,15 @@ def get_movements():
                 product_code = m.material.code or ''
                 product_name = m.material.name or ''
 
-            location_code = m.location.location_code if m.location else ''
-            location_name = m.location.zone.name if m.location and m.location.zone else ''
-            created_by_name = ''
-            if m.created_by_user:
-                created_by_name = m.created_by_user.full_name or m.created_by_user.username or ''
+            location = m.to_location or m.from_location
+            location_code = location.location_code if location else ''
+            location_name = location.zone.name if location and location.zone else ''
+            created_by_name = m.created_by_user.full_name or m.created_by_user.username or '' if m.created_by_user else ''
 
             result.append({
                 'id': m.id,
-                'movement_number': m.reference_number or f'MOV-{m.id:06d}',
-                'movement_type': m.movement_type,
+                'movement_number': m.transaction_number,
+                'movement_type': m.transaction_type,
                 'product_code': product_code,
                 'product_name': product_name,
                 'quantity': float(m.quantity),
@@ -649,10 +651,10 @@ def get_movements():
                 'location_name': location_name,
                 'reference_type': m.reference_type or '',
                 'reference_number': m.reference_number or '',
-                'movement_date': str(m.movement_date) if m.movement_date else '',
+                'movement_date': m.transaction_date.date().isoformat() if m.transaction_date else '',
                 'created_by': created_by_name,
                 'notes': m.notes or '',
-                'status': 'completed',
+                'status': m.status or 'completed',
                 'created_at': str(m.created_at) if m.created_at else ''
             })
 
@@ -670,9 +672,18 @@ def get_movements():
 @jwt_required()
 @require_permission('warehouse.view')
 def get_movement_detail(movement_id):
-    """Get single inventory movement detail"""
+    """Get single inventory movement detail.
+
+    Reads from InventoryTransaction (2026-09-21 migration). NOTE: ids from
+    the old, now-retired InventoryMovement table are a different id space -
+    a pre-migration bookmark/link to /movements/<old_id> will 404 or hit an
+    unrelated row here. Only transactions created after the migration are
+    reachable by id through this endpoint; historical movements remain
+    queryable directly against the (now-frozen) inventory_movements table."""
     try:
-        m = db.session.get(InventoryMovement, movement_id) or abort(404)
+        from models.wms_advanced import InventoryTransaction
+
+        m = db.session.get(InventoryTransaction, movement_id) or abort(404)
 
         product_code = ''
         product_name = ''
@@ -686,22 +697,18 @@ def get_movement_detail(movement_id):
             product_name = m.material.name or ''
             product_uom = m.material.primary_uom or 'pcs'
 
-        location = None
-        from_location = None
-        to_location = None
-        if m.location:
-            loc_data = {
-                'id': m.location.id,
-                'location_code': m.location.location_code,
-                'zone_name': m.location.zone.name if m.location.zone else ''
+        def _loc_dict(loc):
+            if not loc:
+                return None
+            return {
+                'id': loc.id,
+                'location_code': loc.location_code,
+                'zone_name': loc.zone.name if loc.zone else ''
             }
-            location = loc_data
-            if m.movement_type in ('stock_out', 'issue'):
-                from_location = loc_data
-            elif m.movement_type in ('stock_in', 'receive', 'production_receipt'):
-                to_location = loc_data
-            else:
-                to_location = loc_data
+
+        from_location = _loc_dict(m.from_location)
+        to_location = _loc_dict(m.to_location)
+        location = to_location or from_location
 
         created_by_name = ''
         if m.created_by_user:
@@ -709,8 +716,8 @@ def get_movement_detail(movement_id):
 
         return jsonify({
             'id': m.id,
-            'movement_number': m.reference_number or f'MOV-{m.id:06d}',
-            'movement_type': m.movement_type,
+            'movement_number': m.transaction_number,
+            'movement_type': m.transaction_type,
             'product_id': m.product_id,
             'material_id': m.material_id,
             'product_code': product_code,
@@ -719,7 +726,7 @@ def get_movement_detail(movement_id):
             'quantity': float(m.quantity),
             'unit_cost': float(m.unit_cost) if m.unit_cost else 0,
             'total_cost': float(m.total_cost) if m.total_cost else float(m.quantity) * float(m.unit_cost or 0),
-            'location_id': m.location_id,
+            'location_id': (m.to_location_id or m.from_location_id),
             'location': location,
             'from_location': from_location,
             'to_location': to_location,
@@ -728,11 +735,11 @@ def get_movement_detail(movement_id):
             'reference_id': m.reference_id,
             'batch_number': m.batch_number or '',
             'lot_number': m.lot_number or '',
-            'serial_number': m.serial_number or '',
-            'expiry_date': str(m.expiry_date) if m.expiry_date else None,
-            'movement_date': str(m.movement_date) if m.movement_date else '',
+            'serial_number': '',
+            'expiry_date': None,
+            'movement_date': m.transaction_date.date().isoformat() if m.transaction_date else '',
             'notes': m.notes or '',
-            'status': 'completed',
+            'status': m.status or 'completed',
             'created_by': created_by_name,
             'created_at': str(m.created_at) if m.created_at else ''
         }), 200
@@ -773,14 +780,35 @@ def create_movement():
         
         unit_cost = float(data.get('unit_cost', 0)) if data.get('unit_cost') else None
         
+        # Determine direction + location(s) for the new ledger record based on movement_type
+        if movement_type == 'stock_in':
+            txn_direction = 'in'
+            txn_to_location_id = data.get('to_location_id') or data.get('location_id')
+            txn_from_location_id = None
+        elif movement_type == 'stock_out':
+            txn_direction = 'out'
+            txn_to_location_id = None
+            txn_from_location_id = data.get('from_location_id') or data.get('location_id')
+        elif movement_type == 'transfer':
+            txn_direction = 'out'
+            txn_from_location_id = data.get('from_location_id')
+            txn_to_location_id = data.get('to_location_id')
+        else:  # adjust
+            adjustment_type = data.get('adjustment_type', 'increase')
+            txn_direction = 'in' if adjustment_type == 'increase' else 'out'
+            adj_location_id = data.get('location_id')
+            txn_to_location_id = adj_location_id if txn_direction == 'in' else None
+            txn_from_location_id = adj_location_id if txn_direction == 'out' else None
+
         # Create movement record
-        movement = InventoryMovement(
+        movement = record_inventory_transaction(
+            transaction_type='transfer' if movement_type == 'transfer' else ('adjustment' if movement_type == 'adjust' else movement_type),
+            direction=txn_direction,
+            quantity=quantity,
             product_id=product_id,
             material_id=material_id,
-            location_id=data.get('location_id') or data.get('to_location_id'),
-            movement_type=movement_type,
-            movement_date=get_local_now().date(),
-            quantity=quantity,
+            from_location_id=txn_from_location_id,
+            to_location_id=txn_to_location_id,
             reference_number=data.get('reference_number'),
             reference_type=data.get('reference_type'),
             reference_id=data.get('reference_id'),
@@ -791,7 +819,6 @@ def create_movement():
             notes=data.get('notes'),
             created_by=user_id
         )
-        db.session.add(movement)
         
         # Update inventory based on movement type
         if movement_type == 'stock_in':
@@ -835,9 +862,9 @@ def create_movement():
                     db.session.add(inventory)
                     db.session.flush()
                 
-                # Link movement to inventory record
-                movement.inventory_id = inventory.id
-        
+                # NOTE: InventoryTransaction has no inventory_id field (product/material +
+                # batch/location already identify the row); nothing to link here anymore.
+
         elif movement_type == 'stock_out':
             from utils.fifo_helper import fifo_deduct_stock
             

@@ -6,7 +6,8 @@ from models.workflow_integration import WorkflowStep, MRPRequirement, Production
 from models.sales import SalesOrder, SalesOrderItem
 from models.production import WorkOrder, ShiftProduction
 from models.purchasing import PurchaseOrder
-from models.warehouse import Inventory, InventoryMovement
+from models.warehouse import Inventory
+from utils.inventory_helpers import record_inventory_transaction
 from models.quality import QualityInspection
 from models.shipping import ShippingOrder
 from models.finance import Invoice
@@ -217,18 +218,18 @@ def move_buffer_to_warehouse(buffer_id):
         warehouse_location_id = data.get('warehouse_location_id')
         
         # Create inventory movement
-        movement = InventoryMovement(
+        # was using non-existent field on old InventoryMovement model, mapped to correct equivalent
+        movement = record_inventory_transaction(
+            transaction_type='buffer_stock',
+            direction='in',
+            quantity=buffer.excess_quantity,
             product_id=buffer.product_id,
             to_location_id=warehouse_location_id,
-            movement_type='buffer_stock',
-            quantity_in=buffer.excess_quantity,
             reference_type='production_buffer',
             reference_id=buffer.id,
-            movement_date=get_local_now(),
-            performed_by=get_jwt_identity(),
+            created_by=get_jwt_identity(),
             notes=f"Buffer stock from {buffer.buffer_number}"
         )
-        db.session.add(movement)
         
         # Update buffer status
         buffer.status = 'moved_to_warehouse'

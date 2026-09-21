@@ -7,6 +7,7 @@ from models.product import Product, Material
 from models.purchasing import Supplier
 from utils.i18n import success_response, error_response
 from utils import generate_number
+from utils.inventory_helpers import record_inventory_transaction
 from datetime import datetime, date
 from sqlalchemy import func
 from utils.timezone import get_local_now, get_local_today
@@ -109,20 +110,20 @@ def create_stock_input():
             inventory.updated_at = get_local_now()
             
             # Create inventory movement record
-            movement = InventoryMovement(
-                inventory_id=inventory.id,
-                movement_type='stock_in',
-                movement_date=movement_date,
+            movement = record_inventory_transaction(
+                transaction_type='stock_in',
+                direction='in',
                 quantity=quantity,
+                product_id=product_id,
+                material_id=material_id,
+                to_location_id=item_data['location_id'],
                 reference_number=reference_number,
                 reference_type='manual_input',
                 batch_number=item_data.get('batch_number', ''),
-                expiry_date=datetime.fromisoformat(item_data['expiry_date']).date() if item_data.get('expiry_date') else None,
                 notes=item_data.get('notes', ''),
                 created_by=user_id
             )
-            
-            db.session.add(movement)
+
             created_movements.append(movement)
 
         # No separate "header" movement record - this endpoint always crashed
@@ -329,19 +330,20 @@ def quick_stock_add():
         inventory.updated_at = get_local_now()
         
         # Create movement record
-        movement = InventoryMovement(
-            inventory_id=inventory.id,
-            movement_type='stock_in',
-            movement_date=get_local_today(),
+        movement = record_inventory_transaction(
+            transaction_type='stock_in',
+            direction='in',
             quantity=quantity,
+            product_id=product_id,
+            material_id=material_id,
+            to_location_id=data['location_id'],
             reference_number=reference_number,
             reference_type='quick_add',
             batch_number=data.get('batch_number', ''),
             notes=data.get('notes', 'Quick add via API'),
             created_by=user_id
         )
-        
-        db.session.add(movement)
+
         db.session.commit()
         
         return success_response('Stock added successfully', {

@@ -4,7 +4,7 @@ from sqlalchemy import event
 from .sales import SalesOrder, SalesOrderItem
 from .production import WorkOrder, ProductionRecord, ShiftProduction
 from .purchasing import PurchaseOrder, PurchaseOrderItem
-from .warehouse import Inventory, InventoryMovement
+from .warehouse import Inventory
 from .quality import QualityInspection
 from .shipping import ShippingOrder
 from .finance import Invoice, InvoiceItem
@@ -323,25 +323,24 @@ class WorkflowAutomation:
     @staticmethod
     def move_production_to_warehouse(shift_production_id):
         """Move completed production to warehouse"""
-        from .warehouse import InventoryMovement
-        
+        from utils.inventory_helpers import record_inventory_transaction
+
         shift_production = ShiftProduction.query.get(shift_production_id)
         if not shift_production:
             return False
-        
+
         # Create inventory movement for production completion
-        movement = InventoryMovement(
-            product_id=shift_production.product_id,
-            movement_type='production_complete',
+        movement = record_inventory_transaction(
+            transaction_type='production_complete',
+            direction='in',
             quantity=shift_production.actual_quantity,
+            product_id=shift_production.product_id,
             reference_type='shift_production',
             reference_id=shift_production_id,
-            movement_date=get_local_now().date(),
             created_by=shift_production.operator_id or 1,  # Default to system user
             notes=f"Production completion from {shift_production.work_order.wo_number}"
         )
-        db.session.add(movement)
-        
+
         return True
     
     @staticmethod

@@ -703,8 +703,9 @@ def create_grn():
         db.session.add(grn)
         db.session.flush()
         
-        from models import Inventory, InventoryMovement
-        
+        from models import Inventory
+        from utils.inventory_helpers import record_inventory_transaction
+
         for item_data in data.get('items', []):
             product_id = item_data.get('product_id')
             material_id = item_data.get('material_id')
@@ -768,14 +769,13 @@ def create_grn():
                 db.session.flush()
                 
                 # Record movement
-                movement = InventoryMovement(
-                    inventory_id=inventory.id,
+                movement = record_inventory_transaction(
+                    transaction_type='stock_in',
+                    direction='in',
+                    quantity=quantity_accepted,
                     product_id=product_id,
                     material_id=material_id,
-                    location_id=location_id,
-                    movement_type='stock_in',
-                    movement_date=get_local_now().date(),
-                    quantity=quantity_accepted,
+                    to_location_id=location_id,
                     reference_number=grn_number,
                     reference_type='purchase_order',
                     reference_id=grn.id,
@@ -783,7 +783,6 @@ def create_grn():
                     notes=f"Receipt from GRN {grn_number}",
                     created_by=user_id
                 )
-                db.session.add(movement)
 
         # Advance PO status based on total received-vs-ordered across ALL
         # GRNs for this PO (not just this one) - previously create_grn()
@@ -893,7 +892,8 @@ def inspect_grn(grn_id):
         items_data = data.get('items', [])
         overall_notes = data.get('notes', '')
 
-        from models import Inventory, InventoryMovement
+        from models import Inventory
+        from utils.inventory_helpers import record_inventory_transaction
 
         total_accepted = 0
         total_rejected = 0
@@ -934,15 +934,15 @@ def inspect_grn(grn_id):
                     inventory.quantity_available = max(0, float(inventory.quantity_available) + delta)
                     inventory.quantity_on_hand = max(0, float(inventory.quantity_on_hand) + delta)
                     inventory.updated_at = get_local_now()
-                    mv_type = 'adjustment_in' if delta > 0 else 'adjustment_out'
-                    movement = InventoryMovement(
-                        inventory_id=inventory.id,
+                    mv_direction = 'in' if delta > 0 else 'out'
+                    movement = record_inventory_transaction(
+                        transaction_type='adjustment',
+                        direction=mv_direction,
+                        quantity=abs(delta),
                         product_id=item.product_id,
                         material_id=item.material_id,
-                        location_id=item.location_id,
-                        movement_type=mv_type,
-                        movement_date=get_local_now().date(),
-                        quantity=abs(delta),
+                        to_location_id=item.location_id if mv_direction == 'in' else None,
+                        from_location_id=item.location_id if mv_direction == 'out' else None,
                         reference_number=grn.grn_number,
                         reference_type='grn_inspection',
                         reference_id=grn.id,
@@ -950,7 +950,6 @@ def inspect_grn(grn_id):
                         notes=f"QC Inspection adjustment for GRN {grn.grn_number}",
                         created_by=user_id
                     )
-                    db.session.add(movement)
 
             total_accepted += new_accepted
             total_rejected += new_rejected

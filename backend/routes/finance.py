@@ -2522,6 +2522,143 @@ def update_inventory_account_settings():
         return jsonify({'error': str(e)}), 500
 
 
+# ============ GLOBAL ACCOUNT DEFAULTS (final-fallback GL account map - OBYC-style) ============
+# GlobalAccountDefault is the 3rd and final fallback level under item-override
+# and category-default (see utils/finance_helpers.py:resolve_account /
+# resolve_payroll_account). transaction_key is free text, not a DB enum - code
+# across the app resolves whatever key it needs (the 9 item slots, 7 payroll
+# keys, plus standalone keys like 'cash', 'accounts_payable',
+# 'depreciation_expense', 'beban_operasional', etc), so this config surface
+# lists whatever rows already exist and lets an admin add/edit any key by
+# name rather than restricting to one hardcoded list.
+_GLOBAL_DEFAULT_KEY_REFERENCE = [
+    {'key': 'akun_persediaan_id', 'label': 'Akun Persediaan (fallback global)'},
+    {'key': 'akun_penjualan_id', 'label': 'Akun Penjualan (fallback global)'},
+    {'key': 'akun_retur_penjualan_id', 'label': 'Akun Retur Penjualan (fallback global)'},
+    {'key': 'akun_diskon_penjualan_id', 'label': 'Akun Diskon Penjualan (fallback global)'},
+    {'key': 'akun_barang_terkirim_id', 'label': 'Akun Barang Terkirim (fallback global)'},
+    {'key': 'akun_hpp_id', 'label': 'Akun HPP (fallback global)'},
+    {'key': 'akun_retur_pembelian_id', 'label': 'Akun Retur Pembelian (fallback global)'},
+    {'key': 'akun_beban_id', 'label': 'Akun Beban (fallback global)'},
+    {'key': 'akun_pembelian_belum_tertagih_id', 'label': 'Akun Pembelian Belum Tertagih (fallback global)'},
+    {'key': 'payroll_expense', 'label': 'Beban Gaji (Payroll)'},
+    {'key': 'payroll_pph21_expense', 'label': 'Beban PPh 21 (Payroll)'},
+    {'key': 'payroll_tax_payable', 'label': 'Hutang PPh 21 (Payroll)'},
+    {'key': 'payroll_insurance_payable', 'label': 'Hutang BPJS (Payroll)'},
+    {'key': 'payroll_pension_payable', 'label': 'Hutang Dana Pensiun (Payroll)'},
+    {'key': 'payroll_other_deduction_payable', 'label': 'Hutang Potongan Lain (Payroll)'},
+    {'key': 'payroll_net_payable', 'label': 'Hutang Gaji Bersih (Payroll)'},
+    {'key': 'cash', 'label': 'Kas (default, dipakai saat tidak ada supplier/kas eksplisit)'},
+    {'key': 'accounts_payable', 'label': 'Hutang Usaha'},
+    {'key': 'accounts_receivable', 'label': 'Piutang Usaha'},
+    {'key': 'aset_tetap', 'label': 'Aset Tetap (akuisisi)'},
+    {'key': 'accumulated_depreciation', 'label': 'Akumulasi Penyusutan'},
+    {'key': 'akumulasi_penyusutan', 'label': 'Akumulasi Penyusutan (alias lama)'},
+    {'key': 'depreciation_expense', 'label': 'Beban Penyusutan'},
+    {'key': 'beban_operasional', 'label': 'Beban Operasional'},
+    {'key': 'persediaan', 'label': 'Persediaan (alias lama, lihat juga akun_persediaan_id)'},
+    {'key': 'hutang_karyawan', 'label': 'Hutang Karyawan'},
+]
+
+
+@finance_bp.route('/account-preferences/global-defaults', methods=['GET'])
+@jwt_required()
+@require_permission('finance.view')
+def get_global_account_defaults():
+    try:
+        from models.finance import GlobalAccountDefault, Account
+
+        rows = GlobalAccountDefault.query.order_by(GlobalAccountDefault.transaction_key).all()
+        account_ids = {row.account_id for row in rows if row.account_id}
+        accounts_by_id = {
+            a.id: a for a in Account.query.filter(Account.id.in_(account_ids)).all()
+        } if account_ids else {}
+        configured = {
+            row.transaction_key: {
+                'transaction_key': row.transaction_key,
+                'account_id': row.account_id,
+                'account_code': accounts_by_id[row.account_id].account_code if row.account_id in accounts_by_id else None,
+                'account_name': accounts_by_id[row.account_id].account_name if row.account_id in accounts_by_id else None,
+                'description': row.description,
+            }
+            for row in rows
+        }
+
+        # Merge in the known-key reference list so the UI can show
+        # not-yet-configured keys (account_id: None) alongside real rows,
+        # without hiding rows for keys outside the reference list either.
+        reference_keys = {r['key'] for r in _GLOBAL_DEFAULT_KEY_REFERENCE}
+        result = []
+        for ref in _GLOBAL_DEFAULT_KEY_REFERENCE:
+            entry = configured.pop(ref['key'], {
+                'transaction_key': ref['key'], 'account_id': None,
+                'account_code': None, 'account_name': None, 'description': None,
+            })
+            entry['known_label'] = ref['label']
+            result.append(entry)
+        # Any remaining configured rows use a key outside the reference list
+        # (set up directly via API/DB previously) - still show them.
+        for key, entry in configured.items():
+            entry['known_label'] = None
+            result.append(entry)
+
+        return jsonify({'defaults': result}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@finance_bp.route('/account-preferences/global-defaults/<string:transaction_key>', methods=['PUT'])
+@jwt_required()
+@require_permission('accounting.edit')
+def update_global_account_default(transaction_key):
+    try:
+        from models.finance import GlobalAccountDefault
+
+        data = request.get_json() or {}
+        account_id = data.get('account_id')
+        if not account_id:
+            return jsonify({'error': 'account_id wajib diisi'}), 400
+
+        row = GlobalAccountDefault.query.filter_by(transaction_key=transaction_key).first()
+        if not row:
+            row = GlobalAccountDefault(transaction_key=transaction_key)
+            db.session.add(row)
+
+        row.account_id = account_id
+        if 'description' in data:
+            row.description = data['description']
+
+        db.session.commit()
+
+        return jsonify({
+            'transaction_key': row.transaction_key,
+            'account_id': row.account_id,
+            'description': row.description,
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@finance_bp.route('/account-preferences/global-defaults/<string:transaction_key>', methods=['DELETE'])
+@jwt_required()
+@require_permission('accounting.edit')
+def delete_global_account_default(transaction_key):
+    try:
+        from models.finance import GlobalAccountDefault
+
+        row = GlobalAccountDefault.query.filter_by(transaction_key=transaction_key).first()
+        if not row:
+            return jsonify({'error': 'Not found'}), 404
+
+        db.session.delete(row)
+        db.session.commit()
+        return jsonify({'message': 'Deleted'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
 # ============ EXCHANGE RATES ============
 @finance_bp.route('/exchange-rates/sync-cron', methods=['POST'])
 def sync_exchange_rates_cron():

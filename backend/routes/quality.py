@@ -3,7 +3,8 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.auth_decorators import require_permission
 from models import db, QualityTest, QualityInspection, CAPA, QualityStandard
 from models.production import WorkOrder
-from models.warehouse import Inventory, InventoryMovement, WarehouseLocation
+from models.warehouse import Inventory, WarehouseLocation
+from utils.inventory_helpers import record_inventory_transaction
 from utils.i18n import success_response, error_response, get_message
 from utils import generate_number
 from datetime import datetime
@@ -756,13 +757,12 @@ def transfer_qc_to_warehouse(inspection_id):
         db.session.flush()
         
         # Create inventory movement record
-        movement = InventoryMovement(
-            inventory_id=inventory.id,
-            product_id=inspection.product_id,
-            location_id=location_id,
-            movement_type='stock_in',
-            movement_date=get_local_now().date(),
+        movement = record_inventory_transaction(
+            transaction_type='stock_in',
+            direction='in',
             quantity=quantity,
+            product_id=inspection.product_id,
+            to_location_id=location_id,
             reference_type='qc_inspection',
             reference_id=inspection.id,
             reference_number=inspection.inspection_number,
@@ -770,7 +770,6 @@ def transfer_qc_to_warehouse(inspection_id):
             notes=f'Transfer from QC - {inspection.disposition.upper()}',
             created_by=user_id
         )
-        db.session.add(movement)
         
         # Update inspection
         inspection.transferred_to_warehouse = True

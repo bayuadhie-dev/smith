@@ -674,7 +674,8 @@ def approve_purchase_return(id):
         # flipped status flags with zero accounting or stock impact, so goods
         # marked "returned" never actually left inventory and the supplier's
         # payable balance stayed as if nothing happened. Fixed 2026-09-11.
-        from models import Inventory, InventoryMovement
+        from models import Inventory
+        from utils.inventory_helpers import record_inventory_transaction
         from models.finance import GlobalAccountDefault
         from models.approval_workflow import PendingJournalEntry
         from utils.finance_helpers import post_pending_journal, resolve_accounts_payable
@@ -695,20 +696,19 @@ def approve_purchase_return(id):
             inv.quantity_on_hand = float(inv.quantity_on_hand) - quantity
             inv.quantity_available = float(inv.quantity_available) - quantity
             inv.updated_at = get_local_now()
-            db.session.add(InventoryMovement(
-                inventory_id=inv.id,
+            record_inventory_transaction(
+                transaction_type='stock_out',
+                direction='out',
+                quantity=quantity,
                 product_id=item.product_id,
                 material_id=item.material_id,
-                location_id=inv.location_id,
-                movement_type='stock_out',
-                movement_date=get_local_now().date(),
-                quantity=quantity,
+                from_location_id=inv.location_id,
                 reference_number=return_obj.return_number,
                 reference_type='purchase_return',
                 reference_id=return_obj.id,
                 notes=f"Retur pembelian {return_obj.return_number}",
                 created_by=user_id
-            ))
+            )
 
         invoice = db.session.get(Invoice, return_obj.invoice_id) if return_obj.invoice_id else None
         return_total = float(return_obj.total_amount or 0)

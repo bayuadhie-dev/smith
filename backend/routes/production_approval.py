@@ -634,7 +634,8 @@ def approve_production(id):
         # Move stock from WIP to Master Inventory (Gudang Finished Goods)
         try:
             from models.production import WIPStock, WIPStockMovement
-            from models.warehouse import Inventory, InventoryMovement
+            from models.warehouse import Inventory
+            from utils.inventory_helpers import record_inventory_transaction
             
             wo = approval.work_order
             if wo and wo.product_id:
@@ -690,18 +691,21 @@ def approve_production(id):
                 inv.updated_at = get_local_now()
                 
                 # Record Inventory In Movement
-                db.session.add(InventoryMovement(
-                    inventory_id=inv.id,
-                    movement_type='in',
+                # was using non-existent field on old InventoryMovement model, mapped to correct equivalent
+                record_inventory_transaction(
+                    transaction_type='production_receipt',
+                    direction='in',
                     quantity=qty_to_move,
-                    prev_quantity=old_qty,
-                    new_quantity=inv.quantity_on_hand,
+                    product_id=wo.product_id,
+                    to_location_id=inv.location_id,
+                    balance_before=old_qty,
+                    balance_after=inv.quantity_on_hand,
                     reference_type='production_approval',
                     reference_id=approval.id,
                     reference_number=approval.approval_number,
                     notes=f'Penerimaan hasil produksi WO {wo.wo_number}',
                     created_by=user_id
-                ))
+                )
         except Exception as stock_err:
             print(f"Error in stock synchronization: {stock_err}")
             # We don't rollback the whole approval if stock sync fails, 

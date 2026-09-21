@@ -732,6 +732,9 @@ def get_transactions():
         wo_id = request.args.get('work_order_id', type=int)
         product_id = request.args.get('product_id', type=int)
         material_id = request.args.get('material_id', type=int)
+        location_id = request.args.get('location_id', type=int)
+        reference_type = request.args.get('reference_type')
+        batch_number = request.args.get('batch_number')
         direction = request.args.get('direction')
         start_date = request.args.get('start_date')
         end_date = request.args.get('end_date')
@@ -749,6 +752,15 @@ def get_transactions():
             query = query.filter_by(product_id=product_id)
         if material_id:
             query = query.filter_by(material_id=material_id)
+        if location_id:
+            query = query.filter(or_(
+                InventoryTransaction.from_location_id == location_id,
+                InventoryTransaction.to_location_id == location_id,
+            ))
+        if reference_type:
+            query = query.filter_by(reference_type=reference_type)
+        if batch_number:
+            query = query.filter(InventoryTransaction.batch_number.ilike(f'%{batch_number}%'))
         if direction:
             query = query.filter_by(direction=direction)
         if start_date:
@@ -1731,4 +1743,76 @@ def submit_adjustment_for_approval(id):
         return jsonify({'message': 'Adjustment submitted for approval', 'workflow_id': workflow.id}), 200
     except Exception as e:
         db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+# ============================================================
+# TRANSACTIONS SUMMARY (aggregate strip for the existing Transaksi Stok page)
+# ============================================================
+@wms_advanced_bp.route('/transactions/summary', methods=['GET'])
+@jwt_required()
+@require_permission('warehouse.view')
+def get_transactions_summary():
+    """Aggregate quantity in/out per transaction_type, for the same filters
+    accepted by GET /transactions (minus pagination), to drive a summary
+    strip above that page's detail table."""
+    try:
+        txn_type = request.args.get('type')
+        product_id = request.args.get('product_id', type=int)
+        material_id = request.args.get('material_id', type=int)
+        location_id = request.args.get('location_id', type=int)
+        reference_type = request.args.get('reference_type')
+        batch_number = request.args.get('batch_number')
+        start_date = request.args.get('start_date')
+        end_date = request.args.get('end_date')
+
+        query = db.session.query(
+            InventoryTransaction.transaction_type,
+            InventoryTransaction.direction,
+            func.sum(InventoryTransaction.quantity).label('total_qty'),
+            func.count(InventoryTransaction.id).label('count'),
+        )
+
+        if txn_type:
+            query = query.filter(InventoryTransaction.transaction_type == txn_type)
+        if product_id:
+            query = query.filter(InventoryTransaction.product_id == product_id)
+        if material_id:
+            query = query.filter(InventoryTransaction.material_id == material_id)
+        if location_id:
+            query = query.filter(or_(
+                InventoryTransaction.from_location_id == location_id,
+                InventoryTransaction.to_location_id == location_id,
+            ))
+        if reference_type:
+            query = query.filter(InventoryTransaction.reference_type == reference_type)
+        if batch_number:
+            query = query.filter(InventoryTransaction.batch_number.ilike(f'%{batch_number}%'))
+        if start_date:
+            query = query.filter(InventoryTransaction.transaction_date >= datetime.fromisoformat(start_date))
+        if end_date:
+            query = query.filter(InventoryTransaction.transaction_date <= datetime.fromisoformat(end_date))
+
+        rows = query.group_by(
+            InventoryTransaction.transaction_type, InventoryTransaction.direction
+        ).all()
+
+        total_in = sum(float(r.total_qty or 0) for r in rows if r.direction == 'in')
+        total_out = sum(float(r.total_qty or 0) for r in rows if r.direction == 'out')
+
+        return jsonify({
+            'total_in': total_in,
+            'total_out': total_out,
+            'net': total_in - total_out,
+            'by_type': [
+                {
+                    'transaction_type': r.transaction_type,
+                    'direction': r.direction,
+                    'quantity': float(r.total_qty or 0),
+                    'count': r.count,
+                }
+                for r in rows
+            ],
+        }), 200
+    except Exception as e:
         return jsonify({'error': str(e)}), 500

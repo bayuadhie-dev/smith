@@ -1500,6 +1500,7 @@ def update_work_order_status(id):
             # as consumed even though production never happened.
             from models.material_issue import MaterialIssue
             from models.warehouse import Inventory, InventoryMovement
+            from utils.inventory_helpers import record_inventory_transaction
 
             reversed_count = 0
             issues = MaterialIssue.query.filter(
@@ -1517,14 +1518,13 @@ def update_work_order_status(id):
                     inv.quantity_on_hand = float(inv.quantity_on_hand) + float(mv.quantity)
                     inv.quantity_available = float(inv.quantity_available or 0) + float(mv.quantity)
                     inv.updated_at = datetime.utcnow()
-                    reversal = InventoryMovement(
-                        inventory_id=inv.id,
+                    reversal = record_inventory_transaction(
+                        transaction_type='stock_in',
+                        direction='in',
+                        quantity=mv.quantity,
                         product_id=mv.product_id,
                         material_id=mv.material_id,
-                        location_id=mv.location_id,
-                        movement_type='stock_in',
-                        movement_date=datetime.utcnow().date(),
-                        quantity=mv.quantity,
+                        to_location_id=mv.location_id,
                         reference_number=wo.wo_number,
                         reference_type='wo_cancellation_reversal',
                         reference_id=wo.id,
@@ -1535,7 +1535,6 @@ def update_work_order_status(id):
                         notes=f'Reversal: WO {wo.wo_number} dibatalkan setelah material issue {mi.issue_number}',
                         created_by=get_jwt_identity()
                     )
-                    db.session.add(reversal)
                     reversed_count += 1
                 mi.status = 'cancelled'
             integration_results['material_reversal'] = {
@@ -1927,7 +1926,8 @@ def create_work_order_production_record(id):
         # Add buffer stock to inventory as finished goods
         if buffer_stock_qty > 0:
             from models.warehouse import Inventory, InventoryMovement, WarehouseLocation, WarehouseZone
-            
+            from utils.inventory_helpers import record_inventory_transaction
+
             # Find or create inventory for this product
             # First try to find existing inventory for this product
             inventory = Inventory.query.filter_by(
@@ -1966,17 +1966,17 @@ def create_work_order_production_record(id):
                 inventory.updated_at = datetime.utcnow()
                 
                 # Create inventory movement for buffer stock
-                buffer_movement = InventoryMovement(
-                    inventory_id=inventory.id,
-                    movement_type='stock_in',
-                    movement_date=production_date,
+                buffer_movement = record_inventory_transaction(
+                    transaction_type='stock_in',
+                    direction='in',
                     quantity=buffer_stock_qty,
+                    product_id=inventory.product_id,
+                    to_location_id=inventory.location_id,
                     reference_number=wo.wo_number,
                     reference_type='buffer_stock',
                     notes=f'Buffer stock dari WO {wo.wo_number} - produksi melebihi target',
                     created_by=user_id
                 )
-                db.session.add(buffer_movement)
             # Flush buffer stock changes now, in a controlled manner,
             # before any later query (e.g. Machine lookup) triggers autoflush
             db.session.flush()
@@ -2309,6 +2309,7 @@ def start_work_order(id):
     try:
         from models.material_issue import MaterialIssue, MaterialIssueItem
         from models.warehouse import Inventory, InventoryMovement
+        from utils.inventory_helpers import record_inventory_transaction
         from models.production import BillOfMaterials
         from models.wip_job_costing import WIPBatch, JobCostEntry
         from models.product import Material
@@ -2397,20 +2398,6 @@ def start_work_order(id):
                             inv.quantity_available = float(inv.quantity_available) - issue_qty
                         inv.updated_at = datetime.utcnow()
                         
-                        # Create stock_out movement from source
-                        movement_out = InventoryMovement(
-                            inventory_id=inv.id,
-                            movement_type='transfer_out',
-                            movement_date=datetime.utcnow().date(),
-                            quantity=issue_qty,
-                            reference_number=issue_number,
-                            reference_type='material_issue',
-                            batch_number=inv.batch_number,
-                            notes=f'Transfer to production for WO {wo.wo_number}',
-                            created_by=user_id
-                        )
-                        db.session.add(movement_out)
-                        
                         # If production location exists, create inventory there
                         if production_location:
                             # Check if inventory already exists in production location
@@ -2439,21 +2426,36 @@ def start_work_order(id):
                                 db.session.add(prod_inv)
                             
                             db.session.flush()
-                            
-                            # Create transfer_in movement to production
-                            movement_in = InventoryMovement(
-                                inventory_id=prod_inv.id,
-                                movement_type='transfer_in',
-                                movement_date=datetime.utcnow().date(),
+
+                            # Single transfer transaction: source -> production location
+                            movement = record_inventory_transaction(
+                                transaction_type='transfer',
+                                direction='out',
                                 quantity=issue_qty,
+                                material_id=bom_item.material_id,
+                                from_location_id=source_location_id,
+                                to_location_id=production_location.id,
                                 reference_number=issue_number,
                                 reference_type='material_issue',
                                 batch_number=inv.batch_number,
-                                notes=f'Received from storage for WO {wo.wo_number}',
+                                notes=f'Transfer to production for WO {wo.wo_number}',
                                 created_by=user_id
                             )
-                            db.session.add(movement_in)
-                        
+                        else:
+                            # No production location configured - record as plain stock_out
+                            movement = record_inventory_transaction(
+                                transaction_type='transfer',
+                                direction='out',
+                                quantity=issue_qty,
+                                material_id=bom_item.material_id,
+                                from_location_id=source_location_id,
+                                reference_number=issue_number,
+                                reference_type='material_issue',
+                                batch_number=inv.batch_number,
+                                notes=f'Transfer to production for WO {wo.wo_number}',
+                                created_by=user_id
+                            )
+
                         remaining_to_issue -= issue_qty
                     
                     # Calculate material cost
@@ -2623,6 +2625,7 @@ def cancel_batch_confirmation(batch_id):
         from models.batch_scheduling import ProductionBatch
         from models.material_issue import MaterialIssue, MaterialIssueItem
         from models.warehouse import Inventory, InventoryMovement
+        from utils.inventory_helpers import record_inventory_transaction
         from models.settings_extended import AuditLog
         from utils.fifo_helper import fifo_release_reservation
         import json as _json
@@ -2676,14 +2679,15 @@ def cancel_batch_confirmation(batch_id):
                 inv.quantity_on_hand = float(inv.quantity_on_hand) + float(mv.quantity)
                 inv.quantity_available = float(inv.quantity_available or 0) + float(mv.quantity)
                 inv.updated_at = get_local_now()
-                db.session.add(InventoryMovement(
-                    inventory_id=inv.id, product_id=mv.product_id, material_id=mv.material_id,
-                    location_id=mv.location_id, movement_type='stock_in', movement_date=get_local_now().date(),
-                    quantity=mv.quantity, reference_number=batch.batch_number,
+                record_inventory_transaction(
+                    transaction_type='stock_in', direction='in',
+                    quantity=mv.quantity, product_id=mv.product_id, material_id=mv.material_id,
+                    to_location_id=mv.location_id,
+                    reference_number=batch.batch_number,
                     reference_type='batch_confirmation_cancel', reference_id=batch_id,
                     batch_number=mv.batch_number, lot_number=mv.lot_number,
                     notes=f'Reversal: batalkan konfirmasi batch {batch.batch_number}', created_by=user_id,
-                ))
+                )
             mi.status = 'cancelled'
 
         # 3. Release reservations that were never actually issued.
@@ -3008,6 +3012,7 @@ def revert_completed_work_order(id):
     """
     try:
         from models.warehouse import Inventory, InventoryMovement, WarehouseLocation, WarehouseZone
+        from utils.inventory_helpers import record_inventory_transaction
         from models.shipping import ShippingOrder
 
         wo = db.session.get(WorkOrder, id)
@@ -3058,14 +3063,16 @@ def revert_completed_work_order(id):
             if qty <= 0:
                 continue
             consolidated_qty += qty
-            db.session.add(InventoryMovement(
-                inventory_id=row.id, product_id=row.product_id, material_id=row.material_id,
-                location_id=row.location_id, movement_type='qc_disposition',
-                movement_date=movement_date, quantity=qty,
+            status_before = row.stock_status
+            record_inventory_transaction(
+                transaction_type='qc_disposition', direction='out',
+                quantity=qty, product_id=row.product_id, material_id=row.material_id,
+                from_location_id=row.location_id,
                 reference_type='work_order_revert', reference_id=id,
-                batch_number=row.batch_number, status_before=row.stock_status, status_after='quarantine',
-                notes=f'Pembatalan SPK {wo.wo_number} - unrelease', created_by=user_id,
-            ))
+                batch_number=row.batch_number,
+                notes=f'Pembatalan SPK {wo.wo_number} - unrelease (status: {status_before} -> quarantine)',
+                created_by=user_id,
+            )
             row.quantity_on_hand = 0
             row.quantity_available = 0
             row.stock_status = 'quarantine'
@@ -3078,18 +3085,14 @@ def revert_completed_work_order(id):
         # full consolidated quantity, rather than leaving quantity spread
         # across now-empty rows at Gudang Barang Jadi.
         primary = fg_rows[0]
-        db.session.add(InventoryMovement(
-            inventory_id=primary.id, product_id=primary.product_id, location_id=primary.location_id,
-            movement_type='transfer_out', movement_date=movement_date, quantity=consolidated_qty,
+        primary_original_location_id = primary.location_id
+        record_inventory_transaction(
+            transaction_type='transfer', direction='out',
+            quantity=consolidated_qty, product_id=primary.product_id,
+            from_location_id=primary_original_location_id, to_location_id=prod_area_loc.id,
             reference_type='work_order_revert', reference_id=id, batch_number=primary.batch_number,
             notes=f'Pembatalan SPK {wo.wo_number} - transfer balik ke Area Produksi', created_by=user_id,
-        ))
-        db.session.add(InventoryMovement(
-            inventory_id=primary.id, product_id=primary.product_id, location_id=prod_area_loc.id,
-            movement_type='transfer_in', movement_date=movement_date, quantity=consolidated_qty,
-            reference_type='work_order_revert', reference_id=id, batch_number=primary.batch_number,
-            notes=f'Pembatalan SPK {wo.wo_number} - transfer balik ke Area Produksi', created_by=user_id,
-        ))
+        )
         primary.location_id = prod_area_loc.id
         primary.quantity_on_hand = consolidated_qty
         primary.quantity_available = 0

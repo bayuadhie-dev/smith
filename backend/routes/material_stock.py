@@ -10,7 +10,7 @@ from utils import generate_number
 from datetime import datetime
 from sqlalchemy import func, or_
 from utils.timezone import get_local_now, get_local_today
-from utils.inventory_helpers import resolve_initial_stock_status
+from utils.inventory_helpers import resolve_initial_stock_status, record_inventory_transaction
 
 material_stock_bp = Blueprint('material_stock', __name__)
 
@@ -231,19 +231,19 @@ def add_material_stock():
             reference = f'Initial Stock - {data.get("reference", "Manual Entry")}'
         
         # Create inventory movement record
-        movement = InventoryMovement(
-            inventory_id=inventory.id,
-            movement_type=movement_type,
+        movement = record_inventory_transaction(
+            transaction_type=movement_type,
+            direction='in',
             quantity=quantity,
-            quantity_before=old_quantity,
-            quantity_after=float(inventory.quantity_on_hand),
+            material_id=material_id,
+            to_location_id=location_id,
+            balance_before=old_quantity,
+            balance_after=float(inventory.quantity_on_hand),
             reference_type='manual_entry',
             reference_number=data.get('reference', 'MANUAL'),
             notes=data.get('notes'),
-            created_by=user_id,
-            movement_date=get_local_now()
+            created_by=user_id
         )
-        db.session.add(movement)
         
         db.session.commit()
         
@@ -265,54 +265,62 @@ def add_material_stock():
 @jwt_required()
 @require_permission('materials.view')
 def get_material_movements():
-    """Get material stock movements history"""
+    """Get material stock movements history.
+
+    Reads from the unified InventoryTransaction ledger (2026-09-21
+    migration) instead of the retired InventoryMovement table."""
     try:
+        from models.wms_advanced import InventoryTransaction
+
         material_id = request.args.get('material_id', type=int)
         location_id = request.args.get('location_id', type=int)
         start_date = request.args.get('start_date')
         end_date = request.args.get('end_date')
         limit = request.args.get('limit', 50, type=int)
-        
-        # Build query
-        query = db.session.query(InventoryMovement).join(Inventory)
-        
+
+        query = InventoryTransaction.query
+
         if material_id:
-            query = query.filter(Inventory.material_id == material_id)
-        
+            query = query.filter(InventoryTransaction.material_id == material_id)
+
         if location_id:
-            query = query.filter(Inventory.location_id == location_id)
-        
+            query = query.filter(or_(
+                InventoryTransaction.from_location_id == location_id,
+                InventoryTransaction.to_location_id == location_id,
+            ))
+
         if start_date:
-            query = query.filter(InventoryMovement.movement_date >= datetime.fromisoformat(start_date))
-        
+            query = query.filter(InventoryTransaction.transaction_date >= datetime.fromisoformat(start_date))
+
         if end_date:
-            query = query.filter(InventoryMovement.movement_date <= datetime.fromisoformat(end_date))
-        
-        movements = query.order_by(InventoryMovement.movement_date.desc()).limit(limit).all()
-        
+            query = query.filter(InventoryTransaction.transaction_date <= datetime.fromisoformat(end_date))
+
+        movements = query.order_by(InventoryTransaction.transaction_date.desc()).limit(limit).all()
+
         result = []
         for mov in movements:
+            location = mov.to_location or mov.from_location
             result.append({
                 'id': mov.id,
-                'movement_date': mov.movement_date.isoformat() if mov.movement_date else None,
-                'movement_type': mov.movement_type,
-                'material_code': mov.inventory.material.code if mov.inventory and mov.inventory.material else None,
-                'material_name': mov.inventory.material.name if mov.inventory and mov.inventory.material else None,
-                'location': mov.inventory.location.location_code if mov.inventory and mov.inventory.location else None,
+                'movement_date': mov.transaction_date.isoformat() if mov.transaction_date else None,
+                'movement_type': mov.transaction_type,
+                'material_code': mov.material.code if mov.material else None,
+                'material_name': mov.material.name if mov.material else None,
+                'location': location.location_code if location else None,
                 'quantity': float(mov.quantity or 0),
-                'quantity_before': float(mov.quantity_before or 0),
-                'quantity_after': float(mov.quantity_after or 0),
+                'quantity_before': float(mov.balance_before or 0),
+                'quantity_after': float(mov.balance_after or 0),
                 'reference_type': mov.reference_type,
                 'reference_number': mov.reference_number,
                 'notes': mov.notes,
                 'created_by': mov.created_by_user.full_name if mov.created_by_user else None
             })
-        
+
         return jsonify({
             'movements': result,
             'total': len(result)
         }), 200
-        
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

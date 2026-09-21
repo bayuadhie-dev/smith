@@ -297,7 +297,8 @@ def update_maintenance_record(record_id):
                 # Deduct spare parts from inventory when maintenance is completed
                 if record.parts_used:
                     try:
-                        from models import Inventory, InventoryMovement
+                        from models import Inventory
+                        from utils.inventory_helpers import record_inventory_transaction
                         import json
                         parts = json.loads(record.parts_used)
                         
@@ -324,20 +325,18 @@ def update_maintenance_record(record_id):
                                     inv.updated_at = get_local_now()
                                     
                                     # Record movement
-                                    movement = InventoryMovement(
-                                        inventory_id=inv.id,
-                                        material_id=material_id,
-                                        location_id=inv.location_id,
-                                        movement_type='stock_out',
-                                        movement_date=get_local_now().date(),
+                                    movement = record_inventory_transaction(
+                                        transaction_type='stock_out',
+                                        direction='out',
                                         quantity=usage_qty,
+                                        material_id=material_id,
+                                        from_location_id=inv.location_id,
                                         reference_number=record.record_number,
                                         reference_type='work_order',
                                         reference_id=record.id,
                                         notes=f"Used for maintenance {record.record_number}",
                                         created_by=get_jwt_identity()
                                     )
-                                    db.session.add(movement)
                     except Exception as pe:
                         # Log error but don't fail the whole request
                         print(f"Error processing maintenance inventory: {pe}")

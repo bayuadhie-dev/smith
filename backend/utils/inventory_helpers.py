@@ -1,6 +1,67 @@
 VALID_STOCK_STATUSES = {'available', 'released', 'quarantine', 'reject'}
 
 
+def record_inventory_transaction(
+    transaction_type, direction, quantity,
+    product_id=None, material_id=None,
+    from_location_id=None, to_location_id=None,
+    batch_number=None, lot_number=None,
+    reference_type=None, reference_id=None, reference_number=None,
+    work_order_id=None, machine_id=None, shift=None, production_record_id=None,
+    unit_cost=None, total_cost=None,
+    balance_before=None, balance_after=None,
+    status='completed', notes=None, created_by=None,
+):
+    """Single entry point for writing to InventoryTransaction - the unified
+    stock ledger (2026-09-21 migration, replaces the old per-module
+    InventoryMovement() constructor calls scattered across 18 files).
+
+    direction must be 'in' or 'out'. transaction_type is free text (the
+    column has no DB-level enum constraint) - use a value that describes the
+    actual business action (e.g. 'goods_receipt', 'material_issue',
+    'transfer', 'qc_disposition', 'wo_cancellation_reversal') rather than
+    forcing everything into the handful of types the model docstring lists.
+
+    Returns the created (uncommitted) InventoryTransaction - caller adds it
+    to the session (this function does that) and commits as part of its own
+    transaction, same contract as apply_qc_disposition_splits() below.
+    """
+    from models import db
+    from models.wms_advanced import InventoryTransaction
+    from utils.helpers import generate_number
+    from utils.timezone import get_local_now
+
+    txn = InventoryTransaction(
+        transaction_number=generate_number('TXN', InventoryTransaction, 'transaction_number'),
+        transaction_type=transaction_type,
+        transaction_date=get_local_now(),
+        product_id=product_id,
+        material_id=material_id,
+        quantity=quantity,
+        direction=direction,
+        from_location_id=from_location_id,
+        to_location_id=to_location_id,
+        batch_number=batch_number,
+        lot_number=lot_number,
+        reference_type=reference_type,
+        reference_id=reference_id,
+        reference_number=reference_number,
+        work_order_id=work_order_id,
+        machine_id=machine_id,
+        shift=shift,
+        production_record_id=production_record_id,
+        unit_cost=unit_cost,
+        total_cost=total_cost,
+        balance_before=balance_before,
+        balance_after=balance_after,
+        status=status,
+        notes=notes,
+        created_by=created_by,
+    )
+    db.session.add(txn)
+    return txn
+
+
 def apply_qc_disposition_splits(inventory_id, splits, user_id, reference_type=None, reference_id=None, notes=None):
     """Move part or all of a batch's quantity from its current stock_status to
     one or more destination statuses - the MB1A/MB1B-style partial QC
@@ -31,7 +92,7 @@ def apply_qc_disposition_splits(inventory_id, splits, user_id, reference_type=No
             requested quantity exceeds what's actually on hand.
     """
     from models import db
-    from models.warehouse import Inventory, InventoryMovement
+    from models.warehouse import Inventory
     from utils.timezone import get_local_now
 
     source = db.session.get(Inventory, inventory_id)
@@ -102,23 +163,20 @@ def apply_qc_disposition_splits(inventory_id, splits, user_id, reference_type=No
         # passes a same-status split (harmless no-op on Inventory, real
         # record in history).
 
-        movement = InventoryMovement(
-            inventory_id=source.id,
+        movement = record_inventory_transaction(
+            transaction_type='qc_disposition',
+            direction='out' if status == 'reject' else 'in',
+            quantity=quantity,
             product_id=source.product_id,
             material_id=source.material_id,
-            location_id=source.location_id,
-            movement_type='qc_disposition',
-            movement_date=get_local_now().date(),
-            quantity=quantity,
+            from_location_id=source.location_id,
+            to_location_id=source.location_id,
+            batch_number=source.batch_number,
             reference_type=reference_type,
             reference_id=reference_id,
-            batch_number=source.batch_number,
-            status_before=status_before,
-            status_after=status,
-            notes=notes,
+            notes=notes or f'QC disposition: {status_before} -> {status}',
             created_by=user_id,
         )
-        db.session.add(movement)
         movements.append(movement)
 
     return movements

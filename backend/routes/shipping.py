@@ -129,7 +129,8 @@ def create_shipping_order():
         db.session.add(order)
         db.session.flush()
 
-        from models import Inventory, InventoryMovement
+        from models import Inventory
+        from utils.inventory_helpers import record_inventory_transaction
 
         for item_data in data.get('items', []):
             item = ShippingItem(
@@ -167,13 +168,12 @@ def create_shipping_order():
                 inv.quantity_available = float(inv.quantity_available) - quantity
                 inv.updated_at = get_local_now()
 
-                movement = InventoryMovement(
-                    inventory_id=inv.id,
-                    product_id=item_data['product_id'],
-                    location_id=inv.location_id,
-                    movement_type='stock_out',
-                    movement_date=get_local_now().date(),
+                movement = record_inventory_transaction(
+                    transaction_type='stock_out',
+                    direction='out',
                     quantity=quantity,
+                    product_id=item_data['product_id'],
+                    from_location_id=inv.location_id,
                     reference_number=shipping_number,
                     reference_type='sales_order',
                     reference_id=order.id,
@@ -181,7 +181,6 @@ def create_shipping_order():
                     notes=f"Shipped via {shipping_number}",
                     created_by=user_id
                 )
-                db.session.add(movement)
 
         db.session.commit()
         return jsonify({'message': 'Shipping order created', 'shipping_id': order.id}), 201
@@ -793,8 +792,9 @@ def create_shipping_from_qc():
         work_order.status = 'shipped'
         
         # ============= INVENTORY INTEGRATION (A-004) =============
-        from models import Inventory, InventoryMovement
-        
+        from models import Inventory
+        from utils.inventory_helpers import record_inventory_transaction
+
         # Deduct from inventory (Finished Goods Warehouse, Location ID 3 is default for FG)
         # We try to find match by product and batch
         inv = Inventory.query.filter_by(
@@ -823,13 +823,12 @@ def create_shipping_from_qc():
             inv.updated_at = get_local_now()
             
             # Record movement
-            movement = InventoryMovement(
-                inventory_id=inv.id,
-                product_id=work_order.product_id,
-                location_id=inv.location_id,
-                movement_type='stock_out',
-                movement_date=get_local_now().date(),
+            movement = record_inventory_transaction(
+                transaction_type='stock_out',
+                direction='out',
                 quantity=quantity,
+                product_id=work_order.product_id,
+                from_location_id=inv.location_id,
                 reference_number=shipping_number,
                 reference_type='sales_order',
                 reference_id=shipping_order.id,
@@ -837,7 +836,6 @@ def create_shipping_from_qc():
                 notes=f"Shipped from WO {work_order.wo_number}",
                 created_by=user_id
             )
-            db.session.add(movement)
         
         db.session.commit()
         

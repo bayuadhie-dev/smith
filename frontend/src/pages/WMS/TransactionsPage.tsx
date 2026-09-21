@@ -10,6 +10,29 @@ import {
   FunnelIcon,
 } from '@heroicons/react/24/outline';
 
+const REFERENCE_TYPE_LABELS: Record<string, string> = {
+  purchase_order: 'Purchase Order',
+  grn_inspection: 'GRN Inspection',
+  work_order: 'Work Order',
+  material_issue: 'Material Issue',
+  sales_order: 'Sales Order',
+  transfer_order: 'Transfer Gudang',
+  purchase_return: 'Retur Pembelian',
+  stock_opname: 'Stock Opname',
+  qc_inspection: 'QC Inspection',
+  fg_conversion: 'FG Conversion',
+  work_order_revert: 'Pembatalan SPK',
+  wo_cancellation_reversal: 'Pembatalan SPK',
+  batch_confirmation_cancel: 'Pembatalan Konfirmasi Batch',
+  production_buffer: 'Buffer Produksi',
+  shift_production: 'Produksi Shift',
+  inventory_adjustment: 'Penyesuaian Stok',
+  manual_input: 'Input Manual',
+  quick_add: 'Tambah Cepat',
+  manual_entry: 'Entry Manual',
+  production_approval: 'Approval Produksi',
+};
+
 interface Transaction {
   id: number;
   transaction_number: string;
@@ -54,20 +77,40 @@ const TransactionsPage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
   const [directionFilter, setDirectionFilter] = useState('');
+  const [referenceTypeFilter, setReferenceTypeFilter] = useState('');
+  const [batchFilter, setBatchFilter] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [summary, setSummary] = useState<{ total_in: number; total_out: number; net: number } | null>(null);
+
+  const buildParams = () => {
+    const params: any = {};
+    if (search) params.search = search;
+    if (typeFilter) params.type = typeFilter;
+    if (directionFilter) params.direction = directionFilter;
+    if (referenceTypeFilter) params.reference_type = referenceTypeFilter;
+    if (batchFilter) params.batch_number = batchFilter;
+    if (startDate) params.start_date = startDate;
+    if (endDate) params.end_date = endDate;
+    return params;
+  };
 
   useEffect(() => {
     fetchData();
-  }, [page, typeFilter, directionFilter]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, typeFilter, directionFilter, referenceTypeFilter, batchFilter, startDate, endDate]);
+
+  useEffect(() => {
+    fetchSummary();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [typeFilter, directionFilter, referenceTypeFilter, batchFilter, startDate, endDate]);
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      const params: any = { page, per_page: 50 };
-      if (search) params.search = search;
-      if (typeFilter) params.type = typeFilter;
-      if (directionFilter) params.direction = directionFilter;
+      const params = { ...buildParams(), page, per_page: 50 };
       const res = await axiosInstance.get('/api/wms/transactions', { params });
       setData(res.data.transactions);
       setTotalPages(res.data.pagination.pages);
@@ -75,6 +118,15 @@ const TransactionsPage: React.FC = () => {
       toast.error('Gagal memuat transaksi');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchSummary = async () => {
+    try {
+      const res = await axiosInstance.get('/api/wms/transactions/summary', { params: buildParams() });
+      setSummary(res.data);
+    } catch (err: any) {
+      // non-critical, ignore
     }
   };
 
@@ -94,8 +146,35 @@ const TransactionsPage: React.FC = () => {
         <p className="text-gray-500 mt-1">Log semua pergerakan stok — terintegrasi dengan Produksi, PO, SO, dan Transfer</p>
       </div>
 
+      {/* Summary strip */}
+      {summary && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center gap-2 text-green-600">
+              <ArrowDownIcon className="h-5 w-5" />
+              <span className="text-sm font-medium">Total Masuk</span>
+            </div>
+            <div className="text-2xl font-bold text-gray-900 mt-1">{summary.total_in.toLocaleString('id-ID')}</div>
+          </div>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center gap-2 text-red-600">
+              <ArrowUpIcon className="h-5 w-5" />
+              <span className="text-sm font-medium">Total Keluar</span>
+            </div>
+            <div className="text-2xl font-bold text-gray-900 mt-1">{summary.total_out.toLocaleString('id-ID')}</div>
+          </div>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center gap-2 text-blue-600">
+              <FunnelIcon className="h-5 w-5" />
+              <span className="text-sm font-medium">Selisih Bersih</span>
+            </div>
+            <div className="text-2xl font-bold text-gray-900 mt-1">{summary.net.toLocaleString('id-ID')}</div>
+          </div>
+        </div>
+      )}
+
       {/* Filters */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 space-y-3">
         <div className="flex flex-wrap items-center gap-3">
           <form onSubmit={handleSearch} className="flex-1 min-w-[200px]">
             <div className="relative">
@@ -131,6 +210,38 @@ const TransactionsPage: React.FC = () => {
               <option value="out">Keluar</option>
             </select>
           </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <select
+            value={referenceTypeFilter}
+            onChange={(e) => { setReferenceTypeFilter(e.target.value); setPage(1); }}
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+          >
+            <option value="">Semua Dokumen Sumber</option>
+            {Object.entries(REFERENCE_TYPE_LABELS).map(([value, label]) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+          </select>
+          <input
+            type="text"
+            placeholder="No. Batch"
+            value={batchFilter}
+            onChange={(e) => { setBatchFilter(e.target.value); setPage(1); }}
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+          />
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => { setStartDate(e.target.value); setPage(1); }}
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+          />
+          <span className="text-gray-400 text-sm">s/d</span>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => { setEndDate(e.target.value); setPage(1); }}
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+          />
         </div>
       </div>
 

@@ -45,6 +45,7 @@ const AccountPreferences: React.FC = () => {
     { id: 'perusahaan', name: 'Perusahaan' },
     { id: 'persediaan', name: 'Persediaan' },
     { id: 'penomoran', name: 'Penomoran Dokumen' },
+    { id: 'global', name: 'Default Akhir (Global)' },
   ];
 
   return (
@@ -130,6 +131,7 @@ const AccountPreferences: React.FC = () => {
               />
             )}
             {activeTab === 'penomoran' && <NomorDokumenTab />}
+            {activeTab === 'global' && <GlobalDefaultsTab />}
           </div>
         </div>
       </div>
@@ -500,6 +502,247 @@ const NomorDokumenTab: React.FC = () => {
         >
           Tambah
         </button>
+      </div>
+    </div>
+  );
+};
+
+/**
+ * "Default Akhir (Global)" tab: the 3rd and final fallback level under
+ * item-override and category-default (GlobalAccountDefault, resolved by
+ * utils/finance_helpers.py:resolve_account / resolve_payroll_account).
+ * Conceptually the closest SMITH ERP equivalent to SAP's OBYC - a flat
+ * transaction_key -> GL account map used whenever nothing more specific
+ * was configured. transaction_key is free text (no DB enum), so this UI
+ * shows every key already configured in the DB plus a reference list of
+ * every key found in the codebase that isn't configured yet, and also
+ * lets an admin register any other key by name.
+ */
+interface GlobalDefaultRow {
+  transaction_key: string;
+  account_id: number | null;
+  account_code: string | null;
+  account_name: string | null;
+  description: string | null;
+  known_label: string | null;
+}
+
+const GlobalDefaultsTab: React.FC = () => {
+  const [rows, setRows] = useState<GlobalDefaultRow[]>([]);
+  const [accounts, setAccounts] = useState<{ id: number; code: string; name: string; is_header: boolean }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editingKey, setEditingKey] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ account_id: '' as number | '', description: '' });
+  const [newForm, setNewForm] = useState({ transaction_key: '', account_id: '' as number | '', description: '' });
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const load = () => {
+    setLoading(true);
+    Promise.all([
+      axios.get('/finance/account-preferences/global-defaults'),
+      axios.get('/finance/accounts'),
+    ])
+      .then(([defaultsRes, accountsRes]) => {
+        setRows(defaultsRes.data?.defaults || []);
+        const accList = (accountsRes.data?.accounts || []).filter((a: any) => !a.is_header);
+        setAccounts(accList.map((a: any) => ({ id: a.id, code: a.code, name: a.name, is_header: a.is_header })));
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  const startEdit = (row: GlobalDefaultRow) => {
+    setEditingKey(row.transaction_key);
+    setEditForm({ account_id: row.account_id ?? '', description: row.description || '' });
+    setMessage(null);
+  };
+
+  const handleSave = async (transaction_key: string, account_id: number | '', description: string) => {
+    if (!account_id) {
+      setMessage({ type: 'error', text: 'Pilih akun terlebih dahulu.' });
+      return;
+    }
+    setSaving(true);
+    setMessage(null);
+    try {
+      await axios.put(`/finance/account-preferences/global-defaults/${transaction_key}`, { account_id, description });
+      setMessage({ type: 'success', text: 'Berhasil disimpan.' });
+      setEditingKey(null);
+      setNewForm({ transaction_key: '', account_id: '', description: '' });
+      load();
+    } catch (e) {
+      setMessage({ type: 'error', text: 'Gagal menyimpan.' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return <div className="text-gray-500">Memuat...</div>;
+  }
+
+  const configuredRows = rows.filter((r) => r.account_id);
+  const unconfiguredRows = rows.filter((r) => !r.account_id);
+
+  const renderRow = (row: GlobalDefaultRow) => {
+    const isEditing = editingKey === row.transaction_key;
+    return (
+      <tr key={row.transaction_key} className="border-b border-gray-100 dark:border-gray-700">
+        <td className="py-2 pr-4 align-top">
+          <div className="font-mono text-xs text-gray-700 dark:text-gray-200">{row.transaction_key}</div>
+          {row.known_label && <div className="text-xs text-gray-400 mt-0.5">{row.known_label}</div>}
+        </td>
+        <td className="py-2 pr-4 align-top">
+          {isEditing ? (
+            <select
+              value={editForm.account_id}
+              onChange={(e) => setEditForm({ ...editForm, account_id: e.target.value ? Number(e.target.value) : '' })}
+              className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm"
+            >
+              <option value="">-- Pilih Akun --</option>
+              {accounts.map((a) => (
+                <option key={a.id} value={a.id}>{a.code} - {a.name}</option>
+              ))}
+            </select>
+          ) : row.account_id ? (
+            <span className="text-sm text-gray-900 dark:text-white">{row.account_code} - {row.account_name}</span>
+          ) : (
+            <span className="text-sm text-amber-600 dark:text-amber-400">Belum dikonfigurasi</span>
+          )}
+        </td>
+        <td className="py-2 pr-4 align-top">
+          {isEditing ? (
+            <input
+              type="text"
+              value={editForm.description}
+              onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+              className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm"
+              placeholder="Keterangan (opsional)"
+            />
+          ) : (
+            <span className="text-sm text-gray-500 dark:text-gray-400">{row.description || '-'}</span>
+          )}
+        </td>
+        <td className="py-2 align-top text-right whitespace-nowrap">
+          {isEditing ? (
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => handleSave(row.transaction_key, editForm.account_id, editForm.description)}
+                disabled={saving}
+                className="px-3 py-1 text-xs bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50"
+              >
+                Simpan
+              </button>
+              <button
+                onClick={() => setEditingKey(null)}
+                className="px-3 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-md"
+              >
+                Batal
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => startEdit(row)}
+              className="px-3 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              Edit
+            </button>
+          )}
+        </td>
+      </tr>
+    );
+  };
+
+  return (
+    <div>
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Default Akhir (Global)</h2>
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+        Akun yang dipakai saat transaksi tidak punya override di level Item maupun Kategori.
+        Ini fallback terakhir (mirip konfigurasi OBYC di SAP) - hampir setiap posting jurnal otomatis
+        di sistem ini jatuh ke sini kalau tidak ada pengaturan lebih spesifik.
+      </p>
+
+      {message && (
+        <div className={`mb-4 px-4 py-2 rounded-md text-sm ${message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+          {message.text}
+        </div>
+      )}
+
+      {unconfiguredRows.length > 0 && (
+        <div className="mb-4 px-4 py-2 rounded-md text-sm bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400">
+          {unconfiguredRows.length} kunci dikenal belum dikonfigurasi - transaksi yang memakainya akan gagal
+          resolve akun sampai diisi (lihat baris "Belum dikonfigurasi" di bawah).
+        </div>
+      )}
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-left">
+          <thead>
+            <tr className="border-b border-gray-200 dark:border-gray-700 text-xs uppercase text-gray-400">
+              <th className="py-2 pr-4 font-medium">Transaction Key</th>
+              <th className="py-2 pr-4 font-medium">Akun</th>
+              <th className="py-2 pr-4 font-medium">Keterangan</th>
+              <th className="py-2 font-medium text-right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {configuredRows.map(renderRow)}
+            {unconfiguredRows.map(renderRow)}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">Tambah Key Lain</h3>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+          Untuk key yang tidak ada di daftar referensi di atas (misal dipakai modul baru).
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Transaction Key</label>
+            <input
+              type="text"
+              value={newForm.transaction_key}
+              onChange={(e) => setNewForm({ ...newForm, transaction_key: e.target.value.trim() })}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm"
+              placeholder="mis. akun_uang_muka_id"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Akun</label>
+            <select
+              value={newForm.account_id}
+              onChange={(e) => setNewForm({ ...newForm, account_id: e.target.value ? Number(e.target.value) : '' })}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm"
+            >
+              <option value="">-- Pilih Akun --</option>
+              {accounts.map((a) => (
+                <option key={a.id} value={a.id}>{a.code} - {a.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Keterangan</label>
+            <input
+              type="text"
+              value={newForm.description}
+              onChange={(e) => setNewForm({ ...newForm, description: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm"
+            />
+          </div>
+          <button
+            onClick={() => handleSave(newForm.transaction_key, newForm.account_id, newForm.description)}
+            disabled={saving || !newForm.transaction_key || !newForm.account_id}
+            className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50"
+          >
+            Tambah
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -14,6 +14,7 @@ from models.production import (
 )
 from models.product import Product, Material
 from models.warehouse import Inventory, InventoryMovement
+from utils.inventory_helpers import record_inventory_transaction
 from models.quality import QualityInspection
 from utils.fifo_helper import fifo_deduct_stock
 from utils.fg_conversion_helper import (
@@ -316,24 +317,21 @@ def complete_fg_conversion(conversion_id):
                 fg_inventory.quantity_available += item.fg_quantity
             
             # Record FG inventory movement
-            fg_movement = InventoryMovement(
-                inventory_id=fg_inventory.id,
-                product_id=item.fg_product_id,
-                location_id=fg_inventory.location_id,
-                movement_type='stock_in',
-                movement_date=date.today(),
+            fg_movement = record_inventory_transaction(
+                transaction_type='stock_in',
+                direction='in',
                 quantity=item.fg_quantity,
+                product_id=item.fg_product_id,
+                to_location_id=fg_inventory.location_id,
                 reference_number=conversion.conversion_number,
                 reference_type='fg_conversion',
                 reference_id=conversion.id,
                 batch_number=item.batch_number,
-                expiry_date=item.expiry_date,
-                quantity_before=float(fg_inventory.quantity_on_hand) - float(item.fg_quantity),
-                quantity_after=float(fg_inventory.quantity_on_hand),
+                balance_before=float(fg_inventory.quantity_on_hand) - float(item.fg_quantity),
+                balance_after=float(fg_inventory.quantity_on_hand),
                 notes=f'FG from WIP conversion - Batch {item.batch_number}',
                 created_by=current_user_id
             )
-            db.session.add(fg_movement)
         
         # 3. Deduct materials consumed (packaging, labels, etc)
         total_material_cost = 0
