@@ -172,15 +172,41 @@ export default function PRForm() {
     }
   };
 
+  // Items whose own preferred_supplier_id (set per-line in the form above)
+  // already resolves a supplier - these don't need the modal's fallback
+  // picker at all. Only items with NEITHER a preferred supplier NOR the
+  // modal's fallback selected block the conversion.
+  const itemsMissingSupplier = items.filter((i) => i.id && !i.preferred_supplier_id && !convertSupplierId);
+  const distinctPreferredSuppliers = Array.from(
+    new Set(items.filter((i) => i.id && i.preferred_supplier_id).map((i) => i.preferred_supplier_id))
+  );
+
   const handleConvertToPO = async () => {
-    if (!convertSupplierId) { toast.error('Pilih supplier'); return; }
+    if (itemsMissingSupplier.length > 0) {
+      toast.error('Beberapa item belum punya supplier - isi preferred supplier per item atau pilih supplier fallback');
+      return;
+    }
     try {
-      const res = await axiosInstance.post(`/api/purchasing/purchase-requisitions/${id}/convert-to-po`, {
-        supplier_id: parseInt(convertSupplierId),
+      const item_suppliers: Record<string, number> = {};
+      items.forEach((i) => {
+        if (i.id && i.preferred_supplier_id) item_suppliers[String(i.id)] = parseInt(i.preferred_supplier_id);
       });
-      toast.success(`Berhasil dibuat ${res.data.po_number}`);
+      const res = await axiosInstance.post(`/api/purchasing/purchase-requisitions/${id}/convert-to-po`, {
+        supplier_id: convertSupplierId ? parseInt(convertSupplierId) : undefined,
+        item_suppliers,
+      });
+      const pos = res.data.purchase_orders || [{ po_id: res.data.po_id, po_number: res.data.po_number }];
+      toast.success(
+        pos.length === 1
+          ? `Berhasil dibuat ${pos[0].po_number}`
+          : `Berhasil dibuat ${pos.length} PO (beda supplier per item): ${pos.map((p: any) => p.po_number).join(', ')}`
+      );
       setShowConvertModal(false);
-      navigate(`/app/purchasing/purchase-orders/${res.data.po_id}`);
+      if (pos.length === 1) {
+        navigate(`/app/purchasing/purchase-orders/${pos[0].po_id}`);
+      } else {
+        navigate(0); // multiple POs created - stay on PR detail, refresh to show per-item PO links
+      }
     } catch (err: any) {
       toast.error(err?.response?.data?.error || 'Gagal konversi ke PO');
     }
@@ -502,7 +528,26 @@ export default function PRForm() {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md shadow-xl">
             <h3 className="text-lg font-bold mb-3 text-gray-900 dark:text-white">🛒 Buat Purchase Order</h3>
-            <p className="text-sm text-gray-500 mb-4">PR akan dikonversi menjadi PO. Pilih supplier utama:</p>
+
+            {distinctPreferredSuppliers.length > 1 ? (
+              <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-4">
+                Item di PR ini punya {distinctPreferredSuppliers.length} supplier berbeda (preferred supplier per
+                item) — akan dipecah otomatis jadi {distinctPreferredSuppliers.length} PO terpisah, satu per supplier.
+              </p>
+            ) : (
+              <p className="text-sm text-gray-500 mb-2">PR akan dikonversi menjadi PO.</p>
+            )}
+
+            {itemsMissingSupplier.length > 0 && (
+              <p className="text-sm text-red-600 mb-2">
+                {itemsMissingSupplier.length} item belum punya preferred supplier: {itemsMissingSupplier.map((i) => i.item_name).join(', ')}.
+                Pilih supplier fallback di bawah untuk item-item itu, atau isi preferred supplier per item dulu.
+              </p>
+            )}
+
+            <label className="block text-xs text-gray-500 mb-1">
+              Supplier Fallback {distinctPreferredSuppliers.length > 0 ? '(hanya untuk item yang belum punya preferred supplier)' : ''}
+            </label>
             <select
               value={convertSupplierId}
               onChange={(e) => setConvertSupplierId(e.target.value)}

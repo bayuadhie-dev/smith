@@ -67,6 +67,8 @@ def format_pr_item(item):
         'estimated_total': float(item.estimated_total) if item.estimated_total else None,
         'preferred_supplier_id': item.preferred_supplier_id,
         'preferred_supplier_name': item.preferred_supplier.company_name if item.preferred_supplier else None,
+        'converted_to_po_id': item.converted_to_po_id,
+        'converted_po_number': item.converted_po.po_number if item.converted_po else None,
         'notes': item.notes,
     }
 
@@ -294,6 +296,23 @@ def approve_pr(pr_id):
 @jwt_required()
 @require_permission('purchase_requests.create')
 def convert_pr_to_po(pr_id):
+    """Convert an approved PR into one or more Purchase Orders.
+
+    2026-09-21: previously required ONE supplier_id for the whole PR and
+    put every item into a single PO - silently wrong whenever different
+    items needed different suppliers (real gap raised by QA). PRItem
+    already had a `preferred_supplier_id` column (routes/purchase_requisition
+    form has captured it per-line for a while) that this endpoint simply
+    never read. Now: items are grouped by resolved supplier and one PO is
+    created PER supplier group.
+
+    Supplier resolution per item, in order: explicit `item_suppliers`
+    override in the request -> the item's own `preferred_supplier_id` ->
+    the request's fallback `supplier_id` (kept for backward compatibility
+    with the single-supplier case and as a catch-all for items with no
+    preference set). An item with no resolvable supplier at all fails the
+    whole conversion with a clear error rather than silently guessing.
+    """
     try:
         user_id = int(get_jwt_identity())
         pr = db.session.get(PurchaseRequisition, pr_id)
@@ -303,67 +322,99 @@ def convert_pr_to_po(pr_id):
             return jsonify({'error': 'Hanya PR yang sudah di-approve yang bisa dikonversi ke PO'}), 400
         if pr.converted_to_po_id:
             return jsonify({'error': 'PR ini sudah pernah dikonversi ke PO', 'po_id': pr.converted_to_po_id}), 400
+        if not pr.items:
+            return jsonify({'error': 'PR ini tidak punya item'}), 400
 
         data = request.get_json() or {}
-        supplier_id = data.get('supplier_id')
-        if not supplier_id:
-            return jsonify({'error': 'supplier_id wajib diisi'}), 400
+        fallback_supplier_id = data.get('supplier_id')
+        item_suppliers = data.get('item_suppliers') or {}  # {pr_item_id: supplier_id}
+        item_prices = data.get('item_prices') or {}  # {pr_item_id: unit_price}, unchanged from before
+
+        # Resolve supplier per item and group.
+        groups = {}  # supplier_id -> [PRItem, ...]
+        unresolved = []
+        for item in pr.items:
+            resolved_supplier_id = (
+                item_suppliers.get(str(item.id))
+                or item.preferred_supplier_id
+                or fallback_supplier_id
+            )
+            if not resolved_supplier_id:
+                unresolved.append(item.item_name or item.item_code or f'item #{item.id}')
+                continue
+            resolved_supplier_id = int(resolved_supplier_id)
+            groups.setdefault(resolved_supplier_id, []).append(item)
+
+        if unresolved:
+            return jsonify({
+                'error': 'Beberapa item belum punya supplier (preferred_supplier_id kosong dan tidak ada override/fallback)',
+                'items_without_supplier': unresolved,
+            }), 400
 
         from routes.purchasing import _calculate_po_total
 
-        # Generate PO number
-        po_number = generate_number_v2('purchase_order', 'PO', PurchaseOrder, 'po_number')
-
-        po = PurchaseOrder(
-            po_number=po_number,
-            supplier_id=supplier_id,
-            order_date=date.today(),
-            required_date=pr.required_date,
-            status='draft',
-            payment_terms=data.get('payment_terms'),
-            notes=f"Dibuat dari PR {pr.pr_number}. {pr.notes or ''}".strip(),
-            created_by=user_id,
-        )
-        db.session.add(po)
-        db.session.flush()
-
-        # Optional per-line price override (PR items carry an estimated
-        # price that's usually 0 - MRP-generated PRs don't estimate cost -
-        # so this lets the person doing the conversion supply a real price
-        # per pr_item_id without a separate "edit PR" round-trip).
-        item_prices = data.get('item_prices') or {}
-
-        subtotal = 0.0
-        for idx, item in enumerate(pr.items, start=1):
-            unit_price = float(item_prices.get(str(item.id), item.estimated_unit_price or 0))
-            line_total = unit_price * float(item.quantity)
-            subtotal += line_total
-
-            po_item = PurchaseOrderItem(
-                po_id=po.id,
-                line_number=idx,
-                material_id=item.material_id,
-                product_id=item.product_id,
-                description=item.item_name or item.item_code,
-                quantity=float(item.quantity),
-                uom=item.uom,
-                unit_price=unit_price,
-                total_price=line_total,
-                notes=item.notes,
+        created_pos = []
+        for supplier_id, items in groups.items():
+            po_number = generate_number_v2('purchase_order', 'PO', PurchaseOrder, 'po_number')
+            po = PurchaseOrder(
+                po_number=po_number,
+                supplier_id=supplier_id,
+                order_date=date.today(),
+                required_date=pr.required_date,
+                status='draft',
+                payment_terms=data.get('payment_terms'),
+                notes=f"Dibuat dari PR {pr.pr_number}. {pr.notes or ''}".strip(),
+                created_by=user_id,
             )
-            db.session.add(po_item)
+            db.session.add(po)
+            db.session.flush()
 
-        po.subtotal = subtotal
-        po.total_amount = _calculate_po_total(po, subtotal)
+            subtotal = 0.0
+            for idx, item in enumerate(items, start=1):
+                unit_price = float(item_prices.get(str(item.id), item.estimated_unit_price or 0))
+                line_total = unit_price * float(item.quantity)
+                subtotal += line_total
 
-        pr.converted_to_po_id = po.id
+                po_item = PurchaseOrderItem(
+                    po_id=po.id,
+                    line_number=idx,
+                    material_id=item.material_id,
+                    product_id=item.product_id,
+                    description=item.item_name or item.item_code,
+                    quantity=float(item.quantity),
+                    uom=item.uom,
+                    unit_price=unit_price,
+                    total_price=line_total,
+                    notes=item.notes,
+                )
+                db.session.add(po_item)
+                item.converted_to_po_id = po.id
+
+            po.subtotal = subtotal
+            po.total_amount = _calculate_po_total(po, subtotal)
+            created_pos.append(po)
+
+        # PR-level converted_to_po_id stays a single FK (schema predates
+        # multi-PO splitting) - points at the first PO created as the
+        # "primary" reference; PRItem.converted_to_po_id above is the real,
+        # authoritative per-line record of where each item actually went.
+        pr.converted_to_po_id = created_pos[0].id
         pr.status = 'converted'
         db.session.commit()
 
+        if len(created_pos) == 1:
+            return jsonify({
+                'message': f'PR berhasil dikonversi ke {created_pos[0].po_number}',
+                'po_id': created_pos[0].id,
+                'po_number': created_pos[0].po_number,
+                'purchase_orders': [{'po_id': po.id, 'po_number': po.po_number, 'supplier_id': po.supplier_id} for po in created_pos],
+            }), 201
+
         return jsonify({
-            'message': f'PR berhasil dikonversi ke {po.po_number}',
-            'po_id': po.id,
-            'po_number': po.po_number,
+            'message': f'PR berhasil dikonversi ke {len(created_pos)} PO (beda supplier per item)',
+            'po_id': created_pos[0].id,
+            'po_number': created_pos[0].po_number,
+            'purchase_orders': [{'po_id': po.id, 'po_number': po.po_number, 'supplier_id': po.supplier_id} for po in created_pos],
         }), 201
 
     except Exception as e:

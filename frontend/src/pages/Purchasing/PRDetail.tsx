@@ -135,6 +135,7 @@ export default function PRDetail() {
                 <th className="pb-2 pr-3">Satuan</th>
                 <th className="pb-2 pr-3 text-right">Harga Est.</th>
                 <th className="pb-2 pr-3">Supplier Pref.</th>
+                <th className="pb-2 pr-3">PO</th>
                 <th className="pb-2 text-right">Total Est.</th>
               </tr>
             </thead>
@@ -157,6 +158,17 @@ export default function PRDetail() {
                   <td className="py-2 pr-3 text-gray-500 dark:text-gray-400">{item.uom}</td>
                   <td className="py-2 pr-3 text-right tabular-nums">{item.estimated_unit_price ? formatRupiah(item.estimated_unit_price) : '-'}</td>
                   <td className="py-2 pr-3 text-gray-500 dark:text-gray-400">{item.preferred_supplier_name || '-'}</td>
+                  <td className="py-2 pr-3">
+                    {item.converted_po_number ? (
+                      <Link
+                        to={`/app/purchasing/purchase-orders/${item.converted_to_po_id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-emerald-600 dark:text-emerald-400 hover:underline inline-flex items-center gap-1"
+                      >
+                        {item.converted_po_number} <ArrowTopRightOnSquareIcon className="h-3 w-3" />
+                      </Link>
+                    ) : '-'}
+                  </td>
                   <td className="py-2 text-right tabular-nums font-medium">{item.estimated_total ? formatRupiah(item.estimated_total) : '-'}</td>
                 </tr>
               ))}

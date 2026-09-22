@@ -485,6 +485,12 @@ class PRItem(db.Model):
     estimated_total = db.Column(db.Numeric(15, 2), nullable=True)
     preferred_supplier_id = db.Column(db.Integer, db.ForeignKey('suppliers.id'), nullable=True)
     notes = db.Column(db.Text, nullable=True)
+    # 2026-09-21: per-line record of which PO this item actually ended up
+    # on - PR-level converted_to_po_id is a single FK and can't represent a
+    # PR that split into several POs when items had different suppliers
+    # (see routes/purchase_requisition.py:convert_pr_to_po). Nullable until
+    # conversion happens.
+    converted_to_po_id = db.Column(db.Integer, db.ForeignKey('purchase_orders.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -493,6 +499,7 @@ class PRItem(db.Model):
     material = db.relationship('Material')
     product = db.relationship('Product')
     preferred_supplier = db.relationship('Supplier')
+    converted_po = db.relationship('PurchaseOrder', foreign_keys=[converted_to_po_id])
 
     __table_args__ = (
         db.UniqueConstraint('pr_id', 'line_number', name='unique_pr_line'),
