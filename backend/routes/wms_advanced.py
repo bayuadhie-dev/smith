@@ -16,7 +16,8 @@ from models.wms_advanced import (
     StockTransferOrder, StockTransferItem, CycleCountSchedule
 )
 from models.warehouse_adjustment import InventoryAdjustment
-from sqlalchemy import func, or_, and_, desc, case
+from models.user_table_preference import UserTablePreference
+from sqlalchemy import func, or_, and_, desc, asc, case
 from sqlalchemy.orm import joinedload
 from datetime import datetime, date, timedelta
 from utils.timezone import get_local_now, get_local_today
@@ -876,7 +877,19 @@ def get_transactions():
                 InventoryTransaction.batch_number.ilike(f'%{search}%'),
             ))
 
-        query = query.order_by(desc(InventoryTransaction.transaction_date))
+        # ALV-style sortable columns: click a header to sort by it.
+        sort_by = request.args.get('sort_by', 'transaction_date')
+        sort_dir = request.args.get('sort_dir', 'desc')
+        sortable_columns = {
+            'transaction_date': InventoryTransaction.transaction_date,
+            'transaction_number': InventoryTransaction.transaction_number,
+            'quantity': InventoryTransaction.quantity,
+            'total_cost': InventoryTransaction.total_cost,
+            'transaction_type': InventoryTransaction.transaction_type,
+            'batch_number': InventoryTransaction.batch_number,
+        }
+        sort_col = sortable_columns.get(sort_by, InventoryTransaction.transaction_date)
+        query = query.order_by(asc(sort_col) if sort_dir == 'asc' else desc(sort_col))
 
         if account_code:
             # Akun COA filter (MB51 selection screen): resolved_account isn't
@@ -1960,6 +1973,10 @@ def get_transactions_summary():
             'total_amount_in': total_amount_in,
             'total_amount_out': total_amount_out,
             'net_amount': total_amount_in - total_amount_out,
+            # ALV-style subtotal row (sum across ALL matched rows regardless
+            # of direction) - Qty/Nilai footer at the bottom of the grid.
+            'grand_total_qty': total_in + total_out,
+            'grand_total_amount': total_amount_in + total_amount_out,
             'by_type': [
                 {
                     'transaction_type': r.transaction_type,
@@ -1972,4 +1989,47 @@ def get_transactions_summary():
             ],
         }), 200
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# ============================================================
+# TABLE COLUMN PREFERENCES (Field Catalog persistence, per user)
+# ============================================================
+@wms_advanced_bp.route('/table-preferences/<string:view_key>', methods=['GET'])
+@jwt_required()
+def get_table_preference(view_key):
+    """Fetch this user's saved column selection/order for a given table
+    view (e.g. 'wms_transactions'). 404 means the user never saved one -
+    the frontend falls back to its own default column set."""
+    try:
+        user_id = get_jwt_identity()
+        pref = UserTablePreference.query.filter_by(user_id=user_id, view_key=view_key).first()
+        if not pref:
+            return jsonify({'error': 'Not found'}), 404
+        return jsonify(pref.to_dict()), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@wms_advanced_bp.route('/table-preferences/<string:view_key>', methods=['PUT'])
+@jwt_required()
+def set_table_preference(view_key):
+    """Save/replace this user's column selection/order for a table view."""
+    try:
+        user_id = get_jwt_identity()
+        data = request.get_json() or {}
+        visible_columns = data.get('visible_columns')
+        if not isinstance(visible_columns, list):
+            return jsonify({'error': 'visible_columns wajib berupa array'}), 400
+
+        pref = UserTablePreference.query.filter_by(user_id=user_id, view_key=view_key).first()
+        if not pref:
+            pref = UserTablePreference(user_id=user_id, view_key=view_key, visible_columns=visible_columns)
+            db.session.add(pref)
+        else:
+            pref.visible_columns = visible_columns
+        db.session.commit()
+        return jsonify(pref.to_dict()), 200
+    except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500

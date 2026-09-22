@@ -108,14 +108,50 @@ interface WarehouseLocationOpt {
   zone_name?: string;
 }
 
-type ColumnLayout = 'standard' | 'audit';
-
 const formatRupiah = (n: number | null | undefined) => {
   if (n === null || n === undefined) return '-';
   return `Rp ${n.toLocaleString('id-ID', { maximumFractionDigits: 0 })}`;
 };
 
 const toISODate = (d: Date) => d.toISOString().slice(0, 10);
+
+// ---- Field Catalog: every column this ALV grid can show, checkbox-toggle
+// + reorder in the toolbar's "Tampilan Kolom" panel, persisted per user via
+// GET/PUT /api/wms/table-preferences/wms_transactions. `sortKey` maps a
+// column to the backend's sort_by values (see routes/wms_advanced.py's
+// sortable_columns) - omitted for columns the backend can't sort by
+// (computed fields like resolved_account, or joined display text).
+interface ColumnDef {
+  key: string;
+  label: string;
+  sortKey?: string;
+  align?: 'left' | 'right' | 'center';
+}
+
+const COLUMN_CATALOG: ColumnDef[] = [
+  { key: 'transaction_number', label: 'No. Dokumen', sortKey: 'transaction_number' },
+  { key: 'movement_type_code', label: 'Kode Gerakan', sortKey: 'transaction_type' },
+  { key: 'direction', label: 'Arah', align: 'center' },
+  { key: 'item', label: 'Barang' },
+  { key: 'quantity', label: 'Qty', sortKey: 'quantity', align: 'right' },
+  { key: 'total_cost', label: 'Nilai (Rp)', sortKey: 'total_cost', align: 'right' },
+  { key: 'resolved_account', label: 'Akun COA' },
+  { key: 'accounting_entry_number', label: 'No. Jurnal' },
+  { key: 'batch_number', label: 'Batch', sortKey: 'batch_number' },
+  { key: 'location', label: 'Lokasi Asal/Tujuan' },
+  { key: 'unit_cost', label: 'Unit Cost', align: 'right' },
+  { key: 'reference', label: 'Dokumen Sumber' },
+  { key: 'machine_shift', label: 'Mesin / Shift' },
+  { key: 'transaction_date', label: 'Tgl Posting', sortKey: 'transaction_date' },
+  { key: 'created_by', label: 'Dibuat Oleh' },
+];
+
+const DEFAULT_COLUMNS = [
+  'transaction_number', 'movement_type_code', 'direction', 'item', 'quantity',
+  'total_cost', 'resolved_account', 'accounting_entry_number', 'reference', 'transaction_date',
+];
+
+const VIEW_KEY = 'wms_transactions';
 
 const TransactionsPage: React.FC = () => {
   const [data, setData] = useState<Transaction[]>([]);
@@ -136,7 +172,13 @@ const TransactionsPage: React.FC = () => {
 
   // ---- Toolbar ----
   const [resultSearch, setResultSearch] = useState('');
-  const [columnLayout, setColumnLayout] = useState<ColumnLayout>('standard');
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(DEFAULT_COLUMNS);
+  const [catalogOpen, setCatalogOpen] = useState(false);
+  const [catalogSaving, setCatalogSaving] = useState(false);
+
+  // ALV-style sortable columns (click a header)
+  const [sortBy, setSortBy] = useState('transaction_date');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -144,6 +186,7 @@ const TransactionsPage: React.FC = () => {
   const [summary, setSummary] = useState<{
     total_in: number; total_out: number; net: number;
     total_amount_in: number; total_amount_out: number; net_amount: number;
+    grand_total_qty: number; grand_total_amount: number;
   } | null>(null);
 
   // ---- Slide-over drawer ----
@@ -172,17 +215,24 @@ const TransactionsPage: React.FC = () => {
     axiosInstance.get('/api/warehouse/locations', { params: { per_page: 200 } }).then((res) => {
       setLocations(res.data?.locations || []);
     }).catch(() => {});
+    // Field Catalog: restore this user's saved column selection/order, if any.
+    axiosInstance.get(`/api/wms/table-preferences/${VIEW_KEY}`)
+      .then((res) => {
+        const saved = res.data?.visible_columns;
+        if (Array.isArray(saved) && saved.length > 0) setVisibleColumns(saved);
+      })
+      .catch(() => { /* 404 = never saved one, keep DEFAULT_COLUMNS */ });
   }, []);
 
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page]);
+  }, [page, sortBy, sortDir]);
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      const params = { ...buildParams(), page, per_page: 50 };
+      const params = { ...buildParams(), page, per_page: 50, sort_by: sortBy, sort_dir: sortDir };
       const res = await axiosInstance.get('/api/wms/transactions', { params });
       setData(res.data.transactions);
       setTotalPages(res.data.pagination.pages);
@@ -247,6 +297,55 @@ const TransactionsPage: React.FC = () => {
   const toggleTypeFilter = (t: string) => {
     setTypeFilters((prev) => prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]);
   };
+
+  // ALV-style header click-to-sort: same column toggles asc/desc, a
+  // different column starts at desc.
+  const handleSort = (col: ColumnDef) => {
+    if (!col.sortKey) return;
+    if (sortBy === col.sortKey) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortBy(col.sortKey);
+      setSortDir('desc');
+    }
+    setPage(1);
+  };
+
+  // Field Catalog: toggle a column's visibility, keeping catalog order.
+  const toggleColumn = (key: string) => {
+    setVisibleColumns((prev) => {
+      if (prev.includes(key)) return prev.filter((k) => k !== key);
+      // Re-insert respecting the catalog's canonical order.
+      const order = COLUMN_CATALOG.map((c) => c.key);
+      return [...prev, key].sort((a, b) => order.indexOf(a) - order.indexOf(b));
+    });
+  };
+
+  const moveColumn = (key: string, dir: -1 | 1) => {
+    setVisibleColumns((prev) => {
+      const idx = prev.indexOf(key);
+      const next = idx + dir;
+      if (idx === -1 || next < 0 || next >= prev.length) return prev;
+      const copy = [...prev];
+      [copy[idx], copy[next]] = [copy[next], copy[idx]];
+      return copy;
+    });
+  };
+
+  const saveColumnCatalog = async () => {
+    setCatalogSaving(true);
+    try {
+      await axiosInstance.put(`/api/wms/table-preferences/${VIEW_KEY}`, { visible_columns: visibleColumns });
+      toast.success('Tampilan kolom disimpan');
+      setCatalogOpen(false);
+    } catch (err) {
+      toast.error('Gagal menyimpan tampilan kolom');
+    } finally {
+      setCatalogSaving(false);
+    }
+  };
+
+  const resetColumnCatalog = () => setVisibleColumns(DEFAULT_COLUMNS);
 
   // Client-side "cari di hasil" - filters the currently loaded page without a new request
   const visibleRows = useMemo(() => {
@@ -337,6 +436,90 @@ const TransactionsPage: React.FC = () => {
     setDrawerTxnId(null);
     setDrawerData(null);
   };
+
+  // Generic per-column cell renderer, driven by the Field Catalog - one
+  // switch instead of a hand-written <td> per (layout mode x column)
+  // combination like the old Mode Standar/Audit Lengkap toggle had.
+  const renderCell = (txn: Transaction, key: string) => {
+    switch (key) {
+      case 'transaction_number':
+        return <span className="text-gray-700">{txn.transaction_number}</span>;
+      case 'movement_type_code':
+        return (
+          <>
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold bg-gray-100 text-gray-700" title={txn.movement_type_label}>
+              {txn.movement_type_code}
+            </span>
+            <span className="ml-1 font-sans text-[11px] text-gray-400">{txn.movement_type_label}</span>
+          </>
+        );
+      case 'direction':
+        return txn.direction === 'in' ? (
+          <ArrowDownIcon className="h-4 w-4 text-green-600 inline" />
+        ) : (
+          <ArrowUpIcon className="h-4 w-4 text-red-600 inline" />
+        );
+      case 'item':
+        return (
+          <div className="font-sans">
+            <div className="font-medium text-gray-900">{txn.item_name}</div>
+            <div className="text-[11px] text-gray-400">{txn.item_code}</div>
+          </div>
+        );
+      case 'quantity':
+        return <>{txn.quantity.toLocaleString('id-ID')} <span className="text-gray-400 text-[11px]">{txn.uom}</span></>;
+      case 'total_cost':
+        return txn.total_cost ? formatRupiah(txn.total_cost) : <span className="text-gray-300">-</span>;
+      case 'resolved_account':
+        return txn.resolved_account?.code ? (
+          <div className="font-sans">
+            <div className="text-gray-900 text-xs">{txn.resolved_account.code}</div>
+            <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${
+              txn.resolved_account.source === 'item_override' ? 'bg-blue-50 text-blue-600' :
+              txn.resolved_account.source === 'category_default' ? 'bg-purple-50 text-purple-600' :
+              'bg-gray-100 text-gray-500'
+            }`}>
+              {ACCOUNT_SOURCE_LABEL[txn.resolved_account.source] || txn.resolved_account.source}
+            </span>
+          </div>
+        ) : (
+          <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-600 font-sans">Belum resolve</span>
+        );
+      case 'accounting_entry_number':
+        return txn.accounting_entry_number ? <span className="text-green-700">{txn.accounting_entry_number}</span> : <span className="text-gray-300">-</span>;
+      case 'batch_number':
+        return <span className="text-gray-600">{txn.batch_number || '-'}</span>;
+      case 'location':
+        return <span className="font-sans text-xs text-gray-600">{txn.from_location || '-'} {txn.to_location ? `→ ${txn.to_location}` : ''}</span>;
+      case 'unit_cost':
+        return txn.unit_cost ? formatRupiah(txn.unit_cost) : '-';
+      case 'reference':
+        return (
+          <div className="font-sans text-xs">
+            {txn.reference_type && <div className="text-gray-700">{REFERENCE_TYPE_LABELS[txn.reference_type] || txn.reference_type}</div>}
+            {txn.reference_number && <div className="text-gray-400">{txn.reference_number}</div>}
+          </div>
+        );
+      case 'machine_shift':
+        return <span className="font-sans text-xs text-gray-600">{[txn.machine_name, txn.shift].filter(Boolean).join(' / ') || '-'}</span>;
+      case 'transaction_date':
+        return (
+          <span className="font-sans text-xs text-gray-500">
+            {txn.transaction_date ? new Date(txn.transaction_date).toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-'}
+          </span>
+        );
+      case 'created_by':
+        return <span className="font-sans text-xs text-gray-500">{txn.created_by || '-'}</span>;
+      default:
+        return null;
+    }
+  };
+
+  // Subtotal footer row: sums a numeric column across the CURRENTLY LOADED
+  // page (backend's grand_total_* covers the whole filtered set - shown
+  // separately in the summary cards above the table).
+  const pageSubtotal = (key: 'quantity' | 'total_cost') =>
+    visibleRows.reduce((sum, t) => sum + (Number(t[key]) || 0), 0);
 
   return (
     <div className="p-6 space-y-6">
@@ -483,19 +666,48 @@ const TransactionsPage: React.FC = () => {
             className="w-full pl-9 pr-3 py-1.5 border border-gray-300 rounded-lg text-sm"
           />
         </div>
-        <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+        <div className="relative">
           <button
-            onClick={() => setColumnLayout('standard')}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium ${columnLayout === 'standard' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500'}`}
+            onClick={() => setCatalogOpen((v) => !v)}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-medium text-gray-700 hover:bg-gray-50"
           >
-            <TableCellsIcon className="h-3.5 w-3.5" /> Mode Standar
+            <TableCellsIcon className="h-3.5 w-3.5" /> Tampilan Kolom ({visibleColumns.length}/{COLUMN_CATALOG.length})
           </button>
-          <button
-            onClick={() => setColumnLayout('audit')}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium ${columnLayout === 'audit' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500'}`}
-          >
-            <TableCellsIcon className="h-3.5 w-3.5" /> Mode Audit Lengkap
-          </button>
+          {catalogOpen && (
+            <div className="absolute z-20 mt-1 right-0 w-72 bg-white border border-gray-200 rounded-lg shadow-lg p-3">
+              <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Field Catalog</div>
+              <div className="max-h-72 overflow-y-auto space-y-0.5">
+                {visibleColumns.map((key) => {
+                  const col = COLUMN_CATALOG.find((c) => c.key === key);
+                  if (!col) return null;
+                  return (
+                    <div key={key} className="flex items-center gap-2 px-1.5 py-1 rounded hover:bg-gray-50">
+                      <input type="checkbox" checked={true} onChange={() => toggleColumn(key)} className="cursor-pointer" />
+                      <span className="flex-1 text-sm text-gray-700">{col.label}</span>
+                      <button onClick={() => moveColumn(key, -1)} className="text-gray-400 hover:text-gray-700 px-1">↑</button>
+                      <button onClick={() => moveColumn(key, 1)} className="text-gray-400 hover:text-gray-700 px-1">↓</button>
+                    </div>
+                  );
+                })}
+                {COLUMN_CATALOG.filter((c) => !visibleColumns.includes(c.key)).map((col) => (
+                  <div key={col.key} className="flex items-center gap-2 px-1.5 py-1 rounded hover:bg-gray-50 opacity-60">
+                    <input type="checkbox" checked={false} onChange={() => toggleColumn(col.key)} className="cursor-pointer" />
+                    <span className="flex-1 text-sm text-gray-500">{col.label}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center gap-2 mt-3 pt-2 border-t border-gray-100">
+                <button onClick={resetColumnCatalog} className="text-xs text-gray-500 hover:text-gray-700">Reset Default</button>
+                <button
+                  onClick={saveColumnCatalog}
+                  disabled={catalogSaving}
+                  className="ml-auto px-3 py-1 text-xs bg-green-600 hover:bg-green-700 text-white rounded-md disabled:opacity-50"
+                >
+                  {catalogSaving ? 'Menyimpan...' : 'Simpan'}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
         <button onClick={handleExportExcel} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-medium text-gray-700 hover:bg-gray-50">
           <ArrowDownTrayIcon className="h-3.5 w-3.5" /> Export Excel
@@ -517,90 +729,57 @@ const TransactionsPage: React.FC = () => {
             <table className="min-w-full divide-y divide-gray-200 text-sm">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-gray-500 uppercase">No. Dokumen</th>
-                  <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-gray-500 uppercase">Kode Gerakan</th>
-                  <th className="px-3 py-2.5 text-center text-[11px] font-semibold text-gray-500 uppercase">Arah</th>
-                  <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-gray-500 uppercase">Barang</th>
-                  <th className="px-3 py-2.5 text-right text-[11px] font-semibold text-gray-500 uppercase">Qty</th>
-                  <th className="px-3 py-2.5 text-right text-[11px] font-semibold text-gray-500 uppercase">Nilai (Rp)</th>
-                  <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-gray-500 uppercase">Akun COA</th>
-                  <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-gray-500 uppercase">No. Jurnal</th>
-                  {columnLayout === 'audit' && (
-                    <>
-                      <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-gray-500 uppercase">Batch</th>
-                      <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-gray-500 uppercase">Lokasi Asal/Tujuan</th>
-                      <th className="px-3 py-2.5 text-right text-[11px] font-semibold text-gray-500 uppercase">Unit Cost</th>
-                      <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-gray-500 uppercase">Dokumen Sumber</th>
-                    </>
-                  )}
-                  <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-gray-500 uppercase">Tgl Posting</th>
+                  {visibleColumns.map((key) => {
+                    const col = COLUMN_CATALOG.find((c) => c.key === key);
+                    if (!col) return null;
+                    const alignClass = col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left';
+                    return (
+                      <th
+                        key={key}
+                        onClick={() => handleSort(col)}
+                        className={`px-3 py-2.5 ${alignClass} text-[11px] font-semibold text-gray-500 uppercase ${col.sortKey ? 'cursor-pointer hover:text-gray-800 select-none' : ''}`}
+                      >
+                        <span className="inline-flex items-center gap-1">
+                          {col.label}
+                          {col.sortKey && sortBy === col.sortKey && (
+                            <span className="text-gray-400">{sortDir === 'asc' ? '▲' : '▼'}</span>
+                          )}
+                        </span>
+                      </th>
+                    );
+                  })}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 font-mono text-[13px]">
                 {visibleRows.map((txn) => (
                   <tr key={txn.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => openDrawer(txn.id)}>
-                    <td className="px-3 py-2 whitespace-nowrap text-gray-700">{txn.transaction_number}</td>
-                    <td className="px-3 py-2 whitespace-nowrap">
-                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold bg-gray-100 text-gray-700" title={txn.movement_type_label}>
-                        {txn.movement_type_code}
-                      </span>
-                      <span className="ml-1 font-sans text-[11px] text-gray-400">{txn.movement_type_label}</span>
-                    </td>
-                    <td className="px-3 py-2 text-center">
-                      {txn.direction === 'in' ? (
-                        <ArrowDownIcon className="h-4 w-4 text-green-600 inline" />
-                      ) : (
-                        <ArrowUpIcon className="h-4 w-4 text-red-600 inline" />
-                      )}
-                    </td>
-                    <td className="px-3 py-2 font-sans">
-                      <div className="font-medium text-gray-900">{txn.item_name}</div>
-                      <div className="text-[11px] text-gray-400">{txn.item_code}</div>
-                    </td>
-                    <td className="px-3 py-2 text-right whitespace-nowrap">{txn.quantity.toLocaleString('id-ID')} <span className="text-gray-400 text-[11px]">{txn.uom}</span></td>
-                    <td className="px-3 py-2 text-right whitespace-nowrap">{txn.total_cost ? formatRupiah(txn.total_cost) : <span className="text-gray-300">-</span>}</td>
-                    <td className="px-3 py-2 font-sans">
-                      {txn.resolved_account?.code ? (
-                        <>
-                          <div className="text-gray-900 text-xs">{txn.resolved_account.code}</div>
-                          <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                            txn.resolved_account.source === 'item_override' ? 'bg-blue-50 text-blue-600' :
-                            txn.resolved_account.source === 'category_default' ? 'bg-purple-50 text-purple-600' :
-                            'bg-gray-100 text-gray-500'
-                          }`}>
-                            {ACCOUNT_SOURCE_LABEL[txn.resolved_account.source] || txn.resolved_account.source}
-                          </span>
-                        </>
-                      ) : (
-                        <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-600 font-sans">Belum resolve</span>
-                      )}
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap">
-                      {txn.accounting_entry_number ? (
-                        <span className="text-green-700">{txn.accounting_entry_number}</span>
-                      ) : (
-                        <span className="text-gray-300">-</span>
-                      )}
-                    </td>
-                    {columnLayout === 'audit' && (
-                      <>
-                        <td className="px-3 py-2 whitespace-nowrap text-gray-600">{txn.batch_number || '-'}</td>
-                        <td className="px-3 py-2 font-sans text-xs text-gray-600 whitespace-nowrap">
-                          {txn.from_location || '-'} {txn.to_location ? `→ ${txn.to_location}` : ''}
+                    {visibleColumns.map((key) => {
+                      const col = COLUMN_CATALOG.find((c) => c.key === key);
+                      const alignClass = col?.align === 'right' ? 'text-right' : col?.align === 'center' ? 'text-center' : 'text-left';
+                      return (
+                        <td key={key} className={`px-3 py-2 whitespace-nowrap ${alignClass}`}>
+                          {renderCell(txn, key)}
                         </td>
-                        <td className="px-3 py-2 text-right whitespace-nowrap">{txn.unit_cost ? formatRupiah(txn.unit_cost) : '-'}</td>
-                        <td className="px-3 py-2 font-sans text-xs">
-                          {txn.reference_type && <div className="text-gray-700">{REFERENCE_TYPE_LABELS[txn.reference_type] || txn.reference_type}</div>}
-                          {txn.reference_number && <div className="text-gray-400">{txn.reference_number}</div>}
-                        </td>
-                      </>
-                    )}
-                    <td className="px-3 py-2 font-sans text-xs text-gray-500 whitespace-nowrap">
-                      {txn.transaction_date ? new Date(txn.transaction_date).toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-'}
-                    </td>
+                      );
+                    })}
                   </tr>
                 ))}
               </tbody>
+              {visibleRows.length > 0 && (
+                <tfoot className="bg-gray-50 border-t-2 border-gray-200 font-sans text-xs font-semibold text-gray-600">
+                  <tr>
+                    {visibleColumns.map((key, idx) => {
+                      const col = COLUMN_CATALOG.find((c) => c.key === key);
+                      const alignClass = col?.align === 'right' ? 'text-right' : 'text-left';
+                      let content: React.ReactNode = null;
+                      if (idx === 0) content = 'Subtotal (halaman ini)';
+                      else if (key === 'quantity') content = pageSubtotal('quantity').toLocaleString('id-ID');
+                      else if (key === 'total_cost') content = formatRupiah(pageSubtotal('total_cost'));
+                      return <td key={key} className={`px-3 py-2 ${alignClass}`}>{content}</td>;
+                    })}
+                  </tr>
+                </tfoot>
+              )}
             </table>
             {visibleRows.length === 0 && (
               <div className="text-center py-12 text-gray-400 text-sm">Tidak ada data yang cocok</div>
