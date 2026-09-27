@@ -35,16 +35,24 @@ def get_error_detail(error_id):
     return jsonify({"error": row}), 200
 
 
+def _mask(value: str) -> str:
+    if not value:
+        return "(belum diisi)"
+    return f"...{value[-4:]}" if len(value) > 4 else "***"
+
+
 @api_bp.route("/config", methods=["GET"])
 def get_config_route():
     all_config = state.get_all_config()
     api_key = all_config.get("anthropic_api_key", "")
-    masked = f"...{api_key[-4:]}" if len(api_key) > 4 else ("(belum diisi)" if not api_key else "***")
+    openwa_api_key = all_config.get("openwa_api_key", "")
     return jsonify({
-        "anthropic_api_key_masked": masked,
+        "anthropic_api_key_masked": _mask(api_key),
         "anthropic_api_key_set": bool(api_key),
-        "openwa_base_url": all_config.get("openwa_base_url", ""),
-        "openwa_target_number": all_config.get("openwa_target_number", ""),
+        "openwa_send_url": all_config.get("openwa_send_url", ""),
+        "openwa_api_key_masked": _mask(openwa_api_key),
+        "openwa_api_key_set": bool(openwa_api_key),
+        "openwa_target_phone": all_config.get("openwa_target_phone", ""),
     }), 200
 
 
@@ -56,10 +64,12 @@ def set_config_route():
     # akses di jaringan internal/local). Tambahkan minimal API key statis di
     # header atau login sebelum agent-dashboard bisa diakses dari luar.
     data = request.get_json(silent=True) or {}
-    if "anthropic_api_key" in data and data["anthropic_api_key"]:
+    if data.get("anthropic_api_key"):
         state.set_config("anthropic_api_key", data["anthropic_api_key"])
-    if "openwa_base_url" in data:
-        state.set_config("openwa_base_url", data["openwa_base_url"])
-    if "openwa_target_number" in data:
-        state.set_config("openwa_target_number", data["openwa_target_number"])
+    if "openwa_send_url" in data:
+        state.set_config("openwa_send_url", data["openwa_send_url"])
+    if data.get("openwa_api_key"):
+        state.set_config("openwa_api_key", data["openwa_api_key"])
+    if "openwa_target_phone" in data:
+        state.set_config("openwa_target_phone", data["openwa_target_phone"])
     return jsonify({"status": "saved"}), 200

@@ -1,14 +1,18 @@
 """
 wa_notify.py - Format & kirim notifikasi error ke WhatsApp lewat OpenWA.
 
-# TODO: WAJIB DISESUAIKAN - endpoint & payload OpenWA di bawah adalah ASUMSI
-# dari dokumentasi open-wa/wa-automate yang paling umum:
-#   POST {base_url}{send_path}   body: {"phone": "<nomor>@c.us", "text": "<pesan>"}
-# Response yang diasumsikan mengandung message ID terkirim di salah satu dari:
-#   response.json()["id"], response.json()["response"]["id"], atau
-#   response.json()["messageId"] - kode di bawah mencoba ketiganya.
-# CEK ULANG dokumentasi versi OpenWA Anda dan sesuaikan _send_raw() di bawah
-# kalau field/path-nya berbeda.
+Bentuk request/response di bawah ini SUDAH DIVERIFIKASI dari kode nyata
+gateway OpenWA (NestJS) di scripts/OpenWA/ repo ini, bukan tebakan:
+  - scripts/OpenWA/src/modules/message/message.controller.ts (route)
+  - scripts/OpenWA/src/modules/message/dto/send-message.dto.ts (request/response shape)
+  - backend/utils/production_notifications.py (backend SMITH ERP SUDAH
+    memanggil endpoint yang sama untuk notifikasi WO selesai - pola
+    header/body/response di bawah persis meniru itu)
+
+# TODO: WAJIB DISESUAIKAN - config.OPENWA_SEND_URL_DEFAULT (atau isi lewat
+# agent-dashboard > Konfigurasi) harus URL LENGKAP termasuk sessionId:
+#   http://<host>:<port>/sessions/<sessionId>/messages/send-text
+# Lihat penjelasan lengkap di config.py.
 """
 import requests
 
@@ -49,41 +53,53 @@ def format_message(error_row: dict) -> str:
     return "\n".join(lines)
 
 
+def _format_phone_to_chat_id(phone: str) -> str:
+    """Sama persis dengan format_phone_to_chat_id() di
+    backend/utils/production_notifications.py - disalin (bukan diimpor
+    lintas project) supaya agent ini tetap berdiri sendiri tanpa dependency
+    ke package backend Flask."""
+    clean = "".join(filter(str.isdigit, phone))
+    if clean.startswith("0"):
+        clean = "62" + clean[1:]
+    elif not clean.startswith("62"):
+        clean = "62" + clean
+    return f"{clean}@c.us"
+
+
 def _send_raw(text: str) -> str | None:
-    """Kirim pesan mentah, return message ID kalau berhasil, None kalau gagal
+    """Kirim pesan mentah, return messageId kalau berhasil, None kalau gagal
     (gagal kirim WA TIDAK BOLEH menghentikan agent - error tetap tersimpan
     di SQLite dan bisa dilihat lewat agent-dashboard walau WA gagal)."""
     effective = config.get_effective_config()
-    base_url = effective["openwa_base_url"]
-    target = effective["openwa_target_number"]
+    send_url = effective["openwa_send_url"]
+    api_key = effective["openwa_api_key"]
+    target_phone = effective["openwa_target_phone"]
 
-    if not base_url or not target:
-        _log_activity("wa_notify: base_url/target_number belum diset, notifikasi WA dilewati")
+    if not send_url or not api_key or not target_phone:
+        _log_activity("wa_notify: openwa_send_url/api_key/target_phone belum diset, notifikasi WA dilewati")
         return None
 
-    url = base_url.rstrip("/") + config.OPENWA_SEND_ENDPOINT_PATH
+    chat_id = _format_phone_to_chat_id(target_phone)
     try:
         resp = requests.post(
-            url,
-            json={"phone": target, "text": text},  # TODO: WAJIB DISESUAIKAN - nama field body sesuai versi OpenWA Anda
+            send_url,
+            headers={"Content-Type": "application/json", "X-API-Key": api_key},
+            json={"chatId": chat_id, "text": text},
             timeout=10,
         )
-        resp.raise_for_status()
+        if resp.status_code != 201:
+            _log_activity(f"wa_notify: OpenWA mengembalikan status {resp.status_code}: {resp.text[:300]}")
+            return None
         data = resp.json()
-        message_id = (
-            data.get("id")
-            or (data.get("response") or {}).get("id")
-            or data.get("messageId")
-        )
-        return message_id
-    except Exception as e:
+        return data.get("messageId")
+    except requests.exceptions.RequestException as e:
         _log_activity(f"wa_notify: GAGAL kirim pesan - {e}")
         return None
 
 
 def notify_error(error_id: str):
     """Format & kirim notifikasi untuk satu error, simpan wa_message_id ke SQLite
-    supaya webhook balasan bisa dicocokkan lewat reply-to-message."""
+    supaya webhook balasan bisa dicocokkan lewat reply-to-message (quotedMessage.id)."""
     error_row = state.get_error(error_id)
     if not error_row:
         return

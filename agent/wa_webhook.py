@@ -1,14 +1,29 @@
 """
 wa_webhook.py - Terima balasan WhatsApp (approve/skip) dari OpenWA webhook.
 
-# TODO: WAJIB DISESUAIKAN - payload webhook OpenWA ASUMSI bentuk umum:
-#   { "body": "ok", "quotedMsgId": "...", ... }  ATAU
-#   { "body": "ok", "quotedMsg": {"id": "..."}, ... }  ATAU
-#   { "body": "ok", "contextInfo": {"quotedMessage": {"id": "..."}}, ... }
-# _extract_quoted_id() di bawah mencoba ketiga bentuk itu. Kalau versi OpenWA
-# Anda pakai nama field lain, tambahkan di daftar `_QUOTED_ID_PATHS`.
-# Juga pastikan route di bawah (`/webhook/wa`) SAMA dengan URL yang didaftarkan
-# sebagai webhook di konfigurasi OpenWA Anda.
+Bentuk payload di bawah SUDAH DIVERIFIKASI dari kode nyata gateway OpenWA
+(NestJS) di scripts/OpenWA/ repo ini, bukan tebakan (dikoreksi dari draft
+awal yang menebak 3 kemungkinan generik):
+  - scripts/OpenWA/src/modules/webhook/webhook.service.ts (fungsi dispatch(),
+    ~baris 275-390) - envelope pesan webhook:
+      {"event": "message.received", "timestamp": "...", "sessionId": "...",
+       "idempotencyKey": "...", "deliveryId": "...", "data": {...}}
+    "data" adalah objek IncomingMessage APA ADANYA dari engine WA.
+  - scripts/OpenWA/src/modules/session/session.service.ts (~baris 778) -
+    field di dalam "data": teks pesan ada di `data.body`, dan kalau pesan ini
+    adalah balasan/quote ke pesan lain, ada `data.quotedMessage.id` (BUKAN
+    quotedMsgId, BUKAN contextInfo.quotedMessage - itu tebakan generik dari
+    draft sebelumnya, sudah dikoreksi).
+
+# TODO: WAJIB DISESUAIKAN #1 - route "/webhook/wa" di bawah harus SAMA
+# dengan URL yang didaftarkan sebagai webhook untuk sesi OpenWA yang dipakai.
+# Pendaftarannya TIDAK otomatis dilakukan agent ini - lihat catatan lengkap
+# di config.py bagian "Registrasi webhook balasan WA".
+
+# TODO: OPSIONAL - webhook OpenWA bisa diberi secret (HMAC, header
+# X-OpenWA-Signature) saat didaftarkan - verifikasi signature belum
+# diimplementasikan di sini (webhook diterima apa adanya). Tambahkan kalau
+# endpoint ini akan diekspos ke luar jaringan internal.
 
 Spek poin 5 - reply tanpa ketik ID manual:
   - Kalau ada TEPAT SATU error berstatus 'waiting', balasan "ok"/"skip" polos
@@ -28,7 +43,11 @@ from activity_log import log_activity
 
 wa_webhook_bp = Blueprint("wa_webhook", __name__)
 
+# Path utama sudah diverifikasi (lihat docstring atas). Dua fallback lain
+# dipertahankan untuk jaga-jaga versi OpenWA berbeda/berubah di masa depan,
+# tapi TIDAK LAGI jadi tebakan utama.
 _QUOTED_ID_PATHS = [
+    ("quotedMessage", "id"),  # VERIFIED - lihat docstring atas
     ("quotedMsgId",),
     ("quotedMsg", "id"),
     ("contextInfo", "quotedMessage", "id"),
@@ -101,13 +120,27 @@ def _handle_decision(error_row: dict, decision: str):
 
 @wa_webhook_bp.route("/webhook/wa", methods=["POST"])
 def receive_wa_webhook():
-    payload = request.get_json(silent=True) or {}
-    body = (payload.get("body") or "").strip().lower()
+    envelope = request.get_json(silent=True) or {}
+
+    # Hanya proses event message.received (spek: OpenWA webhook subscription
+    # untuk sesi ini seharusnya hanya di-set ke event ini - lihat config.py -
+    # tapi dicek eksplisit di sini juga untuk jaga-jaga kalau webhook yang
+    # sama dipakai untuk event lain juga).
+    if envelope.get("event") and envelope.get("event") != "message.received":
+        return jsonify({"status": "ignored", "reason": f"event {envelope.get('event')} bukan message.received"}), 200
+
+    # Payload asli membungkus data pesan di dalam "data" (lihat docstring
+    # file ini) - fallback ke envelope itu sendiri kalau ternyata versi
+    # OpenWA yang dipakai TIDAK membungkus (mengirim field pesan langsung
+    # di top-level), supaya tidak diam-diam gagal parse.
+    message_data = envelope.get("data") if isinstance(envelope.get("data"), dict) else envelope
+
+    body = (message_data.get("body") or "").strip().lower()
 
     if body not in ("ok", "skip"):
         return jsonify({"status": "ignored", "reason": "bukan balasan ok/skip"}), 200
 
-    quoted_id = _extract_quoted_id(payload)
+    quoted_id = _extract_quoted_id(message_data)
     error_row = state.get_error_by_wa_message_id(quoted_id) if quoted_id else None
 
     if not error_row:

@@ -116,16 +116,17 @@ function ErrorHistoryTab() {
 function ConfigTab() {
   const [config, setConfig] = useState<ConfigData | null>(null)
   const [apiKey, setApiKey] = useState('')
-  const [openwaUrl, setOpenwaUrl] = useState('')
-  const [openwaTarget, setOpenwaTarget] = useState('')
+  const [openwaSendUrl, setOpenwaSendUrl] = useState('')
+  const [openwaApiKey, setOpenwaApiKey] = useState('')
+  const [openwaTargetPhone, setOpenwaTargetPhone] = useState('')
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
 
   const load = () => {
     api.getConfig().then((c) => {
       setConfig(c)
-      setOpenwaUrl(c.openwa_base_url)
-      setOpenwaTarget(c.openwa_target_number)
+      setOpenwaSendUrl(c.openwa_send_url)
+      setOpenwaTargetPhone(c.openwa_target_phone)
     })
   }
 
@@ -137,11 +138,13 @@ function ConfigTab() {
     try {
       await api.saveConfig({
         anthropic_api_key: apiKey || undefined,
-        openwa_base_url: openwaUrl,
-        openwa_target_number: openwaTarget,
+        openwa_send_url: openwaSendUrl,
+        openwa_api_key: openwaApiKey || undefined,
+        openwa_target_phone: openwaTargetPhone,
       })
       setApiKey('')
-      setMessage('Tersimpan. Langsung terpakai untuk diagnosis error berikutnya, tidak perlu restart agent.')
+      setOpenwaApiKey('')
+      setMessage('Tersimpan. Langsung terpakai untuk diagnosis/notifikasi berikutnya, tidak perlu restart agent.')
       load()
     } catch {
       setMessage('Gagal menyimpan.')
@@ -167,11 +170,25 @@ function ConfigTab() {
         onChange={(e) => setApiKey(e.target.value)}
       />
 
-      <label>OpenWA Base URL</label>
-      <input value={openwaUrl} onChange={(e) => setOpenwaUrl(e.target.value)} placeholder="http://localhost:8002" />
+      <label>OpenWA Send-Text URL (lengkap termasuk session ID)</label>
+      <input
+        value={openwaSendUrl}
+        onChange={(e) => setOpenwaSendUrl(e.target.value)}
+        placeholder="http://localhost:8000/sessions/<sessionId>/messages/send-text"
+      />
 
-      <label>Nomor WA Tujuan Notifikasi (format: 62812xxxx@c.us)</label>
-      <input value={openwaTarget} onChange={(e) => setOpenwaTarget(e.target.value)} placeholder="62812xxxxxxx@c.us" />
+      <label>
+        OpenWA API Key (X-API-Key) {config?.openwa_api_key_set && <span className="muted">(sekarang: {config.openwa_api_key_masked})</span>}
+      </label>
+      <input
+        type="password"
+        placeholder="token X-API-Key"
+        value={openwaApiKey}
+        onChange={(e) => setOpenwaApiKey(e.target.value)}
+      />
+
+      <label>Nomor WA Tujuan Notifikasi (digit saja, boleh diawali 0 atau 62)</label>
+      <input value={openwaTargetPhone} onChange={(e) => setOpenwaTargetPhone(e.target.value)} placeholder="0812xxxxxxx" />
 
       <button onClick={handleSave} disabled={saving}>{saving ? 'Menyimpan...' : 'Simpan'}</button>
       {message && <p className="muted">{message}</p>}

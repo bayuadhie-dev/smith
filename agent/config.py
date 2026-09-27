@@ -103,15 +103,44 @@ WATCHED_LOGS = [
 
 # =============================================================================
 # TODO: WAJIB DISESUAIKAN #2 - Detail koneksi OpenWA.
-# Endpoint standar OpenWA BERBEDA-BEDA tergantung versi/fork yang dipakai
-# (open-wa/wa-automate vs implementasi custom). Nilai di bawah ini ASUMSI
-# yang paling umum dari dokumentasi open-wa - CEK ULANG dokumentasi versi
-# OpenWA Anda dan sesuaikan path-nya di wa_notify.py (fungsi send_message())
-# dan wa_webhook.py (parsing payload webhook).
+# BUKAN LAGI ASUMSI - ini bentuk request/response NYATA dari gateway OpenWA
+# (NestJS) yang sudah ada di scripts/OpenWA/ repo ini, dikonfirmasi dari 2
+# sumber: (1) scripts/OpenWA/src/modules/message/message.controller.ts +
+# dto/send-message.dto.ts, (2) backend/utils/production_notifications.py yang
+# SUDAH memanggilnya untuk notifikasi WO selesai. Detail:
+#   - Endpoint kirim pesan: POST {OPENWA_SEND_URL}
+#     Route asli NestJS-nya: POST /sessions/:sessionId/messages/send-text
+#     jadi OPENWA_SEND_URL WAJIB SUDAH mengandung sessionId di path-nya,
+#     contoh: http://localhost:8000/sessions/<sessionId>/messages/send-text
+#     (lihat scripts/OpenWA - session dibuat/dilihat lewat SessionController,
+#     atau dashboard OpenWA di scripts/OpenWA/dashboard/)
+#   - Header auth: X-API-Key: <token>  (BUKAN Authorization/Bearer)
+#   - Body: {"chatId": "62812xxxx@c.us", "text": "..."}
+#   - Sukses = HTTP 201, body respons: {"messageId": "...", "timestamp": ...}
+#     (messageId inilah yang dicocokkan lewat quotedMessage.id saat user
+#     reply di WA - lihat wa_webhook.py)
+#   - Backend SMITH ERP sendiri sudah punya setting yang mirip
+#     (notifications.whatsapp_api_url / notifications.whatsapp_token di
+#     backend/routes/config_manager.py) - TAPI agent ini sengaja punya
+#     config SENDIRI (SQLite terpisah, dikonfirmasi user) supaya tidak perlu
+#     akses ke DB utama SMITH ERP. Boleh isi dengan URL/token YANG SAMA kalau
+#     mau pakai session OpenWA yang sama dengan notifikasi WO.
 # =============================================================================
-OPENWA_BASE_URL_DEFAULT = os.environ.get("OPENWA_BASE_URL", "http://localhost:8002")
-OPENWA_SEND_ENDPOINT_PATH = os.environ.get("OPENWA_SEND_ENDPOINT_PATH", "/sendText")
-OPENWA_TARGET_NUMBER_DEFAULT = os.environ.get("OPENWA_TARGET_NUMBER", "")  # TODO: WAJIB DISESUAIKAN #3 - format 62812xxxx@c.us
+OPENWA_SEND_URL_DEFAULT = os.environ.get("OPENWA_SEND_URL", "")  # TODO: WAJIB DIISI - http://host:port/sessions/<sessionId>/messages/send-text
+OPENWA_API_KEY_DEFAULT = os.environ.get("OPENWA_API_KEY", "")  # TODO: WAJIB DIISI - nilai X-API-Key
+OPENWA_TARGET_PHONE_DEFAULT = os.environ.get("OPENWA_TARGET_PHONE", "")  # TODO: WAJIB DIISI - nomor digit saja (boleh diawali 0 atau 62), dikonversi otomatis ke format 62xxxx@c.us saat kirim
+
+# =============================================================================
+# TODO: OPSIONAL - Registrasi webhook balasan WA ke OpenWA.
+# Gateway OpenWA TIDAK otomatis mengirim balasan masuk ke agent ini - webhook
+# harus didaftarkan dulu ke sesi OpenWA yang dipakai, lewat:
+#   POST {OpenWA base URL}/sessions/<sessionId>/webhooks
+#   body: {"url": "http://<host-agent-ini>:<AGENT_WEBHOOK_PORT>/webhook/wa",
+#          "events": ["message.received"]}
+# (lihat scripts/OpenWA/src/modules/webhook/webhook.controller.ts) - daftarkan
+# sekali lewat dashboard OpenWA atau curl manual, agent ini tidak melakukannya
+# otomatis saat start.
+# =============================================================================
 
 # Anthropic API
 ANTHROPIC_API_KEY_ENV_DEFAULT = os.environ.get("ANTHROPIC_API_KEY", "")
@@ -145,6 +174,7 @@ def get_effective_config():
 
     return {
         "anthropic_api_key": state.get_config("anthropic_api_key") or ANTHROPIC_API_KEY_ENV_DEFAULT,
-        "openwa_base_url": state.get_config("openwa_base_url") or OPENWA_BASE_URL_DEFAULT,
-        "openwa_target_number": state.get_config("openwa_target_number") or OPENWA_TARGET_NUMBER_DEFAULT,
+        "openwa_send_url": state.get_config("openwa_send_url") or OPENWA_SEND_URL_DEFAULT,
+        "openwa_api_key": state.get_config("openwa_api_key") or OPENWA_API_KEY_DEFAULT,
+        "openwa_target_phone": state.get_config("openwa_target_phone") or OPENWA_TARGET_PHONE_DEFAULT,
     }
