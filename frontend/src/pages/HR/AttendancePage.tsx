@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { 
-  Camera, Clock, CheckCircle, XCircle, AlertTriangle, 
-  Calendar, User, Loader2, RefreshCw, History
+import {
+  Camera, Clock, CheckCircle, XCircle, AlertTriangle,
+  Calendar, User, Loader2, RefreshCw, History, Pencil
 } from 'lucide-react';
 import * as faceapi from 'face-api.js';
 import api from '../../utils/axiosConfig';
@@ -38,6 +38,55 @@ const AttendancePage: React.FC = () => {
   const [modelsLoaded, setModelsLoaded] = useState(false);
   const [loadingModels, setLoadingModels] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Attendance correction request modal (2026-09-27) - "lupa clock in/out"
+  const [correctingRecord, setCorrectingRecord] = useState<AttendanceRecord | null>(null);
+  const [correctionForm, setCorrectionForm] = useState({ clock_in: '', clock_out: '', reason: '' });
+  const [correctionError, setCorrectionError] = useState<string | null>(null);
+
+  const submitCorrectionMutation = useMutation({
+    mutationFn: (payload: any) => api.post('/api/attendance/correction-requests', payload),
+    onSuccess: () => {
+      setCorrectingRecord(null);
+      setCorrectionForm({ clock_in: '', clock_out: '', reason: '' });
+      setCorrectionError(null);
+      queryClient.invalidateQueries({ queryKey: ['attendance-history'] });
+    },
+    onError: (err: any) => {
+      setCorrectionError(err.response?.data?.error || 'Gagal mengirim pengajuan koreksi');
+    }
+  });
+
+  const openCorrectionModal = (record: AttendanceRecord) => {
+    setCorrectingRecord(record);
+    setCorrectionForm({
+      clock_in: record.clock_in ? record.clock_in.slice(0, 16) : '',
+      clock_out: record.clock_out ? record.clock_out.slice(0, 16) : '',
+      reason: ''
+    });
+    setCorrectionError(null);
+  };
+
+  const handleSubmitCorrection = () => {
+    if (!correctingRecord) return;
+    if (!correctionForm.reason.trim()) {
+      setCorrectionError('Alasan wajib diisi');
+      return;
+    }
+    const requested_change: any = {};
+    if (correctionForm.clock_in) {
+      requested_change.clock_in = { old: correctingRecord.clock_in, new: correctionForm.clock_in };
+    }
+    if (correctionForm.clock_out) {
+      requested_change.clock_out = { old: correctingRecord.clock_out, new: correctionForm.clock_out };
+    }
+    submitCorrectionMutation.mutate({
+      attendance_id: correctingRecord.id,
+      correction_date: correctingRecord.attendance_date.slice(0, 10),
+      reason: correctionForm.reason,
+      requested_change,
+    });
+  };
 
   // Fetch today's attendance
   const { data: todayAttendance, isLoading: loadingToday } = useQuery({
@@ -550,19 +599,27 @@ const AttendancePage: React.FC = () => {
                          record.status === 'late' ? 'Terlambat' : record.status}
                       </span>
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-slate-500">
-                      <span>
-                        In: {record.clock_in 
-                          ? new Date(record.clock_in).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
-                          : '-'
-                        }
-                      </span>
-                      <span>
-                        Out: {record.clock_out 
-                          ? new Date(record.clock_out).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
-                          : '-'
-                        }
-                      </span>
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-4 text-sm text-slate-500">
+                        <span>
+                          In: {record.clock_in
+                            ? new Date(record.clock_in).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+                            : '-'
+                          }
+                        </span>
+                        <span>
+                          Out: {record.clock_out
+                            ? new Date(record.clock_out).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+                            : '-'
+                          }
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => openCorrectionModal(record)}
+                        className="text-xs text-blue-600 hover:underline flex items-center gap-1"
+                      >
+                        <Pencil className="w-3 h-3" /> Ajukan Koreksi
+                      </button>
                     </div>
                   </div>
                 ))
@@ -575,6 +632,70 @@ const AttendancePage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Correction Request Modal */}
+      {correctingRecord && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold mb-1">Ajukan Koreksi Absensi</h3>
+            <p className="text-sm text-slate-500 mb-4">
+              {new Date(correctingRecord.attendance_date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+            </p>
+            {correctionError && (
+              <div className="mb-3 px-3 py-2 bg-red-50 text-red-700 text-sm rounded-lg">{correctionError}</div>
+            )}
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Clock In (baru)</label>
+                  <input
+                    type="datetime-local"
+                    value={correctionForm.clock_in}
+                    onChange={(e) => setCorrectionForm(prev => ({ ...prev, clock_in: e.target.value }))}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Clock Out (baru)</label>
+                  <input
+                    type="datetime-local"
+                    value={correctionForm.clock_out}
+                    onChange={(e) => setCorrectionForm(prev => ({ ...prev, clock_out: e.target.value }))}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-slate-400">Kosongkan field yang tidak perlu dikoreksi.</p>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Alasan</label>
+                <textarea
+                  value={correctionForm.reason}
+                  onChange={(e) => setCorrectionForm(prev => ({ ...prev, reason: e.target.value }))}
+                  rows={3}
+                  placeholder="Contoh: lupa clock in karena HP mati"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 mt-5">
+              <button
+                onClick={() => { setCorrectingRecord(null); setCorrectionError(null); }}
+                className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleSubmitCorrection}
+                disabled={submitCorrectionMutation.isPending}
+                className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg text-sm disabled:bg-slate-400 flex items-center gap-2"
+              >
+                {submitCorrectionMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                Kirim Pengajuan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

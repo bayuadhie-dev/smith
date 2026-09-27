@@ -424,6 +424,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                 { name: 'Laporan Absensi', href: '/app/hr/attendance-report' },
                 { name: 'Belum Clock Out', href: '/app/hr/attendance-not-clocked-out' },
                 { name: 'Kelola Absensi', href: '/app/hr/attendance-admin' },
+                { name: 'Koreksi & Rekonsiliasi', href: '/app/hr/attendance-reconciliation' },
                 { name: 'Kelola Data Wajah', href: '/app/hr/face-admin' },
               ]
             },

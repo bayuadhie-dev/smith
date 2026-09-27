@@ -23,7 +23,7 @@ from .shipping import ShippingOrder, ShippingItem, DeliveryTracking, LogisticsPr
 from .mbf_report import MBFReport, MBFReportDetail
 from .returns import CustomerReturn, ReturnItem, ReturnQCRecord, ReturnDisposition
 from .finance import Invoice, InvoiceItem, Payment, AccountingEntry, CostCenter, Account
-from .hr import Employee, Department, ShiftSchedule, Attendance, Leave, EmployeeRoster, OutsourcingVendor, PieceworkLog
+from .hr import Employee, Department, ShiftSchedule, Attendance, Leave, EmployeeRoster, OutsourcingVendor, PieceworkLog, AttendanceCorrectionRequest, AttendanceReconciliationFlag
 from .hr_extended import (
     PayrollPeriod, PayrollRecord, SalaryComponent, EmployeeSalaryComponent,
     AppraisalCycle, AppraisalTemplate, AppraisalCriteria, EmployeeAppraisal, AppraisalScore,
@@ -132,7 +132,7 @@ __all__ = [
     'Invoice', 'InvoiceItem', 'Payment', 'AccountingEntry', 'CostCenter', 'Account',
     # HR models
     'Employee', 'Department', 'ShiftSchedule', 'Attendance', 'Leave', 'EmployeeRoster',
-    'OutsourcingVendor', 'PieceworkLog',
+    'OutsourcingVendor', 'PieceworkLog', 'AttendanceCorrectionRequest', 'AttendanceReconciliationFlag',
     # HR Extended models
     'PayrollPeriod', 'PayrollRecord', 'SalaryComponent', 'EmployeeSalaryComponent',
     'AppraisalCycle', 'AppraisalTemplate', 'AppraisalCriteria', 'EmployeeAppraisal', 'AppraisalScore',

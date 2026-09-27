@@ -217,6 +217,99 @@ class Attendance(db.Model):
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 
+
+class AttendanceCorrectionRequest(db.Model):
+    """Employee-initiated correction for a forgotten/wrong clock-in or
+    clock-out (2026-09-27). Separate from admin_verify_attendance in
+    routes/attendance.py, which is the admin side flagging a submitted
+    record as verified/rejected - this is the employee-side "I forgot to
+    clock in/out, please fix it" flow, with its own approval step."""
+    __tablename__ = 'attendance_correction_requests'
+
+    id = db.Column(db.Integer, primary_key=True)
+    employee_id = db.Column(db.Integer, db.ForeignKey('employees.id'), nullable=False, index=True)
+    # attendance_id is nullable: an employee who forgot to clock in at all
+    # has no existing Attendance row to point at - approval then creates one.
+    attendance_id = db.Column(db.Integer, db.ForeignKey('attendances.id'), nullable=True, index=True)
+    correction_date = db.Column(db.Date, nullable=False, index=True)
+    reason = db.Column(db.Text, nullable=False)
+    # requested_change: {"clock_in": {"old": "...", "new": "..."}, "clock_out": {...}}
+    requested_change = db.Column(db.JSON, nullable=False)
+    status = db.Column(db.String(20), nullable=False, default='pending')  # pending, approved, rejected
+    approver_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    approver_notes = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    resolved_at = db.Column(db.DateTime, nullable=True)
+
+    employee = db.relationship('Employee', foreign_keys=[employee_id])
+    attendance = db.relationship('Attendance', foreign_keys=[attendance_id])
+    approver = db.relationship('User', foreign_keys=[approver_id])
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'employee_id': self.employee_id,
+            'employee_name': self.employee.full_name if self.employee else None,
+            'attendance_id': self.attendance_id,
+            'correction_date': self.correction_date.isoformat() if self.correction_date else None,
+            'reason': self.reason,
+            'requested_change': self.requested_change,
+            'status': self.status,
+            'approver_id': self.approver_id,
+            'approver_name': self.approver.full_name if self.approver else None,
+            'approver_notes': self.approver_notes,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'resolved_at': self.resolved_at.isoformat() if self.resolved_at else None,
+        }
+
+
+class AttendanceReconciliationFlag(db.Model):
+    """Cross-check result between Attendance (clock-in/out) and
+    ShiftProduction (operator's production log) for the same employee+date
+    (2026-09-27). Neither side is authoritative - a mismatch could be
+    either record's mistake - so this only flags for supervisor review,
+    never auto-corrects either table. Upserted per (employee_id,
+    flag_date, mismatch_type) each time the reconciliation job/endpoint
+    runs, so re-running is idempotent."""
+    __tablename__ = 'attendance_reconciliation_flags'
+    __table_args__ = (
+        db.UniqueConstraint('employee_id', 'flag_date', 'mismatch_type', name='uq_reconciliation_flag'),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    employee_id = db.Column(db.Integer, db.ForeignKey('employees.id'), nullable=False, index=True)
+    flag_date = db.Column(db.Date, nullable=False, index=True)
+    # missing_attendance: has a ShiftProduction log that day, no Attendance clock-in
+    # missing_production_log: has an Attendance clock-in that day, no ShiftProduction log
+    mismatch_type = db.Column(db.String(30), nullable=False)
+    detail = db.Column(db.JSON, nullable=True)  # e.g. {"shift_production_ids": [12, 13]}
+    status = db.Column(db.String(20), nullable=False, default='open')  # open, reviewed
+    reviewed_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    reviewed_at = db.Column(db.DateTime, nullable=True)
+    review_notes = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    employee = db.relationship('Employee', foreign_keys=[employee_id])
+    reviewer = db.relationship('User', foreign_keys=[reviewed_by])
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'employee_id': self.employee_id,
+            'employee_name': self.employee.full_name if self.employee else None,
+            'flag_date': self.flag_date.isoformat() if self.flag_date else None,
+            'mismatch_type': self.mismatch_type,
+            'detail': self.detail,
+            'status': self.status,
+            'reviewed_by': self.reviewed_by,
+            'reviewer_name': self.reviewer.full_name if self.reviewer else None,
+            'reviewed_at': self.reviewed_at.isoformat() if self.reviewed_at else None,
+            'review_notes': self.review_notes,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+        }
+
+
 class Leave(db.Model):
     __tablename__ = 'leaves'
     

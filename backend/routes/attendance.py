@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify, make_response
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.auth_decorators import require_permission
 from models import db
-from models.hr import Attendance, OfficeLocation
+from models.hr import Attendance, OfficeLocation, Employee, AttendanceCorrectionRequest, AttendanceReconciliationFlag
 from models.user import User
 from datetime import datetime, date, timedelta
 from utils.timezone import get_local_now, get_local_today
@@ -1131,6 +1131,294 @@ def admin_search_attendance():
             })
         
         return jsonify({'records': result}), 200
-        
+
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# ==================== ATTENDANCE CORRECTION REQUESTS (2026-09-27) ====================
+# Employee-side "I forgot to clock in/out" flow, distinct from
+# admin_verify_attendance above (which is the admin verifying a record that
+# WAS submitted). requested_change shape:
+#   {"clock_in": {"old": "2026-09-27T08:15:00", "new": "2026-09-27T08:00:00"},
+#    "clock_out": {"old": null, "new": "2026-09-27T17:00:00"}}
+# Either key may be omitted if that side isn't being corrected.
+
+@attendance_bp.route('/correction-requests', methods=['POST'])
+@jwt_required()
+@require_permission('attendance.create')
+def submit_correction_request():
+    try:
+        user_id = get_jwt_identity()
+        employee = Employee.query.filter_by(user_id=user_id).first()
+        if not employee:
+            return jsonify({'error': 'Akun Anda tidak terhubung ke data karyawan. Hubungi HR.'}), 400
+
+        data = request.get_json() or {}
+        correction_date = data.get('correction_date')
+        reason = (data.get('reason') or '').strip()
+        requested_change = data.get('requested_change')
+
+        if not correction_date:
+            return jsonify({'error': 'Tanggal wajib diisi'}), 400
+        if not reason:
+            return jsonify({'error': 'Alasan wajib diisi'}), 400
+        if not requested_change or not isinstance(requested_change, dict):
+            return jsonify({'error': 'requested_change wajib berupa object {clock_in/clock_out: {old, new}}'}), 400
+
+        try:
+            correction_date_parsed = datetime.strptime(correction_date, '%Y-%m-%d').date()
+        except ValueError:
+            return jsonify({'error': 'Format tanggal tidak valid (YYYY-MM-DD)'}), 400
+
+        attendance_id = data.get('attendance_id')
+        if attendance_id:
+            existing = db.session.get(Attendance, attendance_id)
+            if not existing or existing.employee_id != employee.id:
+                return jsonify({'error': 'Attendance tidak ditemukan atau bukan milik Anda'}), 404
+
+        correction = AttendanceCorrectionRequest(
+            employee_id=employee.id,
+            attendance_id=attendance_id,
+            correction_date=correction_date_parsed,
+            reason=reason,
+            requested_change=requested_change,
+            status='pending',
+        )
+        db.session.add(correction)
+        db.session.commit()
+
+        return jsonify({'message': 'Pengajuan koreksi terkirim', 'correction': correction.to_dict()}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@attendance_bp.route('/correction-requests', methods=['GET'])
+@jwt_required()
+@require_permission('attendance.view')
+def list_correction_requests():
+    try:
+        status = request.args.get('status')
+        query = AttendanceCorrectionRequest.query
+        if status:
+            query = query.filter_by(status=status)
+        requests_ = query.order_by(AttendanceCorrectionRequest.created_at.desc()).all()
+        return jsonify({'correction_requests': [r.to_dict() for r in requests_]}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@attendance_bp.route('/correction-requests/<int:request_id>/approve', methods=['POST'])
+@jwt_required()
+@require_permission('attendance.edit')
+def approve_correction_request(request_id):
+    """Approve applies requested_change to the target Attendance row,
+    creating one first if the employee never had a record at all
+    (e.g. forgot to clock in entirely)."""
+    try:
+        user_id = get_jwt_identity()
+        correction = db.session.get(AttendanceCorrectionRequest, request_id)
+        if not correction:
+            return jsonify({'error': 'Pengajuan tidak ditemukan'}), 404
+        if correction.status != 'pending':
+            return jsonify({'error': 'Pengajuan sudah diproses sebelumnya'}), 400
+
+        attendance = db.session.get(Attendance, correction.attendance_id) if correction.attendance_id else None
+        if not attendance:
+            attendance = Attendance(
+                employee_id=correction.employee_id,
+                attendance_date=correction.correction_date,
+                status='present',
+                notes='Dibuat dari AttendanceCorrectionRequest (koreksi lupa absen)',
+            )
+            db.session.add(attendance)
+
+        change = correction.requested_change or {}
+        if 'clock_in' in change and change['clock_in'].get('new'):
+            attendance.clock_in = datetime.fromisoformat(change['clock_in']['new'])
+        if 'clock_out' in change and change['clock_out'].get('new'):
+            attendance.clock_out = datetime.fromisoformat(change['clock_out']['new'])
+        attendance.verification_status = 'verified'
+        attendance.verified_by = user_id
+        attendance.verified_at = get_local_now()
+
+        db.session.flush()
+        correction.attendance_id = attendance.id
+        correction.status = 'approved'
+        correction.approver_id = user_id
+        correction.resolved_at = get_local_now()
+        correction.approver_notes = (request.get_json() or {}).get('notes')
+
+        db.session.commit()
+        return jsonify({'message': 'Koreksi disetujui', 'correction': correction.to_dict()}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@attendance_bp.route('/correction-requests/<int:request_id>/reject', methods=['POST'])
+@jwt_required()
+@require_permission('attendance.edit')
+def reject_correction_request(request_id):
+    try:
+        user_id = get_jwt_identity()
+        correction = db.session.get(AttendanceCorrectionRequest, request_id)
+        if not correction:
+            return jsonify({'error': 'Pengajuan tidak ditemukan'}), 404
+        if correction.status != 'pending':
+            return jsonify({'error': 'Pengajuan sudah diproses sebelumnya'}), 400
+
+        data = request.get_json() or {}
+        correction.status = 'rejected'
+        correction.approver_id = user_id
+        correction.resolved_at = get_local_now()
+        correction.approver_notes = data.get('notes', 'Ditolak oleh admin')
+
+        db.session.commit()
+        return jsonify({'message': 'Koreksi ditolak', 'correction': correction.to_dict()}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+# ==================== ATTENDANCE <-> SHIFT PRODUCTION RECONCILIATION (2026-09-27) ====================
+# Cross-checks operators' Attendance clock-ins against their
+# ShiftProduction logs. Neither side is auto-corrected - either could be
+# the one that's wrong - this only surfaces mismatches for a supervisor
+# to look at and fix manually (via correction-requests above, or by
+# editing the production log directly).
+
+@attendance_bp.route('/reconciliation/run', methods=['POST'])
+@jwt_required()
+@require_permission('attendance.edit')
+def run_reconciliation():
+    try:
+        from models.production import ShiftProduction
+
+        data = request.get_json() or {}
+        start_date = data.get('start_date')
+        end_date = data.get('end_date')
+        if not start_date or not end_date:
+            return jsonify({'error': 'start_date dan end_date wajib diisi'}), 400
+
+        start = datetime.strptime(start_date, '%Y-%m-%d').date()
+        end = datetime.strptime(end_date, '%Y-%m-%d').date()
+
+        # Group ShiftProduction rows by (operator_id, production_date)
+        sp_rows = ShiftProduction.query.filter(
+            ShiftProduction.production_date >= start,
+            ShiftProduction.production_date <= end,
+            ShiftProduction.operator_id.isnot(None),
+        ).all()
+        sp_by_key = {}
+        for sp in sp_rows:
+            key = (sp.operator_id, sp.production_date)
+            sp_by_key.setdefault(key, []).append(sp.id)
+
+        # Attendance rows in range for employees who are known operators
+        # (appear in ShiftProduction at least once historically) so we
+        # don't flag office staff for never having a production log.
+        known_operator_ids = {sp.operator_id for sp in ShiftProduction.query.filter(
+            ShiftProduction.operator_id.isnot(None)
+        ).with_entities(ShiftProduction.operator_id).distinct()}
+
+        if known_operator_ids:
+            att_rows = Attendance.query.filter(
+                Attendance.attendance_date >= start,
+                Attendance.attendance_date <= end,
+                Attendance.employee_id.in_(known_operator_ids),
+                Attendance.clock_in.isnot(None),
+            ).all()
+        else:
+            att_rows = []
+        att_by_key = {(a.employee_id, a.attendance_date) for a in att_rows}
+
+        flags_created = 0
+        seen_keys = set()
+
+        # Case 1: has ShiftProduction, no Attendance clock-in
+        for (employee_id, prod_date), sp_ids in sp_by_key.items():
+            if (employee_id, prod_date) not in att_by_key:
+                seen_keys.add((employee_id, prod_date, 'missing_attendance'))
+                flag = AttendanceReconciliationFlag.query.filter_by(
+                    employee_id=employee_id, flag_date=prod_date, mismatch_type='missing_attendance'
+                ).first()
+                if not flag:
+                    flag = AttendanceReconciliationFlag(
+                        employee_id=employee_id, flag_date=prod_date, mismatch_type='missing_attendance',
+                    )
+                    db.session.add(flag)
+                    flags_created += 1
+                flag.detail = {'shift_production_ids': sp_ids}
+                if flag.status == 'reviewed':
+                    flag.status = 'open'  # re-open if it recurs after being reviewed
+
+        # Case 2: has Attendance clock-in, no ShiftProduction log that day
+        for employee_id, att_date in att_by_key:
+            if (employee_id, att_date) not in sp_by_key:
+                seen_keys.add((employee_id, att_date, 'missing_production_log'))
+                flag = AttendanceReconciliationFlag.query.filter_by(
+                    employee_id=employee_id, flag_date=att_date, mismatch_type='missing_production_log'
+                ).first()
+                if not flag:
+                    flag = AttendanceReconciliationFlag(
+                        employee_id=employee_id, flag_date=att_date, mismatch_type='missing_production_log',
+                    )
+                    db.session.add(flag)
+                    flags_created += 1
+                if flag.status == 'reviewed':
+                    flag.status = 'open'
+
+        db.session.commit()
+
+        flags = AttendanceReconciliationFlag.query.filter(
+            AttendanceReconciliationFlag.flag_date >= start,
+            AttendanceReconciliationFlag.flag_date <= end,
+        ).order_by(AttendanceReconciliationFlag.flag_date.desc()).all()
+
+        return jsonify({
+            'message': f'{flags_created} flag baru ditemukan',
+            'flags': [f.to_dict() for f in flags],
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@attendance_bp.route('/reconciliation', methods=['GET'])
+@jwt_required()
+@require_permission('attendance.view')
+def list_reconciliation_flags():
+    try:
+        status = request.args.get('status', 'open')
+        query = AttendanceReconciliationFlag.query
+        if status:
+            query = query.filter_by(status=status)
+        flags = query.order_by(AttendanceReconciliationFlag.flag_date.desc()).all()
+        return jsonify({'flags': [f.to_dict() for f in flags]}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@attendance_bp.route('/reconciliation/<int:flag_id>/review', methods=['POST'])
+@jwt_required()
+@require_permission('attendance.edit')
+def review_reconciliation_flag(flag_id):
+    try:
+        user_id = get_jwt_identity()
+        flag = db.session.get(AttendanceReconciliationFlag, flag_id)
+        if not flag:
+            return jsonify({'error': 'Flag tidak ditemukan'}), 404
+
+        data = request.get_json() or {}
+        flag.status = 'reviewed'
+        flag.reviewed_by = user_id
+        flag.reviewed_at = get_local_now()
+        flag.review_notes = data.get('notes')
+
+        db.session.commit()
+        return jsonify({'message': 'Ditandai sudah direview', 'flag': flag.to_dict()}), 200
+    except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500

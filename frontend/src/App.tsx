@@ -220,6 +220,7 @@ import PayrollPeriodForm from './pages/HR/PayrollPeriodForm'
 import PayrollRecordList from './pages/HR/PayrollRecordList'
 import AttendanceManagement from './pages/HR/AttendanceManagement'
 import AttendanceAdmin from './pages/HR/AttendanceAdmin'
+import AttendanceReconciliation from './pages/HR/AttendanceReconciliation'
 import FaceAdmin from './pages/HR/FaceAdmin'
 import AttendancePage from './pages/HR/AttendancePage'
 import AttendanceReport from './pages/HR/AttendanceReport'
@@ -911,6 +912,7 @@ function App() {
                 <Route path="hr/reports" element={<HRReports />} />
                 <Route path="hr/attendance" element={<AttendanceManagement />} />
                 <Route path="hr/attendance-admin" element={<AttendanceAdmin />} />
+                <Route path="hr/attendance-reconciliation" element={<AttendanceReconciliation />} />
                 <Route path="hr/face-admin" element={<FaceAdmin />} />
                 <Route path="hr/attendance-report" element={<AttendanceReport />} />
                 <Route path="hr/attendance-calendar" element={<AttendanceCalendar />} />
