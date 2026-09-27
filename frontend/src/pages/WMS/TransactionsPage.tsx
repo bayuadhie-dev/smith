@@ -155,7 +155,10 @@ const VIEW_KEY = 'wms_transactions';
 
 const TransactionsPage: React.FC = () => {
   const [data, setData] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  // MB51-style selection screen: no data is queried until the user runs a
+  // search - the page opens to an empty state, not a blind full-table dump.
+  const [hasSearched, setHasSearched] = useState(false);
 
   // ---- Selection screen (MB51-style search criteria) ----
   const [itemSearch, setItemSearch] = useState('');
@@ -224,7 +227,11 @@ const TransactionsPage: React.FC = () => {
       .catch(() => { /* 404 = never saved one, keep DEFAULT_COLUMNS */ });
   }, []);
 
+  // MB51-style selection screen: nothing loads until the user runs a
+  // search (page 1 shows an empty state, not a blind full-table dump).
+  // Once they have, page/sort changes re-query automatically as before.
   useEffect(() => {
+    if (!hasSearched) return;
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, sortBy, sortDir]);
@@ -254,16 +261,11 @@ const TransactionsPage: React.FC = () => {
   };
 
   const runSearch = () => {
+    setHasSearched(true);
     setPage(1);
     fetchData();
     fetchSummary();
   };
-
-  useEffect(() => {
-    fetchSummary();
-    // load once on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const applyDateShortcut = (shortcut: 'today' | '7days' | 'month') => {
     const now = new Date();
@@ -720,7 +722,13 @@ const TransactionsPage: React.FC = () => {
 
       {/* Tabel Data Audit (Dense Enterprise View) */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        {loading ? (
+        {!hasSearched ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center px-6">
+            <MagnifyingGlassIcon className="h-10 w-10 text-gray-300 mb-3" />
+            <p className="text-sm font-medium text-gray-500">Atur kriteria seleksi di atas, lalu klik "Jalankan Pencarian"</p>
+            <p className="text-xs text-gray-400 mt-1">Data tidak dimuat otomatis - pilih rentang tanggal/filter dulu supaya hasilnya relevan.</p>
+          </div>
+        ) : loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           </div>
