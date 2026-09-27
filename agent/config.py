@@ -3,17 +3,21 @@ config.py - Semua konfigurasi agent monitoring PM2 (error watcher + notifikasi W
 
 === CARA JALANKAN ===
 1. Install dependency:  pip install -r requirements.txt
-2. Set ANTHROPIC_API_KEY + config OpenWA (lihat "# TODO: WAJIB DISESUAIKAN"
+2. TODO: WAJIB DIISI - set AGENT_DASHBOARD_PASSWORD (password login
+   dashboard - lihat auth.py). Tanpa ini, login SELALU ditolak (fail-closed).
+3. Set ANTHROPIC_API_KEY + config OpenWA (lihat "# TODO: WAJIB DISESUAIKAN"
    di bawah) - atau isi lewat frontend agent-dashboard setelah agent jalan
    (tersimpan di SQLite, lihat state.py, langsung aktif tanpa restart).
-3. Jalankan langsung untuk tes: python main.py
-4. Buka agent-dashboard > tab "Sumber Log", centang app PM2 mana saja yang
-   mau dipantau - TIDAK PERLU diisi manual di sini, agent otomatis scan
-   `pm2 jlist` dan menampilkan semua app PM2 yang ada (lihat pm2_discovery.py).
-5. Daftarkan ke PM2 (proses terpisah dari app lain yang dipantau):
+4. Jalankan langsung untuk tes: python main.py
+5. Buka agent-dashboard, login pakai AGENT_DASHBOARD_PASSWORD, lalu ke tab
+   "Sumber Log", centang app PM2 mana saja yang mau dipantau - TIDAK PERLU
+   diisi manual di config, agent otomatis scan `pm2 jlist` (pm2_discovery.py).
+6. Daftarkan ke PM2 (proses terpisah dari app lain yang dipantau):
        pm2 start main.py --name agent-monitor --interpreter python3
 
 === ENV VAR YANG DIKENALI ===
+  AGENT_DASHBOARD_PASSWORD   - WAJIB - password login dashboard (auth.py)
+  AGENT_SESSION_TTL_HOURS    - opsional, masa berlaku token login (default: 168 = 7 hari)
   ANTHROPIC_API_KEY          - default, bisa dioverride dari frontend (SQLite config)
   OPENWA_BASE_URL            - default, bisa dioverride dari frontend (SQLite config)
   OPENWA_API_KEY             - default, bisa dioverride dari frontend (SQLite config)
@@ -21,6 +25,15 @@ config.py - Semua konfigurasi agent monitoring PM2 (error watcher + notifikasi W
   OPENWA_SESSION_ID_OVERRIDE - opsional, hanya kalau ada >1 sesi OpenWA READY
   AGENT_PUBLIC_CALLBACK_URL  - URL webhook yang didaftarkan ke OpenWA (default: localhost)
   AGENT_WEBHOOK_PORT         - port Flask utk webhook + API frontend (default: 4500)
+
+=== KALAU DITARUH DI TUNNEL (mis. Cloudflare tunnel bareng ERP utama) ===
+Login (AGENT_DASHBOARD_PASSWORD) melindungi /api/* dari orang luar, TAPI
+tetap pikirkan mana yang benar-benar perlu publik:
+  - Cukup expose port dashboard (4501) kalau cuma mau pantau dari luar.
+  - Port backend (4500, AGENT_WEBHOOK_PORT) hanya perlu publik kalau
+    gateway OpenWA-nya ada di jaringan/mesin LAIN dan perlu memanggil
+    balik /webhook/wa dari luar - kalau OpenWA satu mesin/jaringan lokal
+    dengan agent ini, port 4500 tidak perlu di-tunnel sama sekali.
 
 Daftar app PM2 yang dipantau BUKAN environment variable lagi (dulu
 PM2_APP_BACKEND/PM2_APP_FRONTEND, 2 slot tetap) - sekarang dipilih dari

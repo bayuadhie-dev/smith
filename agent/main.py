@@ -46,9 +46,14 @@ from watcher import Watcher
 def create_app() -> Flask:
     app = Flask(__name__)
     # CORS diaktifkan luas (allow semua origin) karena agent-dashboard
-    # (React+Vite, port dev berbeda) perlu fetch endpoint /api/* ini.
-    # TODO: WAJIB DIPERKETAT (batasi origin) kalau agent-dashboard nanti
-    # di-deploy dan diakses dari luar jaringan internal.
+    # (React+Vite, port dev berbeda, atau domain tunnel terpisah nantinya)
+    # perlu fetch endpoint /api/* ini. Ini AMAN dibiarkan luas walau
+    # endpoint-nya sekarang butuh login (auth.py) - autentikasi di sini
+    # pakai token lewat header `Authorization: Bearer` (dibaca manual oleh
+    # JS pemanggil dari localStorage), BUKAN cookie. Situs lain yang
+    # mencoba fetch endpoint ini dari origin berbeda tidak otomatis
+    # membawa token itu (beda dengan cookie yang otomatis terlampir oleh
+    # browser) - jadi tidak ada celah CSRF/cross-origin walau CORS longgar.
     CORS(app)
     app.register_blueprint(wa_webhook_bp)
     app.register_blueprint(api_bp)

@@ -15,15 +15,20 @@ awal yang menebak 3 kemungkinan generik):
     quotedMsgId, BUKAN contextInfo.quotedMessage - itu tebakan generik dari
     draft sebelumnya, sudah dikoreksi).
 
-# TODO: WAJIB DISESUAIKAN - route "/webhook/wa" di bawah harus SAMA
-# dengan URL yang didaftarkan sebagai webhook untuk sesi OpenWA yang dipakai.
-# Pendaftarannya TIDAK otomatis dilakukan agent ini - lihat catatan lengkap
-# di config.py bagian "Registrasi webhook balasan WA".
+# Route "/webhook/wa" di bawah didaftarkan OTOMATIS ke sesi OpenWA yang
+# aktif (openwa_client.py, dipanggil dari main.py saat startup) - tidak
+# perlu disesuaikan manual lagi, TAPI kalau route ini di-rename, ingat
+# webhook yang sudah terdaftar di OpenWA masih menunjuk ke path lama sampai
+# auto_setup() jalan lagi (restart agent, atau simpan ulang config OpenWA
+# lewat dashboard).
 
-# TODO: OPSIONAL - webhook OpenWA bisa diberi secret (HMAC, header
-# X-OpenWA-Signature) saat didaftarkan - verifikasi signature belum
-# diimplementasikan di sini (webhook diterima apa adanya). Tambahkan kalau
-# endpoint ini akan diekspos ke luar jaringan internal.
+# Verifikasi HMAC (X-OpenWA-Signature): AKTIF - openwa_client.py membuat
+# secret sekali (state: openwa_webhook_secret) dan mendaftarkannya ke
+# OpenWA saat registrasi webhook, request masuk di bawah diverifikasi
+# terhadap secret yang sama sebelum diproses (_verify_signature()).
+# Ditambahkan setelah user minta auth proper sebelum agent ini ditaruh di
+# tunnel publik - tanpa ini, siapa saja yang tahu URL webhook bisa kirim
+# payload "ok"/"skip" palsu dan memicu approve/skip error sungguhan.
 
 Spek poin 5 - reply tanpa ketik ID manual:
   - Kalau ada TEPAT SATU error berstatus 'waiting', balasan "ok"/"skip" polos
@@ -31,6 +36,8 @@ Spek poin 5 - reply tanpa ketik ID manual:
   - Kalau ada LEBIH DARI SATU pending dan quoted-id tidak match manapun,
     kirim pesan klarifikasi, JANGAN menebak salah satu secara diam-diam.
 """
+import hashlib
+import hmac
 from datetime import datetime
 from pathlib import Path
 
@@ -42,6 +49,27 @@ import wa_notify
 from activity_log import log_activity
 
 wa_webhook_bp = Blueprint("wa_webhook", __name__)
+
+
+def _verify_signature(raw_body: bytes) -> bool:
+    """True kalau signature valid ATAU kalau secret belum dikonfigurasi sama
+    sekali (fail-open HANYA untuk kasus itu - first run sebelum auto_setup()
+    sempat jalan/OpenWA belum online sekalipun, supaya webhook tidak diam-
+    diam berhenti berfungsi total pada instalasi baru). Begitu secret sudah
+    ada, signature yang tidak cocok/hilang SELALU ditolak (fail-closed)."""
+    secret = state.get_config("openwa_webhook_secret")
+    if not secret:
+        log_activity("wa_webhook: openwa_webhook_secret belum ada, verifikasi signature dilewati (webhook belum pernah auto-register)", level="warning")
+        return True
+
+    signature_header = request.headers.get("X-OpenWA-Signature", "")
+    if not signature_header.startswith("sha256="):
+        log_activity("wa_webhook: request ditolak - header X-OpenWA-Signature hilang/salah format", level="warning")
+        return False
+
+    expected = hmac.new(secret.encode("utf-8"), raw_body, hashlib.sha256).hexdigest()
+    provided = signature_header[len("sha256="):]
+    return hmac.compare_digest(expected, provided)
 
 # Path utama sudah diverifikasi (lihat docstring atas). Dua fallback lain
 # dipertahankan untuk jaga-jaga versi OpenWA berbeda/berubah di masa depan,
@@ -120,6 +148,9 @@ def _handle_decision(error_row: dict, decision: str):
 
 @wa_webhook_bp.route("/webhook/wa", methods=["POST"])
 def receive_wa_webhook():
+    if not _verify_signature(request.get_data()):
+        return jsonify({"error": "Invalid signature"}), 401
+
     envelope = request.get_json(silent=True) or {}
 
     # Hanya proses event message.received (spek: OpenWA webhook subscription

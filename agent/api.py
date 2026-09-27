@@ -9,8 +9,12 @@ saat ini. Ganti/rotate API key kapan pun tidak mempengaruhi histori lama.
 Config endpoint (GET/POST /api/config) sengaja TIDAK PERNAH mengembalikan
 nilai penuh dari anthropic_api_key yang sudah tersimpan (hanya beberapa
 karakter terakhir untuk konfirmasi visual "sudah keisi") - supaya frontend
-tidak perlu handle nilai sensitif di response GET, walau frontend ini
-sendiri belum ada auth (lihat TODO auth di bawah).
+tidak perlu handle nilai sensitif di response GET.
+
+Semua route di sini (kecuali /api/auth/login) dilindungi @require_auth
+(auth.py) - ditambahkan setelah user minta auth proper sebelum agent ini
+ditaruh di tunnel yang sama dengan ERP utama (jadi berpotensi diakses dari
+internet). Lihat auth.py untuk detail mekanismenya.
 """
 import json
 
@@ -19,12 +23,32 @@ from flask import Blueprint, request, jsonify
 import pm2_discovery
 import state
 import openwa_client
+from auth import require_auth, login as auth_login, logout as auth_logout
 from activity_log import log_activity
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
 
 
+@api_bp.route("/auth/login", methods=["POST"])
+def login_route():
+    data = request.get_json(silent=True) or {}
+    token = auth_login(data.get("password", ""))
+    if not token:
+        return jsonify({"error": "Password salah"}), 401
+    return jsonify({"token": token}), 200
+
+
+@api_bp.route("/auth/logout", methods=["POST"])
+@require_auth
+def logout_route():
+    header = request.headers.get("Authorization", "")
+    token = header[len("Bearer "):].strip() if header.startswith("Bearer ") else None
+    auth_logout(token)
+    return jsonify({"status": "logged_out"}), 200
+
+
 @api_bp.route("/errors", methods=["GET"])
+@require_auth
 def list_errors():
     status = request.args.get("status")  # waiting | approved | declined
     risk_level = request.args.get("risk_level")  # HIGH | MEDIUM | LOW
@@ -33,6 +57,7 @@ def list_errors():
 
 
 @api_bp.route("/errors/<error_id>", methods=["GET"])
+@require_auth
 def get_error_detail(error_id):
     row = state.get_error(error_id)
     if not row:
@@ -41,6 +66,7 @@ def get_error_detail(error_id):
 
 
 @api_bp.route("/stats", methods=["GET"])
+@require_auth
 def get_stats():
     """Ringkasan untuk header dashboard: jumlah per status + per risk level,
     dari SELURUH histori (bukan cuma yang lagi difilter di layar) - dipisah
@@ -61,6 +87,7 @@ def get_stats():
 
 
 @api_bp.route("/pm2/processes", methods=["GET"])
+@require_auth
 def get_pm2_processes():
     """Live scan `pm2 jlist` (pm2_discovery.py) + tandai mana yang sedang
     dipilih untuk dipantau (state: monitored_pm2_apps) - dipanggil dashboard
@@ -75,6 +102,7 @@ def get_pm2_processes():
 
 
 @api_bp.route("/pm2/processes", methods=["POST"])
+@require_auth
 def set_pm2_processes():
     """Simpan pilihan app yang mau dipantau (list nama app PM2) - watcher.py
     membaca ini ulang secara berkala (lihat REFRESH_EVERY_N_POLLS), jadi
@@ -95,6 +123,7 @@ def _mask(value: str) -> str:
 
 
 @api_bp.route("/config", methods=["GET"])
+@require_auth
 def get_config_route():
     all_config = state.get_all_config()
     api_key = all_config.get("anthropic_api_key", "")
@@ -111,12 +140,8 @@ def get_config_route():
 
 
 @api_bp.route("/config", methods=["POST"])
+@require_auth
 def set_config_route():
-    # TODO: WAJIB DITAMBAHKAN sebelum diakses dari luar jaringan kantor -
-    # endpoint ini menyimpan/mengubah kredensial (API key) TANPA autentikasi
-    # sama sekali saat ini (asumsi eksplisit spek: hanya user sendiri yang
-    # akses di jaringan internal/local). Tambahkan minimal API key statis di
-    # header atau login sebelum agent-dashboard bisa diakses dari luar.
     data = request.get_json(silent=True) or {}
     openwa_fields_changed = False
     if data.get("anthropic_api_key"):

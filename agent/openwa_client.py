@@ -14,9 +14,12 @@ WhatsApp itu sendiri (scan QR / pairing code pertama kali) - itu satu kali
 saja lewat dashboard OpenWA (scripts/OpenWA/dashboard/), di luar scope agent
 monitoring ini.
 """
+import secrets
+
 import requests
 
 import config
+import state
 from activity_log import log_activity
 
 _cached_session_id = None
@@ -73,11 +76,29 @@ def build_send_url(base_url: str, session_id: str) -> str:
     return f"{base_url.rstrip('/')}/sessions/{session_id}/messages/send-text"
 
 
+def _get_or_create_webhook_secret() -> str:
+    """Secret HMAC dibuat SEKALI dan disimpan permanen di SQLite (bukan
+    di-generate ulang tiap registrasi) - supaya webhook yang sudah terdaftar
+    di OpenWA (dengan secret lama) tetap valid selama idempotent-check di
+    bawah tidak re-register dengan secret baru. Dipakai wa_webhook.py untuk
+    verifikasi X-OpenWA-Signature (ditambahkan setelah user minta auth
+    proper sebelum di-tunnel publik - tanpa ini siapa saja yang tahu URL
+    webhook bisa kirim payload "ok"/"skip" palsu dan memicu approve/skip)."""
+    existing = state.get_config("openwa_webhook_secret")
+    if existing:
+        return existing
+    new_secret = secrets.token_hex(32)
+    state.set_config("openwa_webhook_secret", new_secret)
+    return new_secret
+
+
 def ensure_webhook_registered(base_url: str, api_key: str, session_id: str, callback_url: str):
     """Idempotent: cek dulu apakah callback_url ini sudah terdaftar untuk sesi
     ini sebelum POST webhook baru - supaya restart PM2 berkali-kali tidak
     numpuk webhook duplikat yang masing-masing akan mengirim event sendiri-
     sendiri (agent akan terima 1 balasan WA jadi N kali notifikasi)."""
+    secret = _get_or_create_webhook_secret()
+
     try:
         resp = requests.get(
             f"{base_url.rstrip('/')}/sessions/{session_id}/webhooks",
@@ -98,11 +119,11 @@ def ensure_webhook_registered(base_url: str, api_key: str, session_id: str, call
         resp = requests.post(
             f"{base_url.rstrip('/')}/sessions/{session_id}/webhooks",
             headers=_headers(api_key),
-            json={"url": callback_url, "events": ["message.received"]},
+            json={"url": callback_url, "events": ["message.received"], "secret": secret},
             timeout=10,
         )
         if resp.status_code in (200, 201):
-            log_activity(f"openwa_client: webhook {callback_url} terdaftar untuk sesi {session_id}")
+            log_activity(f"openwa_client: webhook {callback_url} terdaftar untuk sesi {session_id} (dengan HMAC secret)")
         else:
             log_activity(f"openwa_client: gagal daftarkan webhook - status {resp.status_code}: {resp.text[:300]}", level="warning")
     except Exception as e:

@@ -89,6 +89,12 @@ def init_db():
                 offset INTEGER NOT NULL,
                 inode INTEGER
             );
+
+            CREATE TABLE IF NOT EXISTS sessions (
+                token TEXT PRIMARY KEY,
+                created_at TEXT NOT NULL,
+                expires_at TEXT NOT NULL
+            );
             """
         )
         conn.commit()
@@ -292,5 +298,55 @@ def set_offset(file_path, offset, inode):
             "ON CONFLICT(file_path) DO UPDATE SET offset = excluded.offset, inode = excluded.inode",
             (str(file_path), offset, inode),
         )
+        conn.commit()
+        conn.close()
+
+
+# ---------------------------------------------------------------------------
+# Sessions (dashboard/API auth - added after user asked to tunnel this
+# alongside the public ERP domain, which meant the previously-open
+# /api/* endpoints needed real auth before being reachable from outside
+# the internal network)
+# ---------------------------------------------------------------------------
+
+def create_session(token: str, ttl_hours: int):
+    now = datetime.now(WIB)
+    expires = now + timedelta(hours=ttl_hours)
+    with _lock:
+        conn = _connect()
+        conn.execute(
+            "INSERT INTO sessions (token, created_at, expires_at) VALUES (?, ?, ?)",
+            (token, now.isoformat(), expires.isoformat()),
+        )
+        conn.commit()
+        conn.close()
+
+
+def is_session_valid(token: str) -> bool:
+    if not token:
+        return False
+    with _lock:
+        conn = _connect()
+        row = conn.execute("SELECT expires_at FROM sessions WHERE token = ?", (token,)).fetchone()
+        conn.close()
+    if not row:
+        return False
+    return datetime.fromisoformat(row["expires_at"]) > datetime.now(WIB)
+
+
+def delete_session(token: str):
+    with _lock:
+        conn = _connect()
+        conn.execute("DELETE FROM sessions WHERE token = ?", (token,))
+        conn.commit()
+        conn.close()
+
+
+def cleanup_expired_sessions():
+    """Dipanggil sesekali (bukan tiap request - lihat auth.py) supaya tabel
+    sessions tidak numpuk baris kedaluwarsa selamanya."""
+    with _lock:
+        conn = _connect()
+        conn.execute("DELETE FROM sessions WHERE expires_at < ?", (now_wib_iso(),))
         conn.commit()
         conn.close()

@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 import {
   Activity, AlertTriangle, AlertOctagon, Info, CheckCircle2, XCircle,
   Clock, Settings2, ListTree, RefreshCw, Server, FileWarning,
-  Repeat, ShieldAlert, Terminal, FolderGit2,
+  Repeat, ShieldAlert, Terminal, FolderGit2, LogOut, Lock, Loader2,
 } from 'lucide-react'
-import { api, ErrorRow, ConfigData, Stats, Pm2Process } from './api'
+import { api, getToken, setOnUnauthorized, ErrorRow, ConfigData, Stats, Pm2Process } from './api'
 import './App.css'
 
 // detected_at datang dari backend sebagai ISO lengkap dengan milidetik+offset
@@ -391,8 +391,69 @@ function ConfigTab() {
   )
 }
 
+function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+    try {
+      await api.login(password)
+      onSuccess()
+    } catch {
+      setError('Password salah.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="login-screen">
+      <form className="login-card" onSubmit={handleSubmit}>
+        <div className="brand login-brand">
+          <Activity size={22} />
+          <h1>Ops Agent Monitor</h1>
+        </div>
+        <p className="muted">Masuk untuk melihat histori error dan mengatur agent.</p>
+        <label><Lock size={13} /> Password</label>
+        <input
+          type="password"
+          autoFocus
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Password dashboard"
+        />
+        {error && <p className="login-error">{error}</p>}
+        <button className="btn-primary" type="submit" disabled={loading || !password}>
+          {loading ? <Loader2 size={15} className="spin" /> : null} Masuk
+        </button>
+      </form>
+    </div>
+  )
+}
+
 function App() {
   const [tab, setTab] = useState<'history' | 'pm2' | 'config'>('history')
+  const [authed, setAuthed] = useState(!!getToken())
+
+  useEffect(() => {
+    // Dipanggil api.ts saat request manapun kena 401 (token hilang/kedaluwarsa
+    // di server) - lempar balik ke layar login daripada membiarkan tab yang
+    // sedang dibuka diam-diam gagal fetch terus-menerus.
+    setOnUnauthorized(() => setAuthed(false))
+  }, [])
+
+  const handleLogout = async () => {
+    await api.logout()
+    setAuthed(false)
+  }
+
+  if (!authed) {
+    return <LoginScreen onSuccess={() => setAuthed(true)} />
+  }
 
   return (
     <div className="app">
@@ -412,6 +473,9 @@ function App() {
             <Settings2 size={15} /> Konfigurasi
           </button>
         </nav>
+        <button className="btn-ghost logout-btn" onClick={handleLogout}>
+          <LogOut size={14} /> Keluar
+        </button>
       </header>
       <main>
         {tab === 'history' && <ErrorHistoryTab />}

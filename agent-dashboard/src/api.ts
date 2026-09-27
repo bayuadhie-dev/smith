@@ -54,16 +54,56 @@ export interface Pm2Process {
   monitored: boolean
 }
 
+// Token login disimpan di localStorage (bukan cookie - lihat catatan CORS
+// di agent/main.py untuk kenapa itu aman walau CORS server-side longgar) dan
+// dilampirkan manual ke tiap request sebagai `Authorization: Bearer <token>`.
+const TOKEN_KEY = 'agent_auth_token'
+export const getToken = () => localStorage.getItem(TOKEN_KEY)
+export const setToken = (token: string) => localStorage.setItem(TOKEN_KEY, token)
+export const clearToken = () => localStorage.removeItem(TOKEN_KEY)
+
+// Dipanggil dari App.tsx saat sebuah request kena 401 - artinya token hilang/
+// kedaluwarsa, jadi bersihkan token yang tersimpan dan tampilkan layar login
+// lagi. Diisi App.tsx saat mount supaya request.ts tidak perlu impor React.
+let onUnauthorized: (() => void) | null = null
+export const setOnUnauthorized = (fn: () => void) => { onUnauthorized = fn }
+
+class UnauthorizedError extends Error {}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const token = getToken()
   const res = await fetch(`${BASE_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     ...options,
   })
+  if (res.status === 401) {
+    clearToken()
+    onUnauthorized?.()
+    throw new UnauthorizedError('Sesi berakhir, silakan login ulang')
+  }
   if (!res.ok) throw new Error(`Request gagal (${res.status}): ${path}`)
   return res.json()
 }
 
 export const api = {
+  login: async (password: string) => {
+    const res = await fetch(`${BASE_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password }),
+    })
+    if (!res.ok) throw new Error('Password salah')
+    const data: { token: string } = await res.json()
+    setToken(data.token)
+    return data.token
+  },
+  logout: async () => {
+    try { await request('/api/auth/logout', { method: 'POST' }) } catch { /* token mungkin sudah invalid, tetap lanjut bersihkan lokal */ }
+    clearToken()
+  },
   listErrors: (status?: string, riskLevel?: string) => {
     const params = new URLSearchParams()
     if (status) params.set('status', status)
