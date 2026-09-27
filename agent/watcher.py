@@ -16,18 +16,26 @@ WATCH_POLL_INTERVAL_SECONDS) - traceback biasanya tidak butuh reaksi
 sub-detik.
 """
 import hashlib
+import json
 import re
 import threading
-import time
 from collections import deque
 from pathlib import Path
 
 import config
 import diagnose
+import pm2_discovery
 import risk_classifier
 import state
 import wa_notify
 from activity_log import log_activity
+
+# Berapa siklus poll sebelum daftar app yang dipantau di-refresh ulang dari
+# PM2 (pm2 jlist) + pilihan user (state: monitored_pm2_apps) - tidak setiap
+# siklus supaya tidak shell-out ke `pm2 jlist` terlalu sering, tapi cukup
+# sering supaya app baru yang dicentang di dashboard, atau PM2 yang restart
+# dengan path log baru, terpakai tanpa perlu restart proses agent ini.
+REFRESH_EVERY_N_POLLS = 10
 
 # Kata kunci indikasi error (spek poin 1) - dicek per baris baru.
 ERROR_LINE_PATTERN = re.compile(
@@ -157,24 +165,64 @@ def handle_detected_error(log_context: str, error_line: str, source_app: str, lo
 
 class Watcher:
     """Dijalankan di thread terpisah dari Flask (main.py) - lihat docstring
-    main.py untuk alasan kenapa harus threading, bukan proses terpisah."""
+    main.py untuk alasan kenapa harus threading, bukan proses terpisah.
+
+    Daftar app yang dipantau TIDAK LAGI statis dari config.py (dulu 2 slot
+    tetap PM2_APP_BACKEND/PM2_APP_FRONTEND) - sekarang dibangun ulang secara
+    berkala dari state.get_config('monitored_pm2_apps') (dipilih user lewat
+    agent-dashboard) + path log LIVE dari `pm2 jlist` (pm2_discovery.py),
+    supaya app apa saja bisa dipantau, bukan cuma asumsi "backend"+"frontend"."""
 
     def __init__(self):
         self._stop_event = threading.Event()
         self._thread = None
-        self.tailers = [
-            LogTailer(path, source_app, is_error_log)
-            for path, source_app, is_error_log in config.WATCHED_LOGS
-        ]
+        self.tailers: dict[str, LogTailer] = {}  # key: str(path) - persist LogTailer (& context_buffer-nya) antar refresh selama app itu masih dipilih
+        self._poll_count = 0
+        self._refresh_tailers()
+
+    def _get_monitored_app_names(self) -> list[str]:
+        raw = state.get_config("monitored_pm2_apps")
+        if not raw:
+            return []
+        try:
+            return json.loads(raw)
+        except json.JSONDecodeError:
+            return []
+
+    def _refresh_tailers(self):
+        app_names = self._get_monitored_app_names()
+        watched_logs = pm2_discovery.resolve_watched_logs(app_names)
+
+        new_paths = set()
+        for path, source_app, is_error_log in watched_logs:
+            path_key = str(path)
+            new_paths.add(path_key)
+            if path_key not in self.tailers:
+                self.tailers[path_key] = LogTailer(Path(path), source_app, is_error_log)
+
+        # Buang tailer untuk app yang sudah di-uncheck user atau sudah tidak
+        # ada lagi di PM2 - context_buffer-nya boleh hilang (offset di SQLite
+        # tetap tersimpan, jadi kalau app itu dipantau lagi nanti tidak baca
+        # ulang dari awal, cuma kehilangan beberapa baris konteks "sebelum").
+        for stale_key in set(self.tailers) - new_paths:
+            del self.tailers[stale_key]
 
     def start(self):
         self._thread = threading.Thread(target=self._run, name="log-watcher", daemon=False)
         self._thread.start()
-        log_activity("watcher: dimulai, memantau: " + ", ".join(str(t.path) for t in self.tailers))
+        names = ", ".join(self._get_monitored_app_names()) or "(belum ada app dipilih - lihat agent-dashboard > Sumber Log)"
+        log_activity(f"watcher: dimulai, app dipantau: {names}")
 
     def _run(self):
         while not self._stop_event.is_set():
-            for tailer in self.tailers:
+            self._poll_count += 1
+            if self._poll_count % REFRESH_EVERY_N_POLLS == 0:
+                try:
+                    self._refresh_tailers()
+                except Exception as e:
+                    log_activity(f"watcher: gagal refresh daftar app - {e}", level="error")
+
+            for tailer in list(self.tailers.values()):
                 try:
                     tailer.poll()
                 except Exception as e:

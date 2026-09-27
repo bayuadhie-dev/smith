@@ -1,12 +1,62 @@
 import { useEffect, useState } from 'react'
-import { api, ErrorRow, ConfigData } from './api'
+import {
+  Activity, AlertTriangle, AlertOctagon, Info, CheckCircle2, XCircle,
+  Clock, Settings2, ListTree, RefreshCw, Server, FileWarning,
+  Repeat, ShieldAlert, Terminal, FolderGit2,
+} from 'lucide-react'
+import { api, ErrorRow, ConfigData, Stats, Pm2Process } from './api'
 import './App.css'
 
-const RISK_EMOJI: Record<string, string> = { HIGH: '🔴', MEDIUM: '🟡', LOW: '🟢' }
-const STATUS_LABEL: Record<string, string> = { waiting: 'Menunggu', approved: 'Approved', declined: 'Di-skip' }
+// detected_at datang dari backend sebagai ISO lengkap dengan milidetik+offset
+// WIB (mis. "2026-09-27T19:05:03.269220+07:00") - terlalu panjang untuk
+// kolom tabel, dipersingkat ke "27 Sep 19:05" di sini. Detail penuh tetap
+// ditampilkan apa adanya di panel detail (dd elemen).
+function formatShortDate(iso: string): string {
+  try {
+    const d = new Date(iso)
+    return d.toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
+  } catch {
+    return iso
+  }
+}
+
+const RISK_META: Record<string, { icon: typeof AlertOctagon; className: string; label: string }> = {
+  HIGH: { icon: AlertOctagon, className: 'risk-high', label: 'HIGH' },
+  MEDIUM: { icon: AlertTriangle, className: 'risk-medium', label: 'MEDIUM' },
+  LOW: { icon: Info, className: 'risk-low', label: 'LOW' },
+}
+const STATUS_META: Record<string, { icon: typeof Clock; className: string; label: string }> = {
+  waiting: { icon: Clock, className: 'status-waiting', label: 'Menunggu' },
+  approved: { icon: CheckCircle2, className: 'status-approved', label: 'Approved' },
+  declined: { icon: XCircle, className: 'status-declined', label: 'Di-skip' },
+}
+
+function StatCards({ stats }: { stats: Stats | null }) {
+  if (!stats) return null
+  const cards = [
+    { label: 'Total Error', value: stats.total, icon: Activity, tone: 'tone-neutral' },
+    { label: 'Menunggu Approval', value: stats.by_status.waiting, icon: Clock, tone: 'tone-waiting' },
+    { label: 'Risk HIGH', value: stats.by_risk.HIGH, icon: AlertOctagon, tone: 'tone-high' },
+    { label: 'Total Kemunculan', value: stats.total_occurrences, icon: Repeat, tone: 'tone-neutral' },
+  ]
+  return (
+    <div className="stat-cards">
+      {cards.map((c) => (
+        <div key={c.label} className={`stat-card ${c.tone}`}>
+          <c.icon className="stat-icon" size={20} />
+          <div>
+            <div className="stat-value">{c.value}</div>
+            <div className="stat-label">{c.label}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 function ErrorHistoryTab() {
   const [errors, setErrors] = useState<ErrorRow[]>([])
+  const [stats, setStats] = useState<Stats | null>(null)
   const [statusFilter, setStatusFilter] = useState('')
   const [riskFilter, setRiskFilter] = useState('')
   const [selected, setSelected] = useState<ErrorRow | null>(null)
@@ -14,8 +64,14 @@ function ErrorHistoryTab() {
 
   const load = () => {
     setLoading(true)
-    api.listErrors(statusFilter || undefined, riskFilter || undefined)
-      .then((res) => setErrors(res.errors))
+    Promise.all([
+      api.listErrors(statusFilter || undefined, riskFilter || undefined),
+      api.getStats(),
+    ])
+      .then(([errRes, statsRes]) => {
+        setErrors(errRes.errors)
+        setStats(statsRes)
+      })
       .catch(() => setErrors([]))
       .finally(() => setLoading(false))
   }
@@ -25,6 +81,8 @@ function ErrorHistoryTab() {
   return (
     <div className="layout">
       <div className="list-panel">
+        <StatCards stats={stats} />
+
         <div className="filters">
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
             <option value="">Semua Status</option>
@@ -38,14 +96,18 @@ function ErrorHistoryTab() {
             <option value="MEDIUM">MEDIUM</option>
             <option value="LOW">LOW</option>
           </select>
-          <button onClick={load}>Refresh</button>
+          <button className="btn-ghost" onClick={load}><RefreshCw size={14} /> Refresh</button>
         </div>
 
         {loading ? (
           <p className="muted">Memuat...</p>
         ) : errors.length === 0 ? (
-          <p className="muted">Belum ada error terdeteksi.</p>
+          <div className="empty-state">
+            <FileWarning size={28} className="muted" />
+            <p className="muted">Belum ada error terdeteksi.</p>
+          </div>
         ) : (
+          <div className="table-scroll">
           <table>
             <thead>
               <tr>
@@ -57,58 +119,175 @@ function ErrorHistoryTab() {
               </tr>
             </thead>
             <tbody>
-              {errors.map((e) => (
-                <tr key={e.id} className={selected?.id === e.id ? 'row-selected' : ''} onClick={() => setSelected(e)}>
-                  <td>{e.id}</td>
-                  <td>{RISK_EMOJI[e.risk_level]} {e.risk_level}</td>
-                  <td>{e.source_app}</td>
-                  <td>{e.detected_at}</td>
-                  <td>
-                    <span className={`badge badge-${e.status}`}>{STATUS_LABEL[e.status] || e.status}</span>
-                    {e.occurrence_count > 1 && <span className="muted"> ({e.occurrence_count}x)</span>}
-                  </td>
-                </tr>
-              ))}
+              {errors.map((e) => {
+                const risk = RISK_META[e.risk_level]
+                const status = STATUS_META[e.status]
+                return (
+                  <tr key={e.id} className={selected?.id === e.id ? 'row-selected' : ''} onClick={() => setSelected(e)}>
+                    <td className="mono nowrap">{e.id}</td>
+                    <td><span className={`pill ${risk.className}`}><risk.icon size={12} /> {risk.label}</span></td>
+                    <td>{e.source_app}</td>
+                    <td className="muted nowrap">{formatShortDate(e.detected_at)}</td>
+                    <td className="nowrap">
+                      <span className={`pill ${status.className}`}><status.icon size={12} /> {status.label}</span>
+                      {e.occurrence_count > 1 && <span className="muted occ-badge"><Repeat size={11} /> {e.occurrence_count}x</span>}
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 
       <div className="detail-panel">
         {!selected ? (
-          <p className="muted">Klik salah satu error di daftar untuk lihat detail.</p>
+          <div className="empty-state">
+            <ListTree size={28} className="muted" />
+            <p className="muted">Klik salah satu error di daftar untuk lihat detail.</p>
+          </div>
         ) : (
           <div>
-            <h2>{selected.id}</h2>
-            <p>
-              {RISK_EMOJI[selected.risk_level]} <strong>{selected.risk_level}</strong> — {selected.risk_reason}
-            </p>
+            <div className="detail-header">
+              <h2 className="mono">{selected.id}</h2>
+              <span className={`pill ${RISK_META[selected.risk_level].className}`}>
+                {(() => { const Icon = RISK_META[selected.risk_level].icon; return <Icon size={13} /> })()} {selected.risk_level}
+              </span>
+            </div>
+            <p className="risk-reason">{selected.risk_reason}</p>
+
             <dl>
               <dt>App</dt><dd>{selected.source_app}</dd>
-              <dt>Log file</dt><dd className="mono">{selected.log_file}</dd>
+              <dt>Log file</dt><dd className="mono small">{selected.log_file}</dd>
               <dt>Terdeteksi</dt><dd>{selected.detected_at} WIB</dd>
-              <dt>Terakhir muncul</dt><dd>{selected.last_seen_at} WIB ({selected.occurrence_count}x)</dd>
-              <dt>Status</dt><dd>{STATUS_LABEL[selected.status] || selected.status}</dd>
+              <dt>Terakhir muncul</dt><dd>{selected.last_seen_at} WIB &middot; {selected.occurrence_count}x</dd>
+              <dt>Status</dt><dd><span className={`pill ${STATUS_META[selected.status].className}`}>{STATUS_META[selected.status].label}</span></dd>
               {selected.decline_reason && <><dt>Alasan skip</dt><dd>{selected.decline_reason}</dd></>}
             </dl>
 
-            <h3>Diagnosis (Claude API)</h3>
+            <h3><ShieldAlert size={16} /> Diagnosis (Claude API)</h3>
             {selected.diagnosis_cause ? (
               <dl>
                 <dt>Penyebab</dt><dd>{selected.diagnosis_cause}</dd>
-                <dt>File terduga</dt><dd className="mono">{selected.diagnosis_file || '-'}</dd>
+                <dt>File terduga</dt><dd className="mono small">{selected.diagnosis_file || '-'}</dd>
                 <dt>Usulan fix</dt><dd className="pre">{selected.diagnosis_fix}</dd>
-                <dt>Confidence</dt><dd>{selected.diagnosis_confidence}</dd>
+                <dt>Confidence</dt><dd className={`confidence-${selected.diagnosis_confidence}`}>{selected.diagnosis_confidence}</dd>
               </dl>
             ) : (
               <p className="muted">Belum ada hasil diagnosis (mungkin API key belum diset saat error ini terdeteksi).</p>
             )}
 
-            <h3>Log mentah + konteks</h3>
+            <h3><Terminal size={16} /> Log mentah + konteks</h3>
             <pre className="log-context">{selected.raw_context}</pre>
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+function Pm2SourcesTab() {
+  const [processes, setProcesses] = useState<Pm2Process[]>([])
+  const [selectedNames, setSelectedNames] = useState<Set<string>>(new Set())
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [message, setMessage] = useState('')
+
+  const load = () => {
+    setLoading(true)
+    api.getPm2Processes()
+      .then((res) => {
+        setProcesses(res.processes)
+        setSelectedNames(new Set(res.processes.filter((p) => p.monitored).map((p) => p.name)))
+      })
+      .catch(() => setProcesses([]))
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(load, [])
+
+  const toggle = (name: string) => {
+    setSelectedNames((prev) => {
+      const next = new Set(prev)
+      if (next.has(name)) next.delete(name)
+      else next.add(name)
+      return next
+    })
+  }
+
+  const handleSave = async () => {
+    setSaving(true)
+    setMessage('')
+    try {
+      await api.savePm2Processes(Array.from(selectedNames))
+      setMessage('Tersimpan. Watcher mengambil perubahan ini otomatis dalam beberapa siklus polling berikutnya, tidak perlu restart agent.')
+    } catch {
+      setMessage('Gagal menyimpan.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const statusClass = (status: string) => {
+    if (status === 'online') return 'pm2-online'
+    if (status === 'stopped') return 'pm2-stopped'
+    if (status === 'errored') return 'pm2-errored'
+    return 'pm2-other'
+  }
+
+  return (
+    <div className="pm2-panel">
+      <div className="pm2-panel-header">
+        <div>
+          <h2><Server size={18} /> Sumber Log (PM2)</h2>
+          <p className="muted">
+            Discovery live dari <code>pm2 jlist</code> - centang app mana saja yang mau dipantau. Tidak perlu
+            diketik manual, dan tidak dibatasi ke 2 app (backend/frontend) saja.
+          </p>
+        </div>
+        <button className="btn-ghost" onClick={load}><RefreshCw size={14} /> Refresh</button>
+      </div>
+
+      {loading ? (
+        <p className="muted">Memuat daftar proses PM2...</p>
+      ) : processes.length === 0 ? (
+        <div className="empty-state">
+          <Server size={28} className="muted" />
+          <p className="muted">
+            Tidak ada proses PM2 ditemukan. Pastikan <code>pm2</code> ada di PATH dan daemon-nya jalan di mesin
+            yang sama dengan agent ini.
+          </p>
+        </div>
+      ) : (
+        <div className="pm2-list">
+          {processes.map((p) => (
+            <label key={p.name} className="pm2-row">
+              <input type="checkbox" checked={selectedNames.has(p.name)} onChange={() => toggle(p.name)} />
+              <div className="pm2-row-main">
+                <div className="pm2-row-title">
+                  <span className="mono">{p.name}</span>
+                  <span className={`pill ${statusClass(p.status)}`}>{p.status}</span>
+                </div>
+                <div className="pm2-row-meta muted">
+                  <span><FolderGit2 size={12} /> {p.cwd || '-'}</span>
+                  {p.pid && <span>pid {p.pid}</span>}
+                  {p.restart_time != null && <span>{p.restart_time}x restart</span>}
+                </div>
+                <div className="pm2-row-logs muted small mono">
+                  <div>err: {p.err_log || '-'}</div>
+                  <div>out: {p.out_log || '-'}</div>
+                </div>
+              </div>
+            </label>
+          ))}
+        </div>
+      )}
+
+      <button className="btn-primary" onClick={handleSave} disabled={saving || loading}>
+        {saving ? 'Menyimpan...' : `Simpan Pilihan (${selectedNames.size})`}
+      </button>
+      {message && <p className="muted">{message}</p>}
     </div>
   )
 }
@@ -158,6 +337,7 @@ function ConfigTab() {
 
   return (
     <div className="config-panel">
+      <h2><Settings2 size={18} /> Konfigurasi</h2>
       <p className="muted">
         Disimpan di database agent (SQLite), bukan di browser - histori error yang sudah ada TIDAK
         terpengaruh kalau key ini diganti kapan pun.
@@ -200,10 +380,10 @@ function ConfigTab() {
       <label>Session ID Override (opsional - isi hanya kalau ada &gt;1 sesi READY)</label>
       <input value={openwaSessionOverride} onChange={(e) => setOpenwaSessionOverride(e.target.value)} placeholder="kosongkan untuk auto-detect" />
 
-      <button onClick={handleSave} disabled={saving}>{saving ? 'Menyimpan...' : 'Simpan'}</button>
+      <button className="btn-primary" onClick={handleSave} disabled={saving}>{saving ? 'Menyimpan...' : 'Simpan'}</button>
       {message && <p className="muted">{message}</p>}
 
-      <p className="muted" style={{ marginTop: '2rem' }}>
+      <p className="muted todo-note">
         TODO: dashboard ini belum ada autentikasi - aman selama hanya diakses di jaringan
         internal/lokal. Tambahkan proteksi login sebelum diakses dari luar jaringan kantor.
       </p>
@@ -212,18 +392,32 @@ function ConfigTab() {
 }
 
 function App() {
-  const [tab, setTab] = useState<'history' | 'config'>('history')
+  const [tab, setTab] = useState<'history' | 'pm2' | 'config'>('history')
 
   return (
     <div className="app">
       <header>
-        <h1>SMITH Agent Monitor</h1>
+        <div className="brand">
+          <Activity size={20} />
+          <h1>Ops Agent Monitor</h1>
+        </div>
         <nav>
-          <button className={tab === 'history' ? 'active' : ''} onClick={() => setTab('history')}>Histori Error</button>
-          <button className={tab === 'config' ? 'active' : ''} onClick={() => setTab('config')}>Konfigurasi</button>
+          <button className={tab === 'history' ? 'active' : ''} onClick={() => setTab('history')}>
+            <ListTree size={15} /> Histori Error
+          </button>
+          <button className={tab === 'pm2' ? 'active' : ''} onClick={() => setTab('pm2')}>
+            <Server size={15} /> Sumber Log
+          </button>
+          <button className={tab === 'config' ? 'active' : ''} onClick={() => setTab('config')}>
+            <Settings2 size={15} /> Konfigurasi
+          </button>
         </nav>
       </header>
-      <main>{tab === 'history' ? <ErrorHistoryTab /> : <ConfigTab />}</main>
+      <main>
+        {tab === 'history' && <ErrorHistoryTab />}
+        {tab === 'pm2' && <Pm2SourcesTab />}
+        {tab === 'config' && <ConfigTab />}
+      </main>
     </div>
   )
 }

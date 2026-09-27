@@ -5,11 +5,11 @@ Bentuk request/response di bawah ini SUDAH DIVERIFIKASI dari kode nyata
 gateway OpenWA (NestJS) di scripts/OpenWA/ repo ini, bukan tebakan:
   - scripts/OpenWA/src/modules/message/message.controller.ts (route)
   - scripts/OpenWA/src/modules/message/dto/send-message.dto.ts (request/response shape)
-  - backend/utils/production_notifications.py (backend SMITH ERP SUDAH
+  - backend/utils/production_notifications.py (backend ERP internal SUDAH
     memanggil endpoint yang sama untuk notifikasi WO selesai - pola
     header/body/response di bawah persis meniru itu)
 
-# TODO: WAJIB DISESUAIKAN - config.OPENWA_SEND_URL_DEFAULT (atau isi lewat
+# TODO: WAJIB DISESUAIKAN - config.OPENWA_BASE_URL_DEFAULT + OPENWA_API_KEY_DEFAULT (atau isi lewat
 # agent-dashboard > Konfigurasi) harus URL LENGKAP termasuk sessionId:
 #   http://<host>:<port>/sessions/<sessionId>/messages/send-text
 # Lihat penjelasan lengkap di config.py.

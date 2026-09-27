@@ -3,7 +3,7 @@ diagnose.py - Panggil Claude API untuk mendiagnosis error yang terdeteksi.
 
 Sengaja HANYA mengirim teks log (traceback + beberapa baris konteks) ke
 Claude API, TIDAK membaca/mengirim isi file source project (dikonfirmasi
-user): agent ini tidak butuh akses baca ke repo SMITH ERP sama sekali,
+user): agent ini tidak butuh akses baca ke repo ERP internal sama sekali,
 lebih aman untuk dijalankan sebagai proses terpisah, dan lebih murah dari
 sisi token. Konsekuensinya, "file yang kemungkinan bermasalah" dalam hasil
 diagnosis adalah TEBAKAN dari traceback (nama file yang muncul di
@@ -63,7 +63,7 @@ def diagnose_error(log_context: str, risk_level: str, risk_reason: str, source_a
 
     client = anthropic.Anthropic(api_key=api_key)
 
-    user_prompt = f"""Aplikasi: SMITH ERP - {source_app}
+    user_prompt = f"""Aplikasi: ERP internal - {source_app}
 Risk level (sudah ditentukan sistem, bukan tugasmu menilai ulang): {risk_level} ({risk_reason})
 
 Log (traceback + konteks sekitarnya):

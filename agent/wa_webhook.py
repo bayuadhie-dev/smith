@@ -15,7 +15,7 @@ awal yang menebak 3 kemungkinan generik):
     quotedMsgId, BUKAN contextInfo.quotedMessage - itu tebakan generik dari
     draft sebelumnya, sudah dikoreksi).
 
-# TODO: WAJIB DISESUAIKAN #1 - route "/webhook/wa" di bawah harus SAMA
+# TODO: WAJIB DISESUAIKAN - route "/webhook/wa" di bawah harus SAMA
 # dengan URL yang didaftarkan sebagai webhook untuk sesi OpenWA yang dipakai.
 # Pendaftarannya TIDAK otomatis dilakukan agent ini - lihat catatan lengkap
 # di config.py bagian "Registrasi webhook balasan WA".
@@ -96,7 +96,7 @@ def _write_backlog(error_row: dict, reason: str):
     is_new = not path.exists()
     with open(path, "a", encoding="utf-8") as f:
         if is_new:
-            f.write("# Bug Backlog - SMITH Agent Monitor\n\n")
+            f.write("# Bug Backlog - Ops Agent Monitor\n\n")
             f.write("Error yang di-skip (bukan HIGH-priority saat itu, atau butuh keputusan manual).\n\n")
         f.write(f"- [ ] **{error_row['id']}** ({error_row['risk_level']}) - {error_row['source_app']}\n")
         f.write(f"  - Terdeteksi: {error_row['detected_at']} WIB\n")

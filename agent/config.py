@@ -1,108 +1,40 @@
 """
-config.py - Semua konfigurasi agent monitoring SMITH ERP.
+config.py - Semua konfigurasi agent monitoring PM2 (error watcher + notifikasi WA).
 
 === CARA JALANKAN ===
 1. Install dependency:  pip install -r requirements.txt
-2. Set environment variable wajib (lihat daftar "# TODO: WAJIB DISESUAIKAN"
+2. Set ANTHROPIC_API_KEY + config OpenWA (lihat "# TODO: WAJIB DISESUAIKAN"
    di bawah) - atau isi lewat frontend agent-dashboard setelah agent jalan
    (tersimpan di SQLite, lihat state.py, langsung aktif tanpa restart).
 3. Jalankan langsung untuk tes: python main.py
-4. Daftarkan ke PM2 (proses ketiga, terpisah dari backend & frontend SMITH):
-       pm2 start main.py --name smith-agent-monitor --interpreter python3
-   Pastikan PM2 sudah punya proses `smith-backend` dan `smith-frontend`
-   berjalan (atau nama lain - sesuaikan PM2_APP_BACKEND/PM2_APP_FRONTEND
-   di bawah) supaya ada log yang bisa dipantau.
+4. Buka agent-dashboard > tab "Sumber Log", centang app PM2 mana saja yang
+   mau dipantau - TIDAK PERLU diisi manual di sini, agent otomatis scan
+   `pm2 jlist` dan menampilkan semua app PM2 yang ada (lihat pm2_discovery.py).
+5. Daftarkan ke PM2 (proses terpisah dari app lain yang dipantau):
+       pm2 start main.py --name agent-monitor --interpreter python3
 
 === ENV VAR YANG DIKENALI ===
   ANTHROPIC_API_KEY          - default, bisa dioverride dari frontend (SQLite config)
-  PM2_APP_BACKEND            - nama app PM2 untuk backend (default: smith-backend)
-  PM2_APP_FRONTEND           - nama app PM2 untuk frontend (default: smith-frontend)
-  PM2_LOG_BACKEND_ERROR      - override manual path *-error.log backend (opsional)
-  PM2_LOG_BACKEND_OUT        - override manual path *-out.log backend (opsional)
-  PM2_LOG_FRONTEND_ERROR     - override manual path *-error.log frontend (opsional)
-  PM2_LOG_FRONTEND_OUT       - override manual path *-out.log frontend (opsional)
   OPENWA_BASE_URL            - default, bisa dioverride dari frontend (SQLite config)
-  OPENWA_SEND_ENDPOINT_PATH  - path endpoint kirim pesan, relatif ke base URL
-  OPENWA_TARGET_NUMBER       - nomor WA tujuan notifikasi (format: 62812xxxx@c.us)
+  OPENWA_API_KEY             - default, bisa dioverride dari frontend (SQLite config)
+  OPENWA_TARGET_PHONE        - default, bisa dioverride dari frontend (SQLite config)
+  OPENWA_SESSION_ID_OVERRIDE - opsional, hanya kalau ada >1 sesi OpenWA READY
+  AGENT_PUBLIC_CALLBACK_URL  - URL webhook yang didaftarkan ke OpenWA (default: localhost)
   AGENT_WEBHOOK_PORT         - port Flask utk webhook + API frontend (default: 4500)
+
+Daftar app PM2 yang dipantau BUKAN environment variable lagi (dulu
+PM2_APP_BACKEND/PM2_APP_FRONTEND, 2 slot tetap) - sekarang dipilih dari
+agent-dashboard dan disimpan di SQLite (state.py, key monitored_pm2_apps),
+karena app PM2 yang perlu dipantau bisa lebih dari 2 dan bisa berubah-ubah
+tanpa perlu redeploy agent ini. Lihat pm2_discovery.py + watcher.py.
 """
 import os
-import subprocess
-import json
 from pathlib import Path
 
 AGENT_DIR = Path(__file__).parent
 
 # =============================================================================
-# TODO: WAJIB DISESUAIKAN #1 - Nama app PM2 backend & frontend SMITH ERP.
-# Harus PERSIS sama dengan nama yang muncul di `pm2 list` / `pm2 jlist`.
-# =============================================================================
-PM2_APP_BACKEND = os.environ.get("PM2_APP_BACKEND", "smith-backend")
-PM2_APP_FRONTEND = os.environ.get("PM2_APP_FRONTEND", "smith-frontend")
-
-# Default lokasi log PM2 kalau tidak dioverride & auto-discover (lihat
-# discover_pm2_log_paths() di bawah) gagal/tidak dipakai.
-PM2_LOG_DIR = Path(os.environ.get("PM2_HOME", str(Path.home() / ".pm2"))) / "logs"
-
-
-def _default_log_paths(app_name):
-    return {
-        "out": PM2_LOG_DIR / f"{app_name}-out.log",
-        "error": PM2_LOG_DIR / f"{app_name}-error.log",
-    }
-
-
-def discover_pm2_log_paths(app_name):
-    """Auto-discover path log lewat `pm2 jlist` (disebut sebagai opsi robust
-    di spek asli) - lebih akurat daripada hardcode ~/.pm2/logs/<app>-*.log
-    karena pm2.config.js user bisa saja set out_file/error_file custom.
-    Fallback ke pola default kalau pm2 tidak ada di PATH, app belum
-    terdaftar, atau ada error parsing JSON apapun - jangan sampai config
-    loading gagal total hanya karena PM2 belum jalan saat development."""
-    try:
-        result = subprocess.run(
-            ["pm2", "jlist"], capture_output=True, text=True, timeout=5
-        )
-        procs = json.loads(result.stdout)
-        for proc in procs:
-            if proc.get("name") == app_name:
-                pm2_env = proc.get("pm2_env", {})
-                out_path = pm2_env.get("pm_out_log_path")
-                error_path = pm2_env.get("pm_err_log_path")
-                if out_path and error_path:
-                    return {"out": Path(out_path), "error": Path(error_path)}
-    except (subprocess.SubprocessError, FileNotFoundError, json.JSONDecodeError, OSError):
-        pass
-    return _default_log_paths(app_name)
-
-
-def _resolve_log_path(env_var_name, app_name, kind):
-    """Prioritas: 1) env var override manual, 2) auto-discover via pm2 jlist,
-    3) pola default ~/.pm2/logs/<app>-<kind>.log"""
-    override = os.environ.get(env_var_name)
-    if override:
-        return Path(override)
-    return discover_pm2_log_paths(app_name)[kind]
-
-
-BACKEND_LOG_ERROR = _resolve_log_path("PM2_LOG_BACKEND_ERROR", PM2_APP_BACKEND, "error")
-BACKEND_LOG_OUT = _resolve_log_path("PM2_LOG_BACKEND_OUT", PM2_APP_BACKEND, "out")
-FRONTEND_LOG_ERROR = _resolve_log_path("PM2_LOG_FRONTEND_ERROR", PM2_APP_FRONTEND, "error")
-FRONTEND_LOG_OUT = _resolve_log_path("PM2_LOG_FRONTEND_OUT", PM2_APP_FRONTEND, "out")
-
-# Daftar file yang benar-benar di-watch: (path, source_app, is_error_log).
-# error.log diprioritaskan untuk deteksi tapi out.log tetap dipantau karena
-# traceback Python kadang tercetak ke stdout tergantung logger yang dipakai
-# (spek poin 1).
-WATCHED_LOGS = [
-    (BACKEND_LOG_ERROR, "backend", True),
-    (BACKEND_LOG_OUT, "backend", False),
-    (FRONTEND_LOG_ERROR, "frontend", True),
-    (FRONTEND_LOG_OUT, "frontend", False),
-]
-
-# =============================================================================
-# TODO: WAJIB DISESUAIKAN #2 - Detail koneksi OpenWA.
+# TODO: WAJIB DISESUAIKAN - Detail koneksi OpenWA.
 # BUKAN LAGI ASUMSI - ini bentuk request/response NYATA dari gateway OpenWA
 # (NestJS) yang sudah ada di scripts/OpenWA/ repo ini, dikonfirmasi dari 2
 # sumber: (1) scripts/OpenWA/src/modules/message/message.controller.ts +
@@ -132,11 +64,11 @@ WATCHED_LOGS = [
 #   Body: {"chatId": "62812xxxx@c.us", "text": "..."}
 #   Sukses = HTTP 201, body respons: {"messageId": "...", "timestamp": ...}
 #
-# Backend SMITH ERP sendiri sudah punya setting yang mirip
+# Backend ERP internal sendiri sudah punya setting yang mirip
 # (notifications.whatsapp_api_url / notifications.whatsapp_token di
 # backend/routes/config_manager.py) - TAPI agent ini sengaja punya config
 # SENDIRI (SQLite terpisah, dikonfirmasi user) supaya tidak perlu akses ke
-# DB utama SMITH ERP. Boleh isi base URL/token YANG SAMA kalau mau pakai
+# DB utama ERP internal. Boleh isi base URL/token YANG SAMA kalau mau pakai
 # gateway OpenWA yang sama dengan notifikasi WO.
 # =============================================================================
 OPENWA_BASE_URL_DEFAULT = os.environ.get("OPENWA_BASE_URL", "")  # TODO: WAJIB DIISI - http://host:port (TANPA /sessions/... di belakang)

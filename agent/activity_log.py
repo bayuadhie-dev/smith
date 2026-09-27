@@ -10,7 +10,7 @@ import logging
 
 import config
 
-_logger = logging.getLogger("smith_agent_activity")
+_logger = logging.getLogger("ops_agent_activity")
 _logger.setLevel(logging.INFO)
 
 if not _logger.handlers:

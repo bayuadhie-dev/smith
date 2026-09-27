@@ -12,8 +12,11 @@ karakter terakhir untuk konfirmasi visual "sudah keisi") - supaya frontend
 tidak perlu handle nilai sensitif di response GET, walau frontend ini
 sendiri belum ada auth (lihat TODO auth di bawah).
 """
+import json
+
 from flask import Blueprint, request, jsonify
 
+import pm2_discovery
 import state
 import openwa_client
 from activity_log import log_activity
@@ -35,6 +38,54 @@ def get_error_detail(error_id):
     if not row:
         return jsonify({"error": "Tidak ditemukan"}), 404
     return jsonify({"error": row}), 200
+
+
+@api_bp.route("/stats", methods=["GET"])
+def get_stats():
+    """Ringkasan untuk header dashboard: jumlah per status + per risk level,
+    dari SELURUH histori (bukan cuma yang lagi difilter di layar) - dipisah
+    dari list_errors() supaya kartu ringkasan tetap akurat walau user lagi
+    filter tabel di bawahnya ke satu status/risk tertentu."""
+    all_rows = state.list_errors(limit=100000)
+    stats = {
+        "total": len(all_rows),
+        "by_status": {"waiting": 0, "approved": 0, "declined": 0},
+        "by_risk": {"HIGH": 0, "MEDIUM": 0, "LOW": 0},
+        "total_occurrences": 0,
+    }
+    for row in all_rows:
+        stats["by_status"][row["status"]] = stats["by_status"].get(row["status"], 0) + 1
+        stats["by_risk"][row["risk_level"]] = stats["by_risk"].get(row["risk_level"], 0) + 1
+        stats["total_occurrences"] += row.get("occurrence_count", 1)
+    return jsonify(stats), 200
+
+
+@api_bp.route("/pm2/processes", methods=["GET"])
+def get_pm2_processes():
+    """Live scan `pm2 jlist` (pm2_discovery.py) + tandai mana yang sedang
+    dipilih untuk dipantau (state: monitored_pm2_apps) - dipanggil dashboard
+    tab "Sumber Log" tiap kali dibuka, bukan sekali di startup, supaya app
+    PM2 yang baru ditambahkan setelah agent jalan tetap muncul di daftar."""
+    processes = pm2_discovery.list_pm2_processes()
+    monitored_raw = state.get_config("monitored_pm2_apps")
+    monitored = json.loads(monitored_raw) if monitored_raw else []
+    for proc in processes:
+        proc["monitored"] = proc["name"] in monitored
+    return jsonify({"processes": processes, "pm2_available": True if processes or monitored else None}), 200
+
+
+@api_bp.route("/pm2/processes", methods=["POST"])
+def set_pm2_processes():
+    """Simpan pilihan app yang mau dipantau (list nama app PM2) - watcher.py
+    membaca ini ulang secara berkala (lihat REFRESH_EVERY_N_POLLS), jadi
+    perubahan di sini terpakai tanpa restart proses agent."""
+    data = request.get_json(silent=True) or {}
+    app_names = data.get("app_names", [])
+    if not isinstance(app_names, list):
+        return jsonify({"error": "app_names wajib berupa array nama app"}), 400
+    state.set_config("monitored_pm2_apps", json.dumps(app_names))
+    log_activity(f"api: daftar app PM2 yang dipantau diperbarui: {', '.join(app_names) or '(kosong)'}")
+    return jsonify({"status": "saved", "app_names": app_names}), 200
 
 
 def _mask(value: str) -> str:

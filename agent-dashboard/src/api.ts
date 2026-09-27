@@ -34,6 +34,26 @@ export interface ConfigData {
   openwa_session_id_override: string
 }
 
+export interface Stats {
+  total: number
+  by_status: { waiting: number; approved: number; declined: number }
+  by_risk: { HIGH: number; MEDIUM: number; LOW: number }
+  total_occurrences: number
+}
+
+export interface Pm2Process {
+  name: string
+  pm_id: number
+  status: string
+  out_log: string | null
+  err_log: string | null
+  pid: number | null
+  uptime_ms: number | null
+  restart_time: number | null
+  cwd: string | null
+  monitored: boolean
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
     headers: { 'Content-Type': 'application/json' },
@@ -55,4 +75,8 @@ export const api = {
   getConfig: () => request<ConfigData>('/api/config'),
   saveConfig: (data: { anthropic_api_key?: string; openwa_base_url?: string; openwa_api_key?: string; openwa_target_phone?: string; openwa_session_id_override?: string }) =>
     request<{ status: string }>('/api/config', { method: 'POST', body: JSON.stringify(data) }),
+  getStats: () => request<Stats>('/api/stats'),
+  getPm2Processes: () => request<{ processes: Pm2Process[] }>('/api/pm2/processes'),
+  savePm2Processes: (appNames: string[]) =>
+    request<{ status: string }>('/api/pm2/processes', { method: 'POST', body: JSON.stringify({ app_names: appNames }) }),
 }

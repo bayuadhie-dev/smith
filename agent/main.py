@@ -1,20 +1,21 @@
 """
-main.py - Entry point agent monitoring SMITH ERP.
+main.py - Entry point agent monitoring ERP internal.
 
 === CARA JALANKAN ===
   Tes manual  : python main.py
-  Lewat PM2   : pm2 start main.py --name smith-agent-monitor --interpreter python3
+  Lewat PM2   : pm2 start main.py --name agent-monitor --interpreter python3
   (jalankan `pm2 save` setelah itu supaya proses ini ikut restart otomatis
-  bareng backend/frontend SMITH kalau server reboot)
+  bareng backend/frontend ERP kalau server reboot)
 
 Lihat config.py untuk daftar lengkap environment variable, dan bagian mana
 yang # TODO: WAJIB DISESUAIKAN sebelum agent ini benar-benar berguna
-(endpoint OpenWA, nama app PM2 backend/frontend).
+(kredensial OpenWA). App PM2 yang dipantau TIDAK di config.py lagi - pilih
+dari agent-dashboard > tab "Sumber Log" (lihat pm2_discovery.py).
 
 === KENAPA WATCHER + FLASK DALAM SATU PROSES (threading, bukan 2 proses PM2) ===
 Spek eksplisit: PM2 mengelola satu proses per app, dan agent ini didaftarkan
-sebagai SATU proses PM2 (`smith-agent-monitor`) terpisah dari backend/
-frontend SMITH yang sudah ada. Maka watcher (log tailing) dan Flask (terima
+sebagai SATU proses PM2 (`agent-monitor`) terpisah dari backend/
+frontend ERP yang sudah ada. Maka watcher (log tailing) dan Flask (terima
 webhook WA + serve API ke agent-dashboard) harus jalan bersamaan di dalam
 proses yang sama - watcher di thread terpisah, Flask di thread utama.
 
@@ -61,7 +62,7 @@ def create_app() -> Flask:
 
 def main():
     state.init_db()
-    log_activity("main: agent monitoring SMITH ERP dimulai")
+    log_activity("main: agent monitoring ERP internal dimulai")
 
     # Auto-discover session OpenWA + daftarkan webhook balasan (openwa_client.py)
     # - best-effort, tidak boleh menggagalkan startup kalau OpenWA belum
