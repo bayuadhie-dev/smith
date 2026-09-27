@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { 
+import {
   FileText, CheckCircle, XCircle, Clock, User, Calendar,
-  Loader2, Filter, Search, ChevronDown, MapPin, Settings
+  Loader2, Filter, Search, ChevronDown, MapPin, Settings, Plus
 } from 'lucide-react';
 import axiosInstance from '../../lib/axios';
 
@@ -9,6 +9,7 @@ interface LeaveRequest {
   id: number;
   request_number: string;
   staff_name: string;
+  employee_id?: number | null;
   leave_type: string;
   leave_type_label: string;
   start_date: string;
@@ -20,6 +21,10 @@ interface LeaveRequest {
   approver_name?: string;
   approved_at?: string;
   rejection_reason?: string;
+  required_manager_id?: number | null;
+  required_manager_name?: string | null;
+  manager_status: 'pending' | 'approved' | 'rejected' | 'skipped';
+  manager_approved_at?: string | null;
   created_at: string;
 }
 
@@ -64,6 +69,14 @@ const StaffLeaveManagement: React.FC = () => {
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectingId, setRejectingId] = useState<number | null>(null);
   const [rejectReason, setRejectReason] = useState('');
+
+  // Self-submit modal (ESS - 2026-09-27, ported from the retired Leave/LeaveForm flow)
+  const [showSubmitModal, setShowSubmitModal] = useState(false);
+  const [submitForm, setSubmitForm] = useState({
+    leave_type: '', start_date: '', end_date: '', reason: ''
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   useEffect(() => {
     fetchRequests();
@@ -159,6 +172,35 @@ const StaffLeaveManagement: React.FC = () => {
     }
   };
 
+  const handleSubmitLeave = async () => {
+    setSubmitError('');
+    if (!submitForm.leave_type || !submitForm.start_date || !submitForm.end_date || !submitForm.reason.trim()) {
+      setSubmitError('Semua field wajib diisi');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await axiosInstance.post('/api/staff-leave/submit', submitForm);
+      setShowSubmitModal(false);
+      setSubmitForm({ leave_type: '', start_date: '', end_date: '', reason: '' });
+      fetchRequests();
+    } catch (error: any) {
+      setSubmitError(error?.response?.data?.error || 'Gagal mengirim pengajuan');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleManagerApprove = async (id: number, decision: 'approved' | 'rejected') => {
+    if (!confirm(decision === 'approved' ? 'Setujui sebagai manager?' : 'Tolak pengajuan ini?')) return;
+    try {
+      await axiosInstance.post(`/api/staff-leave/manager-approve/${id}`, { decision });
+      fetchRequests();
+    } catch (error: any) {
+      alert(error?.response?.data?.error || 'Gagal memproses approval manager');
+    }
+  };
+
   const handleDeleteLocation = async (id: number) => {
     if (!confirm('Yakin ingin menghapus lokasi ini?')) return;
     
@@ -220,13 +262,22 @@ const StaffLeaveManagement: React.FC = () => {
             </p>
           )}
         </div>
-        <button
-          onClick={() => setShowLocationModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:bg-gray-700 rounded-lg"
-        >
-          <Settings className="h-4 w-4" />
-          Lokasi Kantor
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowSubmitModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg"
+          >
+            <Plus className="h-4 w-4" />
+            Ajukan Cuti
+          </button>
+          <button
+            onClick={() => setShowLocationModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:bg-gray-700 rounded-lg"
+          >
+            <Settings className="h-4 w-4" />
+            Lokasi Kantor
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -301,6 +352,7 @@ const StaffLeaveManagement: React.FC = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tipe</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tanggal</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Durasi</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Approval Manager</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
               </tr>
@@ -327,6 +379,35 @@ const StaffLeaveManagement: React.FC = () => {
                     {req.total_days} hari
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
+                    {req.manager_status === 'skipped' ? (
+                      <span className="text-xs text-gray-400">-</span>
+                    ) : req.manager_status === 'pending' ? (
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">
+                          Menunggu {req.required_manager_name || 'Manager'}
+                        </span>
+                        <button
+                          onClick={() => handleManagerApprove(req.id, 'approved')}
+                          className="p-1 text-green-600 hover:bg-green-50 rounded"
+                          title="Setujui (sebagai manager)"
+                        >
+                          <CheckCircle className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleManagerApprove(req.id, 'rejected')}
+                          className="p-1 text-red-600 hover:bg-red-50 rounded"
+                          title="Tolak (sebagai manager)"
+                        >
+                          <XCircle className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <span className={`px-2 py-1 text-xs rounded-full ${req.manager_status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {req.manager_status === 'approved' ? 'Disetujui manager' : 'Ditolak manager'}
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 text-xs rounded-full ${getStatusBadge(req.status)}`}>
                       {req.status_label}
                     </span>
@@ -336,8 +417,9 @@ const StaffLeaveManagement: React.FC = () => {
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleApprove(req.id)}
-                          className="p-1 text-green-600 hover:bg-green-50 rounded"
-                          title="Setujui"
+                          disabled={req.manager_status === 'pending'}
+                          title={req.manager_status === 'pending' ? 'Menunggu approval manager terlebih dahulu' : 'Setujui'}
+                          className="p-1 text-green-600 hover:bg-green-50 rounded disabled:opacity-30 disabled:cursor-not-allowed"
                         >
                           <CheckCircle className="h-5 w-5" />
                         </button>
@@ -421,6 +503,80 @@ const StaffLeaveManagement: React.FC = () => {
                 className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-lg"
               >
                 Tolak
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Ajukan Cuti Modal (ESS self-submit) */}
+      {showSubmitModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold mb-4">Ajukan Cuti/Izin</h3>
+            {submitError && (
+              <div className="mb-3 px-3 py-2 bg-red-50 text-red-700 text-sm rounded-lg">{submitError}</div>
+            )}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Tipe</label>
+                <select
+                  value={submitForm.leave_type}
+                  onChange={(e) => setSubmitForm(prev => ({ ...prev, leave_type: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"
+                >
+                  <option value="">Pilih tipe...</option>
+                  <option value="sakit">Sakit</option>
+                  <option value="izin">Izin</option>
+                  <option value="cuti_tahunan">Cuti Tahunan</option>
+                  <option value="cuti_khusus">Cuti Khusus</option>
+                  <option value="dinas_luar">Dinas Luar</option>
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Tanggal Mulai</label>
+                  <input
+                    type="date"
+                    value={submitForm.start_date}
+                    onChange={(e) => setSubmitForm(prev => ({ ...prev, start_date: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Tanggal Selesai</label>
+                  <input
+                    type="date"
+                    value={submitForm.end_date}
+                    onChange={(e) => setSubmitForm(prev => ({ ...prev, end_date: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Alasan</label>
+                <textarea
+                  value={submitForm.reason}
+                  onChange={(e) => setSubmitForm(prev => ({ ...prev, reason: e.target.value }))}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 mt-4">
+              <button
+                onClick={() => { setShowSubmitModal(false); setSubmitError(''); }}
+                className="px-4 py-2 text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleSubmitLeave}
+                disabled={submitting}
+                className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg disabled:bg-gray-400 flex items-center gap-2"
+              >
+                {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+                Kirim Pengajuan
               </button>
             </div>
           </div>

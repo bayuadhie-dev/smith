@@ -258,33 +258,53 @@ class StaffLeaveRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     request_number = db.Column(db.String(50), unique=True, nullable=False, index=True)
     staff_name = db.Column(db.String(200), nullable=False, index=True)  # Name-based like attendance
+    # employee_id (2026-09-27, HR consolidation): populated when the request
+    # comes from an authenticated employee via ESS, so it can be joined/
+    # reported on properly instead of relying on staff_name text matching.
+    # Stays nullable - public/kiosk submissions (no login) still use staff_name only.
+    employee_id = db.Column(db.Integer, db.ForeignKey('employees.id'), nullable=True, index=True)
     leave_type = db.Column(db.String(50), nullable=False)  # sakit, izin, cuti_tahunan, cuti_khusus, dinas_luar
     start_date = db.Column(db.Date, nullable=False)
     end_date = db.Column(db.Date, nullable=False)
     total_days = db.Column(db.Integer, nullable=False)
     reason = db.Column(db.Text, nullable=False)
     attachment_path = db.Column(db.String(500), nullable=True)  # For sick note, etc.
-    
+
     # Status & Approval
     status = db.Column(db.String(50), nullable=False, default='pending')  # pending, approved, rejected, cancelled
     approved_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     approved_at = db.Column(db.DateTime, nullable=True)
     rejection_reason = db.Column(db.Text, nullable=True)
-    
+    # Multi-level approval routing (2026-09-27, ported from the old Leave model
+    # during HR consolidation - see PETA_MODUL.md/CLAUDE.md gotcha "RD vs RND
+    # duplikasi" pattern: two parallel leave systems existed, this one won).
+    # manager_status: 'skipped' when the employee's department has no manager
+    # configured, or the request has no employee_id (public/kiosk submission).
+    required_manager_id = db.Column(db.Integer, db.ForeignKey('employees.id'), nullable=True)
+    manager_status = db.Column(db.String(20), nullable=False, default='skipped')  # pending, approved, rejected, skipped
+    manager_approved_at = db.Column(db.DateTime, nullable=True)
+
     # Metadata
     submitted_from_ip = db.Column(db.String(45), nullable=True)
     device_info = db.Column(db.String(500), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     # Relationships
     approver = db.relationship('User', foreign_keys=[approved_by])
-    
+    employee = db.relationship('Employee', foreign_keys=[employee_id])
+    required_manager = db.relationship('Employee', foreign_keys=[required_manager_id])
+
     def to_dict(self):
         return {
             'id': self.id,
             'request_number': self.request_number,
             'staff_name': self.staff_name,
+            'employee_id': self.employee_id,
+            'required_manager_id': self.required_manager_id,
+            'required_manager_name': self.required_manager.full_name if self.required_manager else None,
+            'manager_status': self.manager_status,
+            'manager_approved_at': self.manager_approved_at.isoformat() if self.manager_approved_at else None,
             'leave_type': self.leave_type,
             'leave_type_label': {
                 'sakit': 'Sakit',

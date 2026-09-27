@@ -427,7 +427,13 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                 { name: 'Kelola Data Wajah', href: '/app/hr/face-admin' },
               ]
             },
-            { name: 'Cuti', href: '/app/hr/leaves', icon: CalendarDaysIcon, permission: 'leave' },
+            // 2026-09-27: konsolidasi 2 sistem leave paralel (Leave vs
+            // StaffLeaveRequest) jadi satu - StaffLeaveRequest yang menang
+            // (office-location geofence + calendar + public submit sudah
+            // lebih matang), sekarang ditambah manager routing + ESS
+            // self-submit yang tadinya hanya ada di Leave. /hr/leaves
+            // (LeaveManagement) dipensiunkan, jangan dipakai lagi.
+            { name: 'Cuti', href: '/app/hr/staff-leave', icon: CalendarDaysIcon, permission: 'leave' },
             { name: 'Jadwal Kerja (Roster)', href: '/app/hr/roster', icon: CalendarDaysIcon, permission: 'roster' },
             { name: 'Payroll', href: '/app/hr/payroll', icon: CurrencyDollarIcon, permission: 'payroll' },
             { name: 'Penilaian Kinerja', href: '/app/hr/appraisal', icon: ChartBarIcon, permission: 'appraisal' },

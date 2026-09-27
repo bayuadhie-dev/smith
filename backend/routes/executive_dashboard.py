@@ -4670,23 +4670,26 @@ def get_hr_analytics():
     try:
         from models.hr import Employee, Attendance
 
-        total_employees = Employee.query.count() or 52
-        active_employees = Employee.query.filter_by(status='active').count() or total_employees
+        total_employees = Employee.query.count()
+        active_employees = Employee.query.filter_by(status='active').count()
         total_attendances = Attendance.query.count()
 
-        # Present, late, absent status counts from database
-        present_count = Attendance.query.filter_by(status='present').count() or 10
-        late_count = Attendance.query.filter_by(status='late').count() or 2
-        absent_count = Attendance.query.filter_by(status='absent').count() or 1
+        # Present, late, absent status counts from database - no fallback:
+        # 0 is a legitimate value (2026-09-27 fix, was previously faked to
+        # 10/2/1 via `or X` whenever the real count was 0, which made the
+        # dashboard show fabricated attendance data as if it were real).
+        present_count = Attendance.query.filter_by(status='present').count()
+        late_count = Attendance.query.filter_by(status='late').count()
+        absent_count = Attendance.query.filter_by(status='absent').count()
 
-        attendance_pct = round(((present_count + late_count) / total_employees * 100), 1) if total_employees > 0 else 95.8
+        attendance_pct = round(((present_count + late_count) / total_employees * 100), 1) if total_employees > 0 else 0.0
 
         return jsonify({
             'success': True,
             'metrics': {
                 'total_employees': total_employees,
                 'active_employees': active_employees,
-                'attendance_count': total_attendances or (present_count + late_count),
+                'attendance_count': total_attendances,
                 'attendance_pct': attendance_pct,
                 'shift1_count': present_count,
                 'shift2_count': late_count,

@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
-  useGetEmployeesQuery, 
+  useGetEmployeesQuery,
   useGetAttendanceRecordsQuery,
-  useGetLeavesQuery,
   useGetTrainingSessionsQuery,
   useGetPayrollPeriodsQuery
 } from '../../services/api'
@@ -37,16 +36,23 @@ export default function HRDashboard() {
     start_date: dateFilter,
     end_date: dateFilter
   })
-  const { data: leavesData } = useGetLeavesQuery({ status: 'pending' })
   const { data: trainingsData } = useGetTrainingSessionsQuery({ status: 'ongoing' })
   const { data: payrollData } = useGetPayrollPeriodsQuery({ status: 'processing' })
+
+  // Cuti pending count (2026-09-27: sistem Leave lama dipensiunkan, sumber
+  // data pindah ke StaffLeaveRequest - lihat konsolidasi di Sidebar.tsx)
+  const [pendingLeaves, setPendingLeaves] = useState(0)
+  useEffect(() => {
+    axiosInstance.get('/api/staff-leave/pending')
+      .then(res => setPendingLeaves(res.data?.pending_count || 0))
+      .catch(() => setPendingLeaves(0))
+  }, [])
 
   // Calculate statistics
   const totalEmployees = employeesData?.employees?.length || 0
   const activeEmployees = employeesData?.employees?.filter((emp: any) => emp.status === 'active').length || 0
   const presentToday = attendanceData?.attendances?.filter((att: any) => att.status === 'present').length || 0
   const absentToday = attendanceData?.attendances?.filter((att: any) => att.status === 'absent').length || 0
-  const pendingLeaves = leavesData?.leaves?.length || 0
   const ongoingTrainings = trainingsData?.sessions?.length || 0
 
   const attendanceRate = activeEmployees > 0 ? ((presentToday / activeEmployees) * 100).toFixed(1) : '0'
@@ -105,7 +111,7 @@ export default function HRDashboard() {
       title: 'Manajemen Cuti',
       description: 'Kelola pengajuan dan approval cuti karyawan',
       icon: CalendarDaysIcon,
-      href: '/app/hr/leaves',
+      href: '/app/hr/staff-leave',
       color: 'bg-yellow-500',
       stats: `${pendingLeaves} pending`
     },
@@ -233,7 +239,7 @@ export default function HRDashboard() {
             <ClockIcon className="h-4 w-4" />
             Rekam Absensi
           </Link>
-          <Link to="/app/hr/leaves" className="btn-secondary flex items-center gap-2">
+          <Link to="/app/hr/staff-leave" className="btn-secondary flex items-center gap-2">
             <CalendarDaysIcon className="h-4 w-4" />
             Approval Cuti
           </Link>

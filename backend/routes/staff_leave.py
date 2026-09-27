@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.auth_decorators import require_permission
 from models import db
-from models.hr import StaffLeaveRequest, OfficeLocation
+from models.hr import StaffLeaveRequest, OfficeLocation, Employee
 from models.user import User
 from datetime import datetime, date, timedelta
 from utils.timezone import get_local_now, get_local_today
@@ -52,6 +52,122 @@ def calculate_working_days(start_date, end_date):
             working_days += 1
         current_date += timedelta(days=1)
     return working_days
+
+
+# ==================== AUTHENTICATED ESS SUBMIT (2026-09-27) ====================
+# Ported from the old Leave model's create_leave() during HR consolidation -
+# this is the logged-in employee self-service path (vs. public_submit_leave
+# above, which is for staff with no user account / kiosk use).
+
+@staff_leave_bp.route('/submit', methods=['POST'])
+@jwt_required()
+@require_permission('leave.create')
+def submit_leave():
+    """Authenticated employee submits their own leave request via ESS."""
+    try:
+        user_id = get_jwt_identity()
+        employee = Employee.query.filter_by(user_id=user_id).first()
+        if not employee:
+            return jsonify({'error': 'Akun Anda tidak terhubung ke data karyawan. Hubungi HR.'}), 400
+
+        data = request.get_json() or {}
+        leave_type = data.get('leave_type', '').strip()
+        start_date = data.get('start_date')
+        end_date = data.get('end_date')
+        reason = data.get('reason', '').strip()
+
+        valid_types = ['sakit', 'izin', 'cuti_tahunan', 'cuti_khusus', 'dinas_luar']
+        if leave_type not in valid_types:
+            return jsonify({'error': 'Tipe izin tidak valid'}), 400
+        if not start_date or not end_date:
+            return jsonify({'error': 'Tanggal mulai dan selesai wajib diisi'}), 400
+        if not reason:
+            return jsonify({'error': 'Alasan wajib diisi'}), 400
+
+        try:
+            start = datetime.strptime(start_date, '%Y-%m-%d').date()
+            end = datetime.strptime(end_date, '%Y-%m-%d').date()
+        except ValueError:
+            return jsonify({'error': 'Format tanggal tidak valid (YYYY-MM-DD)'}), 400
+        if end < start:
+            return jsonify({'error': 'Tanggal selesai harus setelah tanggal mulai'}), 400
+
+        total_days = calculate_working_days(start, end)
+
+        # Multi-level approval routing: route to the employee's department
+        # manager first, unless there is none configured or the employee IS
+        # the manager (can't approve their own leave) - same rule as the old
+        # Leave.create_leave().
+        manager_id = None
+        manager_status = 'skipped'
+        if employee.department and employee.department.manager_id:
+            if employee.department.manager_id != employee.id:
+                manager_id = employee.department.manager_id
+                manager_status = 'pending'
+
+        leave_request = StaffLeaveRequest(
+            request_number=generate_request_number(),
+            staff_name=employee.full_name,
+            employee_id=employee.id,
+            leave_type=leave_type,
+            start_date=start,
+            end_date=end,
+            total_days=total_days,
+            reason=reason,
+            status='pending',
+            required_manager_id=manager_id,
+            manager_status=manager_status,
+            submitted_from_ip=get_client_ip(),
+            device_info=request.headers.get('User-Agent', '')[:500],
+        )
+
+        db.session.add(leave_request)
+        db.session.commit()
+
+        return jsonify({
+            'message': 'Pengajuan cuti/izin berhasil dikirim',
+            'leave_request': leave_request.to_dict()
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@staff_leave_bp.route('/manager-approve/<int:request_id>', methods=['POST'])
+@jwt_required()
+def manager_approve_leave(request_id):
+    """First step of the multi-level approval chain - only the employee's
+    actual department manager (required_manager_id) or an admin may act here."""
+    try:
+        user_id = int(get_jwt_identity())
+        leave_request = db.session.get(StaffLeaveRequest, request_id)
+        if not leave_request:
+            return jsonify({'error': 'Pengajuan tidak ditemukan'}), 404
+
+        if leave_request.manager_status != 'pending':
+            return jsonify({'error': 'Pengajuan ini tidak sedang menunggu approval manager'}), 400
+
+        manager_employee = db.session.get(Employee, leave_request.required_manager_id) if leave_request.required_manager_id else None
+        is_the_manager = manager_employee and manager_employee.user_id == user_id
+        user = db.session.get(User, user_id)
+        is_admin = user and (user.is_admin or getattr(user, 'is_super_admin', False))
+        if not (is_the_manager or is_admin):
+            return jsonify({'error': 'Hanya manager departemen karyawan ini yang bisa approve'}), 403
+
+        data = request.get_json() or {}
+        decision = data.get('decision', 'approved')
+        leave_request.manager_status = 'approved' if decision == 'approved' else 'rejected'
+        leave_request.manager_approved_at = get_local_now()
+        if leave_request.manager_status == 'rejected':
+            leave_request.status = 'rejected'
+            leave_request.rejection_reason = data.get('reason', 'Ditolak oleh manager')
+
+        db.session.commit()
+        return jsonify({'message': 'OK', 'leave_request': leave_request.to_dict()}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
 
 
 # ==================== PUBLIC ENDPOINTS (No Auth) ====================
@@ -284,7 +400,9 @@ def approve_leave(request_id):
         
         if leave_request.status != 'pending':
             return jsonify({'error': 'Pengajuan sudah diproses sebelumnya'}), 400
-        
+        if leave_request.manager_status not in ('approved', 'skipped'):
+            return jsonify({'error': 'Menunggu approval manager terlebih dahulu'}), 400
+
         leave_request.status = 'approved'
         leave_request.approved_by = user_id
         leave_request.approved_at = get_local_now()
