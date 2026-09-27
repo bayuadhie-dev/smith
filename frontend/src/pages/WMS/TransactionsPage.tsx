@@ -94,6 +94,7 @@ interface Transaction {
   resolved_account: { code: string | null; name: string | null; source: string };
   accounting_entry_number: string | null;
   accounting_entry_status: string | null;
+  running_balance: number | null;
 }
 
 interface Account {
@@ -134,6 +135,12 @@ const COLUMN_CATALOG: ColumnDef[] = [
   { key: 'direction', label: 'Arah', align: 'center' },
   { key: 'item', label: 'Barang' },
   { key: 'quantity', label: 'Qty', sortKey: 'quantity', align: 'right' },
+  // Reconstructed read-time (not a stored snapshot - see get_running_balances()
+  // in routes/wms_advanced.py), cumulative per item across all history,
+  // ordered chronologically. Not sortable server-side (window-function
+  // result, not a plain column) - sorting the visible page by this column
+  // wouldn't reflect the true running order anyway.
+  { key: 'running_balance', label: 'Saldo Berjalan', align: 'right' },
   { key: 'total_cost', label: 'Nilai (Rp)', sortKey: 'total_cost', align: 'right' },
   { key: 'resolved_account', label: 'Akun COA' },
   { key: 'accounting_entry_number', label: 'No. Jurnal' },
@@ -147,7 +154,7 @@ const COLUMN_CATALOG: ColumnDef[] = [
 ];
 
 const DEFAULT_COLUMNS = [
-  'transaction_number', 'movement_type_code', 'direction', 'item', 'quantity',
+  'transaction_number', 'movement_type_code', 'direction', 'item', 'quantity', 'running_balance',
   'total_cost', 'resolved_account', 'accounting_entry_number', 'reference', 'transaction_date',
 ];
 
@@ -470,6 +477,12 @@ const TransactionsPage: React.FC = () => {
         );
       case 'quantity':
         return <>{txn.quantity.toLocaleString('id-ID')} <span className="text-gray-400 text-[11px]">{txn.uom}</span></>;
+      case 'running_balance':
+        return txn.running_balance !== null && txn.running_balance !== undefined ? (
+          <span className={txn.running_balance < 0 ? 'text-red-600 font-medium' : 'text-gray-700'}>
+            {txn.running_balance.toLocaleString('id-ID')}
+          </span>
+        ) : <span className="text-gray-300">-</span>;
       case 'total_cost':
         return txn.total_cost ? formatRupiah(txn.total_cost) : <span className="text-gray-300">-</span>;
       case 'resolved_account':
@@ -851,6 +864,7 @@ const TransactionsPage: React.FC = () => {
                       <DrawerRow label="Arah" value={drawerData.direction === 'in' ? 'Masuk (IN)' : 'Keluar (OUT)'} />
                       <DrawerRow label="Barang" value={`${drawerData.item_code} - ${drawerData.item_name}`} />
                       <DrawerRow label="Kuantitas" value={`${Number(drawerData.quantity).toLocaleString('id-ID')} ${drawerData.uom || ''}`} />
+                      <DrawerRow label="Saldo Berjalan (item ini, semua lokasi)" value={drawerData.running_balance !== null && drawerData.running_balance !== undefined ? Number(drawerData.running_balance).toLocaleString('id-ID') : '-'} />
                       <DrawerRow label="Dari Lokasi" value={drawerData.from_location} />
                       <DrawerRow label="Ke Lokasi" value={drawerData.to_location} />
                       <DrawerRow label="No. Batch" value={drawerData.batch_number} />

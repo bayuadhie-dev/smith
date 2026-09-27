@@ -120,6 +120,42 @@ def resolve_account_for_transaction(txn):
     return {'code': account.account_code, 'name': account.account_name, 'source': source}
 
 
+def get_running_balances(txn_ids):
+    """Reconstruct running stock balance per row (2026-09-27, MB51 gap fix).
+
+    InventoryTransaction.balance_before/balance_after are write-time
+    snapshot columns that only ~3 of 17 call sites into
+    record_inventory_transaction() ever actually populate - unreliable
+    to rely on for a report. This instead computes the balance
+    read-time: a cumulative signed-quantity sum (in=+, out=-),
+    partitioned per item (product_id/material_id) and ordered
+    chronologically, via a SQL window function over the ENTIRE table
+    (unfiltered) - it has to run over full history to be correct, even
+    though only the ids actually being displayed are fetched back out.
+    Deliberately per-item only, not per-location: InventoryTransaction
+    rows record a movement's from/to location pair, not a snapshot at
+    one location, so a reliable per-location partition would need a
+    different reconstruction (net effect at each location separately) -
+    out of scope here; this gives total-on-hand-for-item trend, which is
+    what "running balance" means in the selection screen/ALV grid usage.
+    """
+    if not txn_ids:
+        return {}
+    signed_qty = case((InventoryTransaction.direction == 'in', InventoryTransaction.quantity), else_=-InventoryTransaction.quantity)
+    running_balance_subq = db.session.query(
+        InventoryTransaction.id,
+        func.sum(signed_qty).over(
+            partition_by=[InventoryTransaction.product_id, InventoryTransaction.material_id],
+            order_by=[InventoryTransaction.transaction_date, InventoryTransaction.id],
+        ).label('running_balance')
+    ).subquery()
+
+    rows = db.session.query(running_balance_subq.c.id, running_balance_subq.c.running_balance).filter(
+        running_balance_subq.c.id.in_(txn_ids)
+    ).all()
+    return {row.id: float(row.running_balance) if row.running_balance is not None else None for row in rows}
+
+
 def enrich_transaction_dict(txn):
     """Attach display-only movement_type_code/label + resolved_account to a
     to_dict() payload, swallowing any resolution error per-row so one bad
@@ -906,15 +942,24 @@ def get_transactions():
             start = (page - 1) * per_page
             page_items = matched[start:start + per_page]
             pages = max(1, (total + per_page - 1) // per_page)
+            balances = get_running_balances([t.id for t in page_items])
+            txns = [enrich_transaction_dict(t) for t in page_items]
+            for txn_dict, t in zip(txns, page_items):
+                txn_dict['running_balance'] = balances.get(t.id)
             return jsonify({
-                'transactions': [enrich_transaction_dict(t) for t in page_items],
+                'transactions': txns,
                 'pagination': {'page': page, 'per_page': per_page, 'total': total, 'pages': pages},
             }), 200
 
         pagination = query.paginate(page=page, per_page=per_page, error_out=False)
 
+        balances = get_running_balances([t.id for t in pagination.items])
+        txns = [enrich_transaction_dict(t) for t in pagination.items]
+        for txn_dict, t in zip(txns, pagination.items):
+            txn_dict['running_balance'] = balances.get(t.id)
+
         return jsonify({
-            'transactions': [enrich_transaction_dict(t) for t in pagination.items],
+            'transactions': txns,
             'pagination': {
                 'page': pagination.page, 'per_page': pagination.per_page,
                 'total': pagination.total, 'pages': pagination.pages,
@@ -935,6 +980,7 @@ def get_transaction_detail(txn_id):
             return jsonify({'error': 'Transaction not found'}), 404
 
         data = enrich_transaction_dict(txn)
+        data['running_balance'] = get_running_balances([txn.id]).get(txn.id)
 
         # Enrich with extra detail
         if txn.work_order_id:
