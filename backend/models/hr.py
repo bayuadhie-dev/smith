@@ -87,10 +87,15 @@ class Employee(db.Model):
     transport_allowance_amount = db.Column(db.Numeric(15, 2), nullable=True, default=0)  # nominal tunjangan transportasi
     emergency_contact_name = db.Column(db.String(200), nullable=True)
     emergency_contact_phone = db.Column(db.String(50), nullable=True)
+    # work_schedule_id (2026-09-27): office-staff schedule assignment - see
+    # WorkSchedule docstring above. Nullable/opt-in: employees with no
+    # schedule assigned fall back to the old global attendance.office_start_time
+    # setting, exactly as before this existed.
+    work_schedule_id = db.Column(db.Integer, db.ForeignKey('work_schedules.id'), nullable=True)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     # Relationships
     user = db.relationship('User')
     department = db.relationship('Department', back_populates='employees', foreign_keys=[department_id])
@@ -99,6 +104,7 @@ class Employee(db.Model):
     leaves = db.relationship('Leave', back_populates='employee', foreign_keys='Leave.employee_id')
     rosters = db.relationship('EmployeeRoster', back_populates='employee')
     outsourcing_vendor = db.relationship('OutsourcingVendor', back_populates='employees')
+    work_schedule = db.relationship('WorkSchedule', back_populates='employees', foreign_keys=[work_schedule_id])
 
 class ShiftSchedule(db.Model):
     __tablename__ = 'shift_schedules'
@@ -116,6 +122,46 @@ class ShiftSchedule(db.Model):
     
     # Relationships
     rosters = db.relationship('EmployeeRoster', back_populates='shift')
+
+
+class WorkSchedule(db.Model):
+    """Office-staff work schedule template (2026-09-27) - deliberately a
+    separate concept from ShiftSchedule/EmployeeRoster above, which are for
+    production operator shift rostering (rotates day-to-day, tied to
+    machines). WorkSchedule is for staff whose hours are the same every
+    working day (e.g. "Kantor Reguler Senin-Jumat 08:00-17:00") - assigned
+    once via Employee.work_schedule_id, not re-assigned per day.
+    Clock-in "late" checking (routes/attendance.py) uses the employee's
+    assigned WorkSchedule when present, falling back to the old single
+    global attendance.office_start_time setting when not (so employees
+    with no schedule assigned keep working exactly as before this existed)."""
+    __tablename__ = 'work_schedules'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    # days_of_week: list of ints, Monday=0 .. Sunday=6 (Python weekday() convention)
+    days_of_week = db.Column(db.JSON, nullable=False, default=lambda: [0, 1, 2, 3, 4])
+    start_time = db.Column(db.Time, nullable=False)
+    end_time = db.Column(db.Time, nullable=False)
+    late_tolerance_minutes = db.Column(db.Integer, nullable=False, default=30)
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    employees = db.relationship('Employee', back_populates='work_schedule')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'days_of_week': self.days_of_week,
+            'start_time': self.start_time.strftime('%H:%M') if self.start_time else None,
+            'end_time': self.end_time.strftime('%H:%M') if self.end_time else None,
+            'late_tolerance_minutes': self.late_tolerance_minutes,
+            'is_active': self.is_active,
+            'employee_count': len(self.employees) if self.employees else 0,
+        }
+
 
 class Attendance(db.Model):
     __tablename__ = 'attendances'

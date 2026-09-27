@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify, make_response
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.auth_decorators import require_permission
 from models import db
-from models.hr import Attendance, OfficeLocation, Employee, AttendanceCorrectionRequest, AttendanceReconciliationFlag
+from models.hr import Attendance, OfficeLocation, Employee, AttendanceCorrectionRequest, AttendanceReconciliationFlag, WorkSchedule
 from models.user import User
 from datetime import datetime, date, timedelta
 from utils.timezone import get_local_now, get_local_today
@@ -445,26 +445,41 @@ def clock_in():
             verification_status='verified'  # Auto-verified if face detected
         )
         
-        # Check if late (after office start + tolerance)
+        # Check if late (after office start + tolerance). Uses the
+        # employee's assigned WorkSchedule when present (2026-09-27),
+        # otherwise falls back to the old single global setting - same
+        # behavior as before this existed. (public_clock_in below stays on
+        # the global setting only - it's name-based/kiosk, no reliable
+        # Employee link to hang a WorkSchedule off of.)
         from utils.helpers import get_setting_value
         from datetime import timedelta
-        start_time_str = get_setting_value('attendance.office_start_time', '08:00')
-        tolerance_min = get_setting_value('attendance.late_tolerance_minutes', 30)
-        try:
-            start_time = datetime.strptime(start_time_str, '%H:%M')
-        except ValueError:
-            start_time = datetime.strptime('08:00', '%H:%M')
-        late_time = (start_time + timedelta(minutes=int(tolerance_min))).time()
-        late_threshold = datetime.combine(today, late_time)
-        
+
+        employee = Employee.query.filter_by(user_id=user_id).first()
+        schedule = employee.work_schedule if (employee and employee.work_schedule and employee.work_schedule.is_active) else None
+
+        if schedule:
+            start_time = datetime.combine(today, schedule.start_time)
+            tolerance_min = schedule.late_tolerance_minutes
+        else:
+            start_time_str = get_setting_value('attendance.office_start_time', '08:00')
+            tolerance_min = get_setting_value('attendance.late_tolerance_minutes', 30)
+            try:
+                start_time = datetime.combine(today, datetime.strptime(start_time_str, '%H:%M').time())
+            except ValueError:
+                start_time = datetime.combine(today, datetime.strptime('08:00', '%H:%M').time())
+
+        late_threshold = start_time + timedelta(minutes=int(tolerance_min))
+
         if now > late_threshold:
             attendance.status = 'late'
             late_minutes = int((now - late_threshold).total_seconds() / 60)
             attendance.notes = f'Terlambat {late_minutes} menit'
-        
+        if employee:
+            attendance.employee_id = employee.id
+
         db.session.add(attendance)
         db.session.commit()
-        
+
         return jsonify({
             'message': 'Clock in berhasil',
             'attendance': attendance.to_dict()
@@ -535,41 +550,46 @@ def clock_out():
         
         # Update attendance record
         attendance.clock_out = now
-        
-        # Calculate worked hours
-        if attendance.clock_in:
-            worked_seconds = (now - attendance.clock_in).total_seconds()
-            attendance.worked_hours = round(worked_seconds / 3600, 2)
-            
-            # Calculate overtime (after office end time)
-            from utils.helpers import get_setting_value
+
+        # Office end time: use the employee's assigned WorkSchedule when
+        # present (2026-09-27), otherwise the old global setting.
+        from utils.helpers import get_setting_value
+        employee = Employee.query.filter_by(user_id=user_id).first() if not attendance.employee_id else db.session.get(Employee, attendance.employee_id)
+        schedule = employee.work_schedule if (employee and employee.work_schedule and employee.work_schedule.is_active) else None
+        if schedule:
+            end_time = schedule.end_time
+        else:
             end_time_str = get_setting_value('attendance.office_end_time', '17:00')
             try:
                 end_time = datetime.strptime(end_time_str, '%H:%M').time()
             except ValueError:
                 end_time = datetime.strptime('17:00', '%H:%M').time()
-            standard_end = datetime.combine(today, end_time)
+        standard_end = datetime.combine(today, end_time)
+
+        # Calculate worked hours
+        if attendance.clock_in:
+            worked_seconds = (now - attendance.clock_in).total_seconds()
+            attendance.worked_hours = round(worked_seconds / 3600, 2)
+
+            # Calculate overtime (after office/schedule end time)
             if now > standard_end:
                 overtime_seconds = (now - standard_end).total_seconds()
                 attendance.overtime_hours = round(overtime_seconds / 3600, 2)
-        
-        # Check early leave (before office end time)
-        from utils.helpers import get_setting_value
-        end_time_str = get_setting_value('attendance.office_end_time', '17:00')
-        try:
-            end_time = datetime.strptime(end_time_str, '%H:%M').time()
-        except ValueError:
-            end_time = datetime.strptime('17:00', '%H:%M').time()
-        early_threshold = datetime.combine(today, end_time)
+
+        # Check early leave (before office/schedule end time)
+        early_threshold = standard_end
         if now < early_threshold:
             early_minutes = int((early_threshold - now).total_seconds() / 60)
             if attendance.notes:
                 attendance.notes += f'; Pulang awal {early_minutes} menit'
             else:
                 attendance.notes = f'Pulang awal {early_minutes} menit'
-        
+
+        if employee and not attendance.employee_id:
+            attendance.employee_id = employee.id
+
         db.session.commit()
-        
+
         return jsonify({
             'message': 'Clock out berhasil',
             'attendance': attendance.to_dict()
@@ -1419,6 +1439,132 @@ def review_reconciliation_flag(flag_id):
 
         db.session.commit()
         return jsonify({'message': 'Ditandai sudah direview', 'flag': flag.to_dict()}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+# ==================== WORK SCHEDULE (OFFICE STAFF) - 2026-09-27 ====================
+# Deliberately separate from ShiftSchedule/EmployeeRoster (production
+# operator rostering, rotates per day) - see WorkSchedule model docstring.
+# This is what "late" checking in clock_in/clock_out above actually reads.
+
+@attendance_bp.route('/work-schedules', methods=['GET'])
+@jwt_required()
+@require_permission('attendance.view')
+def list_work_schedules():
+    try:
+        schedules = WorkSchedule.query.order_by(WorkSchedule.name).all()
+        return jsonify({'work_schedules': [s.to_dict() for s in schedules]}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@attendance_bp.route('/work-schedules', methods=['POST'])
+@jwt_required()
+@require_permission('attendance.edit')
+def create_work_schedule():
+    try:
+        data = request.get_json() or {}
+        name = (data.get('name') or '').strip()
+        start_time = data.get('start_time')
+        end_time = data.get('end_time')
+        days_of_week = data.get('days_of_week', [0, 1, 2, 3, 4])
+
+        if not name or not start_time or not end_time:
+            return jsonify({'error': 'Nama, jam mulai, dan jam selesai wajib diisi'}), 400
+        if not isinstance(days_of_week, list) or not all(isinstance(d, int) and 0 <= d <= 6 for d in days_of_week):
+            return jsonify({'error': 'days_of_week harus berupa list angka 0 (Senin) - 6 (Minggu)'}), 400
+
+        schedule = WorkSchedule(
+            name=name,
+            days_of_week=days_of_week,
+            start_time=datetime.strptime(start_time, '%H:%M').time(),
+            end_time=datetime.strptime(end_time, '%H:%M').time(),
+            late_tolerance_minutes=int(data.get('late_tolerance_minutes', 30)),
+            is_active=data.get('is_active', True),
+        )
+        db.session.add(schedule)
+        db.session.commit()
+        return jsonify({'message': 'Jadwal kerja dibuat', 'work_schedule': schedule.to_dict()}), 201
+    except ValueError as e:
+        return jsonify({'error': f'Format jam tidak valid (HH:MM): {str(e)}'}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@attendance_bp.route('/work-schedules/<int:schedule_id>', methods=['PUT'])
+@jwt_required()
+@require_permission('attendance.edit')
+def update_work_schedule(schedule_id):
+    try:
+        schedule = db.session.get(WorkSchedule, schedule_id)
+        if not schedule:
+            return jsonify({'error': 'Jadwal tidak ditemukan'}), 404
+
+        data = request.get_json() or {}
+        if 'name' in data:
+            schedule.name = data['name'].strip()
+        if 'days_of_week' in data:
+            schedule.days_of_week = data['days_of_week']
+        if 'start_time' in data:
+            schedule.start_time = datetime.strptime(data['start_time'], '%H:%M').time()
+        if 'end_time' in data:
+            schedule.end_time = datetime.strptime(data['end_time'], '%H:%M').time()
+        if 'late_tolerance_minutes' in data:
+            schedule.late_tolerance_minutes = int(data['late_tolerance_minutes'])
+        if 'is_active' in data:
+            schedule.is_active = data['is_active']
+
+        db.session.commit()
+        return jsonify({'message': 'Jadwal kerja diperbarui', 'work_schedule': schedule.to_dict()}), 200
+    except ValueError as e:
+        return jsonify({'error': f'Format jam tidak valid (HH:MM): {str(e)}'}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@attendance_bp.route('/work-schedules/<int:schedule_id>', methods=['DELETE'])
+@jwt_required()
+@require_permission('attendance.edit')
+def delete_work_schedule(schedule_id):
+    try:
+        schedule = db.session.get(WorkSchedule, schedule_id)
+        if not schedule:
+            return jsonify({'error': 'Jadwal tidak ditemukan'}), 404
+        if schedule.employees:
+            return jsonify({'error': f'Tidak bisa dihapus, masih dipakai {len(schedule.employees)} karyawan. Pindahkan mereka ke jadwal lain dulu.'}), 400
+
+        db.session.delete(schedule)
+        db.session.commit()
+        return jsonify({'message': 'Jadwal kerja dihapus'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@attendance_bp.route('/work-schedules/<int:schedule_id>/assign', methods=['POST'])
+@jwt_required()
+@require_permission('attendance.edit')
+def assign_work_schedule(schedule_id):
+    """Assign this schedule to one or more employees (data.employee_ids)."""
+    try:
+        schedule = db.session.get(WorkSchedule, schedule_id)
+        if not schedule:
+            return jsonify({'error': 'Jadwal tidak ditemukan'}), 404
+
+        data = request.get_json() or {}
+        employee_ids = data.get('employee_ids', [])
+        if not isinstance(employee_ids, list) or not employee_ids:
+            return jsonify({'error': 'employee_ids wajib berupa list dan tidak boleh kosong'}), 400
+
+        updated = Employee.query.filter(Employee.id.in_(employee_ids)).update(
+            {'work_schedule_id': schedule_id}, synchronize_session=False
+        )
+        db.session.commit()
+        return jsonify({'message': f'{updated} karyawan ditugaskan ke jadwal ini'}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
