@@ -70,14 +70,22 @@ def _send_raw(text: str) -> str | None:
     """Kirim pesan mentah, return messageId kalau berhasil, None kalau gagal
     (gagal kirim WA TIDAK BOLEH menghentikan agent - error tetap tersimpan
     di SQLite dan bisa dilihat lewat agent-dashboard walau WA gagal)."""
+    import openwa_client  # import lokal - hindari circular import (openwa_client juga panggil config)
+
     effective = config.get_effective_config()
-    send_url = effective["openwa_send_url"]
+    base_url = effective["openwa_base_url"]
     api_key = effective["openwa_api_key"]
     target_phone = effective["openwa_target_phone"]
 
-    if not send_url or not api_key or not target_phone:
-        _log_activity("wa_notify: openwa_send_url/api_key/target_phone belum diset, notifikasi WA dilewati")
+    if not base_url or not api_key or not target_phone:
+        _log_activity("wa_notify: openwa_base_url/api_key/target_phone belum diset, notifikasi WA dilewati")
         return None
+
+    session_id = openwa_client.resolve_session_id(base_url, api_key)
+    if not session_id:
+        _log_activity("wa_notify: session OpenWA tidak bisa di-resolve, notifikasi WA dilewati (lihat log openwa_client di atas)")
+        return None
+    send_url = openwa_client.build_send_url(base_url, session_id)
 
     chat_id = _format_phone_to_chat_id(target_phone)
     try:

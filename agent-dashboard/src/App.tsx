@@ -116,17 +116,19 @@ function ErrorHistoryTab() {
 function ConfigTab() {
   const [config, setConfig] = useState<ConfigData | null>(null)
   const [apiKey, setApiKey] = useState('')
-  const [openwaSendUrl, setOpenwaSendUrl] = useState('')
+  const [openwaBaseUrl, setOpenwaBaseUrl] = useState('')
   const [openwaApiKey, setOpenwaApiKey] = useState('')
   const [openwaTargetPhone, setOpenwaTargetPhone] = useState('')
+  const [openwaSessionOverride, setOpenwaSessionOverride] = useState('')
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
 
   const load = () => {
     api.getConfig().then((c) => {
       setConfig(c)
-      setOpenwaSendUrl(c.openwa_send_url)
+      setOpenwaBaseUrl(c.openwa_base_url)
       setOpenwaTargetPhone(c.openwa_target_phone)
+      setOpenwaSessionOverride(c.openwa_session_id_override)
     })
   }
 
@@ -138,13 +140,14 @@ function ConfigTab() {
     try {
       await api.saveConfig({
         anthropic_api_key: apiKey || undefined,
-        openwa_send_url: openwaSendUrl,
+        openwa_base_url: openwaBaseUrl,
         openwa_api_key: openwaApiKey || undefined,
         openwa_target_phone: openwaTargetPhone,
+        openwa_session_id_override: openwaSessionOverride,
       })
       setApiKey('')
       setOpenwaApiKey('')
-      setMessage('Tersimpan. Langsung terpakai untuk diagnosis/notifikasi berikutnya, tidak perlu restart agent.')
+      setMessage('Tersimpan. Agent otomatis coba deteksi sesi OpenWA + daftarkan webhook lagi sekarang (cek agent_activity.log kalau notifikasi belum jalan).')
       load()
     } catch {
       setMessage('Gagal menyimpan.')
@@ -170,12 +173,16 @@ function ConfigTab() {
         onChange={(e) => setApiKey(e.target.value)}
       />
 
-      <label>OpenWA Send-Text URL (lengkap termasuk session ID)</label>
+      <label>OpenWA Base URL</label>
       <input
-        value={openwaSendUrl}
-        onChange={(e) => setOpenwaSendUrl(e.target.value)}
-        placeholder="http://localhost:8000/sessions/<sessionId>/messages/send-text"
+        value={openwaBaseUrl}
+        onChange={(e) => setOpenwaBaseUrl(e.target.value)}
+        placeholder="http://localhost:8000"
       />
+      <p className="muted">
+        Tanpa /sessions/... - session ID di-auto-detect (pilih sesi yang READY). Isi "Session ID
+        Override" di bawah kalau ada lebih dari satu sesi READY sekaligus.
+      </p>
 
       <label>
         OpenWA API Key (X-API-Key) {config?.openwa_api_key_set && <span className="muted">(sekarang: {config.openwa_api_key_masked})</span>}
@@ -189,6 +196,9 @@ function ConfigTab() {
 
       <label>Nomor WA Tujuan Notifikasi (digit saja, boleh diawali 0 atau 62)</label>
       <input value={openwaTargetPhone} onChange={(e) => setOpenwaTargetPhone(e.target.value)} placeholder="0812xxxxxxx" />
+
+      <label>Session ID Override (opsional - isi hanya kalau ada &gt;1 sesi READY)</label>
+      <input value={openwaSessionOverride} onChange={(e) => setOpenwaSessionOverride(e.target.value)} placeholder="kosongkan untuk auto-detect" />
 
       <button onClick={handleSave} disabled={saving}>{saving ? 'Menyimpan...' : 'Simpan'}</button>
       {message && <p className="muted">{message}</p>}

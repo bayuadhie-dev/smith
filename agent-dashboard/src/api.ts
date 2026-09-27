@@ -27,10 +27,11 @@ export interface ErrorRow {
 export interface ConfigData {
   anthropic_api_key_masked: string
   anthropic_api_key_set: boolean
-  openwa_send_url: string
+  openwa_base_url: string
   openwa_api_key_masked: string
   openwa_api_key_set: boolean
   openwa_target_phone: string
+  openwa_session_id_override: string
 }
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
@@ -52,6 +53,6 @@ export const api = {
   },
   getError: (id: string) => request<{ error: ErrorRow }>(`/api/errors/${id}`),
   getConfig: () => request<ConfigData>('/api/config'),
-  saveConfig: (data: { anthropic_api_key?: string; openwa_send_url?: string; openwa_api_key?: string; openwa_target_phone?: string }) =>
+  saveConfig: (data: { anthropic_api_key?: string; openwa_base_url?: string; openwa_api_key?: string; openwa_target_phone?: string; openwa_session_id_override?: string }) =>
     request<{ status: string }>('/api/config', { method: 'POST', body: JSON.stringify(data) }),
 }

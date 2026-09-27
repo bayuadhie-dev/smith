@@ -35,6 +35,7 @@ from flask_cors import CORS
 
 import config
 import state
+import openwa_client
 from activity_log import log_activity
 from api import api_bp
 from wa_webhook import wa_webhook_bp
@@ -61,6 +62,16 @@ def create_app() -> Flask:
 def main():
     state.init_db()
     log_activity("main: agent monitoring SMITH ERP dimulai")
+
+    # Auto-discover session OpenWA + daftarkan webhook balasan (openwa_client.py)
+    # - best-effort, tidak boleh menggagalkan startup kalau OpenWA belum
+    # siap/offline saat proses ini baru boot (urutan start PM2 antar proses
+    # tidak terjamin). Gagal di sini cuma berarti notifikasi WA belum aktif
+    # sampai openwa_base_url/api_key diisi atau OpenWA-nya online.
+    try:
+        openwa_client.auto_setup()
+    except Exception as e:
+        log_activity(f"main: auto_setup OpenWA gagal (non-fatal, lanjut start) - {e}", level="warning")
 
     watcher = Watcher()
     watcher.start()

@@ -15,6 +15,8 @@ sendiri belum ada auth (lihat TODO auth di bawah).
 from flask import Blueprint, request, jsonify
 
 import state
+import openwa_client
+from activity_log import log_activity
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
 
@@ -49,10 +51,11 @@ def get_config_route():
     return jsonify({
         "anthropic_api_key_masked": _mask(api_key),
         "anthropic_api_key_set": bool(api_key),
-        "openwa_send_url": all_config.get("openwa_send_url", ""),
+        "openwa_base_url": all_config.get("openwa_base_url", ""),
         "openwa_api_key_masked": _mask(openwa_api_key),
         "openwa_api_key_set": bool(openwa_api_key),
         "openwa_target_phone": all_config.get("openwa_target_phone", ""),
+        "openwa_session_id_override": all_config.get("openwa_session_id_override", ""),
     }), 200
 
 
@@ -64,12 +67,28 @@ def set_config_route():
     # akses di jaringan internal/local). Tambahkan minimal API key statis di
     # header atau login sebelum agent-dashboard bisa diakses dari luar.
     data = request.get_json(silent=True) or {}
+    openwa_fields_changed = False
     if data.get("anthropic_api_key"):
         state.set_config("anthropic_api_key", data["anthropic_api_key"])
-    if "openwa_send_url" in data:
-        state.set_config("openwa_send_url", data["openwa_send_url"])
+    if "openwa_base_url" in data:
+        state.set_config("openwa_base_url", data["openwa_base_url"])
+        openwa_fields_changed = True
     if data.get("openwa_api_key"):
         state.set_config("openwa_api_key", data["openwa_api_key"])
+        openwa_fields_changed = True
     if "openwa_target_phone" in data:
         state.set_config("openwa_target_phone", data["openwa_target_phone"])
+    if "openwa_session_id_override" in data:
+        state.set_config("openwa_session_id_override", data["openwa_session_id_override"])
+        openwa_fields_changed = True
+
+    if openwa_fields_changed:
+        # Base URL/API key/session override baru diisi (mungkin pertama kali,
+        # lewat dashboard setelah agent sudah jalan) - coba auto-setup lagi
+        # sekarang juga, jangan tunggu restart PM2 berikutnya.
+        try:
+            openwa_client.auto_setup(force_refresh=True)
+        except Exception as e:
+            log_activity(f"api: auto_setup OpenWA gagal setelah config disimpan - {e}", level="warning")
+
     return jsonify({"status": "saved"}), 200

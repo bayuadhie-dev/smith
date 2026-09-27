@@ -107,40 +107,51 @@ WATCHED_LOGS = [
 # (NestJS) yang sudah ada di scripts/OpenWA/ repo ini, dikonfirmasi dari 2
 # sumber: (1) scripts/OpenWA/src/modules/message/message.controller.ts +
 # dto/send-message.dto.ts, (2) backend/utils/production_notifications.py yang
-# SUDAH memanggilnya untuk notifikasi WO selesai. Detail:
-#   - Endpoint kirim pesan: POST {OPENWA_SEND_URL}
-#     Route asli NestJS-nya: POST /sessions/:sessionId/messages/send-text
-#     jadi OPENWA_SEND_URL WAJIB SUDAH mengandung sessionId di path-nya,
-#     contoh: http://localhost:8000/sessions/<sessionId>/messages/send-text
-#     (lihat scripts/OpenWA - session dibuat/dilihat lewat SessionController,
-#     atau dashboard OpenWA di scripts/OpenWA/dashboard/)
-#   - Header auth: X-API-Key: <token>  (BUKAN Authorization/Bearer)
-#   - Body: {"chatId": "62812xxxx@c.us", "text": "..."}
-#   - Sukses = HTTP 201, body respons: {"messageId": "...", "timestamp": ...}
-#     (messageId inilah yang dicocokkan lewat quotedMessage.id saat user
-#     reply di WA - lihat wa_webhook.py)
-#   - Backend SMITH ERP sendiri sudah punya setting yang mirip
-#     (notifications.whatsapp_api_url / notifications.whatsapp_token di
-#     backend/routes/config_manager.py) - TAPI agent ini sengaja punya
-#     config SENDIRI (SQLite terpisah, dikonfirmasi user) supaya tidak perlu
-#     akses ke DB utama SMITH ERP. Boleh isi dengan URL/token YANG SAMA kalau
-#     mau pakai session OpenWA yang sama dengan notifikasi WO.
+# SUDAH memanggilnya untuk notifikasi WO selesai.
+#
+# session ID dan pendaftaran webhook TIDAK PERLU diisi manual lagi
+# (lihat openwa_client.py, ditambahkan setelah user bertanya "harus manual
+# semua ya?") - agent ini otomatis:
+#   1. GET {OPENWA_BASE_URL}/sessions saat startup, pilih sesi berstatus
+#      READY (kalau PERSIS SATU yang READY - kalau nol/lebih dari satu,
+#      gagal dengan pesan jelas di agent_activity.log, isi
+#      openwa_session_id_override lewat agent-dashboard untuk override manual)
+#   2. Daftarkan webhook /webhook/wa ke sesi itu (idempotent - cek dulu
+#      apakah sudah terdaftar sebelum POST lagi, supaya restart PM2
+#      berulang tidak numpuk webhook duplikat)
+# Yang TETAP wajib manual (bukan sesuatu yang bisa/pantas diotomatiskan):
+#   - OPENWA_BASE_URL + OPENWA_API_KEY di bawah (kredensial, tidak bisa ditebak)
+#   - Sesi WhatsApp itu sendiri harus SUDAH connected/READY (scan QR sekali
+#     lewat dashboard OpenWA, scripts/OpenWA/dashboard/) SEBELUM agent ini
+#     start - agent tidak bisa membuat sesi baru atau scan QR untuk Anda.
+#
+# Detail request/response kirim pesan (untuk referensi, sudah di-encode di
+# openwa_client.py/wa_notify.py, tidak perlu diketik ulang manual):
+#   POST {OPENWA_BASE_URL}/sessions/<sessionId>/messages/send-text
+#   Header: X-API-Key: <OPENWA_API_KEY>
+#   Body: {"chatId": "62812xxxx@c.us", "text": "..."}
+#   Sukses = HTTP 201, body respons: {"messageId": "...", "timestamp": ...}
+#
+# Backend SMITH ERP sendiri sudah punya setting yang mirip
+# (notifications.whatsapp_api_url / notifications.whatsapp_token di
+# backend/routes/config_manager.py) - TAPI agent ini sengaja punya config
+# SENDIRI (SQLite terpisah, dikonfirmasi user) supaya tidak perlu akses ke
+# DB utama SMITH ERP. Boleh isi base URL/token YANG SAMA kalau mau pakai
+# gateway OpenWA yang sama dengan notifikasi WO.
 # =============================================================================
-OPENWA_SEND_URL_DEFAULT = os.environ.get("OPENWA_SEND_URL", "")  # TODO: WAJIB DIISI - http://host:port/sessions/<sessionId>/messages/send-text
+OPENWA_BASE_URL_DEFAULT = os.environ.get("OPENWA_BASE_URL", "")  # TODO: WAJIB DIISI - http://host:port (TANPA /sessions/... di belakang)
 OPENWA_API_KEY_DEFAULT = os.environ.get("OPENWA_API_KEY", "")  # TODO: WAJIB DIISI - nilai X-API-Key
 OPENWA_TARGET_PHONE_DEFAULT = os.environ.get("OPENWA_TARGET_PHONE", "")  # TODO: WAJIB DIISI - nomor digit saja (boleh diawali 0 atau 62), dikonversi otomatis ke format 62xxxx@c.us saat kirim
+OPENWA_SESSION_ID_OVERRIDE_DEFAULT = os.environ.get("OPENWA_SESSION_ID_OVERRIDE", "")  # opsional - isi HANYA kalau ada >1 sesi READY sekaligus (auto-discovery tidak bisa menebak mana yang dimaksud)
 
-# =============================================================================
-# TODO: OPSIONAL - Registrasi webhook balasan WA ke OpenWA.
-# Gateway OpenWA TIDAK otomatis mengirim balasan masuk ke agent ini - webhook
-# harus didaftarkan dulu ke sesi OpenWA yang dipakai, lewat:
-#   POST {OpenWA base URL}/sessions/<sessionId>/webhooks
-#   body: {"url": "http://<host-agent-ini>:<AGENT_WEBHOOK_PORT>/webhook/wa",
-#          "events": ["message.received"]}
-# (lihat scripts/OpenWA/src/modules/webhook/webhook.controller.ts) - daftarkan
-# sekali lewat dashboard OpenWA atau curl manual, agent ini tidak melakukannya
-# otomatis saat start.
-# =============================================================================
+# URL yang didaftarkan ke OpenWA sebagai webhook penerima balasan (poin 2
+# auto-setup di atas). Default menganggap OpenWA & agent ini jalan di mesin
+# yang sama (localhost tetap reachable satu sama lain). TODO: WAJIB DIISI
+# manual via env var kalau OpenWA gateway jalan di MESIN LAIN - localhost
+# dari sudut pandang OpenWA bukan mesin agent ini.
+AGENT_PUBLIC_CALLBACK_URL = os.environ.get(
+    "AGENT_PUBLIC_CALLBACK_URL", f"http://localhost:{os.environ.get('AGENT_WEBHOOK_PORT', '4500')}/webhook/wa"
+)
 
 # Anthropic API
 ANTHROPIC_API_KEY_ENV_DEFAULT = os.environ.get("ANTHROPIC_API_KEY", "")
@@ -174,7 +185,8 @@ def get_effective_config():
 
     return {
         "anthropic_api_key": state.get_config("anthropic_api_key") or ANTHROPIC_API_KEY_ENV_DEFAULT,
-        "openwa_send_url": state.get_config("openwa_send_url") or OPENWA_SEND_URL_DEFAULT,
+        "openwa_base_url": state.get_config("openwa_base_url") or OPENWA_BASE_URL_DEFAULT,
         "openwa_api_key": state.get_config("openwa_api_key") or OPENWA_API_KEY_DEFAULT,
         "openwa_target_phone": state.get_config("openwa_target_phone") or OPENWA_TARGET_PHONE_DEFAULT,
+        "openwa_session_id_override": state.get_config("openwa_session_id_override") or OPENWA_SESSION_ID_OVERRIDE_DEFAULT,
     }
