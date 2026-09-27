@@ -265,7 +265,6 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                 { name: 'Dashboard WMS', href: '/app/wms' },
                 { name: 'Stok per SPK', href: '/app/wms/stock-by-wo' },
                 { name: 'Konsumsi Material', href: '/app/wms/material-consumption' },
-                { name: 'Transaksi Stok', href: '/app/wms/transactions' },
                 { name: 'Pick List', href: '/app/wms/pick-lists' },
                 { name: 'Transfer Stok', href: '/app/wms/transfers' },
                 { name: 'Penyesuaian Stok', href: '/app/warehouse/adjustments' },
@@ -532,6 +531,13 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
       groupName: 'Reports & Settings',
       items: [
         { name: 'Reports', href: '/app/reports', icon: DocumentChartBarIcon, permission: 'reports' },
+        // Lintas modul (Purchasing/Production/Shipping/Finance semua
+        // menulis ke sini - lihat plan.md) - bukan cuma milik Warehouse
+        // lagi, jadi ditaruh di sini bukan di bawah Warehouse > WMS
+        // Advanced (2026-09-21, koreksi dari keputusan awal di plan.md
+        // bagian 6 yang menaruhnya di WMS Advanced sebelum laporan ini
+        // berkembang mencakup GL journal dari modul lain).
+        { name: 'Transaksi Stok', href: '/app/wms/transactions', icon: ArrowsRightLeftIcon },
         {
           name: 'Documents',
           href: '/app/documents',
