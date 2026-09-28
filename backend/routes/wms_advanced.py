@@ -1415,13 +1415,22 @@ def execute_transfer(sto_id):
                 source_query = source_query.filter(Inventory.material_id == item.material_id)
             source_inv = source_query.with_for_update().first()
 
+            source_row_missing = source_inv is None
             if source_inv:
                 source_inv.quantity_on_hand = float(source_inv.quantity_on_hand or 0) - qty
                 source_inv.quantity_available = float(source_inv.quantity_on_hand) - float(source_inv.quantity_reserved or 0)
             # else: no source Inventory row found — nothing to deduct (data
             # inconsistency should not silently pass, but we don't hard-fail
             # the transfer here since the transaction log itself is still
-            # valid; logged via txn.notes below)
+            # valid; flagged in txn.notes below - see source_row_missing -
+            # 2026-09-28: this comment used to say "logged via txn.notes
+            # below" but nothing actually did that, so the exact same
+            # phantom-stock symptom the batch-mismatch fix above closed
+            # could still happen here silently, just from a different root
+            # cause (no source row at all vs. a batch-number mismatch).
+            # Now genuinely logged so scripts/reconcile_stock_accuracy.py
+            # can find every occurrence directly instead of needing a full
+            # ledger reconstruction.
 
             # Carry the real source batch forward when the transfer item itself
             # didn't specify one - same reasoning as the source-lookup fix above.
@@ -1486,7 +1495,10 @@ def execute_transfer(sto_id):
                 reference_id=sto.id,
                 reference_number=sto.transfer_number,
                 status='completed',
-                notes=f'Transfer: {sto.reason}',
+                notes=(
+                    f'Transfer: {sto.reason}'
+                    + (' [PERINGATAN: tidak ada baris Inventory sumber ditemukan - stok tujuan dibuat TANPA pengurangan stok sumber, kemungkinan phantom stock]' if source_row_missing else '')
+                ),
                 created_by=user_id,
             )
             db.session.add(txn)
