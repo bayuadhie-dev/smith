@@ -241,7 +241,6 @@ import LeaveForm from './pages/HR/LeaveForm'
 import PayrollForm from './pages/HR/PayrollForm'
 import OutsourcingVendorList from './pages/HR/OutsourcingVendorList'
 import PieceworkLogList from './pages/HR/PieceworkLogList'
-import AppraisalForm from './pages/HR/AppraisalForm'
 import Departments from './pages/HR/Departments'
 import PositionManagement from './pages/HR/PositionManagement'
 import HRReports from './pages/HR/Reports'
@@ -934,9 +933,6 @@ function App() {
                 <Route path="hr/payroll/periods/:periodId/records" element={<PayrollRecordList />} />
                 <Route path="hr/payroll/outsourcing-vendors" element={<OutsourcingVendorList />} />
                 <Route path="hr/payroll/piecework-logs" element={<PieceworkLogList />} />
-                <Route path="hr/appraisals" element={<AppraisalList />} />
-                <Route path="hr/appraisals/new" element={<AppraisalForm />} />
-                <Route path="hr/appraisals/:id/edit" element={<AppraisalForm />} />
                 <Route path="hr/appraisal" element={<AppraisalList />} />
                 <Route path="hr/appraisal/cycles/new" element={<AppraisalCycleForm />} />
                 <Route path="hr/training" element={<TrainingManagement />} />

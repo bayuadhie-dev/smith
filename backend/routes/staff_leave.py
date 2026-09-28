@@ -6,6 +6,7 @@ from models.hr import StaffLeaveRequest, OfficeLocation, Employee
 from models.user import User
 from datetime import datetime, date, timedelta
 from utils.timezone import get_local_now, get_local_today
+from utils.helpers import get_setting_value
 import math
 
 staff_leave_bp = Blueprint('staff_leave', __name__)
@@ -54,6 +55,42 @@ def calculate_working_days(start_date, end_date):
     return working_days
 
 
+# Leave balance / kuota cuti tahunan (2026-09-28, gap ditemukan saat audit
+# HR): setting `hr.annual_leave_days` sudah ada sejak lama tapi tidak pernah
+# benar-benar dipakai untuk mengurangi/menampilkan sisa cuti karyawan -
+# karyawan bisa ajukan cuti_tahunan tanpa sistem tahu jatahnya masih ada
+# atau tidak. Sengaja DIHITUNG LANGSUNG (bukan disimpan di tabel
+# LeaveBalance terpisah yang perlu di-maintain/reset tiap tahun) supaya
+# selalu akurat terhadap status approval terkini, dan hanya berlaku untuk
+# leave_type 'cuti_tahunan' - tipe lain (sakit/izin/cuti_khusus/dinas_luar)
+# sengaja tidak dibatasi kuota, sesuai kebiasaan cuti Indonesia di mana
+# hanya cuti tahunan yang berjatah tetap.
+#
+# KETERBATASAN yang didokumentasikan, bukan ditangani: jatah dianggap SAMA
+# untuk semua karyawan (hr.annual_leave_days, default 12) tanpa prorate
+# untuk karyawan baru yang hire_date-nya di tengah tahun, dan tidak ada
+# carry-over sisa tahun lalu - keduanya kebijakan HR yang perlu keputusan
+# eksplisit sebelum diimplementasikan, bukan diasumsikan di sini.
+def _get_leave_balance(employee_id, year=None):
+    year = year or get_local_today().year
+    entitlement = int(get_setting_value('hr.annual_leave_days', 12))
+
+    used = db.session.query(db.func.coalesce(db.func.sum(StaffLeaveRequest.total_days), 0)).filter(
+        StaffLeaveRequest.employee_id == employee_id,
+        StaffLeaveRequest.leave_type == 'cuti_tahunan',
+        StaffLeaveRequest.status.in_(('pending', 'approved')),
+        db.extract('year', StaffLeaveRequest.start_date) == year,
+    ).scalar()
+    used = int(used or 0)
+
+    return {
+        'year': year,
+        'entitlement': entitlement,
+        'used': used,
+        'remaining': max(entitlement - used, 0),
+    }
+
+
 # ==================== AUTHENTICATED ESS SUBMIT (2026-09-27) ====================
 # Ported from the old Leave model's create_leave() during HR consolidation -
 # this is the logged-in employee self-service path (vs. public_submit_leave
@@ -93,6 +130,19 @@ def submit_leave():
             return jsonify({'error': 'Tanggal selesai harus setelah tanggal mulai'}), 400
 
         total_days = calculate_working_days(start, end)
+
+        # Kuota cuti tahunan - hanya cuti_tahunan yang dibatasi jatah (lihat
+        # _get_leave_balance()). Dicek terhadap tahun tanggal MULAI cuti,
+        # bukan tahun sekarang - supaya pengajuan cuti akhir Desember untuk
+        # tahun depan dihitung ke jatah tahun depan, bukan tahun berjalan.
+        if leave_type == 'cuti_tahunan':
+            balance = _get_leave_balance(employee.id, year=start.year)
+            if total_days > balance['remaining']:
+                return jsonify({
+                    'error': f"Sisa jatah cuti tahunan {start.year} tinggal {balance['remaining']} hari, "
+                             f"pengajuan ini butuh {total_days} hari.",
+                    'balance': balance,
+                }), 400
 
         # Multi-level approval routing: route to the employee's department
         # manager first, unless there is none configured or the employee IS
@@ -168,6 +218,32 @@ def manager_approve_leave(request_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+
+@staff_leave_bp.route('/balance', methods=['GET'])
+@jwt_required()
+@require_permission('leave.create')
+def get_own_leave_balance():
+    """Sisa jatah cuti tahunan milik user yang login - dipakai ESS submit
+    form untuk menampilkan sisa jatah SEBELUM karyawan mengetik tanggal."""
+    user_id = get_jwt_identity()
+    employee = Employee.query.filter_by(user_id=user_id).first()
+    if not employee:
+        return jsonify({'error': 'Akun Anda tidak terhubung ke data karyawan'}), 400
+    year = request.args.get('year', type=int)
+    return jsonify(_get_leave_balance(employee.id, year=year)), 200
+
+
+@staff_leave_bp.route('/balance/<int:employee_id>', methods=['GET'])
+@jwt_required()
+@require_permission('leave.view')
+def get_employee_leave_balance(employee_id):
+    """Sisa jatah cuti tahunan milik karyawan lain - untuk HR/admin lihat
+    sebelum approve, atau saat mengecek satu karyawan tertentu."""
+    if not db.session.get(Employee, employee_id):
+        return jsonify({'error': 'Karyawan tidak ditemukan'}), 404
+    year = request.args.get('year', type=int)
+    return jsonify(_get_leave_balance(employee_id, year=year)), 200
 
 
 # ==================== PUBLIC ENDPOINTS (No Auth) ====================

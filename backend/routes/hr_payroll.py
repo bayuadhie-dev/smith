@@ -156,10 +156,25 @@ def approve_payroll_period(period_id):
     """Approve payroll period and all its records"""
     try:
         period = db.session.get(PayrollPeriod, period_id) or abort(404)
-        
+
         if period.status != 'processing':
             return jsonify({'error': 'Only processing periods can be approved'}), 400
-        
+
+        # Segregation of duty (2026-09-28, gap ditemukan saat audit HR):
+        # sebelumnya payroll approve 1-langkah, siapa saja dengan permission
+        # payroll.approve bisa langsung approve TERMASUK orang yang barusan
+        # menjalankan kalkulasi (period.processed_by = orang terakhir yang
+        # run /calculate). Blokir supaya orang yang menyiapkan angka tidak
+        # bisa juga jadi orang yang menyetujuinya sendiri - butuh 2 orang
+        # berbeda minimal, mirip pola manager-approval yang baru dibangun di
+        # Leave, tanpa perlu permission baru atau routing per-karyawan (payroll
+        # itu satu periode untuk semua karyawan sekaligus, bukan per-manager).
+        approver_id = int(get_jwt_identity())
+        if period.processed_by == approver_id:
+            return jsonify({
+                'error': 'Tidak bisa approve payroll yang Anda hitung sendiri. Minta orang lain (mis. Finance Manager) untuk approve.'
+            }), 400
+
         period.status = 'completed'
         period.processed_at = datetime.utcnow()
         

@@ -382,6 +382,8 @@ def create_app(config_class=Config):
 
     from routes.hr_extended import hr_extended_bp
 
+    from routes.hr_reports import hr_reports_bp
+
     from routes.work_roster import work_roster_bp
 
     from routes.settings import settings_bp
@@ -560,6 +562,7 @@ def create_app(config_class=Config):
     app.register_blueprint(hr_training_bp, url_prefix='/api/hr/training')
 
     app.register_blueprint(hr_extended_bp, url_prefix='/api/hr')
+    app.register_blueprint(hr_reports_bp, url_prefix='/api/hr/reports')
 
     app.register_blueprint(attendance_bp, url_prefix='/api/attendance')
 

@@ -435,7 +435,14 @@ def submit_manager_review(appraisal_id):
         
         if appraisal.manager_review_status == 'completed':
             return jsonify(error_response('api.error', error_code=400)), 400
-        
+
+        # Manager harus menunggu karyawan self-review dulu (2026-09-28, gap
+        # ditemukan saat audit HR) - sebelumnya manager bisa submit review
+        # duluan sebelum karyawan sempat menilai diri sendiri, yang merusak
+        # maksud alur self-review -> manager-review dua tahap.
+        if appraisal.self_review_status != 'completed':
+            return jsonify({'error': 'Karyawan belum menyelesaikan self-review, manager belum bisa menilai'}), 400
+
         # Update appraisal scores
         scores_data = data.get('scores', [])
         total_weighted_score = Decimal('0')

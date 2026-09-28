@@ -78,6 +78,22 @@ const StaffLeaveManagement: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
 
+  // Sisa jatah cuti tahunan (2026-09-28) - hanya relevan utk leave_type
+  // 'cuti_tahunan', dimuat saat modal dibuka & tiap kali leave_type diganti
+  // ke 'cuti_tahunan', supaya karyawan lihat sisa jatah SEBELUM submit
+  // (backend tetap validasi ulang saat submit - ini cuma agar user tidak
+  // perlu coba-coba submit dulu baru tahu kuotanya habis).
+  const [leaveBalance, setLeaveBalance] = useState<{ year: number; entitlement: number; used: number; remaining: number } | null>(null);
+
+  const fetchLeaveBalance = async () => {
+    try {
+      const res = await axiosInstance.get('/api/staff-leave/balance');
+      setLeaveBalance(res.data);
+    } catch {
+      setLeaveBalance(null);
+    }
+  };
+
   useEffect(() => {
     fetchRequests();
     fetchLocations();
@@ -264,7 +280,7 @@ const StaffLeaveManagement: React.FC = () => {
         </div>
         <div className="flex gap-2">
           <button
-            onClick={() => setShowSubmitModal(true)}
+            onClick={() => { setShowSubmitModal(true); fetchLeaveBalance(); }}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg"
           >
             <Plus className="h-4 w-4" />
@@ -532,6 +548,11 @@ const StaffLeaveManagement: React.FC = () => {
                   <option value="cuti_khusus">Cuti Khusus</option>
                   <option value="dinas_luar">Dinas Luar</option>
                 </select>
+                {submitForm.leave_type === 'cuti_tahunan' && leaveBalance && (
+                  <p className={`mt-1 text-xs ${leaveBalance.remaining === 0 ? 'text-red-600' : 'text-gray-500 dark:text-gray-400'}`}>
+                    Sisa jatah cuti tahunan {leaveBalance.year}: <strong>{leaveBalance.remaining} hari</strong> (dari {leaveBalance.entitlement} hari, terpakai {leaveBalance.used})
+                  </p>
+                )}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>

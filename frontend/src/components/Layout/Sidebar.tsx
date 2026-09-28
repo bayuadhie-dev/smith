@@ -440,6 +440,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
             { name: 'Payroll', href: '/app/hr/payroll', icon: CurrencyDollarIcon, permission: 'payroll' },
             { name: 'Penilaian Kinerja', href: '/app/hr/appraisal', icon: ChartBarIcon, permission: 'appraisal' },
             { name: 'Pelatihan', href: '/app/hr/training', icon: AcademicCapIcon, permission: 'training' },
+            { name: 'Laporan HR', href: '/app/hr/reports', icon: DocumentChartBarIcon, permission: 'hr' },
           ]
         },
       ]
