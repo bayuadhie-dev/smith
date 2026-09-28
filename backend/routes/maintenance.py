@@ -9,9 +9,15 @@ from models.production import Machine
 from models.hr import Employee
 from utils.i18n import success_response, error_response, get_message
 from utils import generate_number
+from utils.maintenance_helpers import resolve_asset_for_machine, generate_maintenance_record_from_schedule
 from datetime import datetime
 from sqlalchemy import func, desc
 from utils.timezone import get_local_now, get_local_today
+
+# Tipe maintenance yang WAJIB isi root_cause saat status jadi 'completed'
+# (2026-09-28) - preventive tidak wajib karena tidak ada kerusakan yang
+# butuh dijelaskan sebabnya, cuma perawatan terjadwal biasa.
+ROOT_CAUSE_REQUIRED_TYPES = ('corrective', 'breakdown', 'emergency')
 
 maintenance_bp = Blueprint('maintenance', __name__)
 
@@ -125,6 +131,7 @@ def create_maintenance():
         record = MaintenanceRecord(
             record_number=record_number,
             machine_id=data['machine_id'],
+            asset_id=resolve_asset_for_machine(data['machine_id']),
             maintenance_type=data['maintenance_type'],
             maintenance_date=datetime.fromisoformat(data.get('scheduled_date', data.get('maintenance_date', datetime.utcnow().isoformat()))),
             duration_hours=data.get('estimated_duration_hours'),
@@ -184,12 +191,15 @@ def create_record():
         record = MaintenanceRecord(
             record_number=record_number,
             machine_id=data['machine_id'],
+            asset_id=resolve_asset_for_machine(data['machine_id']),
             maintenance_type=data['maintenance_type'],
             maintenance_date=get_local_now(),
             start_time=datetime.fromisoformat(data['start_time']) if data.get('start_time') else None,
             end_time=datetime.fromisoformat(data['end_time']) if data.get('end_time') else None,
             problem_description=data.get('problem_description'),
             work_performed=data.get('work_performed'),
+            root_cause=data.get('root_cause'),
+            root_cause_category=data.get('root_cause_category'),
             cost=data.get('cost', 0),
             performed_by=user_id
         )
@@ -219,12 +229,29 @@ def update_maintenance_record(record_id):
     try:
         record = db.session.get(MaintenanceRecord, record_id) or abort(404)
         data = request.get_json()
-        
+
+        if 'root_cause' in data:
+            record.root_cause = data['root_cause']
+        if 'root_cause_category' in data:
+            record.root_cause_category = data['root_cause_category']
+
         # Update fields
         if 'status' in data:
+            # Root cause wajib sebelum status bisa jadi 'completed' untuk tipe
+            # yang benar-benar ada kerusakan (2026-09-28, gap ditemukan saat
+            # verifikasi kematangan modul Maintenance - CLAUDE.md sudah lama
+            # mencatat "root-cause sering hilang" karena sebelumnya tidak ada
+            # field khusus/wajib apapun). Preventive dikecualikan - tidak ada
+            # kerusakan yang perlu dijelaskan sebabnya.
+            if (data['status'] == 'completed' and record.maintenance_type in ROOT_CAUSE_REQUIRED_TYPES
+                    and not (data.get('root_cause') or record.root_cause)):
+                return jsonify({
+                    'error': f'Root cause wajib diisi sebelum maintenance tipe "{record.maintenance_type}" ditandai selesai'
+                }), 400
+
             old_status = record.status
             record.status = data['status']
-            
+
             # Auto-update timestamps based on status
             if data['status'] == 'in_progress' and not record.start_time:
                 record.start_time = get_local_now()
@@ -463,51 +490,16 @@ def generate_maintenance_from_schedule(schedule_id):
     try:
         schedule = db.session.get(MaintenanceSchedule, schedule_id) or abort(404)
         user_id = int(get_jwt_identity())
-        
-        # Generate record number
-        record_number = generate_number('MR', MaintenanceRecord, 'record_number')
-        
-        # Create maintenance record from schedule
-        record = MaintenanceRecord(
-            record_number=record_number,
-            machine_id=schedule.machine_id,
-            schedule_id=schedule.id,
-            maintenance_type=schedule.maintenance_type,
-            maintenance_date=schedule.next_maintenance_date,
-            duration_hours=schedule.estimated_duration_hours,
-            status='scheduled',
-            problem_description=f'Scheduled {schedule.maintenance_type} maintenance',
-            performed_by=schedule.assigned_to or user_id,
-            notes=f'Generated from schedule {schedule.schedule_number}'
-        )
-        
-        db.session.add(record)
-        
-        # Update schedule's last maintenance date and calculate next date
-        from dateutil.relativedelta import relativedelta
-        
-        schedule.last_maintenance_date = schedule.next_maintenance_date
-        
-        # Calculate next maintenance date based on frequency
-        next_date = schedule.next_maintenance_date
-        if schedule.frequency == 'daily':
-            next_date = next_date + relativedelta(days=schedule.frequency_value)
-        elif schedule.frequency == 'weekly':
-            next_date = next_date + relativedelta(weeks=schedule.frequency_value)
-        elif schedule.frequency == 'monthly':
-            next_date = next_date + relativedelta(months=schedule.frequency_value)
-        elif schedule.frequency == 'quarterly':
-            next_date = next_date + relativedelta(months=schedule.frequency_value * 3)
-        elif schedule.frequency == 'yearly':
-            next_date = next_date + relativedelta(years=schedule.frequency_value)
-        
-        schedule.next_maintenance_date = next_date
-        
+
+        # Logic sama persis dipakai juga oleh scripts/generate_due_maintenance.py
+        # (cron, auto-generate) - lihat utils/maintenance_helpers.py.
+        record = generate_maintenance_record_from_schedule(schedule, user_id=user_id)
+
         db.session.commit()
         return jsonify({
             'message': 'Maintenance record generated successfully',
             'record_id': record.id,
-            'next_maintenance_date': next_date.isoformat()
+            'next_maintenance_date': schedule.next_maintenance_date.isoformat()
         }), 201
     except Exception as e:
         db.session.rollback()

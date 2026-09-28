@@ -38,11 +38,27 @@ interface MaintenanceRecord {
   notes?: string;
 }
 
+// Tipe yang wajib isi root cause sebelum bisa ditandai selesai (2026-09-28)
+// - harus sama persis dengan ROOT_CAUSE_REQUIRED_TYPES di backend/routes/maintenance.py
+const ROOT_CAUSE_REQUIRED_TYPES = ['corrective', 'breakdown', 'emergency'];
+
+const ROOT_CAUSE_CATEGORIES = [
+  { value: 'mechanical', label: 'Mekanikal' },
+  { value: 'electrical', label: 'Elektrikal' },
+  { value: 'operator_error', label: 'Kesalahan Operator' },
+  { value: 'material', label: 'Material/Bahan' },
+  { value: 'preventive_lapse', label: 'Preventive Terlewat' },
+  { value: 'other', label: 'Lainnya' },
+];
+
 const MaintenanceList: React.FC = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [records, setRecords] = useState<MaintenanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [completingRecord, setCompletingRecord] = useState<MaintenanceRecord | null>(null);
+  const [rootCauseForm, setRootCauseForm] = useState({ root_cause_category: '', root_cause: '' });
+  const [submittingComplete, setSubmittingComplete] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
@@ -74,6 +90,42 @@ const MaintenanceList: React.FC = () => {
     } catch (error) {
       console.error('Error updating status:', error);
       toast.error('Failed to update status');
+    }
+  };
+
+  // "Mark Complete" (2026-09-28): tipe yang benar-benar ada kerusakan wajib
+  // isi root cause dulu - backend akan menolak (400) tanpa itu, jadi
+  // tangkap di sini dengan modal singkat daripada biarkan user coba-coba
+  // klik dan dapat error yang tidak jelas asalnya.
+  const handleMarkComplete = (record: MaintenanceRecord) => {
+    if (ROOT_CAUSE_REQUIRED_TYPES.includes(record.maintenance_type)) {
+      setCompletingRecord(record);
+      setRootCauseForm({ root_cause_category: '', root_cause: '' });
+    } else {
+      handleStatusChange(record.id, 'completed');
+    }
+  };
+
+  const submitCompleteWithRootCause = async () => {
+    if (!completingRecord) return;
+    if (!rootCauseForm.root_cause.trim()) {
+      toast.error('Root cause wajib diisi');
+      return;
+    }
+    setSubmittingComplete(true);
+    try {
+      await api.patch(`/api/maintenance/records/${completingRecord.id}`, {
+        status: 'completed',
+        root_cause: rootCauseForm.root_cause,
+        root_cause_category: rootCauseForm.root_cause_category || undefined,
+      });
+      toast.success('Maintenance selesai dicatat');
+      setCompletingRecord(null);
+      fetchRecords();
+    } catch (error: any) {
+      toast.error(error?.response?.data?.error || 'Gagal menyelesaikan maintenance');
+    } finally {
+      setSubmittingComplete(false);
     }
   };
 
@@ -310,7 +362,7 @@ const MaintenanceList: React.FC = () => {
                       )}
                       {record.status === 'in_progress' && (
                         <button
-                          onClick={() => handleStatusChange(record.id, 'completed')}
+                          onClick={() => handleMarkComplete(record)}
                           className="p-1 text-gray-400 hover:text-green-600 transition-colors"
                           title="Mark Complete"
                         >
@@ -385,6 +437,58 @@ const MaintenanceList: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Root cause modal - hanya muncul untuk corrective/breakdown/emergency (2026-09-28) */}
+      {completingRecord && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Selesaikan {completingRecord.record_number}</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              Isi root cause dulu - wajib untuk tipe "{completingRecord.maintenance_type}".
+            </p>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Kategori Root Cause</label>
+                <select
+                  value={rootCauseForm.root_cause_category}
+                  onChange={(e) => setRootCauseForm(prev => ({ ...prev, root_cause_category: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"
+                >
+                  <option value="">Pilih kategori (opsional)...</option>
+                  {ROOT_CAUSE_CATEGORIES.map(c => (
+                    <option key={c.value} value={c.value}>{c.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Root Cause *</label>
+                <textarea
+                  value={rootCauseForm.root_cause}
+                  onChange={(e) => setRootCauseForm(prev => ({ ...prev, root_cause: e.target.value }))}
+                  rows={3}
+                  placeholder="Penyebab dasar kerusakan, bukan sekadar gejala..."
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 mt-5">
+              <button
+                onClick={() => setCompletingRecord(null)}
+                className="px-4 py-2 text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+              >
+                Batal
+              </button>
+              <button
+                onClick={submitCompleteWithRootCause}
+                disabled={submittingComplete}
+                className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 rounded-lg disabled:bg-gray-400"
+              >
+                {submittingComplete ? 'Menyimpan...' : 'Tandai Selesai'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

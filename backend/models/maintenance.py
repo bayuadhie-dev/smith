@@ -41,7 +41,20 @@ class MaintenanceRecord(db.Model):
     status = db.Column(db.String(50), nullable=False, default='scheduled')  # scheduled, in_progress, completed, cancelled
     problem_description = db.Column(db.Text, nullable=True)
     work_performed = db.Column(db.Text, nullable=True)
-    parts_used = db.Column(db.Text, nullable=True)  # JSON format
+    # root_cause / root_cause_category (2026-09-28, closes a known gap -
+    # CLAUDE.md: "durasi downtime akurat tapi root-cause sering hilang").
+    # Previously the only place to write a root cause was buried as free
+    # text inside problem_description (which describes the SYMPTOM, not
+    # necessarily the cause) - nothing distinguished or required it.
+    # root_cause_category gives reporting something structured to group by
+    # (mechanical/electrical/operator_error/material/preventive_lapse/other);
+    # root_cause is the free-text detail. Both nullable at the DB level
+    # (existing rows have neither) - required-ness for
+    # corrective/breakdown/emergency records is enforced at the route/UI
+    # layer, not the schema, so this stays backward compatible.
+    root_cause_category = db.Column(db.String(50), nullable=True)
+    root_cause = db.Column(db.Text, nullable=True)
+    parts_used = db.Column(db.Text, nullable=True)  # JSON format - deducts real Inventory/Material stock on completion, see routes/maintenance.py's PATCH handler (A-008)
     cost = db.Column(db.Numeric(15, 2), default=0)
     performed_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     approved_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)

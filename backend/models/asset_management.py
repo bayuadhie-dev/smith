@@ -17,6 +17,15 @@ class Asset(db.Model):
     category = db.Column(db.String(100), nullable=True)  # production_machine, office_equipment, warehouse, etc.
     subcategory = db.Column(db.String(100), nullable=True)
     description = db.Column(db.Text, nullable=True)
+    # machine_id (2026-09-28, closes a gap found while maturing Maintenance):
+    # the class docstring above always said this model "consolidates ...
+    # Machine (production)", but no FK actually existed to do that linking -
+    # MaintenanceRecord.asset_id sat unused because nothing could resolve
+    # "which Asset row is this Machine". Nullable/opt-in: an asset_type=
+    # 'machinery' row only needs this set if the machine is ALSO tracked in
+    # the production Machine registry (some assets, e.g. buildings/vehicles,
+    # never will be).
+    machine_id = db.Column(db.Integer, db.ForeignKey('machines.id'), nullable=True, unique=True)
     
     # Lifecycle Status
     status = db.Column(db.String(50), nullable=False, default='planning')
@@ -98,6 +107,7 @@ class Asset(db.Model):
     updated_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     
     # ========== RELATIONSHIPS ==========
+    machine = db.relationship('Machine', foreign_keys=[machine_id])
     purchase_order = db.relationship('PurchaseOrder', foreign_keys=[purchase_order_id])
     supplier = db.relationship('Supplier')
     department = db.relationship('Department')
