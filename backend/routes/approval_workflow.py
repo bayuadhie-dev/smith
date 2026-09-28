@@ -503,6 +503,28 @@ def approve_workflow(workflow_id):
         # Create journal entries from pending (one AccountingEntry row per line)
         pending_journal = PendingJournalEntry.query.filter_by(workflow_id=workflow_id).first()
         if pending_journal:
+            # Closing Period backstop (2026-09-28, gap ditemukan saat
+            # verifikasi fitur Closing Period): post_pending_journal() TIDAK
+            # PERNAH cek is_period_locked() sendiri - tanggung jawab ada di
+            # tiap caller. Kebanyakan modul lain yang lewat generic workflow
+            # approval INI (bukan posting langsung) memberi entry_date yang
+            # sudah ditentukan saat pending journal dibuat, bisa saja tanggal
+            # bisnis asli (bukan hari ini) - dicek di sini sebagai satu titik
+            # backstop untuk SEMUA flow yang lewat generic approval workflow,
+            # bukan di-duplikasi ke tiap route pemanggil workflow ini.
+            from utils.finance_helpers import is_period_locked
+            if is_period_locked(pending_journal.entry_date):
+                # workflow.status/approver_id di atas + apply_workflow_side_effect()
+                # sudah mengubah session ini tapi belum di-commit - rollback
+                # eksplisit di sini (bukan cuma andalkan teardown) supaya
+                # approve yang ditolak benar-benar tidak meninggalkan efek
+                # samping separuh jalan (mis. stok sudah disesuaikan tapi
+                # jurnal tidak pernah dibuat).
+                db.session.rollback()
+                return jsonify({
+                    'error': f'Periode akuntansi untuk {pending_journal.entry_date.strftime("%B %Y")} sudah ditutup (Closing Period). '
+                             'Tidak bisa approve transaksi yang jurnalnya bertanggal periode tersebut.'
+                }), 400
             created_entries = post_pending_journal(pending_journal.id, posted_by_user_id=current_user_id)
             db.session.flush()
 

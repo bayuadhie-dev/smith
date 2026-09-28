@@ -175,6 +175,21 @@ def approve_payroll_period(period_id):
                 'error': 'Tidak bisa approve payroll yang Anda hitung sendiri. Minta orang lain (mis. Finance Manager) untuk approve.'
             }), 400
 
+        # Closing Period enforcement (2026-09-28, gap ditemukan saat verifikasi
+        # fitur Closing Period): post_payroll_journal() memberi tanggal jurnal
+        # = period.end_date (tanggal akhir periode payroll, mis. 31 Januari),
+        # BUKAN tanggal hari ini seperti kebanyakan jurnal GL lain di sistem
+        # ini - payroll biasanya baru dihitung & di-approve awal bulan
+        # berikutnya, setelah periode akuntansi bulan itu bisa saja sudah
+        # ditutup. Tanpa cek ini, payroll based tetap bisa diposting ke
+        # periode yang sudah closed tanpa ditolak sama sekali.
+        from utils.finance_helpers import is_period_locked
+        if is_period_locked(period.end_date):
+            return jsonify({
+                'error': f'Periode akuntansi untuk {period.end_date.strftime("%B %Y")} sudah ditutup (Closing Period). '
+                         'Tidak bisa posting jurnal payroll ke periode yang sudah closed.'
+            }), 400
+
         period.status = 'completed'
         period.processed_at = datetime.utcnow()
         
