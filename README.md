@@ -391,7 +391,7 @@ POST       /api/spc/recalculate/:product_id/:parameter_id
 **🆕 WMS Advanced (Terintegrasi):**
 - **Stok per Work Order** - Tracking inventori, WIP, dan konsumsi material per WO, dengan halaman detail per WO
 - **Konsumsi Material** - Planned vs actual material consumption dengan variance tracking; fallback otomatis dari `work_order_bom_items` → master `bom_items` via product BOM
-- **Transaksi Stok Terpadu** - Log semua pergerakan stok (produksi, PO, SO, transfer) dengan halaman detail transaksi
+- **Transaksi Stok Terpadu (gaya SAP MB51)** (v3.10) - Log semua pergerakan stok lintas modul (Purchasing, Production, Shipping, Finance) di satu report: selection screen (tidak auto-load, harus "Jalankan Pencarian"), ALV grid dengan kolom sortable + field catalog custom per user (tersimpan), **saldo berjalan (running balance) per baris** direkonstruksi read-time via window function, drawer detail 3 tab (Fisik Material/Jurnal Akuntansi/Document Flow), export Excel/CSV. Dipindah ke menu global Reports & Settings (bukan lagi di bawah Warehouse saja, karena datanya lintas modul)
 - **Pick List Management** - Daftar pengambilan barang untuk produksi, pengiriman, transfer
 - **Transfer Stok** - Pemindahan antar zona/lokasi dengan approval workflow
 - **Cycle Count Schedule** - Jadwal stock opname berkala dengan tracking akurasi
@@ -439,7 +439,7 @@ GET        /api/wms/reports/batch-traceability/:batch_number
 
 **Fitur:**
 - Manajemen Supplier
-- Purchase Requisition (PR) dengan approval
+- Purchase Requisition (PR) dengan approval — konversi ke PO **otomatis dipecah per supplier** (v3.10) kalau item-item dalam satu PR punya supplier pilihan berbeda-beda, bukan dipaksa satu PO satu supplier
 - Purchase Order dengan approval workflow
 - Goods Receipt Note (GRN)
 - Purchase Invoice & Payment
@@ -474,9 +474,17 @@ GET        /api/purchasing/reports
 - Report Keuangan (P&L, Balance Sheet, Cash Flow)
 - Cost Accounting (WIP, COGM, COGS)
 - Tax Management
-- Fixed Assets (Basic)
 - Consolidation Antar Entity
 - **Expense & Reimbursement** — Klaim pengeluaran karyawan
+- **Bank Reconciliation** — Import mutasi bank (CSV/Excel) + pencocokan manual terhadap GL
+- **Commitment/Encumbrance Accounting** — PO approval mereservasi budget, invoice/cancel melepasnya
+- **Proses Akhir Bulan / Closing Period (gaya SAP, v3.10)** — bukan cuma kunci on/off sederhana:
+  - **Kunci berurutan wajib** — tidak bisa tutup Maret tanpa tutup Januari/Februari dulu (kecuali closing pertama kali)
+  - **Reopen guard** — tidak bisa buka kembali periode kalau periode setelahnya sudah ditutup (mencegah saldo awal periode berikutnya rusak diam-diam)
+  - **Kunci parsial per jenis transaksi** — tutup AP tanpa menutup jurnal manual, tanpa perlu closing penuh
+  - **Checklist Closing** ("Closing Cockpit" ringan) — item wajib (rekonsiliasi bank, stock opname, aging AR/AP, payroll, dll) yang harus dicentang sebelum bisa closing, bisa di-override eksplisit
+  - **Peringatan stok negatif** (advisory) saat closing
+  - Enforcement `is_period_locked()` terpasang di 8 titik penulisan jurnal (Faktur Pembelian/Penjualan, Jurnal Manual, Pembayaran, Expense, Penyusutan Aset, Payroll, Approval Workflow generik)
 
 **WIP Accounting & Job Costing:**
 - WIP Ledger per Work Order
@@ -487,7 +495,7 @@ GET        /api/purchasing/reports
 - Job Costing per Work Order
 
 **Frontend Pages (32 halaman):**
-Dashboard, General Ledger, Chart of Accounts, Accounts Payable, Accounts Receivable, Budget Planning & Forecasting, Cash Flow, Cash Bank Management, Financial Reports, Fixed Assets, WIP Ledger, Tax Management, Consolidation, Costing & Controlling, Invoice Management, Expense & Reimbursement
+Dashboard, General Ledger, Chart of Accounts, Accounts Payable, Accounts Receivable, Budget Planning & Forecasting, Cash Flow, Cash Bank Management, Financial Reports, Bank Reconciliation, WIP Ledger, Tax Management, Consolidation, Costing & Controlling, Invoice Management, Expense & Reimbursement, Proses Akhir Bulan (Closing Period)
 
 **Endpoint API:**
 ```bash
@@ -495,6 +503,11 @@ GET/POST   /api/finance/accounts
 GET/POST   /api/finance/journals
 GET/POST   /api/finance/transactions
 GET        /api/finance/reports
+GET/POST   /api/finance/bank-reconciliation
+GET/POST   /api/finance/period-close
+DELETE     /api/finance/period-close/:id          # reopen (dengan guard)
+GET/POST   /api/finance/closing-tasks             # checklist closing
+GET/POST   /api/finance/period-transaction-locks   # kunci parsial per jenis transaksi
 GET/POST   /api/wip-accounting
 GET/POST   /api/wip-job-costing
 GET/POST   /api/expenses
@@ -506,16 +519,19 @@ GET/POST   /api/expenses/reimbursements
 ### 9️⃣ **Modul HR & Payroll**
 
 **Fitur:**
-- Manajemen Karyawan (profil, jabatan, departemen)
-- Manajemen Absensi & Cuti
-- Face Recognition Attendance (real-time dengan face-api.js)
+- Manajemen Karyawan (profil, jabatan, departemen, org hierarchy dengan `manager_id`)
+- Absensi & Cuti — **satu sistem terpadu** (v3.10, konsolidasi dari 2 sistem paralel yang sebelumnya tidak sinkron): ESS self-submit, approval berjenjang (manager departemen → HR), geofencing lokasi kantor multi-titik, kalender cuti
+- **Kuota/Saldo Cuti Tahunan** (v3.10) — dihitung real-time dari pengaturan `hr.annual_leave_days`, submit otomatis ditolak kalau kuota habis, sisa jatah tampil langsung di form pengajuan
+- **Koreksi & Rekonsiliasi Absensi** (v3.10) — karyawan bisa ajukan koreksi kalau lupa clock-in/out; cross-check otomatis antara Absensi dan log produksi operator (shift_productions) untuk temukan selisih tanpa auto-koreksi
+- **Jadwal Kerja Staff Kantor** (v3.10) — jadwal jam kerja per karyawan (terpisah dari roster shift produksi), menentukan keterlambatan/lembur secara individual, bukan satu jam kantor global untuk semua orang
+- Face Recognition Attendance (real-time dengan face-api.js) + validasi GPS radius kantor
 - Public Attendance (QR Code tanpa login)
-- Proses Payroll
-- Performance Appraisal
+- Proses Payroll — 6 tipe gaji (bulanan/mingguan/harian/borongan/outsourcing/tetap), PPh 21 TER PP 58/2023 ditanggung perusahaan, BPJS otomatis, **segregation-of-duty** (v3.10: penghitung payroll tidak bisa approve hasil hitungannya sendiri)
+- Performance Appraisal — alur cycle → self-review → manager-review berjenjang (v3.10: manager tidak bisa menilai duluan sebelum karyawan self-review)
 - Training & Development
 - Manajemen Roster Shift (drag & drop)
 - Piecework Log (tracking borongan)
-- Staff Leave Request (publik, tanpa login) — ⚠️ sistem terpisah dari Manajemen Cuti formal di atas (model & tabel berbeda, belum tersinkron; cuti via kiosk publik ini tidak ikut terhitung di Attendance/Payroll formal)
+- **Laporan HR** (v3.10) — 5 jenis laporan (karyawan, kehadiran, cuti, payroll, headcount per departemen) dengan export Excel & PDF
 - Outsourcing Vendor Management
 - Portal Self-Service Karyawan
 
@@ -526,27 +542,32 @@ GET/POST   /api/expenses/reimbursements
 - Interface drag & drop
 - View roster mingguan & bulanan
 
-**Frontend Pages (31 halaman):**
-HR Dashboard, Employee List & Form, Attendance Management, Attendance Calendar & Report, Leave Management, Payroll List & Records, Appraisal Management, Training Management, Roster Management (Drag & Drop), Work Roster Weekly, Departments, Face Admin, Piecework Log, Staff Leave Management, Outsourcing Vendor
+**Frontend Pages (32 halaman):**
+HR Dashboard, Employee List & Form, Attendance Management, Attendance Calendar & Report, Koreksi & Rekonsiliasi Absensi, Jadwal Kerja Staff Kantor, Staff Leave Management (cuti terpadu), Payroll List & Records, Appraisal Management, Training Management, Roster Management (Drag & Drop), Work Roster Weekly, Departments, Face Admin, Piecework Log, Outsourcing Vendor, Laporan HR
 
 **Endpoint API:**
 ```bash
 GET/POST   /api/hr/employees
 GET/POST   /api/hr/attendance
-GET/POST   /api/hr/leaves
+GET/POST   /api/attendance/correction-requests
+GET/POST   /api/attendance/reconciliation
+GET/POST   /api/attendance/work-schedules
 GET/POST   /api/hr/payroll
 GET/POST   /api/hr/appraisal
 GET/POST   /api/hr/training
 GET/POST   /api/work-roster
-GET/POST   /api/staff-leave
+GET/POST   /api/staff-leave              # sistem cuti terpadu, ESS submit + approval berjenjang
+GET        /api/staff-leave/balance      # kuota/saldo cuti tahunan
 GET/POST   /api/face-recognition
+GET        /api/hr/reports/generate
+GET        /api/hr/reports/export
 ```
 
 ---
 
 ### 🔟 **Modul Asset Management**
 
-> ⚠️ **Catatan status (per audit Sept 2026):** modul ini lengkap secara fitur tapi **belum ada data produksi sama sekali**. Pencatatan aset tetap yang benar-benar dipakai sehari-hari saat ini masih lewat **Fixed Assets di modul Finance** (model `FixedAsset`, lebih sederhana, sudah terhubung ke GL). Kedua sistem berjalan paralel tanpa saling terhubung — konsolidasi masih perlu keputusan bisnis: migrasi data Fixed Assets ke sini, atau sebaliknya.
+> ✅ **Sudah dikonsolidasi (September 2026):** `FixedAsset` (Finance) sudah digabung ke modul Asset Management ini — tidak ada lagi dua sistem aset tetap paralel yang terpisah.
 
 **Fitur:**
 - **Siklus Hidup Aset Lengkap** - Planning → Procurement → Installation → Active → Maintenance → Disposal
@@ -913,6 +934,23 @@ GET    /api/health/system                # Status WhatsApp (bagian dari system h
 | `notifications.whatsapp_api_url` | URL API gateway (untuk provider local) |
 | `notifications.whatsapp_token` | Token autentikasi ke gateway |
 | `notifications.whatsapp_target_phones` | Nomor tujuan (pisah koma) |
+
+### 🤖 **Ops Agent Monitor** 🆕 (v3.10, di luar aplikasi ERP utama)
+
+Alat operasional terpisah (folder `agent/` + `agent-dashboard/`, proses PM2 sendiri) — bukan bagian dari ERP itu sendiri, tapi memantaunya. Menonton log `stdout`/`stderr` proses backend/frontend yang dikelola PM2, mendeteksi error otomatis, mendiagnosisnya lewat Claude API, dan mengirim notifikasi WhatsApp yang bisa langsung di-approve/skip dengan reply `"ok"`/`"skip"` dari HP.
+
+**Fitur:**
+- **Auto-discovery PM2** — scan `pm2 jlist` live, admin tinggal centang app mana saja yang mau dipantau dari dashboard (tidak perlu nama app di-hardcode)
+- **Dedup & cooldown** — error yang sama berulang (signature sama) tidak memicu diagnosis/notifikasi ulang, cuma counter kemunculan yang bertambah
+- **Diagnosis via Claude API** — hanya mengirim potongan log (traceback + konteks), tidak pernah membaca isi source code project — lebih aman & murah
+- **Auto-discovery sesi OpenWA + auto-register webhook** — tidak perlu cari session ID atau daftar webhook manual
+- **Login + HMAC signature verification** — dashboard dan API di belakang password login (token session, bukan JWT — bisa di-revoke instan), webhook OpenWA diverifikasi HMAC-SHA256 sebelum diproses
+- **`apply_fix()` sengaja placeholder** — approve dari WhatsApp mencatat keputusan, tidak pernah otomatis menulis ke kode produksi tanpa review manusia
+- Dashboard React terpisah: histori error + statistik, pemilihan sumber log PM2, konfigurasi (API key tidak pernah round-trip penuh ke browser)
+
+**File Terkait:**
+- `agent/` — Python backend (watcher, diagnose, wa_notify, wa_webhook, auth, openwa_client, pm2_discovery, api, main)
+- `agent-dashboard/` — Frontend React + Vite terpisah, port sendiri
 
 ### 🩺 **System Health Dashboard**
 
@@ -1295,6 +1333,16 @@ Asisten AI adalah fitur chatbot terintegrasi yang memungkinkan pengguna untuk me
 
 ## 📈 Pembaruan Terbaru
 
+### ✨ v3.10 — September 2026 (Pematangan HR, Closing Period gaya SAP, Transaksi Stok MB51, Ops Agent Monitor)
+
+- **Konsolidasi Sistem Cuti** — Dua sistem cuti paralel yang sebelumnya tidak sinkron (`Leave` vs `StaffLeaveRequest`) digabung jadi satu, ditambah kuota/saldo cuti tahunan real-time, koreksi & rekonsiliasi absensi (cross-check vs log produksi operator), dan jadwal kerja per-karyawan untuk staff kantor (terpisah dari roster shift produksi).
+- **Segregation-of-Duty Payroll & Appraisal** — Payroll tidak bisa di-approve oleh orang yang menghitungnya sendiri; Appraisal manager tidak bisa menilai duluan sebelum karyawan self-review.
+- **Laporan HR** — Endpoint backend dibangun dari nol untuk halaman laporan yang sudah lama ada di frontend tapi selalu 404 (tidak pernah ada backend-nya sama sekali) — 5 jenis laporan dengan export Excel/PDF.
+- **Closing Period gaya SAP** — Dari kunci on/off sederhana jadi: kunci berurutan wajib, reopen guard (tidak bisa buka periode kalau periode setelahnya sudah ditutup), kunci parsial per jenis transaksi, checklist closing ("Closing Cockpit" ringan, admin-editable tanpa migrasi), peringatan stok negatif (advisory), dan enforcement `is_period_locked()` di 8 titik penulisan jurnal termasuk Payroll dan Approval Workflow generik.
+- **Transaksi Stok gaya SAP MB51 (Reports & Settings, lintas modul)** — Selection screen, ALV grid dengan field catalog per-user, saldo berjalan (running balance) direkonstruksi read-time, drawer detail 3 tab, export Excel/CSV. Dipindah dari menu Warehouse ke menu global karena datanya sudah lintas Purchasing/Production/Shipping/Finance.
+- **PR → PO Split Multi-Supplier** — Konversi Purchase Requisition ke Purchase Order sekarang otomatis pecah jadi beberapa PO kalau item-itemnya punya supplier pilihan berbeda-beda.
+- **Ops Agent Monitor** (alat operasional terpisah, bukan bagian ERP) — Memantau log PM2 backend/frontend, deteksi error otomatis, diagnosis via Claude API, notifikasi & approval lewat WhatsApp (auto-discovery sesi OpenWA + HMAC signature verification + login dashboard).
+
 ### ✨ v3.9 — September 2026 (Restrukturisasi Gudang, Siklus Hidup SPK, Perbaikan GL Finance)
 
 - **Restrukturisasi Storage Location Gudang** — Zona gudang dirombak total menjadi struktur nyata bergaya SAP storage location: Area Produksi, Gudang Bahan Baku, Gudang Bahan Kemas, Gudang Barang Jadi (WIP ikut di sini), dan Gudang Reject. Status batch (release/quarantine/reject) tetap independen dari lokasi fisik. Barang jadi otomatis masuk Area Produksi saat produksi selesai, lalu berpindah ke Gudang Barang Jadi saat Tutup SPK — tercatat sebagai transfer movement yang bisa dibalik.
@@ -1474,8 +1522,8 @@ See [LICENSE](LICENSE) for full terms.
 
 ### Selesai ✅
 - 20+ modul utama, 100+ sub-modul
-- **57 model files**, **345 tabel database**, **113 route files**
-- **~364,200+ baris kode** (backend + frontend)
+- **59 model files**, **344+ tabel database**, **113 route files**
+- **~369,100+ baris kode** (backend + frontend; belum termasuk alat terpisah `agent/`+`agent-dashboard/`)
 - Autentikasi & otorisasi (JWT + OAuth + Face Recognition)
 - 15+ alur kerja otomatis end-to-end
 - Asisten AI terintegrasi dengan grafik
@@ -1483,13 +1531,15 @@ See [LICENSE](LICENSE) for full terms.
 - **SPC (Statistical Process Control)** — X-bar R Chart, Western Electric Rules, Cp/Cpk
 - **Early Warning System (EWS)** — Prediksi risiko downtime shift produksi dengan Random Forest ML
 - Modul DCC & CAPA (ISO 9001:2015) — 13 tabel
-- Modul Asset Management (EAM) — 6 tabel
+- Modul Asset Management (EAM) — sudah konsolidasi dengan Fixed Assets, satu sistem aset tetap
 - Modul Stok WIP & Daftar Packing
 - Quality Objective & Analisis Downtime + Export Excel/PDF
 - Modul R&D dengan alur kerja persetujuan
-- WMS Advanced dengan batch traceability
-- Finance lengkap: GL, AP, AR, WIP Accounting, Job Costing
+- WMS Advanced dengan batch traceability + **Transaksi Stok gaya SAP MB51** (saldo berjalan, field catalog, lintas modul)
+- Finance lengkap: GL, AP, AR, WIP Accounting, Job Costing, Bank Reconciliation, Commitment Accounting, **Closing Period gaya SAP** (kunci berurutan, reopen guard, kunci parsial, checklist)
 - **Integrasi Accurate Online** — Sinkronisasi item/BOM, EJO cross-check, stok & transfer gudang PM/EPD/FG
+- **HR terpadu** — sistem cuti tunggal dengan kuota real-time, koreksi & rekonsiliasi absensi, segregation-of-duty payroll/appraisal
+- **Ops Agent Monitor** — alat monitoring log PM2 + diagnosis AI + notifikasi WhatsApp (terpisah dari ERP utama)
 
 ### Sedang Dikerjakan 🚧
 - Pelaporan lanjutan dengan ekspor (bulk)
@@ -1508,8 +1558,8 @@ See [LICENSE](LICENSE) for full terms.
 
 ## 🏆 Pencapaian
 
-- ✅ **345 Tabel DB** | **113 Route Files** | **57 Model Files**
-- ✅ **~364,200+ Baris Kode** (Backend + Frontend)
+- ✅ **344+ Tabel DB** | **113 Route Files** | **59 Model Files**
+- ✅ **~369,100+ Baris Kode** (Backend + Frontend)
 - ✅ **20+ Modul Bisnis** dengan 100+ Sub-Modul
 - ✅ **40+ Peran** | **200+ Izin** | RBAC Penuh
 - ✅ **DCC & CAPA** Sesuai ISO 9001:2015
