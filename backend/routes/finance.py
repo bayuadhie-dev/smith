@@ -2941,6 +2941,25 @@ def close_accounting_period():
         if existing_close:
             return jsonify({'error': f'Periode {period_year}-{period_month:02d} sudah ditutup sebelumnya'}), 400
 
+        # Tutup berurutan (2026-09-28, gap ditemukan saat verifikasi fitur
+        # Closing Period): sebelumnya bisa saja menutup Maret tanpa menutup
+        # Januari/Februari dulu - saldo awal periode yang di-skip jadi tidak
+        # pernah "dikunci" walau periode setelahnya sudah closed, merusak
+        # asumsi umum period-end closing (tiap periode ditutup berurutan).
+        # Bootstrap exception: kalau ini closing PERTAMA yang pernah dibuat
+        # sama sekali (tabel PeriodClose masih kosong total), boleh mulai
+        # dari periode manapun - normal untuk sistem yang baru go-live di
+        # tengah tahun, tidak ada histori periode sebelumnya untuk ditutup.
+        any_close_exists = PeriodClose.query.first() is not None
+        if any_close_exists:
+            prev_month, prev_year = (12, period_year - 1) if period_month == 1 else (period_month - 1, period_year)
+            prev_closed = PeriodClose.query.filter_by(period_year=prev_year, period_month=prev_month).first()
+            if not prev_closed:
+                return jsonify({
+                    'error': f'Periode {prev_year}-{prev_month:02d} belum ditutup. '
+                             'Periode harus ditutup berurutan - tutup periode sebelumnya dulu.'
+                }), 400
+
         depreciation_summary = run_monthly_depreciation(period_year, period_month, posted_by_user_id=user_id)
 
         period_close = PeriodClose(
@@ -3013,6 +3032,25 @@ def reopen_accounting_period(id):
             return jsonify({'error': 'Period close record not found'}), 404
 
         period_label = f'{period_close.period_year}-{period_close.period_month:02d}'
+
+        # Reopen guard (2026-09-28, gap ditemukan saat verifikasi fitur
+        # Closing Period): sebelumnya periode manapun bisa dibuka kembali
+        # kapan saja tanpa cek apakah periode SETELAHNYA sudah ditutup.
+        # Membuka Januari lagi padahal Februari sudah closed itu janggal
+        # secara akuntansi - saldo awal Februari sudah "dikunci" berdasarkan
+        # saldo akhir Januari, jadi koreksi di Januari bisa merusak Februari
+        # tanpa sistem memperingatkan. Blokir dulu - kalau memang perlu
+        # koreksi periode lama, buka periode-periode setelahnya secara
+        # eksplisit dulu (urutan terbalik), sesuai filosofi "reopening is
+        # always an explicit, logged manual action" yang sudah ada di sini.
+        next_month, next_year = (1, period_close.period_year + 1) if period_close.period_month == 12 else (period_close.period_month + 1, period_close.period_year)
+        later_close_exists = PeriodClose.query.filter_by(period_year=next_year, period_month=next_month).first()
+        if later_close_exists:
+            return jsonify({
+                'error': f'Tidak bisa membuka periode {period_label} - periode {next_year}-{next_month:02d} sudah ditutup. '
+                         'Buka periode-periode setelahnya dulu (urutan terbalik) sebelum membuka periode ini.'
+            }), 400
+
         db.session.delete(period_close)
         db.session.commit()
 
