@@ -15,6 +15,7 @@
 - [Tentang Sistem](#tentang-sistem)
 - [Screenshots](#screenshots)
 - [Fitur Utama](#fitur-utama)
+- [Kesetaraan dengan SAP](#-kesetaraan-dengan-sap-deep-dive)
 - [Arsitektur Sistem](#arsitektur-sistem)
 - [Teknologi yang Dipakai](#teknologi-yang-dipakai)
 - [Modul-Modul](#modul-modul)
@@ -23,6 +24,7 @@
 - [Pengujian](#pengujian)
 - [Dokumentasi API](#dokumentasi-api)
 - [AI Assistant](#ai-assistant)
+- [Catatan Teknis & Prioritas Perbaikan](#-catatan-teknis--prioritas-perbaikan)
 
 ---
 
@@ -104,6 +106,81 @@
 - **Pengembangan Produk** - Formulasi produk baru, pengujian
 - **Riset Material** - Pengujian dan analisa material
 - **RND Workflow** - Approval workflow formula R&D
+
+---
+
+## 🏢 Kesetaraan dengan SAP (Deep-Dive)
+
+> Dinilai langsung dari kode sumber (bukan dari dokumentasi fitur) — dicek per September 2026. Bukan klaim "mirip SAP" yang generik; tiap baris tabel di bawah dicocokkan ke fungsi/endpoint nyata di kode.
+
+### 🔵 MM (Materials Management)
+
+| Fitur | Konsep SAP | Implementasi |
+|---|---|---|
+| 3-Way Match | SAP MM 3-Way Match | PO → GRN → Invoice divalidasi (`routes/purchase_invoice.py`) |
+| Movement Type codes | SAP MIGO (101/261/311/601/701) | `derive_movement_type_code()` — mapping persis gaya SAP |
+| Auto Stock Reservation FIFO by Document Date | SAP MRP reservation | `process_auto_reserve_queue()` — urut berdasar document date, bukan waktu request masuk |
+| Vendor Scorecard | SAP MM Supplier Evaluation | `compute_vendor_scorecard()` — on-time delivery, quality reject rate, price variance |
+| Budget Commitment (PO Reserve) | SAP MM Commitment Management | `reserve_po_budget_commitment()` — reservasi anggaran saat PO approved |
+
+### 🔵 PP (Production Planning)
+
+| Fitur | Konsep SAP | Implementasi |
+|---|---|---|
+| MRP Time-Phased dengan Low-Level Code | SAP MD01/MD02 | `mrp_engine.py` — weekly buckets, netting WIP, multi-level BOM, lead-time offsetting |
+| BOM Explosion Rekursif + Circular Detection | SAP CS01 | `bom_explosion.py` — `CircularBOMError`, `MaxDepthExceededError`, depth limit 10 |
+| Batch Scheduling 3-Layer Calendar | SAP Work Center Calendar | MachineCalendarOverride > ExceptionCalendar > GlobalCalendar |
+| Capacity-based Scheduling + Timeline Walk | SAP CRP | `_build_timeline()` + `_consume()` — alokasi per slot shift per mesin |
+| WIP Job Costing (Material+Labor+Overhead) | SAP CO-PC | `WIPBatch` dengan pemisahan 3 komponen biaya |
+
+### 🔵 SD (Sales & Distribution)
+
+| Fitur | Konsep SAP | Implementasi |
+|---|---|---|
+| ATP (Available to Promise) | SAP SD ATP Check | `check_atp()` — `free_to_promise = on_hand - committed_elsewhere`, hindari double-promise |
+| Sales Order Workflow Engine | SAP SD Order Management | `confirm_order_core()` — atomic commit satu transaksi |
+| Forecast Auto-Bump dari SO | SAP Demand Management | SO confirmed otomatis update target forecast kalau melampaui |
+| Sales Forecast Grid (rolling 12 bulan, multi-skenario) | SAP SOP | Multi-header forecast, tumpang tindih skenario |
+
+### 🔵 FI/CO (Finance & Controlling)
+
+| Fitur | Konsep SAP | Implementasi |
+|---|---|---|
+| GL Account Resolution 3-Level | SAP Account Determination (OBYC) | `resolve_account()` — item override → category default → global default |
+| Journal Balancing Check | SAP FI Posting | Jurnal tidak bisa posting kalau `debit != credit` |
+| Pending Journal → Approved → Posted | SAP FI Document Workflow | `PendingJournalEntry` → approval → `AccountingEntry` |
+| Closing Period (Cockpit-lite) | SAP MMPV/Closing Cockpit | Lihat section Finance & Accounting di atas |
+
+### 🔵 QM (Quality Management)
+
+| Fitur | Konsep SAP | Implementasi |
+|---|---|---|
+| SPC dengan Western Electric Rules | SAP QM SPC | `check_western_electric_rules()` — Rule 1-4, faktor ASTM/ISO A2/D3/D4/d2 |
+| UCL/LCL Control Chart | SAP QM Control Charts | X-bar R chart, faktor subgroup 2-10 |
+| QC Disposition (Quarantine/Reject) | SAP QM Usage Decision | Status quarantine/reject dikecualikan otomatis dari FIFO picking |
+
+### 🔵 PM (Plant Maintenance) + Warehouse Extras
+
+| Fitur | Konsep SAP | Implementasi |
+|---|---|---|
+| OEE (Availability × Performance × Quality) | SAP OEE Monitoring | Per mesin per shift, Grade A/B/C |
+| MB51 — Material Document List | SAP MB51 | Lihat section Warehouse & Inventory di atas |
+| MB56 — Batch Traceability | SAP MB56 | `/reports/batch-traceability/{batch}` — lacak 1 batch lintas InventoryTransaction + MaterialConsumption + WIPMovement |
+| EWS — ML Prediction Downtime | *(melampaui standar SAP)* | Random Forest (`model_ews_rich.pkl`) — SAP sendiri butuh add-on berbayar (SAC/BTP) untuk ini |
+
+### 🔵 HCM (Human Capital Management)
+
+| Fitur | Konsep SAP | Implementasi |
+|---|---|---|
+| Multi Pay-Type (6 jenis) | SAP Payroll IT0008 | fixed/monthly/weekly/daily/piecework/outsourcing |
+| PPh 21 DTP + TER PP 58/2023 | SAP Tax Schema | Dihitung TER (3 kategori, 40+ bracket) tapi ditanggung perusahaan, tidak dipotong gaji |
+| Payroll → GL (PY-FI) | SAP PY-FI Integration | `post_payroll_journal()` — Dr Beban Gaji/PPh21 DTP, Cr Hutang masing-masing |
+| Time & Attendance (GPS + Face) | SAP PA-TM | Geofencing Haversine + face detection OpenCV |
+| Leave, Appraisal, Training, Roster, Skill Matrix | SAP PA/PD/LSO | Lihat section HR & Payroll di atas |
+
+> **Dua fitur yang melampaui standar SAP:** EWS (Random Forest ML downtime prediction) dan PPh 21 DTP + face-detection clock-in — keduanya sesuai kebutuhan/regulasi Indonesia yang tidak tercakup SAP standard out-of-the-box.
+
+> **Kesimpulan cakupan:** Mencakup semua sub-modul utama SAP ECC — MM, PP, SD, FI/CO, QM, PM, WM, HCM — dengan kedalaman implementasi konsep, bukan cuma permukaan CRUD. Setara SAP Business Suite (ECC) yang dikustomisasi, bukan sekadar SAP Business One.
 
 ---
 
@@ -1112,6 +1189,10 @@ Frontend berjalan di `http://localhost:5173`
 
 ## 🧪 Pengujian
 
+**55 file test** backend (pytest) mencakup finance, sales, purchasing, production, warehouse, auth, OEE, dan lainnya — termasuk `test_production_extended.py` (4.155 baris) yang cukup detail. Vitest dipakai di frontend.
+
+> ⚠️ **Catatan jujur soal CI**: pipeline GitHub Actions saat ini (`.github/workflows/ci.yml`) hanya menjalankan `test_health.py` dan `test_auth.py` secara otomatis saat push — 53 dari 55 file test lainnya **tidak divalidasi otomatis di CI**, meski bisa dijalankan manual lewat `pytest tests/ -v`. Beberapa step CI juga memakai `continue-on-error: true`, jadi CI belum pernah benar-benar bisa gagal. Ini masih tahap "development mode CI", bukan gate kualitas penuh — dicatat di sini apa adanya, bukan diklaim sudah lengkap.
+
 ### Pengujian Backend (Pytest)
 
 ```bash
@@ -1257,8 +1338,13 @@ Total:    ~364,200+ lines of code
 - ✅ **Kontrol Akses Berbasis Role (RBAC)** — 40+ default roles, 200+ permissions, module-level access control
 - ✅ **Jejak Audit** — Tracking semua perubahan data
 - ✅ **Google OAuth** — Login dengan akun Google
-- ✅ **Rate Limiter** — Pembatasan request per endpoint
+- ✅ **Rate Limiter** — Pembatasan request per endpoint (Flask-Limiter, 20.000/jam global) + brute-force lockout login (5x gagal, window 15 menit)
 - ✅ **PDF Security** — AES encryption + digital signature (DCC module)
+- ✅ **Flask-Talisman** — CSP headers + secure cookies, aktif environment-aware (production only)
+- ✅ **Security Scanning** — Bandit & Safety di CI/CD
+- ✅ **Sentry** — Error monitoring production
+
+> ⚠️ **Catatan jujur** (per audit kode langsung): `SECRET_KEY` di `config.py` punya default fallback `'dev-secret-key'` kalau environment variable tidak di-set — aman selama `SECRET_KEY` production betul-betul diisi, tapi berisiko kalau ada environment yang lupa set. `JWT_QUERY_STRING_NAME = 'token'` juga aktif, artinya JWT bisa dikirim lewat query string URL, yang berpotensi tercatat di access log server. Login rate limiter (brute-force lockout di atas) saat ini masih pakai dict in-memory, bukan Redis — cukup untuk single-process tapi tidak konsisten kalau di-scale ke multi-process/multi-server.
 
 ### Detail Sistem RBAC
 
@@ -1515,6 +1601,25 @@ Copyright (c) 2025-2026 **Mochammad Bayu Adhie Nugroho**. All Rights Reserved.
 
 
 See [LICENSE](LICENSE) for full terms.
+
+---
+
+## 🛠️ Catatan Teknis & Prioritas Perbaikan
+
+Dicatat apa adanya dari audit kode langsung — supaya dokumentasi ini tetap jujur, bukan cuma menonjolkan yang bagus.
+
+| Prioritas | Isu | Dampak |
+|---|---|---|
+| 🔴 Tinggi | CI hanya menjalankan 2 dari 55 file test backend (`test_health.py`, `test_auth.py`) | CI belum jadi gate kualitas yang bermakna — banyak step juga pakai `continue-on-error: true` |
+| 🟡 Sedang | Login rate limiter pakai dict in-memory, bukan Redis | Tidak konsisten kalau di-scale ke multi-process/multi-server |
+| 🟡 Sedang | `LanguageContext.tsx` (1531 baris) dan `App.tsx` (1109 baris) terlalu besar | Terjemahan sebaiknya JSON per bahasa; routing sebaiknya dipecah per domain |
+| 🟡 Sedang | Beberapa file backend sangat besar (`production.py` ~249KB, `executive_dashboard.py` ~188KB, `oee.py` ~180KB) | Menyulitkan review & testing |
+| 🟡 Sedang | Duplikasi horizontal di `routes/`: `products.py`+`products_new.py`+`products_new_extended.py`, `bom.py`+`bom_management.py` | Tanda modul di-extend berulang daripada di-refactor |
+| 🟢 Rendah | `SECRET_KEY` di `config.py` punya default fallback `'dev-secret-key'` | Aman kalau env var production selalu diisi, berisiko kalau ada environment yang lupa |
+| 🟢 Rendah | `JWT_QUERY_STRING_NAME = 'token'` aktif | JWT bisa terkirim lewat query string, berpotensi tercatat di access log |
+| 🟢 Rendah | `console.log()` masih ada di beberapa kode produksi frontend | Housekeeping |
+
+**Yang sudah solid** (bukan cuma daftar isu) — arsitektur `create_app()` factory pattern, separation of concerns `routes/→models/→utils/`, FIFO dengan `SELECT FOR UPDATE` untuk cegah race condition di level database, advisory lock PostgreSQL untuk cegah double-generate batch, SQL window function untuk running balance (bukan kolom snapshot yang tidak reliable), journal balance check sebelum posting, dan 96 file migration Alembic yang rapi.
 
 ---
 
