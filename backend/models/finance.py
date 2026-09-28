@@ -551,6 +551,80 @@ class PeriodClose(db.Model):
     )
 
 
+class PeriodTransactionTypeLock(db.Model):
+    """Kunci PARSIAL per jenis transaksi (2026-09-28, mendekati konsep "posting
+    period variant" SAP - di SAP dikunci per Account Type D/K/A/M/S; di sini
+    dikunci per transaction_type karena is_period_locked() dipanggil per RUTE
+    sumber transaksi, bukan per akun GL).
+
+    Beda dengan PeriodClose (kunci PENUH, semua jenis transaksi + depresiasi
+    otomatis + validasi berurutan): ini untuk kasus "AP sudah final duluan,
+    tapi jurnal manual/GL masih boleh untuk adjustment" - HR/Finance mengunci
+    transaction_type tertentu tanpa harus menutup periode secara penuh.
+
+    transaction_type memakai string yang SAMA dengan reference_type yang
+    sudah dipakai post_pending_journal() di seluruh sistem: 'purchase_invoice',
+    'sales_invoice', 'payment', 'expense', 'reimbursement', 'asset',
+    'asset_disposal', 'payroll', 'journal_entry' (manual), 'stock_opname',
+    'goods_receipt', 'purchase_return', 'sales_delivery', 'work_order',
+    'recurring_payment', 'customer_deposit_usage'. Nilai bebas string (bukan
+    FK/enum) sengaja - sama seperti reference_type yang sudah begini di
+    seluruh codebase, supaya modul baru bisa pakai transaction_type baru
+    tanpa migrasi skema.
+    """
+    __tablename__ = 'period_transaction_type_locks'
+
+    id = db.Column(db.Integer, primary_key=True)
+    period_year = db.Column(db.Integer, nullable=False)
+    period_month = db.Column(db.Integer, nullable=False)
+    transaction_type = db.Column(db.String(50), nullable=False)
+    locked_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    locked_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+
+    __table_args__ = (
+        db.UniqueConstraint('period_year', 'period_month', 'transaction_type', name='uq_period_txn_type_lock'),
+    )
+
+
+class ClosingTaskDefinition(db.Model):
+    """Daftar tugas checklist closing yang harus/boleh diselesaikan sebelum
+    periode ditutup (2026-09-28) - versi ringan dari "Closing Cockpit" SAP.
+    Satu tabel definisi GLOBAL (bukan per-periode) - status per-periode ada
+    di PeriodClosingTaskStatus. Admin bisa tambah/nonaktifkan task lewat
+    endpoint CRUD tanpa perlu migrasi kalau kebijakan closing berubah."""
+    __tablename__ = 'closing_task_definitions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(50), unique=True, nullable=False)
+    label = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    is_required = db.Column(db.Boolean, default=True, nullable=False)  # blokir closing kalau belum selesai (bisa di-force override, lihat routes)
+    display_order = db.Column(db.Integer, default=0, nullable=False)
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+
+class PeriodClosingTaskStatus(db.Model):
+    """Status satu task checklist untuk satu periode tertentu."""
+    __tablename__ = 'period_closing_task_statuses'
+
+    id = db.Column(db.Integer, primary_key=True)
+    period_year = db.Column(db.Integer, nullable=False)
+    period_month = db.Column(db.Integer, nullable=False)
+    task_code = db.Column(db.String(50), db.ForeignKey('closing_task_definitions.code'), nullable=False)
+    is_completed = db.Column(db.Boolean, default=False, nullable=False)
+    completed_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    completed_at = db.Column(db.DateTime, nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+
+    task_definition = db.relationship('ClosingTaskDefinition')
+
+    __table_args__ = (
+        db.UniqueConstraint('period_year', 'period_month', 'task_code', name='uq_period_closing_task'),
+    )
+
+
 class BankStatement(db.Model):
     """One imported bank mutation/statement file (2026-09-17, closes the SAP
     FI bank-reconciliation gap - previously zero code anywhere matched GL

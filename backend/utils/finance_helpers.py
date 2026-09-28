@@ -445,6 +445,42 @@ def apply_customer_deposit(invoice):
     return total_applied
 
 
+def get_negative_stock_items():
+    """Daftar item Inventory dengan quantity_on_hand < 0, untuk ditampilkan
+    sebagai PERINGATAN (bukan blocker keras) saat closing (2026-09-28,
+    Accurate-style guard rail yang tadinya sengaja ditunda).
+
+    ADVISORY, BUKAN HARD BLOCK - sengaja: quantity_on_hand punya known
+    accuracy issue pre-existing di sistem ini (dicatat di
+    close_accounting_period() sebelum perbaikan ini) yang belum diperbaiki
+    secara terpisah. Memblokir closing keras berdasarkan data yang sendiri
+    belum tentu akurat berisiko mengunci proses closing berdasarkan angka
+    palsu. Endpoint tetap MENAMPILKAN daftar ini supaya finance tahu &
+    bisa putuskan sendiri (lanjut atau investigasi dulu), tanpa sistem
+    memaksa satu arah berdasarkan data yang belum terpercaya."""
+    from models.warehouse import Inventory
+    from models.product import Product, Material
+
+    negative = Inventory.query.filter(Inventory.quantity_on_hand < 0).all()
+    result = []
+    for inv in negative:
+        item_name = None
+        if inv.product_id:
+            product = db.session.get(Product, inv.product_id)
+            item_name = product.name if product else f'Product #{inv.product_id}'
+        elif inv.material_id:
+            material = db.session.get(Material, inv.material_id)
+            item_name = material.name if material else f'Material #{inv.material_id}'
+        result.append({
+            'inventory_id': inv.id,
+            'item_name': item_name or '(tidak diketahui)',
+            'location_id': inv.location_id,
+            'quantity_on_hand': float(inv.quantity_on_hand),
+            'batch_number': getattr(inv, 'batch_number', None),
+        })
+    return result
+
+
 def run_monthly_depreciation(period_year, period_month, posted_by_user_id=None):
     """
     Compute and post monthly depreciation for all active Assets
@@ -567,23 +603,30 @@ def run_monthly_depreciation(period_year, period_month, posted_by_user_id=None):
     }
 
 
-def is_period_locked(transaction_date):
+def is_period_locked(transaction_date, transaction_type=None):
     """
-    Check whether a given transaction_date falls within a period that has
-    already been closed (see PeriodClose). Callers (transaction-creating
-    routes) should call this and reject the transaction with a 400 if it
-    returns True, mirroring Accurate's period-lock behavior of preventing
-    edits to closed periods.
+    Check whether a given transaction_date falls within a locked period -
+    either a FULL close (PeriodClose - every transaction type blocked) or,
+    when transaction_type is given, a PARTIAL lock scoped to just that type
+    (PeriodTransactionTypeLock - 2026-09-28, see its model docstring for
+    why this exists: SAP-style "close AP but leave GL manual entries open"
+    without a full period close).
 
-    NOTE: as of 2026-08-16, this check is only WIRED IN at
-    close_accounting_period() itself (to prevent re-closing an already-
-    closed period) - it is NOT yet called from create_invoice(),
-    create_purchase_invoice(), or other transaction-creating routes. Adding
-    that enforcement everywhere is a separate, larger follow-up task (many
-    call sites to touch), not done as part of this initial period-close
-    feature build.
+    Coverage as of 2026-09-28: checked at Purchase Invoice, Sales Invoice,
+    manual Journal Entry, Payment, Expense, Asset Depreciation, Payroll
+    approval, and the generic Approval Workflow endpoint (which itself
+    covers any flow that queues a PendingJournalEntry with workflow_id
+    set). Several other GL-writing flows (Stock Opname, GRN, Purchase
+    Return, Shipping/COGS, Production/WIP) were audited and found to
+    already date their journals to "today" rather than a user-editable
+    business date, so a full close already blocks them structurally
+    without needing an explicit check - see the commit history for that
+    verification. transaction_type is not yet passed by every one of the
+    checked call sites (some only ever check the full PeriodClose) -
+    adding it is a small, low-risk follow-up per call site as each one's
+    business need for partial locking comes up, not a structural gap.
     """
-    from models.finance import PeriodClose
+    from models.finance import PeriodClose, PeriodTransactionTypeLock
 
     if not transaction_date:
         return False
@@ -591,7 +634,15 @@ def is_period_locked(transaction_date):
     year = transaction_date.year
     month = transaction_date.month
 
-    return PeriodClose.query.filter_by(period_year=year, period_month=month).first() is not None
+    if PeriodClose.query.filter_by(period_year=year, period_month=month).first() is not None:
+        return True
+
+    if transaction_type:
+        return PeriodTransactionTypeLock.query.filter_by(
+            period_year=year, period_month=month, transaction_type=transaction_type
+        ).first() is not None
+
+    return False
 
 
 def resolve_accounts_receivable(customer_id):

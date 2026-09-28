@@ -2913,23 +2913,39 @@ def close_accounting_period():
     Runs SMITH's "Proses Akhir Bulan" (Period End), mirroring Accurate's
     monthly period-end process: computes and posts monthly depreciation,
     then locks the period so past transactions dated within it get
-    rejected by is_period_locked() checks (not yet enforced at every
-    transaction route as of 2026-08-16 - see finance_helpers.py's docstring).
+    rejected by is_period_locked() checks. Enforced (2026-09-28) at
+    Purchase Invoice, Sales Invoice, manual Journal Entry, Payment,
+    Expense, Asset Depreciation, Payroll, and the generic Approval
+    Workflow endpoint - see finance_helpers.is_period_locked()'s docstring
+    for the full coverage note including which flows are structurally
+    safe without an explicit check.
 
-    Body: {"period_year": int, "period_month": int}
+    Body: {"period_year": int, "period_month": int, "force": bool (optional)}
 
-    Does NOT yet validate for negative stock (Accurate's guard rail) - the
-    underlying quantity_on_hand data has a known pre-existing accuracy bug
-    that must be fixed first (tracked separately), so this check is
-    deliberately deferred rather than validating against untrustworthy data.
+    Two pre-close checks (2026-09-28):
+    - Closing checklist (ClosingTaskDefinition/PeriodClosingTaskStatus):
+      blocks the close if any REQUIRED task for this period isn't marked
+      done, UNLESS force=true is passed - kept overridable rather than a
+      hard rule, since HR/Finance may have a legitimate reason to close
+      anyway (mirrors the existing "reopening is always an explicit,
+      logged manual action" philosophy - force=true is the same kind of
+      explicit override, not a silent bypass).
+    - Negative stock (Accurate's guard rail) - ADVISORY ONLY, included in
+      the response as a warning list, never blocks closing. See
+      get_negative_stock_items()'s docstring for why this isn't a hard
+      block: quantity_on_hand has a known pre-existing accuracy issue
+      elsewhere in the system that hasn't been fixed, so trusting it to
+      hard-block a close would risk locking the process out based on
+      data that might itself be wrong.
     """
     try:
-        from models.finance import PeriodClose
-        from utils.finance_helpers import run_monthly_depreciation
+        from models.finance import PeriodClose, ClosingTaskDefinition, PeriodClosingTaskStatus
+        from utils.finance_helpers import run_monthly_depreciation, get_negative_stock_items
 
         data = request.get_json() or {}
         period_year = data.get('period_year')
         period_month = data.get('period_month')
+        force = bool(data.get('force'))
         user_id = get_jwt_identity()
 
         if not period_year or not period_month:
@@ -2940,6 +2956,22 @@ def close_accounting_period():
         existing_close = PeriodClose.query.filter_by(period_year=period_year, period_month=period_month).first()
         if existing_close:
             return jsonify({'error': f'Periode {period_year}-{period_month:02d} sudah ditutup sebelumnya'}), 400
+
+        if not force:
+            required_codes = {t.code for t in ClosingTaskDefinition.query.filter_by(is_required=True, is_active=True).all()}
+            done_codes = {
+                s.task_code for s in PeriodClosingTaskStatus.query.filter_by(
+                    period_year=period_year, period_month=period_month, is_completed=True
+                ).all()
+            }
+            missing = required_codes - done_codes
+            if missing:
+                missing_tasks = ClosingTaskDefinition.query.filter(ClosingTaskDefinition.code.in_(missing)).all()
+                return jsonify({
+                    'error': 'Ada checklist closing yang belum selesai untuk periode ini.',
+                    'missing_tasks': [{'code': t.code, 'label': t.label} for t in missing_tasks],
+                    'hint': 'Selesaikan checklist dulu, atau kirim ulang dengan force=true untuk menutup tanpa checklist lengkap.',
+                }), 400
 
         # Tutup berurutan (2026-09-28, gap ditemukan saat verifikasi fitur
         # Closing Period): sebelumnya bisa saja menutup Maret tanpa menutup
@@ -2972,9 +3004,12 @@ def close_accounting_period():
         db.session.add(period_close)
         db.session.commit()
 
+        negative_stock_items = get_negative_stock_items()
+
         return jsonify({
             'message': f'Periode {period_year}-{period_month:02d} berhasil ditutup',
             'depreciation_summary': depreciation_summary,
+            'negative_stock_warning': negative_stock_items,  # advisory only, lihat docstring - closing tetap berhasil walau ada isinya
         }), 200
 
     except ValueError as e:
@@ -3059,6 +3094,192 @@ def reopen_accounting_period(id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+
+# ==================== CLOSING CHECKLIST (2026-09-28) ====================
+# Versi ringan "Closing Cockpit" SAP - daftar tugas GLOBAL (ClosingTaskDefinition)
+# + status per-periode (PeriodClosingTaskStatus). close_accounting_period()
+# di atas memblokir closing kalau ada task required yang belum selesai.
+
+@finance_bp.route('/closing-tasks', methods=['GET'])
+@jwt_required()
+@require_permission('finance.view')
+def list_closing_task_definitions():
+    from models.finance import ClosingTaskDefinition
+    tasks = ClosingTaskDefinition.query.filter_by(is_active=True).order_by(ClosingTaskDefinition.display_order).all()
+    return jsonify({'tasks': [{
+        'code': t.code, 'label': t.label, 'description': t.description,
+        'is_required': t.is_required, 'display_order': t.display_order,
+    } for t in tasks]}), 200
+
+
+@finance_bp.route('/closing-tasks', methods=['POST'])
+@jwt_required()
+@require_permission('finance.approve')
+def create_closing_task_definition():
+    """Admin menambah item checklist baru - kebijakan closing bisa berubah
+    tanpa migrasi skema (lihat model docstring)."""
+    from models.finance import ClosingTaskDefinition
+    data = request.get_json() or {}
+    code = (data.get('code') or '').strip()
+    label = (data.get('label') or '').strip()
+    if not code or not label:
+        return jsonify({'error': 'code dan label wajib diisi'}), 400
+    if ClosingTaskDefinition.query.filter_by(code=code).first():
+        return jsonify({'error': f'Task dengan code "{code}" sudah ada'}), 400
+
+    task = ClosingTaskDefinition(
+        code=code, label=label, description=data.get('description'),
+        is_required=data.get('is_required', True),
+        display_order=data.get('display_order', 0),
+    )
+    db.session.add(task)
+    db.session.commit()
+    return jsonify({'message': 'Task checklist dibuat', 'code': task.code}), 201
+
+
+@finance_bp.route('/closing-tasks/<string:code>', methods=['DELETE'])
+@jwt_required()
+@require_permission('finance.approve')
+def deactivate_closing_task_definition(code):
+    """Soft-delete (is_active=False) - tidak dihapus permanen supaya histori
+    PeriodClosingTaskStatus lama yang mereferensikan code ini tetap valid."""
+    from models.finance import ClosingTaskDefinition
+    task = ClosingTaskDefinition.query.filter_by(code=code).first()
+    if not task:
+        return jsonify({'error': 'Task tidak ditemukan'}), 404
+    task.is_active = False
+    db.session.commit()
+    return jsonify({'message': 'Task dinonaktifkan'}), 200
+
+
+@finance_bp.route('/closing-tasks/status', methods=['GET'])
+@jwt_required()
+@require_permission('finance.view')
+def get_closing_task_status():
+    """Status checklist untuk satu periode - gabungan semua task aktif +
+    status selesai/belumnya untuk period_year/period_month yang diminta."""
+    from models.finance import ClosingTaskDefinition, PeriodClosingTaskStatus
+    period_year = request.args.get('period_year', type=int)
+    period_month = request.args.get('period_month', type=int)
+    if not period_year or not period_month:
+        return jsonify({'error': 'period_year dan period_month wajib diisi'}), 400
+
+    tasks = ClosingTaskDefinition.query.filter_by(is_active=True).order_by(ClosingTaskDefinition.display_order).all()
+    statuses = {
+        s.task_code: s for s in PeriodClosingTaskStatus.query.filter_by(
+            period_year=period_year, period_month=period_month
+        ).all()
+    }
+    return jsonify({'checklist': [{
+        'code': t.code, 'label': t.label, 'description': t.description, 'is_required': t.is_required,
+        'is_completed': statuses[t.code].is_completed if t.code in statuses else False,
+        'completed_at': statuses[t.code].completed_at.isoformat() if t.code in statuses and statuses[t.code].completed_at else None,
+        'notes': statuses[t.code].notes if t.code in statuses else None,
+    } for t in tasks]}), 200
+
+
+@finance_bp.route('/closing-tasks/status', methods=['POST'])
+@jwt_required()
+@require_permission('finance.approve')
+def set_closing_task_status():
+    """Tandai satu task checklist selesai/belum untuk satu periode."""
+    from models.finance import ClosingTaskDefinition, PeriodClosingTaskStatus
+    data = request.get_json() or {}
+    period_year = data.get('period_year')
+    period_month = data.get('period_month')
+    task_code = data.get('task_code')
+    is_completed = bool(data.get('is_completed', True))
+    user_id = get_jwt_identity()
+
+    if not (period_year and period_month and task_code):
+        return jsonify({'error': 'period_year, period_month, task_code wajib diisi'}), 400
+    if not ClosingTaskDefinition.query.filter_by(code=task_code).first():
+        return jsonify({'error': f'Task "{task_code}" tidak dikenal'}), 404
+
+    status = PeriodClosingTaskStatus.query.filter_by(
+        period_year=period_year, period_month=period_month, task_code=task_code
+    ).first()
+    if not status:
+        status = PeriodClosingTaskStatus(period_year=period_year, period_month=period_month, task_code=task_code)
+        db.session.add(status)
+
+    status.is_completed = is_completed
+    status.completed_by = user_id if is_completed else None
+    status.completed_at = datetime.utcnow() if is_completed else None
+    status.notes = data.get('notes')
+    db.session.commit()
+    return jsonify({'message': 'Status checklist diperbarui'}), 200
+
+
+# ==================== PARTIAL PERIOD LOCK (2026-09-28) ====================
+# Kunci per jenis transaksi tanpa menutup periode secara penuh - lihat
+# PeriodTransactionTypeLock model docstring. Beda dari PeriodClose: tidak
+# ada validasi berurutan/depresiasi/checklist, murni kunci satu jenis
+# transaksi untuk satu periode.
+
+@finance_bp.route('/period-transaction-locks', methods=['GET'])
+@jwt_required()
+@require_permission('finance.view')
+def list_period_transaction_locks():
+    from models.finance import PeriodTransactionTypeLock
+    period_year = request.args.get('period_year', type=int)
+    period_month = request.args.get('period_month', type=int)
+    query = PeriodTransactionTypeLock.query
+    if period_year:
+        query = query.filter_by(period_year=period_year)
+    if period_month:
+        query = query.filter_by(period_month=period_month)
+    locks = query.order_by(PeriodTransactionTypeLock.period_year.desc(), PeriodTransactionTypeLock.period_month.desc()).all()
+    return jsonify({'locks': [{
+        'id': l.id, 'period_year': l.period_year, 'period_month': l.period_month,
+        'transaction_type': l.transaction_type, 'locked_at': l.locked_at.isoformat() if l.locked_at else None,
+        'notes': l.notes,
+    } for l in locks]}), 200
+
+
+@finance_bp.route('/period-transaction-locks', methods=['POST'])
+@jwt_required()
+@require_permission('finance.approve')
+def create_period_transaction_lock():
+    from models.finance import PeriodTransactionTypeLock
+    data = request.get_json() or {}
+    period_year = data.get('period_year')
+    period_month = data.get('period_month')
+    transaction_type = (data.get('transaction_type') or '').strip()
+    user_id = get_jwt_identity()
+
+    if not (period_year and period_month and transaction_type):
+        return jsonify({'error': 'period_year, period_month, transaction_type wajib diisi'}), 400
+    if not (1 <= period_month <= 12):
+        return jsonify({'error': 'period_month harus 1-12'}), 400
+
+    existing = PeriodTransactionTypeLock.query.filter_by(
+        period_year=period_year, period_month=period_month, transaction_type=transaction_type
+    ).first()
+    if existing:
+        return jsonify({'error': 'Kombinasi periode + jenis transaksi ini sudah dikunci'}), 400
+
+    lock = PeriodTransactionTypeLock(
+        period_year=period_year, period_month=period_month, transaction_type=transaction_type,
+        locked_by=user_id, notes=data.get('notes'),
+    )
+    db.session.add(lock)
+    db.session.commit()
+    return jsonify({'message': f'{transaction_type} untuk {period_year}-{period_month:02d} dikunci', 'id': lock.id}), 201
+
+
+@finance_bp.route('/period-transaction-locks/<int:id>', methods=['DELETE'])
+@jwt_required()
+@require_permission('finance.approve')
+def delete_period_transaction_lock(id):
+    from models.finance import PeriodTransactionTypeLock
+    lock = db.session.get(PeriodTransactionTypeLock, id)
+    if not lock:
+        return jsonify({'error': 'Lock tidak ditemukan'}), 404
+    db.session.delete(lock)
+    db.session.commit()
+    return jsonify({'message': 'Kunci parsial dibuka'}), 200
 
 
 @finance_bp.route('/accounts/<int:id>/transactions', methods=['GET'])

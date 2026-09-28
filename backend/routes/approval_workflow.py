@@ -513,7 +513,7 @@ def approve_workflow(workflow_id):
             # backstop untuk SEMUA flow yang lewat generic approval workflow,
             # bukan di-duplikasi ke tiap route pemanggil workflow ini.
             from utils.finance_helpers import is_period_locked
-            if is_period_locked(pending_journal.entry_date):
+            if is_period_locked(pending_journal.entry_date, transaction_type=workflow.transaction_type):
                 # workflow.status/approver_id di atas + apply_workflow_side_effect()
                 # sudah mengubah session ini tapi belum di-commit - rollback
                 # eksplisit di sini (bukan cuma andalkan teardown) supaya

@@ -184,7 +184,7 @@ def approve_payroll_period(period_id):
         # ditutup. Tanpa cek ini, payroll based tetap bisa diposting ke
         # periode yang sudah closed tanpa ditolak sama sekali.
         from utils.finance_helpers import is_period_locked
-        if is_period_locked(period.end_date):
+        if is_period_locked(period.end_date, transaction_type='payroll'):
             return jsonify({
                 'error': f'Periode akuntansi untuk {period.end_date.strftime("%B %Y")} sudah ditutup (Closing Period). '
                          'Tidak bisa posting jurnal payroll ke periode yang sudah closed.'
