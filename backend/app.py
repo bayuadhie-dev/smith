@@ -203,6 +203,8 @@ def create_app(config_class=Config):
         'http://api.graterp.my.id',   # HTTP fallback for production
         'https://stag.graterp.my.id',      # Staging frontend
         'https://stag-api.graterp.my.id',  # Staging backend
+        'https://erp.fsnindonesia.com',    # VPS frontend (fsnindonesia.com domain)
+        'https://api.fsnindonesia.com',    # VPS backend
         'http://localhost:3000',
         'http://127.0.0.1:3000',
     ]
