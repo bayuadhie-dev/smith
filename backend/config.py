@@ -18,6 +18,13 @@ class Config:
     # Database
     SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'sqlite:///erp_database.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    # Shared secret for server-crontab-triggered endpoints (Accurate sync
+    # scans, warehouse sync, exchange rate sync, machine-health check) -
+    # these are called by plain `curl` from the server's own crontab, not
+    # by a logged-in user, so @jwt_required() doesn't apply. Checked via
+    # the X-Cron-Secret header, see utils/cron_auth.py.
+    CRON_SECRET_TOKEN = os.getenv('CRON_SECRET_TOKEN', '')
     SQLALCHEMY_ECHO = False
     
     # JWT

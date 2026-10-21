@@ -398,10 +398,13 @@ def create_app(config_class=Config):
     from routes.spc import spc_bp
 
     from routes.reports import reports_bp
+    from routes.report_scheduler import report_scheduler_bp
+    from routes.custom_report import custom_report_bp
 
     from routes.dashboard import dashboard_bp
 
     from routes.shipping import shipping_bp
+    from routes.handling_unit import handling_unit_bp
 
     from routes.maintenance import maintenance_bp
     
@@ -588,10 +591,13 @@ def create_app(config_class=Config):
     app.register_blueprint(spc_bp, url_prefix='/api/spc')
 
     app.register_blueprint(reports_bp, url_prefix='/api/reports')
+    app.register_blueprint(report_scheduler_bp)
+    app.register_blueprint(custom_report_bp)
 
     app.register_blueprint(dashboard_bp, url_prefix='/api/dashboard')
 
     app.register_blueprint(shipping_bp, url_prefix='/api/shipping')
+    app.register_blueprint(handling_unit_bp, url_prefix='/api/shipping')
 
     app.register_blueprint(maintenance_bp, url_prefix='/api/maintenance')
     
@@ -874,6 +880,16 @@ def create_app(config_class=Config):
     def serve_chat_upload(filename):
 
         upload_folder = os.path.join(os.path.dirname(__file__), 'uploads', 'chat')
+
+        return send_from_directory(upload_folder, filename)
+
+
+
+    @app.route('/uploads/company/<filename>')
+
+    def serve_company_upload(filename):
+
+        upload_folder = os.path.join(os.path.dirname(__file__), 'uploads', 'company')
 
         return send_from_directory(upload_folder, filename)
 
