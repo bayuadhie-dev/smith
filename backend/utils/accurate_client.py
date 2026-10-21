@@ -11,6 +11,7 @@ from models.product import Material, Product
 from utils.accurate_item_matcher import find_smith_match
 from models.product_excel_schema import ProductNew
 from models.wms_advanced import InventoryTransaction, MaterialConsumption
+from utils.inventory_helpers import derive_movement_type_code
 from models.production import BillOfMaterials, BOMItem
 
 
@@ -423,6 +424,7 @@ class AccurateClient:
                     reference_type='manual',
                     reference_number=log.accurate_tx_no or f'ACC-{log.id}',
                 )
+                txn.movement_type, _ = derive_movement_type_code(txn)
                 db.session.add(txn)
             elif target_table == 'products':
                 new_row = ProductNew(
@@ -454,6 +456,7 @@ class AccurateClient:
                     reference_type='manual',
                     reference_number=log.accurate_tx_no or f'ACC-{log.id}',
                 )
+                txn.movement_type, _ = derive_movement_type_code(txn)
                 db.session.add(txn)
             else:
                 raise ValueError(f'proposed_target_table tidak valid: {target_table}')
@@ -519,6 +522,7 @@ class AccurateClient:
                 reference_type='manual',
                 reference_number=log.accurate_tx_no or f'ACC-{log.id}',
             )
+            txn.movement_type, _ = derive_movement_type_code(txn)
             db.session.add(txn)
 
             log.status = 'APPROVED'

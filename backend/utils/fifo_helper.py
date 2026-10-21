@@ -313,7 +313,10 @@ def fifo_deduct_stock(material_id=None, product_id=None, quantity_needed=0,
             'quantity_deducted': deduct_qty,
             'unit_cost': unit_cost,
             'total_cost': round(deduct_qty * unit_cost, 2) if unit_cost else 0,
-            'remaining_in_batch': float(inv.quantity_on_hand)
+            'remaining_in_batch': float(inv.quantity_on_hand),
+            '_transaction': movement,  # the InventoryTransaction ORM row itself, for callers
+                                        # that need to patch it (e.g. accounting_entry_number)
+                                        # after posting a GL journal built from these movements.
         })
         
         total_cost += (deduct_qty * unit_cost) if unit_cost else 0

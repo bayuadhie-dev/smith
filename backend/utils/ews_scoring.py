@@ -108,6 +108,14 @@ def score_shift_production(shift_production_id: int, db_session) -> dict | None:
     if target is None or target.machine_id is None:
         return None
 
+    # History below only includes status == 'completed' rows. If target
+    # itself isn't completed yet, it gets filtered out of its own history
+    # and the function would silently score + save under target's id using
+    # some OTHER (older, completed) shift's features instead - a real
+    # mismatch bug found during the 2026-10-17 module audit.
+    if target.status != 'completed':
+        return None
+
     # Ambil histori mesin yang sama, urut tanggal+shift, sampai (termasuk) shift target.
     # Dibatasi ke ~10 shift terakhir sebelum target — cukup untuk rolling window 3, hemat query.
     history = (

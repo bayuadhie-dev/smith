@@ -30,25 +30,44 @@ def _get_default_template(document_type):
 
 
 def _create_default_template(user_id, template_name, template_code, document_type, canvas_objects):
-    """Create a template FAMILY + its first (and immediately published) TemplateVersion.
-    Used as the fallback proof-of-concept layout whenever no admin-designed
-    default exists yet for a document_type - real usage is expected to
-    replace these via the Template Designer UI (Fase 1 editor, not built in
-    this step), but auto-generation must never be blocked waiting for that."""
-    template = DocumentTemplate(
-        template_name=template_name,
-        template_code=template_code,
-        document_type=document_type,
-        is_default=True,
-        is_active=True,
-        created_by=user_id,
-    )
-    db.session.add(template)
-    db.session.flush()
+    """Create a template FAMILY + its first (and immediately published) TemplateVersion,
+    OR - if a family with this template_code already exists (e.g. an older
+    default that was deactivated via is_default=False rather than deleted,
+    since existing Document rows FK-reference its TemplateVersion and can't
+    have it removed) - publish a NEW version onto that existing family and
+    reactivate it instead. template_code has a DB-level unique constraint,
+    so a plain INSERT here would raise IntegrityError the moment this
+    function's own canvas_objects ever changes after the family was already
+    created once (found live: fix_report_3.md Fase 20, invoice template
+    density fix). Used as the fallback proof-of-concept layout whenever no
+    admin-designed default exists yet for a document_type - real usage is
+    expected to replace these via the Template Designer UI (Fase 1 editor,
+    not built in this step), but auto-generation must never be blocked
+    waiting for that."""
+    template = DocumentTemplate.query.filter_by(template_code=template_code).first()
+    if template:
+        template.is_default = True
+        template.is_active = True
+        next_version_number = (
+            db.session.query(db.func.max(TemplateVersion.version_number))
+            .filter_by(document_template_id=template.id).scalar() or 0
+        ) + 1
+    else:
+        template = DocumentTemplate(
+            template_name=template_name,
+            template_code=template_code,
+            document_type=document_type,
+            is_default=True,
+            is_active=True,
+            created_by=user_id,
+        )
+        db.session.add(template)
+        db.session.flush()
+        next_version_number = 1
 
     version = TemplateVersion(
         document_template_id=template.id,
-        version_number=1,
+        version_number=next_version_number,
         status='published',
         canvas_data={'version': 'fabric-6', 'objects': canvas_objects},
         paper_size='A4',
@@ -491,7 +510,7 @@ def generate_invoice_document(invoice_id, user_id):
         'ship_to': sales_order.delivery_address if sales_order else '',
         'status': status_label,
         'customer_name': customer.company_name if customer else '',
-        'customer_address': customer.address if customer else '',
+        'customer_address': customer.billing_address if customer else '',
         'payment_terms': invoice.payment_terms or '',
         'notes': invoice.notes or '',
         'subtotal': float(invoice.subtotal or 0),
@@ -623,7 +642,18 @@ def create_default_spk_batch_template(user_id):
 
 def create_default_invoice_template(user_id):
     """Create default Invoice template (Fase 1 proof-of-concept layout - Invoice
-    never had a print mechanism before this)."""
+    never had a print mechanism before this).
+
+    fix_report_3.md Fase 20 (2026-10-03): original layout reserved 100mm for
+    the line-items table before placing totals, which read as a mostly-empty
+    page for any invoice with only a handful of lines (the common case) -
+    real estimate/invoice documents fill the page with actual business
+    content, not whitespace. Tightened the table's reserved height (still
+    room for ~15-20 rows before WeasyPrint's native pagination kicks in) and
+    used the reclaimed space for fields that were already being computed in
+    document_data but never actually placed on the canvas (payment_terms),
+    plus a standard signature block - no invented data, every field here
+    traces to a real document_data key or a static label."""
     objects = _company_header_objects() + [
         _label('INVOICE', 10, 32, 100, 10, font_size=16, font_weight='bold'),
         _field('document_number', 150, 32, 50, font_size=9, text_align='right'),
@@ -635,29 +665,36 @@ def create_default_invoice_template(user_id):
         _field('po_number', 40, 50, 60, font_size=9),
         _label('Status', 110, 50, 30, font_size=8),
         _field('status', 140, 50, 60, font_size=9, font_weight='bold'),
-        _label('Ditagihkan Kepada:', 10, 60, 60, font_size=9, font_weight='bold'),
-        _field('customer_name', 10, 66, 90, font_size=10),
-        _field('customer_address', 10, 71, 90, height=10, font_size=9),
-        _label('Kirim Ke:', 110, 60, 60, font_size=9, font_weight='bold'),
-        _field('ship_to', 110, 66, 90, height=15, font_size=9),
-        _placeholder_box('repeating_table', 10, 90, 190, 100, dataSource='line_items', showHeader=True, columns=[
+        _label('Syarat Pembayaran', 10, 56, 30, font_size=8),
+        _field('payment_terms', 40, 56, 100, font_size=9),
+        _label('Ditagihkan Kepada:', 10, 66, 60, font_size=9, font_weight='bold'),
+        _field('customer_name', 10, 72, 90, font_size=10),
+        _field('customer_address', 10, 77, 90, height=10, font_size=9),
+        _label('Kirim Ke:', 110, 66, 60, font_size=9, font_weight='bold'),
+        _field('ship_to', 110, 72, 90, height=15, font_size=9),
+        _placeholder_box('repeating_table', 10, 96, 190, 65, dataSource='line_items', showHeader=True, columns=[
             {'fieldPath': 'item_name', 'label': 'Item', 'width': 80, 'textAlign': 'left'},
             {'fieldPath': 'quantity', 'label': 'Qty', 'width': 25, 'textAlign': 'right'},
             {'fieldPath': 'uom', 'label': 'Satuan', 'width': 25, 'textAlign': 'left'},
             {'fieldPath': 'unit_price', 'label': 'Harga Satuan', 'width': 30, 'textAlign': 'right'},
             {'fieldPath': 'subtotal', 'label': 'Subtotal', 'width': 30, 'textAlign': 'right'},
         ]),
-        _label('Subtotal', 140, 200, 30, font_size=9),
-        _field('subtotal', 170, 200, 30, font_size=9, text_align='right'),
-        _label('Diskon', 140, 206, 30, font_size=9),
-        _field('discount_amount', 170, 206, 30, font_size=9, text_align='right'),
-        _label('PPN', 140, 212, 30, font_size=9),
-        _field('tax_amount', 170, 212, 30, font_size=9, text_align='right'),
-        _label('TOTAL', 140, 220, 30, font_size=11, font_weight='bold'),
-        _field('total_amount', 170, 220, 30, font_size=11, font_weight='bold', text_align='right'),
-        _label('Sisa Tagihan', 140, 228, 30, font_size=9),
-        _field('balance_due', 170, 228, 30, font_size=9, text_align='right'),
-        _field('notes', 10, 245, 190, height=15, font_size=8),
+        _label('Subtotal', 140, 168, 30, font_size=9),
+        _field('subtotal', 170, 168, 30, font_size=9, text_align='right'),
+        _label('Diskon', 140, 174, 30, font_size=9),
+        _field('discount_amount', 170, 174, 30, font_size=9, text_align='right'),
+        _label('PPN', 140, 180, 30, font_size=9),
+        _field('tax_amount', 170, 180, 30, font_size=9, text_align='right'),
+        _label('TOTAL', 140, 188, 30, font_size=11, font_weight='bold'),
+        _field('total_amount', 170, 188, 30, font_size=11, font_weight='bold', text_align='right'),
+        _label('Sisa Tagihan', 140, 196, 30, font_size=9),
+        _field('balance_due', 170, 196, 30, font_size=9, text_align='right'),
+        _label('Catatan', 10, 168, 30, font_size=8, font_weight='bold'),
+        _field('notes', 10, 174, 115, height=20, font_size=8),
+        _hline(10, 220, 190),
+        _label('Hormat kami,', 140, 228, 60, font_size=9),
+        _field('company.name', 140, 234, 60, font_size=9, font_weight='bold'),
+        _label('(_____________________)', 140, 258, 60, font_size=9),
     ]
     return _create_default_template(user_id, 'Invoice Default', 'INVOICE_DEFAULT', 'invoice', objects)
 

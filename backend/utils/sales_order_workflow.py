@@ -7,6 +7,7 @@ the transaction.
 """
 from datetime import timedelta, date as _date
 from decimal import Decimal
+from sqlalchemy import func as sa_func
 
 from models import db
 from models.sales import SalesOrder, SalesOrderItem
@@ -194,7 +195,119 @@ def confirm_order_core(order, user_id):
         except Exception as forecast_bump_error:
             print(f"Forecast auto-bump warning: {forecast_bump_error}")
 
+    # fix_report_3.md Fase 15 (2026-10-02, design confirmed with owner):
+    # the ATP check above only looks at FINISHED-GOODS stock - it never
+    # checks whether there's enough RAW MATERIAL to actually MANUFACTURE a
+    # freshly-confirmed order (this is an MTO manufacturer: confirming a SO
+    # auto-creates a Work Order via trigger_production_from_so_core() right
+    # after this function returns). Found via a real production test: an
+    # SO for 120,000 pcs confirmed, auto-created a WO, ran all the way to
+    # shipped+invoiced+paid, while every one of its 13 BOM raw materials
+    # had ZERO stock the whole time - nothing anywhere ever warned about it.
+    # Design (warning-only, matches ATP's own precedent, NOT a hard block -
+    # a legitimate business case is "sell now, procure the shortfall after"):
+    # explode each item's BOM, compare against real available stock, and if
+    # short, auto-create ONE PurchaseRequisition for the shortfall (so
+    # purchasing has something to act on immediately) + a human-readable
+    # note on the SO itself. material_eta_date is intentionally left NULL
+    # here - that's filled in LATER, manually, by purchasing once they've
+    # actually processed the PR/PO and know a real date.
+    try:
+        material_warnings = _check_and_create_shortage_pr(order, user_id)
+        inventory_warnings.extend(material_warnings)
+    except Exception as mrp_error:
+        print(f"MRP shortage check warning: {mrp_error}")
+
     return inventory_warnings
+
+
+def _check_and_create_shortage_pr(order, user_id):
+    """MRP feasibility check for a just-confirmed SalesOrder: explode each
+    item's BOM (utils.auto_reserve._get_bom_requirements, the same BOM
+    explosion already used for auto-reserve staging) and compare against
+    real available Inventory. Any shortfall gets rolled into ONE new
+    PurchaseRequisition (status='submitted', so purchasing sees it right
+    away) linked back to this SO. Returns a list of warning dicts (same
+    shape style as the ATP ones) for the caller to fold into
+    inventory_warnings. Never raises past the caller's own try/except -
+    this is advisory, must not block SO confirmation."""
+    from models.product import Material
+    from models.warehouse import Inventory
+    from models.purchasing import PurchaseRequisition, PRItem
+    from utils.auto_reserve import _get_bom_requirements
+
+    shortages = {}  # material_id -> {'shortage': float, 'uom': str, 'name': str}
+    for item in order.items:
+        try:
+            requirements = _get_bom_requirements(item.product_id, float(item.quantity))
+        except Exception:
+            continue
+        for material_id, required_qty, uom, material_name in requirements:
+            available = db.session.query(
+                sa_func.coalesce(sa_func.sum(Inventory.quantity_available), 0)
+            ).filter(
+                Inventory.material_id == material_id,
+                Inventory.is_active == True,
+                Inventory.stock_status.notin_(['quarantine', 'reject']),
+            ).scalar()
+            available = float(available or 0)
+            # Multiple SO items can share the same raw material - shortage
+            # accumulates across the whole order, available stock is only
+            # "spent" once (first item to need it claims it first).
+            already_claimed = shortages.get(material_id, {}).get('claimed', 0)
+            remaining_available = max(0.0, available - already_claimed)
+            shortfall = required_qty - remaining_available
+            if shortfall > 0.01:
+                existing = shortages.setdefault(material_id, {'shortage': 0.0, 'uom': uom, 'name': material_name, 'claimed': 0.0})
+                existing['shortage'] += shortfall
+                existing['claimed'] += remaining_available
+            else:
+                existing = shortages.setdefault(material_id, {'shortage': 0.0, 'uom': uom, 'name': material_name, 'claimed': 0.0})
+                existing['claimed'] += required_qty
+
+    shortage_items = {mid: v for mid, v in shortages.items() if v['shortage'] > 0.01}
+    if not shortage_items:
+        return []
+
+    pr_number = generate_number('PR', PurchaseRequisition, 'pr_number')
+    pr = PurchaseRequisition(
+        pr_number=pr_number,
+        requested_by=user_id,
+        department='Production (auto, kekurangan bahan baku SO)',
+        request_date=get_local_today(),
+        purpose=f'Kekurangan bahan baku untuk memenuhi {order.order_number} - dibuat otomatis saat SO dikonfirmasi.',
+        status='submitted',
+        priority='high',
+        sales_order_id=order.id,
+    )
+    db.session.add(pr)
+    db.session.flush()
+
+    note_lines = []
+    for idx, (material_id, v) in enumerate(shortage_items.items(), 1):
+        material = db.session.get(Material, material_id)
+        db.session.add(PRItem(
+            pr_id=pr.id, line_number=idx, material_id=material_id,
+            item_name=v['name'], item_code=material.code if material else None,
+            quantity=v['shortage'], uom=v['uom'],
+            notes=f'Auto dari kekurangan bahan baku {order.order_number}',
+        ))
+        note_lines.append(f"{v['name']}: kurang {v['shortage']:.2f} {v['uom']}")
+
+    order.material_shortage_note = (
+        f"Bahan baku kurang, PR {pr.pr_number} otomatis dibuat (menunggu diproses purchasing): "
+        + '; '.join(note_lines)
+    )
+
+    return [{
+        'type': 'material_shortage',
+        'purchase_requisition_id': pr.id,
+        'purchase_requisition_number': pr.pr_number,
+        'shortages': [
+            {'material_id': mid, 'material_name': v['name'], 'shortage': v['shortage'], 'uom': v['uom']}
+            for mid, v in shortage_items.items()
+        ],
+    }]
 
 
 def trigger_production_from_so_core(sales_order, user_id):

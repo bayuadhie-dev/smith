@@ -56,11 +56,15 @@ def calculate_price(product_id, customer_id=None, quantity=1):
             running_price -= delta
             total_discount += delta
             breakdown.append({'name': cond.name, 'type': 'discount', 'amount': round(-delta, 2)})
-        elif cond.condition_type == 'surcharge':
+        elif cond.condition_type in ('surcharge', 'freight'):
+            # Freight (SAP KF00-equivalent) is treated exactly like a surcharge in
+            # the pipeline - it compounds onto running_price BEFORE tax, so a later
+            # 'tax' condition correctly taxes the freight amount too, matching SAP's
+            # usual placement of freight conditions ahead of tax in the procedure.
             delta = running_price * value / 100 if cond.calculation_type == 'percentage' else value
             running_price += delta
             total_surcharge += delta
-            breakdown.append({'name': cond.name, 'type': 'surcharge', 'amount': round(delta, 2)})
+            breakdown.append({'name': cond.name, 'type': cond.condition_type, 'amount': round(delta, 2)})
         elif cond.condition_type == 'tax':
             # Tax is reported separately (percentage + amount), not folded into
             # running_price/unit_price - matches SalesOrderItem's existing

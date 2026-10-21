@@ -12,8 +12,33 @@ def admin_required():
             user_id = get_jwt_identity()
             user = db.session.get(User, user_id)
 
-            if not user or not user.is_admin:
+            # is_super_admin implies is_admin-level access too - previously a
+            # true super admin without the is_admin flag set would be wrongly
+            # rejected here (found during the 2026-10-13 RBAC audit).
+            if not user or not (user.is_admin or getattr(user, 'is_super_admin', False)):
                 return jsonify({'error': 'Admin access required'}), 403
+
+            return fn(*args, **kwargs)
+        return decorator
+    return wrapper
+
+
+def require_super_admin():
+    """Decorator restricting a route to true super admins only (is_super_admin flag) -
+    not is_admin, and not any RBAC role/permission, no matter how it's named.
+
+    Used for the System Settings module (user/role/permission management, backups,
+    data export, company config): owner-level requested this be developer/owner-only,
+    separate from the per-module RBAC system everything else uses. Must be used
+    together with @jwt_required() above it."""
+    def wrapper(fn):
+        @wraps(fn)
+        def decorator(*args, **kwargs):
+            user_id = get_jwt_identity()
+            user = db.session.get(User, user_id)
+
+            if not user or not getattr(user, 'is_super_admin', False):
+                return jsonify({'error': 'Super Admin access required'}), 403
 
             return fn(*args, **kwargs)
         return decorator
@@ -33,8 +58,18 @@ def _get_user_permissions(user):
 
 def require_permission(*permission_names):
     """Decorator to require one of the given 'module.action' permissions (e.g. 'finance.approve').
-    Admin/Super Admin always pass. Must be used together with @jwt_required() above it.
-    Multiple names are OR'd — pass any one of them to allow the request through."""
+    Only Super Admin always passes. Must be used together with @jwt_required() above it.
+    Multiple names are OR'd — pass any one of them to allow the request through.
+
+    is_admin intentionally does NOT bypass this check (see models/user.py's column
+    comment: "Staff Admin (Admin Produksi, Admin Gudang)" - it was meant to be a
+    department-scoped admin flag, not a global RBAC bypass). Before 2026-10-13 it
+    bypassed every permission check app-wide, which let a department manager with
+    is_admin=true (no is_super_admin) silently access every module regardless of
+    their actual role's permissions - confirmed in production for one real user.
+    is_admin users now go through the normal role/permission check below like
+    everyone else; grant them the right RBAC role/permissions for their scope
+    instead of flipping this flag."""
     def wrapper(fn):
         @wraps(fn)
         def decorator(*args, **kwargs):
@@ -44,7 +79,7 @@ def require_permission(*permission_names):
             if not user:
                 return jsonify({'error': 'User not found'}), 404
 
-            if user.is_admin or getattr(user, 'is_super_admin', False):
+            if getattr(user, 'is_super_admin', False):
                 return fn(*args, **kwargs)
 
             user_perms = _get_user_permissions(user)

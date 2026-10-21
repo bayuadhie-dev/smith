@@ -132,19 +132,35 @@ def _render_text_like(obj, document_data):
     else:
         content = obj.get('text', '')
 
-    font_size = obj.get('fontSize', 10)
+    # fontSize is a Fabric object property, so per the "1 Fabric unit = 1mm,
+    # always" convention (TemplateVersionEditor.tsx) it's stored in mm just
+    # like left/top/width/height - the editor's canvas.setZoom(PX_PER_MM)
+    # scales it on-screen consistently with every other mm-based property.
+    # WeasyPrint's CSS font-size has no mm-equivalent concept though, only
+    # literal pt - treating the stored number as pt directly (as this used to)
+    # under-sized text by a factor of ~2.83x vs what the editor showed, since
+    # 1mm = 2.83465pt. Convert explicitly so editor and rendered output agree.
+    font_size_mm = float(obj.get('fontSize', 10) or 10)
+    font_size_pt = round(font_size_mm * 2.83465, 2)
     font_family = obj.get('fontFamily', 'Arial')
     font_weight = obj.get('fontWeight', 'normal')
     text_align = obj.get('textAlign', 'left')
     color = obj.get('fill', '#000000')
     bg_color = obj.get('backgroundColor') or 'transparent'
 
+    # align-items must be flex-start (top), not center: Fabric's Textbox in
+    # the editor anchors text at the TOP of its bounding box (originY:'top')
+    # and grows downward - it never vertically centers within a height taller
+    # than the text itself. Centering here made every single text element on
+    # every template render visibly lower in the PDF than where it sits in
+    # the drag-and-drop editor, the position-mismatch bug reported alongside
+    # the fontSize unit bug (both independent causes of the same complaint).
     style = (
         f'position:absolute; left:{left}mm; top:{top}mm; width:{width}mm; height:{height}mm; '
         f'transform: rotate({angle}deg); transform-origin: top left; '
-        f'font-size:{font_size}pt; font-family:{font_family}, sans-serif; font-weight:{font_weight}; '
+        f'font-size:{font_size_pt}pt; font-family:{font_family}, sans-serif; font-weight:{font_weight}; '
         f'text-align:{text_align}; color:{color}; background-color:{bg_color}; '
-        f'overflow:hidden; white-space:pre-wrap; display:flex; align-items:center; '
+        f'overflow:hidden; white-space:pre-wrap; display:flex; align-items:flex-start; '
         f'justify-content:{ {"left": "flex-start", "center": "center", "right": "flex-end"}.get(text_align, "flex-start") };'
     )
     return f'<div style="{style}">{content}</div>'
@@ -226,7 +242,17 @@ def _render_repeating_table(obj, document_data):
     col_widths = ''.join(f'<col style="width:{c.get("width", 0)}mm;">' for c in columns)
 
     return (
-        f'<div style="position:relative; margin-left:{left}mm; width:{width}mm; margin-top:{top}mm;">'
+        # position:absolute (not position:relative + margin-top) - every other
+        # element type on this canvas uses absolute top/left, and margin-top
+        # here used to collapse away to nothing (classic CSS margin-collapse:
+        # this div was the first in-flow box in its container, with no
+        # border/padding separating it from the container's own edge) instead
+        # of offsetting the table, rendering it at y=0 on top of the header
+        # (fix_report_3.md Fase 20, found via a direct screenshot comparison
+        # of the raw generated HTML). Absolute positioning doesn't affect
+        # WeasyPrint's <thead> repeat-per-page behavior below - that's driven
+        # by the <table>'s own layout, not its positioned ancestor.
+        f'<div style="position:absolute; left:{left}mm; top:{top}mm; width:{width}mm;">'
         f'<table style="width:100%; border-collapse:collapse; font-size:9pt;">'
         f'<colgroup>{col_widths}</colgroup>'
         f'{header_html}<tbody>{"".join(body_rows)}</tbody>'

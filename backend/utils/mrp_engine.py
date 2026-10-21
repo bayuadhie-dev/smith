@@ -33,6 +33,7 @@ helper only, to stay consistent with the one known modeling quirk (a WIP
 recorded both as a Product with its own BOM and as a Material leaf row).
 """
 from datetime import timedelta
+from sqlalchemy import func
 from models import db
 from models.sales import SalesOrder
 from models.production import BillOfMaterials, WorkOrder
@@ -81,6 +82,103 @@ def _lookup_min_order_qty(material_id):
         ContractItem.min_order_qty.isnot(None)
     ).first()
     return float(line.min_order_qty) if line else None
+
+
+def _lookup_lot_sizing(material_id):
+    """SAP-equivalence plan item #4 (2026-10-05): the configured lot-sizing
+    procedure for a material - EX/FX/WB/MB, see Material.lot_sizing_procedure
+    docstring on the model. Only materials have this (same scope as
+    _lookup_min_order_qty - sub-assemblies/Products don't get a lot-sizing
+    config field, matching the pre-existing MOQ limitation). Returns
+    ('EX', None) for anything without an explicit procedure set, or for an
+    FX material missing its fixed_lot_size (treated as EX rather than
+    erroring, since a planner may switch the dropdown before filling the
+    size in)."""
+    material = db.session.get(Material, material_id)
+    if not material:
+        return 'EX', None
+    procedure = (material.lot_sizing_procedure or 'EX').upper()
+    if procedure == 'FX':
+        size = float(material.fixed_lot_size) if material.fixed_lot_size else None
+        if not size or size <= 0:
+            return 'EX', None
+        return 'FX', size
+    if procedure in ('WB', 'MB'):
+        return procedure, None
+    return 'EX', None
+
+
+def _round_up_to_multiple(qty, multiple):
+    """Rounds qty UP to the next multiple of `multiple` (SAP FX convention -
+    always orders in whole lots, never a partial one). qty<=0 or
+    multiple<=0 returns qty unchanged (caller already guards against this,
+    kept here too for safety)."""
+    if multiple <= 0 or qty <= 0:
+        return qty
+    import math
+    return math.ceil(qty / multiple) * multiple
+
+
+def _pool_planned_orders(planned_orders, procedure_by_entity):
+    """SAP-equivalence plan item #4 (2026-10-05): WB/MB lot sizing.
+
+    The core engine below (step 6) nets and rounds per WEEKLY BUCKET - but
+    those buckets are a rolling window from today (start_date + 7*i), not
+    calendar-aligned, so they are NOT the same thing as SAP's WB (weekly)
+    lot-sizing procedure, which pools demand by real ISO calendar week
+    (Mon-Sun), and MB pools by real calendar month. This pass runs AFTER
+    the per-bucket planned orders already exist (generated using the same
+    EX/MOQ-or-FX rounding as any other procedure) and merges, for any
+    material configured as WB or MB, every planned order whose need_date
+    falls in the same real calendar week/month into ONE consolidated
+    order - summed quantity, earliest need_date in the group, order_date
+    recomputed from that need_date's own lead time offset.
+
+    procedure_by_entity: {(kind, entity_id): ('EX'|'FX'|'WB'|'MB', extra)}
+    as returned by _lookup_lot_sizing/default, keyed the same way as the
+    engine's internal `state` dict.
+    """
+    from datetime import date as _date
+
+    def _group_key(procedure, need_date_iso):
+        d = _date.fromisoformat(need_date_iso)
+        if procedure == 'WB':
+            iso_year, iso_week, _ = d.isocalendar()
+            return ('WB', iso_year, iso_week)
+        else:  # MB
+            return ('MB', d.year, d.month)
+
+    pooled = []
+    groups = {}  # (kind, entity_id, group_key) -> list of planned_order dicts
+    passthrough = []
+
+    for po in planned_orders:
+        key = (po['entity_kind'], po['material_id'])
+        procedure, _extra = procedure_by_entity.get(key, ('EX', None))
+        if procedure not in ('WB', 'MB'):
+            passthrough.append(po)
+            continue
+        gkey = (po['entity_kind'], po['material_id']) + _group_key(procedure, po['need_date'])
+        groups.setdefault(gkey, []).append(po)
+
+    for gkey, members in groups.items():
+        if len(members) == 1:
+            pooled.append(members[0])
+            continue
+        members_sorted = sorted(members, key=lambda m: m['need_date'])
+        earliest = members_sorted[0]
+        total_qty = round(sum(m['quantity'] for m in members), 4)
+        merged = dict(earliest)
+        merged['quantity'] = total_qty
+        merged['covered_by_moq'] = any(m.get('covered_by_moq') for m in members)
+        merged['covered_by_fixed_lot'] = any(m.get('covered_by_fixed_lot') for m in members)
+        merged['pooled_from_weeks'] = sorted({m['week_index'] for m in members})
+        merged['lot_sizing_procedure'] = earliest.get('lot_sizing_procedure')
+        pooled.append(merged)
+
+    result = passthrough + pooled
+    result.sort(key=lambda p: p['order_date'])
+    return result
 
 
 def run_mrp(horizon_weeks=12, include_forecasts=True):
@@ -171,7 +269,22 @@ def run_mrp(horizon_weeks=12, include_forecasts=True):
         if not need_date or need_date < start_date or need_date > horizon_end:
             continue
         for item in order.items:
-            _explode_one_level(item.product_id, float(item.quantity), need_date)
+            # "Firm" netting: if a WorkOrder already exists for this SO's
+            # product (planner already released it to the floor), don't
+            # re-explode the full quantity as gross demand every re-run -
+            # SAP firms a planned/production order the same way so MRP
+            # stops treating already-committed demand as open. Only the
+            # uncovered remainder (if the WO is partial, or none exists yet)
+            # still generates material demand.
+            firmed_qty = db.session.query(func.coalesce(func.sum(WorkOrder.quantity), 0)).filter(
+                WorkOrder.sales_order_id == order.id,
+                WorkOrder.product_id == item.product_id,
+                WorkOrder.status.in_(['planned', 'released', 'in_progress', 'completed']),
+            ).scalar()
+            remaining_qty = max(0.0, float(item.quantity) - float(firmed_qty or 0))
+            if remaining_qty <= 0:
+                continue
+            _explode_one_level(item.product_id, remaining_qty, need_date)
 
     # 2. Forecasts, apportioned across the weeks they overlap
     if include_forecasts:
@@ -282,6 +395,7 @@ def run_mrp(horizon_weeks=12, include_forecasts=True):
     #    a WIP-coded item that can't actually be produced further, e.g. an
     #    outsourced/subcontracted sub-assembly with no BOM of its own here).
     planned_orders = []
+    procedure_by_entity = {}  # key -> (lot_sizing_procedure, fixed_lot_size), for the WB/MB pooling pass below
     for key, entry in state.items():
         kind, entity_id = key
         is_material = kind == 'material'
@@ -289,6 +403,7 @@ def run_mrp(horizon_weeks=12, include_forecasts=True):
         lead_time = (material.lead_time_days if material else 0) or 0
         procurement_type = 'buy' if (is_material or not entry['has_own_bom']) else 'make'
         moq = _lookup_min_order_qty(entity_id) if is_material else None
+        lot_procedure, fixed_lot_size = _lookup_lot_sizing(entity_id) if is_material else ('EX', None)
         # Safety stock (2026-09-11): a proactive buffer, manually entered by
         # master data staff - NULL means "not used", 0 is a real explicit
         # floor of zero (distinct from NULL, matching the field's own
@@ -324,7 +439,13 @@ def run_mrp(horizon_weeks=12, include_forecasts=True):
                 need_date = bucket_defs[i]['start_date']
                 order_qty = shortage
                 covered_by_moq = False
-                if moq and order_qty < moq:
+                covered_by_fixed_lot = False
+                if lot_procedure == 'FX' and fixed_lot_size:
+                    # FX ignores MOQ - a fixed lot size IS the ordering rule,
+                    # not an additional floor on top of it.
+                    order_qty = _round_up_to_multiple(order_qty, fixed_lot_size)
+                    covered_by_fixed_lot = True
+                elif moq and order_qty < moq:
                     order_qty = moq
                     covered_by_moq = True
                 # No manufacturing-lead-time field exists on Product yet (only
@@ -344,6 +465,8 @@ def run_mrp(horizon_weeks=12, include_forecasts=True):
                     'week_index': i,
                     'lead_time_days': lead_time if procurement_type == 'buy' else 0,
                     'covered_by_moq': covered_by_moq,
+                    'covered_by_fixed_lot': covered_by_fixed_lot,
+                    'lot_sizing_procedure': lot_procedure,
                     'is_overdue': order_date < start_date,
                     'procurement_type': procurement_type,
                 })
@@ -351,8 +474,96 @@ def run_mrp(horizon_weeks=12, include_forecasts=True):
 
         entry['buckets'] = buckets_out
         entry['procurement_type'] = procurement_type
+        procedure_by_entity[key] = (lot_procedure, fixed_lot_size)
 
-    planned_orders.sort(key=lambda p: p['order_date'])
+    planned_orders = _pool_planned_orders(planned_orders, procedure_by_entity)
+
+    # 7. Exception messages (MD05-equivalent): reschedule-in / reschedule-out
+    #    / cancel, for receipts ALREADY committed (open PO items, in-progress
+    #    WOs) that this run's own netting (step 6's per-entity `buckets`,
+    #    specifically `net_requirement`) says are scheduled at the wrong
+    #    time relative to when they're actually needed. Reuses the same
+    #    open_po_items/in_progress_wos querysets steps 3/4 already built -
+    #    by the time step 6 runs, `receipts[idx]` has summed away which PO/WO
+    #    contributed what, so this re-walks those two lists independently
+    #    rather than trying to recover source attribution out of `state`.
+    exceptions = []
+
+    def _earliest_need_idx(entry):
+        for b in entry.get('buckets', []):
+            if b['net_requirement'] > 0:
+                return b['index']
+        return None
+
+    for item, po in open_po_items:
+        if not item.material_id:
+            continue
+        entry = state.get(('material', item.material_id))
+        if not entry:
+            continue
+        po_idx = _week_bucket(po.delivery_date, start_date)
+        need_idx = _earliest_need_idx(entry)
+        remaining = float(item.quantity or 0) - float(item.quantity_received or 0)
+        if remaining <= 0:
+            continue
+        if need_idx is None:
+            exceptions.append({
+                'type': 'cancel', 'source': 'purchase_order', 'source_id': po.id, 'source_number': po.po_number,
+                'material_id': item.material_id, 'material_code': entry['code'], 'material_name': entry['name'],
+                'quantity': remaining, 'scheduled_date': po.delivery_date.isoformat() if hasattr(po.delivery_date, 'isoformat') else str(po.delivery_date),
+                'scheduled_week_index': po_idx, 'needed_week_index': None,
+                'message': f"PO {po.po_number} dijadwalkan terima {entry['name']}, tapi tidak ada kebutuhan untuk material ini dalam horizon - pertimbangkan batalkan/tunda.",
+            })
+        elif need_idx < po_idx:
+            exceptions.append({
+                'type': 'reschedule_in', 'source': 'purchase_order', 'source_id': po.id, 'source_number': po.po_number,
+                'material_id': item.material_id, 'material_code': entry['code'], 'material_name': entry['name'],
+                'quantity': remaining, 'scheduled_date': po.delivery_date.isoformat() if hasattr(po.delivery_date, 'isoformat') else str(po.delivery_date),
+                'scheduled_week_index': po_idx, 'needed_week_index': need_idx,
+                'message': f"PO {po.po_number} ({entry['name']}) dijadwalkan minggu ke-{po_idx}, tapi sudah dibutuhkan minggu ke-{need_idx} - percepat kedatangan.",
+            })
+        elif need_idx > po_idx:
+            exceptions.append({
+                'type': 'reschedule_out', 'source': 'purchase_order', 'source_id': po.id, 'source_number': po.po_number,
+                'material_id': item.material_id, 'material_code': entry['code'], 'material_name': entry['name'],
+                'quantity': remaining, 'scheduled_date': po.delivery_date.isoformat() if hasattr(po.delivery_date, 'isoformat') else str(po.delivery_date),
+                'scheduled_week_index': po_idx, 'needed_week_index': need_idx,
+                'message': f"PO {po.po_number} ({entry['name']}) dijadwalkan minggu ke-{po_idx}, baru dibutuhkan minggu ke-{need_idx} - bisa ditunda.",
+            })
+
+    for wo in in_progress_wos:
+        entry = state.get(('product', wo.product_id))
+        if not entry:
+            continue
+        wo_idx = _week_bucket(wo.scheduled_end_date.date() if hasattr(wo.scheduled_end_date, 'date') else wo.scheduled_end_date, start_date)
+        need_idx = _earliest_need_idx(entry)
+        qty = float(wo.quantity_good) if wo.quantity_good else float(wo.quantity or 0)
+        if qty <= 0:
+            continue
+        if need_idx is None:
+            exceptions.append({
+                'type': 'cancel', 'source': 'work_order', 'source_id': wo.id, 'source_number': wo.wo_number,
+                'material_id': wo.product_id, 'material_code': entry['code'], 'material_name': entry['name'],
+                'quantity': qty, 'scheduled_date': wo.scheduled_end_date.isoformat() if hasattr(wo.scheduled_end_date, 'isoformat') else str(wo.scheduled_end_date),
+                'scheduled_week_index': wo_idx, 'needed_week_index': None,
+                'message': f"SPK {wo.wo_number} ({entry['name']}) dijadwalkan selesai, tapi tidak ada kebutuhan untuk produk ini dalam horizon - cek relevansinya.",
+            })
+        elif need_idx < wo_idx:
+            exceptions.append({
+                'type': 'reschedule_in', 'source': 'work_order', 'source_id': wo.id, 'source_number': wo.wo_number,
+                'material_id': wo.product_id, 'material_code': entry['code'], 'material_name': entry['name'],
+                'quantity': qty, 'scheduled_date': wo.scheduled_end_date.isoformat() if hasattr(wo.scheduled_end_date, 'isoformat') else str(wo.scheduled_end_date),
+                'scheduled_week_index': wo_idx, 'needed_week_index': need_idx,
+                'message': f"SPK {wo.wo_number} ({entry['name']}) dijadwalkan selesai minggu ke-{wo_idx}, tapi sudah dibutuhkan minggu ke-{need_idx} - percepat produksi.",
+            })
+        elif need_idx > wo_idx:
+            exceptions.append({
+                'type': 'reschedule_out', 'source': 'work_order', 'source_id': wo.id, 'source_number': wo.wo_number,
+                'material_id': wo.product_id, 'material_code': entry['code'], 'material_name': entry['name'],
+                'quantity': qty, 'scheduled_date': wo.scheduled_end_date.isoformat() if hasattr(wo.scheduled_end_date, 'isoformat') else str(wo.scheduled_end_date),
+                'scheduled_week_index': wo_idx, 'needed_week_index': need_idx,
+                'message': f"SPK {wo.wo_number} ({entry['name']}) dijadwalkan selesai minggu ke-{wo_idx}, baru dibutuhkan minggu ke-{need_idx} - bisa ditunda.",
+            })
 
     # Keep the 'materials' output dict shape backward-compatible with the
     # frontend (keyed by id, kind kept internally on each entry so a
@@ -363,4 +574,5 @@ def run_mrp(horizon_weeks=12, include_forecasts=True):
         'buckets': [{'index': b['index'], 'start_date': b['start_date'].isoformat(), 'end_date': b['end_date'].isoformat()} for b in bucket_defs],
         'materials': materials_out,
         'planned_orders': planned_orders,
+        'exceptions': exceptions,
     }

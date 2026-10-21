@@ -51,12 +51,74 @@ class MaxDepthExceededError(Exception):
         )
 
 
-def get_current_stock(material_id=None, product_id=None):
+def _convert_to_uom(qty, from_uom, to_uom, material_id=None, product_id=None):
+    """Convert qty from from_uom to to_uom via models.uom.UoMConversion -
+    same resolution order (material/product-specific row first, then a
+    generic row) as the already-correct pattern in
+    routes/production.py::_suggest_actual_from_material_issue. Returns qty
+    unchanged (not silently wrong - logs a warning) when either unit is
+    unknown or no conversion ratio exists, so a missing ratio shows up as a
+    comparison against the raw number rather than crashing the whole
+    shortage calculation."""
+    if not from_uom or not to_uom:
+        return qty
+    from_norm = from_uom.strip().upper()
+    to_norm = to_uom.strip().upper()
+    if from_norm == to_norm:
+        return qty
+
+    from models import db
+    from models.uom import UnitOfMeasure, UoMConversion
+
+    from_unit = UnitOfMeasure.query.filter(db.func.upper(UnitOfMeasure.code) == from_norm).first()
+    to_unit = UnitOfMeasure.query.filter(db.func.upper(UnitOfMeasure.code) == to_norm).first()
+    if not from_unit or not to_unit:
+        logger.warning(f"BOM explosion: UOM '{from_uom}' atau '{to_uom}' tidak dikenal di master UOM - "
+                        f"stok dibandingkan tanpa konversi, bisa salah")
+        return qty
+
+    conversion = UoMConversion.query.filter_by(
+        from_uom_id=from_unit.id, to_uom_id=to_unit.id, material_id=material_id, product_id=product_id, is_active=True
+    ).first() or UoMConversion.query.filter_by(
+        from_uom_id=from_unit.id, to_uom_id=to_unit.id, material_id=None, product_id=None, is_active=True
+    ).first()
+    if not conversion:
+        logger.warning(f"BOM explosion: belum ada rasio konversi {from_uom} -> {to_uom} "
+                        f"(material_id={material_id}, product_id={product_id}) - stok dibandingkan tanpa konversi, bisa salah")
+        return qty
+
+    return qty * float(conversion.conversion_factor)
+
+
+def get_current_stock(material_id=None, product_id=None, target_uom=None):
+    """Returns Inventory.quantity_on_hand for the given material/product.
+
+    Inventory is always recorded in that material/product's own
+    `primary_uom` - it has no uom column of its own. When `target_uom` is
+    given and differs from the primary_uom (e.g. a BOM line written in a
+    different unit than the material/product is stocked in), the result is
+    converted via `_convert_to_uom` before being returned, so shortage
+    comparisons against a BOM-line quantity are apples-to-apples instead of
+    silently comparing raw numbers in different units."""
     from models.warehouse import Inventory
     q = Inventory.query.filter_by(is_active=True)
     q = q.filter_by(material_id=material_id) if material_id else q.filter_by(product_id=product_id)
     inv = q.first()
-    return float(inv.quantity_on_hand) if inv else 0.0
+    if not inv:
+        return 0.0
+    qty = float(inv.quantity_on_hand)
+    if not target_uom:
+        return qty
+
+    from models import db
+    if material_id:
+        from models.product import Material
+        owner = db.session.get(Material, material_id)
+    else:
+        from models.product import Product
+        owner = db.session.get(Product, product_id)
+    source_uom = getattr(owner, 'primary_uom', None) if owner else None
+    return _convert_to_uom(qty, source_uom, target_uom, material_id=material_id, product_id=product_id)
 
 
 def _build_material_code_to_active_bom_map():
@@ -158,7 +220,7 @@ def explode_bom_requirements(product_id, quantity, scale_fn, extra_fn=None, path
             # 2026-08-20, had zero InventoryMovement/grn_id/created_by).
             mid = bom_item.material_id
             matched_product_id = _material_id_to_product_id[mid]
-            current_stock = get_current_stock(product_id=matched_product_id)
+            current_stock = get_current_stock(product_id=matched_product_id, target_uom=bom_item.uom)
             shortage = max(0.0, required_qty - current_stock)
             sub_bom = BillOfMaterials.query.filter_by(product_id=matched_product_id, is_active=True).first()
 
@@ -223,7 +285,7 @@ def explode_bom_requirements(product_id, quantity, scale_fn, extra_fn=None, path
 
         elif bom_item.product_id:
             sub_id = bom_item.product_id
-            current_stock = get_current_stock(product_id=sub_id)
+            current_stock = get_current_stock(product_id=sub_id, target_uom=bom_item.uom)
             shortage = max(0.0, required_qty - current_stock)
             sub_bom = BillOfMaterials.query.filter_by(product_id=sub_id, is_active=True).first()
 

@@ -14,6 +14,58 @@ from models.approval_workflow import PendingJournalEntry
 from utils.helpers import generate_number
 
 
+_CLASSIFY_PREFIX_MAP = {'1': 'asset', '2': 'liability', '3': 'equity', '4': 'revenue'}
+_CLASSIFY_EXPENSE_PREFIXES = ('5', '6', '7', '8', '9')
+_CLASSIFY_VALID_BUCKETS = {'asset', 'liability', 'equity', 'revenue', 'expense'}
+
+
+def classify_account(account):
+    """
+    Single source of truth for "which top-level bucket does this account
+    belong to" (asset/liability/equity/revenue/expense), shared by
+    get_balance_sheet() and get_income_statement() (routes/finance.py).
+
+    Before this (fix_report_3.md): both reports classified accounts by
+    hand-maintained account_code PREFIX lists ('4-' = revenue, '5-'/'6-' =
+    expense, etc). Twice in production this went stale - a real '7-1000'
+    Beban Gaji account and a real '2-1210' Hutang PPN account each existed
+    for a while without matching any prefix branch the code checked,
+    silently excluding them from the Neraca until someone happened to
+    notice the imbalance (see fix_report_2.md Fase 11). A 3rd, previously
+    UNNOTICED instance of the same class of bug: get_balance_sheet()'s
+    current-year-earnings calculation only ever summed prefixes '5-'/'6-'/
+    '7-' for expense, never '8-'/'9-' - which get_income_statement() DOES
+    include - so the two reports could silently disagree on net income
+    for any company whose chart of accounts posts to an 8-xxxx/9-xxxx
+    expense account (this repo's own CoA has exactly that: '9-1000' Beban
+    Bunga). Routing both reports through this one function closes all 3
+    gaps at once and prevents a 4th recurrence for any future prefix.
+
+    Primary source of truth: Account.account_type (set per real account
+    row, not inferred) - verified against erp_db 2026-10-02: every active
+    account's account_type matches the obvious prefix (1=asset, 2=
+    liability, 3=equity, 4=revenue, 5-9=expense), 0 exceptions. Falls back
+    to the account_code prefix ONLY when account_type is missing/invalid -
+    a safety net for stray fixture data, not the primary mechanism.
+
+    Returns one of 'asset', 'liability', 'equity', 'revenue', 'expense',
+    or None if the account cannot be classified at all (no usable
+    account_type AND an account_code that doesn't start with a digit
+    1-9 - should not happen for any real account, but code should never
+    crash on it, just report it as unclassified).
+    """
+    if account.account_type in _CLASSIFY_VALID_BUCKETS:
+        return account.account_type
+
+    code = (account.account_code or '').strip()
+    first = code[:1]
+    if first in _CLASSIFY_PREFIX_MAP:
+        return _CLASSIFY_PREFIX_MAP[first]
+    if first in _CLASSIFY_EXPENSE_PREFIXES:
+        return 'expense'
+    return None
+
+
 def post_pending_journal(pending_journal_id, posted_by_user_id=None, reference_type='pending_journal', reference_id=None):
     """
     Promote an approved PendingJournalEntry into real AccountingEntry rows.
@@ -127,6 +179,98 @@ def post_pending_journal(pending_journal_id, posted_by_user_id=None, reference_t
         )
 
     return created_entries
+
+
+def reverse_accounting_entries(reference_type, reference_id, entry_date, user_id,
+                                description=None, new_reference_type=None):
+    """
+    Post a reversing journal for every posted AccountingEntry tagged with
+    the given (reference_type, reference_id) - i.e. the original journal
+    created by post_pending_journal(..., reference_type=X, reference_id=Y).
+
+    Used by void/cancel flows (Fase 3 audit fix, 2026-09-30: Sales Invoice,
+    Purchase Invoice, Payment) so a void always produces a real, balanced
+    reversing journal instead of silently leaving the original posting in
+    place. Debit and credit are swapped per account (summed if an account
+    appears on multiple original lines), the original entries are marked
+    status='reversed' (the model already had this status value defined but
+    nothing ever set it before this fix), and a fresh PendingJournalEntry +
+    AccountingEntry set is posted with new_reference_type (defaults to
+    'void_<reference_type>') tagged to the SAME reference_id, so the void's
+    journal is easy to find via the same reference_id used for the original.
+
+    Returns the list of created (reversing) AccountingEntry objects, or an
+    empty list if there was nothing posted to reverse (not an error - some
+    callers may void something that never had GL impact).
+
+    Raises ValueError if reference_id is falsy or a resolved account is
+    missing (shouldn't happen since these accounts were valid to post the
+    original journal).
+    """
+    if not reference_id:
+        raise ValueError('reverse_accounting_entries: reference_id wajib diisi')
+
+    original_entries = AccountingEntry.query.filter_by(
+        reference_type=reference_type, reference_id=reference_id, status='posted',
+    ).all()
+    if not original_entries:
+        return []
+
+    from models.approval_workflow import PendingJournalEntry
+
+    totals_by_account = {}
+    for entry in original_entries:
+        acc_id = entry.account_id
+        if acc_id not in totals_by_account:
+            totals_by_account[acc_id] = {'debit': 0.0, 'credit': 0.0}
+        totals_by_account[acc_id]['debit'] += float(entry.debit_amount or 0)
+        totals_by_account[acc_id]['credit'] += float(entry.credit_amount or 0)
+
+    reversal_lines = []
+    for acc_id, totals in totals_by_account.items():
+        net = totals['debit'] - totals['credit']
+        if net == 0:
+            continue
+        reversal_lines.append({
+            'account_id': acc_id,
+            # swap: what was originally debited gets credited back, and
+            # vice versa
+            'debit': max(-net, 0),
+            'credit': max(net, 0),
+            'description': description or f'Pembalikan jurnal {reference_type} #{reference_id}',
+        })
+
+    if not reversal_lines:
+        # original entries net to zero already (shouldn't normally happen
+        # for a balanced journal unless every line was on the same
+        # account) - mark reversed anyway so a re-void doesn't re-trigger.
+        for entry in original_entries:
+            entry.status = 'reversed'
+        return []
+
+    pending = PendingJournalEntry(
+        workflow_id=None,
+        entry_date=entry_date,
+        description=description or f'Pembalikan jurnal {reference_type} #{reference_id}',
+        reference=f'VOID-{reference_type}-{reference_id}',
+        lines=reversal_lines,
+        total_debit=sum(l['debit'] for l in reversal_lines),
+        total_credit=sum(l['credit'] for l in reversal_lines),
+        created_by=user_id,
+    )
+    db.session.add(pending)
+    db.session.flush()
+
+    created = post_pending_journal(
+        pending.id, posted_by_user_id=user_id,
+        reference_type=new_reference_type or f'void_{reference_type}',
+        reference_id=reference_id,
+    )
+
+    for entry in original_entries:
+        entry.status = 'reversed'
+
+    return created
 
 
 def resolve_account(slot_name, product_id=None, category_id=None):
@@ -603,7 +747,51 @@ def run_monthly_depreciation(period_year, period_month, posted_by_user_id=None):
     }
 
 
-def is_period_locked(transaction_date, transaction_type=None):
+# SAP-equivalence plan item #2 (2026-10-06): static mapping from the
+# transaction_type strings already used throughout this codebase (see
+# PeriodTransactionTypeLock's docstring for the full list) to SAP's 5
+# posting-period-variant buckets (D=Debitur/AR, K=Kreditur/AP,
+# M=Material/Inventory, S=GL langsung, A=Aset Tetap). 'payment' is
+# intentionally excluded here - its bucket is ambiguous from the string
+# alone (could be a customer receipt=D or a supplier disbursement=K), so
+# it's resolved dynamically per-row by resolve_payment_sap_bucket()
+# instead of this static map.
+TRANSACTION_TYPE_TO_SAP_BUCKET = {
+    'purchase_invoice': 'K',
+    'purchase_return': 'K',
+    'recurring_payment': 'K',
+    'sales_invoice': 'D',
+    'sales_return': 'D',
+    'customer_deposit_usage': 'D',
+    'stock_opname': 'M',
+    'goods_receipt': 'M',
+    'work_order': 'M',
+    'sales_delivery': 'M',
+    'inventory_destruction': 'M',
+    'asset': 'A',
+    'asset_disposal': 'A',
+    'journal_entry': 'S',
+    'expense': 'S',
+    'reimbursement': 'S',
+    'payroll': 'S',
+}
+
+
+def resolve_payment_sap_bucket(payment):
+    """Payment.customer_id vs supplier_id is the reliable direction signal
+    (same one create_payment() already uses to decide Dr Kas/Cr Piutang
+    vs Dr Hutang/Cr Kas via invoice.invoice_type - payment_type itself has
+    3 inconsistent historical string values and isn't trustworthy, see
+    PaymentDetail.tsx fix notes). Returns None if neither is set (shouldn't
+    happen for a real Payment row, but don't guess if it does)."""
+    if payment.customer_id is not None:
+        return 'D'
+    if payment.supplier_id is not None:
+        return 'K'
+    return None
+
+
+def is_period_locked(transaction_date, transaction_type=None, sap_bucket=None):
     """
     Check whether a given transaction_date falls within a locked period -
     either a FULL close (PeriodClose - every transaction type blocked) or,
@@ -626,7 +814,7 @@ def is_period_locked(transaction_date, transaction_type=None):
     adding it is a small, low-risk follow-up per call site as each one's
     business need for partial locking comes up, not a structural gap.
     """
-    from models.finance import PeriodClose, PeriodTransactionTypeLock
+    from models.finance import PeriodClose, PeriodTransactionTypeLock, PeriodAccountTypeLock
 
     if not transaction_date:
         return False
@@ -638,9 +826,17 @@ def is_period_locked(transaction_date, transaction_type=None):
         return True
 
     if transaction_type:
-        return PeriodTransactionTypeLock.query.filter_by(
+        if PeriodTransactionTypeLock.query.filter_by(
             period_year=year, period_month=month, transaction_type=transaction_type
-        ).first() is not None
+        ).first() is not None:
+            return True
+
+    bucket = sap_bucket or (TRANSACTION_TYPE_TO_SAP_BUCKET.get(transaction_type) if transaction_type else None)
+    if bucket:
+        if PeriodAccountTypeLock.query.filter_by(
+            period_year=year, period_month=month, account_type_bucket=bucket
+        ).first() is not None:
+            return True
 
     return False
 
@@ -807,7 +1003,8 @@ def reserve_po_budget_commitment(po):
         if not line:
             continue
 
-        amount = float(item.total_price or 0)
+        # PO amounts are in po.currency; budgets are IDR (2026-10-19).
+        amount = float(item.total_price or 0) * float(po.exchange_rate or 1)
         line.committed_amount = float(line.committed_amount or 0) + amount
         total_reserved += amount
 
@@ -836,7 +1033,8 @@ def release_po_budget_commitment(po, items=None):
         else:
             account_hint = item
             amount = float(item.total_price or 0)
-
+        # Amounts (model or dict) are in po.currency; budgets are IDR.
+        amount *= float(po.exchange_rate or 1)
         try:
             account_id = _resolve_po_item_account(account_hint)
         except ValueError:

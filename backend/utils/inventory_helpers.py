@@ -1,6 +1,48 @@
 VALID_STOCK_STATUSES = {'available', 'released', 'quarantine', 'reject'}
 
 
+def derive_movement_type_code(txn):
+    """Map an InventoryTransaction's (transaction_type, reference_type,
+    direction) onto a SAP-style 3-digit movement type code.
+
+    Originally a read-time-only presentation mapping (routes/wms_advanced.py,
+    see plan.md section 2). Moved here (fix_report_3.md movement-type
+    persistence item, 2026-10-05) so record_inventory_transaction() below
+    can call it at WRITE time and persist the result onto
+    InventoryTransaction.movement_type, instead of recomputing it on every
+    read. routes/wms_advanced.py's enrich_transaction_dict() still calls this
+    as a fallback for any row where the stored column is NULL (historical
+    rows from before this column existed, or any write path that doesn't go
+    through record_inventory_transaction())."""
+    t = (txn.transaction_type or '').lower()
+    ref = (txn.reference_type or '').lower()
+    direction = txn.direction
+
+    if t == 'stock_in' and ref == 'purchase_order':
+        return '101', 'Penerimaan Barang dari Vendor'
+    if ref in ('wo_cancellation_reversal', 'batch_confirmation_cancel', 'fg_conversion') and direction == 'in':
+        return '131', 'Penerimaan Barang Jadi Produksi'
+    if ref == 'material_issue' and direction == 'out':
+        return '261', 'Pengeluaran Bahan Baku ke SPK'
+    if t == 'transfer':
+        return '311', 'Transfer Antar Gudang/Lokasi'
+    if t == 'qc_disposition' and direction == 'out':
+        return '551', 'Barang Rusak / Reject / QC Disposition'
+    if ref == 'shift_production_reject' and direction == 'in':
+        # fix_report_3.md Fase 20: found live while verifying the screenshot
+        # chain - this was falling through to the generic 'adjustment' ->
+        # 701 "Penyesuaian Opname (Lebih)" branch below, mislabeling a real
+        # production reject (Fase 15's landing into reject stock) as a
+        # stock-opname count correction. Different business event, needs
+        # its own code, checked before the adjustment catch-all.
+        return '552', 'Reject dari Produksi'
+    if ref == 'sales_order' and direction == 'out':
+        return '601', 'Pengiriman ke Pelanggan'
+    if t == 'adjustment':
+        return ('701', 'Penyesuaian Opname (Lebih)') if direction == 'in' else ('702', 'Penyesuaian Opname (Kurang)')
+    return '999', txn.transaction_type or 'Lainnya'
+
+
 def record_inventory_transaction(
     transaction_type, direction, quantity,
     product_id=None, material_id=None,
@@ -69,6 +111,7 @@ def record_inventory_transaction(
         accounting_entry_number=accounting_entry_number,
         accounting_entry_status=accounting_entry_status,
     )
+    txn.movement_type, _ = derive_movement_type_code(txn)
     db.session.add(txn)
     return txn
 
@@ -132,6 +175,20 @@ def apply_qc_disposition_splits(inventory_id, splits, user_id, reference_type=No
     status_before = source.stock_status
     movements = []
 
+    # Cost continuity fix (2026-10-19): record_inventory_transaction() below
+    # was called with no unit_cost, so each split's 'in' transaction landed
+    # with unit_cost=NULL. _get_inventory_unit_cost() (fifo_helper.py) picks
+    # the MOST RECENT 'in' transaction for a batch/location to price it - a
+    # costless disposition transaction therefore silently erased the real
+    # GRN receipt cost for every later FIFO deduction/job-costing of that
+    # batch (job costing WIP would land at Rp0 for any batch that ever went
+    # through a partial QC release, which is the normal path for any
+    # erp_approval material). Look the source batch's real cost up once,
+    # before its own 'in' history is complicated by this split, and stamp
+    # it on every resulting transaction so cost basis survives the split.
+    from utils.fifo_helper import _get_inventory_unit_cost
+    source_unit_cost = _get_inventory_unit_cost(source)
+
     for split in splits:
         status = split['status']
         quantity = float(split['quantity'])
@@ -187,6 +244,8 @@ def apply_qc_disposition_splits(inventory_id, splits, user_id, reference_type=No
             reference_id=reference_id,
             notes=notes or f'QC disposition: {status_before} -> {status}',
             created_by=user_id,
+            unit_cost=source_unit_cost,
+            total_cost=round(quantity * source_unit_cost, 2) if source_unit_cost else None,
         )
         movements.append(movement)
 
