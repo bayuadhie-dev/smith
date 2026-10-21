@@ -1,7 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { useLanguage } from '../../contexts/LanguageContext';
+import { confirmDialog } from '../../components/ui';
+import axiosInstance from '../../utils/axiosConfig';
 import {
   ClockIcon,
   EnvelopeIcon,
@@ -29,55 +31,6 @@ interface ScheduledReport {
   nextRun: string
   createdAt: string
 }
-
-const mockScheduledReports: ScheduledReport[] = [
-  {
-    id: '1',
-    name: 'Daily Sales Summary',
-    reportType: 'sales-summary',
-    schedule: {
-      frequency: 'daily',
-      time: '08:00'
-    },
-    recipients: ['manager@falmaco.com', 'sales@falmaco.com'],
-    format: 'pdf',
-    isActive: true,
-    lastRun: '2025-10-07T08:00:00Z',
-    nextRun: '2025-10-08T08:00:00Z',
-    createdAt: '2025-09-01T10:00:00Z'
-  },
-  {
-    id: '2',
-    name: 'Weekly Production Report',
-    reportType: 'production-efficiency',
-    schedule: {
-      frequency: 'weekly',
-      time: '09:00',
-      dayOfWeek: 1 // Monday
-    },
-    recipients: ['production@falmaco.com', 'manager@falmaco.com'],
-    format: 'excel',
-    isActive: true,
-    lastRun: '2025-10-07T09:00:00Z',
-    nextRun: '2025-10-14T09:00:00Z',
-    createdAt: '2025-09-01T10:00:00Z'
-  },
-  {
-    id: '3',
-    name: 'Monthly Financial Summary',
-    reportType: 'financial-summary',
-    schedule: {
-      frequency: 'monthly',
-      time: '10:00',
-      dayOfMonth: 1
-    },
-    recipients: ['finance@falmaco.com', 'ceo@falmaco.com'],
-    format: 'pdf',
-    isActive: false,
-    nextRun: '2025-11-01T10:00:00Z',
-    createdAt: '2025-09-01T10:00:00Z'
-  }
-]
 
 const reportTypes = [
   { value: 'sales-summary', label: 'Sales Summary Report' },
@@ -116,7 +69,8 @@ export default function ReportScheduler() {
     const { t } = useLanguage();
 
 const navigate = useNavigate()
-  const [scheduledReports, setScheduledReports] = useState<ScheduledReport[]>(mockScheduledReports)
+  const [scheduledReports, setScheduledReports] = useState<ScheduledReport[]>([])
+  const [loading, setLoading] = useState(true)
   const [showNewScheduleModal, setShowNewScheduleModal] = useState(false)
   const [editingReport, setEditingReport] = useState<ScheduledReport | null>(null)
   const [newSchedule, setNewSchedule] = useState({
@@ -130,21 +84,44 @@ const navigate = useNavigate()
     format: 'pdf' as const
   })
 
-  const toggleReportStatus = (id: string) => {
-    setScheduledReports(prev => 
-      prev.map(report => 
-        report.id === id 
-          ? { ...report, isActive: !report.isActive }
-          : report
-      )
-    )
-    toast.success('Report schedule updated')
+  const loadSchedules = async () => {
+    try {
+      setLoading(true)
+      const response = await axiosInstance.get('/api/reports/scheduler')
+      setScheduledReports(response.data?.scheduledReports || [])
+    } catch (error) {
+      console.error('Failed to load scheduled reports:', error)
+      toast.error('Failed to load scheduled reports')
+      setScheduledReports([])
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const deleteScheduledReport = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this scheduled report?')) {
+  useEffect(() => {
+    loadSchedules()
+  }, [])
+
+  const toggleReportStatus = async (id: string) => {
+    try {
+      const response = await axiosInstance.post(`/api/reports/scheduler/${id}/toggle`)
+      setScheduledReports(prev =>
+        prev.map(report => report.id === id ? response.data : report)
+      )
+      toast.success('Report schedule updated')
+    } catch (error) {
+      toast.error('Failed to update report schedule')
+    }
+  }
+
+  const deleteScheduledReport = async (id: string) => {
+    if (!(await confirmDialog('Are you sure you want to delete this scheduled report?'))) return
+    try {
+      await axiosInstance.delete(`/api/reports/scheduler/${id}`)
       setScheduledReports(prev => prev.filter(report => report.id !== id))
       toast.success('Scheduled report deleted')
+    } catch (error) {
+      toast.error('Failed to delete scheduled report')
     }
   }
 
@@ -171,99 +148,56 @@ const navigate = useNavigate()
     }))
   }
 
-  const saveSchedule = () => {
+  const saveSchedule = async () => {
     if (!newSchedule.name.trim()) {
       toast.error('Please enter a schedule name')
       return
     }
-    
+
     if (!newSchedule.reportType) {
       toast.error('Please select a report type')
       return
     }
-    
-    const validRecipients = newSchedule.recipients.filter(email => 
+
+    const validRecipients = newSchedule.recipients.filter(email =>
       email.trim() && email.includes('@')
     )
-    
+
     if (validRecipients.length === 0) {
       toast.error('Please add at least one valid email recipient')
       return
     }
 
-    const nextRun = calculateNextRun(newSchedule)
-    
-    const scheduledReport: ScheduledReport = {
-      id: Date.now().toString(),
-      name: newSchedule.name,
-      reportType: newSchedule.reportType,
-      schedule: {
-        frequency: newSchedule.frequency,
-        time: newSchedule.time,
-        dayOfWeek: newSchedule.frequency === 'weekly' ? newSchedule.dayOfWeek : undefined,
-        dayOfMonth: newSchedule.frequency === 'monthly' ? newSchedule.dayOfMonth : undefined
-      },
-      recipients: validRecipients,
-      format: newSchedule.format,
-      isActive: true,
-      nextRun,
-      createdAt: new Date().toISOString()
-    }
+    try {
+      const response = await axiosInstance.post('/api/reports/scheduler', {
+        name: newSchedule.name,
+        reportType: newSchedule.reportType,
+        schedule: {
+          frequency: newSchedule.frequency,
+          time: newSchedule.time,
+          dayOfWeek: newSchedule.frequency === 'weekly' ? newSchedule.dayOfWeek : undefined,
+          dayOfMonth: newSchedule.frequency === 'monthly' ? newSchedule.dayOfMonth : undefined
+        },
+        recipients: validRecipients,
+        format: newSchedule.format
+      })
 
-    setScheduledReports(prev => [...prev, scheduledReport])
-    setShowNewScheduleModal(false)
-    setNewSchedule({
-      name: '',
-      reportType: '',
-      frequency: 'daily',
-      time: '08:00',
-      dayOfWeek: 1,
-      dayOfMonth: 1,
-      recipients: [''],
-      format: 'pdf'
-    })
-    toast.success('Report schedule created successfully')
-  }
-
-  const calculateNextRun = (schedule: typeof newSchedule) => {
-    const now = new Date()
-    const [hours, minutes] = schedule.time.split(':').map(Number)
-    
-    let nextRun = new Date()
-    nextRun.setHours(hours, minutes, 0, 0)
-    
-    switch (schedule.frequency) {
-      case 'daily':
-        if (nextRun <= now) {
-          nextRun.setDate(nextRun.getDate() + 1)
-        }
-        break
-      case 'weekly':
-        const targetDay = schedule.dayOfWeek
-        const currentDay = nextRun.getDay()
-        let daysUntilTarget = (targetDay - currentDay + 7) % 7
-        if (daysUntilTarget === 0 && nextRun <= now) {
-          daysUntilTarget = 7
-        }
-        nextRun.setDate(nextRun.getDate() + daysUntilTarget)
-        break
-      case 'monthly':
-        nextRun.setDate(schedule.dayOfMonth)
-        if (nextRun <= now) {
-          nextRun.setMonth(nextRun.getMonth() + 1)
-        }
-        break
-      case 'quarterly':
-        const currentMonth = nextRun.getMonth()
-        const nextQuarterMonth = Math.ceil((currentMonth + 1) / 3) * 3
-        nextRun.setMonth(nextQuarterMonth, 1)
-        if (nextRun <= now) {
-          nextRun.setMonth(nextQuarterMonth + 3, 1)
-        }
-        break
+      setScheduledReports(prev => [response.data, ...prev])
+      setShowNewScheduleModal(false)
+      setNewSchedule({
+        name: '',
+        reportType: '',
+        frequency: 'daily',
+        time: '08:00',
+        dayOfWeek: 1,
+        dayOfMonth: 1,
+        recipients: [''],
+        format: 'pdf'
+      })
+      toast.success('Report schedule created successfully')
+    } catch (error: any) {
+      toast.error(error?.response?.data?.error || 'Failed to create report schedule')
     }
-    
-    return nextRun.toISOString()
   }
 
   const formatNextRun = (dateString: string) => {
@@ -288,12 +222,18 @@ const navigate = useNavigate()
     return badges[frequency] || 'badge-info'
   }
 
-  const runReportNow = (report: ScheduledReport) => {
+  const runReportNow = async (report: ScheduledReport) => {
     toast.success(`Running ${report.name} now...`)
-    // Simulate running report
-    setTimeout(() => {
-      toast.success(`${report.name} has been sent to recipients`)
-    }, 2000)
+    try {
+      const response = await axiosInstance.post(`/api/reports/scheduler/${report.id}/run-now`)
+      if (response.data?.sent) {
+        toast.success(`${report.name} has been sent to recipients`)
+      } else {
+        toast.error(response.data?.error || `Failed to send ${report.name}`)
+      }
+    } catch (error: any) {
+      toast.error(error?.response?.data?.error || `Failed to run ${report.name}`)
+    }
   }
 
   return (

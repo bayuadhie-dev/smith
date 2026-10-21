@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
+import axiosInstance from '../../utils/axiosConfig'
 import {
   ChartBarIcon,
   Cog6ToothIcon,
@@ -54,8 +55,9 @@ const dataSources: DataSource[] = [
       { name: 'customer_name', type: 'string', label: 'Customer Name' },
       { name: 'total_amount', type: 'number', label: 'Total Amount' },
       { name: 'order_date', type: 'date', label: 'Order Date' },
-      { name: 'status', type: 'string', label: 'Status' },
-      { name: 'sales_rep', type: 'string', label: 'Sales Representative' }
+      { name: 'status', type: 'string', label: 'Status' }
+      // 'Sales Representative' removed (2026-10-06) - there is no real
+      // sales-rep column on SalesOrder, this used to be fabricated data.
     ]
   },
   {
@@ -78,7 +80,7 @@ const dataSources: DataSource[] = [
     table: 'inventory',
     fields: [
       { name: 'product_name', type: 'string', label: 'Product Name' },
-      { name: 'sku', type: 'string', label: 'SKU' },
+      { name: 'product_code', type: 'string', label: 'Product Code' },
       { name: 'current_stock', type: 'number', label: 'Current Stock' },
       { name: 'minimum_stock', type: 'number', label: 'Minimum Stock' },
       { name: 'location', type: 'string', label: 'Location' },
@@ -93,9 +95,11 @@ const dataSources: DataSource[] = [
       { name: 'test_number', type: 'string', label: 'Test Number' },
       { name: 'product_name', type: 'string', label: 'Product Name' },
       { name: 'test_date', type: 'date', label: 'Test Date' },
-      { name: 'result', type: 'string', label: 'Result' },
-      { name: 'defect_count', type: 'number', label: 'Defect Count' },
-      { name: 'inspector', type: 'string', label: 'Inspector' }
+      { name: 'result', type: 'string', label: 'Result' }
+      // 'Defect Count' and 'Inspector' removed (2026-10-06) - no real
+      // columns on QualityTest for either (defects_found is free-text
+      // JSON, not a count; there's no separate inspector field beyond
+      // tested_by's user id, which isn't exposed as a display name here).
     ]
   },
   {
@@ -120,8 +124,9 @@ const dataSources: DataSource[] = [
       { name: 'machine_name', type: 'string', label: 'Machine Name' },
       { name: 'maintenance_date', type: 'date', label: 'Maintenance Date' },
       { name: 'maintenance_type', type: 'string', label: 'Maintenance Type' },
-      { name: 'status', type: 'string', label: 'Status' },
-      { name: 'cost', type: 'number', label: 'Cost' }
+      { name: 'status', type: 'string', label: 'Status' }
+      // 'Cost' removed (2026-10-06) - no real cost column on
+      // MaintenanceRecord in this schema.
     ]
   }
 ]
@@ -253,48 +258,73 @@ const navigate = useNavigate()
   const generatePreview = async () => {
     setIsGenerating(true)
     try {
-      // Simulate data generation
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      const mockData = Array.from({ length: 10 }, (_, i) => {
-        const row: any = {}
-        report.fields.forEach(field => {
-          if (field.field.includes('date')) {
-            row[field.label] = new Date().toISOString().split('T')[0]
-          } else if (field.field.includes('amount') || field.field.includes('cost') || field.field.includes('quantity')) {
-            row[field.label] = Math.floor(Math.random() * 1000000)
-          } else if (field.field.includes('number')) {
-            row[field.label] = `${field.field.toUpperCase()}-${String(i + 1).padStart(3, '0')}`
-          } else {
-            row[field.label] = `Sample ${field.label} ${i + 1}`
-          }
-        })
-        return row
+      const response = await axiosInstance.post('/api/reports/custom/preview', {
+        dataSources: report.dataSources,
+        fields: report.fields,
+        filters: report.filters,
+        groupBy: report.groupBy,
+        orderBy: report.orderBy
       })
-      
-      setPreviewData(mockData)
-      toast.success('Preview generated successfully!')
-    } catch (error) {
-      toast.error('Failed to generate preview')
+
+      // Backend returns { results: { [sourceId]: row[] } } with rows keyed
+      // by field NAME. The table below renders by field LABEL, and
+      // multiple selected sources are flattened into one row list (each
+      // row only has the columns belonging to its own source - cells for
+      // other sources' columns are simply blank, same as any report that
+      // combines independently-queried tables).
+      const bySource: Record<string, any[]> = response.data.results || {}
+      const rows: any[] = []
+      for (const sourceId of report.dataSources) {
+        const sourceRows = bySource[sourceId] || []
+        for (const row of sourceRows) {
+          const labeled: any = {}
+          report.fields
+            .filter(f => f.source === sourceId)
+            .forEach(f => { labeled[f.label] = row[f.field] })
+          rows.push(labeled)
+        }
+      }
+
+      setPreviewData(rows)
+      if (rows.length === 0) {
+        toast.success('Preview generated - no matching data found')
+      } else {
+        toast.success('Preview generated successfully!')
+      }
+    } catch (error: any) {
+      toast.error(error?.response?.data?.error || 'Failed to generate preview')
     } finally {
       setIsGenerating(false)
     }
   }
 
-  const saveReport = () => {
+  const saveReport = async () => {
     if (!report.name.trim()) {
       toast.error('Please enter a report name')
       return
     }
-    
+
     if (report.fields.length === 0) {
       toast.error('Please select at least one field')
       return
     }
-    
-    // Simulate saving
-    toast.success('Custom report saved successfully!')
-    navigate('/app/reports')
+
+    try {
+      await axiosInstance.post('/api/reports/custom', {
+        name: report.name,
+        description: report.description,
+        dataSources: report.dataSources,
+        fields: report.fields,
+        filters: report.filters,
+        groupBy: report.groupBy,
+        orderBy: report.orderBy,
+        chartType: report.chartType
+      })
+      toast.success('Custom report saved successfully!')
+      navigate('/app/reports')
+    } catch (error: any) {
+      toast.error(error?.response?.data?.error || 'Failed to save report')
+    }
   }
 
   const getAvailableFields = () => {

@@ -12,6 +12,7 @@ import {
   TrashIcon
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
+import { confirmDialog, showError, showSuccess, showInfo } from '../../components/ui';
 interface ScheduledReport {
   id: number;
   name: string;
@@ -137,10 +138,10 @@ const ScheduledReports: React.FC = () => {
       });
       
       await loadScheduledReports();
-      alert('Scheduled report created successfully!');
+      showSuccess('Scheduled report created successfully!');
     } catch (error) {
       console.error('Failed to create scheduled report:', error);
-      alert('Failed to create scheduled report');
+      showError('Failed to create scheduled report');
     }
   };
 
@@ -154,7 +155,7 @@ const ScheduledReports: React.FC = () => {
       await loadScheduledReports();
     } catch (error) {
       console.error('Failed to toggle report status:', error);
-      alert('Failed to update report status');
+      showError('Failed to update report status');
     }
   };
 
@@ -162,26 +163,26 @@ const ScheduledReports: React.FC = () => {
   const runReportNow = async (id: number) => {
     try {
       await axiosInstance.post(`/api/reports/scheduled/${id}/run`);
-      alert('Report execution started. You will receive the report via email.');
+      showInfo('Report execution started. You will receive the report via email.');
     } catch (error) {
       console.error('Failed to run report:', error);
-      alert('Failed to run report');
+      showError('Failed to run report');
     }
   };
 
   // Delete scheduled report
   const deleteScheduledReport = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this scheduled report?')) {
+    if (!(await confirmDialog('Are you sure you want to delete this scheduled report?'))) {
       return;
     }
 
     try {
       await axiosInstance.delete(`/api/reports/scheduled/${id}`);
       await loadScheduledReports();
-      alert('Scheduled report deleted successfully!');
+      showSuccess('Scheduled report deleted successfully!');
     } catch (error) {
       console.error('Failed to delete scheduled report:', error);
-      alert('Failed to delete scheduled report');
+      showError('Failed to delete scheduled report');
     }
   };
 
