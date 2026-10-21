@@ -15,6 +15,7 @@ import {
   XMarkIcon as X
 } from '@heroicons/react/24/outline';
 import SearchableSelect from '../../components/SearchableSelect';
+import { showSuccess } from '../../components/ui';
 interface Product {
   id: number;
   code: string;
@@ -47,6 +48,7 @@ interface BOMItem {
   material_id: number | null;
   quantity: number;
   uom: string;
+  conversion_factor: number;
   percentage: number;
   unit_cost: number;
   total_cost: number;
@@ -217,6 +219,7 @@ const BOMForm: React.FC = () => {
             material_id: item.material_id || null,
             quantity: parseFloat(item.quantity) || 0,
             uom: item.uom || 'KG',
+            conversion_factor: parseFloat(item.conversion_factor) || 1,
             percentage: parseFloat(item.percentage) || 0,
             unit_cost: parseFloat(item.unit_cost) || 0,
             total_cost: parseFloat(item.total_cost) || 0,
@@ -332,7 +335,7 @@ const BOMForm: React.FC = () => {
       console.log('Response:', responseData);
 
       if (response.ok) {
-        alert('BOM saved successfully!');
+        showSuccess('BOM saved successfully!');
         navigate('/app/products/boms');
       } else {
         console.error('Error saving BOM:', responseData);
@@ -379,6 +382,7 @@ const BOMForm: React.FC = () => {
       material_id: null,
       quantity: 1,
       uom: 'kg',
+      conversion_factor: 1,
       percentage: 0,
       unit_cost: 0,
       total_cost: 0,
@@ -725,6 +729,9 @@ const BOMForm: React.FC = () => {
                       </th>
                       <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       </th>
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" title="Berapa satuan stok material sama dengan 1 satuan BOM ini (misal BOM pakai KG, stok material dalam GRAM -> isi 1000). Biarkan 1 kalau satuan BOM sudah sama dengan satuan stok.">
+                        Faktor Konversi
+                      </th>
                       <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         %
                       </th>
@@ -805,6 +812,17 @@ const BOMForm: React.FC = () => {
                               </option>
                             ))}
                           </select>
+                        </td>
+                        <td className="px-2 py-3">
+                          <input
+                            type="number"
+                            value={item.conversion_factor}
+                            onChange={(e) => updateBOMItem(index, 'conversion_factor', Number(e.target.value))}
+                            min="0.00000001"
+                            step="0.00000001"
+                            title="Berapa satuan stok material sama dengan 1 satuan BOM ini"
+                            className="w-20 px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500"
+                          />
                         </td>
                         <td className="px-2 py-3 text-xs text-gray-900 dark:text-white font-medium">
                           {item.percentage.toFixed(1)}%
