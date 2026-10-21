@@ -43,6 +43,27 @@ interface MaterialDetail {
   buckets: MaterialBucket[];
 }
 
+interface ExceptionItem {
+  type: 'reschedule_in' | 'reschedule_out' | 'cancel';
+  source: 'purchase_order' | 'work_order';
+  source_id: number;
+  source_number: string;
+  material_id: number;
+  material_code: string | null;
+  material_name: string;
+  quantity: number;
+  scheduled_date: string;
+  scheduled_week_index: number;
+  needed_week_index: number | null;
+  message: string;
+}
+
+const EXCEPTION_CONFIG: Record<string, { label: string; color: string }> = {
+  reschedule_in: { label: 'Percepat (Reschedule In)', color: 'text-red-600 bg-red-50 dark:bg-red-900/20' },
+  reschedule_out: { label: 'Bisa Ditunda (Reschedule Out)', color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/20' },
+  cancel: { label: 'Pertimbangkan Batal', color: 'text-amber-600 bg-amber-50 dark:bg-amber-900/20' },
+};
+
 export default function MRPRun() {
   const [horizonWeeks, setHorizonWeeks] = useState(12);
   const [loading, setLoading] = useState(false);
@@ -52,6 +73,8 @@ export default function MRPRun() {
   const [detailMaterial, setDetailMaterial] = useState<MaterialDetail | null>(null);
   const [selected, setSelected] = useState<Record<number, boolean>>({});
   const [converting, setConverting] = useState(false);
+  const [exceptions, setExceptions] = useState<ExceptionItem[]>([]);
+  const [detailException, setDetailException] = useState<ExceptionItem | null>(null);
 
   const runMrp = async () => {
     setLoading(true);
@@ -60,6 +83,7 @@ export default function MRPRun() {
       setPlannedOrders(res.data.planned_orders || []);
       setBuckets(res.data.buckets || []);
       setMaterials(res.data.materials || []);
+      setExceptions(res.data.exceptions || []);
       setSelected({});
     } catch (error: any) {
       toast.error(error?.response?.data?.error || 'Gagal menjalankan MRP run');
@@ -81,6 +105,28 @@ export default function MRPRun() {
 
   const selectedOrders = plannedOrders.filter((po, idx) => selected[idx] && po.procurement_type === 'buy');
   const buyOrders = plannedOrders.filter((po) => po.procurement_type === 'buy');
+
+  const [creatingWoIdx, setCreatingWoIdx] = useState<number | null>(null);
+
+  const handleCreateWO = async (po: PlannedOrder, idx: number) => {
+    setCreatingWoIdx(idx);
+    try {
+      const res = await axiosInstance.post('/api/production/work-orders', {
+        product_id: po.material_id,
+        quantity: po.quantity,
+        uom: po.uom,
+        scheduled_end_date: po.need_date,
+        source_type: 'from_mrp',
+        notes: `Auto-generated dari MRP Run: butuh ${po.need_date}, pesan/mulai ${po.order_date}`,
+      });
+      toast.success(`WO ${res.data.wo_number || ''} berhasil dibuat`.trim());
+      runMrp();
+    } catch (error: any) {
+      toast.error(error?.response?.data?.error || 'Gagal membuat Work Order');
+    } finally {
+      setCreatingWoIdx(null);
+    }
+  };
 
   const handleConvertToPR = async () => {
     if (selectedOrders.length === 0) {
@@ -211,18 +257,114 @@ export default function MRPRun() {
                         <span className="text-xs text-amber-600 block">Butuh Work Order, bukan PR</span>
                       )}
                     </td>
-                    <td>
+                    <td className="space-x-2 whitespace-nowrap">
                       <button
                         className="text-primary-600 hover:text-primary-800 text-xs font-medium"
                         onClick={() => setDetailMaterial(materials.find((m) => m.material_id === po.material_id && m.entity_kind === po.entity_kind) || null)}
                       >
                         Detail Mingguan
                       </button>
+                      {po.procurement_type === 'make' && (
+                        <button
+                          className="text-amber-600 hover:text-amber-800 text-xs font-medium disabled:opacity-50"
+                          disabled={creatingWoIdx === idx}
+                          onClick={() => handleCreateWO(po, idx)}
+                        >
+                          {creatingWoIdx === idx ? 'Membuat...' : 'Buat WO'}
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* Exception List (MD05-equivalent): PO/WO yang sudah ada tapi
+          jadwalnya tidak sesuai kebutuhan terkini hasil run ini. */}
+      <div className="card">
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-base font-semibold text-gray-900 dark:text-white">Exception List</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            PO/SPK yang sudah ada tapi jadwalnya tidak sesuai kebutuhan terkini - percepat, tunda, atau pertimbangkan batal.
+          </p>
+        </div>
+        {exceptions.length === 0 ? (
+          <div className="p-6 text-center text-gray-500 text-sm">
+            Tidak ada exception - semua PO/SPK yang sudah berjalan sesuai dengan kebutuhan terkini.
+          </div>
+        ) : (
+          <div className="table-container">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Tipe</th>
+                  <th>Sumber</th>
+                  <th>Bahan/Produk</th>
+                  <th>Qty</th>
+                  <th>Dijadwalkan</th>
+                  <th>Dibutuhkan</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                {exceptions.map((exc, idx) => {
+                  const cfg = EXCEPTION_CONFIG[exc.type];
+                  return (
+                    <tr key={idx}>
+                      <td>
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded ${cfg.color}`}>{cfg.label}</span>
+                      </td>
+                      <td className="text-sm">
+                        {exc.source === 'purchase_order' ? 'PO' : 'SPK'} {exc.source_number}
+                      </td>
+                      <td className="font-medium">{exc.material_code} - {exc.material_name}</td>
+                      <td>{exc.quantity.toLocaleString()}</td>
+                      <td>Minggu {exc.scheduled_week_index + 1}</td>
+                      <td>{exc.needed_week_index !== null ? `Minggu ${exc.needed_week_index + 1}` : '-'}</td>
+                      <td>
+                        <button
+                          className="text-primary-600 hover:text-primary-800 text-xs font-medium"
+                          onClick={() => setDetailException(exc)}
+                        >
+                          Detail
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {detailException && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-lg w-full">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Detail Exception</h3>
+                <button
+                  onClick={() => setDetailException(null)}
+                  className="text-gray-400 hover:text-gray-600 dark:text-gray-300 text-2xl"
+                >
+                  &times;
+                </button>
+              </div>
+              <p className="text-sm text-gray-700 dark:text-gray-200 mb-4">{detailException.message}</p>
+              <dl className="text-sm space-y-2">
+                <div className="flex justify-between"><dt className="text-gray-400">Tipe</dt><dd>{EXCEPTION_CONFIG[detailException.type].label}</dd></div>
+                <div className="flex justify-between"><dt className="text-gray-400">Sumber</dt><dd>{detailException.source === 'purchase_order' ? 'Purchase Order' : 'Surat Perintah Kerja'} {detailException.source_number}</dd></div>
+                <div className="flex justify-between"><dt className="text-gray-400">Bahan/Produk</dt><dd>{detailException.material_code} - {detailException.material_name}</dd></div>
+                <div className="flex justify-between"><dt className="text-gray-400">Kuantitas</dt><dd>{detailException.quantity.toLocaleString()}</dd></div>
+                <div className="flex justify-between"><dt className="text-gray-400">Tanggal Dijadwalkan</dt><dd>{detailException.scheduled_date}</dd></div>
+                <div className="flex justify-between"><dt className="text-gray-400">Minggu Dijadwalkan</dt><dd>Minggu {detailException.scheduled_week_index + 1}</dd></div>
+                <div className="flex justify-between"><dt className="text-gray-400">Minggu Dibutuhkan</dt><dd>{detailException.needed_week_index !== null ? `Minggu ${detailException.needed_week_index + 1}` : 'Tidak ada kebutuhan dalam horizon'}</dd></div>
+              </dl>
+            </div>
           </div>
         </div>
       )}
