@@ -126,6 +126,14 @@ class BOMItem(db.Model):
     material_id = db.Column(db.Integer, db.ForeignKey('materials.id'), nullable=True)
     quantity = db.Column(db.Numeric(20, 10), nullable=False)  # Support up to 10 decimal places for precision
     uom = db.Column(db.String(20), nullable=False)
+    # How many of the MATERIAL's own stock-tracking UOM equal 1 of this
+    # item's `uom` above (e.g. uom='KG', material stock tracked in GRAM ->
+    # conversion_factor=1000). Defaults to 1 - a no-op whenever BOM uom
+    # already matches stock UOM, which was always silently assumed true
+    # before this column existed (2026-10-20, closes a real SAP-gap-audit
+    # finding - see effective_quantity_in_stock_uom below for where this is
+    # actually applied).
+    conversion_factor = db.Column(db.Numeric(18, 8), nullable=False, default=1)
     scrap_percent = db.Column(db.Numeric(5, 2), default=0)
     is_critical = db.Column(db.Boolean, default=False)
     unit_cost = db.Column(db.Numeric(15, 4), nullable=True)
@@ -175,10 +183,23 @@ class BOMItem(db.Model):
 
     @property
     def effective_quantity(self):
-        """Calculate quantity including scrap percentage"""
+        """Quantity including scrap percentage, in THIS ITEM'S OWN `uom` -
+        not necessarily the material's stock-tracking UOM. Use
+        effective_quantity_in_stock_uom instead wherever the result is
+        compared against or deducted from Inventory (current_stock,
+        shortage_quantity, Material Issue, snapshot planning, MRP, etc)."""
         base_quantity = float(self.quantity)
-        scrap_quantity = base_quantity * (float(self.scrap_percent) / 100)
+        scrap_quantity = base_quantity * (float(self.scrap_percent or 0) / 100)
         return base_quantity + scrap_quantity
+
+    @property
+    def effective_quantity_in_stock_uom(self):
+        """effective_quantity converted to the material's own stock-tracking
+        UOM via conversion_factor (2026-10-20) - the number that's actually
+        safe to compare against Inventory.quantity_on_hand/available, which
+        is always tracked in the material's stock UOM regardless of what
+        unit this BOM line was authored in."""
+        return float(self.effective_quantity) * float(self.conversion_factor or 1)
 
     @property
     def total_cost(self):
@@ -214,8 +235,12 @@ class BOMItem(db.Model):
 
     @property
     def shortage_quantity(self):
-        """Calculate shortage for production requirements"""
-        required_qty = float(self.effective_quantity)
+        """Calculate shortage for production requirements. Was comparing
+        effective_quantity (this item's own BOM uom) directly against
+        current_stock (always the material's stock UOM) with zero
+        conversion whenever the two units genuinely differed - fixed
+        2026-10-20 via effective_quantity_in_stock_uom."""
+        required_qty = float(self.effective_quantity_in_stock_uom)
         available_qty = self.current_stock
         return max(0, required_qty - available_qty)
 

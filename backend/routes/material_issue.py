@@ -284,7 +284,11 @@ def create_material_issue_from_wo(work_order_id):
         # if required_qty > batch.quantity, it would fail at issue time.
         insufficient_warnings = []
         for idx, bom_item in enumerate(bom.items, 1):
-            required_qty = float(bom_item.quantity) * float(wo.quantity)
+            # UOM conversion (2026-10-20): bom_item.quantity is in this BOM
+            # line's own uom, not necessarily the material's stock-tracking
+            # UOM - see BOMItem.conversion_factor. required_qty below must be
+            # in stock UOM since it's compared against Inventory.
+            required_qty = float(bom_item.quantity) * float(wo.quantity) * float(bom_item.conversion_factor or 1)
             
             # Check total available across ALL batches (read-only, no lock)
             total_available = db.session.query(
@@ -300,7 +304,9 @@ def create_material_issue_from_wo(work_order_id):
                 material_id=bom_item.material_id,
                 description=bom_item.material.name if bom_item.material else '',
                 required_quantity=required_qty,
-                uom=bom_item.uom,
+                # Stock UOM, not bom_item.uom - required_qty above is already
+                # converted, so the label must match (2026-10-20).
+                uom=bom_item.material.primary_uom if bom_item.material else bom_item.uom,
                 status='pending'
             )
             db.session.add(item)
@@ -475,6 +481,15 @@ def issue_materials(id):
                 item.status = 'partial'
             
             issued_count += 1
+            # Strip '_transaction' (the raw InventoryTransaction ORM row,
+            # only meant for internal callers patching it post-GL-posting -
+            # see fifo_helper.py's comment on that key) before it leaks into
+            # this JSON response, which crashed with "Object of type
+            # InventoryTransaction is not JSON serializable".
+            batch_details = [
+                {k: v for k, v in m.items() if k != '_transaction'}
+                for m in result['movements']
+            ]
             fifo_details.append({
                 'material_id': item.material_id,
                 'material_name': item.material.name if item.material else None,
@@ -482,21 +497,69 @@ def issue_materials(id):
                 'batches_used': len(result['movements']),
                 'weighted_avg_cost': result['weighted_avg_cost'],
                 'total_cost': result['total_cost'],
-                'batch_details': result['movements']
+                'batch_details': batch_details
             })
         
         # Update material issue status
         all_issued = all(item.is_fully_issued for item in mi.items)
         any_issued = any(item.issued_quantity > 0 for item in mi.items)
-        
+
         if all_issued:
             mi.status = 'issued'
             mi.issued_date = get_local_now()
         elif any_issued:
             mi.status = 'partial'
-        
+
         mi.issued_by = user_id
-        
+
+        # GL posting (fix_report_3.md, 2026-10-02): this endpoint physically
+        # pulls raw material out of the warehouse (FIFO-deducts real
+        # Inventory above) but, until now, never recorded that movement in
+        # the books at all - raw material consumed into production simply
+        # vanished from Persediaan Bahan Baku with no corresponding entry
+        # anywhere. Posts once per call, summing only the items actually
+        # deducted THIS call (fifo_details with a real total_cost, i.e. the
+        # success entries, not the 'error' ones) - naturally idempotent
+        # across repeated partial-issue calls on the same MaterialIssue
+        # since each call only journals what it itself just moved.
+        # Dr Persediaan Barang Dalam Proses (WIP) / Cr Persediaan Bahan Baku.
+        # Skipped (not an error) when a material's cost basis is 0 - same
+        # "don't post a fake Rp0 journal" convention already used elsewhere
+        # for zero-cost materials (see scripts/list_zero_cost_materials.py).
+        total_material_cost = sum(
+            float(d.get('total_cost') or 0) for d in fifo_details if 'total_cost' in d
+        )
+        if total_material_cost > 0:
+            from models.finance import GlobalAccountDefault
+            from models.approval_workflow import PendingJournalEntry
+            from utils.finance_helpers import resolve_account, post_pending_journal
+
+            wip_default = GlobalAccountDefault.query.filter_by(transaction_key='wip_persediaan').first()
+            try:
+                persediaan_account_id = resolve_account('akun_persediaan_id', product_id=None, category_id=None)
+            except ValueError:
+                persediaan_account_id = None
+
+            if wip_default and persediaan_account_id:
+                pending = PendingJournalEntry(
+                    workflow_id=None,
+                    entry_date=get_local_now().date(),
+                    description=f'Pemakaian bahan baku - {mi.issue_number}',
+                    reference=mi.issue_number,
+                    lines=[
+                        {'account_id': wip_default.account_id, 'debit': total_material_cost, 'credit': 0,
+                         'description': f'Bahan baku masuk WIP - {mi.issue_number}'},
+                        {'account_id': persediaan_account_id, 'debit': 0, 'credit': total_material_cost,
+                         'description': f'Pemakaian persediaan bahan baku - {mi.issue_number}'},
+                    ],
+                    total_debit=total_material_cost,
+                    total_credit=total_material_cost,
+                    created_by=user_id,
+                )
+                db.session.add(pending)
+                db.session.flush()
+                post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='material_issue', reference_id=mi.id)
+
         db.session.commit()
         
         return success_response('Materials issued successfully (FIFO)', {
@@ -505,6 +568,29 @@ def issue_materials(id):
             'fifo_details': fifo_details
         }), 200
         
+    except Exception as e:
+        db.session.rollback()
+        return error_response(str(e)), 500
+
+@material_issue_bp.route('/material-issues/retry-insufficient', methods=['POST'])
+@jwt_required()
+@require_permission('materials.edit')
+def retry_insufficient_material_issues():
+    """Manual trigger for requeue_insufficient_items() (utils/auto_reserve.py).
+
+    fix_report_3.md (2026-10-02): the retry logic already existed and was
+    already wired into the GRN-receipt and approval-workflow paths, but had
+    no on-demand API trigger and was missing from the manual warehouse
+    stock-in endpoint (separately fixed at POST /warehouse/inventory/add).
+    This gives an operator (or anyone scripting against the API) a direct
+    way to retry right now, without needing to wait for/trigger one of
+    those other events - useful after a stock correction, stock opname, or
+    any other stock-increasing action that doesn't already call it.
+    """
+    try:
+        from utils.auto_reserve import requeue_insufficient_items
+        result = requeue_insufficient_items()
+        return success_response('Retry reservasi selesai', result), 200
     except Exception as e:
         db.session.rollback()
         return error_response(str(e)), 500
@@ -809,7 +895,7 @@ def get_wo_material_requirements(work_order_id):
         
         requirements = []
         for bom_item in bom.items:
-            required_qty = float(bom_item.quantity) * float(wo.quantity)
+            required_qty = float(bom_item.quantity) * float(wo.quantity) * float(bom_item.conversion_factor or 1)
             
             # Get available stock
             available_stock = db.session.query(func.sum(Inventory.quantity_available)).filter(
@@ -836,7 +922,7 @@ def get_wo_material_requirements(work_order_id):
                 'issued_quantity': float(issued_qty),
                 'remaining_quantity': max(0, remaining_to_issue),
                 'available_stock': float(available_stock),
-                'uom': bom_item.uom,
+                'uom': bom_item.material.primary_uom if bom_item.material else bom_item.uom,
                 'is_sufficient': float(available_stock) >= remaining_to_issue
             })
         
@@ -877,8 +963,8 @@ def reserve_materials_for_wo(work_order_id):
         already_reserved = []  # track for rollback if any item fails
         
         for bom_item in bom.items:
-            required_qty = float(bom_item.quantity) * float(wo.quantity)
-            
+            required_qty = float(bom_item.quantity) * float(wo.quantity) * float(bom_item.conversion_factor or 1)
+
             result = fifo_reserve_stock(
                 material_id=bom_item.material_id,
                 quantity_needed=required_qty

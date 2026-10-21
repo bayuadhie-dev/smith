@@ -24,6 +24,19 @@ def get_product_name_from_new(product_code):
 
 bom_bp = Blueprint('bom', __name__)
 
+
+def _parse_bool_arg(name, default=None):
+    """Parse a query-string boolean correctly.
+
+    request.args.get(name, type=bool) is broken: Werkzeug applies Python's
+    bool() to the raw string, and any non-empty string (including "false",
+    "0", "False") is truthy - so ?is_active=false silently behaves as True.
+    """
+    raw = request.args.get(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in ('true', '1', 'yes')
+
 @bom_bp.route('/boms', methods=['GET'])
 @jwt_required()
 @require_permission('bom.view')
@@ -34,7 +47,7 @@ def get_boms():
         per_page = request.args.get('per_page', 50, type=int)
         all_boms = request.args.get('all', 'false').lower() == 'true'
         product_id = request.args.get('product_id', type=int)
-        is_active = request.args.get('is_active', type=bool)
+        is_active = _parse_bool_arg('is_active')
         search = request.args.get('search', '')
 
         query = BillOfMaterials.query.join(Product)
@@ -131,9 +144,11 @@ def get_bom(bom_id):
                 'item_type': item.item_type,
                 'quantity': float(item.quantity),
                 'uom': item.uom,
+                'conversion_factor': float(item.conversion_factor or 1),
                 'percentage': float(item.percentage) if item.percentage else 0,
                 'scrap_percent': float(item.scrap_percent),
                 'effective_quantity': float(item.effective_quantity),
+                'effective_quantity_in_stock_uom': float(item.effective_quantity_in_stock_uom),
                 'is_critical': item.is_critical,
                 'unit_cost': float(item.unit_cost) if item.unit_cost else None,
                 'total_cost': float(item.total_cost),
@@ -142,7 +157,7 @@ def get_bom(bom_id):
                 'is_shortage': item.is_shortage,
                 'notes': item.notes,
                 'supplier_id': item.supplier_id,
-                'supplier_name': item.supplier.name if item.supplier else None,
+                'supplier_name': item.supplier.company_name if item.supplier else None,
                 'lead_time_days': item.lead_time_days
             }
             items.append(item_data)
@@ -217,6 +232,7 @@ def create_bom():
                 product_id=item_data.get('product_id'),
                 quantity=item_data['quantity'],
                 uom=item_data.get('uom') or 'PCS',
+                conversion_factor=item_data.get('conversion_factor') or 1,
                 percentage=item_data.get('percentage', 0),
                 scrap_percent=item_data.get('scrap_percent', 0),
                 is_critical=item_data.get('is_critical', False),
@@ -297,6 +313,7 @@ def update_bom(bom_id):
                     product_id=item_data.get('product_id'),
                     quantity=item_data['quantity'],
                     uom=item_data['uom'],
+                    conversion_factor=item_data.get('conversion_factor') or 1,
                     percentage=item_data.get('percentage', 0),
                     scrap_percent=item_data.get('scrap_percent', 0),
                     is_critical=item_data.get('is_critical', False),
@@ -359,7 +376,7 @@ def get_bom_shortage_analysis(bom_id):
                 'item_type': bom_item.item_type,
                 'unit_cost': float(bom_item.unit_cost) if bom_item.unit_cost else 0,
                 'is_critical': bom_item.is_critical,
-                'supplier_name': bom_item.supplier.name if bom_item.supplier else None,
+                'supplier_name': bom_item.supplier.company_name if bom_item.supplier else None,
                 'lead_time_days': bom_item.lead_time_days
             }
 
@@ -384,7 +401,7 @@ def get_bom_shortage_analysis(bom_id):
             for m in level['materials']:
                 if len(m['path']) != path_len:
                     continue
-                available_qty = get_current_stock(material_id=m['material_id'])
+                available_qty = get_current_stock(material_id=m['material_id'], target_uom=m['uom'])
                 shortage_qty = max(0, m['required_quantity'] - available_qty)
                 unit_cost = m.get('unit_cost', 0)
                 shortage_cost = shortage_qty * unit_cost
@@ -516,7 +533,7 @@ def get_materials_for_bom():
     """Get materials for BOM creation"""
     try:
         material_type = request.args.get('material_type')
-        is_active = request.args.get('is_active', True, type=bool)
+        is_active = _parse_bool_arg('is_active', True)
         search = request.args.get('search', '')
 
         query = Material.query
@@ -544,7 +561,7 @@ def get_materials_for_bom():
                 'category': material.category,
                 'primary_uom': material.primary_uom,
                 'cost_per_unit': float(material.cost_per_unit),
-                'supplier_name': material.supplier.name if material.supplier else None,
+                'supplier_name': material.supplier.company_name if material.supplier else None,
                 'lead_time_days': material.lead_time_days,
                 'is_hazardous': material.is_hazardous
             } for material in materials]
@@ -559,8 +576,8 @@ def get_materials_for_bom():
 def get_products_for_bom():
     """Get products for BOM creation"""
     try:
-        is_producible = request.args.get('is_producible', True, type=bool)
-        is_active = request.args.get('is_active', True, type=bool)
+        is_producible = _parse_bool_arg('is_producible', True)
+        is_active = _parse_bool_arg('is_active', True)
         search = request.args.get('search', '')
 
         query = Product.query

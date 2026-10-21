@@ -39,6 +39,11 @@ class WorkOrderBOMItem(db.Model):
     # Quantities - can be edited without affecting master BOM
     quantity_per_unit = db.Column(db.Numeric(20, 10), nullable=False)  # Qty per 1 unit product
     uom = db.Column(db.String(20), nullable=False)
+    # Copied from BOMItem.conversion_factor at snapshot time (2026-10-20) -
+    # see that column's comment. quantity_planned below is already stored
+    # converted into the material's stock UOM, so most callers never need
+    # to touch this directly; kept for traceability/display.
+    conversion_factor = db.Column(db.Numeric(18, 8), nullable=False, default=1)
     scrap_percent = db.Column(db.Numeric(5, 2), default=0)
     
     # Actual usage tracking
