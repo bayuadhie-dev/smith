@@ -125,7 +125,7 @@ export default function QualityDashboardEnhanced() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#059669]"></div>
       </div>
     );
   }
@@ -144,16 +144,19 @@ export default function QualityDashboardEnhanced() {
     );
   }
 
+  // 2026-10-07: Axion bento-grid restyle (tier-1 module landing page,
+  // #9 of 17). Sub-pages (Pending QC, Inspections, Alerts, etc) are
+  // intentionally left as-is - only this landing dashboard is in scope.
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard Quality</h1>
-          <p className="text-gray-600 dark:text-gray-300">Enhanced quality analytics and monitoring</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-snug">Dashboard Quality</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Enhanced quality analytics and monitoring</p>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="text-sm text-gray-500 dark:text-gray-400">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="text-xs text-gray-500 dark:text-gray-400 mr-1">
             Last updated: {dashboardData ? new Date(dashboardData.last_updated).toLocaleTimeString() : ''}
           </div>
           <Link to="/app/quality/to-warehouse" className="btn-primary inline-flex items-center gap-2">
@@ -166,47 +169,26 @@ export default function QualityDashboardEnhanced() {
         </div>
       </div>
 
-      {/* Quick Actions */}
+      {/* Quick Actions - bento gradient tiles */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Link to="/app/quality/pending-qc" className="card p-4 hover:shadow-md transition-shadow border-l-4 border-blue-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Pending QC</p>
-              <p className="text-lg font-semibold">SPK</p>
+        {[
+          { to: '/app/quality/pending-qc', label1: 'Pending QC', label2: 'SPK', icon: ClockIcon, gradient: 'from-[#059669] to-[#047857]' },
+          { to: '/app/quality/to-warehouse', label1: 'QC Selesai', label2: 'Transfer ke Warehouse', icon: BuildingStorefrontIcon, gradient: 'from-teal-500 to-teal-600' },
+          { to: '/app/quality/tests/new', label1: 'Buat', label2: 'QC Test Baru', icon: DocumentTextIcon, gradient: 'from-violet-500 to-violet-600' },
+          { to: '/app/shipping/orders/from-qc', label1: 'Siap Kirim', label2: 'Buat Shipping', icon: ArrowRightIcon, gradient: 'from-[#F15D2C] to-[#C73E1D]' },
+        ].map((action) => (
+          <Link key={action.to} to={action.to} className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{action.label1}</p>
+                <p className="text-base font-semibold text-gray-900 dark:text-white">{action.label2}</p>
+              </div>
+              <div className={`bg-gradient-to-br ${action.gradient} p-2.5 rounded-xl flex-shrink-0`}>
+                <action.icon className="h-6 w-6 text-white" />
+              </div>
             </div>
-            <ClockIcon className="h-8 w-8 text-blue-500" />
-          </div>
-        </Link>
-        
-        <Link to="/app/quality/to-warehouse" className="card p-4 hover:shadow-md transition-shadow border-l-4 border-green-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-300">QC Selesai</p>
-              <p className="text-lg font-semibold">Transfer ke Warehouse</p>
-            </div>
-            <BuildingStorefrontIcon className="h-8 w-8 text-green-500" />
-          </div>
-        </Link>
-        
-        <Link to="/app/quality/tests/new" className="card p-4 hover:shadow-md transition-shadow border-l-4 border-purple-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Buat</p>
-              <p className="text-lg font-semibold">QC Test Baru</p>
-            </div>
-            <DocumentTextIcon className="h-8 w-8 text-purple-500" />
-          </div>
-        </Link>
-        
-        <Link to="/app/shipping/orders/from-qc" className="card p-4 hover:shadow-md transition-shadow border-l-4 border-orange-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Siap Kirim</p>
-              <p className="text-lg font-semibold">Buat Shipping</p>
-            </div>
-            <ArrowRightIcon className="h-8 w-8 text-orange-500" />
-          </div>
-        </Link>
+          </Link>
+        ))}
       </div>
 
       {/* Critical Alerts */}
@@ -241,63 +223,57 @@ export default function QualityDashboardEnhanced() {
         </div>
       )}
 
-      {/* KeyIcon Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Pass Rate (This Week)</p>
-              <p className={`text-2xl font-bold ${getPassRateColor(dashboardData?.summary.pass_rate || 0)}`}>
-                {dashboardData?.summary.pass_rate || 0}%
-              </p>
+      {/* Key Metrics - bento: Pass Rate spans 2 cols (primary metric) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="xl:col-span-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <CheckCircleIcon className="w-5 h-5" />
             </div>
-            <CheckCircleIcon className="h-8 w-8 text-green-500" />
+            <p className="text-sm opacity-90">Pass Rate (This Week)</p>
           </div>
-          <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-            {dashboardData?.summary.inspections_this_week || 0} inspections
-          </div>
+          <p className="text-3xl font-bold">{dashboardData?.summary.pass_rate || 0}%</p>
+          <p className="text-xs opacity-75 mt-1">{dashboardData?.summary.inspections_this_week || 0} inspections</p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Inspections Today</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardData?.summary.inspections_today || 0}</p>
+        <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <DocumentTextIcon className="w-5 h-5" />
             </div>
-            <DocumentTextIcon className="h-8 w-8 text-blue-500" />
           </div>
+          <p className="text-xs opacity-90 mb-1">Inspections Today</p>
+          <p className="text-2xl font-bold">{dashboardData?.summary.inspections_today || 0}</p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Active Alerts</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardData?.summary.active_alerts || 0}</p>
+        <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <ExclamationTriangleIcon className="w-5 h-5" />
             </div>
-            <ExclamationTriangleIcon className="h-8 w-8 text-yellow-500" />
           </div>
-          <div className="mt-2 text-sm text-red-600">
-            {dashboardData?.summary.critical_alerts || 0} critical
-          </div>
+          <p className="text-xs opacity-90 mb-1">Active Alerts</p>
+          <p className="text-2xl font-bold">{dashboardData?.summary.active_alerts || 0}</p>
+          <p className="text-xs opacity-75 mt-1">{dashboardData?.summary.critical_alerts || 0} critical</p>
         </div>
+      </div>
 
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Open CAPAs</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardData?.summary.open_capas || 0}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <ClockIcon className="w-5 h-5" />
             </div>
-            <ClockIcon className="h-8 w-8 text-purple-500" />
           </div>
-          <div className="mt-2 text-sm text-red-600">
-            {dashboardData?.summary.overdue_capas || 0} overdue
-          </div>
+          <p className="text-xs opacity-90 mb-1">Open CAPAs</p>
+          <p className="text-2xl font-bold">{dashboardData?.summary.open_capas || 0}</p>
+          <p className="text-xs opacity-75 mt-1">{dashboardData?.summary.overdue_capas || 0} overdue</p>
         </div>
       </div>
 
       {/* Pass Rate Trend Chart */}
       {dashboardData?.trends.pass_rate && dashboardData.trends.pass_rate.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Pass Rate Trend (Last 7 Days)</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -321,7 +297,7 @@ export default function QualityDashboardEnhanced() {
 
       {/* Machine Performance */}
       {dashboardData?.machine_performance && dashboardData.machine_performance.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Machine Quality Performance</h3>
           <div className="space-y-4">
             {dashboardData.machine_performance.map((machine, index) => (
@@ -343,52 +319,34 @@ export default function QualityDashboardEnhanced() {
       )}
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Link to="/app/quality/inspections/new" className="group bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
-          <div className="flex items-center justify-between mb-4">
-            <DocumentTextIcon className="h-8 w-8 text-blue-500" />
-            <ArrowTrendingUpIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600 dark:text-gray-300" />
-          </div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">New Inspection</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-300">Create quality inspection record</p>
-        </Link>
-
-        <Link to="/app/quality-enhanced/alerts" className="group bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
-          <div className="flex items-center justify-between mb-4">
-            <BellIcon className="h-8 w-8 text-yellow-500" />
-            <span className="text-xs px-2 py-1 bg-red-100 text-red-800 rounded-full">
-              {dashboardData?.summary.active_alerts || 0}
-            </span>
-          </div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Quality Alerts</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-300">Manage quality alerts and issues</p>
-        </Link>
-
-        <Link to="/app/quality-enhanced/analytics" className="group bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
-          <div className="flex items-center justify-between mb-4">
-            <ChartBarIcon className="h-8 w-8 text-purple-500" />
-            <EyeIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600 dark:text-gray-300" />
-          </div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Analytics</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-300">Quality metrics and trends</p>
-        </Link>
-
-        <Link to="/app/quality-enhanced/audits" className="group bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
-          <div className="flex items-center justify-between mb-4">
-            <AcademicCapIcon className="h-8 w-8 text-green-500" />
-            <ArrowTrendingUpIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600 dark:text-gray-300" />
-          </div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Quality Audits</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-300">Audit planning and management</p>
-        </Link>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { to: '/app/quality/inspections/new', icon: DocumentTextIcon, title: 'New Inspection', desc: 'Create quality inspection record', gradient: 'from-[#059669] to-[#047857]' },
+          { to: '/app/quality-enhanced/alerts', icon: BellIcon, title: 'Quality Alerts', desc: 'Manage quality alerts and issues', gradient: 'from-teal-500 to-teal-600', badge: dashboardData?.summary.active_alerts || 0 },
+          { to: '/app/quality-enhanced/analytics', icon: ChartBarIcon, title: 'Analytics', desc: 'Quality metrics and trends', gradient: 'from-violet-500 to-violet-600' },
+          { to: '/app/quality-enhanced/audits', icon: AcademicCapIcon, title: 'Quality Audits', desc: 'Audit planning and management', gradient: 'from-[#F15D2C] to-[#C73E1D]' },
+        ].map((action) => (
+          <Link key={action.to} to={action.to} className="group bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
+            <div className="flex items-center justify-between mb-4">
+              <div className={`bg-gradient-to-br ${action.gradient} p-2.5 rounded-xl group-hover:scale-110 transition-transform`}>
+                <action.icon className="h-6 w-6 text-white" />
+              </div>
+              {action.badge !== undefined && (
+                <span className="text-xs px-2 py-1 bg-red-100 text-red-800 rounded-full">{action.badge}</span>
+              )}
+            </div>
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1">{action.title}</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{action.desc}</p>
+          </Link>
+        ))}
       </div>
 
       {/* Recent Alerts Summary */}
       {alerts.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Quality Alerts</h3>
-            <Link to="/app/quality-enhanced/alerts" className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+            <Link to="/app/quality-enhanced/alerts" className="text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 text-sm font-medium">
               View All
             </Link>
           </div>

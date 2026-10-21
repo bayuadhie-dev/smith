@@ -323,7 +323,7 @@ const QualityObjectiveProduction: React.FC = () => {
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {data.machines.map((machine, index) => (
-                    <tr key={machine.machine_id} className={`hover:bg-slate-50 ${index % 2 === 0 ? 'bg-white' : 'bg-slate-25'}`}>
+                    <tr key={machine.machine_id} className={`hover:bg-slate-50 ${index % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${machine.is_achieved ? 'bg-green-100' : 'bg-red-100'}`}>

@@ -106,66 +106,65 @@ export default function SPCDashboard() {
 
   if (dashLoading) return (
     <div className="min-h-screen flex items-center justify-center">
-      <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600" />
+      <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#059669]" />
     </div>
   );
 
+  // 2026-10-07: Axion bento-grid restyle (tier-2 sub-dashboard). The
+  // control-chart/capability-table content below is intentionally left
+  // as-is - only the header + summary cards are in scope.
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-snug">
             SPC
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
             X-bar R Chart · Capability Analysis · Western Electric Rules
           </p>
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-[#059669] to-[#047857] text-white rounded-lg hover:shadow-lg transition-shadow text-sm font-medium"
         >
           <PlusCircleIcon className="h-5 w-5" />
           Input Sample
         </button>
       </div>
 
-      {/* Summary Cards */}
+      {/* Summary Cards - bento */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-gray-800 p-5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl p-4 text-white shadow-lg">
           <div className="flex items-center gap-3">
-            <BeakerIcon className="h-8 w-8 text-blue-500" />
+            <div className="p-2 bg-white/20 rounded-lg"><BeakerIcon className="h-6 w-6" /></div>
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Samples Today</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {dashboard.today_samples ?? 0}
-              </p>
+              <p className="text-sm opacity-90">Samples Today</p>
+              <p className="text-2xl font-bold">{dashboard.today_samples ?? 0}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className={`bg-gradient-to-br ${dashboard.today_ooc > 0 ? 'from-[#F15D2C] to-[#C73E1D]' : 'from-teal-500 to-teal-600'} rounded-xl p-4 text-white shadow-lg`}>
           <div className="flex items-center gap-3">
-            <ExclamationTriangleIcon className="h-8 w-8 text-red-500" />
+            <div className="p-2 bg-white/20 rounded-lg"><ExclamationTriangleIcon className="h-6 w-6" /></div>
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Out of Control Today</p>
-              <p className={`text-2xl font-bold ${dashboard.today_ooc > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                {dashboard.today_ooc ?? 0}
-              </p>
+              <p className="text-sm opacity-90">Out of Control Today</p>
+              <p className="text-2xl font-bold">{dashboard.today_ooc ?? 0}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow-lg">
           <div className="flex items-center gap-3">
-            <CheckCircleIcon className="h-8 w-8 text-green-500" />
+            <div className="p-2 bg-white/20 rounded-lg"><CheckCircleIcon className="h-6 w-6" /></div>
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Capable Parameters</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              <p className="text-sm opacity-90">Capable Parameters</p>
+              <p className="text-2xl font-bold">
                 {capSummary.filter((c: any) => c.status === 'capable').length}
-                <span className="text-sm text-gray-400 font-normal"> / {capSummary.length}</span>
+                <span className="text-sm opacity-75 font-normal"> / {capSummary.length}</span>
               </p>
             </div>
           </div>

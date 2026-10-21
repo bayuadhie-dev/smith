@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { confirmDialog } from '../../components/ui';
 import {
   ChartBarIcon,
   CalendarIcon,
@@ -159,7 +160,7 @@ const DowntimeAnalysis: React.FC = () => {
   };
 
   const deleteRootCause = async (id: number) => {
-    if (!confirm('Hapus analisa ini?')) return;
+    if (!(await confirmDialog('Hapus analisa ini?'))) return;
     try {
       await axiosInstance.delete(`/api/oee/downtime-root-causes/${id}`);
       fetchData();

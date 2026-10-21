@@ -6,6 +6,7 @@ import {
 } from '../../../services/api';
 import { useGetWorkOrdersQuery, useGetMachinesQuery } from '../../../services/api';
 import { XMarkIcon, TrashIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { showError, showWarning } from '../../../components/ui';
 
 interface Props {
   onClose: () => void;
@@ -111,8 +112,8 @@ export default function SPCSampleForm({ onClose, onSuccess }: Props) {
   };
 
   const handleSubmit = async () => {
-    if (!selectedWO) return alert('Pilih SPK terlebih dahulu');
-    if (measurements.length === 0) return alert('Tambahkan minimal 1 parameter');
+    if (!selectedWO) return showWarning('Pilih SPK terlebih dahulu');
+    if (measurements.length === 0) return showWarning('Tambahkan minimal 1 parameter');
 
     const payload = {
       product_id: selectedWO.product_id,
@@ -137,7 +138,7 @@ export default function SPCSampleForm({ onClose, onSuccess }: Props) {
         onSuccess();
       }
     } catch (e: any) {
-      alert(e.data?.error || 'Gagal menyimpan sample');
+      showError(e.data?.error || 'Gagal menyimpan sample');
     }
   };
 
