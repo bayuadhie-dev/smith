@@ -5,6 +5,7 @@ import { useForm, Controller } from 'react-hook-form'
 import axiosInstance from '../../utils/axiosConfig'
 import LoadingSpinner from '../../components/Common/LoadingSpinner'
 import SearchableSelect from '../../components/SearchableSelect'
+import { showError, showSuccess, showWarning } from '../../components/ui'
 import {
   ArrowLeftIcon,
   CalendarDaysIcon,
@@ -109,6 +110,7 @@ const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
   const [bomProducts, setBomProducts] = useState<BOMProduct[]>([])
   const [machines, setMachines] = useState<Machine[]>([])
+  const [eligibleMachineIds, setEligibleMachineIds] = useState<number[] | null>(null)
   const [employees, setEmployees] = useState<Employee[]>([])
   const [salesOrders, setSalesOrders] = useState<SalesOrderOption[]>([])
   const [loadingData, setLoadingData] = useState(true)
@@ -165,6 +167,26 @@ const navigate = useNavigate()
       setBom(null)
     }
   }, [selectedProductId, bomProducts])
+
+  // Filter the machine dropdown to machines that have a ProductionRecipe for
+  // the selected product - otherwise a wrong/incompatible machine could be
+  // picked manually with no recipe to compute batch size/duration from.
+  useEffect(() => {
+    if (!selectedProductId) {
+      setEligibleMachineIds(null)
+      return
+    }
+    axiosInstance.get('/api/batch-scheduling/recipes', { params: { product_id: selectedProductId } })
+      .then(res => {
+        const ids = (res.data.recipes || []).map((r: any) => r.machine_id)
+        setEligibleMachineIds(ids)
+      })
+      .catch(() => setEligibleMachineIds(null))
+  }, [selectedProductId])
+
+  const machineOptions = eligibleMachineIds && eligibleMachineIds.length > 0
+    ? machines.filter(m => eligibleMachineIds.includes(m.id))
+    : machines
 
   const fetchBOMForProduct = async (productId: number) => {
     try {
@@ -370,20 +392,20 @@ const navigate = useNavigate()
       }
     } catch (error) {
       console.error('Error loading SPK:', error)
-      alert('Failed to load SPK')
+      showError('Failed to load SPK')
     }
   }
 
   const onSubmit = async (data: WorkOrderFormData) => {
     // Validate product selection
     if (!selectedProduct) {
-      alert('Please select a product');
+      showWarning('Please select a product');
       return;
     }
-    
+
     // Validate pack per carton
     if (!packPerKarton || packPerKarton <= 0) {
-      alert('Pack per Karton harus diisi (minimal 1)');
+      showWarning('Pack per Karton harus diisi (minimal 1)');
       return;
     }
     
@@ -407,16 +429,29 @@ const navigate = useNavigate()
 
       if (isEdit) {
         await axiosInstance.put(`/api/production/work-orders/${id}`, payload)
-        alert('SPK updated successfully!')
+        showSuccess('SPK updated successfully!')
       } else {
-        await axiosInstance.post('/api/production/work-orders', payload)
-        alert('SPK created successfully!')
+        const res = await axiosInstance.post('/api/production/work-orders', payload)
+        showSuccess('SPK created successfully!')
+
+        // Soft overcommit warning (2026-10-20): this WO's material need,
+        // combined with what other still-open WOs already need from the
+        // same material, exceeds current stock. Non-blocking - the WO is
+        // already created - just surfaces it now instead of staff only
+        // finding out when Material Issue comes up short later.
+        const warnings = res.data?.material_warnings || []
+        if (warnings.length > 0) {
+          const lines = warnings.map((w: any) =>
+            `${w.material_name}: butuh ${w.combined_demand} (termasuk SPK draft lain), stok ${w.available_stock} - kurang ${w.deficit}`
+          ).join('\n')
+          showWarning(`SPK dibuat, tapi ada potensi rebutan bahan baku:\n${lines}`)
+        }
       }
-      
+
       navigate('/app/production/work-orders')
     } catch (error: any) {
       console.error('Error saving SPK:', error)
-      alert(error.response?.data?.error || 'Failed to save SPK')
+      showError(error.response?.data?.error || 'Failed to save SPK')
     } finally {
       setIsLoading(false)
     }
@@ -996,12 +1031,22 @@ const navigate = useNavigate()
               </label>
               <select {...register('machine_id')} className="input">
                 <option value="">Auto-assign or select machine</option>
-                {machines.map((machine) => (
+                {machineOptions.map((machine) => (
                   <option key={machine.id} value={machine.id}>
                     {machine.code} - {machine.name} ({machine.status})
                   </option>
                 ))}
               </select>
+              {eligibleMachineIds && eligibleMachineIds.length > 0 && (
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Hanya menampilkan mesin yang punya resep untuk produk ini.
+                </p>
+              )}
+              {eligibleMachineIds && eligibleMachineIds.length === 0 && (
+                <p className="mt-1 text-xs text-amber-600">
+                  Belum ada resep (ProductionRecipe) untuk produk ini - menampilkan semua mesin.
+                </p>
+              )}
             </div>
 
             {/* Supervisor */}
