@@ -5,6 +5,7 @@ import { useCreateLeaveRequestMutation, useGetEmployeesQuery } from '../../servi
 import {
   ArrowLeftIcon
 } from '@heroicons/react/24/outline';
+import { showSuccess, showError } from '../../components/ui';
 export default function LeaveRequestForm() {
     const { t } = useLanguage();
 
@@ -26,10 +27,10 @@ const navigate = useNavigate()
     e.preventDefault()
     try {
       await createLeaveRequest(formData).unwrap()
-      alert('Leave request submitted successfully!')
+      showSuccess('Leave request submitted successfully!')
       navigate('/app/hr/leaves')
     } catch (error) {
-      alert('Error submitting leave request')
+      showError('Error submitting leave request')
     }
   }
 

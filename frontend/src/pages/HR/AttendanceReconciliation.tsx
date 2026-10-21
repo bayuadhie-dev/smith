@@ -3,6 +3,7 @@ import {
   ClipboardCheck, CheckCircle, XCircle, Loader2, AlertTriangle, RefreshCw
 } from 'lucide-react';
 import axiosInstance from '../../utils/axiosConfig';
+import { confirmDialog, showError, showSuccess } from '../../components/ui';
 
 interface CorrectionRequest {
   id: number;
@@ -51,12 +52,12 @@ const AttendanceReconciliation: React.FC = () => {
   };
 
   const approveCorrection = async (id: number) => {
-    if (!confirm('Setujui koreksi ini? Data absensi akan diperbarui.')) return;
+    if (!(await confirmDialog('Setujui koreksi ini? Data absensi akan diperbarui.'))) return;
     try {
       await axiosInstance.post(`/api/attendance/correction-requests/${id}/approve`);
       fetchCorrections();
     } catch (e: any) {
-      alert(e?.response?.data?.error || 'Gagal menyetujui');
+      showError(e?.response?.data?.error || 'Gagal menyetujui');
     }
   };
 
@@ -66,7 +67,7 @@ const AttendanceReconciliation: React.FC = () => {
       await axiosInstance.post(`/api/attendance/correction-requests/${id}/reject`, { notes });
       fetchCorrections();
     } catch (e: any) {
-      alert(e?.response?.data?.error || 'Gagal menolak');
+      showError(e?.response?.data?.error || 'Gagal menolak');
     }
   };
 
@@ -99,10 +100,10 @@ const AttendanceReconciliation: React.FC = () => {
       const res = await axiosInstance.post('/api/attendance/reconciliation/run', {
         start_date: dateRange.start, end_date: dateRange.end,
       });
-      alert(res.data.message);
+      showSuccess(res.data.message);
       fetchFlags();
     } catch (e: any) {
-      alert(e?.response?.data?.error || 'Gagal menjalankan reconciliation');
+      showError(e?.response?.data?.error || 'Gagal menjalankan reconciliation');
     } finally {
       setRunning(false);
     }
@@ -114,7 +115,7 @@ const AttendanceReconciliation: React.FC = () => {
       await axiosInstance.post(`/api/attendance/reconciliation/${id}/review`, { notes });
       fetchFlags();
     } catch (e: any) {
-      alert(e?.response?.data?.error || 'Gagal menandai review');
+      showError(e?.response?.data?.error || 'Gagal menandai review');
     }
   };
 

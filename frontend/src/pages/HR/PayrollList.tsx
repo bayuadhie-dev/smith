@@ -12,6 +12,7 @@ import {
   ClipboardDocumentListIcon
 
 } from '@heroicons/react/24/outline';
+import { confirmDialog, showSuccess, showError } from '../../components/ui';
 export default function PayrollList() {
     const { t } = useLanguage();
 
@@ -31,14 +32,18 @@ const navigate = useNavigate()
         msg += '\n\nKaryawan dilewati (gaji pokok belum diisi):\n'
         msg += result.summary.skipped.map((s: any) => `- ${s.name}`).join('\n')
       }
-      alert(msg)
+      if (result?.summary?.unaccounted_warnings?.length > 0) {
+        msg += '\n\n⚠️ Hari tanpa absensi maupun cuti disetujui (cek dulu sebelum approve):\n'
+        msg += result.summary.unaccounted_warnings.map((w: any) => `- ${w.name}: ${w.dates.join(', ')}`).join('\n')
+      }
+      showSuccess(msg)
     } catch (error: any) {
-      alert(error?.data?.error || 'Error menghitung payroll')
+      showError(error?.data?.error || 'Error menghitung payroll')
     }
   }
 
   const handleApprovePayroll = async (periodId: number) => {
-    if (!confirm('Approve payroll for this period?')) return
+    if (!(await confirmDialog('Approve payroll for this period?'))) return
     try {
       const response = await fetch(`/api/hr/payroll/periods/${periodId}/approve`, {
         method: 'POST',
@@ -49,12 +54,12 @@ const navigate = useNavigate()
       })
       if (response.ok) {
         refetch()
-        alert('Payroll approved successfully!')
+        showSuccess('Payroll approved successfully!')
       } else {
-        alert('Error approving payroll')
+        showError('Error approving payroll')
       }
     } catch (error) {
-      alert('Error approving payroll')
+      showError('Error approving payroll')
     }
   }
 

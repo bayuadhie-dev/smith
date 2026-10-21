@@ -30,8 +30,13 @@ export default function HRDashboard() {
   const [dateFilter, setDateFilter] = useState(new Date().toISOString().split('T')[0])
   const [loading, setLoading] = useState(false)
   
-  // Fetch data for dashboard
-  const { data: employeesData } = useGetEmployeesQuery({})
+  // Fetch data for dashboard. per_page set high (2026-10-07 bugfix) - the
+  // API paginates at 50/page by default, and this dashboard used to count
+  // off `employees.length` (just the current page) instead of the API's
+  // own `total` field, silently undercounting once headcount passed 50.
+  // A large per_page also makes the client-side activeEmployees status
+  // filter below correct instead of only reflecting page 1.
+  const { data: employeesData } = useGetEmployeesQuery({ per_page: 1000 })
   const { data: attendanceData } = useGetAttendanceRecordsQuery({
     start_date: dateFilter,
     end_date: dateFilter
@@ -49,7 +54,7 @@ export default function HRDashboard() {
   }, [])
 
   // Calculate statistics
-  const totalEmployees = employeesData?.employees?.length || 0
+  const totalEmployees = employeesData?.total ?? employeesData?.employees?.length ?? 0
   const activeEmployees = employeesData?.employees?.filter((emp: any) => emp.status === 'active').length || 0
   const presentToday = attendanceData?.attendances?.filter((att: any) => att.status === 'present').length || 0
   const absentToday = attendanceData?.attendances?.filter((att: any) => att.status === 'absent').length || 0
@@ -57,34 +62,35 @@ export default function HRDashboard() {
 
   const attendanceRate = activeEmployees > 0 ? ((presentToday / activeEmployees) * 100).toFixed(1) : '0'
 
-  // Quick Stats
+  // Quick Stats - gradients (2026-10-07 Axion bento restyle, tier-1 #8 of 17)
   const quickStats = [
     {
       name: 'Total Karyawan',
       value: activeEmployees,
       icon: UserGroupIcon,
-      color: 'bg-blue-500',
-      subtext: `${totalEmployees} terdaftar`
+      gradient: 'from-[#059669] to-[#047857]',
+      subtext: `${totalEmployees} terdaftar`,
+      span: true,
     },
     {
       name: 'Kehadiran Hari Ini',
       value: `${attendanceRate}%`,
       icon: ClockIcon,
-      color: 'bg-green-500',
+      gradient: 'from-teal-500 to-teal-600',
       subtext: `${presentToday} hadir`
     },
     {
       name: 'Cuti Pending',
       value: pendingLeaves,
       icon: CalendarDaysIcon,
-      color: 'bg-yellow-500',
+      gradient: 'from-[#F15D2C] to-[#C73E1D]',
       subtext: 'Menunggu approval'
     },
     {
       name: 'Training Aktif',
       value: ongoingTrainings,
       icon: AcademicCapIcon,
-      color: 'bg-purple-500',
+      gradient: 'from-violet-500 to-violet-600',
       subtext: 'Sesi berjalan'
     }
   ]
@@ -96,7 +102,7 @@ export default function HRDashboard() {
       description: 'Kelola data karyawan, jabatan, dan departemen',
       icon: UserGroupIcon,
       href: '/app/hr/employees',
-      color: 'bg-blue-500',
+      gradient: 'from-[#059669] to-[#047857]',
       stats: `${activeEmployees} karyawan aktif`
     },
     {
@@ -104,7 +110,7 @@ export default function HRDashboard() {
       description: 'Pantau kehadiran dan rekam absensi harian',
       icon: ClockIcon,
       href: '/app/hr/attendance',
-      color: 'bg-green-500',
+      gradient: 'from-teal-500 to-teal-600',
       stats: 'Real-time tracking'
     },
     {
@@ -112,7 +118,7 @@ export default function HRDashboard() {
       description: 'Kelola pengajuan dan approval cuti karyawan',
       icon: CalendarDaysIcon,
       href: '/app/hr/staff-leave',
-      color: 'bg-yellow-500',
+      gradient: 'from-amber-500 to-amber-600',
       stats: `${pendingLeaves} pending`
     },
     {
@@ -120,7 +126,7 @@ export default function HRDashboard() {
       description: 'Proses penggajian dan slip gaji karyawan',
       icon: BanknotesIcon,
       href: '/app/hr/payroll',
-      color: 'bg-emerald-500',
+      gradient: 'from-emerald-500 to-emerald-600',
       stats: 'Kalkulasi otomatis'
     },
     {
@@ -128,7 +134,7 @@ export default function HRDashboard() {
       description: 'Kelola program training dan pengembangan',
       icon: AcademicCapIcon,
       href: '/app/hr/training',
-      color: 'bg-purple-500',
+      gradient: 'from-violet-500 to-violet-600',
       stats: `${ongoingTrainings} sesi aktif`
     },
     {
@@ -136,7 +142,7 @@ export default function HRDashboard() {
       description: 'Atur jadwal shift dan penugasan karyawan',
       icon: ClipboardDocumentListIcon,
       href: '/app/hr/roster',
-      color: 'bg-pink-500',
+      gradient: 'from-pink-500 to-pink-600',
       stats: 'Drag & drop roster'
     },
     {
@@ -144,7 +150,7 @@ export default function HRDashboard() {
       description: 'Kelola struktur organisasi dan departemen',
       icon: BuildingOfficeIcon,
       href: '/app/hr/departments',
-      color: 'bg-indigo-500',
+      gradient: 'from-indigo-500 to-indigo-600',
       stats: 'Struktur organisasi'
     },
     {
@@ -152,18 +158,21 @@ export default function HRDashboard() {
       description: 'Laporan absensi, cuti, dan statistik karyawan',
       icon: ChartBarIcon,
       href: '/app/hr/reports',
-      color: 'bg-orange-500',
+      gradient: 'from-[#F15D2C] to-[#C73E1D]',
       stats: 'Export Excel/PDF'
     }
   ]
 
+  // 2026-10-07: Axion bento-grid restyle (tier-1 module landing page,
+  // #8 of 17). Sub-pages (Employees, Attendance, Payroll, etc) are
+  // intentionally left as-is - only this landing dashboard is in scope.
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard HR</h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-1">Kelola sumber daya manusia perusahaan</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-snug">Dashboard HR</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Kelola sumber daya manusia perusahaan</p>
         </div>
         <div className="flex items-center gap-3">
           <input
@@ -182,44 +191,45 @@ export default function HRDashboard() {
         </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Quick Stats - bento: Total Karyawan spans 2 cols (primary metric) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         {quickStats.map((stat, index) => (
-          <div key={index} className="card p-6">
-            <div className="flex items-center">
-              <div className={`${stat.color} p-3 rounded-lg`}>
-                <stat.icon className="h-6 w-6 text-white" />
+          <div
+            key={index}
+            className={`${stat.span ? 'xl:col-span-2' : ''} bg-gradient-to-br ${stat.gradient} rounded-xl p-4 text-white shadow-lg`}
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-2 bg-white/20 rounded-lg">
+                <stat.icon className="w-5 h-5" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">{stat.name}</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">{stat.subtext}</p>
-              </div>
+              <p className="text-sm opacity-90">{stat.name}</p>
             </div>
+            <p className={stat.span ? 'text-3xl font-bold' : 'text-2xl font-bold'}>{stat.value}</p>
+            <p className="text-xs opacity-75 mt-1">{stat.subtext}</p>
           </div>
         ))}
       </div>
 
       {/* HR Modules */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Modul HR</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4">Modul HR</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {moduleCards.map((module, index) => (
             <Link
               key={index}
               to={module.href}
-              className="card p-6 hover:shadow-lg transition-shadow group"
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-5 group"
             >
               <div className="flex items-start space-x-4">
-                <div className={`${module.color} p-3 rounded-lg group-hover:scale-110 transition-transform`}>
+                <div className={`bg-gradient-to-br ${module.gradient} p-3 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0`}>
                   <module.icon className="h-6 w-6 text-white" />
                 </div>
-                <div className="flex-1">
-                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors">
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-base font-semibold text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                     {module.title}
                   </h4>
-                  <p className="text-gray-600 dark:text-gray-300 text-sm mt-1">{module.description}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">{module.stats}</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">{module.description}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">{module.stats}</p>
                 </div>
               </div>
             </Link>

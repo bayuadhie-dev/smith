@@ -9,6 +9,7 @@ import {
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
+import { confirmDialog } from '../../components/ui';
 
 interface Department {
   id: number;
@@ -108,7 +109,7 @@ export default function Departments() {
   const childDepartments = (deptId: number) => departments.filter((d) => d.parent_department_id === deptId);
 
   const handleDelete = async (dept: Department) => {
-    if (!confirm(`Hapus departemen ${dept.name}?`)) return;
+    if (!(await confirmDialog(`Hapus departemen ${dept.name}?`))) return;
     try {
       await axiosInstance.delete(`/api/hr/departments/${dept.id}`);
       toast.success('Departemen berhasil dihapus');

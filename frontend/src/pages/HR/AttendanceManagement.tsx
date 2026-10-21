@@ -8,6 +8,7 @@ import {
   UserGroupIcon
 
 } from '@heroicons/react/24/outline';
+import { showSuccess, showError, showInfo } from '../../components/ui';
 export default function AttendanceManagement() {
     const { t } = useLanguage();
 
@@ -31,9 +32,9 @@ const navigate = useNavigate()
     try {
       await clockIn({ employee_id: employeeId }).unwrap()
       refetch()
-      alert('Clocked in successfully!')
+      showSuccess('Clocked in successfully!')
     } catch (error) {
-      alert('Error clocking in')
+      showError('Error clocking in')
     }
   }
 
@@ -41,9 +42,9 @@ const navigate = useNavigate()
     try {
       await clockOut({ employee_id: employeeId }).unwrap()
       refetch()
-      alert('Clocked out successfully!')
+      showSuccess('Clocked out successfully!')
     } catch (error) {
-      alert('Error clocking out')
+      showError('Error clocking out')
     }
   }
 
@@ -63,7 +64,7 @@ const navigate = useNavigate()
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Attendance Management</h1>
         <div className="flex gap-2">
           <button 
-            onClick={() => alert('Bulk Mark Attendance feature - Coming Soon!')}
+            onClick={() => showInfo('Bulk Mark Attendance feature - Coming Soon!')}
             className="btn-outline inline-flex items-center gap-2"
           >
             <UserGroupIcon className="h-5 w-5" />

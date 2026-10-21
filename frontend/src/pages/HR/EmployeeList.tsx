@@ -15,6 +15,7 @@ import {
   TrashIcon
 } from '@heroicons/react/24/outline';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
+import { confirmDialog } from '../../components/ui';
 
 export default function EmployeeList() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -58,7 +59,7 @@ export default function EmployeeList() {
   const hasActiveFilters = searchQuery || departmentFilter || positionFilter || statusFilter || employmentTypeFilter
 
   const handleDelete = async (id: number, name: string) => {
-    if (!window.confirm(`Yakin hapus karyawan "${name}"?`)) return
+    if (!(await confirmDialog(`Yakin hapus karyawan "${name}"?`))) return
     try {
       await axiosInstance.delete(`/api/hr/employees/${id}`)
       toast.success('Karyawan berhasil dihapus')

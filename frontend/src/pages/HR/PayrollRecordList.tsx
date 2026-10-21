@@ -12,6 +12,7 @@ import {
   CurrencyDollarIcon,
   DocumentTextIcon
 } from '@heroicons/react/24/outline'
+import { confirmDialog, showError } from '../../components/ui'
 
 interface PayrollRecord {
   id: number
@@ -119,7 +120,7 @@ export default function PayrollRecordList() {
   }
 
   const handleApproveRecord = async (recordId: number) => {
-    if (!confirm('Approve payroll record ini?')) return
+    if (!(await confirmDialog('Approve payroll record ini?'))) return
     try {
       const response = await fetch(`/api/hr/payroll/records/${recordId}/approve`, {
         method: 'POST',
@@ -128,15 +129,15 @@ export default function PayrollRecordList() {
       if (response.ok) {
         fetchRecords()
       } else {
-        alert('Gagal approve record')
+        showError('Gagal approve record')
       }
     } catch (error) {
-      alert('Error approving record')
+      showError('Error approving record')
     }
   }
 
   const handleMarkPaid = async (recordId: number) => {
-    if (!confirm('Tandai sebagai sudah dibayar?')) return
+    if (!(await confirmDialog('Tandai sebagai sudah dibayar?'))) return
     try {
       const response = await fetch(`/api/hr/payroll/records/${recordId}/pay`, {
         method: 'POST',
@@ -146,10 +147,10 @@ export default function PayrollRecordList() {
       if (response.ok) {
         fetchRecords()
       } else {
-        alert('Gagal menandai pembayaran')
+        showError('Gagal menandai pembayaran')
       }
     } catch (error) {
-      alert('Error marking payment')
+      showError('Error marking payment')
     }
   }
 

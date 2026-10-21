@@ -4,6 +4,7 @@ import {
   Loader2, Filter, Search, ChevronDown, MapPin, Settings, Plus
 } from 'lucide-react';
 import axiosInstance from '../../lib/axios';
+import { confirmDialog, showSuccess, showError, showWarning } from '../../components/ui';
 
 interface LeaveRequest {
   id: number;
@@ -133,14 +134,14 @@ const StaffLeaveManagement: React.FC = () => {
   };
 
   const handleApprove = async (id: number) => {
-    if (!confirm('Yakin ingin menyetujui pengajuan ini?')) return;
-    
+    if (!(await confirmDialog('Yakin ingin menyetujui pengajuan ini?'))) return;
+
     try {
       await axiosInstance.post(`/api/staff-leave/approve/${id}`);
       fetchRequests();
     } catch (error) {
       console.error('Error approving:', error);
-      alert('Gagal menyetujui pengajuan');
+      showError('Gagal menyetujui pengajuan');
     }
   };
 
@@ -157,13 +158,13 @@ const StaffLeaveManagement: React.FC = () => {
       fetchRequests();
     } catch (error) {
       console.error('Error rejecting:', error);
-      alert('Gagal menolak pengajuan');
+      showError('Gagal menolak pengajuan');
     }
   };
 
   const handleSaveLocation = async () => {
     if (!newLocation.name || !newLocation.latitude || !newLocation.longitude) {
-      alert('Nama, latitude, dan longitude wajib diisi');
+      showWarning('Nama, latitude, dan longitude wajib diisi');
       return;
     }
 
@@ -179,10 +180,10 @@ const StaffLeaveManagement: React.FC = () => {
       });
       setNewLocation({ name: '', latitude: '', longitude: '', radius_meters: '100', address: '', is_default: false });
       fetchLocations();
-      alert('Lokasi kantor berhasil disimpan');
+      showSuccess('Lokasi kantor berhasil disimpan');
     } catch (error) {
       console.error('Error saving location:', error);
-      alert('Gagal menyimpan lokasi');
+      showError('Gagal menyimpan lokasi');
     } finally {
       setSavingLocation(false);
     }
@@ -208,24 +209,24 @@ const StaffLeaveManagement: React.FC = () => {
   };
 
   const handleManagerApprove = async (id: number, decision: 'approved' | 'rejected') => {
-    if (!confirm(decision === 'approved' ? 'Setujui sebagai manager?' : 'Tolak pengajuan ini?')) return;
+    if (!(await confirmDialog(decision === 'approved' ? 'Setujui sebagai manager?' : 'Tolak pengajuan ini?'))) return;
     try {
       await axiosInstance.post(`/api/staff-leave/manager-approve/${id}`, { decision });
       fetchRequests();
     } catch (error: any) {
-      alert(error?.response?.data?.error || 'Gagal memproses approval manager');
+      showError(error?.response?.data?.error || 'Gagal memproses approval manager');
     }
   };
 
   const handleDeleteLocation = async (id: number) => {
-    if (!confirm('Yakin ingin menghapus lokasi ini?')) return;
-    
+    if (!(await confirmDialog('Yakin ingin menghapus lokasi ini?'))) return;
+
     try {
       await axiosInstance.delete(`/api/staff-leave/office-locations/${id}`);
       fetchLocations();
     } catch (error) {
       console.error('Error deleting location:', error);
-      alert('Gagal menghapus lokasi');
+      showError('Gagal menghapus lokasi');
     }
   };
 

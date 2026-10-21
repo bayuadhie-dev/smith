@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Trash2, RefreshCw, AlertCircle, CheckCircle, Users, Camera } from 'lucide-react';
 import api from '../../utils/axiosConfig';
+import { confirmDialog } from '../../components/ui';
 
 interface RegisteredFace {
   id: number;
@@ -37,7 +38,7 @@ const FaceAdmin: React.FC = () => {
   };
 
   const handleDeleteFace = async (id: number, faceName: string) => {
-    if (!confirm(`Yakin ingin menghapus data wajah "${faceName}"?`)) return;
+    if (!(await confirmDialog(`Yakin ingin menghapus data wajah "${faceName}"?`))) return;
     
     setDeletingId(id);
     setError(null);

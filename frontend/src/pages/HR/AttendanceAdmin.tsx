@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Trash2, RefreshCw, AlertCircle, CheckCircle } from 'lucide-react';
 import api from '../../utils/axiosConfig';
+import { confirmDialog } from '../../components/ui';
 
 interface AttendanceRecord {
   id: number;
@@ -38,7 +39,7 @@ const AttendanceAdmin: React.FC = () => {
   };
 
   const handleDelete = async (record: AttendanceRecord) => {
-    if (!confirm(`Yakin ingin menghapus data absensi "${record.name}" tanggal ${record.date}?`)) return;
+    if (!(await confirmDialog(`Yakin ingin menghapus data absensi "${record.name}" tanggal ${record.date}?`))) return;
     
     setDeletingId(record.id);
     setError(null);

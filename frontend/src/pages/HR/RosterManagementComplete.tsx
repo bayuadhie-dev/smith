@@ -16,6 +16,7 @@ import {
   UserIcon
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
+import { confirmDialog, showSuccess, showError } from '../../components/ui';
 // Fix untuk React 18 Strict Mode
 const StrictModeDroppable = ({ children, ...props }: any) => {
   const [enabled, setEnabled] = useState(false);
@@ -248,7 +249,7 @@ const RosterManagementComplete: React.FC = () => {
     if (isEmployeeAssignedInWeek(employeeId, selectedShift)) {
       const employee = employees.find(e => e.id === employeeId);
       const shift = shifts.find(s => s.id === selectedShift);
-      alert(`❌ ${employee?.full_name} is already assigned in this week for ${shift?.name}!\nOne employee can only be assigned once per shift per week.`);
+      showError(`❌ ${employee?.full_name} is already assigned in this week for ${shift?.name}!\nOne employee can only be assigned once per shift per week.`);
       return;
     }
 
@@ -256,7 +257,7 @@ const RosterManagementComplete: React.FC = () => {
     if (isSlotOccupied(machineId, date, selectedShift)) {
       const machine = machines.find(m => m.id === machineId);
       const shift = shifts.find(s => s.id === selectedShift);
-      alert(`❌ This slot is already occupied!\nMachine: ${machine?.name}\nDate: ${new Date(date).toLocaleDateString()}\nShift: ${shift?.name}`);
+      showError(`❌ This slot is already occupied!\nMachine: ${machine?.name}\nDate: ${new Date(date).toLocaleDateString()}\nShift: ${shift?.name}`);
       return;
     }
 
@@ -271,7 +272,7 @@ const RosterManagementComplete: React.FC = () => {
                           `Shift: ${shift?.name}\n\n` +
                           `Continue?`;
     
-    if (!confirm(confirmMessage)) {
+    if (!(await confirmDialog(confirmMessage))) {
       return;
     }
 
@@ -308,7 +309,7 @@ const RosterManagementComplete: React.FC = () => {
         console.log('✅ Data reloaded successfully');
         
         // Show success message
-        alert(`✅ Assignment successful!\n${employee?.full_name} assigned to ${machine?.name}`);
+        showSuccess(`✅ Assignment successful!\n${employee?.full_name} assigned to ${machine?.name}`);
       } else {
         throw new Error(`Unexpected response status: ${response.status}`);
       }
@@ -334,7 +335,7 @@ const RosterManagementComplete: React.FC = () => {
         errorMessage += `Error: ${error.message}`;
       }
       
-      alert(errorMessage);
+      showError(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -383,7 +384,7 @@ const RosterManagementComplete: React.FC = () => {
 
   // Remove assignment
   const removeAssignment = async (assignmentId: number) => {
-    if (!confirm('Are you sure you want to remove this assignment?')) {
+    if (!(await confirmDialog('Are you sure you want to remove this assignment?'))) {
       return;
     }
 
@@ -395,10 +396,10 @@ const RosterManagementComplete: React.FC = () => {
       // Reload data
       await loadAllData();
       
-      alert('Assignment removed successfully!');
+      showSuccess('Assignment removed successfully!');
     } catch (error: any) {
       console.error('❌ Failed to remove assignment:', error);
-      alert('Failed to remove assignment: ' + error.message);
+      showError('Failed to remove assignment: ' + error.message);
     } finally {
       setSaving(false);
     }
@@ -413,7 +414,7 @@ const RosterManagementComplete: React.FC = () => {
 
   // Copy week roster
   const copyWeekRoster = async () => {
-    if (!confirm('Copy current week roster to next week?')) {
+    if (!(await confirmDialog('Copy current week roster to next week?'))) {
       return;
     }
 
@@ -426,14 +427,14 @@ const RosterManagementComplete: React.FC = () => {
       });
       
       console.log('📋 Week copied:', response.data);
-      alert('Week roster copied successfully!');
-      
+      showSuccess('Week roster copied successfully!');
+
       // Navigate to next week and reload
       navigateWeek('next');
-      
+
     } catch (error: any) {
       console.error('❌ Failed to copy week:', error);
-      alert('Failed to copy week: ' + error.message);
+      showError('Failed to copy week: ' + error.message);
     } finally {
       setSaving(false);
     }

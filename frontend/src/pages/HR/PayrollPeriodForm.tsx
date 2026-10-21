@@ -5,6 +5,7 @@ import { useCreatePayrollPeriodMutation } from '../../services/api'
 import {
   ArrowLeftIcon
 } from '@heroicons/react/24/outline';
+import { showSuccess, showError } from '../../components/ui';
 export default function PayrollPeriodForm() {
     const { t } = useLanguage();
 
@@ -24,10 +25,10 @@ const navigate = useNavigate()
     e.preventDefault()
     try {
       await createPayrollPeriod(formData).unwrap()
-      alert('Payroll period created successfully!')
+      showSuccess('Payroll period created successfully!')
       navigate('/app/hr/payroll')
     } catch (error) {
-      alert('Error creating payroll period')
+      showError('Error creating payroll period')
     }
   }
 

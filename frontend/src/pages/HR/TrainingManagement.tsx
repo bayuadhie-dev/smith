@@ -9,6 +9,7 @@ import {
   PlusIcon,
   UserGroupIcon
 } from '@heroicons/react/24/outline';
+import { showInfo } from '../../components/ui';
 export default function TrainingManagement() {
     const { t } = useLanguage();
 
@@ -73,7 +74,7 @@ const navigate = useNavigate()
             Training Report
           </button>
           <button 
-            onClick={() => alert('New Training Session form - Coming Soon!')}
+            onClick={() => showInfo('New Training Session form - Coming Soon!')}
             className="btn-primary inline-flex items-center gap-2"
           >
             <PlusIcon className="h-5 w-5" />

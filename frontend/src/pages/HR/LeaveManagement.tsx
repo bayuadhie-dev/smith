@@ -9,6 +9,7 @@ import {
   PlusIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
+import { showSuccess, showError } from '../../components/ui';
 export default function LeaveManagement() {
     const { t } = useLanguage();
 
@@ -39,9 +40,9 @@ const navigate = useNavigate()
     try {
       await approveLeave(leaveId).unwrap()
       refetch()
-      alert('Leave approved successfully!')
+      showSuccess('Leave approved successfully!')
     } catch (error) {
-      alert('Error approving leave')
+      showError('Error approving leave')
     }
   }
 
@@ -52,9 +53,9 @@ const navigate = useNavigate()
     try {
       await rejectLeave({ leaveId, rejection_reason: reason }).unwrap()
       refetch()
-      alert('Leave rejected successfully!')
+      showSuccess('Leave rejected successfully!')
     } catch (error) {
-      alert('Error rejecting leave')
+      showError('Error rejecting leave')
     }
   }
 

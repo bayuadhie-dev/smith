@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, Plus, Pencil, Trash2, Users, Loader2, X } from 'lucide-react';
 import axiosInstance from '../../utils/axiosConfig';
+import { confirmDialog, showError } from '../../components/ui';
 
 interface WorkSchedule {
   id: number;
@@ -103,12 +104,12 @@ const WorkScheduleManagement: React.FC = () => {
   };
 
   const handleDelete = async (s: WorkSchedule) => {
-    if (!confirm(`Hapus jadwal "${s.name}"?`)) return;
+    if (!(await confirmDialog(`Hapus jadwal "${s.name}"?`))) return;
     try {
       await axiosInstance.delete(`/api/attendance/work-schedules/${s.id}`);
       fetchSchedules();
     } catch (e: any) {
-      alert(e?.response?.data?.error || 'Gagal menghapus jadwal');
+      showError(e?.response?.data?.error || 'Gagal menghapus jadwal');
     }
   };
 
@@ -133,7 +134,7 @@ const WorkScheduleManagement: React.FC = () => {
       setAssigningSchedule(null);
       fetchSchedules();
     } catch (e: any) {
-      alert(e?.response?.data?.error || 'Gagal menugaskan jadwal');
+      showError(e?.response?.data?.error || 'Gagal menugaskan jadwal');
     } finally {
       setAssigning(false);
     }

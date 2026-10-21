@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { BriefcaseIcon, PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
+import { confirmDialog } from '../../components/ui';
 import {
   useGetJobPositionsQuery,
   useCreateJobPositionMutation,
@@ -59,7 +60,7 @@ export default function PositionManagement() {
   };
 
   const handleDelete = async (p: any) => {
-    if (!confirm(`Hapus jabatan ${p.title}?`)) return;
+    if (!(await confirmDialog(`Hapus jabatan ${p.title}?`))) return;
     try {
       await deletePosition(p.id).unwrap();
       toast.success('Jabatan dihapus');

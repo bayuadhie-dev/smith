@@ -5,6 +5,7 @@ import { useCreateAppraisalCycleMutation, useGetAppraisalTemplatesQuery } from '
 import {
   ArrowLeftIcon
 } from '@heroicons/react/24/outline';
+import { showSuccess, showError } from '../../components/ui';
 export default function AppraisalCycleForm() {
     const { t } = useLanguage();
 
@@ -28,10 +29,10 @@ const navigate = useNavigate()
     e.preventDefault()
     try {
       await createAppraisalCycle(formData).unwrap()
-      alert('Appraisal cycle created successfully!')
+      showSuccess('Appraisal cycle created successfully!')
       navigate('/app/hr/appraisal')
     } catch (error) {
-      alert('Error creating appraisal cycle')
+      showError('Error creating appraisal cycle')
     }
   }
 
