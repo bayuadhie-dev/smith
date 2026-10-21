@@ -36,6 +36,9 @@ export {
   showPromise
 } from './Toast';
 
+// Confirm Dialog (replaces native window.confirm - see ConfirmDialog.tsx)
+export { ConfirmDialogProvider, confirmDialog } from './ConfirmDialog';
+
 // Form Components
 export { TextInput, Textarea, Select, Checkbox } from './FormInput';
 

@@ -40,15 +40,26 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
         className={`absolute inset-0 bg-white/80 dark:bg-slate-900/80 ${blur ? 'backdrop-blur-sm' : ''}`}
       />
       
-      {/* Spinner */}
+      {/* Spinner - 2026-10-07: Axion redesign, dual counter-rotating
+          rings + pulsing center dot, matching components/Common/
+          LoadingSpinner.tsx so the "feel" of loading is consistent
+          everywhere, not just the color. */}
       <div className="relative flex flex-col items-center">
-        <div className="relative">
-          {/* Outer ring */}
-          <div className="w-12 h-12 rounded-full border-4 border-slate-200 dark:border-slate-700" />
-          {/* Spinning ring */}
-          <div className="absolute top-0 left-0 w-12 h-12 rounded-full border-4 border-transparent border-t-blue-600 animate-spin" />
+        <div className="relative w-12 h-12">
+          <div className="absolute inset-0 rounded-full border-4 border-slate-200 dark:border-slate-700" />
+          <div
+            className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#059669] border-r-teal-400 animate-spin"
+            style={{ animationDuration: '0.9s' }}
+          />
+          <div
+            className="absolute inset-[5px] rounded-full border-4 border-transparent border-b-[#F15D2C] animate-spin [animation-direction:reverse]"
+            style={{ animationDuration: '1.4s' }}
+          />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="h-2 w-2 rounded-full bg-gradient-to-br from-[#059669] to-[#047857] animate-pulse" />
+          </div>
         </div>
-        
+
         {/* Message */}
         <p className="mt-4 text-sm font-medium text-slate-600 dark:text-slate-400 text-center px-4">
           {displayMessage}
@@ -88,9 +99,19 @@ export const PageLoading: React.FC<{ message?: string }> = ({ message }) => {
   return (
     <div className="min-h-[60vh] flex items-center justify-center">
       <div className="text-center px-4">
-        <div className="relative inline-block">
-          <div className="w-16 h-16 rounded-full border-4 border-slate-200 dark:border-slate-700" />
-          <div className="absolute top-0 left-0 w-16 h-16 rounded-full border-4 border-transparent border-t-blue-600 animate-spin" />
+        <div className="relative inline-block w-16 h-16">
+          <div className="absolute inset-0 rounded-full border-4 border-slate-200 dark:border-slate-700" />
+          <div
+            className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#059669] border-r-teal-400 animate-spin"
+            style={{ animationDuration: '0.9s' }}
+          />
+          <div
+            className="absolute inset-[6px] rounded-full border-4 border-transparent border-b-[#F15D2C] animate-spin [animation-direction:reverse]"
+            style={{ animationDuration: '1.4s' }}
+          />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="h-2.5 w-2.5 rounded-full bg-gradient-to-br from-[#059669] to-[#047857] animate-pulse" />
+          </div>
         </div>
         <p className="mt-4 text-slate-600 dark:text-slate-400 font-medium text-sm sm:text-base">{displayMsg}</p>
       </div>
