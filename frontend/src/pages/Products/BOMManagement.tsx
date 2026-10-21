@@ -13,6 +13,7 @@ import {
 import axiosInstance from '../../utils/axiosConfig';
 import { formatRupiah } from '../../utils/currencyUtils';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { confirmDialog, showError, showSuccess } from '../../components/ui';
 import SearchableSelect from '../../components/SearchableSelect';
 
 interface BOMItem {
@@ -117,22 +118,20 @@ const BOMManagement: React.FC = () => {
       setMaterials(materialsRes.data?.materials || []);
     } catch (error) {
       console.error('Failed to load data:', error);
-      // Set empty data - will show "No BOMs found" message
+      // 2026-10-07: this used to fall back to 4 fake products (id 1-4,
+      // "Nonwoven Fabric A"/"Medical Mask Material"/etc - one of them
+      // literally named "FunnelIcon Media", a leftover from a broken
+      // find/replace) on ANY API error. Those fake ids populate the BOM
+      // product-selection dropdown directly - a user could pick one and
+      // save a BOM referencing a completely different REAL product that
+      // happens to share id 1-4. Honest empty data on failure instead.
       setBoms([]);
+      setProducts([]);
       
-      setProducts([
-        { id: 1, name: 'Nonwoven Fabric A', code: 'NWF-001', category: 'Nonwoven Fabrics' },
-        { id: 2, name: 'Medical Mask Material', code: 'MMM-001', category: 'Medical Products' },
-        { id: 3, name: 'FunnelIcon Media', code: 'FM-001', category: 'FunnelIcon Media' },
-        { id: 4, name: 'Geotextile Fabric', code: 'GTF-001', category: 'Geotextiles' }
-      ]);
-      
-      setMaterials([
-        { id: 1, name: 'PP Granules', code: 'PP-001', unit: 'kg', unit_cost: 8500, stock_quantity: 1500 },
-        { id: 2, name: 'Additives', code: 'ADD-001', unit: 'kg', unit_cost: 25000, stock_quantity: 50 },
-        { id: 3, name: 'Meltblown Fabric', code: 'MB-001', unit: 'm²', unit_cost: 12000, stock_quantity: 200 },
-        { id: 4, name: 'Spunbond Fabric', code: 'SB-001', unit: 'm²', unit_cost: 1900, stock_quantity: 800 }
-      ]);
+      // Same risk as products above - fake material ids 1-4 could be
+      // picked into a real BOM item, silently consuming the wrong real
+      // material.
+      setMaterials([]);
     } finally {
       setLoading(false);
     }
@@ -220,25 +219,25 @@ const BOMManagement: React.FC = () => {
 
       closeBOMModal();
       await loadData();
-      alert(`BOM ${selectedBOM ? 'updated' : 'created'} successfully!`);
+      showSuccess(`BOM ${selectedBOM ? 'updated' : 'created'} successfully!`);
     } catch (error) {
       console.error('Failed to save BOM:', error);
-      alert('Failed to save BOM');
+      showError('Failed to save BOM');
     }
   };
 
   const deleteBOM = async (bomId: number) => {
-    if (!confirm('Are you sure you want to delete this BOM? This action cannot be undone.')) {
+    if (!(await confirmDialog('Are you sure you want to delete this BOM? This action cannot be undone.'))) {
       return;
     }
 
     try {
       await axiosInstance.delete(`/api/boms/${bomId}`);
       await loadData();
-      alert('BOM deleted successfully!');
+      showSuccess('BOM deleted successfully!');
     } catch (error) {
       console.error('Failed to delete BOM:', error);
-      alert('Failed to delete BOM');
+      showError('Failed to delete BOM');
     }
   };
 
@@ -286,15 +285,15 @@ const BOMManagement: React.FC = () => {
 
       closeItemModal();
       await loadData();
-      alert(`BOM item ${editingItem ? 'updated' : 'added'} successfully!`);
+      showSuccess(`BOM item ${editingItem ? 'updated' : 'added'} successfully!`);
     } catch (error) {
       console.error('Failed to save BOM item:', error);
-      alert('Failed to save BOM item');
+      showError('Failed to save BOM item');
     }
   };
 
   const deleteItem = async (bomId: number, itemId: number) => {
-    if (!confirm('Are you sure you want to remove this item from the BOM?')) {
+    if (!(await confirmDialog('Are you sure you want to remove this item from the BOM?'))) {
       return;
     }
 
@@ -305,19 +304,19 @@ const BOMManagement: React.FC = () => {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
-      
+
       if (response.ok) {
         // Reload the BOM items for this specific BOM
         await toggleBOMExpand(bomId);
         await toggleBOMExpand(bomId); // Toggle twice to refresh
-        alert('BOM item removed successfully!');
+        showSuccess('BOM item removed successfully!');
       } else {
         const errorData = await response.json();
-        alert(`Failed to delete BOM item: ${errorData.error || 'Unknown error'}`);
+        showError(`Failed to delete BOM item: ${errorData.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Failed to delete BOM item:', error);
-      alert('Failed to delete BOM item');
+      showError('Failed to delete BOM item');
     }
   };
 

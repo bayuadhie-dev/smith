@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useGetProductsQuery, useDeleteProductMutation } from '../../services/api'
 import toast from 'react-hot-toast'
+import { confirmDialog } from '../../components/ui'
 import {
   LinkIcon,
   PencilIcon,
@@ -18,7 +19,7 @@ export default function ProductList() {
   const [deleteProduct] = useDeleteProductMutation()
 
   const handleDelete = async (id: number) => {
-    if (confirm('Are you sure you want to delete this product?')) {
+    if (await confirmDialog('Are you sure you want to delete this product?')) {
       try {
         await deleteProduct(id).unwrap()
         toast.success('Product deleted successfully')

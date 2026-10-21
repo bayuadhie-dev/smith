@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { showError, showSuccess } from '../../components/ui';
 const NonwovenCalculator: React.FC = () => {
   const { t } = useLanguage();
 
@@ -41,9 +42,9 @@ const NonwovenCalculator: React.FC = () => {
         })
       });
       const result = await response.json();
-      alert(`GSM: ${result.gsm}`);
+      showSuccess(`GSM: ${result.gsm}`);
     } catch (error) {
-      alert('Error calculating GSM');
+      showError('Error calculating GSM');
     }
   };
 
@@ -59,9 +60,9 @@ const NonwovenCalculator: React.FC = () => {
         })
       });
       const result = await response.json();
-      alert(`Weight per sheet: ${result.weight_per_sheet_g} grams`);
+      showSuccess(`Weight per sheet: ${result.weight_per_sheet_g} grams`);
     } catch (error) {
-      alert('Error calculating sheet weight');
+      showError('Error calculating sheet weight');
     }
   };
 
@@ -76,9 +77,9 @@ const NonwovenCalculator: React.FC = () => {
         })
       });
       const result = await response.json();
-      alert(`Packaging Structure: ${result.packaging_ratio}`);
+      showSuccess(`Packaging Structure: ${result.packaging_ratio}`);
     } catch (error) {
-      alert('Error calculating packaging');
+      showError('Error calculating packaging');
     }
   };
 
@@ -94,9 +95,9 @@ const NonwovenCalculator: React.FC = () => {
         })
       });
       const result = await response.json();
-      alert(`Converted: ${result.converted_value} ${result.to_uom}`);
+      showSuccess(`Converted: ${result.converted_value} ${result.to_uom}`);
     } catch (error) {
-      alert('Error converting UOM');
+      showError('Error converting UOM');
     }
   };
 

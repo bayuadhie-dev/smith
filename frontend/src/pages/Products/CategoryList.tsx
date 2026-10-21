@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 import { notificationService } from '../../services/notificationService';
+import { confirmDialog } from '../../components/ui';
 import {
   CheckCircleIcon,
   EyeIcon,
@@ -122,7 +123,7 @@ const navigate = useNavigate();
   };
 
   const handleDelete = async (id: number, name: string) => {
-    if (!window.confirm(`Are you sure you want to delete category "${name}"?`)) {
+    if (!(await confirmDialog(`Are you sure you want to delete category "${name}"?`))) {
       return;
     }
 

@@ -13,6 +13,7 @@ import {
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import { formatRupiah } from '../../utils/currencyUtils';
+import { confirmDialog, showError, showSuccess } from '../../components/ui';
 import { useLanguage } from '../../contexts/LanguageContext';
 
 interface ProductCategory {
@@ -41,6 +42,7 @@ const ProductCategories: React.FC = () => {
   const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [filteredCategories, setFilteredCategories] = useState<ProductCategory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   
@@ -65,115 +67,24 @@ const ProductCategories: React.FC = () => {
   const loadCategories = async () => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get('/api/products/categories');
+      setLoadError(false);
+      // 2026-10-07: this used to call /api/products/categories, which
+      // collides with an unrelated static nonwoven spec-range lookup
+      // registered at the same path (gsm/width/length ranges) - the real
+      // product-category CRUD list lives at /product-categories.
+      const response = await axiosInstance.get('/api/products/product-categories');
       setCategories(response.data?.categories || []);
     } catch (error) {
       console.error('Failed to load categories:', error);
-      // Set mock data for development
-      setCategories([
-        {
-          id: 1,
-          name: 'Nonwoven Fabrics',
-          description: 'Various types of nonwoven fabric products',
-          parent_id: null,
-          product_count: 45,
-          total_value: 850000000,
-          is_active: true,
-          created_at: '2024-01-01T00:00:00Z',
-          updated_at: '2024-01-15T10:30:00Z'
-        },
-        {
-          id: 2,
-          name: 'Medical Grade',
-          description: 'Medical grade nonwoven fabrics',
-          parent_id: 1,
-          parent_name: 'Nonwoven Fabrics',
-          product_count: 18,
-          total_value: 320000000,
-          is_active: true,
-          created_at: '2024-01-01T00:00:00Z',
-          updated_at: '2024-01-15T10:30:00Z'
-        },
-        {
-          id: 3,
-          name: 'Industrial Grade',
-          description: 'Industrial grade nonwoven fabrics',
-          parent_id: 1,
-          parent_name: 'Nonwoven Fabrics',
-          product_count: 27,
-          total_value: 530000000,
-          is_active: true,
-          created_at: '2024-01-01T00:00:00Z',
-          updated_at: '2024-01-15T10:30:00Z'
-        },
-        {
-          id: 4,
-          name: 'Medical Products',
-          description: 'Medical and healthcare products',
-          parent_id: null,
-          product_count: 32,
-          total_value: 620000000,
-          is_active: true,
-          created_at: '2024-01-01T00:00:00Z',
-          updated_at: '2024-01-15T10:30:00Z'
-        },
-        {
-          id: 5,
-          name: 'Face Masks',
-          description: 'Various types of face masks',
-          parent_id: 4,
-          parent_name: 'Medical Products',
-          product_count: 15,
-          total_value: 280000000,
-          is_active: true,
-          created_at: '2024-01-01T00:00:00Z',
-          updated_at: '2024-01-15T10:30:00Z'
-        },
-        {
-          id: 6,
-          name: 'FunnelIcon Media',
-          description: 'Air and liquid filtration media',
-          parent_id: null,
-          product_count: 25,
-          total_value: 380000000,
-          is_active: true,
-          created_at: '2024-01-01T00:00:00Z',
-          updated_at: '2024-01-15T10:30:00Z'
-        },
-        {
-          id: 7,
-          name: 'Geotextiles',
-          description: 'Geotextile and civil engineering fabrics',
-          parent_id: null,
-          product_count: 18,
-          total_value: 290000000,
-          is_active: true,
-          created_at: '2024-01-01T00:00:00Z',
-          updated_at: '2024-01-15T10:30:00Z'
-        },
-        {
-          id: 8,
-          name: 'Raw Materials',
-          description: 'Raw materials and components',
-          parent_id: null,
-          product_count: 28,
-          total_value: 450000000,
-          is_active: true,
-          created_at: '2024-01-01T00:00:00Z',
-          updated_at: '2024-01-15T10:30:00Z'
-        },
-        {
-          id: 9,
-          name: 'Discontinued',
-          description: 'Discontinued product category',
-          parent_id: null,
-          product_count: 5,
-          total_value: 25000000,
-          is_active: false,
-          created_at: '2024-01-01T00:00:00Z',
-          updated_at: '2024-01-15T10:30:00Z'
-        }
-      ]);
+      // 2026-10-07: this used to fall back to 9 hardcoded fake categories
+      // ("Nonwoven Fabrics" with 45 products / Rp850,000,000, etc) on ANY
+      // API error - a real backend hiccup (auth expiry, network blip,
+      // server restart) would silently show a complete, plausible-looking
+      // fake category list instead of an honest error. The real
+      // /api/products/categories endpoint exists and works; show an empty
+      // state on failure instead of fabricated data.
+      setCategories([]);
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
@@ -247,25 +158,25 @@ const ProductCategories: React.FC = () => {
 
       closeModal();
       await loadCategories();
-      alert(`Category ${editingCategory ? 'updated' : 'created'} successfully!`);
+      showSuccess(`Category ${editingCategory ? 'updated' : 'created'} successfully!`);
     } catch (error) {
       console.error('Failed to save category:', error);
-      alert('Failed to save category');
+      showError('Failed to save category');
     }
   };
 
   const deleteCategory = async (categoryId: number) => {
-    if (!confirm('Are you sure you want to delete this category? This action cannot be undone.')) {
+    if (!(await confirmDialog('Are you sure you want to delete this category? This action cannot be undone.'))) {
       return;
     }
 
     try {
       await axiosInstance.delete(`/api/products/categories/${categoryId}`);
       await loadCategories();
-      alert('Category deleted successfully!');
+      showSuccess('Category deleted successfully!');
     } catch (error) {
       console.error('Failed to delete category:', error);
-      alert('Failed to delete category. It may have associated products.');
+      showError('Failed to delete category. It may have associated products.');
     }
   };
 
@@ -419,10 +330,14 @@ const ProductCategories: React.FC = () => {
       {filteredCategories.length === 0 && (
         <div className="text-center py-12">
           <TagIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No categories found</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            {loadError ? 'Failed to load categories' : 'No categories found'}
+          </h3>
           <p className="text-gray-600 mb-4">
-            {searchTerm || statusFilter !== 'all' 
-              ? 'Try adjusting your search or filters' 
+            {loadError
+              ? 'Could not reach the server. Please try again.'
+              : searchTerm || statusFilter !== 'all'
+              ? 'Try adjusting your search or filters'
               : 'Get started by creating your first product category'
             }
           </p>

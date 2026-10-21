@@ -11,6 +11,7 @@ import ProductFormNew from '../components/ProductFormNew';
 import ProductDetailNew from '../components/ProductDetailNew';
 import ProductDashboardNew from '../components/ProductDashboardNew';
 import axiosInstance from '../utils/axiosConfig';
+import { showError, showSuccess } from '../components/ui';
 interface ProductNew {
   id: number;
   kode_produk: string;
@@ -102,16 +103,16 @@ const ProductsNewPage: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        alert(productData.id ? 'Produk berhasil diperbarui!' : 'Produk berhasil ditambahkan!');
+        showSuccess(productData.id ? 'Produk berhasil diperbarui!' : 'Produk berhasil ditambahkan!');
         setViewMode('list');
         setSelectedProduct(null);
       } else {
         const error = await response.json();
-        alert('Gagal menyimpan produk: ' + error.error);
+        showError('Gagal menyimpan produk: ' + error.error);
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('Terjadi kesalahan saat menyimpan produk');
+      showError('Terjadi kesalahan saat menyimpan produk');
     }
   };
 

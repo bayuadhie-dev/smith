@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import { formatRupiah } from '../../utils/currencyUtils';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { showInfo } from '../../components/ui';
 import {
   ArrowDownTrayIcon,
   ArrowLeftIcon,
@@ -107,25 +108,30 @@ const ProductAnalytics: React.FC = () => {
     }
   };
 
+  // 2026-10-07: these used to call .format()/.toFixed() directly on
+  // whatever the API sent, which crashed the whole page (ErrorBoundary,
+  // blank screen) whenever a numeric field the backend didn't yet send
+  // came through as undefined - defend with `?? 0` like formatRupiah
+  // elsewhere in this codebase already does.
   const formatRupiah = (amount: number) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
       currency: 'IDR',
       minimumFractionDigits: 0
-    }).format(amount);
+    }).format(amount ?? 0);
   };
 
   const formatNumber = (num: number) => {
-    return new Intl.NumberFormat('id-ID').format(num);
+    return new Intl.NumberFormat('id-ID').format(num ?? 0);
   };
 
   const formatPercent = (num: number) => {
-    return `${num.toFixed(1)}%`;
+    return `${(num ?? 0).toFixed(1)}%`;
   };
 
   const exportData = () => {
     // Mock export functionality
-    alert('Export functionality will be implemented with backend integration');
+    showInfo('Export functionality will be implemented with backend integration');
   };
 
   const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'];
@@ -341,7 +347,7 @@ const ProductAnalytics: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    {product.stock_turnover.toFixed(1)}x
+                    {(product.stock_turnover ?? 0).toFixed(1)}x
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <Link

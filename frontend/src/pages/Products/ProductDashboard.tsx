@@ -106,7 +106,11 @@ const ProductDashboard: React.FC = () => {
       setTrendData(trendsRes.data?.trends || []);
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
-      // Set minimal fallback data to prevent chart errors
+      // 2026-10-07: this used to fall back to a fake "No Data" product
+      // (id=1 - a real id that could collide with an actual product/
+      // stock-alert row) and 3 hardcoded Jan-Mar trend rows on ANY API
+      // error. Honest empty arrays instead - the charts below already
+      // render fine with empty data.
       setKpis({
         total_products: 0,
         active_products: 0,
@@ -117,20 +121,10 @@ const ProductDashboard: React.FC = () => {
         total_value: 0,
         avg_price: 0
       });
-      setTopProducts([
-        { product_name: 'No Data', sales_qty: 0, sales_value: 0, profit_margin: 0 }
-      ]);
-      setCategoryData([
-        { category: 'No Data', product_count: 0, total_value: 0 }
-      ]);
-      setStockAlerts([
-        { id: 1, product_name: 'No Data', status: 'normal', current_stock: 0, min_stock: 0 }
-      ]);
-      setTrendData([
-        { month: 'Jan', new_products: 0, discontinued: 0, sales_volume: 0 },
-        { month: 'Feb', new_products: 0, discontinued: 0, sales_volume: 0 },
-        { month: 'Mar', new_products: 0, discontinued: 0, sales_volume: 0 }
-      ]);
+      setTopProducts([]);
+      setCategoryData([]);
+      setStockAlerts([]);
+      setTrendData([]);
     } finally {
       setLoading(false);
     }
@@ -167,110 +161,91 @@ const ProductDashboard: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#059669]"></div>
         <span className="ml-3">Loading product dashboard...</span>
       </div>
     );
   }
 
+  // 2026-10-07: Axion bento-grid restyle (tier-2 sub-dashboard). Charts/
+  // alerts tables below are intentionally left as-is - only the header +
+  // KPI cards are in scope.
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard Produk</h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-1">Comprehensive overview of your product portfolio</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-snug">Dashboard Produk</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Comprehensive overview of your product portfolio</p>
         </div>
-        <div className="flex space-x-3">
+        <div className="flex gap-2">
           <Link
             to="/app/products/analytics"
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
           >
-            <ChartBarIcon className="h-5 w-5 mr-2" />
+            <ChartBarIcon className="h-5 w-5" />
           </Link>
           <Link
             to="/app/products/new"
-            className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-[#059669] to-[#047857] text-white rounded-lg hover:shadow-lg transition-shadow text-sm font-medium"
           >
-            <PlusIcon className="h-5 w-5 mr-2" />
+            <PlusIcon className="h-5 w-5" />
             Add Product
           </Link>
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <CubeIcon className="h-6 w-6 text-blue-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Products</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatNumber(kpis.total_products ?? 0)}</p>
-            </div>
+      {/* KPI Cards - bento: Total Products spans 2 cols (primary metric) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="xl:col-span-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg"><CubeIcon className="w-5 h-5" /></div>
+            <p className="text-sm opacity-90">Total Products</p>
           </div>
-          <div className="mt-4 flex items-center text-sm">
-            <span className="text-green-600 font-medium">{formatNumber(kpis.active_products ?? 0)} Active</span>
-            <span className="text-gray-400 mx-2">•</span>
-            <span className="text-red-600 font-medium">{formatNumber(kpis.inactive_products ?? 0)} Inactive</span>
-          </div>
+          <p className="text-3xl font-bold">{formatNumber(kpis.total_products ?? 0)}</p>
+          <p className="text-xs opacity-75 mt-1">
+            {formatNumber(kpis.active_products ?? 0)} Active &middot; {formatNumber(kpis.inactive_products ?? 0)} Inactive
+          </p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <TagIcon className="h-6 w-6 text-green-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Categories</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatNumber(kpis.total_categories ?? 0)}</p>
-            </div>
+        <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg"><TagIcon className="w-5 h-5" /></div>
           </div>
-          <div className="mt-4">
-            <Link to="/app/products/categories" className="text-sm text-blue-600 hover:text-blue-800">
-              Manage Categories →
-            </Link>
-          </div>
+          <p className="text-xs opacity-90 mb-1">Categories</p>
+          <p className="text-2xl font-bold">{formatNumber(kpis.total_categories ?? 0)}</p>
+          <Link to="/app/products/categories" className="text-xs underline opacity-90 hover:opacity-100">
+            Manage Categories →
+          </Link>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-2 bg-yellow-100 rounded-lg">
-              <ExclamationTriangleIcon className="h-6 w-6 text-yellow-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Stock Alerts</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatNumber((kpis.low_stock_products ?? 0) + (kpis.out_of_stock_products ?? 0))}</p>
-            </div>
+        <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg"><ExclamationTriangleIcon className="w-5 h-5" /></div>
           </div>
-          <div className="mt-4 flex items-center text-sm">
-            <span className="text-yellow-600 font-medium">{formatNumber(kpis.low_stock_products ?? 0)} Low Stock</span>
-            <span className="text-gray-400 mx-2">•</span>
-            <span className="text-red-600 font-medium">{formatNumber(kpis.out_of_stock_products ?? 0)} Out of Stock</span>
-          </div>
+          <p className="text-xs opacity-90 mb-1">Stock Alerts</p>
+          <p className="text-2xl font-bold">{formatNumber((kpis.low_stock_products ?? 0) + (kpis.out_of_stock_products ?? 0))}</p>
+          <p className="text-xs opacity-75 mt-1">
+            {formatNumber(kpis.low_stock_products ?? 0)} Low &middot; {formatNumber(kpis.out_of_stock_products ?? 0)} Out
+          </p>
         </div>
+      </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <BanknotesIcon className="h-6 w-6 text-purple-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Portfolio Value</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatRupiah(kpis.total_value ?? 0)}</p>
-            </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg"><BanknotesIcon className="w-5 h-5" /></div>
           </div>
-          <div className="mt-4">
-            <span className="text-sm text-gray-600 dark:text-gray-300">Avg Price: {formatRupiah(kpis.avg_price ?? 0)}</span>
-          </div>
+          <p className="text-xs opacity-90 mb-1">Portfolio Value</p>
+          <p className="text-xl font-bold">{formatRupiah(kpis.total_value ?? 0)}</p>
+          <p className="text-xs opacity-75 mt-1">Avg Price: {formatRupiah(kpis.avg_price ?? 0)}</p>
         </div>
       </div>
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top Products Chart */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Top Selling Products</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={topProducts}>
@@ -287,7 +262,7 @@ const ProductDashboard: React.FC = () => {
         </div>
 
         {/* Category Distribution */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Products by Category</h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
@@ -314,7 +289,7 @@ const ProductDashboard: React.FC = () => {
       {/* Bottom Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Stock Alerts */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Stock Alerts</h3>
             <Link to="/app/warehouse/inventory" className="text-sm text-blue-600 hover:text-blue-800">
@@ -339,7 +314,7 @@ const ProductDashboard: React.FC = () => {
         </div>
 
         {/* Product Trends */}
-        <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Product Trends</h3>
           <ResponsiveContainer width="100%" height={250}>
             <LineChart data={trendData}>
@@ -356,7 +331,7 @@ const ProductDashboard: React.FC = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <Link

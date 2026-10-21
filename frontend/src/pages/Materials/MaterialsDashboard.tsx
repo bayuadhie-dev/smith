@@ -90,7 +90,7 @@ const MaterialsDashboard: React.FC = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#059669]"></div>
       </div>
     );
   }
@@ -103,96 +103,75 @@ const MaterialsDashboard: React.FC = () => {
     );
   }
 
+  // 2026-10-07: Axion bento-grid restyle (tier-2 sub-dashboard). Charts/
+  // table/quick-action details below are intentionally left as-is -
+  // only the header + summary cards are in scope.
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Materials Dashboard</h1>
-          <p className="text-gray-600 dark:text-gray-300">Overview of your materials inventory and activities</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-snug">Materials Dashboard</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Overview of your materials inventory and activities</p>
         </div>
-        <div className="flex space-x-3">
-          <button 
-            onClick={() => window.location.href = '/app/warehouse/materials/list'}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
-          >
-            <Eye className="h-4 w-4" />
-            <span>View All Materials</span>
-          </button>
+        <button
+          onClick={() => window.location.href = '/app/warehouse/materials/list'}
+          className="bg-gradient-to-br from-[#059669] to-[#047857] hover:shadow-lg transition-shadow text-white px-4 py-2 rounded-lg flex items-center space-x-2 text-sm font-medium"
+        >
+          <Eye className="h-4 w-4" />
+          <span>View All Materials</span>
+        </button>
+      </div>
+
+      {/* Summary Cards - bento: Total Materials spans 2 cols (primary metric) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="xl:col-span-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <CubeIcon className="w-5 h-5" />
+            </div>
+            <p className="text-sm opacity-90">Total Materials</p>
+          </div>
+          <p className="text-3xl font-bold">{dashboardData.summary.total_materials.toLocaleString()}</p>
+        </div>
+
+        <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <ArrowTrendingUpIcon className="w-5 h-5" />
+            </div>
+          </div>
+          <p className="text-xs opacity-90 mb-1">Active Materials</p>
+          <p className="text-2xl font-bold">{dashboardData.summary.active_materials.toLocaleString()}</p>
+        </div>
+
+        <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <AlertTriangle className="w-5 h-5" />
+            </div>
+          </div>
+          <p className="text-xs opacity-90 mb-1">With Stock</p>
+          <p className="text-2xl font-bold">{dashboardData.summary.materials_with_stock.toLocaleString()}</p>
         </div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                <CubeIcon className="h-5 w-5 text-blue-600" />
-              </div>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Materials</p>
-              <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-                {dashboardData.summary.total_materials.toLocaleString()}
-              </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <Activity className="w-5 h-5" />
             </div>
           </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                <ArrowTrendingUpIcon className="h-5 w-5 text-green-600" />
-              </div>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Active Materials</p>
-              <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-                {dashboardData.summary.active_materials.toLocaleString()}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <AlertTriangle className="h-5 w-5 text-yellow-600" />
-              </div>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">With Stock</p>
-              <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-                {dashboardData.summary.materials_with_stock.toLocaleString()}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Activity className="h-5 w-5 text-purple-600" />
-              </div>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Inventory Value</p>
-              <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-                Rp {dashboardData.summary.total_inventory_value.toLocaleString('id-ID')}
-              </p>
-            </div>
-          </div>
+          <p className="text-xs opacity-90 mb-1">Inventory Value</p>
+          <p className="text-xl font-bold">Rp {dashboardData.summary.total_inventory_value.toLocaleString('id-ID')}</p>
         </div>
       </div>
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Materials by Type - Pie Chart */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Materials by Type</h3>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
@@ -218,7 +197,7 @@ const MaterialsDashboard: React.FC = () => {
         </div>
 
         {/* Materials by Type - Bar Chart */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Material Count by Type</h3>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
@@ -240,11 +219,11 @@ const MaterialsDashboard: React.FC = () => {
       </div>
 
       {/* Recent Movements */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md">
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Material Movements</h3>
-            <button className="text-blue-600 hover:text-blue-800 flex items-center space-x-1">
+            <button className="text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 flex items-center space-x-1">
               <span>View All</span>
               <ArrowRightIcon className="h-4 w-4" />
             </button>
@@ -292,7 +271,7 @@ const MaterialsDashboard: React.FC = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <button className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 text-left">
