@@ -2,3 +2,5 @@ agent_state.db
 agent_activity.log
 __pycache__/
 *.pyc
+.env
+venv/

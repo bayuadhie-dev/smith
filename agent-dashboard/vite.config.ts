@@ -7,5 +7,12 @@ import react from '@vitejs/plugin-react'
 // VITE_AGENT_API_URL, default localhost:4500 - lihat src/api.ts.
 export default defineConfig({
   plugins: [react()],
-  server: { port: 4501 },
+  server: {
+    port: 4501,
+    // Diakses lewat Cloudflare tunnel (agent.graterp.my.id), bukan cuma
+    // localhost - Vite 5 default menolak request dengan Host header asing
+    // (403 "Blocked request") sebagai pengaman dev-server. Daftarkan
+    // hostname tunnel-nya di sini.
+    allowedHosts: ['agent.graterp.my.id'],
+  },
 })
