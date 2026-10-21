@@ -129,7 +129,7 @@ const ExecutiveDashboard: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#059669]"></div>
         <span className="ml-3">Loading executive dashboard...</span>
       </div>
     );
@@ -145,99 +145,90 @@ const ExecutiveDashboard: React.FC = () => {
     );
   }
 
+  // 2026-10-07: Axion bento-grid restyle (tier-2 sub-dashboard). Detailed
+  // metric/alert cards below are intentionally left as-is - only the
+  // header + top KPI grid are in scope.
   return (
-    <div className="p-6">
+    <div className="p-6 space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen">
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between">
+      <div className="mb-2">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-snug">
               Executive Dashboard
             </h1>
-            <p className="text-gray-600 dark:text-gray-300">
+            <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
               High-level business insights and key performance indicators
             </p>
           </div>
-          
-          <div className="flex items-center space-x-4">
+
+          <div className="flex items-center gap-2">
             <select
               value={selectedPeriod}
               onChange={(e) => setSelectedPeriod(e.target.value)}
-              className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
+              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-sm"
             >
               <option value="week">This Week</option>
               <option value="month">This Month</option>
               <option value="quarter">This Quarter</option>
               <option value="year">This Year</option>
             </select>
-            
+
             <button
               onClick={loadExecutiveMetrics}
-              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
             >
-              <EyeIcon className="h-5 w-5 mr-2" />
+              <EyeIcon className="h-5 w-5" />
             </button>
           </div>
         </div>
       </div>
 
-      {/* KeyIcon Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        
-        {/* Financial Metrics */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Revenue</h3>
-            <BanknotesIcon className="h-8 w-8 text-green-500" />
+      {/* Key Metrics Grid - bento: Revenue spans 2 cols (primary metric) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="xl:col-span-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg"><BanknotesIcon className="w-5 h-5" /></div>
+            <p className="text-sm opacity-90">Revenue</p>
           </div>
-          <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            {formatRupiah(metrics.financial.revenue)}
-          </div>
-          <div className="flex items-center">
+          <p className="text-3xl font-bold">{formatRupiah(metrics.financial.revenue)}</p>
+          <div className="flex items-center mt-1">
             {getTrendIcon(metrics.financial.revenue_growth)}
-            <span className={`ml-1 text-sm ${metrics.financial.revenue_growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <span className="ml-1 text-xs opacity-90">
               {formatPercentage(Math.abs(metrics.financial.revenue_growth))} vs last period
             </span>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('navigation.production')}</h3>
-            <CogIcon className="h-8 w-8 text-blue-500" />
+        <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg"><CogIcon className="w-5 h-5" /></div>
+            <p className="text-sm opacity-90">{t('navigation.production')}</p>
           </div>
-          <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            {metrics.production.output.toLocaleString()}
-          </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">
-            Units produced &middot; OEE {formatPercentage(metrics.production.avg_oee)}
-          </div>
+          <p className="text-2xl font-bold">{metrics.production.output.toLocaleString()}</p>
+          <p className="text-xs opacity-75 mt-1">Units produced &middot; OEE {formatPercentage(metrics.production.avg_oee)}</p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Quality Pass Rate</h3>
-            <ChartBarIcon className="h-8 w-8 text-purple-500" />
+        <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg"><ChartBarIcon className="w-5 h-5" /></div>
+            <p className="text-sm opacity-90">Quality Pass Rate</p>
           </div>
-          <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          <p className="text-2xl font-bold">
             {metrics.quality.total_inspections > 0 ? formatPercentage(metrics.quality.pass_rate) : 'Belum tersedia'}
-          </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">
-            {metrics.quality.total_inspections} inspeksi periode ini
-          </div>
+          </p>
+          <p className="text-xs opacity-75 mt-1">{metrics.quality.total_inspections} inspeksi periode ini</p>
         </div>
+      </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Employees</h3>
-            <UsersIcon className="h-8 w-8 text-indigo-500" />
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg"><UsersIcon className="w-5 h-5" /></div>
+            <p className="text-sm opacity-90">Employees</p>
           </div>
-          <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            {metrics.hr.active_employees}
-          </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">
-            Active employees
-          </div>
+          <p className="text-2xl font-bold">{metrics.hr.active_employees}</p>
+          <p className="text-xs opacity-75 mt-1">Active employees</p>
         </div>
       </div>
 
@@ -245,7 +236,7 @@ const ExecutiveDashboard: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         
         {/* Financial Performance */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Financial Performance</h3>
           
           <div className="space-y-4">
@@ -276,7 +267,7 @@ const ExecutiveDashboard: React.FC = () => {
         </div>
 
         {/* Operational Metrics */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Operational Excellence</h3>
 
           <div className="space-y-4">
@@ -309,7 +300,7 @@ const ExecutiveDashboard: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         
         {/* HR Metrics */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Human Resources</h3>
           
           <div className="space-y-4">
@@ -336,7 +327,7 @@ const ExecutiveDashboard: React.FC = () => {
         </div>
 
         {/* Inventory Metrics */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Inventory Management</h3>
 
           <div className="space-y-4">
@@ -364,7 +355,7 @@ const ExecutiveDashboard: React.FC = () => {
       </div>
 
       {/* Alerts & Notifications */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Executive Alerts</h3>
         
         {alerts.length > 0 ? (

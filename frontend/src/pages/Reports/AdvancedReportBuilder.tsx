@@ -10,6 +10,7 @@ import {
   TrashIcon
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
+import { showError, showSuccess } from '../../components/ui';
 interface DataSource {
   id: string;
   name: string;
@@ -171,7 +172,7 @@ const AdvancedReportBuilder: React.FC = () => {
       setReportResult(response.data);
     } catch (error) {
       console.error('Failed to generate report:', error);
-      alert('Failed to generate report');
+      showError('Failed to generate report');
     } finally {
       setLoading(false);
     }
@@ -186,10 +187,10 @@ const AdvancedReportBuilder: React.FC = () => {
         config: report
       });
       
-      alert('Report saved successfully!');
+      showSuccess('Report saved successfully!');
     } catch (error) {
       console.error('Failed to save report:', error);
-      alert('Failed to save report');
+      showError('Failed to save report');
     }
   };
 
