@@ -15,6 +15,7 @@ import {
   XCircleIcon as XCircle
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
+import { confirmDialog } from '../../components/ui';
 
 interface Machine {
   id: number;
@@ -1028,8 +1029,8 @@ const ProductionInput: React.FC = () => {
           <div className="flex items-center gap-4">
             <button
               type="button"
-              onClick={() => {
-                if (confirm('Apakah Anda yakin ingin reset form?')) {
+              onClick={async () => {
+                if (await confirmDialog('Apakah Anda yakin ingin reset form?')) {
                   setFormData({
                     production_date: new Date().toISOString().split('T')[0],
                     shift: '',

@@ -198,7 +198,7 @@ export default function BatchClose() {
             to={`/app/production/batches/${batchId}/record`}
             className="ml-auto flex items-center gap-2 px-4 py-2 bg-[#059669] text-white rounded-lg hover:bg-emerald-700 text-sm font-medium"
           >
-            Lihat Batch Record
+            Lihat Batch Report
           </Link>
         )}
       </div>

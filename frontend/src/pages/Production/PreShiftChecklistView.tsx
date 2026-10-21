@@ -19,6 +19,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { CheckCircleIcon as CheckCircleSolid, XCircleIcon as XCircleSolid } from '@heroicons/react/24/solid'
 import { useGetPreShiftChecklistSubmissionQuery, useAddSupervisorNoteMutation } from '../../services/api'
+import { showError } from '../../components/ui'
 
 const SHIFT_CONFIG: { [key: number]: { name: string; time: string; color: string; bg: string; border: string; gradient: string } } = {
   1: { name: 'Shift 1', time: '07:00 - 15:00', color: 'text-blue-700', bg: 'bg-blue-100', border: 'border-blue-300', gradient: 'from-blue-600 to-blue-700' },
@@ -106,7 +107,7 @@ const PreShiftChecklistView = () => {
       refetch()
     } catch (error) {
       console.error('Error saving supervisor note:', error)
-      alert('Gagal menyimpan catatan')
+      showError('Gagal menyimpan catatan')
     }
   }
 
@@ -407,7 +408,7 @@ const PreShiftChecklistView = () => {
                       <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-red-600 text-white text-xs font-bold">NG</span>
                     )}
                     {answer.status === 'NA' && (
-                      <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-gray-50 dark:bg-gray-9000 text-white text-xs font-bold">N/A</span>
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-gray-50 dark:bg-gray-900 text-white text-xs font-bold">N/A</span>
                     )}
                   </div>
                 </div>

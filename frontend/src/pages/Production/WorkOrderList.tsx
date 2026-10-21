@@ -1,4 +1,5 @@
 import { toast } from 'react-hot-toast';
+import { confirmDialog, showError, showSuccess, showWarning } from '../../components/ui';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import {
@@ -109,41 +110,41 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
       loadWorkOrders() // Refresh list
     } catch (error) {
       console.error('Error updating SPK status:', error)
-      alert('Failed to update SPK status')
+      showError('Failed to update SPK status')
     }
   }
 
   const handleDelete = async (id: number, woNumber: string) => {
-    if (!window.confirm(`Are you sure you want to delete SPK ${woNumber}?`)) {
+    if (!(await confirmDialog(`Are you sure you want to delete SPK ${woNumber}?`))) {
       return
     }
     try {
       await axiosInstance.delete(`/api/production/work-orders/${id}`)
-      alert('SPK deleted successfully')
+      showSuccess('SPK deleted successfully')
       loadWorkOrders()
     } catch (error: any) {
       console.error('Error deleting SPK:', error)
-      alert(error.response?.data?.error || 'Failed to delete SPK')
+      showError(error.response?.data?.error || 'Failed to delete SPK')
     }
   }
 
   const handleBulkComplete = async () => {
     const inProgressCount = workOrders.filter(wo => wo.status === 'in_progress').length
     if (inProgressCount === 0) {
-      alert('Tidak ada SPK dengan status In Progress')
+      showWarning('Tidak ada SPK dengan status In Progress')
       return
     }
-    if (!window.confirm(`Selesaikan semua ${inProgressCount} SPK yang In Progress?`)) {
+    if (!(await confirmDialog(`Selesaikan semua ${inProgressCount} SPK yang In Progress?`))) {
       return
     }
     try {
       setBulkCompleting(true)
       const response = await axiosInstance.put('/api/production/work-orders/bulk-complete')
-      alert(response.data.message || `${response.data.completed} WO berhasil diselesaikan`)
+      showSuccess(response.data.message || `${response.data.completed} WO berhasil diselesaikan`)
       loadWorkOrders()
     } catch (error: any) {
       console.error('Error bulk completing:', error)
-      alert(error.response?.data?.error || 'Gagal menyelesaikan SPK')
+      showError(error.response?.data?.error || 'Gagal menyelesaikan SPK')
     } finally {
       setBulkCompleting(false)
     }

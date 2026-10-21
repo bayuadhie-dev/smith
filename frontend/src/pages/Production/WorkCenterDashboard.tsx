@@ -216,29 +216,28 @@ export default function WorkCenterDashboard() {
         </div>
       </div>
 
-      {/* Summary cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="card p-6">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">OEE Rata-rata</h3>
-          <p className={`mt-2 text-3xl font-semibold ${getOEEColor(machinesWithData.length ? avgOEE : null)}`}>
+      {/* Summary cards - bento: OEE Rata-rata spans 2 cols (primary metric) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="xl:col-span-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl p-4 text-white shadow-lg">
+          <p className="text-sm opacity-90">OEE Rata-rata</p>
+          <p className="mt-1 text-3xl font-bold">
             {machinesWithData.length ? `${avgOEE.toFixed(1)}%` : '-'}
           </p>
         </div>
-        <div className="card p-6">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Mesin Berjalan</h3>
-          <p className="mt-2 text-3xl font-semibold text-gray-900 dark:text-white">
-            {runningCount} / {machines.length}
-          </p>
+        <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
+          <p className="text-xs opacity-90">Mesin Berjalan</p>
+          <p className="mt-1 text-2xl font-bold">{runningCount} / {machines.length}</p>
         </div>
-        <div className="card p-6">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Breakdown Aktif</h3>
-          <p className={`mt-2 text-3xl font-semibold ${breakdownCount > 0 ? 'text-red-600' : 'text-green-600'}`}>
-            {breakdownCount}
-          </p>
+        <div className={`bg-gradient-to-br ${breakdownCount > 0 ? 'from-[#F15D2C] to-[#C73E1D]' : 'from-violet-500 to-violet-600'} rounded-xl p-4 text-white shadow-lg`}>
+          <p className="text-xs opacity-90">Breakdown Aktif</p>
+          <p className="mt-1 text-2xl font-bold">{breakdownCount}</p>
         </div>
-        <div className="card p-6">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Downtime</h3>
-          <p className="mt-2 text-3xl font-semibold text-yellow-600">
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl p-4 text-white shadow-lg">
+          <p className="text-xs opacity-90">Total Downtime</p>
+          <p className="mt-1 text-2xl font-bold">
             {totalDowntime} <span className="text-base font-normal">mnt</span>
           </p>
         </div>

@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom'
 import { useLanguage } from '../../contexts/LanguageContext';
 import axiosInstance from '../../utils/axiosConfig'
 import LoadingSpinner from '../../components/Common/LoadingSpinner'
+import { showInfo } from '../../components/ui'
 import {
   CalendarDaysIcon,
   CheckCircleIcon
@@ -331,7 +332,7 @@ const ProductionScheduling = () => {
                         )}
                         <button
                           className="text-indigo-600 hover:text-indigo-900"
-                          onClick={() => alert(`View schedule ${schedule.schedule_number}`)}
+                          onClick={() => showInfo(`View schedule ${schedule.schedule_number}`)}
                         >
                         </button>
                       </div>

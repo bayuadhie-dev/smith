@@ -8,6 +8,7 @@ import {
   CogIcon
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig'
+import { showError, showSuccess } from '../../components/ui'
 import LoadingSpinner from '../../components/Common/LoadingSpinner'
 interface MachineFormData {
   name: string
@@ -72,7 +73,7 @@ const navigate = useNavigate()
       })
     } catch (error) {
       console.error('Error loading machine:', error)
-      alert('Failed to load machine data')
+      showError('Failed to load machine data')
     } finally {
       setLoadingData(false)
     }
@@ -111,16 +112,16 @@ const navigate = useNavigate()
       if (isEdit) {
         const res = await axiosInstance.put(`/api/production/machines/${id}`, payload)
         console.log('=== UPDATE RESPONSE ===', res.data)
-        alert('Machine updated successfully!')
+        showSuccess('Machine updated successfully!')
       } else {
         await axiosInstance.post('/api/production/machines', payload)
-        alert('Machine created successfully!')
+        showSuccess('Machine created successfully!')
       }
-      
+
       navigate('/app/production/machines')
     } catch (error: any) {
       console.error('Error saving machine:', error)
-      alert(error.response?.data?.error || 'Failed to save machine')
+      showError(error.response?.data?.error || 'Failed to save machine')
     } finally {
       setIsLoading(false)
     }

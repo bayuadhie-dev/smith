@@ -12,6 +12,7 @@ import {
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import toast from 'react-hot-toast';
+import { confirmDialog } from '../../components/ui';
 
 interface FGConversionItem {
   id: number;
@@ -112,7 +113,7 @@ const FGConversionDetail: React.FC = () => {
   };
 
   const handleComplete = async () => {
-    if (!confirm('Yakin ingin menyelesaikan konversi ini? Proses ini akan:\n- Mengurangi WIP stock\n- Menambah FG inventory\n- Mengurangi material (packaging, labels)\n\nProses tidak dapat dibatalkan!')) {
+    if (!(await confirmDialog('Yakin ingin menyelesaikan konversi ini? Proses ini akan:\n- Mengurangi WIP stock\n- Menambah FG inventory\n- Mengurangi material (packaging, labels)\n\nProses tidak dapat dibatalkan!'))) {
       return;
     }
 

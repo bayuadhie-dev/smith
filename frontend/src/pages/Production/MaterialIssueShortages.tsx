@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import axiosInstance from '../../utils/axiosConfig'
+import toast from 'react-hot-toast'
 import {
   ExclamationTriangleIcon,
   ArrowPathIcon,
@@ -51,6 +52,7 @@ const sourceTypeLabels: Record<string, string> = {
 const MaterialIssueShortages: React.FC = () => {
   const [rows, setRows] = useState<ShortageRow[]>([])
   const [loading, setLoading] = useState(true)
+  const [retrying, setRetrying] = useState(false)
 
   useEffect(() => {
     fetchShortages()
@@ -68,6 +70,29 @@ const MaterialIssueShortages: React.FC = () => {
     }
   }
 
+  // fix_report_3.md Fase 14 (2026-10-02): requeue_insufficient_items()
+  // sudah otomatis dipanggil setelah GRN/approval/stock-in/QC-release, tapi
+  // sering baru ketahuan "ternyata sekarang sudah bisa" setelah admin lihat
+  // laporan ini - tombol ini langsung trigger retry tanpa perlu menunggu
+  // event lain atau akses API manual.
+  const handleRetryNow = async () => {
+    setRetrying(true)
+    try {
+      const res = await axiosInstance.post('/api/production/material-issues/retry-insufficient')
+      const resolved = res.data?.data?.resolved || []
+      if (resolved.length > 0) {
+        toast.success(`${resolved.length} Material Issue berhasil di-resolve`)
+      } else {
+        toast('Belum ada yang bisa di-resolve sekarang', { icon: 'ℹ️' })
+      }
+      fetchShortages()
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Gagal retry reservasi')
+    } finally {
+      setRetrying(false)
+    }
+  }
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -80,9 +105,14 @@ const MaterialIssueShortages: React.FC = () => {
             Material Issue yang gagal di-reserve penuh (partial/insufficient) dari BOM requirement
           </p>
         </div>
-        <button onClick={fetchShortages} className="btn btn-secondary flex items-center gap-2">
-          <ArrowPathIcon className="h-4 w-4" /> Refresh
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={handleRetryNow} disabled={retrying} className="btn btn-primary flex items-center gap-2">
+            <ArrowPathIcon className={`h-4 w-4 ${retrying ? 'animate-spin' : ''}`} /> Retry Reservasi Sekarang
+          </button>
+          <button onClick={fetchShortages} className="btn btn-secondary flex items-center gap-2">
+            <ArrowPathIcon className="h-4 w-4" /> Refresh
+          </button>
+        </div>
       </div>
 
       <div className="card overflow-hidden">

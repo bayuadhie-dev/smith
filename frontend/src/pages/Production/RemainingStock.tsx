@@ -11,6 +11,7 @@ import {
 import axiosInstance from '../../utils/axiosConfig';
 import SearchableSelect from '../../components/SearchableSelect';
 import { toast } from 'react-hot-toast';
+import { confirmDialog } from '../../components/ui';
 
 interface RemainingStockItem {
   id: number;
@@ -155,7 +156,7 @@ export default function RemainingStock() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('Apakah Anda yakin ingin menghapus data ini?')) {
+    if (!(await confirmDialog('Apakah Anda yakin ingin menghapus data ini?'))) {
       return;
     }
 

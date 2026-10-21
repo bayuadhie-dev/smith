@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
 import axiosInstance from '../../utils/axiosConfig';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
+import { showError, showWarning } from '../../components/ui';
 
 const STOP_CATEGORIES = [
   { value: 'mesin', label: 'Mesin Rusak' },
@@ -111,7 +112,7 @@ const LiveMonitoringDashboard: React.FC = () => {
       setEditingSlot(null);
       fetchData();
       fetchMismatchCount();
-    } catch (e) { console.error(e); alert('Gagal menyimpan'); } finally { setSaving(false); }
+    } catch (e) { console.error(e); showError('Gagal menyimpan'); } finally { setSaving(false); }
   };
 
   if (loading) return <div className="flex items-center justify-center h-96"><LoadingSpinner /></div>;
@@ -165,31 +166,31 @@ const LiveMonitoringDashboard: React.FC = () => {
 
       {/* SUMMARY CARDS */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow border">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-3 shadow-md hover:shadow-lg transition-shadow duration-200">
           <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase font-medium">Mesin Terjadwal</p>
           <p className="text-2xl font-bold text-gray-900 dark:text-white">{summary.total_machines}</p>
           <p className="text-[10px] text-gray-400">Dari shift production</p>
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow border">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-3 shadow-md hover:shadow-lg transition-shadow duration-200">
           <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase font-medium">Patrol Selesai</p>
           <p className="text-2xl font-bold text-blue-600">{summary.total_checks}/{summary.total_possible}</p>
           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-1">
             <div className="bg-blue-500 h-1.5 rounded-full" style={{ width: `${summary.completion_pct}%` }} />
           </div>
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow border">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-3 shadow-md hover:shadow-lg transition-shadow duration-200">
           <p className="text-[10px] text-green-600 uppercase font-medium">Running</p>
           <p className="text-2xl font-bold text-green-600">{summary.running_count}</p>
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow border">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-3 shadow-md hover:shadow-lg transition-shadow duration-200">
           <p className="text-[10px] text-red-600 uppercase font-medium">Stopped</p>
           <p className="text-2xl font-bold text-red-600">{summary.stopped_count}</p>
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow border">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-3 shadow-md hover:shadow-lg transition-shadow duration-200">
           <p className="text-[10px] text-yellow-600 uppercase font-medium">Start Telat</p>
           <p className="text-2xl font-bold text-yellow-600">{summary.delayed_count}</p>
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow border">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-3 shadow-md hover:shadow-lg transition-shadow duration-200">
           <p className="text-[10px] text-red-500 uppercase font-medium">Total Stop</p>
           <p className="text-2xl font-bold text-red-500">{summary.total_stop_minutes}m</p>
           <p className="text-[10px] text-gray-400">{(summary.total_stop_minutes / 60).toFixed(1)} jam</p>
@@ -197,14 +198,14 @@ const LiveMonitoringDashboard: React.FC = () => {
       </div>
 
       {noMachines ? (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow border p-12 text-center">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-12 text-center">
           <ClockIcon className="h-16 w-16 text-gray-300 mx-auto mb-3" />
           <p className="text-lg font-semibold text-gray-500 dark:text-gray-400">Tidak ada mesin terjadwal</p>
           <p className="text-sm text-gray-400 mt-1">Belum ada input produksi (ShiftProduction) untuk tanggal & shift ini.</p>
         </div>
       ) : (
         /* MACHINE GRID */
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow border overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden">
           <div className="p-4 border-b bg-gray-50 dark:bg-gray-900 flex items-center justify-between flex-wrap gap-2">
             <div>
               <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Patrol Check per Mesin</h3>
@@ -274,7 +275,7 @@ const LiveMonitoringDashboard: React.FC = () => {
                                   <button onClick={() => navigate(`/app/production/live-monitoring/view/${d.id}`)}
                                     className="px-1.5 py-0.5 bg-blue-500 hover:bg-blue-600 text-white rounded text-[9px]">View</button>
                                   <button onClick={() => setEditingSlot({ machineId: m.machine_id, slot: slot.slot, machine: m })}
-                                    className="px-1.5 py-0.5 bg-gray-50 dark:bg-gray-9000 hover:bg-gray-600 text-white rounded text-[9px]">Edit</button>
+                                    className="px-1.5 py-0.5 bg-gray-50 dark:bg-gray-900 hover:bg-gray-600 text-white rounded text-[9px]">Edit</button>
                                 </div>
                               </div>
                             ) : (
@@ -432,11 +433,11 @@ const CheckInputModal: React.FC<CheckInputModalProps> = ({ machineId, machine, s
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (status === 'stopped' && (!stopFrom || !stopTo)) {
-      alert('Jika mesin berhenti, wajib isi dari jam berapa sampai jam berapa.');
+      showWarning('Jika mesin berhenti, wajib isi dari jam berapa sampai jam berapa.');
       return;
     }
     if (status === 'stopped' && !stopReason.trim()) {
-      alert('Jika mesin berhenti, wajib isi alasan kenapa berhenti.');
+      showWarning('Jika mesin berhenti, wajib isi alasan kenapa berhenti.');
       return;
     }
     

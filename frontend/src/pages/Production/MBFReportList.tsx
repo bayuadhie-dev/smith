@@ -12,6 +12,7 @@ import {
 import axiosInstance from '../../utils/axiosConfig';
 import { format } from 'date-fns';
 import axios from 'axios';
+import { confirmDialog } from '../../components/ui';
 interface MBFReportItem {
   id: number;
   report_number: string;
@@ -58,7 +59,7 @@ const MBFReportList: React.FC = () => {
   };
 
   const deleteReport = async (id: number, reportNumber: string) => {
-    if (!window.confirm(`Hapus laporan ${reportNumber}? Tindakan ini tidak bisa dibatalkan.`)) return;
+    if (!(await confirmDialog(`Hapus laporan ${reportNumber}? Tindakan ini tidak bisa dibatalkan.`))) return;
     try {
       const token = localStorage.getItem('token');
       await axios.delete(`/api/mbf-report/reports/${id}`, {

@@ -199,7 +199,7 @@ const WIPDashboard: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#059669]"></div>
         <span className="ml-3">Loading WIP dashboard...</span>
       </div>
     );
@@ -251,72 +251,50 @@ const WIPDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* KPI Cards */}
+      {/* KPI Cards - bento: Total WIP Value spans 2 cols (primary metric) */}
       {dashboardData && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="card">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <CurrencyDollarIcon className="h-8 w-8 text-blue-600" />
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+            <div className="xl:col-span-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl p-4 text-white shadow-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-2 bg-white/20 rounded-lg"><CurrencyDollarIcon className="w-5 h-5" /></div>
+                <p className="text-sm opacity-90">Total WIP Value</p>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total WIP Value</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {formatCurrency(dashboardData.summary.total_wip_value)}
-                </p>
+              <p className="text-3xl font-bold">{formatCurrency(dashboardData.summary.total_wip_value)}</p>
+            </div>
+
+            <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-2 bg-white/20 rounded-lg"><ChartBarIcon className="w-5 h-5" /></div>
               </div>
+              <p className="text-xs opacity-90 mb-1">Active Batches</p>
+              <p className="text-2xl font-bold">{dashboardData.summary.active_batches}</p>
+              <p className="text-xs opacity-75 mt-1">of {dashboardData.summary.total_batches} total</p>
+            </div>
+
+            <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-2 bg-white/20 rounded-lg"><CheckCircleIcon className="w-5 h-5" /></div>
+              </div>
+              <p className="text-xs opacity-90 mb-1">Completed Batches</p>
+              <p className="text-2xl font-bold">{dashboardData.summary.completed_batches}</p>
+              <p className="text-xs opacity-75 mt-1">
+                {((dashboardData.summary.completed_batches / dashboardData.summary.total_batches) * 100).toFixed(1)}% completion rate
+              </p>
             </div>
           </div>
 
-          <div className="card">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <ChartBarIcon className="h-8 w-8 text-green-600" />
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+            <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-4 text-white shadow-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-2 bg-white/20 rounded-lg"><ExclamationTriangleIcon className="w-5 h-5" /></div>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Active Batches</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {dashboardData.summary.active_batches}
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  of {dashboardData.summary.total_batches} total
-                </p>
-              </div>
+              <p className="text-xs opacity-90 mb-1">Bottlenecks</p>
+              <p className="text-2xl font-bold">{bottleneckData?.total_bottlenecks || 0}</p>
+              <p className="text-xs opacity-75 mt-1">stages need attention</p>
             </div>
           </div>
-
-          <div className="card">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <CheckCircleIcon className="h-8 w-8 text-green-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Completed Batches</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {dashboardData.summary.completed_batches}
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {((dashboardData.summary.completed_batches / dashboardData.summary.total_batches) * 100).toFixed(1)}% completion rate
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="card">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <ExclamationTriangleIcon className="h-8 w-8 text-red-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Bottlenecks</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {bottleneckData?.total_bottlenecks || 0}
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">stages need attention</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        </>
       )}
 
       {/* Charts Row */}

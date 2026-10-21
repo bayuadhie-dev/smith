@@ -8,6 +8,7 @@ import {
   ExclamationTriangleIcon,
   CheckCircleIcon 
 } from '@heroicons/react/24/outline';
+import { showSuccess } from '../../components/ui';
 
 interface Product {
   id: number;
@@ -238,10 +239,10 @@ const ProductionPlanningForm: React.FC = () => {
 
       if (isEditMode) {
         await axiosInstance.put(`/api/production-planning/production-plans/${id}`, formData);
-        alert('Production plan updated successfully!');
+        showSuccess('Production plan updated successfully!');
       } else {
         await axiosInstance.post('/api/production-planning/production-plans', formData);
-        alert('Production plan created successfully!');
+        showSuccess('Production plan created successfully!');
       }
 
       navigate('/app/production/planning');

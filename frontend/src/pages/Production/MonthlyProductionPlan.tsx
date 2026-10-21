@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import SearchableSelect from '../../components/SearchableSelect';
+import { confirmDialog, showError, showSuccess, showWarning } from '../../components/ui';
 import {
   PlusIcon,
   ChevronLeftIcon,
@@ -160,7 +161,7 @@ const MonthlyProductionPlan: React.FC = () => {
   const handleAddItem = async () => {
     try {
       if (!formData.product_id) {
-        alert('Pilih produk');
+        showWarning('Pilih produk');
         return;
       }
       
@@ -188,7 +189,7 @@ const MonthlyProductionPlan: React.FC = () => {
       resetForm();
       fetchData();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Gagal menambah jadwal');
+      showError(error.response?.data?.error || 'Gagal menambah jadwal');
     }
   };
 
@@ -209,17 +210,17 @@ const MonthlyProductionPlan: React.FC = () => {
       resetForm();
       fetchData();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Gagal mengupdate jadwal');
+      showError(error.response?.data?.error || 'Gagal mengupdate jadwal');
     }
   };
 
   const handleDeleteItem = async (id: number) => {
-    if (!confirm('Hapus jadwal bulanan ini?')) return;
+    if (!(await confirmDialog('Hapus jadwal bulanan ini?'))) return;
     try {
       await axiosInstance.delete(`/api/production/monthly-schedule/${id}`);
       fetchData();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Gagal menghapus');
+      showError(error.response?.data?.error || 'Gagal menghapus');
     }
   };
 
@@ -251,17 +252,17 @@ const MonthlyProductionPlan: React.FC = () => {
   };
 
   const handleSubmitForApproval = async () => {
-    if (!confirm(`Submit rencana produksi ${MONTHS[currentMonth - 1]} ${currentYear} untuk approval?`)) return;
-    
+    if (!(await confirmDialog(`Submit rencana produksi ${MONTHS[currentMonth - 1]} ${currentYear} untuk approval?`))) return;
+
     try {
       await axiosInstance.post(`/api/production/monthly-schedule/submit-approval`, {
         year: currentYear,
         month: currentMonth,
       });
-      alert('Rencana produksi berhasil disubmit untuk approval!');
+      showSuccess('Rencana produksi berhasil disubmit untuk approval!');
       fetchData();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Gagal submit untuk approval');
+      showError(error.response?.data?.error || 'Gagal submit untuk approval');
     }
   };
 

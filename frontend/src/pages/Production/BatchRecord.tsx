@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import AccessibleModal from '../../components/ui/AccessibleModal';
 import { ArrowLeftIcon, ArrowPathIcon, PrinterIcon, CubeIcon } from '@heroicons/react/24/outline';
 
 export default function BatchRecord() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [record, setRecord] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -48,9 +49,9 @@ export default function BatchRecord() {
       {/* Header - hidden on print */}
       <div className="flex items-center justify-between print:hidden">
         <div className="flex items-center gap-3">
-          <Link to={`/app/production/batches/${id}/close`} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+          <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg" title="Kembali">
             <ArrowLeftIcon className="h-5 w-5" />
-          </Link>
+          </button>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">Catatan Pengolahan Bets</h1>
         </div>
         <button
@@ -138,7 +139,6 @@ export default function BatchRecord() {
                   <th className="pb-2 pr-3">Supervisor</th>
                   <th className="pb-2 pr-3 text-right">Target</th>
                   <th className="pb-2 pr-3 text-right">Aktual</th>
-                  <th className="pb-2 pr-3 text-right">Baik</th>
                   <th className="pb-2 text-right">Reject</th>
                 </tr>
               </thead>
@@ -151,7 +151,6 @@ export default function BatchRecord() {
                     <td className="py-2 pr-3">{s.supervisor_name || '-'}</td>
                     <td className="py-2 pr-3 text-right tabular-nums">{s.target_quantity.toLocaleString('id-ID')}</td>
                     <td className="py-2 pr-3 text-right tabular-nums">{s.actual_quantity.toLocaleString('id-ID')}</td>
-                    <td className="py-2 pr-3 text-right tabular-nums text-emerald-600">{s.good_quantity.toLocaleString('id-ID')}</td>
                     <td className="py-2 text-right tabular-nums text-red-600">{s.reject_quantity.toLocaleString('id-ID')}</td>
                   </tr>
                 ))}
@@ -159,7 +158,6 @@ export default function BatchRecord() {
             </table>
           )}
           <div className="flex justify-end gap-6 pt-3 mt-3 border-t border-gray-100 dark:border-gray-700 text-sm">
-            <p><span className="text-gray-500">Total Baik:</span> <strong>{record.summary.total_good.toLocaleString('id-ID')}</strong></p>
             <p><span className="text-gray-500">Total Reject:</span> <strong>{record.summary.total_reject.toLocaleString('id-ID')}</strong></p>
             <p><span className="text-gray-500">Yield:</span> <strong>{record.summary.yield_percent != null ? `${record.summary.yield_percent}%` : '-'}</strong></p>
           </div>

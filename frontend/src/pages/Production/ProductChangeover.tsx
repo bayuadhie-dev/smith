@@ -10,6 +10,7 @@ import {
   CubeIcon,
   WrenchScrewdriverIcon,
 } from '@heroicons/react/24/outline';
+import { showSuccess } from '../../components/ui';
 
 interface WorkOrder {
   id: number;
@@ -101,7 +102,7 @@ const ProductChangeover: React.FC = () => {
         notes: form.notes,
       });
       
-      alert('Changeover berhasil dimulai!');
+      showSuccess('Changeover berhasil dimulai!');
       
       // Navigate to changeover detail or SPK list
       if (form.to_work_order_id) {

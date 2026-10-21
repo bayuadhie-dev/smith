@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeftIcon, PlusIcon, TrashIcon, PencilIcon, ArrowPathIcon, CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
+import { confirmDialog } from '../../components/ui';
 
 interface BOMItem {
   id: number;
@@ -33,6 +34,15 @@ interface WorkOrder {
   status: string;
 }
 
+interface CostSummary {
+  total_cost_planned: number;
+  total_cost_actual: number | null;
+  variance: number | null;
+  variance_percent: number | null;
+  items_with_actual_cost: number;
+  items_total: number;
+}
+
 interface Material {
   id: number;
   code: string;
@@ -48,6 +58,7 @@ export default function WorkOrderBOMEdit() {
   const [workOrder, setWorkOrder] = useState<WorkOrder | null>(null);
   const [bomItems, setBomItems] = useState<BOMItem[]>([]);
   const [bomSource, setBomSource] = useState<string>('none');
+  const [costSummary, setCostSummary] = useState<CostSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [materials, setMaterials] = useState<Material[]>([]);
@@ -83,6 +94,7 @@ export default function WorkOrderBOMEdit() {
       setWorkOrder(woRes.data.work_order);
       setBomSource(bomRes.data.source);
       setBomItems(bomRes.data.bom_items || []);
+      setCostSummary(bomRes.data.cost_summary || null);
       setMaterials(matRes.data.materials || []);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -93,7 +105,7 @@ export default function WorkOrderBOMEdit() {
   };
 
   const handleCopyFromMaster = async () => {
-    if (!confirm('Copy BOM dari master ke SPK ini? BOM ini akan bisa diedit tanpa mengubah BOM master.')) {
+    if (!(await confirmDialog('Copy BOM dari master ke SPK ini? BOM ini akan bisa diedit tanpa mengubah BOM master.'))) {
       return;
     }
     
@@ -110,7 +122,7 @@ export default function WorkOrderBOMEdit() {
   };
 
   const handleResetBOM = async () => {
-    if (!confirm('Reset BOM SPK? Semua perubahan akan dihapus dan bisa di-copy ulang dari master.')) {
+    if (!(await confirmDialog('Reset BOM SPK? Semua perubahan akan dihapus dan bisa di-copy ulang dari master.'))) {
       return;
     }
     
@@ -141,7 +153,7 @@ export default function WorkOrderBOMEdit() {
   };
 
   const handleDeleteItem = async (itemId: number) => {
-    if (!confirm('Hapus item ini dari BOM SPK? BOM master tidak akan terpengaruh.')) {
+    if (!(await confirmDialog('Hapus item ini dari BOM SPK? BOM master tidak akan terpengaruh.'))) {
       return;
     }
     
@@ -300,6 +312,56 @@ export default function WorkOrderBOMEdit() {
           </div>
         </div>
       </div>
+
+      {/* Cost Variance Summary - informasional (produksi pakai actual costing,
+          selisih ini bukan jurnal GL, HPP sudah diposting pakai biaya
+          aktual/FIFO riil di Shipping) */}
+      {bomSource === 'work_order' && costSummary && (
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
+          <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
+            Ringkasan Biaya Material (Rencana vs Aktual)
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Biaya Rencana (BOM)</p>
+              <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                Rp {costSummary.total_cost_planned.toLocaleString('id-ID')}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Biaya Aktual</p>
+              <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                {costSummary.total_cost_actual !== null
+                  ? `Rp ${costSummary.total_cost_actual.toLocaleString('id-ID')}`
+                  : '-'}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Selisih</p>
+              <p className={`text-lg font-semibold ${
+                costSummary.variance === null ? 'text-gray-400' :
+                costSummary.variance > 0 ? 'text-red-600' : costSummary.variance < 0 ? 'text-green-600' : 'text-gray-900 dark:text-white'
+              }`}>
+                {costSummary.variance !== null
+                  ? `${costSummary.variance > 0 ? '+' : ''}Rp ${costSummary.variance.toLocaleString('id-ID')}`
+                  : 'Belum ada input aktual'}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">% Selisih</p>
+              <p className={`text-lg font-semibold ${
+                costSummary.variance_percent === null ? 'text-gray-400' :
+                costSummary.variance_percent > 0 ? 'text-red-600' : costSummary.variance_percent < 0 ? 'text-green-600' : 'text-gray-900 dark:text-white'
+              }`}>
+                {costSummary.variance_percent !== null ? `${costSummary.variance_percent > 0 ? '+' : ''}${costSummary.variance_percent}%` : '-'}
+              </p>
+            </div>
+          </div>
+          <p className="text-xs text-gray-400 mt-3">
+            {costSummary.items_with_actual_cost} dari {costSummary.items_total} item sudah ada input aktual. Ringkasan ini informasional untuk kontrol produksi - tidak memengaruhi jurnal akuntansi (HPP sudah dicatat dari biaya aktual FIFO saat pengiriman).
+          </p>
+        </div>
+      )}
 
       {/* BOM Items Table */}
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">

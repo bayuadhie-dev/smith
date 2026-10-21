@@ -43,6 +43,7 @@ export default function WorkOrderEdit() {
   const [workOrder, setWorkOrder] = useState<WorkOrder | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [machines, setMachines] = useState<Machine[]>([]);
+  const [eligibleMachineIds, setEligibleMachineIds] = useState<number[] | null>(null);
   
   const [formData, setFormData] = useState({
     product_id: '',
@@ -59,6 +60,25 @@ export default function WorkOrderEdit() {
   useEffect(() => {
     fetchData();
   }, [id]);
+
+  // Filter the machine dropdown to machines that have a ProductionRecipe for
+  // the selected product - same reasoning as WorkOrderForm.tsx.
+  useEffect(() => {
+    if (!formData.product_id) {
+      setEligibleMachineIds(null);
+      return;
+    }
+    axiosInstance.get('/api/batch-scheduling/recipes', { params: { product_id: formData.product_id } })
+      .then(res => {
+        const ids = (res.data.recipes || []).map((r: any) => r.machine_id);
+        setEligibleMachineIds(ids);
+      })
+      .catch(() => setEligibleMachineIds(null));
+  }, [formData.product_id]);
+
+  const machineOptions = eligibleMachineIds && eligibleMachineIds.length > 0
+    ? machines.filter(m => eligibleMachineIds.includes(m.id))
+    : machines;
 
   const fetchData = async () => {
     try {
@@ -242,12 +262,22 @@ export default function WorkOrderEdit() {
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">Pilih Mesin</option>
-              {machines.map(machine => (
+              {machineOptions.map(machine => (
                 <option key={machine.id} value={machine.id}>
                   {machine.code} - {machine.name}
                 </option>
               ))}
             </select>
+            {eligibleMachineIds && eligibleMachineIds.length > 0 && (
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Hanya menampilkan mesin yang punya resep untuk produk ini.
+              </p>
+            )}
+            {eligibleMachineIds && eligibleMachineIds.length === 0 && (
+              <p className="mt-1 text-xs text-amber-600">
+                Belum ada resep (ProductionRecipe) untuk produk ini - menampilkan semua mesin.
+              </p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">

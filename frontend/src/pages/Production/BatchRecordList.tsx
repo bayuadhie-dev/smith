@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
-import { ArrowPathIcon, MagnifyingGlassIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon, MagnifyingGlassIcon, DocumentTextIcon, CalendarDaysIcon } from '@heroicons/react/24/outline';
 import { useDebounce } from '../../hooks/useDebounce';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
@@ -33,9 +33,15 @@ export default function BatchRecordList() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Batch Record</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Batch Report</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">Catatan Pengolahan Bets (GMP) per batch produksi</p>
         </div>
+        <Link
+          to="/app/production/batches/weekly-report"
+          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-[#059669] to-[#047857] text-white rounded-lg hover:shadow-lg transition-shadow text-sm font-medium"
+        >
+          <CalendarDaysIcon className="h-4 w-4" /> Laporan Mingguan
+        </Link>
       </div>
 
       <div className="relative max-w-sm">

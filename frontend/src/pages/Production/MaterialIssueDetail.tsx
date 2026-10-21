@@ -11,6 +11,7 @@ import {
   MapPinIcon
 } from '@heroicons/react/24/outline'
 import axiosInstance from '../../utils/axiosConfig'
+import { confirmDialog, showError } from '../../components/ui'
 
 interface MaterialIssueItem {
   id: number
@@ -111,42 +112,42 @@ const MaterialIssueDetail: React.FC = () => {
   }
 
   const handleApprove = async () => {
-    if (!window.confirm('Setujui pengeluaran material ini? Material akan di-reserve dari inventory.')) return
-    
+    if (!(await confirmDialog('Setujui pengeluaran material ini? Material akan di-reserve dari inventory.'))) return
+
     try {
       setActionLoading(true)
       await axiosInstance.put(`/api/production/material-issues/${id}/approve`)
       fetchIssue()
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Gagal menyetujui')
+      showError(error.response?.data?.message || 'Gagal menyetujui')
     } finally {
       setActionLoading(false)
     }
   }
 
   const handleIssue = async () => {
-    if (!window.confirm('Keluarkan material? Stok akan berkurang dari inventory.')) return
-    
+    if (!(await confirmDialog('Keluarkan material? Stok akan berkurang dari inventory.'))) return
+
     try {
       setActionLoading(true)
       await axiosInstance.put(`/api/production/material-issues/${id}/issue`)
       fetchIssue()
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Gagal mengeluarkan material')
+      showError(error.response?.data?.message || 'Gagal mengeluarkan material')
     } finally {
       setActionLoading(false)
     }
   }
 
   const handleCancel = async () => {
-    if (!window.confirm('Batalkan pengeluaran material ini?')) return
-    
+    if (!(await confirmDialog('Batalkan pengeluaran material ini?'))) return
+
     try {
       setActionLoading(true)
       await axiosInstance.put(`/api/production/material-issues/${id}/cancel`)
       fetchIssue()
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Gagal membatalkan')
+      showError(error.response?.data?.message || 'Gagal membatalkan')
     } finally {
       setActionLoading(false)
     }
@@ -178,7 +179,7 @@ const MaterialIssueDetail: React.FC = () => {
       setShowReceiptModal(false)
       fetchIssue()
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Gagal konfirmasi penerimaan')
+      showError(error.response?.data?.message || 'Gagal konfirmasi penerimaan')
     } finally {
       setActionLoading(false)
     }

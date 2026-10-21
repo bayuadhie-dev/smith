@@ -14,6 +14,7 @@ import {
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import toast from 'react-hot-toast';
+import { confirmDialog } from '../../components/ui';
 
 interface ProductionApproval {
   id: number;
@@ -174,7 +175,7 @@ const ProductionApprovalList: React.FC = () => {
   };
 
   const handleApproveMonthlyPlan = async (year: number, month: number, action: 'approve' | 'reject') => {
-    if (!confirm(`${action === 'approve' ? 'Approve' : 'Reject'} rencana produksi bulan ini?`)) return;
+    if (!(await confirmDialog(`${action === 'approve' ? 'Approve' : 'Reject'} rencana produksi bulan ini?`))) return;
     
     try {
       await axiosInstance.post('/api/production/monthly-schedule/approve', { year, month, action });
@@ -200,7 +201,7 @@ const ProductionApprovalList: React.FC = () => {
   };
 
   const handleApproveScheduleGrid = async (week_start: string, action: 'approve' | 'reject') => {
-    if (!confirm(`${action === 'approve' ? 'Approve' : 'Reject'} jadwal mingguan ini?`)) return;
+    if (!(await confirmDialog(`${action === 'approve' ? 'Approve' : 'Reject'} jadwal mingguan ini?`))) return;
     
     try {
       await axiosInstance.post('/api/production/schedule-grid/approve', { week_start, action });

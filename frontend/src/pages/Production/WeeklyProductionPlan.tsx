@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import SearchableSelect from '../../components/SearchableSelect';
 import { useGetEWSSummaryQuery } from '../../services/api';
+import { confirmDialog, showError, showSuccess, showWarning } from '../../components/ui';
 import {
   PlusIcon,
   ChevronLeftIcon,
@@ -266,10 +267,10 @@ const WeeklyProductionPlan: React.FC = () => {
   const handleAddItem = async () => {
     try {
       if (!formData.machine_id || !formData.product_id) {
-        alert('Pilih mesin dan produk');
+        showWarning('Pilih mesin dan produk');
         return;
       }
-      
+
       await axiosInstance.post('/api/production/schedule-grid', {
         ...formData,
         machine_id: parseInt(formData.machine_id),
@@ -277,22 +278,22 @@ const WeeklyProductionPlan: React.FC = () => {
         order_ctn: parseFloat(formData.order_ctn) || 0,
         qty_per_ctn: parseFloat(formData.qty_per_ctn) || 0,
       });
-      
+
       setShowAddModal(false);
       resetForm();
       fetchData();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Gagal menambah jadwal');
+      showError(error.response?.data?.error || 'Gagal menambah jadwal');
     }
   };
 
   const handleDeleteItem = async (id: number) => {
-    if (!confirm('Hapus jadwal ini?')) return;
+    if (!(await confirmDialog('Hapus jadwal ini?'))) return;
     try {
       await axiosInstance.delete(`/api/production/schedule-grid/${id}`);
       fetchData();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Gagal menghapus');
+      showError(error.response?.data?.error || 'Gagal menghapus');
     }
   };
 
@@ -328,7 +329,7 @@ const WeeklyProductionPlan: React.FC = () => {
       resetForm();
       fetchData();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Gagal mengupdate jadwal');
+      showError(error.response?.data?.error || 'Gagal mengupdate jadwal');
     }
   };
 
@@ -381,17 +382,17 @@ const WeeklyProductionPlan: React.FC = () => {
 
   const handleAddFromMonthly = async () => {
     if (!selectedMonthly || !monthlyOrderCtn) {
-      alert('Pilih jadwal bulanan dan masukkan jumlah CTN');
+      showWarning('Pilih jadwal bulanan dan masukkan jumlah CTN');
       return;
     }
 
     const orderCtn = parseFloat(monthlyOrderCtn);
     if (orderCtn <= 0) {
-      alert('Jumlah CTN harus lebih dari 0');
+      showWarning('Jumlah CTN harus lebih dari 0');
       return;
     }
     if (orderCtn > selectedMonthly.remaining_ctn) {
-      alert(`Melebihi sisa target. Sisa: ${selectedMonthly.remaining_ctn} CTN`);
+      showWarning(`Melebihi sisa target. Sisa: ${selectedMonthly.remaining_ctn} CTN`);
       return;
     }
 
@@ -409,47 +410,47 @@ const WeeklyProductionPlan: React.FC = () => {
       setMonthlyOrderCtn('');
       resetForm();
       fetchData();
-      alert('Jadwal berhasil ditambahkan dari target bulanan');
+      showSuccess('Jadwal berhasil ditambahkan dari target bulanan');
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Gagal menambah jadwal');
+      showError(error.response?.data?.error || 'Gagal menambah jadwal');
     }
   };
 
   const handleGenerateWO = async (scheduleId: number) => {
-    if (!confirm('Generate SPK dari jadwal ini?')) return;
+    if (!(await confirmDialog('Generate SPK dari jadwal ini?'))) return;
     try {
       const response = await axiosInstance.post(`/api/production/schedule-grid/${scheduleId}/generate-wo`);
-      alert(response.data.message);
+      showSuccess(response.data.message);
       fetchData();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Gagal membuat SPK');
+      showError(error.response?.data?.error || 'Gagal membuat SPK');
     }
   };
 
   const handleGenerateAllWO = async () => {
-    if (!confirm('Generate semua SPK untuk hari ini?')) return;
+    if (!(await confirmDialog('Generate semua SPK untuk hari ini?'))) return;
     try {
       const response = await axiosInstance.post('/api/production/schedule-grid/generate-wo-batch', {
         date: toLocalDateString(new Date())
       });
-      alert(response.data.message);
+      showSuccess(response.data.message);
       fetchData();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Gagal membuat SPK');
+      showError(error.response?.data?.error || 'Gagal membuat SPK');
     }
   };
 
   const handleSubmitForApproval = async () => {
     const weekStartStr = weekDates[0] ? toLocalDateString(weekDates[0]) : '';
-    if (!confirm(`Submit jadwal minggu ${weekStartStr} untuk approval?`)) return;
+    if (!(await confirmDialog(`Submit jadwal minggu ${weekStartStr} untuk approval?`))) return;
     try {
       const response = await axiosInstance.post('/api/production/schedule-grid/submit-approval', {
         week_start: weekStartStr
       });
-      alert(response.data.message);
+      showSuccess(response.data.message);
       fetchData();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Gagal submit untuk approval');
+      showError(error.response?.data?.error || 'Gagal submit untuk approval');
     }
   };
 
@@ -471,13 +472,13 @@ const WeeklyProductionPlan: React.FC = () => {
   };
 
   const handleGenerateWOApproved = async (scheduleId: number) => {
-    if (!confirm('Generate SPK dari jadwal yang sudah diapprove ini?')) return;
+    if (!(await confirmDialog('Generate SPK dari jadwal yang sudah diapprove ini?'))) return;
     try {
       const response = await axiosInstance.post(`/api/production/schedule-grid/${scheduleId}/generate-wo-approved`);
-      alert(response.data.message);
+      showSuccess(response.data.message);
       fetchData();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Gagal membuat SPK');
+      showError(error.response?.data?.error || 'Gagal membuat SPK');
     }
   };
 

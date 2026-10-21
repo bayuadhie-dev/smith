@@ -17,6 +17,7 @@ import {
   CubeIcon
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
+import { showError } from '../../components/ui';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -450,7 +451,7 @@ const MachineDetail: React.FC = () => {
                       window.URL.revokeObjectURL(url);
                     } catch (error) {
                       console.error('Export failed:', error);
-                      alert('Export failed. Please try again.');
+                      showError('Export failed. Please try again.');
                     }
                   }}
                   className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"

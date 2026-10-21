@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import { Calendar, Package, TrendingUp, AlertCircle, CheckCircle, Clock, Play, FileText } from 'lucide-react';
+import { confirmDialog, showError, showSuccess } from '../../components/ui';
 
 interface ProductionPlan {
   id: number;
@@ -77,7 +78,7 @@ const ProductionPlanningList: React.FC = () => {
   };
 
   const handleApprovePlan = async (planId: number) => {
-    if (!confirm('Are you sure you want to approve this plan?')) return;
+    if (!(await confirmDialog('Are you sure you want to approve this plan?'))) return;
 
     try {
       const token = localStorage.getItem('token');
@@ -86,10 +87,10 @@ const ProductionPlanningList: React.FC = () => {
         {}
       );
 
-      alert('Plan approved successfully!');
+      showSuccess('Plan approved successfully!');
       fetchPlans();
     } catch (err: any) {
-      alert(err.response?.data?.error || 'Failed to approve plan');
+      showError(err.response?.data?.error || 'Failed to approve plan');
     }
   };
 
@@ -103,16 +104,16 @@ const ProductionPlanningList: React.FC = () => {
         woGenerateOptions
       );
 
-      alert(`${response.data.data.work_orders.length} SPK generated successfully!`);
+      showSuccess(`${response.data.data.work_orders.length} SPK generated successfully!`);
       setGenerateModal({ show: false, planId: null, planNumber: '' });
       fetchPlans();
     } catch (err: any) {
-      alert(err.response?.data?.error || 'Failed to generate SPK');
+      showError(err.response?.data?.error || 'Failed to generate SPK');
     }
   };
 
   const handleDeletePlan = async (planId: number) => {
-    if (!confirm('Are you sure you want to delete this plan?')) return;
+    if (!(await confirmDialog('Are you sure you want to delete this plan?'))) return;
 
     try {
       const token = localStorage.getItem('token');
@@ -120,10 +121,10 @@ const ProductionPlanningList: React.FC = () => {
         `/api/production-planning/production-plans/${planId}`
       );
 
-      alert('Plan deleted successfully!');
+      showSuccess('Plan deleted successfully!');
       fetchPlans();
     } catch (err: any) {
-      alert(err.response?.data?.error || 'Failed to delete plan');
+      showError(err.response?.data?.error || 'Failed to delete plan');
     }
   };
 

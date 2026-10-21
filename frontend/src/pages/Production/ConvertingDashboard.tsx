@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
+import { confirmDialog, showError } from '../../components/ui';
 import {
   CogIcon,
   PlusIcon,
@@ -197,13 +198,13 @@ const ConvertingDashboard: React.FC = () => {
   };
 
   const handleDeleteClick = async (id: number) => {
-    if (!window.confirm('Apakah Anda yakin ingin menghapus data produksi ini? Tindakan ini tidak dapat dibatalkan.')) return;
+    if (!(await confirmDialog('Apakah Anda yakin ingin menghapus data produksi ini? Tindakan ini tidak dapat dibatalkan.'))) return;
     try {
       await axiosInstance.delete(`/api/converting/production/${id}`);
       fetchData();
     } catch (error) {
       console.error('Error deleting production record:', error);
-      alert('Gagal menghapus data produksi. Silakan coba lagi.');
+      showError('Gagal menghapus data produksi. Silakan coba lagi.');
     }
   };
 
@@ -270,7 +271,7 @@ const ConvertingDashboard: React.FC = () => {
       fetchData();
     } catch (error) {
       console.error('Error saving production edits:', error);
-      alert('Gagal menyimpan perubahan. Silakan periksa kembali input Anda.');
+      showError('Gagal menyimpan perubahan. Silakan periksa kembali input Anda.');
     } finally {
       setSaving(false);
     }
@@ -336,25 +337,28 @@ const ConvertingDashboard: React.FC = () => {
     return acc;
   }, {} as Record<string, MachineData[]>);
 
+  // 2026-10-07: Axion bento-grid restyle (tier-2 sub-dashboard). Machine
+  // list/detail sections below are intentionally left as-is - only the
+  // header + summary cards are in scope.
   return (
-    <div className="min-h-screen bg-slate-100 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Converting Dashboard</h1>
-          <p className="text-slate-500">Monitor produksi mesin converting</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-snug">Converting Dashboard</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Monitor produksi mesin converting</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <button
             onClick={() => navigate('/app/production/converting/input')}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-[#059669] to-[#047857] text-white rounded-lg hover:shadow-lg transition-shadow text-sm font-medium"
           >
             <PlusIcon className="h-5 w-5" />
             Input Produksi
           </button>
           <button
             onClick={fetchData}
-            className="p-2 bg-white dark:bg-gray-800 rounded-lg hover:bg-slate-50 border"
+            className="p-2 bg-white dark:bg-gray-800 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600"
           >
             <ArrowPathIcon className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
           </button>
@@ -377,34 +381,32 @@ const ConvertingDashboard: React.FC = () => {
         </button>
       </div>
 
-      {/* Summary Cards */}
+      {/* Summary Cards - bento */}
       {summary && (
-        <div className="grid grid-cols-5 gap-4 mb-6">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
-            <p className="text-sm text-slate-500">Total Mesin</p>
-            <p className="text-2xl font-bold text-slate-800">{summary.total_machines}</p>
-            <p className="text-xs text-green-600">{summary.active_machines} aktif</p>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+          <div className="bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl p-4 text-white shadow-lg">
+            <p className="text-sm opacity-90">Total Mesin</p>
+            <p className="text-2xl font-bold">{summary.total_machines}</p>
+            <p className="text-xs opacity-75">{summary.active_machines} aktif</p>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
-            <p className="text-sm text-slate-500">Total Output</p>
-            <p className="text-2xl font-bold text-blue-600">{summary.total_output.toLocaleString()}</p>
-            <p className="text-xs text-slate-500">pcs</p>
+          <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
+            <p className="text-sm opacity-90">Total Output</p>
+            <p className="text-2xl font-bold">{summary.total_output.toLocaleString()}</p>
+            <p className="text-xs opacity-75">pcs</p>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
-            <p className="text-sm text-slate-500">Grade A</p>
-            <p className="text-2xl font-bold text-green-600">{summary.total_good.toLocaleString()}</p>
-            <p className="text-xs text-slate-500">pcs</p>
+          <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow-lg">
+            <p className="text-sm opacity-90">Grade A</p>
+            <p className="text-2xl font-bold">{summary.total_good.toLocaleString()}</p>
+            <p className="text-xs opacity-75">pcs</p>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
-            <p className="text-sm text-slate-500">Reject</p>
-            <p className="text-2xl font-bold text-red-600">{summary.total_reject.toLocaleString()}</p>
-            <p className="text-xs text-slate-500">pcs</p>
+          <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-4 text-white shadow-lg">
+            <p className="text-sm opacity-90">Reject</p>
+            <p className="text-2xl font-bold">{summary.total_reject.toLocaleString()}</p>
+            <p className="text-xs opacity-75">pcs</p>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
-            <p className="text-sm text-slate-500">Quality Rate</p>
-            <p className={`text-2xl font-bold ${summary.quality_rate >= 95 ? 'text-green-600' : 'text-yellow-600'}`}>
-              {summary.quality_rate}%
-            </p>
+          <div className={`bg-gradient-to-br ${summary.quality_rate >= 95 ? 'from-emerald-500 to-emerald-600' : 'from-amber-500 to-amber-600'} rounded-xl p-4 text-white shadow-lg`}>
+            <p className="text-sm opacity-90">Quality Rate</p>
+            <p className="text-2xl font-bold">{summary.quality_rate}%</p>
           </div>
         </div>
       )}
@@ -412,7 +414,7 @@ const ConvertingDashboard: React.FC = () => {
       {/* Loading */}
       {loading && (
         <div className="flex items-center justify-center py-12">
-          <ArrowPathIcon className="h-8 w-8 animate-spin text-blue-600" />
+          <ArrowPathIcon className="h-8 w-8 animate-spin text-[#059669]" />
         </div>
       )}
 

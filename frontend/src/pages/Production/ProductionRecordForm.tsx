@@ -8,6 +8,7 @@ import {
   ClipboardDocumentListIcon
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig'
+import { showError, showSuccess } from '../../components/ui'
 import LoadingSpinner from '../../components/Common/LoadingSpinner'
 interface ProductionRecordFormData {
   work_order_id: number
@@ -149,7 +150,7 @@ const navigate = useNavigate()
       })
     } catch (error) {
       console.error('Error loading record:', error)
-      alert('Failed to load production record')
+      showError('Failed to load production record')
     }
   }
 
@@ -193,16 +194,16 @@ const navigate = useNavigate()
 
       if (isEdit) {
         await axiosInstance.put(`/api/production/production-records/${id}`, payload)
-        alert('Production record updated successfully!')
+        showSuccess('Production record updated successfully!')
       } else {
         await axiosInstance.post('/api/production/production-records', payload)
-        alert('Production record created successfully!')
+        showSuccess('Production record created successfully!')
       }
-      
+
       navigate('/app/production/records')
     } catch (error: any) {
       console.error('Error saving record:', error)
-      alert(error.response?.data?.error || 'Failed to save production record')
+      showError(error.response?.data?.error || 'Failed to save production record')
     } finally {
       setIsLoading(false)
     }

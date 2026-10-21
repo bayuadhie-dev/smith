@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import SearchableSelect from '../../components/SearchableSelect';
+import { confirmDialog, showError, showSuccess, showWarning } from '../../components/ui';
 import {
   CalendarDaysIcon,
   PlusIcon,
@@ -132,7 +133,7 @@ const WeeklyPlanDetail: React.FC = () => {
   const handleAddItem = async () => {
     try {
       if (!formData.product_id || !formData.planned_quantity) {
-        alert('Pilih produk dan masukkan quantity');
+        showWarning('Pilih produk dan masukkan quantity');
         return;
       }
       
@@ -156,18 +157,18 @@ const WeeklyPlanDetail: React.FC = () => {
       });
       fetchData();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Gagal menambah item');
+      showError(error.response?.data?.error || 'Gagal menambah item');
     }
   };
 
   const handleDeleteItem = async (itemId: number) => {
-    if (!confirm('Hapus item ini?')) return;
-    
+    if (!(await confirmDialog('Hapus item ini?'))) return;
+
     try {
       await axiosInstance.delete(`/api/production/weekly-plans/${id}/items/${itemId}`);
       fetchData();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Gagal menghapus item');
+      showError(error.response?.data?.error || 'Gagal menghapus item');
     }
   };
 
@@ -175,10 +176,10 @@ const WeeklyPlanDetail: React.FC = () => {
     try {
       setCheckingMaterials(true);
       const response = await axiosInstance.post(`/api/production/weekly-plans/${id}/check-materials`);
-      alert(`Material check selesai!\n\nTersedia: ${response.data.summary.available}\nKurang: ${response.data.summary.shortage}\nTanpa BOM: ${response.data.summary.no_bom}`);
+      showSuccess(`Material check selesai!\n\nTersedia: ${response.data.summary.available}\nKurang: ${response.data.summary.shortage}\nTanpa BOM: ${response.data.summary.no_bom}`);
       fetchData();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Gagal cek material');
+      showError(error.response?.data?.error || 'Gagal cek material');
     } finally {
       setCheckingMaterials(false);
     }
@@ -189,7 +190,7 @@ const WeeklyPlanDetail: React.FC = () => {
       await axiosInstance.post(`/api/production/weekly-plans/${id}/submit`);
       fetchData();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Gagal submit');
+      showError(error.response?.data?.error || 'Gagal submit');
     }
   };
 
@@ -198,33 +199,33 @@ const WeeklyPlanDetail: React.FC = () => {
       await axiosInstance.post(`/api/production/weekly-plans/${id}/approve`);
       fetchData();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Gagal approve');
+      showError(error.response?.data?.error || 'Gagal approve');
     }
   };
 
   const handleGenerateWO = async () => {
-    if (!confirm('Generate SPK untuk semua item yang belum memiliki WO?')) return;
-    
+    if (!(await confirmDialog('Generate SPK untuk semua item yang belum memiliki WO?'))) return;
+
     try {
       setGeneratingWO(true);
       const response = await axiosInstance.post(`/api/production/weekly-plans/${id}/generate-work-orders`);
-      alert(`${response.data.work_orders.length} SPK berhasil dibuat!`);
+      showSuccess(`${response.data.work_orders.length} SPK berhasil dibuat!`);
       fetchData();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Gagal generate WO');
+      showError(error.response?.data?.error || 'Gagal generate WO');
     } finally {
       setGeneratingWO(false);
     }
   };
 
   const handleDelete = async () => {
-    if (!confirm('Hapus rencana produksi ini?')) return;
-    
+    if (!(await confirmDialog('Hapus rencana produksi ini?'))) return;
+
     try {
       await axiosInstance.delete(`/api/production/weekly-plans/${id}`);
       navigate('/app/production/scheduling');
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Gagal menghapus');
+      showError(error.response?.data?.error || 'Gagal menghapus');
     }
   };
 

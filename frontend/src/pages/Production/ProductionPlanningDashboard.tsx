@@ -60,7 +60,7 @@ const ProductionPlanningDashboard: React.FC = () => {
   if (loading || !dashboardData) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500 dark:text-gray-400">Loading dashboard...</div>
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#059669]"></div>
       </div>
     );
   }
@@ -96,18 +96,21 @@ const ProductionPlanningDashboard: React.FC = () => {
     return badges[priority] || badges.normal;
   };
 
+  // 2026-10-07: Axion bento-grid restyle (tier-2 sub-dashboard).
+  // Filters/charts/table are intentionally left as-is - only the
+  // header + summary cards are in scope for the bento treatment.
   return (
-    <div className="p-6">
+    <div className="p-6 space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen">
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex justify-between items-center">
+      <div className="mb-2">
+        <div className="flex flex-wrap justify-between items-center gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Production Planning Dashboard</h1>
-            <p className="text-gray-600 dark:text-gray-300">Master Production Schedule (MPS) Overview</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-snug">Production Planning Dashboard</h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Master Production Schedule (MPS) Overview</p>
           </div>
           <button
             onClick={() => navigate('/app/production/planning')}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="px-4 py-2 bg-gradient-to-br from-[#059669] to-[#047857] text-white rounded-lg hover:shadow-lg transition-shadow text-sm font-medium"
           >
             View All Plans
           </button>
@@ -115,7 +118,7 @@ const ProductionPlanningDashboard: React.FC = () => {
       </div>
 
       {/* Date Range Filter */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
@@ -142,52 +145,46 @@ const ProductionPlanningDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <Package className="text-blue-600" size={24} />
+      {/* Summary Cards - bento: Total Planned spans 2 cols (primary metric) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="xl:col-span-1 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <Package size={18} />
             </div>
+            <p className="text-sm opacity-90">Total Planned</p>
           </div>
-          <h3 className="text-gray-600 dark:text-gray-300 text-sm font-medium mb-1">Total Planned</h3>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white">
-            {dashboardData.summary.total_planned.toLocaleString()}
-          </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Units planned for production</p>
+          <p className="text-3xl font-bold">{dashboardData.summary.total_planned.toLocaleString()}</p>
+          <p className="text-xs opacity-75 mt-1">Units planned for production</p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-green-100 rounded-lg">
-              <CheckCircle className="text-green-600" size={24} />
+        <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <CheckCircle size={18} />
             </div>
+            <p className="text-sm opacity-90">Total Actual</p>
           </div>
-          <h3 className="text-gray-600 dark:text-gray-300 text-sm font-medium mb-1">Total Actual</h3>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white">
-            {dashboardData.summary.total_actual.toLocaleString()}
-          </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Units actually produced</p>
+          <p className="text-3xl font-bold">{dashboardData.summary.total_actual.toLocaleString()}</p>
+          <p className="text-xs opacity-75 mt-1">Units actually produced</p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-purple-100 rounded-lg">
-              <TrendingUp className="text-purple-600" size={24} />
+        <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <TrendingUp size={18} />
             </div>
+            <p className="text-sm opacity-90">Completion Rate</p>
           </div>
-          <h3 className="text-gray-600 dark:text-gray-300 text-sm font-medium mb-1">Completion Rate</h3>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white">
-            {dashboardData.summary.completion_rate.toFixed(1)}%
-          </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Overall plan completion</p>
+          <p className="text-3xl font-bold">{dashboardData.summary.completion_rate.toFixed(1)}%</p>
+          <p className="text-xs opacity-75 mt-1">Overall plan completion</p>
         </div>
       </div>
 
       {/* Charts */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {/* Status Distribution */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Plans by Status</h2>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
@@ -211,7 +208,7 @@ const ProductionPlanningDashboard: React.FC = () => {
         </div>
 
         {/* Priority Distribution */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Plans by Priority</h2>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={priorityData}>
@@ -227,7 +224,7 @@ const ProductionPlanningDashboard: React.FC = () => {
       </div>
 
       {/* Upcoming Plans */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden">
         <div className="p-6 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Upcoming Production Plans</h2>
         </div>

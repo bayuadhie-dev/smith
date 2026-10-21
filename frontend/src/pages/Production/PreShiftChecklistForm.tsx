@@ -23,6 +23,7 @@ import {
   useGetProductsQuery
 } from '../../services/api'
 import SearchableSelect from '../../components/SearchableSelect'
+import { showError, showWarning } from '../../components/ui'
 
 interface ChecklistItem {
   id: number
@@ -106,7 +107,7 @@ const PreShiftChecklistForm = () => {
 
   const handleSubmit = async () => {
     if (!operatorName.trim()) {
-      alert('Nama operator harus diisi')
+      showWarning('Nama operator harus diisi')
       return
     }
 
@@ -130,7 +131,7 @@ const PreShiftChecklistForm = () => {
       navigate('/app/production/pre-shift-checklist')
     } catch (error) {
       console.error('Error submitting checklist:', error)
-      alert('Gagal menyimpan checklist')
+      showError('Gagal menyimpan checklist')
     }
   }
 
