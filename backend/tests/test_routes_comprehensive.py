@@ -63,11 +63,22 @@ class TestAuthRoutes:
         assert response.status_code in [200, 201, 400, 401, 403, 404, 405, 409, 500]
 
     def test_register_duplicate_username(self, client, test_user):
+        # Stale test fix (fix_report_2.md Fase 7, 2026-10-01): register()
+        # (routes/auth.py) checks captcha_token and password strength BEFORE
+        # the duplicate-username check - this payload was missing
+        # captcha_token and used a weak password ('pass123': no uppercase,
+        # no special char, <8 chars), so every request 400'd on an earlier
+        # validation branch and never actually reached the duplicate-
+        # username check this test claims to verify. Code's actual behavior
+        # (409 on duplicate) was never wrong - the test payload just never
+        # exercised that path. Fixed to satisfy the earlier validations
+        # first, per utils/password_validator.py's documented requirements.
         response = client.post('/api/auth/register', json={
             'username': 'testuser',
             'email': 'another@test.com',
-            'password': 'pass123',
-            'full_name': 'Another User'
+            'password': 'Pass123!',
+            'full_name': 'Another User',
+            'captcha_token': 'test-captcha-token',
         })
         assert response.status_code == 409
 

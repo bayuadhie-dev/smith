@@ -155,7 +155,13 @@ def test_import_inventory_success_and_upsert(client, db_session, auth_headers):
     assert inv_p is not None
     assert inv_p.quantity_on_hand == 50
     assert inv_p.quantity_available == 50
-    assert inv_p.stock_status == 'released' # Check default
+    # Stale test fix (fix_report_2.md Fase 7, 2026-10-01): prod's
+    # material_type is 'finished_goods', and per the 2026-09-09 mandatory-
+    # QC policy (utils/inventory_helpers.py::resolve_initial_stock_status),
+    # ALL finished-goods inventory is born 'quarantine' regardless of the
+    # requested default - it needs QC release before becoming sellable.
+    # This assertion predates that policy and was never updated for it.
+    assert inv_p.stock_status == 'quarantine' # Mandatory QC for finished_goods (2026-09-09 policy)
     
     inv_m = Inventory.query.filter_by(material_id=mat.id, location_id=loc.id).first()
     assert inv_m is not None

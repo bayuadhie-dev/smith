@@ -1129,11 +1129,14 @@ class TestProductionTraceabilityAdvanced:
         assert response.status_code in [200, 404, 500]
 
     def test_generate_traceability_report(self, client, auth_headers):
-        response = client.post('/api/production/traceability/report', json={
-            'product_id': 1,
-            'batch_number': 'BATCH-001'
-        }, headers=auth_headers)
-        assert response.status_code in [200, 400, 404, 500]
+        """Fase 13 (fix_report_3.md): tes ini SELALU gagal dengan 405 - route
+        asli (`POST /api/production/traceability/report`) tidak pernah ada.
+        Satu-satunya endpoint traceability nyata adalah
+        `GET /api/production/traceability/<search_term>` (cari by batch_number
+        atau wo_number) - diperbaiki di sini untuk memanggil endpoint yang
+        benar-benar ada, bukan URL yang dikarang."""
+        response = client.get('/api/production/traceability/BATCH-001', headers=auth_headers)
+        assert response.status_code in [200, 404, 500]
 
     def test_get_genealogy(self, client, auth_headers):
         response = client.get('/api/production/traceability/genealogy/1', headers=auth_headers)
@@ -2106,17 +2109,31 @@ class TestProductionApprovalWorkflow:
         assert response.status_code == 404
 
 class TestCreatePlanFromForecast:
-    """Tests for create_plan_from_forecast endpoint (Sales Forecast Matrix, 2026-08-24:
-    a 'forecast' is now 1 ForecastLine row under a ForecastHeader per year, not a
-    standalone SalesForecast row)."""
+    """Tests for create_plan_from_forecast endpoint (Sales Forecast Matrix).
+
+    Fase 13 (fix_report_3.md, 2026-10-02): tes ini ditulis untuk skema LAMA
+    (ForecastHeader.year, ForecastLine.qty_jan/qty_apr - era 2026-08-24) dan
+    tidak pernah diperbarui saat model ini dirombak 2026-08-25 ("putaran 6")
+    ke skema rolling-window: ForecastHeader.period_start (bukan year tetap)
+    + qty per bulan sekarang di child table ForecastLineMonth(line_id,
+    period, quantity), bukan kolom qty_jan/qty_apr langsung di ForecastLine.
+    Konsekuensinya ForecastHeader(year=...) melempar TypeError sejak rombak
+    itu - baseline full suite (fix_report_3.md) mengkonfirmasi tes ini SELALU
+    gagal, bukan flaky. Diperbarui di sini mengikuti skema aktual + body
+    endpoint aktual ({"period": "YYYY-MM"}, lihat
+    routes/production_planning.py create_plan_from_forecast())."""
 
     @pytest.fixture
     def approved_forecast(self, db_session, test_product, test_user):
-        header = ForecastHeader(year=2026, name='Test Forecast 2026', status='approved', created_by=test_user.id)
+        from datetime import date
+        from models.sales import ForecastLineMonth
+        header = ForecastHeader(period_start=date(2026, 1, 1), name='Test Forecast 2026', status='approved', created_by=test_user.id)
         db_session.add(header)
         db_session.flush()
-        line = ForecastLine(header_id=header.id, product_id=test_product.id, qty_jan=500)
+        line = ForecastLine(header_id=header.id, product_id=test_product.id)
         db_session.add(line)
+        db_session.flush()
+        db_session.add(ForecastLineMonth(line_id=line.id, period=date(2026, 1, 1), quantity=500))
         db_session.commit()
         return line
 
@@ -2124,7 +2141,7 @@ class TestCreatePlanFromForecast:
         """Creating a plan from an approved forecast line should succeed and use the given month's qty as planned quantity"""
         response = client.post(
             f'/api/production-planning/production-plans/from-forecast/{approved_forecast.id}',
-            json={'month': 1},
+            json={'period': '2026-01'},
             headers=auth_headers
         )
         assert response.status_code == 201
@@ -2138,16 +2155,20 @@ class TestCreatePlanFromForecast:
 
     def test_create_plan_from_unapproved_forecast_rejected(self, client, auth_headers, db_session, test_product, test_user):
         """Creating a plan from a line under a draft (not yet approved) header should be rejected"""
-        header = ForecastHeader(year=2027, name='Test Forecast Draft', status='draft', created_by=test_user.id)
+        from datetime import date
+        from models.sales import ForecastLineMonth
+        header = ForecastHeader(period_start=date(2027, 1, 1), name='Test Forecast Draft', status='draft', created_by=test_user.id)
         db_session.add(header)
         db_session.flush()
-        line = ForecastLine(header_id=header.id, product_id=test_product.id, qty_apr=300)
+        line = ForecastLine(header_id=header.id, product_id=test_product.id)
         db_session.add(line)
+        db_session.flush()
+        db_session.add(ForecastLineMonth(line_id=line.id, period=date(2027, 4, 1), quantity=300))
         db_session.commit()
 
         response = client.post(
             f'/api/production-planning/production-plans/from-forecast/{line.id}',
-            json={'month': 4},
+            json={'period': '2027-04'},
             headers=auth_headers
         )
         assert response.status_code == 400
@@ -2489,8 +2510,26 @@ class TestCompleteWorkOrder:
     """Tests for complete_work_order endpoint"""
 
     def test_complete_work_order_success(self, client, auth_headers, db_session, test_product):
+        """Fase 13 (fix_report_3.md): tes ini SELALU gagal (400, bukan 200)
+        sejak fitur 'Tutup SPK' (_check_closing_requirements) ditambahkan -
+        gate itu MEWAJIBKAN packing list + semua batch sudah ditutup untuk
+        WO produk finished_goods (lihat test_product fixture di conftest.py:
+        material_type='finished_goods'), jadi WO polos tanpa batch/packing
+        list di tes ini selalu ditolak. Ini BUKAN bug - gate itu memang
+        disengaja (lihat project_tutup_spk_closing di memori sesi
+        sebelumnya). Diperbaiki dengan produk non-finished_goods (WIP) khusus
+        tes ini, supaya gate dilewati dan tes kembali menguji mekanisme
+        completion itu sendiri (tujuan aslinya), bukan closing-gate-nya."""
+        from models.product import Product
+        wip_product = Product(
+            code='TEST-COMPLETE-WIP', name='Test WIP Product', material_type='wip',
+            primary_uom='PCS', cost=100.00, price=150.00, is_producible=True, is_active=True,
+        )
+        db_session.add(wip_product)
+        db_session.commit()
+
         wo = WorkOrder(
-            wo_number='WO-COMPLETE-001', product_id=test_product.id,
+            wo_number='WO-COMPLETE-001', product_id=wip_product.id,
             quantity=20, uom='PCS', status='in_progress', quantity_good=18
         )
         db_session.add(wo)
@@ -3037,12 +3076,28 @@ class TestBulkCompleteWorkOrders:
         assert data['completed'] == 0
 
     def test_bulk_complete_multiple_work_orders(self, client, auth_headers, db_session, test_product):
-        """Multiple in_progress WOs should all be processed in a single call"""
-        wo1 = WorkOrder(wo_number='WO-BULK-001', product_id=test_product.id, quantity=10, uom='PCS',
+        """Multiple in_progress WOs should all be processed in a single call.
+
+        Fase 13 (fix_report_3.md): sama seperti test_complete_work_order_success
+        di atas - selalu gagal (completed=0, bukan 2) karena gate 'Tutup SPK'
+        (_check_closing_requirements) menolak WO finished_goods tanpa packing
+        list/batch (bulk_complete_work_orders() memasukkannya ke 'skipped',
+        bukan 'errors', jadi tes lama yang hanya cek errors kosong tidak
+        pernah menangkap kenapa completed tetap 0). Diperbaiki dengan produk
+        WIP khusus tes ini supaya gate dilewati."""
+        from models.product import Product
+        wip_product = Product(
+            code='TEST-BULK-WIP', name='Test WIP Product Bulk', material_type='wip',
+            primary_uom='PCS', cost=100.00, price=150.00, is_producible=True, is_active=True,
+        )
+        db_session.add(wip_product)
+        db_session.commit()
+
+        wo1 = WorkOrder(wo_number='WO-BULK-001', product_id=wip_product.id, quantity=10, uom='PCS',
                          status='in_progress', quantity_good=10)
-        wo2 = WorkOrder(wo_number='WO-BULK-002', product_id=test_product.id, quantity=20, uom='PCS',
+        wo2 = WorkOrder(wo_number='WO-BULK-002', product_id=wip_product.id, quantity=20, uom='PCS',
                          status='in_progress', quantity_good=20)
-        wo3 = WorkOrder(wo_number='WO-BULK-003', product_id=test_product.id, quantity=5, uom='PCS',
+        wo3 = WorkOrder(wo_number='WO-BULK-003', product_id=wip_product.id, quantity=5, uom='PCS',
                          status='planned')  # not in_progress, should be untouched
         db_session.add_all([wo1, wo2, wo3])
         db_session.commit()
@@ -3050,10 +3105,19 @@ class TestBulkCompleteWorkOrders:
         response = client.put('/api/production/work-orders/bulk-complete', headers=auth_headers)
         assert response.status_code == 200
         data = response.get_json()
-        assert data['completed'] == 2
+        # >=, not ==: this suite's db_session fixture only rolls back the
+        # final uncommitted transaction per test (tests/conftest.py) while
+        # the app itself commits per-request - any in_progress WO a PRIOR
+        # test in this session left behind also gets completed by this
+        # endpoint's global query, inflating the count. Asserting our own
+        # 2 WOs individually below is the part that actually proves this
+        # endpoint works; the aggregate count can only be a lower bound.
+        assert data['completed'] >= 2
         assert len(data['errors']) == 0
 
         db_session.expire_all()
+        assert db.session.get(WorkOrder, wo1.id).status == 'completed'
+        assert db.session.get(WorkOrder, wo2.id).status == 'completed'
         # wo3 should remain untouched since it wasn't in_progress
         untouched_wo = db.session.get(WorkOrder, wo3.id)
         assert untouched_wo.status == 'planned'
@@ -3779,16 +3843,23 @@ class TestCreateWorkOrderProductionRecord:
         db_session.add(wo)
         db_session.commit()
 
+        # Fase 13 (fix_report_3.md, 2026-10-02): quantity_reject=5 out of
+        # quantity_produced=100 is 5%, which now violates the <=2% reject
+        # business rule added that same session (plus waste_reason is now
+        # mandatory whenever reject>0) - reduced to 2 (exactly 2%) + reason
+        # added, preserving this test's original intent (aggregation math),
+        # not testing the reject-validation rule itself (see
+        # test_fase13_production_reject_tracking.py for that).
         response = client.post(
             f'/api/production/work-orders/{wo.id}/production-records',
-            json={'quantity_produced': 100, 'quantity_good': 95, 'quantity_reject': 5, 'shift': '1'},
+            json={'quantity_produced': 100, 'quantity_good': 98, 'quantity_reject': 2, 'shift': '1', 'waste_reason': 'Cacat cetak'},
             headers=auth_headers
         )
         assert response.status_code == 201
         data = response.get_json()
         assert data['work_order_progress']['quantity_produced'] == 100
-        assert data['work_order_progress']['quantity_good'] == 95
-        assert data['work_order_progress']['quantity_scrap'] == 5
+        assert data['work_order_progress']['quantity_good'] == 98
+        assert data['work_order_progress']['quantity_scrap'] == 2
 
     def test_quantities_accumulate_across_multiple_shift_entries(self, client, auth_headers, db_session, test_product):
         """A second production record for the same WO should ADD to totals, not overwrite them."""
@@ -3847,7 +3918,17 @@ class TestCreateWorkOrderProductionRecord:
         assert data['buffer_stock']['quantity'] == 10  # 60 produced vs 50 target
         assert data['buffer_stock']['added_to_inventory'] is True
         db_session.expire_all()
-        inventory = Inventory.query.filter_by(product_id=test_product.id, stock_status='released').first()
+        # Stale test fix (fix_report_2.md Fase 7, 2026-10-01): test_product's
+        # material_type is 'finished_goods', and per the 2026-09-09 mandatory-
+        # QC policy (utils/inventory_helpers.py::resolve_initial_stock_status),
+        # ALL finished-goods buffer stock is born 'quarantine' regardless of
+        # the 'released' status requested by the caller - it needs QC release
+        # before becoming sellable. This assertion used to check
+        # stock_status='released', which never matches for a finished_goods
+        # product and made this test fail every run - the code's behavior is
+        # correct per that policy, the old assertion was simply never updated
+        # for it.
+        inventory = Inventory.query.filter_by(product_id=test_product.id, stock_status='quarantine').first()
         assert inventory is not None
         assert float(inventory.quantity_on_hand) == 10
 
@@ -3922,11 +4003,15 @@ class TestGetAndCreateSchedules:
         assert schedules[0]['machine_name'] == 'Schedule Machine'
         assert schedules[0]['status'] == 'scheduled'
 
-    def test_create_schedule_missing_required_field_returns_500_not_400(self, client, auth_headers, db_session):
-        """Documents an API quality gap: create_schedule accesses data['work_order_id']
-        etc. directly (not .get()), so a missing required field raises an uncaught
-        KeyError that the generic except Exception turns into a 500, instead of a
-        proper 400 validation error. Callers can't tell "bad request" from "server broke"."""
+    def test_create_schedule_missing_required_field_returns_400(self, client, auth_headers, db_session):
+        """Fase 13 (fix_report_3.md): tes ini dulu mendokumentasikan sebuah bug
+        (judul lama '..._returns_500_not_400' - missing field dulu memang
+        melempar KeyError tak tertangani -> 500). create_schedule()
+        (routes/production.py) sekarang SUDAH memvalidasi required_fields
+        secara eksplisit dan mengembalikan 400 yang proper - baseline full
+        suite (fix_report_3.md) mengkonfirmasi tes lama ini sekarang SELALU
+        gagal karena justru mengharapkan bug yang sudah tidak ada. Diperbarui
+        untuk menegaskan perilaku yang benar sekarang."""
         machine = Machine(code='MC-SCH-002', name='Schedule Machine 2', machine_type='nonwoven_machine')
         db_session.add(machine)
         db_session.commit()
@@ -3941,14 +4026,14 @@ class TestGetAndCreateSchedules:
             },
             headers=auth_headers
         )
-        assert response.status_code == 500
+        assert response.status_code == 400
+        assert 'work_order_id' in response.get_json()['error']
 
-    def test_create_schedule_does_not_validate_work_order_exists(self, client, auth_headers, db_session):
-        """Documents a real bug: create_schedule never verifies work_order_id/machine_id
-        reference existing rows before saving. A schedule pointing at a non-existent
-        WorkOrder is accepted (201), but then crashes get_schedules() with a 500 because
-        it accesses s.work_order.wo_number without a None check - taking down the ENTIRE
-        schedule list for everyone, not just the bad record."""
+    def test_create_schedule_validates_work_order_exists(self, client, auth_headers, db_session):
+        """Fase 13 (fix_report_3.md): tes ini dulu mendokumentasikan bug
+        (create_schedule menerima work_order_id yang tidak ada, 201). Sekarang
+        SUDAH divalidasi (db.session.get(WorkOrder, ...) + 400 kalau tidak
+        ketemu) - diperbarui untuk menegaskan validasi itu bekerja."""
         machine = Machine(code='MC-SCH-003', name='Schedule Machine 3', machine_type='nonwoven_machine')
         db_session.add(machine)
         db_session.commit()
@@ -3963,11 +4048,15 @@ class TestGetAndCreateSchedules:
             },
             headers=auth_headers
         )
-        assert response.status_code == 201  # accepted despite invalid reference
+        assert response.status_code == 400
+        assert 'not found' in response.get_json()['error'].lower()
 
+        # The invalid schedule was correctly rejected (never saved), so
+        # listing schedules afterwards should work normally - no orphan
+        # FK row left behind to crash get_schedules() on s.work_order being
+        # None, unlike the old pre-fix behavior this test used to document.
         list_response = client.get('/api/production/schedules', headers=auth_headers)
-        # get_schedules crashes because s.work_order is None
-        assert list_response.status_code == 500
+        assert list_response.status_code == 200
 
 
 class TestWorkOrderBOMItemDeleteActualReset:
@@ -4034,10 +4123,15 @@ class TestWorkOrderBOMItemDeleteActualReset:
         assert updated_item.notes == 'slight overuse'
         assert updated_item.is_modified is True
 
-    def test_bulk_update_actual_zero_quantity_planned_skips_variance(self, client, auth_headers, db_session, test_product, test_material):
-        """Documents the same falsy-check bug pattern as bug #3 (update_work_order_bom_item):
-        `if item.quantity_planned:` treats a legitimate quantity_planned=0 as falsy, so
-        quantity_variance is never calculated even though quantity_actual is correctly saved."""
+    def test_bulk_update_actual_zero_quantity_planned_still_computes_variance(self, client, auth_headers, db_session, test_product, test_material):
+        """Fase 13 (fix_report_3.md): tes ini dulu mendokumentasikan sebuah
+        falsy-check bug (`if item.quantity_planned:` memperlakukan
+        quantity_planned=0 yang sah sebagai falsy, melewatkan perhitungan
+        variance). update_work_order_bom_actual() (routes/production.py)
+        sekarang sudah memakai `if item.quantity_planned is not None:` -
+        baseline full suite mengkonfirmasi tes lama ini SELALU gagal karena
+        mengharapkan bug yang sudah tidak ada. Diperbarui untuk menegaskan
+        variance SEKARANG benar dihitung (5 - 0 = 5)."""
         wo, item = self._make_wo_and_item(db_session, test_product, test_material, 'WO-BOMACT-002', quantity_planned=0)
 
         response = client.put(
@@ -4049,8 +4143,7 @@ class TestWorkOrderBOMItemDeleteActualReset:
 
         updated_item = db.session.get(WorkOrderBOMItem, item.id)
         assert float(updated_item.quantity_actual) == 5
-        # BUG: variance should be 5 - 0 = 5, but the falsy check skips it entirely
-        assert updated_item.quantity_variance is None
+        assert float(updated_item.quantity_variance) == 5.0
 
     def test_bulk_update_actual_skips_items_from_other_work_orders_silently(self, client, auth_headers, db_session, test_product, test_material):
         wo1, item1 = self._make_wo_and_item(db_session, test_product, test_material, 'WO-BOMACT-003')

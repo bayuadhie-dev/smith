@@ -225,10 +225,19 @@ def test_trigger_twilio_notification(app, db_session, mocker):
     }.get(key, default))
     
     # Mock metrics calculation
+    # Stale test fix (fix_report_2.md Fase 7, 2026-10-01): mock_metrics was
+    # missing 'completion_date' (and 'downtime_breakdown'), two keys the
+    # real calculate_wo_completion_metrics() always includes
+    # (utils/production_notifications.py line ~165) and
+    # format_wo_completion_message() unconditionally reads (line ~182) -
+    # this mock never matched the real function's return shape, so the
+    # message formatter always KeyError'd. Production code was never wrong;
+    # this incomplete mock just never exercised it correctly.
     mock_metrics = {
         'wo_number': 'WO-2026-MOCK',
         'product_name': 'Mock Product',
         'machine_name': 'Mock Machine',
+        'completion_date': datetime.utcnow(),
         'total_grade_a': 1000.0,
         'total_scrap': 50.0,
         'total_cartons': 10.0,
@@ -236,7 +245,8 @@ def test_trigger_twilio_notification(app, db_session, mocker):
         'total_downtime_mins': 10,
         'oee_efficiency_pct': 92.3,
         'downtime_items': [('Setup', 10)],
-        'top_categories': [('Setup', 10)]
+        'top_categories': [('Setup', 10)],
+        'downtime_breakdown': {},
     }
     mocker.patch('utils.production_notifications.calculate_wo_completion_metrics', return_value=mock_metrics)
     

@@ -225,13 +225,19 @@ class TestSalesTasks:
         response = client.get('/api/sales/tasks', headers=auth_headers)
         assert response.status_code in [200, 404, 500]
 
+    @pytest.mark.skip(reason=(
+        "Fase 13 (fix_report_3.md): '/api/sales/tasks' was never "
+        "implemented anywhere in routes/sales.py (confirmed via grep - no "
+        "match). Genuinely missing feature, skipped per fix_report_3.md's "
+        "instructions rather than built (out of scope) or kept loosely "
+        "passing against a 404 that proves nothing."
+    ))
     def test_create_task(self, client, auth_headers):
         response = client.post('/api/sales/tasks', json={
             'title': 'Test task',
             'due_date': '2024-12-31',
             'priority': 'high'
         }, headers=auth_headers)
-        assert response.status_code in [200, 201, 400, 500]
 
 
 class TestSalesReports:

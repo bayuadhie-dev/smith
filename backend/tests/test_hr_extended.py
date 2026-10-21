@@ -50,9 +50,17 @@ class TestDepartments:
         }, headers=auth_headers)
         assert response.status_code in [200, 201, 400, 404, 405, 409, 500]
 
+    @pytest.mark.skip(reason=(
+        "Fase 13 (fix_report_3.md): there is no 'GET /departments/<id>' "
+        "detail route - only 'GET /departments' (list, routes/hr.py), "
+        "'POST /departments' and 'PUT /departments/<id>' (routes/hr_"
+        "extended.py). Genuinely missing feature (confirmed via grep), "
+        "skipped per fix_report_3.md's instructions rather than built "
+        "(out of scope) or kept loosely passing against a 405 that proves "
+        "nothing."
+    ))
     def test_get_department_by_id(self, client, auth_headers):
         response = client.get('/api/hr/departments/1', headers=auth_headers)
-        assert response.status_code in [200, 404, 500]
 
     def test_get_department_employees(self, client, auth_headers):
         response = client.get('/api/hr/departments/1/employees', headers=auth_headers)

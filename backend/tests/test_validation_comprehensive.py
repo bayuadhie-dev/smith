@@ -52,25 +52,36 @@ def test_production_validation_failures(client, auth_headers, db_session):
     db_session.add(machine)
     db_session.commit()
 
+    # Stale test fix (fix_report_2.md Fase 7, 2026-10-01): create_work_order()
+    # (routes/production.py) reads data['quantity'] (bracket access,
+    # required) - this payload used 'planned_quantity', a field name the
+    # WorkOrder model doesn't have at all, so every request KeyError'd
+    # before reaching any date/quantity validation (caught generically,
+    # returned 500 instead of 400). Fixed to use the real field name.
+    # Also: create_work_order() had NO validation at all for end-before-
+    # start dates or non-positive quantity - both gaps are now closed
+    # (routes/production.py, 2 new checks) so these assertions now
+    # exercise real validation instead of an unrelated KeyError crash.
+
     # 1. Create Work Order with invalid date sequence (end_date before start_date)
     invalid_wo_payload = {
         'wo_number': 'WO-VAL-BAD-DATES',
         'product_id': product.id,
         'machine_id': machine.id,
-        'planned_quantity': 100,
+        'quantity': 100,
         'scheduled_start_date': (datetime.utcnow() + timedelta(days=5)).isoformat(),
         'scheduled_end_date': datetime.utcnow().isoformat(),  # End date is earlier
         'status': 'planned'
     }
     response = client.post('/api/production/work-orders', json=invalid_wo_payload, headers=auth_headers)
     assert response.status_code == 400
-    
+
     # 2. Create Work Order with negative planned quantity
     negative_qty_payload = {
         'wo_number': 'WO-VAL-NEG-QTY',
         'product_id': product.id,
         'machine_id': machine.id,
-        'planned_quantity': -500,  # Negative quantity
+        'quantity': -500,  # Negative quantity
         'scheduled_start_date': datetime.utcnow().isoformat(),
         'scheduled_end_date': (datetime.utcnow() + timedelta(days=1)).isoformat(),
         'status': 'planned'
@@ -98,11 +109,16 @@ def test_production_output_record_validation(client, auth_headers, db_session):
     db_session.add_all([product, machine])
     db_session.commit()
 
+    # Stale test fix (fix_report_2.md Fase 7, 2026-10-01): WorkOrder has no
+    # 'planned_quantity' column - the real field is 'quantity' (confirmed
+    # in routes/production.py::create_work_order()). This previously
+    # TypeError'd at construction time.
     wo = WorkOrder(
         wo_number='WO-VAL-02',
         product_id=product.id,
         machine_id=machine.id,
-        planned_quantity=100,
+        quantity=100,
+        uom='PCS',
         scheduled_start_date=datetime.utcnow(),
         scheduled_end_date=datetime.utcnow() + timedelta(days=1),
         status='in_progress'
@@ -110,16 +126,27 @@ def test_production_output_record_validation(client, auth_headers, db_session):
     db_session.add(wo)
     db_session.commit()
 
+    # Stale test fix (fix_report_2.md Fase 7, 2026-10-01): '/output' was
+    # never a real route - the actual endpoint is
+    # 'POST /work-orders/<id>/production-records'
+    # (create_work_order_production_record(), routes/production.py) with
+    # field names quantity_produced/quantity_good/quantity_reject/
+    # actual_runtime, not good_quantity/reject_quantity. Always 404'd.
+    # Also: that endpoint had NO validation at all for negative quantities/
+    # runtime - now closed (routes/production.py, 2 new checks) so these
+    # assertions exercise real validation instead of a 404.
+
     # 1. Report output with negative good quantity
     negative_output_payload = {
         'machine_id': machine.id,
         'production_date': datetime.utcnow().date().isoformat(),
         'shift': '1',
-        'good_quantity': -10,  # Negative good qty
-        'reject_quantity': 0,
+        'quantity_produced': 10,
+        'quantity_good': -10,  # Negative good qty
+        'quantity_reject': 0,
         'actual_runtime': 480
     }
-    response = client.post(f'/api/production/work-orders/{wo.id}/output', json=negative_output_payload, headers=auth_headers)
+    response = client.post(f'/api/production/work-orders/{wo.id}/production-records', json=negative_output_payload, headers=auth_headers)
     assert response.status_code == 400
 
     # 2. Report output with negative runtime minutes
@@ -127,11 +154,12 @@ def test_production_output_record_validation(client, auth_headers, db_session):
         'machine_id': machine.id,
         'production_date': datetime.utcnow().date().isoformat(),
         'shift': '1',
-        'good_quantity': 50,
-        'reject_quantity': 2,
+        'quantity_produced': 52,
+        'quantity_good': 50,
+        'quantity_reject': 2,
         'actual_runtime': -60  # Negative runtime minutes
     }
-    response = client.post(f'/api/production/work-orders/{wo.id}/output', json=negative_runtime_payload, headers=auth_headers)
+    response = client.post(f'/api/production/work-orders/{wo.id}/production-records', json=negative_runtime_payload, headers=auth_headers)
     assert response.status_code == 400
 
 
@@ -168,24 +196,37 @@ def test_warehouse_transfer_validation(client, auth_headers, db_session):
     db_session.add_all([loc1, loc2])
     db_session.commit()
 
+    # Stale test fix (fix_report_2.md Fase 7, 2026-10-01): '/api/warehouse/transfers'
+    # was never a real route - the actual stock-transfer endpoint is
+    # 'POST /api/wms/transfers' (create_transfer(), routes/wms_advanced.py),
+    # with a different payload shape (from_zone_id/to_zone_id required,
+    # from_location_id/to_location_id optional, items as a list each with
+    # their own quantity) - not the flat source_location_id/destination_location_id/
+    # quantity this test assumed. Always 404'd. Also: that endpoint had NO
+    # validation at all for self-transfer or negative item quantity - both
+    # closed now (routes/wms_advanced.py, 2 new checks) so these assertions
+    # exercise real validation instead of a 404.
+
     # 1. Transfer stock from location to itself (invalid self-transfer)
     self_transfer_payload = {
-        'source_location_id': loc1.id,
-        'destination_location_id': loc1.id,  # Same location
-        'product_id': 1,
-        'quantity': 10
+        'from_zone_id': zone.id,
+        'to_zone_id': zone.id,
+        'from_location_id': loc1.id,
+        'to_location_id': loc1.id,  # Same location
+        'items': [{'product_id': 1, 'quantity': 10}],
     }
-    response = client.post('/api/warehouse/transfers', json=self_transfer_payload, headers=auth_headers)
+    response = client.post('/api/wms/transfers', json=self_transfer_payload, headers=auth_headers)
     assert response.status_code == 400
 
     # 2. Transfer negative quantity of stock
     neg_transfer_payload = {
-        'source_location_id': loc1.id,
-        'destination_location_id': loc2.id,
-        'product_id': 1,
-        'quantity': -5  # Negative quantity
+        'from_zone_id': zone.id,
+        'to_zone_id': zone.id,
+        'from_location_id': loc1.id,
+        'to_location_id': loc2.id,
+        'items': [{'product_id': 1, 'quantity': -5}],  # Negative quantity
     }
-    response = client.post('/api/warehouse/transfers', json=neg_transfer_payload, headers=auth_headers)
+    response = client.post('/api/wms/transfers', json=neg_transfer_payload, headers=auth_headers)
     assert response.status_code == 400
 
 

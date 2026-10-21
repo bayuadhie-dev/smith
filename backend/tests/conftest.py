@@ -160,3 +160,4 @@ def reset_db(db_session):
         db_session.execute(table.delete())
     db_session.commit()
     db_session.expire_all()
+    db.session.remove()
