@@ -192,9 +192,24 @@ export default function Register() {
       return
     }
 
-    // Check password strength
-    if (passwordStrength && passwordStrength.score < 60) {
-      toast.error('Password is too weak. Please use a stronger password.')
+    // Backend (utils/password_validator.py) requires ALL FOUR character classes
+    // regardless of overall score - a high score alone (e.g. missing only the
+    // special character) used to pass this client-side gate and then get
+    // rejected by the backend after the user filled out the whole form.
+    if (!/[A-Z]/.test(formData.password)) {
+      toast.error('Password must contain at least one uppercase letter')
+      return
+    }
+    if (!/[a-z]/.test(formData.password)) {
+      toast.error('Password must contain at least one lowercase letter')
+      return
+    }
+    if (!/\d/.test(formData.password)) {
+      toast.error('Password must contain at least one number')
+      return
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>_\-+=[\]\\/;'`~]/.test(formData.password)) {
+      toast.error('Password must contain at least one special character (!@#$%^&*...)')
       return
     }
 
@@ -323,7 +338,7 @@ export default function Register() {
               />
             </div>
 
-            <div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="department" className="block text-sm font-medium text-emerald-200">
                   Department
@@ -336,6 +351,21 @@ export default function Register() {
                   onChange={handleChange}
                   className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-600 placeholder-gray-400 dark:placeholder-gray-500 dark:placeholder-gray-400 text-white bg-gray-800 rounded-md focus:outline-none focus:ring-[#059669] focus:border-[#059669] focus:z-10 sm:text-sm"
                   placeholder="Your department"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="position" className="block text-sm font-medium text-emerald-200">
+                  Position
+                </label>
+                <input
+                  id="position"
+                  name="position"
+                  type="text"
+                  value={formData.position}
+                  onChange={handleChange}
+                  className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-600 placeholder-gray-400 dark:placeholder-gray-500 dark:placeholder-gray-400 text-white bg-gray-800 rounded-md focus:outline-none focus:ring-[#059669] focus:border-[#059669] focus:z-10 sm:text-sm"
+                  placeholder="Your job title"
                 />
               </div>
             </div>

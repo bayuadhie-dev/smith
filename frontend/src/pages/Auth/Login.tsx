@@ -4,7 +4,6 @@ import { useAppDispatch } from '../../hooks/redux'
 import { login } from '../../store/slices/authSlice'
 import axiosInstance from '../../utils/axiosConfig'
 import toast from 'react-hot-toast'
-import { getDynamicLoginGreeting } from '../../utils/greetingHelper'
 import {
   EyeIcon,
   EyeSlashIcon,
@@ -133,11 +132,14 @@ export default function Login() {
       localStorage.setItem('session_start_time', Date.now().toString())
       localStorage.setItem('last_activity_time', Date.now().toString())
       
-      const isFirstLogin = loginResult?.user?.is_first_login || loginResult?.user?.login_count === 1;
-      const greetingMsg = getDynamicLoginGreeting(loginResult?.user?.full_name || username, isFirstLogin);
-      toast.success(greetingMsg, { duration: 5000 });
-      // Use RoleBasedRedirect logic - navigate will be handled by App.tsx
-      window.location.href = '/'
+      // The dynamic/random greeting is shown as the Dashboard page heading right
+      // after redirect (see DashboardEnhanced.tsx) - showing it here too produced
+      // two different random greetings stacked on screen. Keep this toast short.
+      toast.success('Login berhasil!', { duration: 3000 });
+      // SPA navigation - Redux auth state is already populated by login.fulfilled,
+      // so a hard reload here only causes a blank-screen flash and a redundant
+      // checkAuth() on remount. RoleBasedRedirect at '/' handles the redirect.
+      navigate('/', { replace: true })
     } catch (error: any) {
       // Check if account is locked
       if (error.includes('locked') || error.includes('Account locked')) {

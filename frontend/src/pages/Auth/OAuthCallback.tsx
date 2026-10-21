@@ -4,7 +4,6 @@ import { useAppDispatch } from '../../hooks/redux';
 import { setCredentials } from '../../store/slices/authSlice';
 import axiosInstance from '../../utils/axiosConfig';
 import toast from 'react-hot-toast';
-import { getDynamicLoginGreeting } from '../../utils/greetingHelper';
 
 export default function OAuthCallback() {
   const [searchParams] = useSearchParams();
@@ -59,8 +58,9 @@ export default function OAuthCallback() {
           window.dispatchEvent(new Event('auth-change'));
 
           setStatus('success');
-          const greetingMsg = getDynamicLoginGreeting(user.full_name, user.is_first_login);
-          toast.success(greetingMsg, { duration: 5000 });
+          // Dashboard page heading already shows a dynamic greeting right after
+          // redirect - keep this toast short to avoid two stacked greetings.
+          toast.success('Login berhasil!', { duration: 3000 });
           setTimeout(() => navigate('/'), 1000);
           return;
         } catch (err: any) {
@@ -136,11 +136,24 @@ export default function OAuthCallback() {
   }, [searchParams, navigate, dispatch]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-[#064e3b] to-slate-900">
       <div className="text-center">
         {status === 'processing' && (
           <>
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
+            <div className="relative h-16 w-16 mx-auto mb-4">
+              <div className="absolute inset-0 rounded-full border-[3px] border-white/10" />
+              <div
+                className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-[#10b981] border-r-teal-400 animate-spin"
+                style={{ animationDuration: '0.9s' }}
+              />
+              <div
+                className="absolute inset-[6px] rounded-full border-[3px] border-transparent border-b-[#F15D2C] animate-spin [animation-direction:reverse]"
+                style={{ animationDuration: '1.4s' }}
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="h-2.5 w-2.5 rounded-full bg-gradient-to-br from-[#059669] to-[#047857] animate-pulse" />
+              </div>
+            </div>
             <p className="text-white text-lg">Signing you in...</p>
           </>
         )}

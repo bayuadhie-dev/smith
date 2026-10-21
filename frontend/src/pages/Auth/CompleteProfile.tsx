@@ -74,11 +74,16 @@ export default function CompleteProfile() {
       setRoles(availableRoles);
     } catch (error) {
       console.error('Failed to fetch roles:', error);
-      // Set default roles if API fails
-      setRoles([
-        { id: 1, name: 'Staff', description: 'Staff umum dengan akses terbatas' },
-        { id: 2, name: 'Viewer', description: 'Hanya dapat melihat data' }
-      ]);
+      // 2026-10-07: this used to fall back to 2 fake roles ("Staff" id=1,
+      // "Viewer" id=2) on ANY API error, completely bypassing the
+      // admin-role filter just above. In this system's real database,
+      // role id 1 is actually "admin" and id 2 is "manager" - neither
+      // "Staff" nor "Viewer" exist as real assignable roles here at all.
+      // The submit button is already disabled until a role is selected
+      // (see `disabled={loading || !formData.requested_role}` below), so
+      // an honest empty list here safely blocks submission instead of
+      // offering roles that don't correspond to anything real.
+      setRoles([]);
     } finally {
       setLoadingRoles(false);
     }
