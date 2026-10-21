@@ -383,6 +383,15 @@ def _create_work_order(plan, quantity, scheduled_date, user_id):
     )
     
     db.session.add(wo)
+    db.session.flush()
+
+    # Snapshot the master BOM into this WO right now - see
+    # utils/bom_snapshot.py for why this can't wait for a manual "Copy BOM"
+    # click (same fix applied to the manual create_work_order() endpoint in
+    # routes/production.py).
+    from utils.bom_snapshot import snapshot_bom_to_work_order
+    snapshot_bom_to_work_order(wo)
+
     return wo
 
 

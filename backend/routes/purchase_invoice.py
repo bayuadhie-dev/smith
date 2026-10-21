@@ -45,6 +45,10 @@ def _resolve_incoming_status(data, default='draft'):
     return default
 
 
+def _inv_amount_idr(inv, amount):
+    return float(amount or 0) * float(inv.exchange_rate or 1)
+
+
 def _serialize_invoice_list_item(inv):
     return {
         'id': inv.id,
@@ -73,6 +77,10 @@ def _serialize_invoice_list_item(inv):
         'total_amount': float(inv.total_amount) if inv.total_amount else 0,
         'amount_paid': float(inv.paid_amount) if inv.paid_amount else 0,
         'balance_due': float(inv.balance_due) if inv.balance_due else 0,
+        'subtotal_idr': _inv_amount_idr(inv, inv.subtotal),
+        'total_amount_idr': _inv_amount_idr(inv, inv.total_amount),
+        'amount_paid_idr': _inv_amount_idr(inv, inv.paid_amount),
+        'balance_due_idr': _inv_amount_idr(inv, inv.balance_due),
         'notes': inv.notes,
         'received_by': inv.received_by,
         'received_by_name': inv.received_by_user.username if inv.received_by_user else None,
@@ -242,6 +250,10 @@ def get_purchase_invoice(id):
             'total_amount': float(invoice.total_amount) if invoice.total_amount else 0,
             'amount_paid': float(invoice.paid_amount) if invoice.paid_amount else 0,
             'balance_due': float(invoice.balance_due) if invoice.balance_due else 0,
+            'subtotal_idr': _inv_amount_idr(invoice, invoice.subtotal),
+            'total_amount_idr': _inv_amount_idr(invoice, invoice.total_amount),
+            'amount_paid_idr': _inv_amount_idr(invoice, invoice.paid_amount),
+            'balance_due_idr': _inv_amount_idr(invoice, invoice.balance_due),
             'notes': invoice.notes,
             'internal_notes': invoice.internal_notes,
             'received_by': invoice.received_by,
@@ -268,6 +280,8 @@ def get_purchase_invoice(id):
                 'tax_percent': float(item.tax_percent) if item.tax_percent else 0,
                 'tax_amount': float(item.tax_amount) if item.tax_amount else 0,
                 'total_price': float(item.total_amount) if item.total_amount else 0,
+                'unit_price_idr': _inv_amount_idr(invoice, item.unit_price),
+                'total_price_idr': _inv_amount_idr(invoice, item.total_amount),
                 'quantity_returned': float(item.quantity_returned) if item.quantity_returned else 0,
                 'notes': item.notes,
             } for item in invoice.items]
@@ -367,10 +381,21 @@ def create_purchase_invoice():
         if not po:
             return jsonify({'error': 'Purchase Order not found'}), 404
 
+        # Multi-currency (2026-10-19, po_multicurrency_plan.md): currency and
+        # exchange_rate come strictly from the PO (single source of truth).
+        if po.currency != 'IDR' and po.status == 'draft':
+            return jsonify({'error': f'PO {po.currency} masih draft, kurs belum dikunci. Submit PO terlebih dahulu.'}), 400
+        if data.get('currency') and data['currency'].strip().upper() != po.currency:
+            return jsonify({'error': f"Mata uang invoice harus mengikuti PO ({po.currency}), tidak bisa diubah ke '{data['currency']}'"}), 400
+        if data.get('exchange_rate') is not None and abs(float(data['exchange_rate']) - float(po.exchange_rate or 1)) > 1e-6:
+            return jsonify({'error': f"Kurs invoice mengikuti kurs PO yang sudah dikunci ({float(po.exchange_rate or 1)}), tidak bisa diisi manual"}), 400
+        inv_currency = po.currency
+        inv_rate = float(po.exchange_rate or 1)
+
         invoice_date_parsed = datetime.strptime(data.get('invoice_date'), '%Y-%m-%d').date() if data.get('invoice_date') else get_local_today()
 
         from utils.finance_helpers import is_period_locked
-        if is_period_locked(invoice_date_parsed):
+        if is_period_locked(invoice_date_parsed, transaction_type='purchase_invoice'):
             return jsonify({'error': f'Periode {invoice_date_parsed.strftime("%Y-%m")} sudah ditutup (period-close). Tidak bisa membuat transaksi baru di periode ini.'}), 400
 
         # Create invoice - journal is posted immediately below (see original
@@ -385,8 +410,8 @@ def create_purchase_invoice():
             supplier_invoice_number=data.get('supplier_invoice_number'),
             supplier_invoice_date=datetime.strptime(data.get('supplier_invoice_date'), '%Y-%m-%d').date() if data.get('supplier_invoice_date') else None,
             status=_resolve_incoming_status(data, default='sent'),
-            currency=data.get('currency', 'IDR'),
-            exchange_rate=data.get('exchange_rate', 1.0),
+            currency=inv_currency,
+            exchange_rate=inv_rate,
             payment_terms=data.get('payment_terms'),
             payment_method=data.get('payment_method'),
             subtotal=data.get('subtotal', 0),
@@ -425,9 +450,23 @@ def create_purchase_invoice():
         from utils.finance_helpers import post_pending_journal, resolve_account, resolve_accounts_payable
 
         journal_lines = []
-        total_debit_amount = 0
+        total_items_amount = 0.0
+        total_debit_amount = 0.0
 
         for idx, item_data in enumerate(items_data, 1):
+            # total_price is NOT NULL and was left entirely to the caller to
+            # supply - auto-compute from quantity*unit_price when omitted,
+            # same fallback already used in purchase_return.py. Found via
+            # real production testing 2026-10-01 (500 NotNullViolation).
+            total_price = item_data.get('total_price')
+            if total_price is None:
+                quantity = float(item_data.get('quantity') or 0)
+                unit_price = float(item_data.get('unit_price') or 0)
+                discount_amount = float(item_data.get('discount_amount') or 0)
+                tax_amount = float(item_data.get('tax_amount') or 0)
+                total_price = quantity * unit_price - discount_amount + tax_amount
+                item_data['total_price'] = total_price
+
             item = InvoiceItem(
                 invoice_id=invoice.id,
                 po_item_id=item_data.get('po_item_id'),
@@ -442,7 +481,7 @@ def create_purchase_invoice():
                 discount_amount=item_data.get('discount_amount', 0),
                 tax_percent=item_data.get('tax_percent', 0),
                 tax_amount=item_data.get('tax_amount', 0),
-                total_amount=item_data.get('total_price'),
+                total_amount=total_price,
                 notes=item_data.get('notes'),
                 created_at=get_local_now()
             )
@@ -467,7 +506,8 @@ def create_purchase_invoice():
             # Determine debit account: inventory if this is a stocked item
             # (Material is always inventory; Product depends on material_type),
             # otherwise expense.
-            line_amount = item_data.get('total_price') or 0
+            line_amount = float(item_data.get('total_price') or 0)
+            line_amount_idr = line_amount * inv_rate
             product_id = item_data.get('product_id')
             material_id = item_data.get('material_id')
 
@@ -501,11 +541,23 @@ def create_purchase_invoice():
 
             journal_lines.append({
                 'account_id': debit_account_id,
-                'debit': float(line_amount),
+                'debit': line_amount_idr,
                 'credit': 0,
                 'description': item_data.get('description') or f'Purchase invoice {invoice_number} line {idx}',
             })
-            total_debit_amount += float(line_amount)
+            total_items_amount += line_amount
+            total_debit_amount += line_amount_idr
+
+        # Header total_amount had the same gap as item total_price: left
+        # entirely to the caller, defaulting to 0 when omitted - an invoice
+        # with correct item lines could still show Rp0 total/balance_due,
+        # misleading AP/payment reports. Auto-sum from the items' total_price
+        # (now itself guaranteed non-null by the fallback above) when the
+        # caller didn't supply total_amount. Found via real production
+        # testing 2026-10-02, same session as the item-level fix.
+        if data.get('total_amount') is None:
+            invoice.total_amount = total_items_amount
+            invoice.balance_due = total_items_amount - float(invoice.paid_amount or 0)
 
         # Invoice blocking (SAP MM concept, 2026-09-14) - a 3-way-match discrepancy
         # bigger than the configured tolerance now HOLDS the invoice's journal entry
@@ -521,7 +573,7 @@ def create_purchase_invoice():
         try:
             match_result = _compute_three_way_match(invoice)
             total_price_variance = sum(
-                (line['inv_price'] - line['po_price']) * line['inv_qty']
+                (line['inv_price'] - line['po_price']) * line['inv_qty'] * inv_rate
                 for line in match_result['lines']
                 if abs(line['price_variance']) > 0.01
             )
@@ -529,7 +581,7 @@ def create_purchase_invoice():
             tolerance = float(purchase_settings.invoice_variance_tolerance_percent or 0)
             if abs(total_price_variance) > 0.01 and variance_percent > tolerance:
                 discrepancy_lines = [
-                    f"{l.get('description', l.get('product_id') or l.get('material_id'))}: PO Rp{l['po_price']:,.0f} vs Invoice Rp{l['inv_price']:,.0f}"
+                    f"{l.get('description', l.get('product_id') or l.get('material_id'))}: PO {inv_currency} {l['po_price']:,.2f} vs Invoice {inv_currency} {l['inv_price']:,.2f}"
                     for l in match_result['lines'] if abs(l['price_variance']) > 0.01
                 ]
                 hold_reason = (
@@ -670,8 +722,12 @@ def update_purchase_invoice(id):
                 invoice.posted_by = user_id
                 invoice.posted_at = get_local_now()
         if 'currency' in data:
+            if invoice.purchase_order_id and data['currency'].strip().upper() != invoice.currency:
+                return jsonify({'error': f"Mata uang invoice mengikuti PO ({invoice.currency}), tidak bisa diubah"}), 400
             invoice.currency = data['currency']
         if 'exchange_rate' in data:
+            if invoice.purchase_order_id and abs(float(data['exchange_rate']) - float(invoice.exchange_rate or 1)) > 1e-6:
+                return jsonify({'error': f"Kurs invoice mengikuti kurs PO ({float(invoice.exchange_rate or 1)}), tidak bisa diubah"}), 400
             invoice.exchange_rate = data['exchange_rate']
         if 'payment_terms' in data:
             invoice.payment_terms = data['payment_terms']
@@ -706,6 +762,14 @@ def update_purchase_invoice(id):
 
             # Add new items
             for idx, item_data in enumerate(data['items'], 1):
+                total_price = item_data.get('total_price')
+                if total_price is None:
+                    quantity = float(item_data.get('quantity') or 0)
+                    unit_price = float(item_data.get('unit_price') or 0)
+                    discount_amount = float(item_data.get('discount_amount') or 0)
+                    tax_amount = float(item_data.get('tax_amount') or 0)
+                    total_price = quantity * unit_price - discount_amount + tax_amount
+
                 item = InvoiceItem(
                     invoice_id=invoice.id,
                     po_item_id=item_data.get('po_item_id'),
@@ -720,7 +784,7 @@ def update_purchase_invoice(id):
                     discount_amount=item_data.get('discount_amount', 0),
                     tax_percent=item_data.get('tax_percent', 0),
                     tax_amount=item_data.get('tax_amount', 0),
-                    total_amount=item_data.get('total_price'),
+                    total_amount=total_price,
                     notes=item_data.get('notes'),
                 )
                 db.session.add(item)
@@ -837,7 +901,8 @@ def _compute_three_way_match(invoice):
 
         if abs(price_variance) > 0.01:
             has_price_variance = True
-            issues.append(f'Harga berbeda: PO Rp{po_price:,.2f} vs Invoice Rp{inv_price:,.2f}')
+            ccy_label = 'Rp' if invoice.currency == 'IDR' else f'{invoice.currency} '
+            issues.append(f'Harga berbeda: PO {ccy_label}{po_price:,.2f} vs Invoice {ccy_label}{inv_price:,.2f}')
             status = 'discrepancy'
 
         if qty_vs_grn > 0.001:
@@ -882,14 +947,20 @@ def _compute_three_way_match(invoice):
     else:
         overall = 'matched'
 
+    po_total_val = sum(float(i.total_price or 0) for i in po.items)
+    rate = float(invoice.exchange_rate or 1)
     return {
         'invoice_id': invoice.id,
         'invoice_number': invoice.invoice_number,
         'po_id': po.id,
         'po_number': po.po_number,
         'supplier_name': invoice.supplier.company_name if invoice.supplier else None,
+        'currency': invoice.currency,
+        'exchange_rate': rate,
         'invoice_total': float(invoice.total_amount or 0),
-        'po_total': sum(float(i.total_price or 0) for i in po.items),
+        'invoice_total_idr': _inv_amount_idr(invoice, invoice.total_amount),
+        'po_total': po_total_val,
+        'po_total_idr': po_total_val * rate,
         'grn_count': len(grns),
         'overall_status': overall,
         'has_price_variance': has_price_variance,
@@ -940,7 +1011,7 @@ def release_invoice_hold(id):
         from utils.finance_helpers import post_pending_journal
         user_id = get_jwt_identity()
         post_pending_journal(invoice.pending_journal_entry_id, posted_by_user_id=user_id,
-                              reference_type='purchase_invoice', reference_id=invoice.id)
+                             reference_type='purchase_invoice', reference_id=invoice.id)
 
         invoice.on_hold = False
         invoice.posted_by = user_id
@@ -986,7 +1057,10 @@ def invoice_match_summary():
                 'supplier_name': inv.supplier.company_name if inv.supplier else None,
                 'invoice_date': inv.invoice_date.isoformat() if inv.invoice_date else None,
                 'due_date': inv.due_date.isoformat() if inv.due_date else None,
+                'currency': inv.currency,
+                'exchange_rate': float(inv.exchange_rate or 1),
                 'total_amount': float(inv.total_amount or 0),
+                'total_amount_idr': _inv_amount_idr(inv, inv.total_amount),
                 'status': inv.status,
                 'payment_status': _status_to_legacy_payment_status(inv.status),
                 'grn_count': grn_count,

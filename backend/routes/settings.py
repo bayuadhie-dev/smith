@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, send_file
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from utils.auth_decorators import require_permission
+from utils.auth_decorators import require_super_admin
 from models import db, SystemSetting, CompanyProfile, User, Role
 from utils.i18n import success_response, error_response, get_message
 from datetime import datetime
@@ -15,7 +15,7 @@ settings_bp = Blueprint('settings', __name__)
 
 @settings_bp.route('/system', methods=['GET'])
 @jwt_required()
-@require_permission('settings.view')
+@require_super_admin()
 def get_system_settings():
     """
     Get all system settings
@@ -66,7 +66,7 @@ def get_system_settings():
 
 @settings_bp.route('/system', methods=['PUT'])
 @jwt_required()
-@require_permission('settings.edit')
+@require_super_admin()
 def update_system_settings():
     """
     Update system settings
@@ -206,14 +206,83 @@ def get_company_profile():
             'city': profile.city,
             'country': profile.country,
             'currency': profile.currency,
-            'timezone': profile.timezone
+            'timezone': profile.timezone,
+            'logoUrl': f'/uploads/company/{os.path.basename(profile.logo_path)}' if profile.logo_path else None,
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
+@settings_bp.route('/company/logo', methods=['POST'])
+@jwt_required()
+@require_super_admin()
+def upload_company_logo():
+    """Logo upload for Company Profile - the gap flagged in
+    utils/company_context.py (2026-08-23): CompanyProfile.logo_path existed
+    as a column with working read-side resolution (_resolve_logo_url, used by
+    every Print Template Designer document's company.logo_url field) but no
+    upload UI/endpoint anywhere, so the logo box on every template rendered
+    permanently blank. Stored as a file (not inline base64 in the DB) because
+    logo_path is VARCHAR(500) - nowhere near enough room for an embedded
+    image - matching the existing chat-upload pattern's file-on-disk approach."""
+    try:
+        from werkzeug.utils import secure_filename
+        import secrets
+
+        if 'file' not in request.files:
+            return jsonify({'error': 'Tidak ada file yang dikirim'}), 400
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'error': 'Tidak ada file dipilih'}), 400
+
+        ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'svg', 'webp'}
+        ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else ''
+        if ext not in ALLOWED_EXTENSIONS:
+            return jsonify({'error': f'Tipe file tidak didukung. Gunakan: {", ".join(sorted(ALLOWED_EXTENSIONS))}'}), 400
+
+        file.seek(0, 2)
+        file_size = file.tell()
+        file.seek(0)
+        if file_size > 2 * 1024 * 1024:
+            return jsonify({'error': 'Ukuran file melebihi batas 2MB'}), 400
+
+        upload_folder = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'uploads', 'company')
+        os.makedirs(upload_folder, exist_ok=True)
+
+        unique_filename = f"logo_{secrets.token_hex(8)}.{ext}"
+        file.save(os.path.join(upload_folder, unique_filename))
+
+        profile = CompanyProfile.query.first()
+        if not profile:
+            return jsonify({'error': 'Company profile belum ada - isi dulu Company Information sebelum upload logo'}), 404
+
+        old_logo_path = profile.logo_path
+        profile.logo_path = os.path.join('uploads', 'company', unique_filename)
+        db.session.commit()
+
+        # Clean up the old logo file, if any, now that the new one is committed.
+        if old_logo_path and not old_logo_path.startswith('data:'):
+            old_full_path = old_logo_path if os.path.isabs(old_logo_path) else os.path.join(
+                os.path.dirname(os.path.dirname(__file__)), old_logo_path
+            )
+            if os.path.isfile(old_full_path):
+                try:
+                    os.remove(old_full_path)
+                except OSError:
+                    pass  # best-effort cleanup, never fail the upload over it
+
+        return jsonify({
+            'message': 'Logo berhasil diupload',
+            'logoUrl': f'/uploads/company/{unique_filename}',
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
 @settings_bp.route('/company', methods=['PUT'])
 @jwt_required()
-@require_permission('settings.edit')
+@require_super_admin()
 def update_company_profile():
     try:
         data = request.get_json()
@@ -245,7 +314,7 @@ def update_company_profile():
 
 @settings_bp.route('/users', methods=['GET'])
 @jwt_required()
-@require_permission('settings.view')
+@require_super_admin()
 def get_users():
     try:
         # Get users with eager loading of roles
@@ -277,7 +346,7 @@ def get_users():
 
 @settings_bp.route('/users/<int:user_id>/profile', methods=['GET'])
 @jwt_required()
-@require_permission('settings.view')
+@require_super_admin()
 def get_user_profile(user_id):
     """Get user profile by ID - restricted to admin roles"""
     try:
@@ -363,7 +432,8 @@ def get_user_profile(user_id):
 
 @settings_bp.route('/users', methods=['POST'])
 @jwt_required()
-@require_permission('settings.view')
+@require_super_admin()
+# (held by e.g. the read-only Auditor role) could create users, see audit note below
 def create_user():
     try:
         data = request.get_json()
@@ -419,7 +489,7 @@ def create_user():
 
 @settings_bp.route('/users/<int:user_id>', methods=['PUT'])
 @jwt_required()
-@require_permission('settings.edit')
+@require_super_admin()
 def update_user(user_id):
     try:
         data = request.get_json()
@@ -494,7 +564,7 @@ def update_user(user_id):
 
 @settings_bp.route('/users/<int:user_id>', methods=['DELETE'])
 @jwt_required()
-@require_permission('settings.view')
+@require_super_admin()
 def delete_user(user_id):
     try:
         current_user_id = int(get_jwt_identity())
@@ -521,16 +591,19 @@ def delete_user(user_id):
 
 @settings_bp.route('/users/<int:user_id>/permanent', methods=['DELETE'])
 @jwt_required()
-@require_permission('settings.view')
+@require_super_admin()
 def permanent_delete_user(user_id):
     """Permanently delete a user from the database"""
     try:
         current_user_id = int(get_jwt_identity())
         
-        # Get current user to check if admin
+        # Permanent deletion is the most destructive operation in the app - restrict
+        # to true super admins only, not department-level is_admin (see
+        # auth_decorators.py require_permission comment for why is_admin no
+        # longer implies this kind of blanket authority)
         current_user = db.session.get(User, current_user_id)
-        if not current_user or not (current_user.is_admin or current_user.is_super_admin):
-            return jsonify({'error': 'Only administrators can permanently delete users'}), 403
+        if not current_user or not current_user.is_super_admin:
+            return jsonify({'error': 'Only super administrators can permanently delete users'}), 403
         
         # Prevent deleting self
         if current_user_id == user_id:
@@ -571,7 +644,7 @@ def permanent_delete_user(user_id):
 
 @settings_bp.route('/backup/create', methods=['POST'])
 @jwt_required()
-@require_permission('settings.view')
+@require_super_admin()
 def create_backup():
     try:
         user_id = int(get_jwt_identity())  # Convert string to int
@@ -620,7 +693,7 @@ def create_backup():
 
 @settings_bp.route('/backup/download/<filename>', methods=['GET'])
 @jwt_required()
-@require_permission('settings.view')
+@require_super_admin()
 def download_backup(filename):
     try:
         # In production, you'd store these in a secure location
@@ -636,7 +709,7 @@ def download_backup(filename):
 
 @settings_bp.route('/export/data', methods=['POST'])
 @jwt_required()
-@require_permission('settings.view')
+@require_super_admin()
 def export_data():
     try:
         data = request.get_json()
@@ -676,7 +749,7 @@ def export_data():
 
 @settings_bp.route('/security/session-timeout', methods=['PUT'])
 @jwt_required()
-@require_permission('settings.edit')
+@require_super_admin()
 def update_session_timeout():
     try:
         data = request.get_json()
@@ -714,17 +787,23 @@ def update_session_timeout():
 
 @settings_bp.route('/roles/public', methods=['GET'])
 def get_public_roles():
-    """Get all active roles for registration (public endpoint)"""
+    """Get all active roles for self-registration (public endpoint).
+
+    Self-registration is Staff/Operator level only - Supervisor, Management and
+    Direktur-level roles must be assigned by a superadmin (see also the same
+    guard in routes/auth.py register()), so those categories are filtered out
+    here entirely rather than just the small hardcoded top-executive list.
+    """
     try:
         # Exclude admin/super admin roles from public registration
-        excluded_roles = ['Super Admin', 'Direktur Utama', 'Direktur Operasional', 
+        excluded_roles = ['Super Admin', 'Direktur Utama', 'Direktur Operasional',
                          'Direktur Keuangan', 'Direktur HRD', 'IT Admin']
-        
+
         roles = Role.query.filter(
             Role.is_active == True,
             ~Role.name.in_(excluded_roles)
         ).order_by(Role.name).all()
-        
+
         # Group roles by category
         role_categories = {
             'Management': [],
@@ -732,28 +811,37 @@ def get_public_roles():
             'Staff': [],
             'Operator': []
         }
-        
+
+        self_registerable_roles = []
         for r in roles:
             role_data = {
                 'id': r.id,
                 'name': r.name,
                 'description': r.description
             }
-            
+
             name_lower = r.name.lower()
             if 'manager' in name_lower or 'general' in name_lower:
                 role_categories['Management'].append(role_data)
+                continue  # Management - superadmin assigns, not self-registration
             elif 'supervisor' in name_lower or 'team lead' in name_lower:
                 role_categories['Supervisor'].append(role_data)
+                continue  # Supervisor and up - superadmin assigns, not self-registration
             elif 'staff' in name_lower or 'admin' in name_lower:
                 role_categories['Staff'].append(role_data)
             elif 'operator' in name_lower or 'helper' in name_lower:
                 role_categories['Operator'].append(role_data)
             else:
                 role_categories['Staff'].append(role_data)
-        
+            self_registerable_roles.append(role_data)
+
+        # Management/Supervisor stay as empty arrays in `categories` so the
+        # frontend's optgroup-if-length check keeps working with no changes.
+        role_categories['Management'] = []
+        role_categories['Supervisor'] = []
+
         return jsonify({
-            'roles': [{'id': r.id, 'name': r.name, 'description': r.description} for r in roles],
+            'roles': self_registerable_roles,
             'categories': role_categories
         }), 200
     except Exception as e:
@@ -761,7 +849,7 @@ def get_public_roles():
 
 @settings_bp.route('/roles', methods=['GET'])
 @jwt_required()
-@require_permission('settings.view')
+@require_super_admin()
 def get_roles():
     """Get all roles with permissions"""
     try:
@@ -793,7 +881,7 @@ def get_roles():
 
 @settings_bp.route('/roles', methods=['POST'])
 @jwt_required()
-@require_permission('settings.view')
+@require_super_admin()
 def create_role():
     """Create new role"""
     try:
@@ -845,7 +933,7 @@ def create_role():
 
 @settings_bp.route('/roles/<int:role_id>', methods=['PUT'])
 @jwt_required()
-@require_permission('settings.edit')
+@require_super_admin()
 def update_role(role_id):
     """Update role"""
     try:
@@ -902,7 +990,7 @@ def update_role(role_id):
 
 @settings_bp.route('/roles/<int:role_id>', methods=['DELETE'])
 @jwt_required()
-@require_permission('settings.view')
+@require_super_admin()
 def delete_role(role_id):
     """Delete role (soft delete)"""
     try:
@@ -937,7 +1025,7 @@ def delete_role(role_id):
 
 @settings_bp.route('/permissions', methods=['GET'])
 @jwt_required()
-@require_permission('settings.view')
+@require_super_admin()
 def get_permissions():
     """Get all permissions grouped by module"""
     try:
@@ -960,7 +1048,7 @@ def get_permissions():
 
 @settings_bp.route('/permissions', methods=['POST'])
 @jwt_required()
-@require_permission('settings.view')
+@require_super_admin()
 def create_permission():
     """Create new permission"""
     try:
@@ -1018,7 +1106,7 @@ def create_permission():
 
 @settings_bp.route('/users/<int:user_id>/roles', methods=['POST'])
 @jwt_required()
-@require_permission('settings.view')
+@require_super_admin()
 def assign_user_roles(user_id):
     """Assign roles to user"""
     try:
@@ -1058,7 +1146,7 @@ def assign_user_roles(user_id):
 
 @settings_bp.route('/users/<int:user_id>/roles/<int:role_id>', methods=['DELETE'])
 @jwt_required()
-@require_permission('settings.view')
+@require_super_admin()
 def remove_user_role(user_id, role_id):
     """Remove specific role from user"""
     try:
@@ -1082,7 +1170,7 @@ def remove_user_role(user_id, role_id):
 
 @settings_bp.route('/notifications/test', methods=['POST'])
 @jwt_required()
-@require_permission('settings.view')
+@require_super_admin()
 def test_notifications():
     try:
         data = request.get_json()

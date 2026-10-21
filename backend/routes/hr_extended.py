@@ -505,7 +505,11 @@ def manager_approve_leave(leave_id):
         manager_employee = db.session.get(Employee, leave.required_manager_id) if leave.required_manager_id else None
         is_the_manager = manager_employee and manager_employee.user_id == user_id
         user = db.session.get(User, user_id)
-        is_admin = user and (user.is_admin or getattr(user, 'is_super_admin', False))
+        # is_admin alone no longer bypasses - only the actual department
+        # manager or a true super admin may act here (2026-10-13 RBAC audit;
+        # this was letting any department admin approve leave for employees
+        # outside their own department)
+        is_admin = user and getattr(user, 'is_super_admin', False)
         if not (is_the_manager or is_admin):
             return jsonify({'error': 'Hanya manager departemen karyawan ini yang bisa approve'}), 403
 

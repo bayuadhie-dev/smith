@@ -29,6 +29,23 @@ def _calculate_po_total(po, subtotal):
     fields applied."""
     return subtotal + float(po.shipping_cost or 0) + float(po.tax_amount or 0) - float(po.discount_amount or 0)
 
+
+# Multi-currency PO (2026-10-19, po_multicurrency_plan.md). Only currencies
+# that utils/exchange_rates.py actually tracks rates for.
+PO_ALLOWED_CURRENCIES = ('IDR', 'USD', 'CNY')
+
+
+def _validate_po_currency(value):
+    """Return the normalized currency code, or raise ValueError."""
+    currency = (value or 'IDR').strip().upper()
+    if currency not in PO_ALLOWED_CURRENCIES:
+        raise ValueError(f"Mata uang '{currency}' tidak didukung. Pilihan: {', '.join(PO_ALLOWED_CURRENCIES)}")
+    return currency
+
+
+def _po_amount_idr(po, amount):
+    return float(amount or 0) * float(po.exchange_rate or 1)
+
 @purchasing_bp.route('/suppliers', methods=['GET'])
 @jwt_required()
 @require_permission('suppliers.view')
@@ -368,7 +385,11 @@ def get_purchase_orders():
                 'order_date': po.order_date.isoformat(),
                 'status': po.status,
                 'priority': po.priority,
-                'total_amount': float(po.total_amount)
+                'total_amount': float(po.total_amount),
+                'currency': po.currency,
+                'exchange_rate': float(po.exchange_rate or 1),
+                'exchange_rate_source': po.exchange_rate_source,
+                'total_amount_idr': _po_amount_idr(po, po.total_amount)
             } for po in pos.items],
             'total': pos.total
         }), 200
@@ -421,6 +442,11 @@ def create_purchase_order():
 
         po_number = generate_number_v2('purchase_order', 'PO', PurchaseOrder, 'po_number')
 
+        try:
+            currency = _validate_po_currency(data.get('currency'))
+        except ValueError as ve:
+            return jsonify({'error': str(ve)}), 400
+
         po = PurchaseOrder(
             po_number=po_number,
             supplier_id=data['supplier_id'],
@@ -429,6 +455,10 @@ def create_purchase_order():
             status='draft',
             payment_terms=data.get('payment_terms'),
             notes=data.get('notes'),
+            # exchange_rate is never taken from the client; it stays 1 until
+            # submit_for_approval locks the real rate.
+            currency=currency,
+            exchange_rate=1,
             created_by=user_id
         )
         
@@ -514,6 +544,10 @@ def get_purchase_order(id):
             'tax_amount': float(po.tax_amount or 0),
             'discount_amount': float(po.discount_amount or 0),
             'total_amount': float(po.total_amount),
+            'currency': po.currency,
+            'exchange_rate': float(po.exchange_rate or 1),
+            'exchange_rate_source': po.exchange_rate_source,
+            'total_amount_idr': _po_amount_idr(po, po.total_amount),
             'has_grn': len(po.grn_records) > 0,
             'items': [{
                 'id': i.id,
@@ -580,6 +614,16 @@ def update_purchase_order(id):
                 from utils.finance_helpers import release_po_budget_commitment
                 release_po_budget_commitment(po)
 
+        if 'currency' in data:
+            try:
+                new_currency = _validate_po_currency(data['currency'])
+            except ValueError as ve:
+                return jsonify({'error': str(ve)}), 400
+            if new_currency != po.currency:
+                if po.status != 'draft':
+                    return jsonify({'error': 'Mata uang hanya bisa diubah saat PO masih draft'}), 400
+                po.currency = new_currency
+
         header_fields = ['priority', 'payment_terms', 'payment_method', 'delivery_address',
                           'shipping_method', 'notes', 'internal_notes', 'status']
         for field in header_fields:
@@ -605,7 +649,8 @@ def update_purchase_order(id):
                     item = PurchaseOrderItem(
                         po_id=po.id,
                         line_number=idx,
-                        product_id=item_data['product_id'],
+                        product_id=item_data.get('product_id'),
+                        material_id=item_data.get('material_id'),
                         quantity=item_data['quantity'],
                         uom=item_data.get('uom', 'PCS'),
                         unit_price=item_data['unit_price'],
@@ -687,6 +732,17 @@ def create_grn():
         user_id = get_jwt_identity()
         
         grn_number = generate_number_v2('grn', 'GRN', GoodsReceivedNote, 'grn_number')
+
+        # Multi-currency (2026-10-19): PO prices are in po.currency; stock
+        # cost and the GR/IR journal must be IDR, using the rate locked at
+        # submit_for_approval. A foreign-currency PO still in draft has no
+        # locked rate yet, so it can't be received.
+        grn_po = db.session.get(PurchaseOrder, data['po_id'])
+        if not grn_po:
+            return jsonify({'error': 'Purchase Order tidak ditemukan'}), 404
+        if grn_po.currency != 'IDR' and grn_po.status == 'draft':
+            return jsonify({'error': f'PO {grn_po.currency} masih draft, kurs belum dikunci. Submit PO terlebih dahulu.'}), 400
+        po_rate = float(grn_po.exchange_rate or 1)
         
         grn = GoodsReceivedNote(
             grn_number=grn_number,
@@ -782,7 +838,7 @@ def create_grn():
                 # receipt with no unit_cost here silently falls through to a
                 # less accurate material/product-level fallback cost.
                 po_item = db.session.get(PurchaseOrderItem, item_data['po_item_id'])
-                receipt_unit_cost = float(po_item.unit_price) if po_item and po_item.unit_price else None
+                receipt_unit_cost = (float(po_item.unit_price) * po_rate) if po_item and po_item.unit_price else None
 
                 # Record movement
                 movement = record_inventory_transaction(
@@ -814,7 +870,7 @@ def create_grn():
                 # place), so this reuses the same "is it inventory" gate as
                 # the stock movement above (product_id/material_id present).
                 if po_item and quantity_accepted > 0:
-                    line_amount = quantity_accepted * float(po_item.unit_price or 0)
+                    line_amount = quantity_accepted * float(po_item.unit_price or 0) * po_rate
                     if line_amount > 0:
                         debit_slot = 'akun_persediaan_id'
                         try:
@@ -943,7 +999,8 @@ def get_grn(grn_id):
                 'material_id': item.material_id,
                 'item_name': (
                     item.product.name if item.product else
-                    (item.po_item.description if item.po_item and item.po_item.description else f'Item #{item.id}')
+                    (item.material.name if item.material else
+                     (item.po_item.description if item.po_item and item.po_item.description else f'Item #{item.id}'))
                 ),
                 'quantity_ordered': float(item.quantity_ordered),
                 'quantity_received': float(item.quantity_received),
@@ -959,6 +1016,203 @@ def get_grn(grn_id):
             } for item in grn.items],
         }), 200
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+def _resolve_grn_quarantine_location():
+    """Cari lokasi karantina untuk barang reject GRN (Fase 4 audit fix,
+    2026-09-30). Keputusan pemilik: pakai zona 'Gudang Reject' yang sudah
+    ada (dibuat saat warehouse restructure, bukan zona baru khusus GRN),
+    dicari lewat zone_type='quarantine' ATAU nama zona mengandung 'reject'
+    (case-insensitive) supaya tidak bergantung pada satu ejaan nama pasti.
+
+    Raises ValueError kalau zona/lokasi belum ada - sengaja tidak
+    auto-create WarehouseZone di sini (keputusan lokasi karantina adalah
+    keputusan pemilik, bukan sesuatu yang harus ditebak/dibuat otomatis).
+    """
+    from models.warehouse import WarehouseZone, WarehouseLocation
+
+    zone = WarehouseZone.query.filter(
+        db.or_(
+            WarehouseZone.zone_type == 'quarantine',
+            WarehouseZone.name.ilike('%reject%'),
+        )
+    ).first()
+    if not zone:
+        raise ValueError(
+            "Zona karantina/reject belum ada di sistem ini (dicari lewat "
+            "zone_type='quarantine' atau nama mengandung 'reject'). GRN "
+            "reject tidak bisa diproses sampai zona ini dibuat."
+        )
+
+    location = WarehouseLocation.query.filter_by(zone_id=zone.id, is_active=True).first()
+    if not location:
+        raise ValueError(
+            f"Zona karantina '{zone.name}' ditemukan tapi belum punya "
+            "lokasi (WarehouseLocation) aktif di dalamnya."
+        )
+    return location
+
+
+@purchasing_bp.route('/quarantine/<int:inventory_id>/destroy', methods=['POST'])
+@jwt_required()
+@require_permission('purchasing.create')
+def destroy_quarantine_inventory(inventory_id):
+    """Musnahkan barang di karantina (Fase 5 bagian B, fix_report_2.md,
+    2026-10-01, disetujui pemilik via AskUserQuestion). Sebelumnya barang
+    reject GRN yang masuk karantina (Fase 4 fix_report.md) tidak punya
+    alur lanjutan sama sekali - endpoint ini melengkapi satu dari dua
+    alur yang disetujui (yang lain: retur ke supplier, lihat
+    create_purchase_return_from_quarantine()).
+
+    Membuat WasteRecord (pola sama dengan
+    routes/returns.py::_process_disposition() untuk retur penjualan: cari
+    WasteCategory lewat kode/nama, buat kalau belum ada), mengurangi
+    Inventory.quantity_on_hand di lokasi karantina, DAN memposting jurnal
+    Dr Beban Kerugian Persediaan (slot akun_beban_id, akun beban generik
+    yang sudah ada - BUKAN akun baru khusus "kerugian", supaya tidak
+    butuh konfigurasi tambahan sebelum fitur ini bisa dipakai) /
+    Cr Persediaan (akun_persediaan_id) sebesar cost barang - yang
+    SEBELUMNYA tidak pernah ada sama sekali untuk WasteRecord manapun.
+
+    Hanya berlaku untuk Inventory dengan stock_status 'quarantine',
+    'reject', atau 'rejected' - inventory yang stoknya 'available'/
+    'released' TIDAK BOLEH dimusnahkan lewat endpoint ini (barang itu
+    belum tentu benar-benar rusak/ditolak).
+    """
+    try:
+        from models import Inventory, WasteRecord
+        from models.waste import WasteCategory
+        from utils.inventory_helpers import record_inventory_transaction
+        from utils.finance_helpers import post_pending_journal, resolve_account, is_period_locked
+        from models.approval_workflow import PendingJournalEntry
+
+        user_id = get_jwt_identity()
+        data = request.get_json(silent=True) or {}
+
+        inv = db.session.get(Inventory, inventory_id)
+        if not inv:
+            return jsonify({'error': 'Inventory tidak ditemukan'}), 404
+
+        if inv.stock_status not in ('quarantine', 'reject', 'rejected'):
+            return jsonify({
+                'error': f"Inventory ini berstatus '{inv.stock_status}', hanya stok "
+                         "quarantine/reject/rejected yang bisa dimusnahkan lewat endpoint ini."
+            }), 400
+
+        quantity = float(data.get('quantity', 0))
+        if quantity <= 0:
+            return jsonify({'error': 'quantity harus > 0'}), 400
+        if quantity > float(inv.quantity_on_hand or 0):
+            return jsonify({
+                'error': f'quantity ({quantity}) melebihi stok karantina yang tersedia '
+                         f'({float(inv.quantity_on_hand or 0)})'
+            }), 400
+
+        reason = data.get('reason')
+        if not reason:
+            return jsonify({'error': 'reason wajib diisi'}), 400
+
+        today = get_local_now().date()
+        if is_period_locked(today, transaction_type='inventory_destruction'):
+            return jsonify({
+                'error': f'Periode {today.strftime("%Y-%m")} sudah ditutup, tidak bisa '
+                         'memposting pemusnahan persediaan.'
+            }), 400
+
+        category_name = data.get('waste_category') or 'GRN Reject - Dimusnahkan'
+        category = WasteCategory.query.filter(
+            db.or_(WasteCategory.code == category_name, WasteCategory.name == category_name)
+        ).first()
+        if not category:
+            category = WasteCategory(
+                code=category_name[:50], name=category_name, waste_type='general_waste',
+            )
+            db.session.add(category)
+            db.session.flush()
+
+        item_name = None
+        cost = 0.0
+        uom = 'PCS'
+        if inv.material_id:
+            material = db.session.get(Material, inv.material_id)
+            item_name = material.name if material else None
+            cost = float(material.cost_per_unit or 0) if material else 0.0
+            uom = material.primary_uom if material else uom
+        elif inv.product_id:
+            product = db.session.get(Product, inv.product_id)
+            item_name = product.name if product else None
+            cost = float(product.cost or 0) if product else 0.0
+            uom = product.primary_uom if product else uom
+
+        waste_record = WasteRecord(
+            record_number=generate_number('WR', WasteRecord, 'record_number'),
+            category_id=category.id,
+            waste_date=today,
+            product_id=inv.product_id,
+            material_id=inv.material_id,
+            quantity=quantity,
+            uom=uom,
+            estimated_value=cost * quantity,
+            reason=reason,
+            recorded_by=user_id,
+        )
+        db.session.add(waste_record)
+
+        inv.quantity_on_hand = float(inv.quantity_on_hand or 0) - quantity
+        inv.quantity_available = max(0, float(inv.quantity_available or 0) - quantity)
+        inv.updated_at = get_local_now()
+
+        record_inventory_transaction(
+            transaction_type='adjustment',
+            direction='out',
+            quantity=quantity,
+            product_id=inv.product_id,
+            material_id=inv.material_id,
+            from_location_id=inv.location_id,
+            reference_number=waste_record.record_number,
+            reference_type='inventory_destruction',
+            reference_id=waste_record.id,
+            batch_number=inv.batch_number,
+            notes=f"Pemusnahan stok karantina - {reason}",
+            created_by=user_id,
+        )
+
+        cost_value = cost * quantity
+        if cost_value > 0:
+            beban_account_id = resolve_account('akun_beban_id', product_id=inv.product_id)
+            persediaan_account_id = resolve_account('akun_persediaan_id', product_id=inv.product_id)
+
+            pending = PendingJournalEntry(
+                workflow_id=None,
+                entry_date=today,
+                description=f'Pemusnahan persediaan karantina - {waste_record.record_number}',
+                reference=waste_record.record_number,
+                lines=[
+                    {'account_id': beban_account_id, 'debit': cost_value, 'credit': 0,
+                     'description': f'Beban Kerugian Persediaan - {waste_record.record_number} ({reason})'},
+                    {'account_id': persediaan_account_id, 'debit': 0, 'credit': cost_value,
+                     'description': f'Pengurangan Persediaan - {waste_record.record_number}'},
+                ],
+                total_debit=cost_value,
+                total_credit=cost_value,
+                created_by=user_id,
+            )
+            db.session.add(pending)
+            db.session.flush()
+            post_pending_journal(
+                pending.id, posted_by_user_id=user_id,
+                reference_type='inventory_destruction', reference_id=waste_record.id,
+            )
+
+        db.session.commit()
+        return jsonify({
+            'message': f'{quantity} {uom} {item_name or ""} berhasil dimusnahkan',
+            'waste_record_id': waste_record.id,
+            'record_number': waste_record.record_number,
+        }), 200
+    except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
 
@@ -1000,7 +1254,9 @@ def inspect_grn(grn_id):
                 new_rejected = qty_received - new_accepted
 
             old_accepted = float(item.quantity_accepted or 0)
+            old_rejected = float(item.quantity_rejected or 0)
             delta = new_accepted - old_accepted  # positive = more accepted, negative = reversed
+            reject_delta = new_rejected - old_rejected  # positive = more rejected, negative = reversed
 
             item.quantity_accepted = new_accepted
             item.quantity_rejected = new_rejected
@@ -1037,6 +1293,60 @@ def inspect_grn(grn_id):
                         notes=f"QC Inspection adjustment for GRN {grn.grn_number}",
                         created_by=user_id
                     )
+
+            # Fase 4 audit fix (2026-09-30): barang yang ditolak (quantity_rejected)
+            # sebelumnya hanya angka di GRNItem, tidak pernah masuk Inventory -
+            # stok fisik yang ditolak "hilang" dari sistem, tidak terlacak sama
+            # sekali. Sekarang dicatat sebagai baris Inventory di lokasi
+            # karantina (stock_status quarantine/reject/rejected), batch yang
+            # sama, supaya tidak ikut FIFO picking (FIFO hanya mengambil
+            # stock_status available/released) dan tetap kelihatan di stok
+            # fisik. Idempoten lewat reject_delta (pola sama seperti delta
+            # accepted di atas) - inspeksi ulang tidak menggandakan stok.
+            if reject_delta != 0 and (item.product_id or item.material_id):
+                quarantine_location = _resolve_grn_quarantine_location()
+                q_query = Inventory.query.filter_by(location_id=quarantine_location.id)
+                if item.product_id:
+                    q_query = q_query.filter_by(product_id=item.product_id)
+                    reject_status = 'reject'
+                else:
+                    q_query = q_query.filter_by(material_id=item.material_id)
+                    reject_status = 'rejected'
+                q_query = q_query.filter_by(batch_number=item.batch_number)
+                quarantine_inventory = q_query.first()
+
+                if quarantine_inventory:
+                    quarantine_inventory.quantity_on_hand = max(0, float(quarantine_inventory.quantity_on_hand) + reject_delta)
+                    quarantine_inventory.quantity_available = max(0, float(quarantine_inventory.quantity_available) + reject_delta)
+                    quarantine_inventory.updated_at = get_local_now()
+                else:
+                    quarantine_inventory = Inventory(
+                        product_id=item.product_id,
+                        material_id=item.material_id,
+                        location_id=quarantine_location.id,
+                        quantity_on_hand=max(0, reject_delta),
+                        quantity_available=max(0, reject_delta),
+                        batch_number=item.batch_number,
+                        stock_status=reject_status,
+                        grn_id=grn.id,
+                    )
+                    db.session.add(quarantine_inventory)
+
+                record_inventory_transaction(
+                    transaction_type='adjustment',
+                    direction='in' if reject_delta > 0 else 'out',
+                    quantity=abs(reject_delta),
+                    product_id=item.product_id,
+                    material_id=item.material_id,
+                    to_location_id=quarantine_location.id if reject_delta > 0 else None,
+                    from_location_id=quarantine_location.id if reject_delta < 0 else None,
+                    reference_number=grn.grn_number,
+                    reference_type='grn_inspection_reject',
+                    reference_id=grn.id,
+                    batch_number=item.batch_number,
+                    notes=f"GRN {grn.grn_number} - barang ditolak QC masuk karantina",
+                    created_by=user_id
+                )
 
             total_accepted += new_accepted
             total_rejected += new_rejected
@@ -1209,20 +1519,45 @@ def approve_purchase_order(po_id):
         if not approval:
             return jsonify(error_response('api.error', error_code=404)), 404
 
-        approval.status = data.get('status', 'approved')  # approved or rejected
+        # Fase 2 audit fix (fix_report_2.md, 2026-10-01): status dari body
+        # request sebelumnya dipakai langsung tanpa validasi apapun - nilai
+        # sembarangan (typo, client lama yang kirim format berbeda) akan
+        # tersimpan apa adanya ke PurchaseApproval.status (field yang
+        # menurut modelnya cuma boleh 'pending'/'approved'/'rejected') DAN
+        # otomatis jatuh ke cabang `else: po.status = 'rejected'` di bawah
+        # - PO ikut berubah status akibat input yang seharusnya ditolak
+        # validasi, bukan akibat keputusan approve/reject yang sebenarnya.
+        requested_status = data.get('status', 'approved')
+        if requested_status not in ('approved', 'rejected'):
+            return jsonify({'error': f"status harus 'approved' atau 'rejected', diterima: '{requested_status}'"}), 400
+
+        approval.status = requested_status
         approval.comments = data.get('comments')
         approval.approved_at = get_local_now()
 
         # Update PO status if all approvals are complete
         po = db.session.get(PurchaseOrder, po_id)
         if approval.status == 'approved':
-            # Check if all required approvals are complete
+            # Fase 7 audit fix (2026-09-30): this query runs AFTER
+            # approval.status was set to 'approved' above (line ~1303), and
+            # SQLAlchemy autoflushes that change before this SELECT touches
+            # the same table - so pending_approvals here already EXCLUDES
+            # the approval just granted, it counts only OTHER approvals
+            # still pending. The old check `== 1` treated that count as if
+            # it still included the current row, so with exactly one
+            # approval level configured (the common case) this condition
+            # was NEVER true: pending_approvals was 0, not 1. PO status
+            # never flipped to 'approved' and reserve_po_budget_commitment()
+            # never ran - found via Fase 7 HTTP re-verification
+            # (tests/test_fase7_http_reverification.py), matching the
+            # exact "works when called directly, silently fails through
+            # the real endpoint" pattern the audit prompt warned about.
             pending_approvals = PurchaseApproval.query.filter_by(
                 po_id=po_id,
                 status='pending'
             ).count()
 
-            if pending_approvals == 1:  # This is the last approval
+            if pending_approvals == 0:  # no other approval levels left pending
                 po.status = 'approved'
                 po.approved_by = user_id
                 po.approved_at = get_local_now()
@@ -1263,6 +1598,44 @@ def submit_for_approval(po_id):
 
         from models.approval_workflow import ApprovalWorkflow, ApprovalHistory, ApprovalConfiguration
 
+        # Multi-currency (2026-10-19): lock the PO's exchange rate here, at
+        # submit, so the release-strategy threshold and budget commitment
+        # below (both in IDR) see the IDR value, and every later approval
+        # path (generic ApprovalWorkflow, legacy PurchaseApproval) inherits
+        # an already-locked rate. Single source: the automatic rate when it
+        # exists; a user-entered rate is accepted ONLY when it doesn't.
+        body = request.get_json(silent=True) or {}
+        manual_rate = body.get('manual_exchange_rate')
+        if po.currency == 'IDR':
+            po.exchange_rate = 1
+            po.exchange_rate_source = 'auto'
+        else:
+            from utils.exchange_rates import get_current_rate
+            auto_rate = get_current_rate(f'{po.currency}_IDR')
+            if auto_rate:
+                if manual_rate is not None:
+                    return jsonify({'error': 'Kurs otomatis tersedia, kurs manual tidak diterima', 'auto_rate': auto_rate}), 400
+                po.exchange_rate = auto_rate
+                po.exchange_rate_source = 'auto'
+            else:
+                if manual_rate is None:
+                    return jsonify({
+                        'error': f'Kurs otomatis {po.currency}/IDR tidak tersedia. Masukkan kurs manual setelah mengecek kurs riil.',
+                        'error_code': 'EXCHANGE_RATE_UNAVAILABLE',
+                        'currency': po.currency,
+                    }), 400
+                try:
+                    manual_rate = float(manual_rate)
+                except (TypeError, ValueError):
+                    return jsonify({'error': 'manual_exchange_rate harus berupa angka'}), 400
+                if manual_rate <= 0:
+                    return jsonify({'error': 'manual_exchange_rate harus lebih dari 0'}), 400
+                if body.get('manual_rate_confirmed') is not True:
+                    return jsonify({'error': 'Konfirmasi bahwa kurs riil sudah dicek (manual_rate_confirmed) wajib diisi'}), 400
+                po.exchange_rate = manual_rate
+                po.exchange_rate_source = 'manual'
+        total_idr = _po_amount_idr(po, po.total_amount)
+
         # Release strategy by value (SAP MM concept, 2026-09-14) - uses the
         # ApprovalConfiguration.amount_threshold field, which existed but was never
         # actually enforced anywhere (found during the MM gap audit). A PO at or
@@ -1271,7 +1644,7 @@ def submit_for_approval(po_id):
         # threshold (or when no threshold is configured, preserving old behavior)
         # still goes through the full review->approve ApprovalWorkflow as before.
         config = ApprovalConfiguration.query.filter_by(transaction_type='purchase_order', is_active=True).first()
-        if config and config.amount_threshold is not None and float(po.total_amount or 0) <= float(config.amount_threshold):
+        if config and config.amount_threshold is not None and total_idr <= float(config.amount_threshold):
             po.status = 'approved'
             po.approved_by = user_id
             po.approved_at = get_local_now()
@@ -1280,7 +1653,7 @@ def submit_for_approval(po_id):
             db.session.commit()
             return jsonify(success_response('api.success', data={
                 'auto_approved': True,
-                'reason': f'Total PO Rp{float(po.total_amount or 0):,.0f} di bawah batas release strategy Rp{float(config.amount_threshold):,.0f}, disetujui otomatis.',
+                'reason': f'Total PO Rp{total_idr:,.0f} di bawah batas release strategy Rp{float(config.amount_threshold):,.0f}, disetujui otomatis.',
             })), 200
 
         workflow = ApprovalWorkflow(
@@ -1312,6 +1685,23 @@ def submit_for_approval(po_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+
+@purchasing_bp.route('/exchange-rate', methods=['GET'])
+@jwt_required()
+@require_permission('purchase_orders.view')
+def get_po_exchange_rate():
+    """Read-only estimate of <currency> -> IDR for the PO form. The rate
+    actually used is locked at submit_for_approval, not this value."""
+    try:
+        currency = _validate_po_currency(request.args.get('currency'))
+    except ValueError as ve:
+        return jsonify({'error': str(ve)}), 400
+    if currency == 'IDR':
+        return jsonify({'currency': 'IDR', 'rate': 1.0, 'available': True}), 200
+    from utils.exchange_rates import get_current_rate
+    rate = get_current_rate(f'{currency}_IDR')
+    return jsonify({'currency': currency, 'rate': rate, 'available': rate is not None}), 200
 
 # ===============================
 # RFQ (REQUEST FOR QUOTATION) ENDPOINTS

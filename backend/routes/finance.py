@@ -10,6 +10,7 @@ from sqlalchemy import func, extract
 from utils.timezone import get_local_now, get_local_today
 from utils.auth_decorators import require_permission
 from utils.tax_helpers import resolve_item_tax_percent
+from utils.cron_auth import require_cron_secret
 import os
 import io
 import openpyxl
@@ -338,7 +339,9 @@ def create_invoice():
         invoice_date_parsed = datetime.fromisoformat(data['invoice_date'])
 
         from utils.finance_helpers import is_period_locked
-        if is_period_locked(invoice_date_parsed.date() if hasattr(invoice_date_parsed, 'date') else invoice_date_parsed):
+        invoice_transaction_type = 'sales_invoice' if data.get('invoice_type') == 'sales' else 'purchase_invoice'
+        if is_period_locked(invoice_date_parsed.date() if hasattr(invoice_date_parsed, 'date') else invoice_date_parsed,
+                             transaction_type=invoice_transaction_type):
             return jsonify({'error': f'Periode {invoice_date_parsed.strftime("%Y-%m")} sudah ditutup (period-close). Tidak bisa membuat transaksi baru di periode ini.'}), 400
 
         invoice = Invoice(
@@ -611,6 +614,13 @@ def create_payment():
         if not bank_account or not bank_account.is_cash_bank:
             return jsonify({'error': 'bank_account_id must reference a Kas/Bank account'}), 400
 
+        from utils.finance_helpers import is_period_locked
+        payment_date_parsed = datetime.fromisoformat(data['payment_date'])
+        payment_bucket = 'D' if data.get('customer_id') is not None else ('K' if data.get('supplier_id') is not None else None)
+        if is_period_locked(payment_date_parsed.date() if hasattr(payment_date_parsed, 'date') else payment_date_parsed,
+                             transaction_type='payment', sap_bucket=payment_bucket):
+            return jsonify({'error': f'Periode {payment_date_parsed.strftime("%Y-%m")} sudah ditutup (period-close). Tidak bisa mencatat pembayaran di periode ini.'}), 400
+
         payment = Payment(
             payment_number=payment_number,
             payment_date=datetime.fromisoformat(data['payment_date']),
@@ -632,8 +642,19 @@ def create_payment():
         invoice = None
         if data.get('invoice_id'):
             invoice = db.session.get(Invoice, data['invoice_id'])
+            # Reject overpayment - previously unvalidated, letting a typo'd
+            # amount push balance_due permanently negative while forcing
+            # status='paid' (the balance_due<=0 check below), silently
+            # losing track of the excess instead of surfacing it as a
+            # mistake or routing it through the existing customer-deposit
+            # mechanism (apply_customer_deposit, used on the invoice side).
+            current_balance = float(invoice.balance_due or 0)
+            if float(data['amount']) > current_balance + 0.01:
+                return jsonify({
+                    'error': f'Jumlah pembayaran (Rp{float(data["amount"]):,.2f}) melebihi sisa tagihan (Rp{current_balance:,.2f})'
+                }), 400
             invoice.paid_amount = float(invoice.paid_amount or 0) + float(data['amount'])
-            invoice.balance_due = float(invoice.balance_due or 0) - float(data['amount'])
+            invoice.balance_due = current_balance - float(data['amount'])
             if invoice.balance_due <= 0:
                 invoice.status = 'paid'
             elif invoice.paid_amount > 0:
@@ -688,6 +709,228 @@ def create_payment():
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+
+@finance_bp.route('/invoices/<int:id>/void', methods=['POST'])
+@jwt_required()
+@require_permission('finance.create')
+def void_invoice(id):
+    """Void Sales Invoice atau Purchase Invoice (Fase 3 audit fix, 2026-09-30).
+
+    Sebelumnya tidak ada endpoint void sama sekali untuk Invoice - satu-
+    satunya cara "membatalkan" invoice adalah mengubah status langsung di
+    DB, tanpa jurnal pembalik, sehingga Piutang/Hutang di GL tetap seolah
+    invoice itu masih berlaku.
+
+    Aturan:
+    - Hanya invoice berstatus valid (bukan sudah 'cancelled') yang bisa
+      di-void.
+    - Invoice yang sudah punya Payment (paid_amount > 0) ditolak - Payment-
+      nya harus di-void dulu lewat /payments/<id>/void.
+    - Periode terkunci (is_period_locked) menolak void.
+    - Jurnal pembalik dibuat lewat reverse_accounting_entries() terhadap
+      reference_type 'sales_invoice' (dibuat routes/finance.py::create_invoice)
+      atau 'purchase_invoice' (dibuat routes/purchase_invoice.py::create_purchase_invoice).
+    """
+    try:
+        user_id = get_jwt_identity()
+        invoice = db.session.get(Invoice, id)
+        if not invoice:
+            return jsonify({'error': 'Invoice tidak ditemukan'}), 404
+
+        if invoice.status == 'cancelled':
+            return jsonify({'error': 'Invoice sudah dalam status cancelled'}), 400
+
+        if float(invoice.paid_amount or 0) > 0:
+            return jsonify({
+                'error': 'Invoice ini sudah punya pembayaran. Void Payment-nya '
+                         'terlebih dahulu lewat /api/finance/payments/<id>/void '
+                         'sebelum bisa void invoice ini.'
+            }), 400
+
+        from utils.finance_helpers import is_period_locked, reverse_accounting_entries
+
+        invoice_transaction_type = 'sales_invoice' if invoice.invoice_type == 'sales' else 'purchase_invoice'
+        if is_period_locked(invoice.invoice_date, transaction_type=invoice_transaction_type):
+            return jsonify({
+                'error': f'Periode {invoice.invoice_date.strftime("%Y-%m")} sudah '
+                         'ditutup (period-close). Tidak bisa void invoice di periode ini.'
+            }), 400
+
+        data = request.get_json(silent=True) or {}
+        reason = data.get('reason')
+
+        reverse_accounting_entries(
+            reference_type=invoice_transaction_type,
+            reference_id=invoice.id,
+            entry_date=get_local_now().date(),
+            user_id=user_id,
+            description=f'Void invoice {invoice.invoice_number}' + (f' - {reason}' if reason else ''),
+        )
+
+        invoice.status = 'cancelled'
+        invoice.balance_due = 0
+        invoice.voided_by = user_id
+        invoice.voided_at = get_local_now()
+        invoice.void_reason = reason
+
+        db.session.commit()
+        return jsonify({'message': f'Invoice {invoice.invoice_number} berhasil di-void'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@finance_bp.route('/payments/<int:id>', methods=['GET'])
+@jwt_required()
+@require_permission('finance.view')
+def get_payment_detail(id):
+    """Single-payment detail view (fix_report_3.md Fase 20, 2026-10-05).
+
+    Never existed before - GET /payments only ever returned the flat list
+    shape, and the frontend route /finance/payments/:id was wired to
+    PaymentForm, which ignores its own :id param entirely and always
+    renders a blank "Record Payment" create form. Found while screenshotting
+    the Payment for the WETKINS BABY BLUE E2E chain for the verification
+    report - a real dead end, not a gap that happened to not need a
+    screenshot. Added this detail endpoint + PaymentDetail.tsx so the route
+    actually shows something when given an id."""
+    try:
+        payment = db.session.get(Payment, id)
+        if not payment:
+            return jsonify({'error': 'Payment tidak ditemukan'}), 404
+
+        bank_account = db.session.get(Account, payment.bank_account_id) if payment.bank_account_id else None
+
+        gl_entries = AccountingEntry.query.filter_by(
+            reference_type='payment', reference_id=payment.id
+        ).all()
+
+        return jsonify({
+            'id': payment.id,
+            'payment_number': payment.payment_number,
+            'payment_type': payment.payment_type,
+            'payment_date': payment.payment_date.isoformat() if payment.payment_date else None,
+            'amount': float(payment.amount or 0),
+            'currency': payment.currency,
+            'payment_method': payment.payment_method,
+            'reference_number': payment.reference_number,
+            'status': payment.status,
+            'notes': payment.notes,
+            'invoice_id': payment.invoice_id,
+            'invoice_number': payment.invoice.invoice_number if payment.invoice else None,
+            'invoice_total_amount': float(payment.invoice.total_amount) if payment.invoice and payment.invoice.total_amount is not None else None,
+            'invoice_status': payment.invoice.status if payment.invoice else None,
+            'customer_id': payment.customer_id,
+            'customer_name': payment.customer.company_name if payment.customer else None,
+            'supplier_id': payment.supplier_id,
+            'supplier_name': payment.supplier.company_name if payment.supplier else None,
+            'bank_account_id': payment.bank_account_id,
+            'bank_account_name': bank_account.account_name if bank_account else None,
+            'bank_account_code': bank_account.account_code if bank_account else None,
+            'received_by_name': payment.received_by_user.full_name if payment.received_by_user else None,
+            'created_at': payment.created_at.isoformat() if payment.created_at else None,
+            'voided_by': payment.voided_by,
+            'voided_at': payment.voided_at.isoformat() if payment.voided_at else None,
+            'void_reason': payment.void_reason,
+            'gl_entries': [{
+                'id': e.id,
+                'entry_number': e.entry_number,
+                'account_code': e.account.account_code if e.account else None,
+                'account_name': e.account.account_name if e.account else None,
+                'debit_amount': float(e.debit_amount or 0),
+                'credit_amount': float(e.credit_amount or 0),
+                'description': e.description,
+            } for e in gl_entries],
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@finance_bp.route('/payments/<int:id>/void', methods=['POST'])
+@jwt_required()
+@require_permission('finance.create')
+def void_payment(id):
+    """Void Payment (Fase 3 audit fix, 2026-09-30).
+
+    Aturan:
+    - Payment yang sudah 'cancelled' tidak bisa di-void lagi.
+    - Payment yang sudah dicocokkan (matched) di Rekonsiliasi Bank ditolak -
+      keputusan pemilik (2026-09-30): void tidak boleh otomatis membatalkan
+      pencocokan, user harus unmatch dulu secara manual di halaman Bank
+      Reconciliation.
+    - Periode terkunci (is_period_locked) menolak void.
+    - Jurnal pembalik dibuat lewat reverse_accounting_entries() terhadap
+      reference_type 'payment' (dibuat create_payment() di atas), lalu
+      Invoice.paid_amount/balance_due/status dikoreksi kembali.
+    """
+    try:
+        user_id = get_jwt_identity()
+        payment = db.session.get(Payment, id)
+        if not payment:
+            return jsonify({'error': 'Payment tidak ditemukan'}), 404
+
+        if payment.status == 'cancelled':
+            return jsonify({'error': 'Payment sudah dalam status cancelled'}), 400
+
+        from models.finance import BankStatementLine
+
+        matched_original_entries = AccountingEntry.query.filter_by(
+            reference_type='payment', reference_id=payment.id, status='posted',
+        ).with_entities(AccountingEntry.id).all()
+        matched_entry_ids = [e.id for e in matched_original_entries]
+        if matched_entry_ids:
+            already_matched = BankStatementLine.query.filter(
+                BankStatementLine.matched_accounting_entry_id.in_(matched_entry_ids)
+            ).first()
+            if already_matched:
+                return jsonify({
+                    'error': 'Payment ini sudah dicocokkan (matched) di Rekonsiliasi '
+                             'Bank. Batalkan pencocokannya dulu di halaman Bank '
+                             'Reconciliation sebelum bisa void payment ini.'
+                }), 400
+
+        from utils.finance_helpers import is_period_locked, reverse_accounting_entries, resolve_payment_sap_bucket
+
+        if is_period_locked(payment.payment_date, transaction_type='payment', sap_bucket=resolve_payment_sap_bucket(payment)):
+            return jsonify({
+                'error': f'Periode {payment.payment_date.strftime("%Y-%m")} sudah '
+                         'ditutup (period-close). Tidak bisa void payment di periode ini.'
+            }), 400
+
+        data = request.get_json(silent=True) or {}
+        reason = data.get('reason')
+
+        reverse_accounting_entries(
+            reference_type='payment',
+            reference_id=payment.id,
+            entry_date=get_local_now().date(),
+            user_id=user_id,
+            description=f'Void payment {payment.payment_number}' + (f' - {reason}' if reason else ''),
+        )
+
+        if payment.invoice_id:
+            invoice = db.session.get(Invoice, payment.invoice_id)
+            if invoice:
+                invoice.paid_amount = max(0, float(invoice.paid_amount or 0) - float(payment.amount or 0))
+                invoice.balance_due = float(invoice.total_amount or 0) - invoice.paid_amount
+                if invoice.status != 'cancelled':
+                    if invoice.paid_amount <= 0:
+                        invoice.status = 'sent' if invoice.invoice_type == 'sales' else 'draft'
+                    elif invoice.balance_due > 0:
+                        invoice.status = 'partial'
+
+        payment.status = 'cancelled'
+        payment.voided_by = user_id
+        payment.voided_at = get_local_now()
+        payment.void_reason = reason
+
+        db.session.commit()
+        return jsonify({'message': f'Payment {payment.payment_number} berhasil di-void'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
 
 @finance_bp.route('/invoices/unpaid', methods=['GET'])
 @jwt_required()
@@ -903,7 +1146,7 @@ def create_manual_journal_entry():
             return jsonify({'error': 'Jurnal butuh minimal 2 baris (debit dan kredit) yang seimbang'}), 400
 
         entry_date_parsed = datetime.strptime(entry_date_str, '%Y-%m-%d').date()
-        if is_period_locked(entry_date_parsed):
+        if is_period_locked(entry_date_parsed, transaction_type='journal_entry'):
             return jsonify({'error': f'Periode {entry_date_parsed.strftime("%Y-%m")} sudah ditutup (period-close). Tidak bisa membuat jurnal manual di periode ini.'}), 400
 
         total_debit = sum(float(l.get('debit', 0) or 0) for l in lines)
@@ -970,7 +1213,7 @@ def delete_manual_journal_entry(id):
             }), 400
 
         from utils.finance_helpers import is_period_locked
-        if is_period_locked(entry.entry_date):
+        if is_period_locked(entry.entry_date, transaction_type='journal_entry'):
             return jsonify({'error': f'Periode {entry.entry_date.strftime("%Y-%m")} sudah ditutup (period-close). Tidak bisa menghapus jurnal di periode ini.'}), 400
 
         # Delete every row from the same journal group (all lines share the
@@ -1381,6 +1624,38 @@ def get_consolidation():
         return jsonify({'error': str(e)}), 500
 
 # ============ FINANCIAL REPORTS ============
+
+def _account_balance_in_range(account, date_from=None, date_to=None):
+    """Balance of ONE account restricted to posted entries in [date_from,
+    date_to] (either bound optional), in the account's own normal_balance
+    convention. Shared building block for both get_income_statement() and
+    get_balance_sheet() - see classify_account()'s docstring for why this
+    unification exists."""
+    q = AccountingEntry.query.filter_by(account_id=account.id, status='posted')
+    if date_from:
+        q = q.filter(AccountingEntry.entry_date >= date_from)
+    if date_to:
+        q = q.filter(AccountingEntry.entry_date <= date_to)
+    debit = sum(float(e.debit_amount or 0) for e in q)
+    credit = sum(float(e.credit_amount or 0) for e in q)
+    return (debit - credit) if account.normal_balance == 'debit' else (credit - debit)
+
+
+def _classified_accounts(bucket):
+    """All active accounts whose classify_account() result matches `bucket`
+    ('asset'/'liability'/'equity'/'revenue'/'expense')."""
+    from utils.finance_helpers import classify_account
+    return [a for a in Account.query.filter(Account.is_active == True).all() if classify_account(a) == bucket]
+
+
+def _classified_balance_in_range(bucket, date_from=None, date_to=None):
+    """Sum of _account_balance_in_range() across every active account in
+    `bucket`. Used for current/prior-year revenue and expense totals in
+    both get_balance_sheet() and (indirectly, via the same classification)
+    get_income_statement()."""
+    return sum(_account_balance_in_range(a, date_from, date_to) for a in _classified_accounts(bucket))
+
+
 @finance_bp.route('/reports/income-statement', methods=['GET'])
 @jwt_required()
 @require_permission('finance.view')
@@ -1409,21 +1684,13 @@ def get_income_statement():
                 credit_total = sum(float(e.credit_amount or 0) for e in entries)
                 return debit_total - credit_total if account.normal_balance == 'debit' else credit_total - debit_total
 
-            # Get revenue accounts (4000-4999)
-            revenue_accounts = Account.query.filter(
-                Account.account_code.like('4%'),
-                Account.is_active == True
-            ).all()
-
-            # Get expense accounts (5000-9999)
-            expense_accounts = Account.query.filter(
-                Account.account_code.like('5%') |
-                Account.account_code.like('6%') |
-                Account.account_code.like('7%') |
-                Account.account_code.like('8%') |
-                Account.account_code.like('9%'),
-                Account.is_active == True
-            ).all()
+            # Revenue/expense account lists now come from classify_account()
+            # (utils/finance_helpers.py) - the same function get_balance_sheet()
+            # uses - instead of hand-maintained prefix filters. See
+            # classify_account()'s docstring for the 3 real production bugs
+            # this class of prefix drift caused (fix_report_3.md).
+            revenue_accounts = _classified_accounts('revenue')
+            expense_accounts = _classified_accounts('expense')
 
             # Chart of accounts convention (confirmed 2026-09-19): 5-xxxx = HPP/COGS
             # (5-1100 bahan baku, 5-1200 tenaga kerja, 5-1300 overhead),
@@ -1499,7 +1766,8 @@ def get_income_statement():
         except ImportError:
             # Fallback calculation
             total_revenue = db.session.query(func.sum(Invoice.total_amount)).filter(
-                Invoice.invoice_type == 'sales'
+                Invoice.invoice_type == 'sales',
+                Invoice.status.notin_(['draft', 'cancelled'])
             ).scalar() or 0
             
             from utils.helpers import get_setting_value
@@ -1547,7 +1815,7 @@ def get_balance_sheet():
         # Previously this endpoint returned an all-zero hardcoded object
         # with a "not implemented yet" TODO - the page never showed real
         # numbers regardless of how much real GL activity existed.
-        from models.finance import Account
+        from models.finance import Account, AccountingEntry
 
         def code_balance(code):
             acc = Account.query.filter_by(account_code=code).first()
@@ -1556,6 +1824,21 @@ def get_balance_sheet():
         def prefix_balance(prefix, exclude=()):
             accs = Account.query.filter(Account.account_code.like(f'{prefix}%'), Account.is_active == True).all()
             return sum(float(a.balance) for a in accs if a.account_code not in exclude)
+
+        # Fase 6 audit fix (fix_report_2.md, 2026-10-01): current_year_earnings
+        # (ditambahkan Fase 1 fix_report.md) sebelumnya dihitung dari
+        # prefix_balance('4-'/'5-'/'6-') yang TIDAK difilter tanggal sama
+        # sekali (Account.balance menjumlahkan SEMUA AccountingEntry posted
+        # sepanjang masa) - laba tahun-tahun sebelumnya ikut tercampur ke
+        # laba tahun berjalan. Keputusan pemilik (dikonfirmasi 2026-10-01,
+        # sebelum kode ini ditulis): perusahaan BELUM punya praktik jurnal
+        # penutupan tahunan manual ke akun 3-3000 - akun 4/5/6-xxxx terus
+        # terakumulasi sejak awal pemakaian sistem, tidak pernah di-nol-kan.
+        # Jadi laba tahun-tahun sebelumnya DIHITUNG REAL-TIME dari data
+        # historis (bukan dari jurnal penutupan sungguhan yang tidak ada)
+        # dan dimasukkan ke retained_earnings setiap kali laporan dibuka.
+        # (date-ranged revenue/expense sums now come from the shared
+        # _classified_balance_in_range() module-level helper, below)
 
         cash = code_balance('1-1000') + code_balance('1-1010') + code_balance('1-1020')
         accounts_receivable = code_balance('1-1100') - code_balance('1-1110')
@@ -1569,7 +1852,16 @@ def get_balance_sheet():
         total_assets = total_current_assets + net_fixed_assets
 
         accounts_payable = code_balance('2-1000')
-        accrued_liabilities = prefix_balance('2-11')
+        # Fase 1/6 follow-up fix (2026-10-01, found via real production
+        # testing after server came back online): was prefix_balance('2-11')
+        # only - missed '2-1210' Hutang PPN (and any other 2-1xxx sub-range
+        # besides 2-1000/2-1300), understating current_liabilities and
+        # throwing off the balance sheet by exactly that amount. Broadened
+        # to the whole '2-1' prefix minus the 2 codes already counted
+        # separately, so any future 2-1xxx sub-account (GR/IR clearing,
+        # other accrued-liability types, etc) is caught automatically
+        # instead of needing another narrow prefix patch each time.
+        accrued_liabilities = prefix_balance('2-1', exclude=('2-1000', '2-1300'))
         short_term_debt = code_balance('2-1300')
         total_current_liabilities = accounts_payable + accrued_liabilities + short_term_debt
 
@@ -1577,9 +1869,108 @@ def get_balance_sheet():
         total_long_term_liabilities = long_term_debt
         total_liabilities = total_current_liabilities + total_long_term_liabilities
 
+        # Fase 1 fix (audit 29 Sept 2026): equity sebelumnya cuma membaca
+        # 3-1000/3-2000/3-3000 dan tidak pernah memasukkan laba/rugi tahun
+        # berjalan (akun 4-xxxx pendapatan dikurangi 5-xxxx/6-xxxx beban),
+        # jadi neraca selisih persis sebesar net income begitu ada transaksi
+        # pendapatan/beban yang belum diposting manual ke akun equity.
+        #
+        # Fase 6 fix (fix_report_2.md, 2026-10-01): direvisi supaya
+        # current_year_earnings HANYA laba/rugi tahun berjalan (1 Jan
+        # tahun as_of_date sampai as_of_date) - laba tahun-tahun sebelumnya
+        # dihitung terpisah dan digabung ke retained_earnings, bukan ikut
+        # current_year_earnings. Keputusan pemilik (2026-10-01): perusahaan
+        # belum punya praktik jurnal penutupan tahunan manual ke 3-3000,
+        # jadi laba tahun-tahun sebelumnya dihitung real-time dari data
+        # historis setiap laporan dibuka, bukan dari saldo 3-3000 yang
+        # sudah "ditutup" (karena memang belum pernah ditutup).
+        try:
+            as_of_date_parsed = datetime.strptime(as_of_date, '%Y-%m-%d').date()
+        except ValueError:
+            as_of_date_parsed = get_local_now().date()
+        current_year_start = as_of_date_parsed.replace(month=1, day=1)
+        day_before_current_year = current_year_start - timedelta(days=1)
+
+        # Fase 1/6 follow-up fix (2026-10-01, found via real production
+        # testing after server came back online): chart of accounts has a
+        # 3rd expense prefix '7-xxxx' (confirmed: '7-1000' Beban Gaji,
+        # payroll expense, deliberately kept separate from '6-xxxx' Beban
+        # Operasional per owner confirmation 2026-10-01) that the original
+        # 4/5/6 pattern never anticipated - expense was understated by the
+        # full payroll amount, overstating current_year_earnings by the
+        # same amount and throwing off the whole balance sheet. Neither the
+        # Fase 1 nor Fase 6 pytest tests caught this because they only used
+        # synthetic test accounts matching the assumed 4/5/6 pattern, never
+        # exercised against the real production chart of accounts.
+        # fix_report_3.md: replaced the hand-maintained '4-'/'5-'/'6-'/'7-'
+        # prefix sum (which silently missed '8-'/'9-' expense accounts -
+        # this repo's own CoA has '9-1000' Beban Bunga - causing
+        # current_year_earnings here to silently disagree with
+        # get_income_statement()'s net_income for any company posting to
+        # an 8-/9- expense account) with _classified_balance_in_range(),
+        # driven by the SAME classify_account() both reports now share.
+        current_year_revenue = _classified_balance_in_range('revenue', date_from=current_year_start, date_to=as_of_date_parsed)
+        current_year_expense = _classified_balance_in_range('expense', date_from=current_year_start, date_to=as_of_date_parsed)
+        current_year_earnings = current_year_revenue - current_year_expense
+
+        prior_years_revenue = _classified_balance_in_range('revenue', date_to=day_before_current_year)
+        prior_years_expense = _classified_balance_in_range('expense', date_to=day_before_current_year)
+        prior_years_net_income = prior_years_revenue - prior_years_expense
+
         common_stock = code_balance('3-1000')
-        retained_earnings = code_balance('3-2000') + code_balance('3-3000')
-        total_equity = common_stock + retained_earnings
+        retained_earnings = code_balance('3-2000') + code_balance('3-3000') + prior_years_net_income
+        total_equity = common_stock + retained_earnings + current_year_earnings
+
+        # fix_report_3.md: unclassified_accounts - active asset/liability/
+        # equity accounts with a non-zero balance that none of the literal
+        # code/prefix buckets above actually sum. This is how the '7-1000'
+        # and '2-1210' production bugs (fix_report_2.md Fase 11) would have
+        # shown up immediately instead of silently throwing off the Neraca -
+        # any FUTURE account in the same situation now surfaces here instead
+        # of waiting for someone to notice an imbalance. revenue/expense
+        # accounts are intentionally excluded (they already flow into
+        # current_year_earnings/retained_earnings above via classify_account,
+        # not individually listed on the Neraca).
+        from utils.finance_helpers import classify_account
+        _covered_codes = {
+            '1-1000', '1-1010', '1-1020', '1-1100', '1-1110',
+            '1-1200', '1-1300', '1-1400', '1-1500', '1-1600',
+            '1-2000', '1-2100',
+            '2-2000',
+            '3-1000', '3-2000', '3-3000',
+        }
+        _covered_prefixes = ('2-1',)  # whole current-liabilities range: AP + accrued + short_term_debt together already sum all of it
+        unclassified_accounts = []
+        for acc in Account.query.filter(Account.is_active == True).all():
+            bucket = classify_account(acc)
+            if bucket not in ('asset', 'liability', 'equity'):
+                continue
+            if acc.account_code in _covered_codes:
+                continue
+            if any(acc.account_code.startswith(p) for p in _covered_prefixes):
+                continue
+            balance = float(acc.balance)
+            if abs(balance) > 0.01:
+                unclassified_accounts.append({
+                    'account_code': acc.account_code,
+                    'account_name': acc.account_name,
+                    'account_type': bucket,
+                    'balance': balance,
+                })
+
+        total_liabilities_equity = total_liabilities + total_equity
+        imbalance = total_assets - total_liabilities_equity
+        is_balanced = abs(imbalance) < 0.01
+
+        warnings = []
+        if not is_balanced:
+            warnings.append(f'Neraca tidak seimbang: selisih Rp{imbalance:,.2f} (aset - liabilitas - ekuitas).')
+        for ua in unclassified_accounts:
+            warnings.append(
+                f"Akun {ua['account_code']} ({ua['account_name']}) bersaldo Rp{ua['balance']:,.2f} "
+                f"tidak termasuk kategori manapun di Neraca - kemungkinan kode akun di luar "
+                f"konvensi yang sudah ditangani."
+            )
 
         balance_sheet = {
             'assets': {
@@ -1613,9 +2004,16 @@ def get_balance_sheet():
             'equity': {
                 'common_stock': common_stock,
                 'retained_earnings': retained_earnings,
+                'current_year_earnings': current_year_earnings,
                 'total_equity': total_equity
             },
-            'total_liabilities_equity': total_liabilities + total_equity
+            'total_liabilities_equity': total_liabilities + total_equity,
+            # fix_report_3.md: new fields, additive - existing keys above
+            # are all untouched so old callers/tests keep working.
+            'unclassified_accounts': unclassified_accounts,
+            'is_balanced': is_balanced,
+            'imbalance': imbalance,
+            'warnings': warnings,
         }
 
         return jsonify({
@@ -1691,87 +2089,61 @@ def get_cost_centers():
 @jwt_required()
 @require_permission('finance.view')
 def get_dashboard_kpis():
-    """Get finance dashboard KPIs"""
+    """Get finance dashboard KPIs.
+
+    Bug fixed 2026-10-07 (found via a user-requested dashboard audit):
+    total_expenses and cash_balance used to be fabricated as fixed ratios
+    of total_revenue (expenses = revenue*0.76, cash = revenue*0.36) -
+    NOT computed from any real expense/GL/bank data, despite this system
+    already having real Chart-of-Accounts-based expense totals (see
+    get_income_statement()'s _classified_balance_in_range() a few
+    hundred lines above) and a real Kas/Bank ledger balance
+    (utils.finance_helpers.get_cash_balance_as_of()). This made
+    profit_margin always compute to exactly 24.0% whenever any revenue
+    existed (100% - the hardcoded 76% expense ratio) regardless of
+    actual financial performance - a dead giveaway once noticed. Now
+    reuses those same real calculations instead of guessing.
+    """
     try:
-        # Try to calculate from actual data, fallback to mock if no data
-        try:
-            # Calculate total revenue from invoices
-            total_revenue = db.session.query(func.sum(Invoice.total_amount)).filter(
-                Invoice.invoice_type == 'sales'
-            ).scalar() or 0
-            
-            # Calculate accounts receivable
-            accounts_receivable = db.session.query(func.sum(Invoice.balance_due)).filter(
-                Invoice.invoice_type == 'sales',
-                Invoice.balance_due > 0
-            ).scalar() or 0
-            
-            # Calculate accounts payable  
-            accounts_payable = db.session.query(func.sum(Invoice.balance_due)).filter(
-                Invoice.invoice_type == 'purchase',
-                Invoice.balance_due > 0
-            ).scalar() or 0
-            
-            # If we have some real data, use it
-            if total_revenue > 0:
-                total_expenses = total_revenue * 0.76  # Estimate 76% expense ratio
-                net_profit = total_revenue - total_expenses
-                profit_margin = (net_profit / total_revenue * 100) if total_revenue > 0 else 0
-                cash_balance = total_revenue * 0.36  # Estimate cash balance
-                working_capital = cash_balance + accounts_receivable - accounts_payable
-                
-                kpis = {
-                    'total_revenue': float(total_revenue),
-                    'total_expenses': float(total_expenses),
-                    'net_profit': float(net_profit),
-                    'profit_margin': float(profit_margin),
-                    'cash_balance': float(cash_balance),
-                    'accounts_receivable': float(accounts_receivable),
-                    'accounts_payable': float(accounts_payable),
-                    'working_capital': float(working_capital)
-                }
-            else:
-                # Fallback to mock data if no real data
-                raise Exception("No invoice data found")
-                
-        except Exception:
-            # Calculate from available data or use minimal defaults
-            invoice_count = db.session.query(Invoice).count()
-            payment_count = db.session.query(Payment).count()
-            
-            if invoice_count > 0 or payment_count > 0:
-                # Use basic calculations from available data
-                total_revenue = db.session.query(func.sum(Invoice.total_amount)).scalar() or 0
-                total_payments = db.session.query(func.sum(Payment.amount)).scalar() or 0
-                
-                # Use whichever is higher as revenue indicator
-                revenue_base = max(float(total_revenue), float(total_payments))
-                
-                kpis = {
-                    'total_revenue': revenue_base,
-                    'total_expenses': revenue_base * 0.76,
-                    'net_profit': revenue_base * 0.24,
-                    'profit_margin': 24.0,
-                    'cash_balance': revenue_base * 0.36,
-                    'accounts_receivable': revenue_base * 0.15,
-                    'accounts_payable': revenue_base * 0.10,
-                    'working_capital': revenue_base * 0.27
-                }
-            else:
-                # Minimal default values when no data exists
-                kpis = {
-                    'total_revenue': 0,
-                    'total_expenses': 0,
-                    'net_profit': 0,
-                    'profit_margin': 0,
-                    'cash_balance': 0,
-                    'accounts_receivable': 0,
-                    'accounts_payable': 0,
-                    'working_capital': 0
-                }
-        
+        from utils.finance_helpers import get_cash_balance_as_of
+
+        total_revenue = float(db.session.query(func.sum(Invoice.total_amount)).filter(
+            Invoice.invoice_type == 'sales',
+            Invoice.status.notin_(['draft', 'cancelled'])
+        ).scalar() or 0)
+
+        total_expenses = _classified_balance_in_range('expense')
+
+        accounts_receivable = float(db.session.query(func.sum(Invoice.balance_due)).filter(
+            Invoice.invoice_type == 'sales',
+            Invoice.balance_due > 0,
+            Invoice.status.notin_(['draft', 'cancelled'])
+        ).scalar() or 0)
+
+        accounts_payable = float(db.session.query(func.sum(Invoice.balance_due)).filter(
+            Invoice.invoice_type == 'purchase',
+            Invoice.balance_due > 0,
+            Invoice.status.notin_(['draft', 'cancelled'])
+        ).scalar() or 0)
+
+        net_profit = total_revenue - total_expenses
+        profit_margin = (net_profit / total_revenue * 100) if total_revenue > 0 else 0
+        cash_balance = get_cash_balance_as_of(get_local_now().date())
+        working_capital = cash_balance + accounts_receivable - accounts_payable
+
+        kpis = {
+            'total_revenue': total_revenue,
+            'total_expenses': total_expenses,
+            'net_profit': net_profit,
+            'profit_margin': profit_margin,
+            'cash_balance': cash_balance,
+            'accounts_receivable': accounts_receivable,
+            'accounts_payable': accounts_payable,
+            'working_capital': working_capital
+        }
+
         return jsonify({'kpis': kpis}), 200
-        
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -1814,37 +2186,44 @@ def get_dashboard_cash_flow():
 @jwt_required()
 @require_permission('finance.view')
 def get_dashboard_expenses():
-    """Get expense breakdown for dashboard"""
+    """Get expense breakdown for dashboard - real per-category totals from
+    the Chart of Accounts/AccountingEntry, same categorization convention
+    as get_income_statement() (5-1xxx COGS split by materials/labor/
+    overhead, 6-/8-1 selling, 7-/8-2 admin, 9- other). Previously this
+    split a single fabricated expense_base (itself derived from purchase
+    invoices or 80% of total payments) into fixed percentages
+    (36.8%/29.5%/15.8%/8.9%/5.5%/3.5%) that never reflected the real books
+    at all."""
     try:
-        # Calculate expenses based on available data
-        total_expenses = 0
-        
-        # Try to get expense data from invoices or payments
-        purchase_invoices = db.session.query(func.sum(Invoice.total_amount)).filter(
-            Invoice.invoice_type == 'purchase'
-        ).scalar() or 0
-        
-        total_payments = db.session.query(func.sum(Payment.amount)).scalar() or 0
-        
-        # Use available data as expense base
-        expense_base = max(float(purchase_invoices), float(total_payments) * 0.8) if (purchase_invoices or total_payments) else 0
-        
-        if expense_base > 0:
-            # Calculate realistic expense breakdown
+        expense_accounts = _classified_accounts('expense')
+
+        materials = sum(_account_balance_in_range(a) for a in expense_accounts if a.account_code in ('5-1000', '5-1100'))
+        labor = sum(_account_balance_in_range(a) for a in expense_accounts if a.account_code == '5-1200')
+        manufacturing = sum(_account_balance_in_range(a) for a in expense_accounts if a.account_code == '5-1300')
+        selling = sum(_account_balance_in_range(a) for a in expense_accounts if a.account_code.startswith('8-1') or a.account_code.startswith('6-'))
+        admin = sum(_account_balance_in_range(a) for a in expense_accounts if a.account_code.startswith('8-2') or a.account_code.startswith('7-'))
+        others = sum(_account_balance_in_range(a) for a in expense_accounts if a.account_code.startswith('9-'))
+
+        categories = [
+            ('Raw Materials', materials),
+            ('Labor Costs', labor),
+            ('Manufacturing', manufacturing),
+            ('Marketing & Sales', selling),
+            ('Administration', admin),
+            ('Others', others),
+        ]
+        total = sum(amount for _, amount in categories)
+
+        if total > 0:
             expenses = [
-                {'category': 'Raw Materials', 'amount': expense_base * 0.368, 'percentage': 36.8},
-                {'category': 'Labor Costs', 'amount': expense_base * 0.295, 'percentage': 29.5},
-                {'category': 'Manufacturing', 'amount': expense_base * 0.158, 'percentage': 15.8},
-                {'category': 'Marketing & Sales', 'amount': expense_base * 0.089, 'percentage': 8.9},
-                {'category': 'Administration', 'amount': expense_base * 0.055, 'percentage': 5.5},
-                {'category': 'Others', 'amount': expense_base * 0.035, 'percentage': 3.5}
+                {'category': cat, 'amount': amount, 'percentage': round(amount / total * 100, 1)}
+                for cat, amount in categories if amount != 0
             ]
         else:
-            # Empty expenses when no data
             expenses = []
-        
+
         return jsonify({'expenses': expenses}), 200
-        
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -1852,45 +2231,44 @@ def get_dashboard_expenses():
 @jwt_required()
 @require_permission('finance.view')
 def get_dashboard_revenue():
-    """Get revenue data for dashboard"""
+    """Get revenue data for dashboard - real month-by-month revenue/expenses/
+    profit for the last 6 months, computed from actual sales Invoices and
+    real GL expense postings. Previously spread a single fabricated
+    average across 6 fixed month labels (Jul-Dec regardless of the actual
+    current month) with an invented +8%/month growth curve and a
+    repeating +/-5% variance pattern, then applied the same hardcoded 77%
+    expense ratio bug as the old /dashboard/kpis."""
     try:
-        # Calculate revenue based on available data
-        total_revenue = db.session.query(func.sum(Invoice.total_amount)).filter(
-            Invoice.invoice_type == 'sales'
-        ).scalar() or 0
-        
-        total_payments = db.session.query(func.sum(Payment.amount)).scalar() or 0
-        
-        # Use available data to generate revenue trends
-        revenue_base = max(float(total_revenue), float(total_payments)) / 6 if (total_revenue or total_payments) else 0
-        
-        if revenue_base > 0:
-            revenue = []
-            months = ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-            for i, month in enumerate(months):
-                # Add growth trend and variance
-                from utils.helpers import get_setting_value
-                growth_rate = float(get_setting_value('finance.assumed_monthly_growth', 8.0)) / 100.0
-                growth_factor = 1 + (i * growth_rate)
-                variance = 1 + ((i % 3) * 0.05)  # Some variance
-                
-                monthly_revenue = revenue_base * growth_factor * variance
-                exp_rate = float(get_setting_value('finance.fallback_expense_ratio', 77.0)) / 100.0
-                monthly_expenses = monthly_revenue * exp_rate
-                monthly_profit = monthly_revenue - monthly_expenses
-                
-                revenue.append({
-                    'month': month,
-                    'revenue': monthly_revenue,
-                    'profit': monthly_profit,
-                    'expenses': monthly_expenses
-                })
-        else:
-            # Empty revenue when no data
-            revenue = []
-        
+        from datetime import timedelta
+
+        revenue = []
+        current_date = get_local_now()
+
+        for i in range(6):
+            month_start = (current_date.replace(day=1) - timedelta(days=i * 30)).replace(day=1)
+            next_month = (month_start + timedelta(days=32)).replace(day=1)
+            month_end = next_month - timedelta(days=1)
+            month_name = month_start.strftime('%b')
+
+            monthly_revenue = float(db.session.query(func.sum(Invoice.total_amount)).filter(
+                Invoice.invoice_type == 'sales',
+                Invoice.status.notin_(['draft', 'cancelled']),
+                Invoice.invoice_date >= month_start.date(),
+                Invoice.invoice_date <= month_end.date(),
+            ).scalar() or 0)
+
+            monthly_expenses = _classified_balance_in_range('expense', date_from=month_start.date(), date_to=month_end.date())
+            monthly_profit = monthly_revenue - monthly_expenses
+
+            revenue.insert(0, {
+                'month': month_name,
+                'revenue': monthly_revenue,
+                'profit': monthly_profit,
+                'expenses': monthly_expenses
+            })
+
         return jsonify({'revenue': revenue}), 200
-        
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -2159,31 +2537,41 @@ def get_budget_list():
 @jwt_required()
 @require_permission('finance.view')
 def get_variance_analysis():
-    """Get budget variance analysis"""
+    """Get budget variance analysis, grouped by BudgetLine.category, summed
+    across all active budgets. Computed live from budget_amount/actual_amount
+    (BudgetLine.variance_amount/variance_percent are dead columns - never
+    written anywhere in the codebase, so reading them would always return 0)."""
     try:
-        # Calculate variance analysis from budget vs actual data
+        from models.finance import Budget, BudgetLine
+
+        lines = BudgetLine.query.join(Budget).filter(Budget.is_active == True).all()
+
+        by_category = {}
+        for line in lines:
+            cat = by_category.setdefault(line.category, {'budget': 0.0, 'actual': 0.0})
+            cat['budget'] += float(line.budget_amount or 0)
+            cat['actual'] += float(line.actual_amount or 0)
+
         analysis = []
-        
-        # TODO: Implement when Budget and BudgetLine models are created
-        # budget_lines = BudgetLine.query.join(Budget).filter(Budget.is_active == True).all()
-        # for line in budget_lines:
-        #     actual_amount = calculate_actual_for_category(line.category, line.account_codes)
-        #     variance = actual_amount - line.budget_amount
-        #     variance_percent = (variance / line.budget_amount * 100) if line.budget_amount > 0 else 0
-        #     
-        #     analysis.append({
-        #         'category': line.category,
-        #         'budget': float(line.budget_amount),
-        #         'actual': float(actual_amount),
-        #         'variance': float(variance),
-        #         'variance_percent': float(variance_percent)
-        #     })
-        
-        return jsonify({
-            'analysis': analysis,
-            'message': 'No budget variance data available. Please set up budgets first.'
-        }), 200
-        
+        for category, totals in sorted(by_category.items()):
+            budget_amt = totals['budget']
+            actual_amt = totals['actual']
+            variance = actual_amt - budget_amt
+            variance_percent = (variance / budget_amt * 100) if budget_amt > 0 else 0
+
+            analysis.append({
+                'category': category,
+                'budget': budget_amt,
+                'actual': actual_amt,
+                'variance': variance,
+                'variance_percent': variance_percent
+            })
+
+        response = {'analysis': analysis}
+        if not analysis:
+            response['message'] = 'No budget variance data available. Please set up budgets first.'
+        return jsonify(response), 200
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -2258,10 +2646,12 @@ def get_cash_flow_analysis():
 
         # Real DSO: average receivables / (annual revenue / 365)
         avg_receivables = db.session.query(func.sum(Invoice.balance_due)).filter(
-            Invoice.invoice_type == 'sales', Invoice.balance_due > 0
+            Invoice.invoice_type == 'sales', Invoice.balance_due > 0,
+            Invoice.status.notin_(['draft', 'cancelled'])
         ).scalar() or 0
         annual_revenue = db.session.query(func.sum(Invoice.total_amount)).filter(
-            Invoice.invoice_type == 'sales', Invoice.invoice_date >= year_start
+            Invoice.invoice_type == 'sales', Invoice.invoice_date >= year_start,
+            Invoice.status.notin_(['draft', 'cancelled'])
         ).scalar() or 0
         dso = round(float(avg_receivables) / (float(annual_revenue) / 365), 1) if annual_revenue else None
 
@@ -2662,6 +3052,7 @@ def delete_global_account_default(transaction_key):
 
 # ============ EXCHANGE RATES ============
 @finance_bp.route('/exchange-rates/sync-cron', methods=['POST'])
+@require_cron_secret
 def sync_exchange_rates_cron():
     """
     Daily cron endpoint (no @jwt_required - matches the existing pattern for
@@ -2790,7 +3181,7 @@ def create_recurring_payment_transaction(id):
         if amount <= 0:
             return jsonify({'error': 'Amount harus lebih besar dari 0'}), 400
 
-        if is_period_locked(payment_date):
+        if is_period_locked(payment_date, transaction_type='recurring_payment'):
             return jsonify({'error': f'Periode {payment_date.strftime("%Y-%m")} sudah ditutup (period-close). Tidak bisa mencatat pembayaran di periode ini.'}), 400
 
         transaction_number = generate_number('RCP', RecurringPaymentTransaction, 'transaction_number')
@@ -3280,6 +3671,92 @@ def delete_period_transaction_lock(id):
     db.session.delete(lock)
     db.session.commit()
     return jsonify({'message': 'Kunci parsial dibuka'}), 200
+
+
+# ============= ACCOUNT TYPE LOCK, SAP-style D/K/M/S/A (2026-10-06) =====
+# Kunci yang lebih kasar dari PeriodTransactionTypeLock di atas - satu
+# bucket SAP mengunci SEMUA transaction_type yang masuk ke bucket itu
+# sekaligus (lihat utils.finance_helpers.TRANSACTION_TYPE_TO_SAP_BUCKET).
+# Berdampingan, bukan pengganti, PeriodTransactionTypeLock.
+
+_SAP_BUCKET_LABELS = {
+    'D': 'D - Piutang (AR / Debitur)',
+    'K': 'K - Hutang (AP / Kreditur)',
+    'M': 'M - Material / Inventory',
+    'S': 'S - Buku Besar Langsung',
+    'A': 'A - Aset Tetap',
+}
+
+
+@finance_bp.route('/period-account-type-locks', methods=['GET'])
+@jwt_required()
+@require_permission('finance.view')
+def list_period_account_type_locks():
+    from models.finance import PeriodAccountTypeLock
+    period_year = request.args.get('period_year', type=int)
+    period_month = request.args.get('period_month', type=int)
+    query = PeriodAccountTypeLock.query
+    if period_year:
+        query = query.filter_by(period_year=period_year)
+    if period_month:
+        query = query.filter_by(period_month=period_month)
+    locks = query.order_by(PeriodAccountTypeLock.period_year.desc(), PeriodAccountTypeLock.period_month.desc()).all()
+    return jsonify({
+        'locks': [{
+            'id': l.id, 'period_year': l.period_year, 'period_month': l.period_month,
+            'account_type_bucket': l.account_type_bucket,
+            'account_type_label': _SAP_BUCKET_LABELS.get(l.account_type_bucket, l.account_type_bucket),
+            'locked_at': l.locked_at.isoformat() if l.locked_at else None,
+            'notes': l.notes,
+        } for l in locks],
+        'bucket_labels': _SAP_BUCKET_LABELS,
+    }), 200
+
+
+@finance_bp.route('/period-account-type-locks', methods=['POST'])
+@jwt_required()
+@require_permission('finance.approve')
+def create_period_account_type_lock():
+    from models.finance import PeriodAccountTypeLock
+    data = request.get_json() or {}
+    period_year = data.get('period_year')
+    period_month = data.get('period_month')
+    bucket = (data.get('account_type_bucket') or '').strip().upper()
+    user_id = get_jwt_identity()
+
+    if not (period_year and period_month and bucket):
+        return jsonify({'error': 'period_year, period_month, account_type_bucket wajib diisi'}), 400
+    if not (1 <= period_month <= 12):
+        return jsonify({'error': 'period_month harus 1-12'}), 400
+    if bucket not in _SAP_BUCKET_LABELS:
+        return jsonify({'error': f'account_type_bucket harus salah satu dari: {", ".join(_SAP_BUCKET_LABELS)}'}), 400
+
+    existing = PeriodAccountTypeLock.query.filter_by(
+        period_year=period_year, period_month=period_month, account_type_bucket=bucket
+    ).first()
+    if existing:
+        return jsonify({'error': 'Kombinasi periode + bucket ini sudah dikunci'}), 400
+
+    lock = PeriodAccountTypeLock(
+        period_year=period_year, period_month=period_month, account_type_bucket=bucket,
+        locked_by=user_id, notes=data.get('notes'),
+    )
+    db.session.add(lock)
+    db.session.commit()
+    return jsonify({'message': f'{_SAP_BUCKET_LABELS[bucket]} untuk {period_year}-{period_month:02d} dikunci', 'id': lock.id}), 201
+
+
+@finance_bp.route('/period-account-type-locks/<int:id>', methods=['DELETE'])
+@jwt_required()
+@require_permission('finance.approve')
+def delete_period_account_type_lock(id):
+    from models.finance import PeriodAccountTypeLock
+    lock = db.session.get(PeriodAccountTypeLock, id)
+    if not lock:
+        return jsonify({'error': 'Lock tidak ditemukan'}), 404
+    db.session.delete(lock)
+    db.session.commit()
+    return jsonify({'message': 'Kunci bucket dibuka'}), 200
 
 
 @finance_bp.route('/accounts/<int:id>/transactions', methods=['GET'])

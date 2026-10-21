@@ -121,7 +121,7 @@ def get_materials():
                 'description': m.description,
                 'unit_of_measure': m.primary_uom,
                 'cost_per_unit': float(m.cost_per_unit) if m.cost_per_unit else 0,
-                'supplier': m.supplier.name if m.supplier else None,
+                'supplier': m.supplier.company_name if m.supplier else None,
                 'is_active': m.is_active,
                 'kelompok': m.kelompok,
                 'ppn_code': m.ppn_code,
@@ -212,12 +212,12 @@ def get_materials_inventory():
             Material.code,
             Material.name,
             Material.material_type,
-            Material.unit_of_measure,
+            Material.primary_uom,
             func.coalesce(func.sum(Inventory.quantity_on_hand), 0).label('total_stock'),
             func.coalesce(func.sum(Inventory.quantity_available), 0).label('available_stock'),
             func.coalesce(func.sum(Inventory.quantity_reserved), 0).label('reserved_stock')
         ).outerjoin(Inventory, Material.id == Inventory.material_id).group_by(
-            Material.id, Material.code, Material.name, Material.material_type, Material.unit_of_measure
+            Material.id, Material.code, Material.name, Material.material_type, Material.primary_uom
         )
         
         # Filter by type
@@ -238,7 +238,7 @@ def get_materials_inventory():
                 'code': r.code,
                 'name': r.name,
                 'material_type': r.material_type,
-                'unit_of_measure': r.unit_of_measure,
+                'unit_of_measure': r.primary_uom,
                 'total_stock': float(r.total_stock),
                 'available_stock': float(r.available_stock),
                 'reserved_stock': float(r.reserved_stock),

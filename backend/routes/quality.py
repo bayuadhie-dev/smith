@@ -70,7 +70,7 @@ def create_inventory_disposition():
 
         return jsonify({
             'message': f'{len(movements)} disposisi berhasil dicatat',
-            'movements': [{'id': m.id, 'status_after': m.status_after, 'quantity': float(m.quantity)} for m in movements],
+            'movements': [{'id': m.id, 'quantity': float(m.quantity)} for m in movements],
         }), 201
     except ValueError as e:
         db.session.rollback()
@@ -167,6 +167,66 @@ def get_inspections():
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@quality_bp.route('/inspections/<int:id>', methods=['GET'])
+@jwt_required()
+@require_permission('quality.view')
+def get_inspection_detail(id):
+    """Single-inspection detail view (fix_report_3.md Fase 20, 2026-10-05).
+
+    Never existed before - the frontend route /quality/inspections/:id was
+    wired to QualityTestForm, which ignores its own :id param entirely and
+    always renders a blank "Create Quality Test" form (ironically for a
+    DIFFERENT model, QualityTest, not QualityInspection - the two were
+    never the same thing). Found while screenshotting QI-202610-00001 for
+    the WETKINS BABY BLUE E2E verification report - a real dead end, not a
+    gap that happened to not need a screenshot. Added this detail endpoint
+    + QualityInspectionDetail.tsx so the route actually shows something."""
+    try:
+        inspection = db.session.get(QualityInspection, id)
+        if not inspection:
+            return jsonify({'error': 'Inspeksi tidak ditemukan'}), 404
+
+        return jsonify({
+            'id': inspection.id,
+            'inspection_number': inspection.inspection_number,
+            'inspection_date': inspection.inspection_date.isoformat() if inspection.inspection_date else None,
+            'inspection_type': inspection.inspection_type,
+            'product_id': inspection.product_id,
+            'product_name': inspection.product.name if inspection.product else None,
+            'product_code': inspection.product.code if inspection.product else None,
+            'work_order_id': inspection.work_order_id,
+            'wo_number': inspection.work_order.wo_number if inspection.work_order else None,
+            'batch_number': inspection.batch_number,
+            'sample_size': inspection.sample_size,
+            'defect_count': inspection.defect_count,
+            'status': inspection.status,
+            'result': inspection.result,
+            'reference_type': inspection.reference_type,
+            'reference_id': inspection.reference_id,
+            'notes': inspection.notes,
+            'total_checklist_items': inspection.total_checklist_items,
+            'passed_checklist_items': inspection.passed_checklist_items,
+            'failed_checklist_items': inspection.failed_checklist_items,
+            'quantity_inspected': float(inspection.quantity_inspected) if inspection.quantity_inspected is not None else None,
+            'quantity_passed': float(inspection.quantity_passed) if inspection.quantity_passed is not None else None,
+            'quantity_failed': float(inspection.quantity_failed) if inspection.quantity_failed is not None else None,
+            'disposition': inspection.disposition,
+            'disposition_date': inspection.disposition_date.isoformat() if inspection.disposition_date else None,
+            'disposition_by_name': inspection.disposition_user.full_name if inspection.disposition_user else None,
+            'disposition_notes': inspection.disposition_notes,
+            'transferred_to_warehouse': inspection.transferred_to_warehouse,
+            'warehouse_transfer_date': inspection.warehouse_transfer_date.isoformat() if inspection.warehouse_transfer_date else None,
+            'warehouse_location_name': inspection.warehouse_location.location_code if inspection.warehouse_location else None,
+            'findings': inspection.findings,
+            'corrective_actions': inspection.corrective_actions,
+            'inspector_name': inspection.inspector.full_name if inspection.inspector else None,
+            'created_by_name': inspection.created_by_user.full_name if inspection.created_by_user else None,
+            'created_at': inspection.created_at.isoformat() if inspection.created_at else None,
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 
 @quality_bp.route('/inspections', methods=['POST'])
 @jwt_required()
@@ -904,12 +964,25 @@ def get_incoming_materials_for_qc():
         status = request.args.get('status', 'pending')
         
         # Get goods receipts that need QC
-        query = GoodsReceivedNote.query.filter(
+        grns = GoodsReceivedNote.query.filter(
             GoodsReceivedNote.status == 'pending'
-        ).order_by(GoodsReceivedNote.receipt_date.desc())
-        
+        ).order_by(GoodsReceivedNote.receipt_date.desc()).all()
+
+        # GRNItem.material relationship is disabled on the model (see
+        # models/purchasing.py - "# material = db.relationship('Material')
+        # # Disabled temporarily"), so material_id must be resolved via a
+        # direct lookup, not item.material. Bulk-fetched once rather than
+        # per-item to avoid an N+1 query.
+        from models.product import Material
+        material_ids = {
+            item.material_id for gr in grns for item in gr.items if item.material_id
+        }
+        materials_by_id = {
+            m.id: m for m in Material.query.filter(Material.id.in_(material_ids)).all()
+        } if material_ids else {}
+
         materials = []
-        for gr in query.all():
+        for gr in grns:
             for item in gr.items:
                 # Check if QC already done for this item
                 existing_inspection = QualityInspection.query.filter(
@@ -931,15 +1004,27 @@ def get_incoming_materials_for_qc():
                 # Filter by status
                 if status != 'all' and qc_status != status:
                     continue
-                
+
+                # GRNItem is backed by EITHER a Material or a Product
+                # (never both) - fall back to the product's own code/name
+                # so product-backed receipts aren't shown with a blank
+                # item identification in the UI.
+                material = materials_by_id.get(item.material_id) if item.material_id else None
+                if material:
+                    item_code, item_name = material.code, material.name
+                elif item.product:
+                    item_code, item_name = item.product.code, item.product.name
+                else:
+                    item_code, item_name = None, None
+
                 materials.append({
                     'id': item.id,
                     'gr_number': gr.grn_number,
                     'po_number': gr.purchase_order.po_number if gr.purchase_order else None,
-                    'supplier_name': gr.purchase_order.supplier.name if gr.purchase_order and gr.purchase_order.supplier else 'Unknown',
+                    'supplier_name': gr.purchase_order.supplier.company_name if gr.purchase_order and gr.purchase_order.supplier else 'Unknown',
                     'material_id': item.material_id,
-                    'material_code': item.material.code if item.material else None,
-                    'material_name': item.material.name if item.material else None,
+                    'material_code': item_code,
+                    'material_name': item_name,
                     'batch_number': item.batch_number,
                     'quantity': float(item.quantity_received or 0),
                     'uom': item.uom or 'pcs',

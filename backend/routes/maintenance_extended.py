@@ -259,53 +259,131 @@ def get_maintenance_analytics():
             query = query.filter(MaintenanceRecord.maintenance_type == maintenance_type)
         
         records = query.all()
-        
+
         # Calculate summary metrics
         total_work_orders = len(records)
         completed_work_orders = len([r for r in records if r.status == 'completed'])
         pending_work_orders = len([r for r in records if r.status == 'pending'])
         total_cost = sum([r.cost or 0 for r in records])
-        
-        # Calculate MTTR (Mean Time To Repair)
-        completed_records = [r for r in records if r.status == 'completed' and r.actual_completion_time]
-        mttr = sum([r.actual_completion_time for r in completed_records]) / len(completed_records) if completed_records else 0
-        
-        # Mock additional data
-        availability_rate = 85.5
-        mtbf = 168.0  # Mean Time Between Failures
-        
+
+        # Calculate MTTR (Mean Time To Repair).
+        # Bug fixed 2026-10-07: this used to read `r.actual_completion_time`,
+        # a field that DOES NOT EXIST on MaintenanceRecord (see models/
+        # maintenance.py - the real duration field is `duration_hours`).
+        # Any time this endpoint ran against a date range containing even
+        # one 'completed' record, `r.actual_completion_time` raised
+        # AttributeError, caught by the bare `except Exception` below and
+        # turned into a silent 500 - this is very likely WHY the rest of
+        # this endpoint was "temporarily" filled with mock/hardcoded data
+        # in the first place (a crash discovered, worked around with fake
+        # data, and the underlying crash never actually fixed).
+        completed_records = [r for r in records if r.status == 'completed' and r.duration_hours]
+        mttr = float(sum([float(r.duration_hours or 0) for r in completed_records]) / len(completed_records)) if completed_records else 0
+
+        # Real availability/MTBF from actual downtime_hours + failure count,
+        # not the hardcoded 85.5%/168.0h this endpoint used to always
+        # return regardless of filters. "Failure" = corrective/breakdown/
+        # emergency maintenance (unplanned) - preventive is scheduled, not
+        # a failure. Period length comes from the requested date range when
+        # given, else the real span between the earliest and latest record
+        # in the result set (never fabricated).
+        if date_from and date_to:
+            period_hours = (datetime.fromisoformat(date_to) - datetime.fromisoformat(date_from)).total_seconds() / 3600
+        elif records:
+            dates = [r.maintenance_date for r in records if r.maintenance_date]
+            period_hours = (max(dates) - min(dates)).total_seconds() / 3600 if dates else 0
+        else:
+            period_hours = 0
+
+        total_downtime_hours = float(sum([float(r.downtime_hours or 0) for r in records]))
+        failure_records = [r for r in records if r.maintenance_type in ('corrective', 'breakdown', 'emergency')]
+        availability_rate = round(max(0.0, (period_hours - total_downtime_hours) / period_hours * 100), 2) if period_hours > 0 else 0
+        mtbf = round(period_hours / len(failure_records), 2) if failure_records and period_hours > 0 else 0
+
         # Generate chart data
+        preventive_records = [r for r in records if r.maintenance_type == 'preventive']
+        corrective_records = [r for r in records if r.maintenance_type == 'corrective']
+        emergency_records = [r for r in records if r.maintenance_type == 'emergency']
         maintenance_by_type = [
-            {'name': 'Preventive', 'value': len([r for r in records if r.maintenance_type == 'preventive']), 'color': '#3B82F6'},
-            {'name': 'Corrective', 'value': len([r for r in records if r.maintenance_type == 'corrective']), 'color': '#10B981'},
-            {'name': 'Emergency', 'value': len([r for r in records if r.maintenance_type == 'emergency']), 'color': '#EF4444'},
+            {'name': 'Preventive', 'value': len(preventive_records), 'color': '#3B82F6'},
+            {'name': 'Corrective', 'value': len(corrective_records), 'color': '#10B981'},
+            {'name': 'Emergency', 'value': len(emergency_records), 'color': '#EF4444'},
         ]
-        
-        # Monthly trends (mock data)
-        monthly_trends = [
-            {'month': 'Jan', 'work_orders': 12, 'cost': 15000000, 'mttr': 4.2},
-            {'month': 'Feb', 'work_orders': 15, 'cost': 18500000, 'mttr': 3.8},
-            {'month': 'Mar', 'work_orders': 10, 'cost': 12000000, 'mttr': 4.5},
-            {'month': 'Apr', 'work_orders': 18, 'cost': 22000000, 'mttr': 3.9},
-            {'month': 'May', 'work_orders': 14, 'cost': 16800000, 'mttr': 4.1},
-            {'month': 'Jun', 'work_orders': 16, 'cost': 19200000, 'mttr': 3.7}
-        ]
-        
+
+        # Real monthly trends grouped from `records` (was 6 literal hardcoded
+        # Jan-Jun rows that never changed regardless of filters/real data).
+        monthly_buckets = {}
+        for r in records:
+            if not r.maintenance_date:
+                continue
+            key = r.maintenance_date.strftime('%Y-%m')
+            bucket = monthly_buckets.setdefault(key, {'month': r.maintenance_date.strftime('%b'), 'work_orders': 0, 'cost': 0.0, '_mttr_sum': 0.0, '_mttr_n': 0})
+            bucket['work_orders'] += 1
+            bucket['cost'] += float(r.cost or 0)
+            if r.status == 'completed' and r.duration_hours:
+                bucket['_mttr_sum'] += float(r.duration_hours)
+                bucket['_mttr_n'] += 1
+        monthly_trends = []
+        for key in sorted(monthly_buckets.keys()):
+            b = monthly_buckets[key]
+            monthly_trends.append({
+                'month': b['month'],
+                'work_orders': b['work_orders'],
+                'cost': b['cost'],
+                'mttr': round(b['_mttr_sum'] / b['_mttr_n'], 2) if b['_mttr_n'] > 0 else 0
+            })
+
+        # Real per-machine performance (was always an empty array).
+        machine_buckets = {}
+        for r in records:
+            if not r.machine_id:
+                continue
+            mb = machine_buckets.setdefault(r.machine_id, {'machine_id': r.machine_id, 'count': 0, 'cost': 0.0, 'downtime': 0.0})
+            mb['count'] += 1
+            mb['cost'] += float(r.cost or 0)
+            mb['downtime'] += float(r.downtime_hours or 0)
         machine_performance = []
-        cost_breakdown = [
-            {'category': 'Labor', 'amount': total_cost * 0.4, 'percentage': 40},
-            {'category': 'Parts', 'amount': total_cost * 0.35, 'percentage': 35},
-            {'category': 'Tools', 'amount': total_cost * 0.15, 'percentage': 15},
-            {'category': 'External Services', 'amount': total_cost * 0.1, 'percentage': 10}
-        ]
-        
-        downtime_analysis = [
-            {'reason': 'Equipment Failure', 'hours': 24.5, 'frequency': 8},
-            {'reason': 'Scheduled Maintenance', 'hours': 16.0, 'frequency': 12},
-            {'reason': 'Parts Shortage', 'hours': 8.5, 'frequency': 5},
-            {'reason': 'Operator Error', 'hours': 4.2, 'frequency': 3}
-        ]
-        
+        if machine_buckets:
+            from models.production import Machine
+            machines_by_id = {m.id: m for m in Machine.query.filter(Machine.id.in_(machine_buckets.keys())).all()}
+            for mid, mb in machine_buckets.items():
+                machine = machines_by_id.get(mid)
+                machine_period_hours = period_hours if period_hours > 0 else 1
+                machine_performance.append({
+                    'machine': machine.name if machine else f'Machine {mid}',
+                    'availability': round(max(0.0, (machine_period_hours - mb['downtime']) / machine_period_hours * 100), 2),
+                    'mttr': mb['count'],
+                    'cost': mb['cost']
+                })
+
+        # Cost breakdown by real maintenance_type (was total_cost split by
+        # fixed invented Labor/Parts/Tools/External percentages that never
+        # reflected what was actually spent). No cost-category field exists
+        # in this schema to split cost by Labor/Parts/Tools honestly.
+        cost_breakdown = []
+        for label, recs in [('Preventive', preventive_records), ('Corrective', corrective_records), ('Emergency', emergency_records)]:
+            amount = float(sum(r.cost or 0 for r in recs))
+            cost_breakdown.append({
+                'category': label,
+                'amount': amount,
+                'percentage': round(amount / float(total_cost) * 100, 1) if total_cost else 0
+            })
+
+        # Real downtime analysis grouped by root_cause_category (a real
+        # structured field, see models/maintenance.py) - was 4 hardcoded
+        # reasons/hours/frequency numbers that never changed.
+        downtime_buckets = {}
+        for r in records:
+            if not r.downtime_hours:
+                continue
+            key = r.root_cause_category or 'Belum dikategorikan'
+            db_bucket = downtime_buckets.setdefault(key, {'reason': key, 'hours': 0.0, 'frequency': 0})
+            db_bucket['hours'] += float(r.downtime_hours)
+            db_bucket['frequency'] += 1
+        downtime_analysis = sorted(downtime_buckets.values(), key=lambda x: x['hours'], reverse=True)
+
+        total_duration_hours = float(sum([float(r.duration_hours or 0) for r in records]))
+
         return jsonify({
             'summary': {
                 'total_work_orders': total_work_orders,
@@ -325,12 +403,16 @@ def get_maintenance_analytics():
                 'downtime_analysis': downtime_analysis
             },
             'kpis': {
-                'preventive_ratio': (len([r for r in records if r.maintenance_type == 'preventive']) / total_work_orders * 100) if total_work_orders > 0 else 0,
-                'emergency_ratio': (len([r for r in records if r.maintenance_type == 'emergency']) / total_work_orders * 100) if total_work_orders > 0 else 0,
-                'cost_per_hour': total_cost / sum([r.actual_completion_time or 0 for r in records]) if sum([r.actual_completion_time or 0 for r in records]) > 0 else 0,
-                'parts_cost_ratio': 35.0,
-                'labor_cost_ratio': 40.0,
-                'schedule_compliance': 92.5
+                'preventive_ratio': (len(preventive_records) / total_work_orders * 100) if total_work_orders > 0 else 0,
+                'emergency_ratio': (len(emergency_records) / total_work_orders * 100) if total_work_orders > 0 else 0,
+                'cost_per_hour': float(total_cost) / total_duration_hours if total_duration_hours > 0 else 0,
+                # No cost-category or maintenance-schedule-adherence field
+                # exists in this schema yet to compute these for real - left
+                # honestly at 0 instead of the previous hardcoded 35.0/40.0/
+                # 92.5 (which never changed regardless of actual data).
+                'parts_cost_ratio': 0,
+                'labor_cost_ratio': 0,
+                'schedule_compliance': 0
             }
         }), 200
     except Exception as e:

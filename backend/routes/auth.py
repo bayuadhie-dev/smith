@@ -273,21 +273,51 @@ def register():
         role_id = data.get('role_id')
         if role_id:
             from models import Role, UserRole
-            # Validate role exists and is not admin role
-            excluded_roles = ['Super Admin', 'Direktur Utama', 'Direktur Operasional', 
+            # Validate role exists and is not admin/supervisor/management level -
+            # self-registration is Staff/Operator only, Supervisor and up must be
+            # assigned by a superadmin. Same category logic as GET /roles/public,
+            # enforced here too in case role_id is sent directly without going
+            # through that endpoint's filtered list.
+            excluded_roles = ['Super Admin', 'Direktur Utama', 'Direktur Operasional',
                              'Direktur Keuangan', 'Direktur HRD', 'IT Admin']
             role = Role.query.filter(
                 Role.id == role_id,
                 Role.is_active == True,
                 ~Role.name.in_(excluded_roles)
             ).first()
-            
+
             if role:
-                user_role = UserRole(user_id=new_user.id, role_id=role.id)
-                db.session.add(user_role)
+                name_lower = role.name.lower()
+                is_supervisor_or_above = (
+                    'manager' in name_lower or 'general' in name_lower or
+                    'supervisor' in name_lower or 'team lead' in name_lower
+                )
+                if not is_supervisor_or_above:
+                    user_role = UserRole(user_id=new_user.id, role_id=role.id)
+                    db.session.add(user_role)
         
         db.session.commit()
-        
+
+        # Notify every super_admin that a new registration needs review
+        # (2026-10-16) - otherwise the only way to notice a pending
+        # registration is to remember to check the Settings page.
+        try:
+            from utils.send_notification import send_notification
+            super_admins = User.query.filter_by(is_super_admin=True, is_active=True).all()
+            for admin in super_admins:
+                send_notification(
+                    admin.id,
+                    title='Pendaftaran Akun Baru',
+                    message=f'{new_user.full_name} (@{new_user.username}) mendaftar dan menunggu persetujuan Anda.',
+                    category='system',
+                    notification_type='info',
+                    action_url='/app/settings/user-roles',
+                    reference_type='user_registration',
+                    reference_id=new_user.id,
+                )
+        except Exception as notif_error:
+            print(f"Failed to notify super admins of new registration: {notif_error}")
+
         # Send welcome email (async, don't block registration)
         try:
             from utils.email_service import get_email_service
@@ -961,12 +991,18 @@ def google_callback():
 @auth_bp.route('/pending-users', methods=['GET'])
 @jwt_required()
 def get_pending_users():
-    """Get all users with is_active=False waiting for admin approval"""
+    """Get all users with is_active=False waiting for admin approval.
+
+    2026-10-16: restricted to super_admin only (was previously also allowed
+    for is_admin, which per the RBAC scoping fix earlier this marathon is a
+    department-level flag, not a system-administration one) - user
+    confirmed account management/approval is super_admin-exclusive since
+    only the developer's own account manages accounts."""
     try:
         user_id = get_jwt_identity()
         current_user = db.session.get(User, int(user_id))
-        if not current_user or not (getattr(current_user, 'is_super_admin', False) or current_user.is_admin):
-            return jsonify({'error': 'Unauthorized: Admin access required'}), 403
+        if not current_user or not getattr(current_user, 'is_super_admin', False):
+            return jsonify({'error': 'Unauthorized: Super Admin access required'}), 403
             
         pending_users = User.query.filter_by(is_active=False).order_by(User.created_at.desc()).all()
         result = []
@@ -992,12 +1028,12 @@ def get_pending_users():
 @auth_bp.route('/approve-user/<int:target_user_id>', methods=['POST'])
 @jwt_required()
 def approve_or_decline_user(target_user_id):
-    """Approve or decline a pending user registration"""
+    """Approve or decline a pending user registration. Super Admin only - see get_pending_users() docstring."""
     try:
         user_id = get_jwt_identity()
         current_user = db.session.get(User, int(user_id))
-        if not current_user or not (getattr(current_user, 'is_super_admin', False) or current_user.is_admin):
-            return jsonify({'error': 'Unauthorized: Admin access required'}), 403
+        if not current_user or not getattr(current_user, 'is_super_admin', False):
+            return jsonify({'error': 'Unauthorized: Super Admin access required'}), 403
 
         target_user = db.session.get(User, target_user_id)
         if not target_user:
@@ -1009,6 +1045,19 @@ def approve_or_decline_user(target_user_id):
         if action == 'approve':
             target_user.is_active = True
             db.session.commit()
+
+            try:
+                from utils.send_notification import send_notification
+                send_notification(
+                    target_user.id,
+                    title='Akun Anda Disetujui',
+                    message='Pendaftaran akun Anda telah disetujui. Anda sekarang bisa login ke SMITH ERP.',
+                    category='system',
+                    notification_type='success',
+                )
+            except Exception as notif_error:
+                print(f"Failed to notify approved user {target_user.id}: {notif_error}")
+
             return jsonify({'success': True, 'message': f'Pengguna {target_user.username} berhasil disetujui'}), 200
         elif action == 'decline':
             username = target_user.username

@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.auth_decorators import require_permission
 from models import db, PurchaseReturn, PurchaseReturnItem, Invoice, InvoiceItem, Supplier, User
+from models.product import Material, Product
 from utils.i18n import success_response, error_response, get_message
 from utils import generate_number
 from datetime import datetime, date
@@ -359,7 +360,7 @@ def create_purchase_return():
         description: Purchase invoice not found
     """
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True) or {}
         user_id = get_jwt_identity()
         
         # Generate return number
@@ -454,6 +455,143 @@ def create_purchase_return():
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
+
+@purchase_return_bp.route('/purchase-returns/from-quarantine', methods=['POST'])
+@jwt_required()
+@require_permission('returns.create')
+def create_purchase_return_from_quarantine():
+    """Buat Purchase Return LANGSUNG dari baris Inventory karantina (Fase 5
+    bagian A, fix_report_2.md, 2026-10-01, disetujui pemilik via
+    AskUserQuestion) - melengkapi alur lanjutan barang reject GRN (Fase 4
+    fix_report.md) yang sebelumnya cuma berhenti di "masuk karantina",
+    tanpa cara lanjut retur ke supplier.
+
+    Beda dari create_purchase_return() biasa: qty yang diretur divalidasi
+    TIDAK BOLEH melebihi stok yang BENAR-BENAR ada di baris Inventory
+    karantina yang ditunjuk (inventory_id) - create_purchase_return() biasa
+    tidak memvalidasi terhadap stok fisik sama sekali.
+
+    Skema TIDAK diubah - PurchaseReturn.invoice_id dan
+    PurchaseReturnItem.invoice_item_id tetap NOT NULL, jadi caller tetap
+    wajib memberi invoice_id + invoice_item_id yang valid (biasanya sudah
+    diketahui dari rantai GRN -> PO -> Invoice).
+
+    Tidak mengurangi Inventory di sini - pengurangan stok tetap terjadi
+    saat approve_purchase_return() dipanggil, konsisten dengan
+    create_purchase_return() biasa (yang juga tidak menyentuh Inventory
+    saat create, hanya saat approve).
+    """
+    try:
+        from models import Inventory
+
+        data = request.get_json(silent=True) or {}
+        user_id = get_jwt_identity()
+
+        inventory_id = data.get('inventory_id')
+        inv = db.session.get(Inventory, inventory_id) if inventory_id else None
+        if not inv:
+            return jsonify({'error': 'inventory_id tidak ditemukan'}), 404
+
+        if inv.stock_status not in ('quarantine', 'reject', 'rejected'):
+            return jsonify({
+                'error': f"Inventory ini berstatus '{inv.stock_status}', hanya stok "
+                         "quarantine/reject/rejected yang bisa diretur lewat endpoint ini."
+            }), 400
+
+        quantity = data.get('quantity')
+        if quantity is None or float(quantity) <= 0:
+            return jsonify({'error': 'quantity harus > 0'}), 400
+        quantity = float(quantity)
+        if quantity > float(inv.quantity_on_hand or 0):
+            return jsonify({
+                'error': f'quantity ({quantity}) melebihi stok karantina yang tersedia '
+                         f'({float(inv.quantity_on_hand or 0)})'
+            }), 400
+
+        invoice = db.session.get(Invoice, data.get('invoice_id'))
+        if not invoice or invoice.invoice_type != 'purchase':
+            return jsonify({'error': 'Purchase Invoice not found'}), 404
+
+        invoice_item = db.session.get(InvoiceItem, data.get('invoice_item_id'))
+        if not invoice_item or invoice_item.invoice_id != invoice.id:
+            return jsonify({'error': 'invoice_item_id tidak ditemukan atau bukan milik invoice_id ini'}), 404
+
+        if invoice_item.material_id != inv.material_id or invoice_item.product_id != inv.product_id:
+            return jsonify({
+                'error': 'invoice_item_id yang diberikan tidak cocok dengan material/produk pada baris Inventory karantina ini'
+            }), 400
+
+        if not data.get('reason'):
+            return jsonify({'error': 'reason wajib diisi'}), 400
+
+        return_number = generate_number('PR')
+        unit_price = float(invoice_item.unit_price or 0)
+        total_price = quantity * unit_price
+
+        # uom pada InvoiceItem nullable secara skema (beberapa invoice lama/
+        # manual tidak mengisinya) - PurchaseReturnItem.uom NOT NULL, jadi
+        # perlu fallback ke Inventory/Material/Product supaya tidak crash
+        # IntegrityError untuk kasus yang sebetulnya valid.
+        uom = invoice_item.uom
+        if not uom:
+            if inv.material_id:
+                material = db.session.get(Material, inv.material_id)
+                uom = material.primary_uom if material else None
+            elif inv.product_id:
+                product = db.session.get(Product, inv.product_id)
+                uom = product.primary_uom if product else None
+        if not uom:
+            return jsonify({'error': 'UOM tidak diketahui - invoice_item, material, dan product sama-sama tidak punya UOM'}), 400
+
+        return_obj = PurchaseReturn(
+            return_number=return_number,
+            invoice_id=invoice.id,
+            supplier_id=invoice.supplier_id,
+            return_date=get_local_today(),
+            reason=data.get('reason'),
+            return_type=data.get('return_type', 'defective'),
+            status='draft',
+            approval_status='pending',
+            subtotal=total_price,
+            total_amount=total_price,
+            notes=f"Dibuat dari stok karantina (Inventory #{inv.id}, batch {inv.batch_number or '-'})",
+            created_by=user_id,
+            created_at=get_local_now(),
+        )
+        db.session.add(return_obj)
+        db.session.flush()
+
+        item = PurchaseReturnItem(
+            return_id=return_obj.id,
+            invoice_item_id=invoice_item.id,
+            line_number=1,
+            product_id=inv.product_id,
+            material_id=inv.material_id,
+            description=invoice_item.description,
+            quantity=quantity,
+            uom=uom,
+            unit_price=unit_price,
+            total_price=total_price,
+            reason=data.get('reason'),
+            created_at=get_local_now(),
+        )
+        db.session.add(item)
+
+        db.session.commit()
+
+        return jsonify({
+            'message': 'Purchase return dari karantina berhasil dibuat',
+            'return': {
+                'id': return_obj.id,
+                'return_number': return_obj.return_number,
+            }
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
 @purchase_return_bp.route('/purchase-returns/<int:id>', methods=['PUT'])
 @jwt_required()
 @require_permission('returns.edit')
@@ -513,7 +651,7 @@ def update_purchase_return(id):
     """
     try:
         return_obj = db.session.get(PurchaseReturn, id) or abort(404)
-        data = request.get_json()
+        data = request.get_json(silent=True) or {}
         user_id = get_jwt_identity()
         
         # Update return fields
@@ -690,7 +828,21 @@ def approve_purchase_return(id):
                 inv_query = inv_query.filter_by(product_id=item.product_id)
             else:
                 inv_query = inv_query.filter_by(material_id=item.material_id)
-            inv = inv_query.order_by(Inventory.quantity_on_hand.desc()).first()
+
+            # Fase 5 audit fix (fix_report_2.md, 2026-10-01): sebelumnya
+            # baris Inventory dipilih murni lewat quantity_on_hand terbesar
+            # TANPA filter status - retur yang sumbernya stok karantina
+            # (Fase 4 fix_report.md) bisa salah memotong stok 'available'
+            # yang jauh lebih besar alih-alih stok quarantine/reject yang
+            # sebenarnya sedang diretur. Prioritaskan baris berstatus
+            # quarantine/reject/rejected kalau ada, baru fallback ke baris
+            # manapun (perilaku lama) kalau tidak ada baris karantina sama
+            # sekali untuk item ini.
+            inv = inv_query.filter(
+                Inventory.stock_status.in_(['quarantine', 'reject', 'rejected'])
+            ).order_by(Inventory.quantity_on_hand.desc()).first()
+            if not inv:
+                inv = inv_query.order_by(Inventory.quantity_on_hand.desc()).first()
             if not inv:
                 continue
             quantity = float(item.quantity or 0)
@@ -802,7 +954,7 @@ def reject_purchase_return(id):
     """
     try:
         return_obj = db.session.get(PurchaseReturn, id) or abort(404)
-        data = request.get_json()
+        data = request.get_json(silent=True) or {}
         user_id = get_jwt_identity()
         
         if return_obj.approval_status == 'approved':

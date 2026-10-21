@@ -27,21 +27,18 @@ def get_quality_dashboard():
         week_start = today - timedelta(days=7)
         month_start = today.replace(day=1)
         
-        # Basic quality metrics
-        total_inspections_today = QualityInspection.query.filter(
-            func.date(QualityInspection.inspection_date) == today
-        ).count()
-        
-        total_inspections_week = QualityInspection.query.filter(
-            QualityInspection.inspection_date >= week_start
-        ).count()
-        
-        passed_inspections_week = QualityInspection.query.filter(
-            QualityInspection.inspection_date >= week_start,
-            QualityInspection.result == 'accepted'
-        ).count()
-        
-        pass_rate = (passed_inspections_week / total_inspections_week * 100) if total_inspections_week > 0 else 0
+        # Basic quality metrics - combined across BOTH QC tables (bug fixed
+        # 2026-10-07): QualityInspection (incoming-materials QC, ~1 real
+        # row) and QualityTest (finished-goods QC on completed Work
+        # Orders, 608 real rows - was previously imported into this file
+        # but never actually queried). "Quality Pass Rate" used to only
+        # reflect QualityInspection, making it blind to the vast majority
+        # of real QC activity. See utils/quality_metrics.py.
+        from utils.quality_metrics import combined_inspection_counts, combined_pass_rate
+
+        total_inspections_today = combined_inspection_counts(today)
+        total_inspections_week = combined_inspection_counts(week_start, today)
+        pass_rate, _ = combined_pass_rate(week_start, today)
         
         # Active alerts
         active_alerts = QualityAlert.query.filter_by(status='active').count()
@@ -62,19 +59,13 @@ def get_quality_dashboard():
             QualityInspection.inspection_date >= week_start
         ).scalar() or 0
         
-        # Trend data - last 7 days pass rate
+        # Trend data - last 7 days pass rate (combined across both QC
+        # tables, same as the summary metrics above)
         pass_rate_trend = []
         for i in range(7):
             trend_date = today - timedelta(days=6-i)
-            daily_inspections = QualityInspection.query.filter(
-                func.date(QualityInspection.inspection_date) == trend_date
-            ).count()
-            daily_passed = QualityInspection.query.filter(
-                func.date(QualityInspection.inspection_date) == trend_date,
-                QualityInspection.result == 'accepted'
-            ).count()
-            daily_pass_rate = (daily_passed / daily_inspections * 100) if daily_inspections > 0 else 0
-            
+            daily_pass_rate, daily_inspections = combined_pass_rate(trend_date)
+
             pass_rate_trend.append({
                 'date': trend_date.isoformat(),
                 'pass_rate': round(daily_pass_rate, 2),
@@ -90,34 +81,47 @@ def get_quality_dashboard():
         # Machine performance - get real data from database
         machine_performance = []
         try:
-            # Get machines that have quality inspections
-            machines_with_inspections = db.session.query(Machine).join(
+            # Combined across both QC tables (bug fixed 2026-10-07, same
+            # reasoning as the summary metrics above) - both
+            # QualityInspection and QualityTest have product_id, joined
+            # the same way through Product.machine_id.
+            machine_counts = {}  # machine_id -> {'machine': obj, 'total': n, 'passed': n}
+
+            insp_rows = db.session.query(Machine, QualityInspection).join(
                 Product, Machine.id == Product.machine_id
             ).join(
                 QualityInspection, Product.id == QualityInspection.product_id
             ).filter(
                 QualityInspection.inspection_date >= week_start
-            ).distinct().all()
-            
-            for machine in machines_with_inspections:
-                # Get inspections for products made by this machine
-                machine_inspections = db.session.query(QualityInspection).join(
-                    Product, QualityInspection.product_id == Product.id
-                ).filter(
-                    Product.machine_id == machine.id,
-                    QualityInspection.inspection_date >= week_start
-                ).all()
-                
-                if machine_inspections:
-                    total_inspections = len(machine_inspections)
-                    passed_inspections = len([i for i in machine_inspections if i.result == 'accepted'])
-                    machine_pass_rate = (passed_inspections / total_inspections * 100) if total_inspections > 0 else 0
-                    
-                    machine_performance.append({
-                        'machine': machine.name,
-                        'pass_rate': round(machine_pass_rate, 2),
-                        'total_inspections': total_inspections
-                    })
+            ).all()
+            for machine, inspection in insp_rows:
+                entry = machine_counts.setdefault(machine.id, {'machine': machine, 'total': 0, 'passed': 0})
+                entry['total'] += 1
+                if inspection.result == 'accepted':
+                    entry['passed'] += 1
+
+            test_rows = db.session.query(Machine, QualityTest).join(
+                Product, Machine.id == Product.machine_id
+            ).join(
+                QualityTest, Product.id == QualityTest.product_id
+            ).filter(
+                QualityTest.test_date >= week_start,
+                QualityTest.result != 'pending',
+            ).all()
+            for machine, test in test_rows:
+                entry = machine_counts.setdefault(machine.id, {'machine': machine, 'total': 0, 'passed': 0})
+                entry['total'] += 1
+                if test.result == 'passed':
+                    entry['passed'] += 1
+
+            for entry in machine_counts.values():
+                total = entry['total']
+                machine_pass_rate = (entry['passed'] / total * 100) if total > 0 else 0
+                machine_performance.append({
+                    'machine': entry['machine'].name,
+                    'pass_rate': round(machine_pass_rate, 2),
+                    'total_inspections': total
+                })
         except Exception as e:
             print(f"Error getting machine performance: {e}")
             # If error, return empty list instead of dummy data

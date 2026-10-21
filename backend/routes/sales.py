@@ -10,7 +10,7 @@ from models.sales import (
 from models.user import User
 from utils import generate_number, generate_number_v2
 from utils.business_rules import BusinessRules, ValidationError, SALES_ORDER_TRANSITIONS
-from utils.tax_helpers import resolve_item_tax_percent
+from utils.tax_helpers import resolve_item_tax_percent, ppn_rate_for_code
 from datetime import datetime, date
 from decimal import Decimal
 from sqlalchemy import or_, func, and_
@@ -43,6 +43,19 @@ def _apply_item_amounts(item, item_total, discount_percent, tax_percent):
     item.tax_amount = tax_amount
     item.total_price = net + tax_amount
     return item.total_price
+
+
+def _apply_shipping_amounts(order_or_quote):
+    """Resolves shipping_tax_amount from shipping_cost + shipping_ppn_code
+    (same Y/A/B/L rate map as product-level ppn_code, via
+    utils.tax_helpers.ppn_rate_for_code - 'Tidak ada'/blank code means 0%,
+    matching resolve_item_tax_percent()'s handling of an absent code) and
+    returns the tax-inclusive shipping total to roll into total_amount."""
+    shipping_cost = float(order_or_quote.shipping_cost or 0)
+    rate = ppn_rate_for_code(order_or_quote.shipping_ppn_code)
+    tax_amount = shipping_cost * (float(rate) / 100) if rate else 0
+    order_or_quote.shipping_tax_amount = tax_amount
+    return shipping_cost + tax_amount
 
 # Customers
 @sales_bp.route('/customers', methods=['GET'])
@@ -511,7 +524,20 @@ def create_order():
     try:
         data = request.get_json()
         user_id = get_jwt_identity()
-        
+
+        # Fase 7 audit fix (fix_report_2.md, 2026-10-01): no validation
+        # existed for an empty items list or a negative item quantity - a
+        # sales order with 0 items, or with a negative quantity item,
+        # silently got created. Found while triaging
+        # test_sales_order_input_validation.
+        items_data = data.get('items', [])
+        if not items_data:
+            return jsonify({'error': 'Sales order harus punya minimal 1 item'}), 400
+        for item_data in items_data:
+            qty = item_data.get('quantity')
+            if qty is not None and float(qty) < 0:
+                return jsonify({'error': 'quantity item tidak boleh negatif'}), 400
+
         # BUSINESS RULE: Validate customer credit limit
         customer_id = data.get('customer_id')
         if customer_id:
@@ -550,13 +576,16 @@ def create_order():
             customer_po_number=data.get('customer_po_number'),
             payment_terms=data.get('payment_terms'),
             delivery_address=data.get('delivery_address'),
+            shipping_method=data.get('shipping_method'),
+            shipping_cost=data.get('shipping_cost', 0),
+            shipping_ppn_code=data.get('shipping_ppn_code', 'Y'),
             notes=data.get('notes'),
             created_by=user_id
         )
-        
+
         db.session.add(order)
         db.session.flush()
-        
+
         # Add items
         subtotal = 0
         grand_total = 0
@@ -581,7 +610,13 @@ def create_order():
             subtotal += item_total
 
         order.subtotal = subtotal
-        order.total_amount = grand_total
+        # SAP-equivalence plan item #3 (2026-10-05): shipping_cost was a real
+        # column on this model that no create/update path ever set or rolled
+        # into total_amount - effectively dead. Added as a header-level charge
+        # on top of the item-level grand_total (which already carries its own
+        # discount+tax per _apply_item_amounts), taxed via its own
+        # shipping_ppn_code since it isn't tied to any one product/ppn_code.
+        order.total_amount = grand_total + _apply_shipping_amounts(order)
 
         db.session.commit()
 
@@ -653,10 +688,18 @@ def get_order(id):
             'customer_po_number': order.customer_po_number,
             'payment_terms': order.payment_terms,
             'delivery_address': order.delivery_address,
+            'shipping_method': order.shipping_method,
+            'shipping_cost': float(order.shipping_cost or 0),
+            'shipping_ppn_code': order.shipping_ppn_code,
+            'shipping_tax_amount': float(order.shipping_tax_amount or 0),
             'subtotal': float(order.subtotal),
             'tax_amount': float(order.tax_amount),
             'total_amount': float(order.total_amount),
             'notes': order.notes,
+            # fix_report_3.md Fase 16 (2026-10-02): MRP shortage check at
+            # SO confirm - see utils.sales_order_workflow._check_and_create_shortage_pr().
+            'material_shortage_note': order.material_shortage_note,
+            'material_eta_date': order.material_eta_date.isoformat() if order.material_eta_date else None,
             'items': [{
                 'id': i.id,
                 'line_number': i.line_number,
@@ -1145,6 +1188,19 @@ def update_order(id):
             order.required_date = datetime.fromisoformat(data['required_date'].replace('Z', '+00:00'))
         if 'customer_id' in data and data['customer_id']:
             order.customer_id = data['customer_id']
+        if 'shipping_method' in data:
+            order.shipping_method = data['shipping_method']
+        if 'shipping_cost' in data:
+            order.shipping_cost = data['shipping_cost'] or 0
+        if 'shipping_ppn_code' in data:
+            order.shipping_ppn_code = data['shipping_ppn_code']
+        # fix_report_3.md Fase 15 (2026-10-02): filled in MANUALLY by
+        # purchasing admin once they've processed the PR/PO auto-created
+        # for this SO's raw-material shortage (see
+        # utils.sales_order_workflow._check_and_create_shortage_pr) - not
+        # set automatically anywhere, intentionally.
+        if 'material_eta_date' in data:
+            order.material_eta_date = datetime.fromisoformat(data['material_eta_date']).date() if data['material_eta_date'] else None
 
         items_changed = False
         old_total = float(order.total_amount or 0)
@@ -1193,10 +1249,23 @@ def update_order(id):
                 subtotal += item_total
 
             order.subtotal = subtotal
-            order.total_amount = grand_total
+            order.total_amount = grand_total + _apply_shipping_amounts(order)
+            db.session.flush()
+        elif 'shipping_cost' in data or 'shipping_ppn_code' in data:
+            # SAP-equivalence plan item #3 (2026-10-05): shipping_cost/
+            # shipping_ppn_code can be edited without touching items -
+            # recompute total_amount from the existing items' already-stored
+            # total_price (which already has its own discount+tax baked in
+            # via _apply_item_amounts) rather than going through the
+            # items-replace path above, so this never triggers the
+            # items_changed-gated reservation-release/re-create flow for a
+            # charge that has nothing to do with BOM material.
+            item_grand_total = sum(float(it.total_price or 0) for it in order.items)
+            order.total_amount = item_grand_total + _apply_shipping_amounts(order)
             db.session.flush()
 
-        if items_changed:
+        total_changed = items_changed or ('shipping_cost' in data) or ('shipping_ppn_code' in data)
+        if total_changed:
             new_total = float(order.total_amount or 0)
             try:
                 _sync_sales_order_journal(order, old_total, new_total, user_id)
@@ -1917,14 +1986,16 @@ def create_quotation():
             delivery_date=datetime.strptime(data['delivery_date'], '%Y-%m-%d').date() if data.get('delivery_date') else None,
             payment_terms=data.get('payment_terms'),
             delivery_terms=data.get('delivery_terms'),
+            shipping_cost=data.get('shipping_cost', 0),
+            shipping_ppn_code=data.get('shipping_ppn_code', 'Y'),
             notes=data.get('notes'),
             terms_conditions=data.get('terms_conditions'),
             prepared_by=user_id
         )
-        
+
         db.session.add(quotation)
         db.session.flush()
-        
+
         # Add items
         subtotal = 0
         grand_total = 0
@@ -1947,9 +2018,12 @@ def create_quotation():
             grand_total += _apply_item_amounts(item, item_total, discount_percent, tax_percent)
             db.session.add(item)
             subtotal += item_total
-        
+
         quotation.subtotal = subtotal
-        quotation.total_amount = grand_total
+        # SAP-equivalence plan item #3 (2026-10-05): see analogous comment on
+        # create_order() above - shipping_cost was a dead column, now rolled
+        # into total_amount as a taxed header-level additive.
+        quotation.total_amount = grand_total + _apply_shipping_amounts(quotation)
 
         db.session.commit()
         
@@ -1990,6 +2064,8 @@ def get_quotation(id):
                 'tax_percent': float(quotation.tax_percent or 0),
                 'tax_amount': float(quotation.tax_amount or 0),
                 'shipping_cost': float(quotation.shipping_cost or 0),
+                'shipping_ppn_code': quotation.shipping_ppn_code,
+                'shipping_tax_amount': float(quotation.shipping_tax_amount or 0),
                 'total_amount': float(quotation.total_amount or 0),
                 'status': quotation.status,
                 'notes': quotation.notes,
@@ -2038,6 +2114,10 @@ def update_quotation(id):
         for field in ('payment_terms', 'delivery_terms', 'notes', 'terms_conditions', 'opportunity_id'):
             if field in data:
                 setattr(quotation, field, data[field])
+        if 'shipping_cost' in data:
+            quotation.shipping_cost = data['shipping_cost'] or 0
+        if 'shipping_ppn_code' in data:
+            quotation.shipping_ppn_code = data['shipping_ppn_code']
 
         if 'items' in data:
             # Replace all items
@@ -2065,7 +2145,12 @@ def update_quotation(id):
                 subtotal += item_total
 
             quotation.subtotal = subtotal
-            quotation.total_amount = grand_total
+            quotation.total_amount = grand_total + _apply_shipping_amounts(quotation)
+        elif 'shipping_cost' in data or 'shipping_ppn_code' in data:
+            # Shipping cost/ppn_code changed without touching items -
+            # recompute total from existing items' already-stored total_price.
+            item_grand_total = sum(float(it.total_price or 0) for it in quotation.items)
+            quotation.total_amount = item_grand_total + _apply_shipping_amounts(quotation)
 
         db.session.commit()
 
@@ -2105,6 +2190,8 @@ def convert_quotation_to_order(id):
             status='draft',
             priority='normal',
             payment_terms=quotation.payment_terms,
+            shipping_cost=quotation.shipping_cost or 0,
+            shipping_ppn_code=quotation.shipping_ppn_code or 'Y',
             notes=f'Converted from Quotation {quotation.quote_number}',
             created_by=user_id
         )
@@ -2132,7 +2219,7 @@ def convert_quotation_to_order(id):
             subtotal += item_total
 
         order.subtotal = subtotal
-        order.total_amount = grand_total
+        order.total_amount = grand_total + _apply_shipping_amounts(order)
 
         quotation.status = 'converted'
         quotation.converted_to_order_id = order.id
@@ -3067,10 +3154,12 @@ def report_sales_per_customer():
             func.avg(SalesOrder.total_amount).label('avg_order_value')
         ).join(
             SalesOrder, Customer.id == SalesOrder.customer_id
+        ).filter(
+            SalesOrder.status.notin_(['draft', 'cancelled'])
         ).group_by(
             Customer.id, Customer.company_name
         )
-        
+
         if date_from:
             query = query.filter(SalesOrder.order_date >= date_from)
         if date_to:
@@ -3424,17 +3513,21 @@ def report_sales_charts():
         chart_type = request.args.get('chart_type', 'trend')  # trend, proportion
         
         if chart_type == 'trend':
-            # Sales trend over time (monthly)
+            # Sales trend over time (monthly). PostgreSQL (not SQLite - see
+            # CLAUDE.md) has no strftime(); to_char() is the equivalent.
+            month_expr = func.to_char(SalesOrder.order_date, 'YYYY-MM')
             query = db.session.query(
-                func.strftime('%Y-%m', SalesOrder.order_date).label('month'),
+                month_expr.label('month'),
                 func.count(SalesOrder.id).label('order_count'),
                 func.sum(SalesOrder.total_amount).label('total_sales')
+            ).filter(
+                SalesOrder.status.notin_(['draft', 'cancelled'])
             ).group_by(
-                func.strftime('%Y-%m', SalesOrder.order_date)
+                month_expr
             ).order_by(
-                func.strftime('%Y-%m', SalesOrder.order_date)
+                month_expr
             )
-            
+
             if date_from:
                 query = query.filter(SalesOrder.order_date >= date_from)
             if date_to:
@@ -3458,10 +3551,12 @@ def report_sales_charts():
                 func.sum(SalesOrder.total_amount).label('total_sales')
             ).join(
                 SalesOrder, Customer.id == SalesOrder.customer_id
+            ).filter(
+                SalesOrder.status.notin_(['draft', 'cancelled'])
             ).group_by(
                 Customer.company_name
             )
-            
+
             if date_from:
                 query = query.filter(SalesOrder.order_date >= date_from)
             if date_to:

@@ -47,9 +47,11 @@ def get_material(material_id):
                 'safety_stock_qty': float(material.safety_stock_qty) if material.safety_stock_qty is not None else None,
                 'safety_stock_days': material.safety_stock_days,
                 'min_order_qty': float(material.min_order_qty) if material.min_order_qty is not None else None,
+                'lot_sizing_procedure': material.lot_sizing_procedure,
+                'fixed_lot_size': float(material.fixed_lot_size) if material.fixed_lot_size is not None else None,
                 'is_excluded_from_mrp': material.is_excluded_from_mrp,
                 'supplier_id': material.supplier_id,
-                'supplier': material.supplier.name if material.supplier else None,
+                'supplier': material.supplier.company_name if material.supplier else None,
                 'kelompok': material.kelompok,
                 'ppn_code': material.ppn_code,
                 'erp_approval': material.erp_approval,
@@ -125,6 +127,13 @@ def update_material(material_id):
             material.safety_stock_days = data['safety_stock_days'] if data['safety_stock_days'] not in ('', None) else None
         if 'min_order_qty' in data:
             material.min_order_qty = data['min_order_qty'] if data['min_order_qty'] not in ('', None) else None
+        if 'lot_sizing_procedure' in data:
+            procedure = (data['lot_sizing_procedure'] or 'EX').upper()
+            if procedure not in ('EX', 'FX', 'WB', 'MB'):
+                return jsonify({'error': f"lot_sizing_procedure harus salah satu dari EX/FX/WB/MB, dapat '{procedure}'"}), 400
+            material.lot_sizing_procedure = procedure
+        if 'fixed_lot_size' in data:
+            material.fixed_lot_size = data['fixed_lot_size'] if data['fixed_lot_size'] not in ('', None) else None
         if 'is_excluded_from_mrp' in data:
             material.is_excluded_from_mrp = bool(data['is_excluded_from_mrp'])
         if 'supplier_id' in data:
@@ -258,9 +267,14 @@ def create_material():
             safety_stock_qty=data.get('safety_stock_qty') if data.get('safety_stock_qty') not in ('', None) else None,
             safety_stock_days=data.get('safety_stock_days') if data.get('safety_stock_days') not in ('', None) else None,
             is_excluded_from_mrp=bool(data.get('is_excluded_from_mrp', False)),
-            supplier_id=data.get('supplier_id')
+            supplier_id=data.get('supplier_id'),
+            min_order_qty=data.get('min_order_qty') if data.get('min_order_qty') not in ('', None) else None,
+            lot_sizing_procedure=(data.get('lot_sizing_procedure') or 'EX').upper(),
+            fixed_lot_size=data.get('fixed_lot_size') if data.get('fixed_lot_size') not in ('', None) else None
         )
-        
+        if material.lot_sizing_procedure not in ('EX', 'FX', 'WB', 'MB'):
+            return jsonify({'error': f"lot_sizing_procedure harus salah satu dari EX/FX/WB/MB, dapat '{material.lot_sizing_procedure}'"}), 400
+
         db.session.add(material)
         db.session.commit()
         

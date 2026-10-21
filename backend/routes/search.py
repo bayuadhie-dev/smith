@@ -35,7 +35,7 @@ def global_search():
     try:
         current_user_id = get_jwt_identity()
         current_user = db.session.get(User, int(current_user_id))
-        bypass = bool(current_user and (current_user.is_admin or getattr(current_user, 'is_super_admin', False)))
+        bypass = bool(current_user and getattr(current_user, 'is_super_admin', False))  # is_admin no longer bypasses - see auth_decorators.py require_permission comment
         perms = _get_user_permissions(current_user) if current_user and not bypass else set()
 
         query = request.args.get('q', '').strip()
@@ -333,7 +333,7 @@ def search_suggestions():
     try:
         current_user_id = get_jwt_identity()
         current_user = db.session.get(User, int(current_user_id))
-        bypass = bool(current_user and (current_user.is_admin or getattr(current_user, 'is_super_admin', False)))
+        bypass = bool(current_user and getattr(current_user, 'is_super_admin', False))  # is_admin no longer bypasses - see auth_decorators.py require_permission comment
         perms = _get_user_permissions(current_user) if current_user and not bypass else set()
 
         query = request.args.get('q', '').strip()

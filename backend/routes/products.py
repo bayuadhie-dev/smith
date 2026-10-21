@@ -672,9 +672,23 @@ def delete_all_products():
 @jwt_required()
 @require_permission('products.view')
 def get_categories():
-    """Get all product categories"""
+    """Get all product categories.
+
+    Bug fixed 2026-10-07 (system-wide fabricated-data sweep): the frontend's
+    `ProductCategories.tsx` page (the real, routed "Kategori Produk" CRUD
+    page) was calling `GET /api/products/categories` - a URL that collides
+    with a completely unrelated endpoint at the same path (line ~30, a
+    static nonwoven spec-range lookup: gsm/width/length ranges, not a
+    product category CRUD list at all). That shape mismatch rendered as
+    "Products: NaN" / "Total Value: RpNaN" on every category card live in
+    production. THIS is the real product-category list endpoint
+    (`/product-categories`) - now also includes is_active/parent_id/
+    parent_name/product_count/total_value/created_at/updated_at (real,
+    computed from the actual Product rows in each category), which the
+    frontend needs and this endpoint didn't previously return at all.
+    """
     try:
-        cache_key = 'products_categories_all'
+        cache_key = 'products_categories_all_v2'
         try:
             redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
             r = redis.from_url(redis_url)
@@ -684,13 +698,35 @@ def get_categories():
         except Exception as cache_error:
             print(f"Redis cache error (using fallback): {cache_error}")
 
-        categories = ProductCategory.query.filter_by(is_active=True).all()
+        categories = ProductCategory.query.all()
+        category_ids = [c.id for c in categories]
+
+        product_counts = dict(db.session.query(
+            Product.category_id, func.count(Product.id)
+        ).filter(Product.category_id.in_(category_ids)).group_by(Product.category_id).all()) if category_ids else {}
+
+        inventory_value_rows = db.session.query(
+            Product.category_id, func.sum(Inventory.quantity_on_hand * Product.price)
+        ).join(Inventory, Inventory.product_id == Product.id).filter(
+            Product.category_id.in_(category_ids)
+        ).group_by(Product.category_id).all() if category_ids else []
+        total_value_by_category = {cat_id: float(val or 0) for cat_id, val in inventory_value_rows}
+
+        categories_by_id = {c.id: c for c in categories}
+
         response_data = {
             'categories': [{
                 'id': c.id,
                 'code': c.code,
                 'name': c.name,
-                'description': c.description
+                'description': c.description,
+                'parent_id': c.parent_id,
+                'parent_name': categories_by_id[c.parent_id].name if c.parent_id and c.parent_id in categories_by_id else None,
+                'is_active': c.is_active,
+                'product_count': product_counts.get(c.id, 0),
+                'total_value': total_value_by_category.get(c.id, 0),
+                'created_at': c.created_at.isoformat() if c.created_at else None,
+                'updated_at': c.updated_at.isoformat() if c.updated_at else None,
             } for c in categories]
         }
         
@@ -1224,29 +1260,50 @@ def get_lifecycle_transitions():
 @jwt_required()
 @require_permission('products.view')
 def get_analytics_performance():
-    """Get product performance analytics from work orders and production"""
+    """Get product performance analytics from work orders, production, and
+    real sales.
+
+    Bug fixed 2026-10-07 (found live: this endpoint's response was crashing
+    the ENTIRE Product Analytics page to a blank white screen in production
+    - ErrorBoundary caught `TypeError: Cannot read properties of undefined
+    (reading 'toFixed')` at ProductAnalytics.tsx, because the frontend's
+    `ProductPerformance` interface expects sales_value/profit_margin/
+    growth_rate/stock_turnover/last_sale_date, but this endpoint only ever
+    returned production-centric fields (total_produced/quality_rate/
+    completion_rate/etc) - a pure frontend/backend contract mismatch, not
+    related to the fabricated-ratio bugs found elsewhere this same sweep.
+    Now returns both: the original production fields are kept, plus the
+    fields the frontend actually reads, computed from real sales Invoice
+    data where possible. profit_margin is left at 0 (no reliable per-unit
+    standard cost exists in this schema yet, same honest stance as
+    /analytics/profitability) rather than guessing a number.
+    """
     try:
         from models.production import WorkOrder, ShiftProduction
-        from models import ProductNew
+        from models import ProductNew, Inventory
+        from models.finance import Invoice, InvoiceItem
         from datetime import datetime, timedelta
-        
+        from sqlalchemy import func
+
         period = request.args.get('period', '3months')
         category = request.args.get('category', 'all')
-        
+
         # Calculate date range
         end_date = get_local_now()
         if period == '1month':
-            start_date = end_date - timedelta(days=30)
+            days = 30
         elif period == '3months':
-            start_date = end_date - timedelta(days=90)
+            days = 90
         elif period == '6months':
-            start_date = end_date - timedelta(days=180)
+            days = 180
         else:
-            start_date = end_date - timedelta(days=365)
-        
+            days = 365
+        start_date = end_date - timedelta(days=days)
+        prev_period_start = start_date - timedelta(days=days)
+
         # Get products with production data
         products = ProductNew.query.filter(ProductNew.is_active == True).all()
-        
+
         performance = []
         for product in products:
             # Get work orders for this product
@@ -1254,20 +1311,58 @@ def get_analytics_performance():
                 WorkOrder.product_id == product.id,
                 WorkOrder.created_at >= start_date
             ).all()
-            
+
             total_produced = sum(wo.quantity_produced or 0 for wo in work_orders)
             total_planned = sum(wo.quantity or 0 for wo in work_orders)
-            
+
             # Get shift production data
             shift_prods = ShiftProduction.query.filter(
                 ShiftProduction.product_id == product.id,
                 ShiftProduction.production_date >= start_date.date()
             ).all()
-            
+
             total_good = sum(sp.good_quantity or 0 for sp in shift_prods)
             total_reject = sum(sp.reject_quantity or 0 for sp in shift_prods)
-            
+
             if total_produced > 0 or len(work_orders) > 0:
+                # Real sales figures for this product (current period)
+                sales_row = db.session.query(
+                    func.sum(InvoiceItem.quantity).label('qty'),
+                    func.sum(InvoiceItem.total_amount).label('value'),
+                    func.max(Invoice.invoice_date).label('last_sale')
+                ).join(Invoice, InvoiceItem.invoice_id == Invoice.id).filter(
+                    InvoiceItem.product_id == product.id,
+                    Invoice.invoice_type == 'sales',
+                    Invoice.status.notin_(['draft', 'cancelled']),
+                    Invoice.invoice_date >= start_date.date()
+                ).first()
+                sales_qty = float(sales_row.qty or 0) if sales_row else 0
+                sales_value = float(sales_row.value or 0) if sales_row else 0
+                last_sale_date = sales_row.last_sale.isoformat() if sales_row and sales_row.last_sale else None
+
+                # Real growth rate: this period's sales value vs the
+                # immediately preceding period of the same length
+                prev_sales_value = float(db.session.query(
+                    func.sum(InvoiceItem.total_amount)
+                ).join(Invoice, InvoiceItem.invoice_id == Invoice.id).filter(
+                    InvoiceItem.product_id == product.id,
+                    Invoice.invoice_type == 'sales',
+                    Invoice.status.notin_(['draft', 'cancelled']),
+                    Invoice.invoice_date >= prev_period_start.date(),
+                    Invoice.invoice_date < start_date.date()
+                ).scalar() or 0)
+                growth_rate = round((sales_value - prev_sales_value) / prev_sales_value * 100, 2) if prev_sales_value > 0 else 0
+
+                # Stock turnover approximation: sales qty this period over
+                # current on-hand inventory for this product. Uses current
+                # (not period-average) inventory - a reasonable real proxy,
+                # not a fabricated number, but not a textbook average-
+                # inventory turnover ratio either.
+                current_stock = float(db.session.query(
+                    func.sum(Inventory.quantity_on_hand)
+                ).filter(Inventory.product_id == product.id).scalar() or 0)
+                stock_turnover = round(sales_qty / current_stock, 2) if current_stock > 0 else 0
+
                 performance.append({
                     'product_id': product.id,
                     'product_name': product.name,
@@ -1279,12 +1374,18 @@ def get_analytics_performance():
                     'total_reject': int(total_reject),
                     'quality_rate': round((total_good / total_produced * 100), 2) if total_produced > 0 else 0,
                     'work_order_count': len(work_orders),
-                    'completion_rate': round((total_produced / total_planned * 100), 2) if total_planned > 0 else 0
+                    'completion_rate': round((total_produced / total_planned * 100), 2) if total_planned > 0 else 0,
+                    'sales_qty': sales_qty,
+                    'sales_value': sales_value,
+                    'profit_margin': 0,  # not yet computable - see docstring above
+                    'growth_rate': growth_rate,
+                    'stock_turnover': stock_turnover,
+                    'last_sale_date': last_sale_date,
                 })
-        
+
         # Sort by total produced descending
         performance.sort(key=lambda x: x['total_produced'], reverse=True)
-        
+
         return jsonify({'products': performance[:20]}), 200
         
     except Exception as e:
@@ -1296,14 +1397,30 @@ def get_analytics_performance():
 @jwt_required()
 @require_permission('products.view')
 def get_analytics_timeline():
-    """Get production timeline from shift production"""
+    """Get production + real sales timeline.
+
+    Bug fixed 2026-10-07 (found via a system-wide fabricated-data sweep,
+    same class of bug as the Finance dashboard's hardcoded 0.76/0.36
+    ratios): sales_value and profit used to be 'estimated' by multiplying
+    PRODUCTION quantity by a flat invented price (Rp15,000/unit) and
+    flat invented margin (Rp3,000/unit profit) - not derived from any
+    real sales transaction at all, despite real sales data (Invoice/
+    InvoiceItem, invoice_type='sales') already existing and being used
+    elsewhere (routes/finance.py). sales_value now sums real
+    InvoiceItem.total_amount per day. profit is NOT guessed at a fake
+    ratio - there's no reliable per-unit standard cost in this schema
+    yet (same reason /analytics/profitability below honestly returns
+    empty instead of estimating) - left at 0, consistent with that
+    endpoint's existing stance rather than inventing a second fake ratio.
+    """
     try:
         from models.production import ShiftProduction
+        from models.finance import Invoice, InvoiceItem
         from datetime import datetime, timedelta
         from sqlalchemy import func
-        
+
         period = request.args.get('period', '3months')
-        
+
         end_date = get_local_now()
         if period == '1month':
             start_date = end_date - timedelta(days=30)
@@ -1313,7 +1430,7 @@ def get_analytics_timeline():
             start_date = end_date - timedelta(days=180)
         else:
             start_date = end_date - timedelta(days=365)
-        
+
         # Get daily production aggregates
         daily_data = db.session.query(
             ShiftProduction.production_date,
@@ -1327,16 +1444,31 @@ def get_analytics_timeline():
         ).order_by(
             ShiftProduction.production_date
         ).all()
-        
+
+        # Real daily sales value from actual sales Invoices, keyed by date
+        sales_rows = db.session.query(
+            Invoice.invoice_date,
+            func.sum(InvoiceItem.total_amount).label('total_sales')
+        ).join(
+            InvoiceItem, InvoiceItem.invoice_id == Invoice.id
+        ).filter(
+            Invoice.invoice_type == 'sales',
+            Invoice.status.notin_(['draft', 'cancelled']),
+            Invoice.invoice_date >= start_date.date()
+        ).group_by(
+            Invoice.invoice_date
+        ).all()
+        sales_by_date = {row.invoice_date: float(row.total_sales or 0) for row in sales_rows}
+
         timeline = []
         for row in daily_data:
             timeline.append({
                 'date': row.production_date.isoformat() if row.production_date else None,
                 'sales_qty': int(row.total_qty or 0),
-                'sales_value': int(row.total_qty or 0) * 15000,  # Estimated value
-                'profit': int(row.good_qty or 0) * 3000  # Estimated profit
+                'sales_value': sales_by_date.get(row.production_date, 0),
+                'profit': 0  # not yet computable - see docstring above
             })
-        
+
         return jsonify({'timeline': timeline}), 200
         
     except Exception as e:
@@ -1348,15 +1480,27 @@ def get_analytics_timeline():
 @jwt_required()
 @require_permission('products.view')
 def get_analytics_categories():
-    """Get category performance from products and production"""
+    """Get category performance from products and real sales.
+
+    Bug fixed 2026-10-07 (same fabricated-data sweep as get_analytics_timeline()
+    above): total_sales used to be production_qty * a flat invented
+    Rp15,000/unit price, and avg_margin was a single hardcoded 22.5%
+    applied identically to every category regardless of its real
+    product mix. total_sales now sums real InvoiceItem.total_amount for
+    that category's products. avg_margin left at 0 - no reliable
+    per-unit standard cost exists yet in this schema (same honest stance
+    as /analytics/profitability's empty response) rather than guessing a
+    second fake number.
+    """
     try:
         from models import ProductNew
         from models.production import WorkOrder
+        from models.finance import Invoice, InvoiceItem
         from datetime import datetime, timedelta
         from sqlalchemy import func
-        
+
         period = request.args.get('period', '3months')
-        
+
         end_date = get_local_now()
         if period == '1month':
             start_date = end_date - timedelta(days=30)
@@ -1364,7 +1508,7 @@ def get_analytics_categories():
             start_date = end_date - timedelta(days=90)
         else:
             start_date = end_date - timedelta(days=180)
-        
+
         # Get products grouped by category
         category_stats = db.session.query(
             ProductNew.spunlace,
@@ -1374,11 +1518,11 @@ def get_analytics_categories():
         ).group_by(
             ProductNew.spunlace
         ).all()
-        
+
         categories = []
         for cat_name, product_count in category_stats:
             cat_display = cat_name or 'Uncategorized'
-            
+
             # Get work order stats for this category
             wo_stats = db.session.query(
                 func.sum(WorkOrder.quantity_produced).label('total_produced')
@@ -1388,17 +1532,32 @@ def get_analytics_categories():
                 ProductNew.spunlace == cat_name,
                 WorkOrder.created_at >= start_date
             ).first()
-            
+
             total_produced = int(wo_stats.total_produced or 0) if wo_stats else 0
-            
+
+            sales_stats = db.session.query(
+                func.sum(InvoiceItem.total_amount).label('total_sales')
+            ).join(
+                Invoice, InvoiceItem.invoice_id == Invoice.id
+            ).join(
+                ProductNew, InvoiceItem.product_id == ProductNew.id
+            ).filter(
+                ProductNew.spunlace == cat_name,
+                Invoice.invoice_type == 'sales',
+                Invoice.status.notin_(['draft', 'cancelled']),
+                Invoice.invoice_date >= start_date.date()
+            ).first()
+            total_sales = float(sales_stats.total_sales or 0) if sales_stats else 0
+
             categories.append({
                 'category': cat_display,
                 'total_products': product_count,
-                'total_sales': total_produced * 15000,  # Estimated
-                'avg_margin': 22.5,  # Default margin
+                'total_produced': total_produced,
+                'total_sales': total_sales,
+                'avg_margin': 0,  # not yet computable - see docstring above
                 'growth_rate': 0  # Would need historical data
             })
-        
+
         return jsonify({'categories': categories}), 200
         
     except Exception as e:

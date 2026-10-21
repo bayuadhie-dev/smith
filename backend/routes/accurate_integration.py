@@ -8,6 +8,7 @@ from datetime import datetime
 from flask import Blueprint, request, jsonify, redirect
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.auth_decorators import require_permission
+from utils.cron_auth import require_cron_secret
 from models import db
 from models.accurate import AccurateConfig, AccurateItemMapping, AccurateSyncLog
 from utils.accurate_client import AccurateClient
@@ -308,6 +309,7 @@ def reject_sync_log(log_id):
         return error_response('accurate.reject_error', details=str(e)), 500
 
 @accurate_bp.route('/sync-scan-cron', methods=['POST'])
+@require_cron_secret
 def trigger_sync_scan_cron():
     """
     Sama seperti /sync-scan tapi tanpa auth -- untuk dipanggil dari system
@@ -386,6 +388,7 @@ def trigger_bom_scan():
 
 
 @accurate_bp.route('/bom-scan-cron', methods=['POST'])
+@require_cron_secret
 def trigger_bom_scan_cron():
     """
     Sama seperti /bom-scan tapi tanpa auth -- untuk dipanggil dari system
@@ -529,6 +532,7 @@ def ejo_manual_match():
 
 
 @accurate_bp.route('/warehouse-transfer-sync-cron', methods=['POST'])
+@require_cron_secret
 def trigger_warehouse_transfer_sync_cron():
     """
     Sama seperti /warehouse-transfer-sync tapi tanpa auth -- untuk
@@ -644,6 +648,7 @@ def get_warehouse_snapshot_detail_endpoint():
 
 
 @accurate_bp.route('/warehouse-stock-full-sync-cron', methods=['POST'])
+@require_cron_secret
 def trigger_warehouse_stock_full_sync_cron():
     """
     Sama seperti /warehouse-stock-full-sync tapi tanpa auth -- untuk

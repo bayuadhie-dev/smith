@@ -232,6 +232,7 @@ def calculate_payroll(period_id):
         total_net = Decimal('0')
         calculated_count = 0
         skipped = []
+        unaccounted_warnings = []
         
         for employee in employees:
             # Skip employees without salary set
@@ -254,14 +255,26 @@ def calculate_payroll(period_id):
                 })
                 continue
 
+            # Flag (not block) days in this period that are neither a
+            # recorded Attendance row nor covered by an approved leave - paid
+            # in full by default (absence_deduction only fires on explicit
+            # status='absent'), so this is the approver's only signal that
+            # something here needs a human look before approving the period.
+            if attendance_data['unaccounted_dates']:
+                unaccounted_warnings.append({
+                    'employee_id': employee.id,
+                    'name': employee.full_name,
+                    'dates': attendance_data['unaccounted_dates'],
+                })
+
             # Get employee salary components
             salary_components = get_employee_salary_components(employee.id)
-            
+
             # Calculate payroll record
             payroll_record = calculate_employee_payroll(
                 employee, period, attendance_data, salary_components
             )
-            
+
             total_gross += payroll_record.gross_salary
             total_deductions += payroll_record.total_deductions
             total_net += payroll_record.net_salary
@@ -281,7 +294,9 @@ def calculate_payroll(period_id):
         message = f'Payroll berhasil dihitung untuk {calculated_count} karyawan.'
         if skipped:
             message += f' {len(skipped)} karyawan dilewati karena gaji pokok belum diisi.'
-        
+        if unaccounted_warnings:
+            message += f' {len(unaccounted_warnings)} karyawan punya hari tanpa absensi maupun cuti disetujui - cek dulu sebelum approve.'
+
         return jsonify({
             'message': message,
             'summary': {
@@ -289,7 +304,8 @@ def calculate_payroll(period_id):
                 'total_gross_salary': float(total_gross),
                 'total_deductions': float(total_deductions),
                 'total_net_salary': float(total_net),
-                'skipped': skipped
+                'skipped': skipped,
+                'unaccounted_warnings': unaccounted_warnings
             }
         })
     except Exception as e:
@@ -299,7 +315,8 @@ def calculate_payroll(period_id):
 def calculate_employee_attendance(employee_id, start_date, end_date):
     """Calculate attendance data for employee in period using real attendance records"""
     from datetime import timedelta
-    
+    from models.hr import StaffLeaveRequest
+
     attendances = Attendance.query.filter(
         and_(
             Attendance.employee_id == employee_id,
@@ -307,26 +324,55 @@ def calculate_employee_attendance(employee_id, start_date, end_date):
             Attendance.attendance_date <= end_date
         )
     ).all()
-    
+    attendance_dates = {a.attendance_date for a in attendances}
+
+    # Approved leave (Cuti) overlapping this period - staff_leave_requests is
+    # the live model (hr_extended.py's older `Leave` model is unused, 0 rows
+    # in production as of 2026-10-14). Used below only to tell "approved
+    # leave, correctly unpaid-deducted" apart from "day nobody recorded
+    # anything for" - both currently look identical (no Attendance row) and
+    # both already go unpunished by the absence_deduction logic below, since
+    # that only counts explicit status='absent' rows. The real gap this
+    # closes is making the *second* case (genuinely unaccounted) visible to
+    # whoever approves the period, instead of it silently being paid in full
+    # with nobody the wiser.
+    approved_leaves = StaffLeaveRequest.query.filter(
+        StaffLeaveRequest.employee_id == employee_id,
+        StaffLeaveRequest.status == 'approved',
+        StaffLeaveRequest.start_date <= end_date,
+        StaffLeaveRequest.end_date >= start_date,
+    ).all()
+    leave_dates = set()
+    for lr in approved_leaves:
+        d = max(lr.start_date, start_date)
+        while d <= min(lr.end_date, end_date):
+            leave_dates.add(d)
+            d += timedelta(days=1)
+
     # Count working days excluding Sundays (weekday() == 6)
     total_working_days = 0
+    unaccounted_dates = []
     current = start_date
     while current <= end_date:
         if current.weekday() != 6:  # Exclude Sunday
             total_working_days += 1
+            if current not in attendance_dates and current not in leave_dates:
+                unaccounted_dates.append(current.isoformat())
         current += timedelta(days=1)
-    
+
     # Count attendance: present, late, half_day all count as worked
     days_worked = len([a for a in attendances if a.status in ('present', 'late', 'half_day')])
     days_absent = len([a for a in attendances if a.status == 'absent'])
     total_overtime_hours = sum([float(a.overtime_hours or 0) for a in attendances])
     total_late_hours = sum([float(a.late_hours or 0) for a in attendances if hasattr(a, 'late_hours') and a.late_hours])
     total_worked_hours = sum([float(a.worked_hours or 0) for a in attendances])
-    
+
     return {
         'total_working_days': total_working_days,
         'days_worked': days_worked,
         'days_absent': days_absent,
+        'days_on_leave': len(leave_dates),
+        'unaccounted_dates': unaccounted_dates,
         'overtime_hours': total_overtime_hours,
         'late_hours': total_late_hours,
         'worked_hours': total_worked_hours,

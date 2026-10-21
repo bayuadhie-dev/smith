@@ -312,7 +312,22 @@ def auto_receive_finished_goods(work_order_id, quantity_produced, user_id=None):
             WHERE mi.work_order_id = :work_order_id
         """), {'work_order_id': work_order_id}).scalar()
         material_cost_total = float(material_cost_total or 0)
-        fg_unit_cost = (material_cost_total / quantity_produced) if quantity_produced else 0
+
+        # fix_report_3.md Fase 19 (2026-10-02): fg_unit_cost used to be
+        # material-only - the FG Inventory's own cost basis (read later by
+        # _get_inventory_unit_cost() for COGS at shipping, via this same
+        # InventoryTransaction's unit_cost) never reflected the labor+
+        # overhead actually spent making it, only raw material. Folded in
+        # here, at the source, rather than patched onto the Inventory row
+        # afterward - _get_inventory_unit_cost() reads InventoryTransaction.
+        # unit_cost, not Inventory.unit_cost, so a later UPDATE on the
+        # Inventory row's own column would have been silently ignored by
+        # every COGS calculation that reads it back.
+        from models.wip_job_costing import WIPBatch
+        wip_batch = WIPBatch.query.filter_by(work_order_id=work_order_id).first()
+        conversion_cost = float((wip_batch.labor_cost or 0) + (wip_batch.overhead_cost or 0)) if wip_batch else 0.0
+        total_manufacturing_cost = material_cost_total + conversion_cost
+        fg_unit_cost = (total_manufacturing_cost / quantity_produced) if quantity_produced else 0
 
         fg_movement = record_inventory_transaction(
             transaction_type='production_receipt',
@@ -325,7 +340,7 @@ def auto_receive_finished_goods(work_order_id, quantity_produced, user_id=None):
             reference_number=wo_number,
             work_order_id=work_order_id,
             unit_cost=fg_unit_cost or None,
-            total_cost=material_cost_total or None,
+            total_cost=total_manufacturing_cost or None,
             notes=f'Auto-receipt from WO {wo_number}',
             created_by=user_id,
         )
@@ -444,6 +459,59 @@ def auto_receive_finished_goods(work_order_id, quantity_produced, user_id=None):
                 # level) - stock effect above still applies, journal is
                 # skipped rather than failing WO completion.
                 pass
+
+        # fix_report_3.md Fase 19 (2026-10-02, design confirmed with owner,
+        # direct follow-on from Fase 18): Fase 18 made each production shift
+        # debit Persediaan Barang Dalam Proses (WIP, 1-1300) for labor/
+        # overhead absorbed that shift - but nothing ever credited it back
+        # out. The material-transformation journal above bypasses WIP
+        # entirely (Dr FG / Cr Bahan Baku directly, a 2026-09-21 design
+        # decision predating Fase 18), so WIP's balance would otherwise
+        # grow every shift, forever, for every WO. The FG Inventory's own
+        # cost basis (fg_unit_cost/total_cost, which is what
+        # _get_inventory_unit_cost() actually reads back for COGS at
+        # shipping - NOT Inventory.unit_cost, a separate unread column)
+        # was already folded with conversion_cost above, at
+        # record_inventory_transaction() time. This block only closes the
+        # GL side: credit WIP for this WO's ENTIRE accumulated
+        # labor_cost+overhead_cost, debit the same FG account the material
+        # journal used. Idempotency: guarded by checking for an existing
+        # posted entry with this reference, same pattern as every other
+        # GL-posting site in this codebase.
+        from models.finance import AccountingEntry
+        if conversion_cost > 0:
+            already_transferred = AccountingEntry.query.filter_by(
+                reference_type='wip_conversion_to_fg', reference_id=work_order_id
+            ).first()
+            if not already_transferred:
+                try:
+                    from utils.finance_helpers import resolve_account, post_pending_journal
+                    from models.finance import GlobalAccountDefault
+                    from models.approval_workflow import PendingJournalEntry
+
+                    wip_default = GlobalAccountDefault.query.filter_by(transaction_key='wip_persediaan').first()
+                    fg_account_id = resolve_account('akun_persediaan_id', product_id=product_id, category_id=None)
+                    if wip_default:
+                        pending = PendingJournalEntry(
+                            workflow_id=None,
+                            entry_date=get_local_now().date(),
+                            description=f'Transfer biaya konversi (labor+overhead) WIP ke Barang Jadi - {wo_number}',
+                            reference=wo_number,
+                            lines=[
+                                {'account_id': fg_account_id, 'debit': conversion_cost, 'credit': 0,
+                                 'description': f'Biaya konversi masuk Barang Jadi - {wo_number}'},
+                                {'account_id': wip_default.account_id, 'debit': 0, 'credit': conversion_cost,
+                                 'description': f'Transfer keluar WIP - {wo_number}'},
+                            ],
+                            total_debit=conversion_cost,
+                            total_credit=conversion_cost,
+                            created_by=user_id,
+                        )
+                        db.session.add(pending)
+                        db.session.flush()
+                        post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='wip_conversion_to_fg', reference_id=work_order_id)
+                except ValueError:
+                    pass
 
         db.session.commit()
 

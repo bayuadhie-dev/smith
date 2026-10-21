@@ -293,7 +293,12 @@ def get_material_movements():
             query = query.filter(InventoryTransaction.transaction_date >= datetime.fromisoformat(start_date))
 
         if end_date:
-            query = query.filter(InventoryTransaction.transaction_date <= datetime.fromisoformat(end_date))
+            # Same end-of-day bug as GET /wms/transactions (fix_report_3.md
+            # Fase 20) - a date-only end_date truncates to 00:00:00 that
+            # day, silently excluding transactions recorded later the same
+            # day. Shared fix via the same helper.
+            from routes.wms_advanced import _end_of_day_filter_bound
+            query = query.filter(InventoryTransaction.transaction_date <= _end_of_day_filter_bound(end_date))
 
         movements = query.order_by(InventoryTransaction.transaction_date.desc()).limit(limit).all()
 

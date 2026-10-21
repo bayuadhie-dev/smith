@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required
 from models import db
 from models.product_excel_schema import ProductNew, ProductVersion
 from datetime import datetime
@@ -51,6 +52,7 @@ def check_specification_changes(old_product, new_product):
     return changes
 
 @products_new_excel_bp.route('/', methods=['GET'])
+@jwt_required()
 def get_products():
     """Get all products with pagination and filtering"""
     try:
@@ -99,6 +101,7 @@ def get_products():
         return jsonify({'error': str(e)}), 500
 
 @products_new_excel_bp.route('/<string:kode_produk>', methods=['GET'])
+@jwt_required()
 def get_product(kode_produk):
     """Get specific product by kode_produk"""
     try:
@@ -113,6 +116,7 @@ def get_product(kode_produk):
         return jsonify({'error': str(e)}), 500
 
 @products_new_excel_bp.route('/', methods=['POST'])
+@jwt_required()
 def create_product():
     """Create new product with version tracking"""
     try:
@@ -167,6 +171,7 @@ def create_product():
         return jsonify({'error': str(e)}), 500
 
 @products_new_excel_bp.route('/<string:kode_produk>', methods=['PUT'])
+@jwt_required()
 def update_product(kode_produk):
     """Update product with automatic version increment"""
     try:
@@ -224,6 +229,7 @@ def update_product(kode_produk):
         return jsonify({'error': str(e)}), 500
 
 @products_new_excel_bp.route('/<string:kode_produk>', methods=['DELETE'])
+@jwt_required()
 def delete_product(kode_produk):
     """Soft delete product (set is_active=False)"""
     try:
@@ -257,6 +263,7 @@ def delete_product(kode_produk):
         return jsonify({'error': str(e)}), 500
 
 @products_new_excel_bp.route('/<string:kode_produk>/versions', methods=['GET'])
+@jwt_required()
 def get_product_versions(kode_produk):
     """Get version history for a product"""
     try:
@@ -294,6 +301,7 @@ def get_product_versions(kode_produk):
         return jsonify({'error': str(e)}), 500
 
 @products_new_excel_bp.route('/<string:kode_produk>/compare', methods=['GET'])
+@jwt_required()
 def compare_product_versions(kode_produk):
     """Compare two versions of a product"""
     try:
@@ -350,6 +358,7 @@ def compare_product_versions(kode_produk):
         return jsonify({'error': str(e)}), 500
 
 @products_new_excel_bp.route('/dashboard', methods=['GET'])
+@jwt_required()
 def get_dashboard():
     """Get dashboard statistics for ProductNew"""
     try:

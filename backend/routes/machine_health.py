@@ -7,8 +7,10 @@ Akses di: /api/machine-health
 """
 from datetime import datetime
 from flask import Blueprint, jsonify, request
+from flask_jwt_extended import jwt_required
 from models import db
 from sqlalchemy import text
+from utils.cron_auth import require_cron_secret
 
 machine_health_bp = Blueprint('machine_health', __name__)
 
@@ -23,7 +25,7 @@ def get_weekly_downtime_by_machine():
     """
     result = db.session.execute(text('''
         SELECT machine_id,
-               strftime('%Y-%W', production_date) as week,
+               to_char(production_date, 'IYYY-IW') as week,
                SUM(downtime_mesin) as total_downtime
         FROM shift_productions
         WHERE downtime_mesin > 0
@@ -77,7 +79,7 @@ def build_machine_status(current_week=None):
     Bangun status semua mesin: baseline, minggu berjalan, apakah anomali.
     """
     if current_week is None:
-        current_week = datetime.now().strftime('%Y-%W')
+        current_week = datetime.now().strftime('%G-%V')
 
     weekly_data = get_weekly_downtime_by_machine()
     machine_names = get_machine_names()
@@ -121,13 +123,14 @@ def build_machine_status(current_week=None):
 # ============================================================
 
 @machine_health_bp.route('/api/machine-health/status', methods=['GET'])
+@jwt_required()
 def api_status():
     """Status kesehatan semua mesin minggu ini (atau minggu tertentu via ?week=YYYY-WW)"""
     week = request.args.get('week')
     try:
         statuses = build_machine_status(current_week=week)
         return jsonify({
-            'week': week or datetime.now().strftime('%Y-%W'),
+            'week': week or datetime.now().strftime('%G-%V'),
             'machines': statuses,
             'anomaly_count': sum(1 for s in statuses if s['is_anomaly'])
         }), 200
@@ -136,6 +139,7 @@ def api_status():
 
 
 @machine_health_bp.route('/api/machine-health/history/<int:machine_id>', methods=['GET'])
+@jwt_required()
 def api_history(machine_id):
     """History mingguan 1 mesin + baseline, buat chart trend"""
     try:
@@ -163,6 +167,7 @@ def api_history(machine_id):
 
 
 @machine_health_bp.route('/api/machine-health/check-and-notify', methods=['POST'])
+@require_cron_secret
 def api_check_and_notify():
     """
     Dipanggil scheduler mingguan (misal tiap Senin pagi).
@@ -171,7 +176,7 @@ def api_check_and_notify():
     try:
         # Cek minggu KEMARIN (minggu yang baru selesai), bukan minggu berjalan
         from datetime import timedelta
-        last_week = (datetime.now() - timedelta(weeks=1)).strftime('%Y-%W')
+        last_week = (datetime.now() - timedelta(weeks=1)).strftime('%G-%V')
 
         statuses = build_machine_status(current_week=last_week)
         anomalies = [s for s in statuses if s['is_anomaly']]

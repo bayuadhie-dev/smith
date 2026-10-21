@@ -8,7 +8,7 @@ Executive Dashboard Routes - Advanced Analytics
 from flask import Blueprint, jsonify, request
 
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from utils.auth_decorators import require_permission
+from utils.auth_decorators import require_permission, require_super_admin
 
 from datetime import datetime, timedelta
 
@@ -141,7 +141,8 @@ def get_executive_overview():
             current_revenue = db.session.query(func.sum(SalesOrder.total_amount))\
                 .filter(
                     SalesOrder.order_date >= start_date,
-                    SalesOrder.order_date <= end_date
+                    SalesOrder.order_date <= end_date,
+                    SalesOrder.status.notin_(['draft', 'cancelled'])
                 ).scalar() or 0
 
         
@@ -165,7 +166,8 @@ def get_executive_overview():
             prev_revenue = db.session.query(func.sum(SalesOrder.total_amount))\
     .filter(
             SalesOrder.order_date >= prev_start_date,
-            SalesOrder.order_date <= prev_end_date
+            SalesOrder.order_date <= prev_end_date,
+            SalesOrder.status.notin_(['draft', 'cancelled'])
 
                 ).scalar() or 0
 
@@ -186,11 +188,13 @@ def get_executive_overview():
 
         
 
-        # Outstanding AR
+        # Outstanding AR. Invoice.status is actually draft/sent/partial/paid/
+        # overdue/cancelled (models/finance.py) - 'pending' never matched
+        # anything, silently undercounting by excluding 'sent'/'overdue'.
 
         outstanding_ar = db.session.query(func.sum(Invoice.total_amount - Invoice.paid_amount))\
             .filter(
-            Invoice.status.in_(['pending', 'partial']),
+            Invoice.status.in_(['sent', 'partial', 'overdue']),
             Invoice.due_date < end_date
 
             ).scalar() or 0
@@ -1175,7 +1179,8 @@ def get_top_performers():
     .join(Invoice, SalesOrder.id == Invoice.sales_order_id)\
     .filter(
             Invoice.invoice_date >= start_date,
-            Invoice.invoice_date <= end_date
+            Invoice.invoice_date <= end_date,
+            Invoice.status.notin_(['draft', 'cancelled'])
 
         ).group_by(Customer.id, Customer.company_name)\
     .order_by(func.sum(Invoice.total_amount).desc())\
@@ -4543,9 +4548,20 @@ def get_warehouse_analytics():
 
 @executive_dashboard_bp.route('/real-audit-logs', methods=['GET'])
 @jwt_required()
-@require_permission('executive_dashboard.view')
+@require_super_admin()
 def get_real_audit_logs():
-    """Get real audit trail logs converted to local WIB time (Asia/Jakarta UTC+7) directly from AuditLog table in database"""
+    """Get real audit trail logs converted to local WIB time (Asia/Jakarta UTC+7)
+    directly from AuditLog table in database.
+
+    2026-10-16: was previously gated only by `executive_dashboard.view` (any
+    user with executive dashboard access could see the full audit trail,
+    including other users' field-level changes) and never excluded
+    super_admin actions - the dashboard's "Recent Activity" widget showed
+    raw action/resource_type strings for everyone. Restricted to
+    super_admin (consistent with the AuditTrail page and the audit-log
+    summary endpoint) and now excludes super_admin's own actions from the
+    results, matching the same policy enforced everywhere else in the
+    audit log feature."""
     try:
         from models.settings_extended import AuditLog
         from models.user import User
@@ -4570,7 +4586,7 @@ def get_real_audit_logs():
             AuditLog.duration_ms,
             AuditLog.timestamp,
             User.username.label('user_name')
-        ).outerjoin(User, User.id == AuditLog.user_id)
+        ).join(User, User.id == AuditLog.user_id).filter(User.is_super_admin == False)
 
         if module_filter and module_filter != 'all':
             query = query.filter(

@@ -64,8 +64,11 @@ def view_logs():
         user_id = get_jwt_identity()
         user = db.session.get(User, int(user_id))
         
-        if not user or not (user.is_admin or user.is_super_admin):
-            return jsonify({'error': 'Admin access required'}), 403
+        # Raw server logs are a system-wide resource (not scoped to any one
+        # department) and can contain sensitive data from any module - treated
+        # like the Settings module, super admin only (2026-10-13 RBAC audit)
+        if not user or not user.is_super_admin:
+            return jsonify({'error': 'Super Admin access required'}), 403
         
         log_type = request.args.get('type', 'error')  # error, access, app, frontend
         lines = int(request.args.get('lines', 100))

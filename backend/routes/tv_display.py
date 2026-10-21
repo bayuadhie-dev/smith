@@ -136,7 +136,7 @@ def get_overview_display():
                 'active_work_orders': len(active_wos),
                 'active_machines': len([m for m in machines if m.status == 'running']),
                 'today_production': float(today_production),
-                'efficiency_avg': sum([float(m.efficiency) for m in machines]) / len(machines) if machines else 0
+                'efficiency_avg': sum([float(m.efficiency or 0) for m in machines]) / len(machines) if machines else 0
             },
             'shipping': {
                 'active_shipments': len(active_shipments),
@@ -182,9 +182,9 @@ def get_production_display():
             'active_work_orders': [{
                 'wo_number': wo.wo_number,
                 'product_name': wo.product.name,
-                'quantity': float(wo.quantity),
-                'quantity_produced': float(wo.quantity_produced),
-                'progress': (float(wo.quantity_produced) / float(wo.quantity) * 100) if wo.quantity > 0 else 0,
+                'quantity': float(wo.quantity or 0),
+                'quantity_produced': float(wo.quantity_produced or 0),
+                'progress': (float(wo.quantity_produced or 0) / float(wo.quantity) * 100) if wo.quantity else 0,
                 'machine': wo.machine.name if wo.machine else None,
                 'status': wo.status
             } for wo in active_wos],
@@ -192,7 +192,7 @@ def get_production_display():
                 'code': m.code,
                 'name': m.name,
                 'status': m.status,
-                'efficiency': float(m.efficiency)
+                'efficiency': float(m.efficiency or 0)
             } for m in machines],
             'today_production': float(today_production)
         }), 200

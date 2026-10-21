@@ -234,9 +234,10 @@ def create_asset():
             # Production Machine
             is_production_machine=data.get('is_production_machine', False),
             machine_code=data.get('machine_code'),
+            machine_id=data.get('machine_id'),
             capacity=data.get('capacity'),
             speed=data.get('speed'),
-            
+
             created_by=user_id
         )
         
@@ -323,7 +324,7 @@ def dispose_asset(asset_id):
             return jsonify({'error': 'Aset ini sudah berstatus disposed'}), 400
 
         today = get_local_today()
-        if is_period_locked(today):
+        if is_period_locked(today, transaction_type='asset_disposal'):
             return jsonify({'error': f'Periode {today.strftime("%Y-%m")} sudah ditutup (period-close). Tidak bisa dispose aset hari ini.'}), 400
 
         data = request.get_json() or {}
@@ -431,6 +432,15 @@ def update_asset(asset_id):
             asset.department_id = data['department_id']
         if 'description' in data:
             asset.description = data['description']
+        # machine_id (asset-to-production-machine link, added 2026-09-28 -
+        # see resolve_asset_for_machine() docstring) was never wired into
+        # create_asset()/update_asset() - the column existed and the
+        # maintenance-record auto-link logic that READS it worked fine, but
+        # there was no way to ever WRITE it through the API, so it could
+        # never actually be populated. Found via real production testing
+        # 2026-10-02.
+        if 'machine_id' in data:
+            asset.machine_id = data['machine_id']
         if 'tax_depreciation_method' in data:
             asset.tax_depreciation_method = data['tax_depreciation_method']
         if 'tax_useful_life_years' in data:
@@ -515,18 +525,37 @@ def get_depreciation_schedule(asset_id):
 @jwt_required()
 @require_permission('maintenance.create')
 def calculate_batch_depreciation():
-    """Calculate depreciation for all active assets for current month"""
+    """Calculate depreciation for all active assets for current month.
+
+    Was updating Asset.accumulated_depreciation and flagging the schedule
+    is_posted=True with NO journal entry anywhere - depreciation expense
+    never reached the GL/Income Statement despite looking "posted" at the
+    asset level (confirmed empty in accounting_entries, 2026-10-14 audit),
+    even though dispose_asset() right below already knows how to post real
+    journals against these same depreciation accounts. Now posts one
+    combined Dr Beban Penyusutan / Cr Akumulasi Penyusutan journal for the
+    whole batch (Accurate's one-posting-covers-everyone pattern, same as
+    post_payroll_journal) instead of one journal per asset.
+    """
     try:
+        from models.finance import GlobalAccountDefault
+        from models.approval_workflow import PendingJournalEntry
+        from utils.finance_helpers import post_pending_journal
+
         current_month = get_local_today().replace(day=1)
-        
+        user_id = get_jwt_identity()
+
         # Get all active assets with depreciation
         assets = Asset.query.filter(
             Asset.status == 'active',
             Asset.purchase_cost.isnot(None),
             Asset.useful_life_years.isnot(None)
         ).all()
-        
+
         updated_count = 0
+        journal_lines = []
+        total_depreciation = 0.0
+
         for asset in assets:
             # Check if depreciation for this month exists
             existing = DepreciationSchedule.query.filter_by(
@@ -552,6 +581,28 @@ def calculate_batch_depreciation():
                     schedule.is_posted = True
                     schedule.posted_date = datetime.utcnow()
 
+                if monthly_dep and monthly_dep > 0:
+                    category_slug = (asset.category or '').strip().lower().replace(' & ', '_dan_').replace(' ', '_')
+                    akumulasi_default = (
+                        GlobalAccountDefault.query.filter_by(transaction_key=f'akumulasi_penyusutan_{category_slug}').first()
+                        if category_slug else None
+                    ) or GlobalAccountDefault.query.filter_by(transaction_key='accumulated_depreciation').first() \
+                      or GlobalAccountDefault.query.filter_by(transaction_key='akumulasi_penyusutan').first()
+                    beban_default = GlobalAccountDefault.query.filter_by(transaction_key='depreciation_expense').first()
+                    if not akumulasi_default or not beban_default:
+                        db.session.rollback()
+                        return jsonify({'error': 'Akun Beban Penyusutan dan/atau Akumulasi Penyusutan belum diatur di Preferensi Akun'}), 400
+
+                    journal_lines.append({
+                        'account_id': beban_default.account_id, 'debit': float(monthly_dep), 'credit': 0,
+                        'description': f'Beban penyusutan {asset.asset_code} - {current_month.strftime("%B %Y")}',
+                    })
+                    journal_lines.append({
+                        'account_id': akumulasi_default.account_id, 'debit': 0, 'credit': float(monthly_dep),
+                        'description': f'Akumulasi penyusutan {asset.asset_code} - {current_month.strftime("%B %Y")}',
+                    })
+                    total_depreciation += float(monthly_dep)
+
                 updated_count += 1
 
             # Parallel fiscal/tax book (SAP FI-AA concept) - advances the same way
@@ -564,9 +615,24 @@ def calculate_batch_depreciation():
                 if fiscal_existing_period and float(asset.tax_accumulated_depreciation or 0) < float(fiscal_existing_period.accumulated_depreciation):
                     asset.tax_accumulated_depreciation = float(asset.tax_accumulated_depreciation or 0) + asset.tax_monthly_depreciation
                     asset.tax_last_depreciation_date = current_month
-        
+
+        if journal_lines:
+            pending = PendingJournalEntry(
+                workflow_id=None,
+                entry_date=current_month,
+                description=f'Beban Penyusutan Bulanan - {current_month.strftime("%B %Y")}',
+                reference=f'DEPR-{current_month.strftime("%Y%m")}',
+                lines=journal_lines,
+                total_debit=total_depreciation,
+                total_credit=total_depreciation,
+                created_by=user_id,
+            )
+            db.session.add(pending)
+            db.session.flush()
+            post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='asset_depreciation', reference_id=None)
+
         db.session.commit()
-        
+
         return jsonify({
             'message': f'Depreciation calculated for {updated_count} assets',
             'period': current_month.isoformat()

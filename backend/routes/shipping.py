@@ -97,18 +97,29 @@ def create_shipping_order():
         data = request.get_json()
         user_id = int(get_jwt_identity())
 
-        # Guard against double-shipping the same sales order from this path
-        # (mirrors the guard on create_shipping_from_qc) - this endpoint
-        # deducts Inventory below, so a second call for the same order would
-        # double-deduct stock for goods only shipped once.
-        existing_shipment = ShippingOrder.query.filter(
-            ShippingOrder.sales_order_id == data['sales_order_id'],
-            ShippingOrder.status != 'cancelled'
-        ).first()
-        if existing_shipment:
-            return jsonify({
-                'error': f'Sales order ini sudah punya pengiriman aktif ({existing_shipment.shipping_number}) - tidak bisa dibuat lagi.'
-            }), 400
+        # Guard against OVER-shipping a sales order line, not against a
+        # second shipment existing at all - a SO legitimately ships in
+        # multiple partial deliveries (confirmed 2026-10-14; the previous
+        # guard blocked ANY second shipment outright once one existed,
+        # which also blocked ordinary partial shipping, not just accidental
+        # double-submits). Checked per product line against
+        # SalesOrderItem.quantity_shipped (already-shipped total across all
+        # active shipments) so repeated partial shipments are fine as long
+        # as the running total never exceeds what was actually ordered.
+        from models.sales import SalesOrderItem
+        for item_data in data.get('items', []):
+            so_item = SalesOrderItem.query.filter_by(
+                order_id=data['sales_order_id'], product_id=item_data['product_id']
+            ).first()
+            if so_item:
+                already_shipped = float(so_item.quantity_shipped or 0)
+                ordered = float(so_item.quantity or 0)
+                requesting = float(item_data['quantity'])
+                remaining = ordered - already_shipped
+                if requesting > remaining + 0.01:
+                    return jsonify({
+                        'error': f'Kuantitas kirim untuk produk ini ({requesting}) melebihi sisa yang belum dikirim ({remaining} dari {ordered} dipesan, {already_shipped} sudah dikirim).'
+                    }), 400
 
         shipping_number = generate_number('SHP', ShippingOrder, 'shipping_number')
 
@@ -131,7 +142,7 @@ def create_shipping_order():
 
         from models import Inventory
         from utils.inventory_helpers import record_inventory_transaction
-        from utils.fifo_helper import _get_inventory_unit_cost
+        from utils.fifo_helper import _get_inventory_unit_cost, fifo_deduct_stock
         from utils.finance_helpers import resolve_account
 
         stock_txns = []
@@ -139,87 +150,135 @@ def create_shipping_order():
         total_cogs_amount = 0.0
 
         for item_data in data.get('items', []):
-            item = ShippingItem(
-                shipping_id=order.id,
-                product_id=item_data['product_id'],
-                quantity=item_data['quantity'],
-                uom=item_data['uom'],
-                batch_number=item_data.get('batch_number')
-            )
-            db.session.add(item)
-
-            # Deduct Inventory (2026-09-11 fix - this endpoint previously
-            # created the shipping record with zero stock effect at all,
-            # unlike create_shipping_from_qc which does deduct). Same
-            # location fallback pattern as create_shipping_from_qc.
             quantity = float(item_data['quantity'])
             batch_number = item_data.get('batch_number')
-            inv = Inventory.query.filter_by(
-                product_id=item_data['product_id'],
-                batch_number=batch_number,
-                location_id=3
+
+            so_item = SalesOrderItem.query.filter_by(
+                order_id=data['sales_order_id'], product_id=item_data['product_id']
             ).first()
-            if not inv:
-                inv = Inventory.query.filter_by(
+            if so_item:
+                so_item.quantity_shipped = float(so_item.quantity_shipped or 0) + quantity
+
+            if batch_number:
+                # Caller explicitly pinned one batch - keep the old
+                # single-batch path (manual override, e.g. staff picked a
+                # specific lot on purpose).
+                item = ShippingItem(
+                    shipping_id=order.id,
+                    sales_order_item_id=so_item.id if so_item else None,
                     product_id=item_data['product_id'],
-                    batch_number=batch_number
-                ).first()
-            if not inv:
-                inv = Inventory.query.filter_by(
-                    product_id=item_data['product_id']
-                ).first()
-
-            if inv:
-                # Fase 3 (2026-09-21): capture the real FIFO cost of the
-                # batch being shipped BEFORE deducting it, for the COGS
-                # journal below - see plan.md section 7. No COGS/HPP journal
-                # existed anywhere in the system before this (confirmed by
-                # audit: neither this endpoint nor create_invoice() posted
-                # one), so this is a pure addition, not a redirect of an
-                # existing posting - nothing else needs to change to avoid
-                # double-counting.
-                unit_cost = _get_inventory_unit_cost(inv)
-
-                inv.quantity_on_hand = float(inv.quantity_on_hand) - quantity
-                inv.quantity_available = float(inv.quantity_available) - quantity
-                inv.updated_at = get_local_now()
-
-                movement = record_inventory_transaction(
-                    transaction_type='stock_out',
-                    direction='out',
                     quantity=quantity,
-                    product_id=item_data['product_id'],
-                    from_location_id=inv.location_id,
-                    reference_number=shipping_number,
-                    reference_type='sales_order',
-                    reference_id=order.id,
-                    batch_number=batch_number,
-                    unit_cost=unit_cost or None,
-                    total_cost=(unit_cost * quantity) if unit_cost else None,
-                    notes=f"Shipped via {shipping_number}",
-                    created_by=user_id
+                    uom=item_data['uom'],
+                    batch_number=batch_number
                 )
-                stock_txns.append(movement)
+                db.session.add(item)
 
+                inv = Inventory.query.filter_by(
+                    product_id=item_data['product_id'],
+                    batch_number=batch_number,
+                    location_id=3
+                ).first()
+                if not inv:
+                    inv = Inventory.query.filter_by(
+                        product_id=item_data['product_id'],
+                        batch_number=batch_number
+                    ).first()
+
+                if inv:
+                    unit_cost = _get_inventory_unit_cost(inv)
+                    inv.quantity_on_hand = float(inv.quantity_on_hand) - quantity
+                    inv.quantity_available = float(inv.quantity_available) - quantity
+                    inv.updated_at = get_local_now()
+
+                    movement = record_inventory_transaction(
+                        transaction_type='stock_out',
+                        direction='out',
+                        quantity=quantity,
+                        product_id=item_data['product_id'],
+                        from_location_id=inv.location_id,
+                        reference_number=shipping_number,
+                        reference_type='sales_order',
+                        reference_id=order.id,
+                        batch_number=batch_number,
+                        unit_cost=unit_cost or None,
+                        total_cost=(unit_cost * quantity) if unit_cost else None,
+                        notes=f"Shipped via {shipping_number}",
+                        created_by=user_id
+                    )
+                    stock_txns.append(movement)
+
+                    if unit_cost and unit_cost > 0:
+                        cogs_amount = unit_cost * quantity
+                        try:
+                            hpp_account_id = resolve_account('akun_hpp_id', product_id=item_data['product_id'], category_id=None)
+                            persediaan_account_id = resolve_account('akun_persediaan_id', product_id=item_data['product_id'], category_id=None)
+                            cogs_journal_lines.append({
+                                'account_id': hpp_account_id, 'debit': cogs_amount, 'credit': 0,
+                                'description': f'HPP pengiriman {shipping_number} - {batch_number or ""}',
+                            })
+                            cogs_journal_lines.append({
+                                'account_id': persediaan_account_id, 'debit': 0, 'credit': cogs_amount,
+                                'description': f'Persediaan barang jadi keluar {shipping_number} - {batch_number or ""}',
+                            })
+                            total_cogs_amount += cogs_amount
+                        except ValueError:
+                            pass
+                continue
+
+            # No batch pinned by the caller - auto-split across batches
+            # FIFO (oldest first) via fifo_deduct_stock, same helper used by
+            # material_issue/fg_conversion/waste. Previously this endpoint
+            # only ever created ONE ShippingItem row per product line even
+            # when the single oldest batch didn't have enough stock to
+            # cover the requested quantity (the old code picked one
+            # Inventory row via .first() and deducted the full requested
+            # quantity from it regardless of what it actually held - could
+            # even push quantity_on_hand negative). Now the line is split
+            # into one ShippingItem per batch actually consumed, matching
+            # SAP's batch-split-on-delivery behavior.
+            result = fifo_deduct_stock(
+                product_id=item_data['product_id'],
+                quantity_needed=quantity,
+                reference_number=shipping_number,
+                reference_type='sales_order',
+                reference_id=order.id,
+                notes=f"Shipped via {shipping_number}",
+                user_id=user_id,
+            )
+            if not result['success']:
+                return jsonify({'error': result['error']}), 400
+
+            for movement_info in result['movements']:
+                batch_qty = movement_info['quantity_deducted']
+                if movement_info.get('_transaction'):
+                    stock_txns.append(movement_info['_transaction'])
+                item = ShippingItem(
+                    shipping_id=order.id,
+                    sales_order_item_id=so_item.id if so_item else None,
+                    product_id=item_data['product_id'],
+                    quantity=batch_qty,
+                    uom=item_data['uom'],
+                    batch_number=movement_info['batch_number'],
+                    notes=f'Auto-split FIFO dari batch {movement_info["batch_number"] or "-"}'
+                )
+                db.session.add(item)
+
+                unit_cost = movement_info['unit_cost']
                 if unit_cost and unit_cost > 0:
-                    cogs_amount = unit_cost * quantity
+                    cogs_amount = unit_cost * batch_qty
                     try:
                         hpp_account_id = resolve_account('akun_hpp_id', product_id=item_data['product_id'], category_id=None)
                         persediaan_account_id = resolve_account('akun_persediaan_id', product_id=item_data['product_id'], category_id=None)
                         cogs_journal_lines.append({
                             'account_id': hpp_account_id, 'debit': cogs_amount, 'credit': 0,
-                            'description': f'HPP pengiriman {shipping_number} - {batch_number or ""}',
+                            'description': f'HPP pengiriman {shipping_number} - {movement_info["batch_number"] or ""}',
                         })
                         cogs_journal_lines.append({
                             'account_id': persediaan_account_id, 'debit': 0, 'credit': cogs_amount,
-                            'description': f'Persediaan barang jadi keluar {shipping_number} - {batch_number or ""}',
+                            'description': f'Persediaan barang jadi keluar {shipping_number} - {movement_info["batch_number"] or ""}',
                         })
                         total_cogs_amount += cogs_amount
                     except ValueError:
-                        # akun_hpp_id / akun_persediaan_id not configured for
-                        # this product/category/global - stock effect above
-                        # still applies, COGS posting is skipped for this
-                        # line rather than failing the whole shipment.
                         pass
 
         if cogs_journal_lines and total_cogs_amount > 0:
@@ -718,7 +777,7 @@ def get_ready_for_shipping():
                 'customer_id': customer.id if customer else None,
                 'customer_name': customer.company_name if customer else 'Stock / No Customer',
                 'delivery_address': sales_order.delivery_address if sales_order else None,
-                'production_date': work_order.actual_end.isoformat() if work_order.actual_end else work_order.planned_end.isoformat() if work_order.planned_end else None,
+                'production_date': work_order.actual_end_date.isoformat() if work_order.actual_end_date else work_order.scheduled_end_date.isoformat() if work_order.scheduled_end_date else None,
                 'notes': qc.notes
             })
         
@@ -850,7 +909,21 @@ def create_shipping_from_qc():
             notes=f'From Work Order {work_order.wo_number}'
         )
         db.session.add(shipping_item)
-        
+
+        # fix_report_3.md (2026-10-02): this endpoint deducts real Inventory
+        # and creates the ShippingItem below, but never touched
+        # SalesOrderItem.quantity_shipped - "how much of this SO line has
+        # actually shipped" stayed 0 forever through this path. Found via a
+        # real end-to-end production test (SO fully shipped, item still
+        # showed quantity_shipped=0).
+        if work_order.sales_order_id:
+            from models.sales import SalesOrderItem
+            so_item = SalesOrderItem.query.filter_by(
+                order_id=work_order.sales_order_id, product_id=work_order.product_id,
+            ).first()
+            if so_item:
+                so_item.quantity_shipped = float(so_item.quantity_shipped or 0) + quantity
+
         # Update work order status
         work_order.status = 'shipped'
         

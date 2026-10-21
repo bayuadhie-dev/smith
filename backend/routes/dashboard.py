@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
 from utils.auth_decorators import require_permission
-from models import db, SalesOrder, WorkOrder, Inventory, Machine, Product, User, Customer, Supplier, PurchaseOrder
+from models import db, SalesOrder, WorkOrder, Inventory, Machine, Product, Material, User, Customer, Supplier, PurchaseOrder
 from utils.i18n import success_response, error_response, get_message
 from models.oee import OEERecord, OEEAlert
 from models.quality import QualityInspection
@@ -29,14 +29,16 @@ def get_overview():
         
         try:
             sales_today = db.session.query(func.sum(SalesOrder.total_amount)).filter(
-                func.date(SalesOrder.order_date) == today
+                func.date(SalesOrder.order_date) == today,
+                SalesOrder.status.notin_(['draft', 'cancelled'])
             ).scalar() or 0
         except:
             sales_today = 0
-        
+
         try:
             sales_this_month = db.session.query(func.sum(SalesOrder.total_amount)).filter(
-                SalesOrder.order_date >= month_start
+                SalesOrder.order_date >= month_start,
+                SalesOrder.status.notin_(['draft', 'cancelled'])
             ).scalar() or 0
         except:
             sales_this_month = 0
@@ -110,7 +112,8 @@ def get_sales_chart():
             func.date(SalesOrder.order_date).label('date'),
             func.sum(SalesOrder.total_amount).label('total')
         ).filter(
-            SalesOrder.order_date >= start_date
+            SalesOrder.order_date >= start_date,
+            SalesOrder.status.notin_(['draft', 'cancelled'])
         ).group_by(func.date(SalesOrder.order_date)).all()
         
         return jsonify({
@@ -162,16 +165,19 @@ def get_executive_dashboard():
         
         # Basic metrics that we know work
         sales_today = db.session.query(func.coalesce(func.sum(SalesOrder.total_amount), 0)).filter(
-            func.date(SalesOrder.order_date) == today
+            func.date(SalesOrder.order_date) == today,
+            SalesOrder.status.notin_(['draft', 'cancelled'])
         ).scalar() or 0
-        
+
         sales_this_month = db.session.query(func.coalesce(func.sum(SalesOrder.total_amount), 0)).filter(
-            SalesOrder.order_date >= month_start
+            SalesOrder.order_date >= month_start,
+            SalesOrder.status.notin_(['draft', 'cancelled'])
         ).scalar() or 0
-        
+
         # Sales orders count
         sales_orders_count = SalesOrder.query.filter(
-            SalesOrder.order_date >= month_start
+            SalesOrder.order_date >= month_start,
+            SalesOrder.status.notin_(['draft', 'cancelled'])
         ).count()
         
         active_work_orders = WorkOrder.query.filter_by(status='in_progress').count()
@@ -222,31 +228,51 @@ def get_executive_dashboard():
         except:
             production_output = 0
         
-        # Quality pass rate from ShiftProduction
+        # Quality pass rate - bug fixed 2026-10-07 in two stages. Stage 1
+        # fixed this from computing PRODUCTION YIELD to real QC data.
+        # Stage 2 (this version): QC is tracked in TWO parallel tables -
+        # QualityInspection (incoming-materials QC, ~1 real row) and
+        # QualityTest (finished-goods QC on completed WOs, 608 real rows)
+        # - this used to only read QualityInspection, so "Quality Pass
+        # Rate" was blind to the vast majority of real QC activity. Now
+        # uses utils.quality_metrics.combined_pass_rate() so this figure
+        # matches routes/quality_enhanced.py's own dashboard exactly,
+        # instead of two different numbers under the same label.
         try:
-            total_produced = db.session.query(func.coalesce(func.sum(ShiftProduction.actual_quantity), 0)).filter(
-                ShiftProduction.production_date >= month_start
-            ).scalar() or 0
-            total_good = db.session.query(func.coalesce(func.sum(ShiftProduction.good_quantity), 0)).filter(
-                ShiftProduction.production_date >= month_start
-            ).scalar() or 0
-            quality_pass_rate = (total_good / total_produced * 100) if total_produced > 0 else 0
+            from utils.quality_metrics import combined_pass_rate
+            quality_pass_rate, _ = combined_pass_rate(week_start, today)
         except:
             quality_pass_rate = 0
-        
-        # Quality inspections
+
+        # Quality inspections (combined across both QC tables - see above)
         try:
-            inspections_today = QualityInspection.query.filter(
-                func.date(QualityInspection.inspection_date) == today
-            ).count()
+            from utils.quality_metrics import combined_inspection_counts
+            inspections_today = combined_inspection_counts(today)
         except:
             inspections_today = 0
         
-        # Inventory
+        # Inventory - low stock. Bug fixed 2026-10-07: was comparing
+        # against Inventory.min_stock_level with no `> 0` guard - most
+        # Inventory rows have that field left at its default of 0 (the
+        # real threshold lives on Product/Material.min_stock_level
+        # instead, set per-item in master data), so `0 <= 0` was true for
+        # every never-configured row and inflated this into the
+        # thousands. Inventory rows are backed by EITHER a Product OR a
+        # Material (never both), so both thresholds must be checked.
         try:
-            low_stock_items = Inventory.query.filter(
-                Inventory.quantity_on_hand <= Inventory.min_stock_level
+            low_stock_products = db.session.query(Inventory).join(
+                Product, Inventory.product_id == Product.id
+            ).filter(
+                Inventory.quantity_on_hand <= Product.min_stock_level,
+                Product.min_stock_level > 0,
             ).count()
+            low_stock_materials = db.session.query(Inventory).join(
+                Material, Inventory.material_id == Material.id
+            ).filter(
+                Inventory.quantity_on_hand <= Material.min_stock_level,
+                Material.min_stock_level > 0,
+            ).count()
+            low_stock_items = low_stock_products + low_stock_materials
         except:
             low_stock_items = 0
         
@@ -320,16 +346,20 @@ def get_executive_dashboard():
         try:
             prev_month_sales = db.session.query(func.coalesce(func.sum(SalesOrder.total_amount), 0)).filter(
                 SalesOrder.order_date >= prev_month_start,
-                SalesOrder.order_date <= prev_month_end
+                SalesOrder.order_date <= prev_month_end,
+                SalesOrder.status.notin_(['draft', 'cancelled'])
             ).scalar() or 0
             revenue_growth = ((sales_this_month - prev_month_sales) / prev_month_sales * 100) if prev_month_sales > 0 else 0
         except:
             revenue_growth = 0
         
-        # Outstanding invoices
+        # Outstanding invoices. Invoice.status values are actually
+        # draft/sent/partial/paid/overdue/cancelled (see models/finance.py) -
+        # 'pending' here never matched anything, silently undercounting by
+        # excluding 'sent' and 'overdue' invoices that are genuinely unpaid.
         try:
             outstanding_invoices = db.session.query(func.coalesce(func.sum(Invoice.total_amount - Invoice.paid_amount), 0)).filter(
-                Invoice.status.in_(['pending', 'partial'])
+                Invoice.status.in_(['sent', 'partial', 'overdue'])
             ).scalar() or 0
         except:
             outstanding_invoices = 0
@@ -339,7 +369,8 @@ def get_executive_dashboard():
         for i in range(7):
             trend_date = today - timedelta(days=6-i)
             daily_sales = db.session.query(func.coalesce(func.sum(SalesOrder.total_amount), 0)).filter(
-                func.date(SalesOrder.order_date) == trend_date
+                func.date(SalesOrder.order_date) == trend_date,
+                SalesOrder.status.notin_(['draft', 'cancelled'])
             ).scalar() or 0
             sales_trend.append({
                 'date': trend_date.isoformat(),

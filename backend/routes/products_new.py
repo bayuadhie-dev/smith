@@ -4,6 +4,7 @@ API endpoints with all Excel fields, now backed by the merged products table.
 """
 
 from flask import Blueprint, request, jsonify, abort
+from flask_jwt_extended import jwt_required
 from models import db
 from models.product_excel_schema import ProductNew, ProductVersion
 from datetime import datetime
@@ -22,6 +23,7 @@ from utils.timezone import get_local_now, get_local_today
 products_new_bp = Blueprint('products_new', __name__, url_prefix='/api/products-new')
 
 @products_new_bp.route('/', methods=['GET'])
+@jwt_required()
 def get_products():
     """Get all products with pagination and filtering"""
     try:
@@ -63,6 +65,7 @@ def get_products():
         return jsonify({'error': str(e)}), 500
 
 @products_new_bp.route('/<int:product_id>', methods=['GET'])
+@jwt_required()
 def get_product(product_id):
     """Get single product by ID"""
     try:
@@ -75,6 +78,7 @@ def get_product(product_id):
         return jsonify({'error': str(e)}), 500
 
 @products_new_bp.route('/kode/<kode_produk>', methods=['GET'])
+@jwt_required()
 def get_product_by_kode(kode_produk):
     """Get product by kode_produk (code)"""
     try:
@@ -87,6 +91,7 @@ def get_product_by_kode(kode_produk):
         return jsonify({'error': str(e)}), 500
 
 @products_new_bp.route('/', methods=['POST'])
+@jwt_required()
 def create_product():
     """Create new product"""
     try:
@@ -146,6 +151,7 @@ def create_product():
         return jsonify({'error': str(e)}), 500
 
 @products_new_bp.route('/<int:product_id>', methods=['PUT'])
+@jwt_required()
 def update_product(product_id):
     """Update existing product with versioning"""
     try:
@@ -213,6 +219,7 @@ def update_product(product_id):
         return jsonify({'error': str(e)}), 500
 
 @products_new_bp.route('/<int:product_id>', methods=['DELETE'])
+@jwt_required()
 def delete_product(product_id):
     """Delete product (soft delete)"""
     try:
@@ -231,6 +238,7 @@ def delete_product(product_id):
         return jsonify({'error': str(e)}), 500
 
 @products_new_bp.route('/<int:product_id>/versions', methods=['GET'])
+@jwt_required()
 def get_product_versions(product_id):
     """Get version history for a product"""
     try:
@@ -251,6 +259,7 @@ def get_product_versions(product_id):
         return jsonify({'error': str(e)}), 500
 
 @products_new_bp.route('/dashboard', methods=['GET'])
+@jwt_required()
 def get_dashboard():
     """Get dashboard statistics for products"""
     try:
@@ -285,6 +294,7 @@ def get_dashboard():
         return jsonify({'error': str(e)}), 500
 
 @products_new_bp.route('/search', methods=['GET'])
+@jwt_required()
 def search_products():
     """Advanced product search"""
     try:
@@ -324,6 +334,7 @@ def search_products():
         return jsonify({'error': str(e)}), 500
 
 @products_new_bp.route('/import/excel', methods=['POST'])
+@jwt_required()
 def import_excel():
     """Import Excel file directly"""
     try:

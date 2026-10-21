@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from utils.auth_decorators import require_permission
+from utils.auth_decorators import require_permission, require_super_admin
 from models import db
 from utils.i18n import success_response, error_response, get_message
 from models.user import User
@@ -219,13 +219,22 @@ def get_permissions():
 # Audit Trail
 @settings_extended_bp.route('/audit-logs', methods=['GET'])
 @jwt_required()
-@require_permission('settings.view')
+@require_super_admin()
 def get_audit_logs():
-    """Get audit trail logs - REAL DATA from database"""
+    """Get audit trail logs - REAL DATA from database.
+
+    Restricted to super_admin (2026-10-16) - this is sensitive security
+    data (who did what, down to field-level changes), consistent with
+    Settings already being locked to super_admin-only. The exclusion
+    filter below was also fixed the same day: it used to only exclude a
+    user literally named 'admin' (User has no singular `.role` column, so
+    the old `hasattr(user, 'role')` check never matched anything) - now
+    correctly excludes by the real `is_super_admin` flag, matching what
+    utils/audit_middleware.py's logging side already does."""
     try:
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 50, type=int)
-        
+
         # Get filters
         user_id = request.args.get('user_id', type=int)
         action = request.args.get('action')
@@ -236,10 +245,10 @@ def get_audit_logs():
         status = request.args.get('status')
         start_date = request.args.get('start_date')
         end_date = request.args.get('end_date')
-        
-        # Build query - EXCLUDE ADMIN USERS
+
+        # Build query - exclude super_admin users (see docstring above)
         query = AuditLog.query.join(User, AuditLog.user_id == User.id).filter(
-            User.username != 'admin'  # Exclude admin
+            User.is_super_admin == False
         )
         
         # Apply filters
@@ -311,7 +320,7 @@ def get_audit_logs():
 
 @settings_extended_bp.route('/audit-logs/export', methods=['GET'])
 @jwt_required()
-@require_permission('settings.view')
+@require_super_admin()
 def export_audit_logs():
     """Export audit logs to CSV - REAL DATA"""
     try:
@@ -322,10 +331,10 @@ def export_audit_logs():
         status = request.args.get('status')
         start_date = request.args.get('start_date')
         end_date = request.args.get('end_date')
-        
-        # Build query - EXCLUDE ADMIN USERS
+
+        # Build query - exclude super_admin users
         query = AuditLog.query.join(User, AuditLog.user_id == User.id).filter(
-            User.username != 'admin'  # Exclude admin
+            User.is_super_admin == False
         )
         
         # Apply filters
@@ -365,6 +374,67 @@ def export_audit_logs():
             'success': False,
             'message': f'Failed to export audit logs: {str(e)}'
         }), 500
+
+@settings_extended_bp.route('/audit-logs/summary', methods=['GET'])
+@jwt_required()
+@require_super_admin()
+def get_audit_logs_summary():
+    """Lightweight summary for the main Dashboard's audit-log widget
+    (2026-10-16) - counts + most recent entries, not the full paginated
+    list. Same super_admin-only + is_super_admin-exclusion rules as
+    get_audit_logs()."""
+    try:
+        from sqlalchemy import func as _func
+        today_start = get_local_today()
+        week_start = today_start - timedelta(days=7)
+
+        base = AuditLog.query.join(User, AuditLog.user_id == User.id).filter(User.is_super_admin == False)
+
+        today_count = base.filter(AuditLog.timestamp >= today_start).count()
+        week_count = base.filter(AuditLog.timestamp >= week_start).count()
+        failed_today = base.filter(AuditLog.timestamp >= today_start, AuditLog.status == 'failed').count()
+
+        top_actions_today = (
+            base.filter(AuditLog.timestamp >= today_start)
+            .with_entities(AuditLog.action, _func.count(AuditLog.id))
+            .group_by(AuditLog.action)
+            .order_by(_func.count(AuditLog.id).desc())
+            .limit(5)
+            .all()
+        )
+
+        # "Recent" only shows actions that actually changed something
+        # (create/update/delete) - 'view'/'list' entries are overwhelmingly
+        # the majority of raw traffic and drown out anything meaningful on
+        # a dashboard widget meant for a quick glance, not a full log read
+        # (the full filterable list, including views, is on the AuditTrail
+        # page itself via "Lihat Semua").
+        recent = (
+            base.filter(AuditLog.action.in_(['create', 'update', 'delete']))
+            .order_by(AuditLog.timestamp.desc())
+            .limit(5)
+            .all()
+        )
+
+        return jsonify({
+            'success': True,
+            'today_count': today_count,
+            'week_count': week_count,
+            'failed_today': failed_today,
+            'top_actions_today': [{'action': a, 'count': c} for a, c in top_actions_today],
+            'recent': [{
+                'id': log.id,
+                'user_name': log.user.full_name if log.user else 'Unknown',
+                'action': log.action,
+                'resource_type': log.resource_type,
+                'resource_id': log.resource_id,
+                'status': log.status,
+                'timestamp': format_local_datetime(log.timestamp) if log.timestamp else None,
+            } for log in recent],
+        }), 200
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Failed to load audit log summary: {str(e)}'}), 500
+
 
 # Backup Management - MOVED TO routes/backup.py
 # All backup endpoints are now handled by the dedicated backup blueprint

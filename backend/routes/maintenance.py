@@ -10,6 +10,7 @@ from models.hr import Employee
 from utils.i18n import success_response, error_response, get_message
 from utils import generate_number
 from utils.maintenance_helpers import resolve_asset_for_machine, generate_maintenance_record_from_schedule
+from utils.helpers import get_setting_value
 from datetime import datetime
 from sqlalchemy import func, desc
 from utils.timezone import get_local_now, get_local_today
@@ -576,20 +577,43 @@ def get_maintenance_kpis():
             ])
             mttr = total_duration / len(completed_records) if completed_records else 0
         
-        # MTBF calculation (simplified)
-        from utils.helpers import get_setting_value
-        mtbf = get_setting_value('maintenance.default_mtbf_hours', 168.0)
-        
+        # Real MTBF/uptime, replacing the old fabricated placeholders (static
+        # 168h default MTBF + a synthetic "100% - 2%-per-work-order" uptime
+        # formula with no connection to actual machine running time). Both
+        # now derive from the same real downtime source: completed
+        # unplanned-failure MaintenanceRecord rows (breakdown/corrective/
+        # emergency - 'preventive' is scheduled, not a failure, so it's
+        # excluded from downtime/MTBF).
+        failure_records = base_query.filter(
+            MaintenanceRecord.maintenance_type.in_(['breakdown', 'corrective', 'emergency']),
+            MaintenanceRecord.status == 'completed',
+            MaintenanceRecord.start_time.isnot(None),
+            MaintenanceRecord.end_time.isnot(None)
+        ).all()
+        failure_count = len(failure_records)
+        downtime_hours = sum(
+            (r.end_time - r.start_time).total_seconds() / 3600
+            for r in failure_records if r.end_time and r.start_time
+        )
+
+        if machine_filter and machine_filter != 'all':
+            machines_in_scope = 1
+        else:
+            machines_in_scope = Machine.query.filter_by(is_active=True).count() or 1
+        total_available_hours = period * 24 * machines_in_scope
+
+        equipment_uptime = max(0, (total_available_hours - downtime_hours) / total_available_hours * 100) if total_available_hours else 0
+        # MTBF is undefined (not zero) when there were no failures to measure
+        # between - leaving it None rather than a fake number lets the
+        # frontend show "-" instead of a misleading 0 or placeholder.
+        mtbf = round(total_available_hours / failure_count, 1) if failure_count > 0 else None
+
         # Preventive maintenance percentage
         preventive_count = base_query.filter(
             MaintenanceRecord.maintenance_type == 'preventive'
         ).count()
-        
+
         preventive_percentage = (preventive_count / total_work_orders * 100) if total_work_orders > 0 else 0
-        
-        # Equipment uptime (simplified calculation)
-        reduction_per_wo = get_setting_value('maintenance.uptime_reduction_per_wo', 2.0)
-        equipment_uptime = max(0, 100 - (total_work_orders * reduction_per_wo))
         
         return jsonify({
             'total_work_orders': total_work_orders,
@@ -720,24 +744,33 @@ def get_equipment_performance():
             records = MaintenanceRecord.query.filter_by(machine_id=machine.id).all()
             
             if records:
-                # Calculate metrics
+                # Real metrics, replacing the old fabricated placeholders
+                # (hardcoded MTBF default + a synthetic "100% minus a
+                # per-record percentage" uptime formula, same fake pattern as
+                # get_maintenance_kpis above - fixed together 2026-10-14).
+                # Downtime/MTBF only count unplanned failures (breakdown/
+                # corrective/emergency) - scheduled 'preventive' work isn't a
+                # reliability failure.
+                failure_records = [r for r in records if r.maintenance_type in ('breakdown', 'corrective', 'emergency')
+                                    and r.end_time and r.start_time]
                 total_downtime = sum([
                     (record.end_time - record.start_time).total_seconds() / 3600
-                    for record in records
-                    if record.end_time and record.start_time
+                    for record in failure_records
                 ])
-                
-                # Simplified calculations
-                reduction_pct = get_setting_value('maintenance.uptime_reduction_per_wo', 2.0)
-                uptime_percentage = max(0, 100 - (len(records) * (reduction_pct * 0.75))) # scaling down slightly for per-machine records
-                mttr = total_downtime / len(records) if total_downtime > 0 else 0
-                mtbf = get_setting_value('maintenance.default_mtbf_hours', 168.0)
+
+                record_dates = [r.maintenance_date for r in records if r.maintenance_date]
+                first_date, last_date = min(record_dates), max(record_dates)
+                observation_hours = max(24, ((last_date - first_date).days + 1) * 24)
+
+                uptime_percentage = max(0, (observation_hours - total_downtime) / observation_hours * 100)
+                mttr = total_downtime / len(failure_records) if failure_records else 0
+                mtbf = round(observation_hours / len(failure_records), 1) if failure_records else None
                 maintenance_cost = sum([float(record.cost or 0) for record in records])
-                last_maintenance = max([record.maintenance_date for record in records]).isoformat()
+                last_maintenance = last_date.isoformat()
             else:
                 uptime_percentage = 100
                 mttr = 0
-                mtbf = get_setting_value('maintenance.default_mtbf_hours', 168.0)
+                mtbf = None
                 maintenance_cost = 0
                 last_maintenance = get_local_now().isoformat()
             

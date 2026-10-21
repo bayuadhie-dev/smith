@@ -17,6 +17,7 @@ from models.wms_advanced import (
 )
 from models.warehouse_adjustment import InventoryAdjustment
 from models.user_table_preference import UserTablePreference
+from utils.inventory_helpers import derive_movement_type_code
 from sqlalchemy import func, or_, and_, desc, asc, case
 from sqlalchemy.orm import joinedload
 from datetime import datetime, date, timedelta
@@ -35,32 +36,6 @@ def generate_txn_number(prefix='TXN'):
     global _txn_counter
     _txn_counter += 1
     return f"{prefix}-{get_local_now().strftime('%Y%m%d%H%M%S')}-{_txn_counter:04d}"
-
-
-def derive_movement_type_code(txn):
-    """Map an InventoryTransaction's (transaction_type, reference_type,
-    direction) onto a SAP-style 3-digit movement type code for display
-    purposes only (see plan.md section 2) - purely a presentation label
-    derived from data already on the row, not a stored column."""
-    t = (txn.transaction_type or '').lower()
-    ref = (txn.reference_type or '').lower()
-    direction = txn.direction
-
-    if t == 'stock_in' and ref == 'purchase_order':
-        return '101', 'Penerimaan Barang dari Vendor'
-    if ref in ('wo_cancellation_reversal', 'batch_confirmation_cancel', 'fg_conversion') and direction == 'in':
-        return '131', 'Penerimaan Barang Jadi Produksi'
-    if ref == 'material_issue' and direction == 'out':
-        return '261', 'Pengeluaran Bahan Baku ke SPK'
-    if t == 'transfer':
-        return '311', 'Transfer Antar Gudang/Lokasi'
-    if t == 'qc_disposition' and direction == 'out':
-        return '551', 'Barang Rusak / Reject / QC Disposition'
-    if ref == 'sales_order' and direction == 'out':
-        return '601', 'Pengiriman ke Pelanggan'
-    if t == 'adjustment':
-        return ('701', 'Penyesuaian Opname (Lebih)') if direction == 'in' else ('702', 'Penyesuaian Opname (Kurang)')
-    return '999', txn.transaction_type or 'Lainnya'
 
 
 def resolve_account_for_transaction(txn):
@@ -161,7 +136,17 @@ def enrich_transaction_dict(txn):
     to_dict() payload, swallowing any resolution error per-row so one bad
     item never 500s the whole list (see plan.md Langkah 1)."""
     data = txn.to_dict()
-    code, label = derive_movement_type_code(txn)
+    if txn.movement_type:
+        # Persisted at write time (see utils.inventory_helpers.
+        # record_inventory_transaction) - label still derived fresh since
+        # only the 3-digit code is stored, not its Indonesian description.
+        code = txn.movement_type
+        _, label = derive_movement_type_code(txn)
+    else:
+        # Legacy row predating the movement_type column, or written by a
+        # path that doesn't go through record_inventory_transaction() -
+        # fall back to deriving both at read time.
+        code, label = derive_movement_type_code(txn)
     data['movement_type_code'] = code
     data['movement_type_label'] = label
     try:
@@ -842,6 +827,7 @@ def issue_material(mc_id):
             notes=f'Material issue for WO',
             created_by=user_id,
         )
+        txn.movement_type, _ = derive_movement_type_code(txn)
         db.session.add(txn)
         db.session.commit()
 
@@ -857,6 +843,20 @@ def issue_material(mc_id):
 # ============================================================
 # 4. INVENTORY TRANSACTIONS (Unified Log)
 # ============================================================
+def _end_of_day_filter_bound(end_date_str):
+    """Date-only picker (no time component) sent from the frontend for
+    end_date - a plain <= comparison truncates to 00:00:00 that day,
+    silently excluding every transaction recorded later the SAME day
+    (found via live E2E verification: WO completion events at 06:48-06:53
+    were missing from a "this month" search whose end_date was today).
+    Shared by GET /transactions and GET /transactions/summary, which
+    filter the same InventoryTransaction.transaction_date column."""
+    end_dt = datetime.fromisoformat(end_date_str)
+    if end_dt.time() == datetime.min.time():
+        end_dt = end_dt + timedelta(days=1) - timedelta(microseconds=1)
+    return end_dt
+
+
 @wms_advanced_bp.route('/transactions', methods=['GET'])
 @jwt_required()
 @require_permission('warehouse.view')
@@ -864,6 +864,7 @@ def get_transactions():
     """Get inventory transactions with full filtering"""
     try:
         txn_type = request.args.get('type')
+        movement_type = request.args.get('movement_type')
         wo_id = request.args.get('work_order_id', type=int)
         product_id = request.args.get('product_id', type=int)
         material_id = request.args.get('material_id', type=int)
@@ -885,6 +886,16 @@ def get_transactions():
             # list of transaction_type values, e.g. 'stock_in,transfer'.
             types = [t.strip() for t in txn_type.split(',') if t.strip()]
             query = query.filter(InventoryTransaction.transaction_type.in_(types)) if len(types) > 1 else query.filter_by(transaction_type=types[0])
+        if movement_type:
+            # MB51 selection-screen style: comma-separated SAP movement type
+            # codes, e.g. 'movement_type=261,601'. Filters on the persisted
+            # column only - legacy rows with a NULL movement_type (written
+            # before this column existed, or by a path not yet backfilled)
+            # won't match here even though enrich_transaction_dict() would
+            # still show a derived code for them on read; run the one-off
+            # backfill script if old data needs to be included in this filter.
+            codes = [c.strip() for c in movement_type.split(',') if c.strip()]
+            query = query.filter(InventoryTransaction.movement_type.in_(codes)) if len(codes) > 1 else query.filter_by(movement_type=codes[0])
         if wo_id:
             query = query.filter_by(work_order_id=wo_id)
         if product_id:
@@ -905,7 +916,7 @@ def get_transactions():
         if start_date:
             query = query.filter(InventoryTransaction.transaction_date >= datetime.fromisoformat(start_date))
         if end_date:
-            query = query.filter(InventoryTransaction.transaction_date <= datetime.fromisoformat(end_date))
+            query = query.filter(InventoryTransaction.transaction_date <= _end_of_day_filter_bound(end_date))
         if search:
             query = query.filter(or_(
                 InventoryTransaction.transaction_number.ilike(f'%{search}%'),
@@ -923,6 +934,7 @@ def get_transactions():
             'total_cost': InventoryTransaction.total_cost,
             'transaction_type': InventoryTransaction.transaction_type,
             'batch_number': InventoryTransaction.batch_number,
+            'movement_type': InventoryTransaction.movement_type,
         }
         sort_col = sortable_columns.get(sort_by, InventoryTransaction.transaction_date)
         query = query.order_by(asc(sort_col) if sort_dir == 'asc' else desc(sort_col))
@@ -1061,6 +1073,7 @@ def create_transaction():
             notes=data.get('notes'),
             created_by=user_id,
         )
+        txn.movement_type, _ = derive_movement_type_code(txn)
         db.session.add(txn)
         db.session.commit()
 
@@ -1253,12 +1266,26 @@ def create_transfer():
         data = request.get_json()
         user_id = get_jwt_identity()
 
+        # Fase 7 audit fix (fix_report_2.md, 2026-10-01): no validation
+        # existed for a self-transfer (source == destination location) or
+        # for negative item quantities - both silently got accepted. Found
+        # while triaging test_warehouse_transfer_validation.
+        from_location_id = data.get('from_location_id')
+        to_location_id = data.get('to_location_id')
+        if from_location_id and to_location_id and from_location_id == to_location_id:
+            return jsonify({'error': 'from_location_id dan to_location_id tidak boleh sama (self-transfer)'}), 400
+
+        for item_data in data.get('items', []):
+            qty = item_data.get('quantity')
+            if qty is not None and float(qty) < 0:
+                return jsonify({'error': 'quantity item transfer tidak boleh negatif'}), 400
+
         sto = StockTransferOrder(
             transfer_number=generate_txn_number('STO'),
             from_zone_id=data['from_zone_id'],
             to_zone_id=data['to_zone_id'],
-            from_location_id=data.get('from_location_id'),
-            to_location_id=data.get('to_location_id'),
+            from_location_id=from_location_id,
+            to_location_id=to_location_id,
             reason=data.get('reason', 'relocation'),
             priority=data.get('priority', 'normal'),
             requested_by=user_id,
@@ -1501,6 +1528,7 @@ def execute_transfer(sto_id):
                 ),
                 created_by=user_id,
             )
+            txn.movement_type, _ = derive_movement_type_code(txn)
             db.session.add(txn)
 
         sto.status = 'completed'
@@ -2013,7 +2041,7 @@ def get_transactions_summary():
         if start_date:
             query = query.filter(InventoryTransaction.transaction_date >= datetime.fromisoformat(start_date))
         if end_date:
-            query = query.filter(InventoryTransaction.transaction_date <= datetime.fromisoformat(end_date))
+            query = query.filter(InventoryTransaction.transaction_date <= _end_of_day_filter_bound(end_date))
 
         rows = query.group_by(
             InventoryTransaction.transaction_type, InventoryTransaction.direction

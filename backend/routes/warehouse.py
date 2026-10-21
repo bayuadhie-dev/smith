@@ -329,7 +329,15 @@ def get_inventory():
         if zone_id:
             query = query.join(WarehouseLocation).filter(WarehouseLocation.zone_id == zone_id)
         
-        # Filter by stock status (quantity-based)
+        # Filter by stock status. fix_report_3.md Fase 16 (2026-10-02): this
+        # param's own comment always said "released, quarantine, reject"
+        # (the REAL Inventory.stock_status enum values) but the code never
+        # actually checked for them - only 3 quantity-derived pseudo-values
+        # ('available'/'out_of_stock'/'low_stock') were ever implemented.
+        # There was no way to filter the inventory list by physical
+        # quarantine/reject/released status at all - found while making
+        # sure the new production-reject Inventory rows (Fase 15) are
+        # actually reachable/drill-down-able from the frontend.
         if stock_status:
             if stock_status == 'available':
                 query = query.filter(Inventory.quantity_on_hand > 0)
@@ -341,6 +349,25 @@ def get_inventory():
                     Inventory.quantity_on_hand <= Inventory.min_stock_level,
                     Inventory.min_stock_level > 0
                 )
+            else:
+                # NOTE: 'available' is deliberately NOT included here - it's
+                # already claimed above as the quantity-based pseudo-filter,
+                # a pre-existing naming collision with the real literal
+                # stock_status value materials use for "not quarantined/
+                # rejected" (see MATERIAL_STATUSES in qc_batch_status.py).
+                # Not resolved here (would need a breaking param-name
+                # change for existing callers of the quantity-based filter);
+                # a caller wanting literal materials-available status must
+                # still go through quarantine/reject exclusion client-side.
+                #
+                # Anything else is taken as a literal Inventory.stock_status
+                # value - covers the canonical set (released/quarantine/
+                # reject for products, available/quarantine/reject for
+                # materials per qc_batch_status.py's PRODUCT_STATUSES/
+                # MATERIAL_STATUSES) AND older/legacy values still present
+                # in production data (in_stock, in_production, rejected)
+                # rather than hardcoding a list that would silently miss them.
+                query = query.filter(Inventory.stock_status == stock_status)
         
         # Search by product/material code or name
         if search:
@@ -534,9 +561,15 @@ def add_to_inventory():
                 db.session.add(inventory)
                 db.session.flush()
         
-        # Update quantities
-        inventory.quantity_on_hand += quantity
-        inventory.quantity_available += quantity
+        # Update quantities. float(...) wrap required: an EXISTING Inventory
+        # row's quantity_on_hand/quantity_available load back from Postgres
+        # as Decimal, and Decimal += float raises TypeError - only ever hit
+        # for materials/products that already had stock (a brand-new row's
+        # Python-side default of 0 (int) tolerates += float fine, which is
+        # why this went unnoticed). Found via real production testing
+        # 2026-10-02 adding raw material stock mid-batch.
+        inventory.quantity_on_hand = float(inventory.quantity_on_hand or 0) + quantity
+        inventory.quantity_available = float(inventory.quantity_available or 0) + quantity
         inventory.updated_at = get_local_now()
         
         # Create movement record
@@ -562,13 +595,29 @@ def add_to_inventory():
             location.occupied = float(location.occupied or 0) + quantity
         
         db.session.commit()
-        
+
+        # fix_report_3.md (2026-10-02): requeue_insufficient_items()
+        # (utils/auto_reserve.py) already retries FIFO reservation for
+        # MaterialIssueItem rows stuck at reservation_status='insufficient'
+        # after new stock arrives - but was only wired into the GRN receipt
+        # (routes/purchasing.py) and approval-workflow paths, not this
+        # manual stock-in endpoint. Found via a real production test: adding
+        # raw material stock here for a shortage never unstuck the
+        # already-approved MaterialIssue waiting on it. Best-effort, same
+        # pattern as the other 2 call sites - never blocks the stock-in
+        # itself.
+        try:
+            from utils.auto_reserve import requeue_insufficient_items
+            requeue_insufficient_items()
+        except Exception:
+            pass
+
         return success_response('Stock added successfully', {
             'inventory_id': inventory.id,
             'movement_id': movement.id,
             'new_quantity': float(inventory.quantity_on_hand)
         }), 201
-        
+
     except Exception as e:
         db.session.rollback()
         return error_response(str(e)), 500
@@ -896,30 +945,40 @@ def create_movement():
                 return error_response('Both from_location_id and to_location_id are required for transfer'), 400
             
             # Decrease from source
-            from_inventory = Inventory.query.filter_by(
+            # batch_number filter hanya diterapkan kalau request benar-benar
+            # menyebutkan batch tertentu - sama seperti fix execute_transfer di
+            # wms_advanced.py (2026-09-28): tanpa ini, lokasi yang punya >1 batch
+            # material/produk yang sama bisa salah ambil batch (rusak FIFO/traceability).
+            requested_batch = data.get('batch_number')
+            from_query = Inventory.query.filter_by(
                 product_id=product_id,
                 material_id=material_id,
                 location_id=from_location_id
-            ).first()
-            
+            )
+            if requested_batch:
+                from_query = from_query.filter(Inventory.batch_number == requested_batch)
+            from_inventory = from_query.with_for_update().first()
+
             if not from_inventory or from_inventory.quantity_available < quantity:
                 return error_response('Insufficient stock at source location'), 400
-            
+
             from_inventory.quantity_on_hand -= quantity
             from_inventory.quantity_available -= quantity
-            
+
             # Update source location occupied
             from_location = db.session.get(WarehouseLocation, from_location_id)
             if from_location:
                 from_location.occupied = float(from_location.occupied or 0) - quantity
-            
-            # Increase at destination
+
+            # Increase at destination - carry forward the actual source batch
+            effective_batch = requested_batch or from_inventory.batch_number
             to_inventory = Inventory.query.filter_by(
                 product_id=product_id,
                 material_id=material_id,
-                location_id=to_location_id
-            ).first()
-            
+                location_id=to_location_id,
+                batch_number=effective_batch
+            ).with_for_update().first()
+
             if to_inventory:
                 to_inventory.quantity_on_hand += quantity
                 to_inventory.quantity_available += quantity
@@ -930,7 +989,11 @@ def create_movement():
                     location_id=to_location_id,
                     quantity_on_hand=quantity,
                     quantity_available=quantity,
-                    batch_number=data.get('batch_number'),
+                    batch_number=effective_batch,
+                    lot_number=from_inventory.lot_number,
+                    production_date=from_inventory.production_date,
+                    expiry_date=from_inventory.expiry_date,
+                    stock_status=from_inventory.stock_status,
                     is_active=True,
                     created_by=user_id
                 )

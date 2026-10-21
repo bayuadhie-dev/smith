@@ -47,6 +47,7 @@ def run_mrp_calculation():
             'buckets': result['buckets'],
             'materials': materials_out,
             'planned_orders': result['planned_orders'],
+            'exceptions': result.get('exceptions', []),
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -937,26 +938,18 @@ def get_dashboard_capacity():
                 print(f"Error processing machine {machine.id}: {machine_error}")
                 continue
         
-        # If no machines found, return sample data
-        if not capacity:
-            capacity = [
-                {'resource': 'Machine A', 'available_capacity': 800.0, 'planned_capacity': 560.0, 'utilization_percent': 70.0, 'bottleneck': False},
-                {'resource': 'Machine B', 'available_capacity': 800.0, 'planned_capacity': 640.0, 'utilization_percent': 80.0, 'bottleneck': False},
-                {'resource': 'Machine C', 'available_capacity': 800.0, 'planned_capacity': 720.0, 'utilization_percent': 90.0, 'bottleneck': False}
-            ]
-        
+        # Bug fixed 2026-10-07 (system-wide fabricated-data sweep): this used
+        # to fall back to 3 literal fake rows ("Machine A/B/C" at a fixed
+        # 70%/80%/90% utilization) whenever no real active Machine existed -
+        # AND, worse, on ANY exception in the real computation above, which
+        # silently masked real backend errors as a fake 200-success capacity
+        # report. Now returns an honest empty list in both cases - no
+        # fabricated machines, and errors are no longer disguised as data.
         return jsonify({'capacity': capacity}), 200
-        
+
     except Exception as e:
         print(f"Capacity endpoint error: {str(e)}")
-        # Return fallback data on error
-        return jsonify({
-            'capacity': [
-                {'resource': 'Machine A', 'available_capacity': 800.0, 'planned_capacity': 560.0, 'utilization_percent': 70.0, 'bottleneck': False},
-                {'resource': 'Machine B', 'available_capacity': 800.0, 'planned_capacity': 640.0, 'utilization_percent': 80.0, 'bottleneck': False},
-                {'resource': 'Machine C', 'available_capacity': 800.0, 'planned_capacity': 720.0, 'utilization_percent': 90.0, 'bottleneck': False}
-            ]
-        }), 200
+        return jsonify({'capacity': [], 'error': str(e)}), 500
 
 @mrp_bp.route('/dashboard/material-shortages', methods=['GET'])
 @jwt_required()
@@ -1129,50 +1122,15 @@ def get_demand_forecast():
             # Return empty forecasts if query fails
             forecasts = []
         
-        # If no real data, return sample data for development
-        if not forecasts:
-            forecasts = [
-                {
-                    'product_id': 1,
-                    'product_name': 'Sample Product A',
-                    'product_code': 'SP001',
-                    'category': 'Category A',
-                    'current_demand': 100,
-                    'forecasted_demand': 120,
-                    'variance': 20.0,
-                    'trend': 'up',
-                    'confidence_level': 85.0,
-                    'seasonality_factor': 1.1,
-                    'last_updated': '2024-01-01T00:00:00'
-                },
-                {
-                    'product_id': 2,
-                    'product_name': 'Sample Product B',
-                    'product_code': 'SP002',
-                    'category': 'Category B',
-                    'current_demand': 80,
-                    'forecasted_demand': 75,
-                    'variance': -6.25,
-                    'trend': 'stable',
-                    'confidence_level': 78.0,
-                    'seasonality_factor': 0.9,
-                    'last_updated': '2024-01-01T00:00:00'
-                },
-                {
-                    'product_id': 3,
-                    'product_name': 'Sample Product C',
-                    'product_code': 'SP003',
-                    'category': 'Category C',
-                    'current_demand': 150,
-                    'forecasted_demand': 130,
-                    'variance': -13.33,
-                    'trend': 'down',
-                    'confidence_level': 72.0,
-                    'seasonality_factor': 0.8,
-                    'last_updated': '2024-01-01T00:00:00'
-                }
-            ]
-        
+        # Bug fixed 2026-10-07 (system-wide fabricated-data sweep): this used
+        # to fall back to 3 literal fake products ("Sample Product A/B/C",
+        # product_id 1/2/3 - real IDs that could collide with actual
+        # products) with invented demand/confidence/seasonality numbers
+        # whenever `forecasts` was empty for ANY reason, including a real
+        # DB query error just above (`query_error` sets forecasts=[] then
+        # falls straight into this block). An honest empty list is correct
+        # here - there either is no real forecast data yet, or a real error
+        # occurred, neither of which should be disguised as 3 fake products.
         return jsonify({'forecasts': forecasts}), 200
         
     except Exception as e:
@@ -1264,13 +1222,70 @@ def calculate_demand_forecast():
 @jwt_required()
 @require_permission('mrp.view')
 def get_capacity_resources():
-    """Get capacity resources data"""
+    """Real capacity-vs-load per machine over the next 14 days, computed from
+    Machine.capacity_per_hour/availability + the same 3-layer working calendar
+    (MachineCalendarOverride > ExceptionCalendar > GlobalCalendar) Batch
+    Scheduling uses, netted against ProductionBatch.planned_qty already
+    scheduled on each machine in that window. 2026-10-20: this used to be a
+    permanent empty stub ("to be implemented") - replaced with the real
+    computation rather than leaving the Capacity Planning page always blank."""
     try:
-        # Return empty resources - to be implemented when capacity planning is needed
+        from models.batch_scheduling import ProductionBatch
+        from routes.batch_scheduling import resolve_effective_calendar
+
+        today = get_local_today()
+        window_end = today + timedelta(days=13)
+
+        machines = Machine.query.filter_by(is_active=True).all()
         resources = []
-        
+
+        for m in machines:
+            capacity_per_hour = float(m.capacity_per_hour or 0)
+            availability_pct = float(m.availability if m.availability is not None else 100)
+            efficiency_pct = float(m.efficiency if m.efficiency is not None else 100)
+
+            available_capacity = 0.0
+            d = today
+            while d <= window_end:
+                cal = resolve_effective_calendar(m.id, d)
+                if cal['is_working_day'] and cal['shift_count'] and cal['shift_duration_hours']:
+                    hours = cal['shift_count'] * cal['shift_duration_hours']
+                    available_capacity += hours * capacity_per_hour * (availability_pct / 100)
+                d += timedelta(days=1)
+
+            planned_capacity = db.session.query(
+                func.coalesce(func.sum(ProductionBatch.planned_qty), 0)
+            ).filter(
+                ProductionBatch.machine_id == m.id,
+                ProductionBatch.scheduled_date >= today,
+                ProductionBatch.scheduled_date <= window_end,
+                ProductionBatch.status.in_(['draft', 'approved', 'in_progress']),
+            ).scalar()
+            planned_capacity = float(planned_capacity or 0)
+
+            utilization_percent = (planned_capacity / available_capacity * 100) if available_capacity > 0 else 0
+
+            if m.status == 'maintenance':
+                status = 'maintenance'
+            elif available_capacity == 0:
+                status = 'idle'
+            else:
+                status = 'active'
+
+            resources.append({
+                'id': m.id,
+                'resource_name': f'{m.name} ({m.code})',
+                'resource_type': 'machine',
+                'available_capacity': round(available_capacity, 2),
+                'planned_capacity': round(planned_capacity, 2),
+                'utilization_percent': round(utilization_percent, 2),
+                'bottleneck': utilization_percent >= 95,
+                'efficiency': efficiency_pct,
+                'status': status,
+            })
+
         return jsonify({'resources': resources}), 200
-        
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -1278,13 +1293,48 @@ def get_capacity_resources():
 @jwt_required()
 @require_permission('mrp.view')
 def get_capacity_timeline():
-    """Get capacity timeline data"""
+    """Day-by-day available/planned/actual load across all active machines,
+    same 14-day window as /capacity/resources. actual_load reads
+    ProductionBatch.realized_qty (kept in sync from ShiftProduction by the
+    batch-scheduling module) for days that have already happened."""
     try:
-        # Return empty timeline - to be implemented when capacity timeline tracking is needed
+        from models.batch_scheduling import ProductionBatch
+        from routes.batch_scheduling import resolve_effective_calendar
+
+        today = get_local_today()
+        window_end = today + timedelta(days=13)
+
+        machines = Machine.query.filter_by(is_active=True).all()
         timeline = []
-        
+
+        d = today
+        while d <= window_end:
+            available_capacity = 0.0
+            for m in machines:
+                cal = resolve_effective_calendar(m.id, d)
+                if cal['is_working_day'] and cal['shift_count'] and cal['shift_duration_hours']:
+                    hours = cal['shift_count'] * cal['shift_duration_hours']
+                    availability_pct = float(m.availability if m.availability is not None else 100)
+                    available_capacity += hours * float(m.capacity_per_hour or 0) * (availability_pct / 100)
+
+            day_batches = ProductionBatch.query.filter(
+                ProductionBatch.scheduled_date == d,
+                ProductionBatch.status.in_(['draft', 'approved', 'in_progress', 'completed']),
+            ).all()
+            planned_load = sum(float(b.planned_qty or 0) for b in day_batches)
+            actual_load = sum(float(b.realized_qty or 0) for b in day_batches)
+
+            timeline.append({
+                'date': d.strftime('%Y-%m-%d'),
+                'available_capacity': round(available_capacity, 2),
+                'planned_load': round(planned_load, 2),
+                'actual_load': round(actual_load, 2),
+                'utilization': round((planned_load / available_capacity * 100), 2) if available_capacity > 0 else 0,
+            })
+            d += timedelta(days=1)
+
         return jsonify({'timeline': timeline}), 200
-        
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

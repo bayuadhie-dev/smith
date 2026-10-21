@@ -127,6 +127,24 @@ def update_batch_status(inventory_id):
 
     db.session.commit()
 
+    # fix_report_3.md (2026-10-02): this is the REAL point stock newly
+    # received becomes usable (erp_approval defaults True, so almost every
+    # new batch is born 'quarantine' - see resolve_initial_stock_status())
+    # - a MaterialIssueItem stuck at reservation_status='insufficient'
+    # waiting on this exact material was never retried here before. The
+    # GRN-receipt and approval-workflow paths already call
+    # requeue_insufficient_items() after their own stock-increasing events;
+    # this was the missing one for the "QC just released it" event. Only
+    # worth trying when the batch moved OUT of quarantine/reject (into
+    # released/available) - skip for quarantine->reject or other no-op-ish
+    # transitions. Best-effort, never blocks the status change itself.
+    if old_status in ('quarantine', 'reject', 'rejected') and new_status not in ('quarantine', 'reject', 'rejected'):
+        try:
+            from utils.auto_reserve import requeue_insufficient_items
+            requeue_insufficient_items()
+        except Exception:
+            pass
+
     return jsonify({
         'message': 'Status batch berhasil diubah',
         'inventory_id': inv.id,

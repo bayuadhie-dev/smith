@@ -3,11 +3,68 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.auth_decorators import require_permission
 from datetime import datetime, date
 from models import db
-from models.purchasing import PurchaseRequisition, PRItem, PurchaseOrder, PurchaseOrderItem, Supplier
-from models.user import User
+from models.purchasing import PurchaseRequisition, PRItem, PurchaseOrder, PurchaseOrderItem, Supplier, PRApproval
+from models.user import User, Role
 from utils import generate_number, generate_number_v2
 
 pr_bp = Blueprint('purchase_requisition', __name__)
+
+# Tiered approval thresholds (2026-10-16) - amounts in Rupiah, compared
+# against PR's total_estimated (sum of PRItem.estimated_total). Below the
+# first threshold, PR auto-approves with no approval steps at all (reusing
+# the intent of the already-registered-but-never-wired-up 'purchasing.
+# pr_auto_approve_limit' setting - kept as a hardcoded constant here rather
+# than reading that setting key, since that key was never actually
+# consumed anywhere and this gives an explicit, auditable starting point;
+# revisit if the setting needs to be admin-editable later).
+PR_AUTO_APPROVE_LIMIT = 1_000_000
+PR_TIER2_THRESHOLD = 50_000_000  # above this, needs Manager AND Direktur
+
+
+def _pr_total_estimated(pr):
+    return float(sum(float(i.estimated_total or 0) for i in pr.items))
+
+
+def _create_pr_approval_levels(pr):
+    """Create the PRApproval rows this PR needs based on its total estimated
+    amount, and set pr.status accordingly. Does not commit - caller does."""
+    total = _pr_total_estimated(pr)
+
+    if total < PR_AUTO_APPROVE_LIMIT:
+        pr.status = 'approved'
+        pr.approved_by = None
+        pr.approved_at = datetime.utcnow()
+        pr.rejection_reason = None
+        return []
+
+    manager_role = Role.query.filter_by(name='manager').first()
+    direktur_role = Role.query.filter_by(name='Direktur').first()
+
+    levels_needed = [manager_role] if total < PR_TIER2_THRESHOLD else [manager_role, direktur_role]
+    created = []
+    for level_num, role in enumerate(levels_needed, start=1):
+        if not role:
+            continue
+        step = PRApproval(pr_id=pr.id, approval_level=level_num, required_role_id=role.id, status='pending')
+        db.session.add(step)
+        created.append(step)
+
+    pr.status = 'submitted'
+    return created
+
+
+def format_pr_approval_step(step):
+    return {
+        'id': step.id,
+        'approval_level': step.approval_level,
+        'required_role_id': step.required_role_id,
+        'required_role_name': step.required_role.name if step.required_role else None,
+        'approver_id': step.approver_id,
+        'approver_name': step.approver.full_name if step.approver else None,
+        'status': step.status,
+        'comments': step.comments,
+        'approved_at': step.approved_at.isoformat() if step.approved_at else None,
+    }
 
 
 def generate_pr_number():
@@ -43,12 +100,18 @@ def format_pr(pr):
         'rejection_reason': pr.rejection_reason,
         'converted_to_po_id': pr.converted_to_po_id,
         'converted_po_number': pr.converted_po.po_number if pr.converted_po else None,
+        # fix_report_3.md Fase 16 (2026-10-02): traceability balik ke SO
+        # yang memicu PR ini otomatis saat SO confirm mendeteksi kekurangan
+        # bahan baku - lihat utils.sales_order_workflow._check_and_create_shortage_pr().
+        'sales_order_id': pr.sales_order_id,
+        'sales_order_number': pr.sales_order.order_number if pr.sales_order else None,
         'notes': pr.notes,
         'created_at': pr.created_at.isoformat() if pr.created_at else None,
         'items': [format_pr_item(i) for i in pr.items],
         'total_estimated': float(sum(
             float(i.estimated_total or 0) for i in pr.items
         )),
+        'approval_steps': [format_pr_approval_step(s) for s in sorted(pr.approval_steps, key=lambda s: s.approval_level)],
     }
 
 
@@ -243,9 +306,14 @@ def submit_pr(pr_id):
         if not pr.items:
             return jsonify({'error': 'PR harus memiliki minimal 1 item'}), 400
 
-        pr.status = 'submitted'
+        # Tiered approval (2026-10-16): below PR_AUTO_APPROVE_LIMIT, this
+        # auto-approves the PR right here (no approval steps created) - see
+        # _create_pr_approval_levels for the full threshold logic.
+        _create_pr_approval_levels(pr)
         db.session.commit()
-        return jsonify({'message': 'PR berhasil diajukan untuk approval', 'pr': format_pr(pr)}), 200
+
+        msg = 'PR otomatis disetujui (di bawah batas approval)' if pr.status == 'approved' else 'PR berhasil diajukan untuk approval'
+        return jsonify({'message': msg, 'pr': format_pr(pr)}), 200
 
     except Exception as e:
         db.session.rollback()
@@ -258,6 +326,11 @@ def submit_pr(pr_id):
 @jwt_required()
 @require_permission('purchase_requests.approve')
 def approve_pr(pr_id):
+    """Legacy single-shot approve/reject - only usable on a PR with NO
+    tiered approval steps (e.g. one submitted before 2026-10-16, or a PR
+    whose amount put it in the no-approval-needed-but-not-yet-approved
+    edge case). PRs with real PRApproval rows must go through
+    act_on_pr_approval_step() below instead, one level at a time."""
     try:
         user_id = int(get_jwt_identity())
         pr = db.session.get(PurchaseRequisition, pr_id)
@@ -265,6 +338,8 @@ def approve_pr(pr_id):
             return jsonify({'error': 'Purchase Requisition not found'}), 404
         if pr.status != 'submitted':
             return jsonify({'error': 'Hanya PR berstatus submitted yang bisa di-approve'}), 400
+        if pr.approval_steps:
+            return jsonify({'error': 'PR ini punya approval berjenjang - gunakan endpoint approval-steps, bukan approve langsung.'}), 400
 
         data = request.get_json() or {}
         action = data.get('action', 'approve')  # approve or reject
@@ -281,6 +356,78 @@ def approve_pr(pr_id):
             pr.approved_at = datetime.utcnow()
             pr.rejection_reason = data.get('rejection_reason', '')
             msg = 'PR ditolak'
+
+        db.session.commit()
+        return jsonify({'message': msg, 'pr': format_pr(pr)}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@pr_bp.route('/purchase-requisitions/<int:pr_id>/approval-steps/<int:level>/action', methods=['POST'])
+@jwt_required()
+@require_permission('purchase_requests.approve')
+def act_on_pr_approval_step(pr_id, level):
+    """Approve or reject ONE level of a tiered PR approval. Levels are
+    sequential - level N can't be acted on until level N-1 is approved.
+    The acting user must hold the role required for that level (any user
+    with that role can act - this is role-gated, not a pre-assigned
+    individual, same pattern as ApprovalConfiguration.approver_roles)."""
+    try:
+        user_id = int(get_jwt_identity())
+        pr = db.session.get(PurchaseRequisition, pr_id, with_for_update=True)
+        if not pr:
+            return jsonify({'error': 'Purchase Requisition not found'}), 404
+
+        # Idempotency (2026-10-17): row-locked so a genuinely concurrent
+        # duplicate request can't both read status='pending' before either
+        # commits - matches the same fix applied to the generic
+        # ApprovalWorkflow system (routes/approval_workflow.py) the same day.
+        step = PRApproval.query.filter_by(pr_id=pr_id, approval_level=level).with_for_update().first()
+        if not step:
+            return jsonify({'error': f'Approval level {level} tidak ditemukan untuk PR ini'}), 404
+        if step.status != 'pending':
+            return jsonify({'error': f'Approval level {level} sudah berstatus {step.status}'}), 400
+
+        prior_pending = PRApproval.query.filter(
+            PRApproval.pr_id == pr_id,
+            PRApproval.approval_level < level,
+            PRApproval.status != 'approved',
+        ).first()
+        if prior_pending:
+            return jsonify({'error': f'Level {prior_pending.approval_level} harus di-approve dulu sebelum level {level}.'}), 400
+
+        user = db.session.get(User, user_id)
+        user_role_names = {ur.role.name for ur in user.roles if ur.role}
+        if not user.is_super_admin and step.required_role.name not in user_role_names:
+            return jsonify({'error': f'Approval level {level} butuh role "{step.required_role.name}" - akun Anda tidak punya role ini.'}), 403
+
+        data = request.get_json() or {}
+        action = data.get('action', 'approve')
+
+        step.approver_id = user_id
+        step.approved_at = datetime.utcnow()
+        step.comments = data.get('comments')
+
+        if action == 'approve':
+            step.status = 'approved'
+            remaining = PRApproval.query.filter(
+                PRApproval.pr_id == pr_id, PRApproval.status != 'approved'
+            ).count()
+            if remaining == 0:
+                pr.status = 'approved'
+                pr.approved_by = user_id
+                pr.approved_at = datetime.utcnow()
+                pr.rejection_reason = None
+            msg = f'Level {level} ({step.required_role.name}) disetujui' + (' - PR fully approved' if remaining == 0 else '')
+        else:
+            step.status = 'rejected'
+            pr.status = 'rejected'
+            pr.approved_by = user_id
+            pr.approved_at = datetime.utcnow()
+            pr.rejection_reason = data.get('rejection_reason', step.comments or '')
+            msg = f'PR ditolak pada level {level} ({step.required_role.name})'
 
         db.session.commit()
         return jsonify({'message': msg, 'pr': format_pr(pr)}), 200

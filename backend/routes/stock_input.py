@@ -191,7 +191,7 @@ def get_stock_input_history():
                     'quantity': float(movement.quantity),
                     'batch_number': movement.batch_number,
                     'expiry_date': movement.expiry_date.isoformat() if movement.expiry_date else None,
-                    'location_name': movement.inventory.location.name if movement.inventory.location else None
+                    'location_name': movement.inventory.location.location_code if movement.inventory.location else None
                 }
                 
                 if movement.inventory.product:

@@ -108,12 +108,17 @@ def get_user_roles(user):
     """Return a set of lowercase role names for the user from the RBAC relationship.
 
     The User model has no scalar ``role`` column; roles are stored via the
-    ``user.roles`` (UserRole) relationship plus ``is_admin``/``is_super_admin`` flags.
+    ``user.roles`` (UserRole) relationship plus the ``is_super_admin`` flag.
+
+    is_admin intentionally does NOT grant the 'admin' wildcard here (see
+    auth_decorators.py's require_permission comment) - it used to let any
+    department admin review/approve workflow steps (PO, stock adjustment, etc)
+    regardless of the transaction type's configured reviewer/approver roles.
     """
     names = set()
     if not user:
         return names
-    if getattr(user, 'is_super_admin', False) or getattr(user, 'is_admin', False):
+    if getattr(user, 'is_super_admin', False):
         names.add('admin')
     try:
         for user_role in user.roles:
@@ -414,7 +419,13 @@ def review_workflow(workflow_id):
         user = db.session.get(User, current_user_id)
         data = request.get_json()
 
-        workflow = db.session.get(ApprovalWorkflow, workflow_id) or abort(404)
+        # Idempotency (2026-10-17): row-locked so a genuinely concurrent
+        # duplicate request (double-click firing two XHRs, a network retry)
+        # blocks on this SELECT until the first request's transaction
+        # commits, then re-reads the now-updated status and correctly fails
+        # the guard below - a plain (unlocked) read here let both requests
+        # see 'pending_review' simultaneously and both proceed.
+        workflow = db.session.get(ApprovalWorkflow, workflow_id, with_for_update=True) or abort(404)
 
         # Check if user has reviewer role for this transaction_type, per ApprovalConfiguration
         allowed, error_message = user_can_act_on(user, workflow, 'review')
@@ -433,7 +444,8 @@ def review_workflow(workflow_id):
         workflow.review_changes = data.get('changes')  # Track what was edited
         workflow.status = 'pending_approval'
         workflow.current_step = 'approval'
-        
+        workflow.escalated_at = None  # fresh escalation window for the new step
+
         # Create history
         history = ApprovalHistory(
             workflow_id=workflow_id,
@@ -477,7 +489,12 @@ def approve_workflow(workflow_id):
         user = db.session.get(User, current_user_id)
         data = request.get_json()
 
-        workflow = db.session.get(ApprovalWorkflow, workflow_id) or abort(404)
+        # Idempotency (2026-10-17): row-locked - see review_workflow()'s
+        # comment. Here the stakes are higher: a double-approve without
+        # this lock would double-reserve PO budget, double-adjust stock
+        # (stock_opname/inventory_adjustment), and double-post the GL
+        # journal (see the PendingJournalEntry.posted_at guard below).
+        workflow = db.session.get(ApprovalWorkflow, workflow_id, with_for_update=True) or abort(404)
 
         # Check if user has approver role for this transaction_type, per ApprovalConfiguration
         allowed, error_message = user_can_act_on(user, workflow, 'approval')
@@ -500,8 +517,16 @@ def approve_workflow(workflow_id):
         # stock transfer approval, stock opname inventory adjustment, etc.)
         apply_workflow_side_effect(workflow, 'approve', current_user_id)
 
-        # Create journal entries from pending (one AccountingEntry row per line)
-        pending_journal = PendingJournalEntry.query.filter_by(workflow_id=workflow_id).first()
+        # Create journal entries from pending (one AccountingEntry row per line).
+        # Locked + posted_at-guarded (2026-10-17): the workflow row lock above
+        # already blocks a concurrent duplicate from reaching here, but this
+        # is a second, independent guard specifically for the GL side effect -
+        # if this PendingJournalEntry was somehow already posted (e.g. a
+        # future code path posts it through a different route), skip rather
+        # than double-post.
+        pending_journal = PendingJournalEntry.query.filter_by(workflow_id=workflow_id).with_for_update().first()
+        if pending_journal and pending_journal.posted_at:
+            pending_journal = None  # already posted elsewhere - do not re-post
         if pending_journal:
             # Closing Period backstop (2026-09-28, gap ditemukan saat
             # verifikasi fitur Closing Period): post_pending_journal() TIDAK
@@ -526,6 +551,7 @@ def approve_workflow(workflow_id):
                              'Tidak bisa approve transaksi yang jurnalnya bertanggal periode tersebut.'
                 }), 400
             created_entries = post_pending_journal(pending_journal.id, posted_by_user_id=current_user_id)
+            pending_journal.posted_at = get_local_now()
             db.session.flush()
 
             # journal_entry_id historically pointed at a single AccountingEntry;
@@ -579,7 +605,16 @@ def reject_workflow(workflow_id):
         user = db.session.get(User, current_user_id)
         data = request.get_json()
         
-        workflow = db.session.get(ApprovalWorkflow, workflow_id) or abort(404)
+        # Idempotency (2026-10-17): row-locked, see review_workflow()'s comment.
+        workflow = db.session.get(ApprovalWorkflow, workflow_id, with_for_update=True) or abort(404)
+
+        # Status guard (2026-10-17): this endpoint previously had NONE at all -
+        # a workflow already 'approved'/'rejected' could be "rejected" again,
+        # re-running apply_workflow_side_effect('reject') on a source document
+        # that had already been approved (e.g. flipping an approved PO's
+        # budget-reserved status back to draft after the fact).
+        if workflow.status not in ('pending_review', 'pending_approval'):
+            return jsonify({'error': f'Workflow is not pending (current status: {workflow.status})'}), 400
 
         # Check authorization - same reviewer/approver role config as review/approve
         if workflow.status == 'pending_review':
@@ -590,7 +625,7 @@ def reject_workflow(workflow_id):
             allowed, error_message = user_can_act_on(user, workflow, 'approval')
             if not allowed:
                 return jsonify({'error': error_message}), 403
-        
+
         # Update workflow
         old_status = workflow.status
         workflow.rejected_by = current_user_id

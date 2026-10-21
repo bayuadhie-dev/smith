@@ -4,6 +4,7 @@ Auto-calculate product metrics based on specifications
 """
 
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required
 from models import db
 from models.product_excel_schema import ProductNew
 from datetime import datetime
@@ -23,6 +24,7 @@ product_calc_bp = Blueprint('product_calculations', __name__, url_prefix='/api/p
 
 
 @product_calc_bp.route('/calculate', methods=['POST'])
+@jwt_required()
 def calculate_product_metrics():
     """
     Calculate product metrics based on input specifications
@@ -80,6 +82,7 @@ def calculate_product_metrics():
 
 
 @product_calc_bp.route('/calculate-batch', methods=['POST'])
+@jwt_required()
 def calculate_batch():
     """
     Calculate metrics for multiple products at once
@@ -133,6 +136,7 @@ def calculate_batch():
 
 
 @product_calc_bp.route('/<kode_produk>/recalculate', methods=['POST'])
+@jwt_required()
 def recalculate_product(kode_produk):
     """
     Recalculate and update stored calculations for a product
@@ -180,6 +184,7 @@ def recalculate_product(kode_produk):
 
 
 @product_calc_bp.route('/recalculate-all', methods=['POST'])
+@jwt_required()
 def recalculate_all_products():
     """
     Recalculate all products in the database

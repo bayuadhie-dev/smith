@@ -201,7 +201,9 @@ def manager_approve_leave(request_id):
         manager_employee = db.session.get(Employee, leave_request.required_manager_id) if leave_request.required_manager_id else None
         is_the_manager = manager_employee and manager_employee.user_id == user_id
         user = db.session.get(User, user_id)
-        is_admin = user and (user.is_admin or getattr(user, 'is_super_admin', False))
+        # is_admin alone no longer bypasses - same fix as hr_extended.py's
+        # equivalent leave-approval check (2026-10-13 RBAC audit)
+        is_admin = user and getattr(user, 'is_super_admin', False)
         if not (is_the_manager or is_admin):
             return jsonify({'error': 'Hanya manager departemen karyawan ini yang bisa approve'}), 403
 

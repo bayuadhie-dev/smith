@@ -238,38 +238,28 @@ def recognize_face():
 def list_registered_faces():
     """List all registered staff faces"""
     try:
-        # Debug: check table exists
-        from sqlalchemy import text
-        result_proxy = db.session.execute(text("SELECT name FROM sqlite_master WHERE type='table' AND name='staff_faces'"))
-        table_exists = result_proxy.fetchone()
-        
-        if not table_exists:
-            return jsonify({
-                'total': 0,
-                'staff': [],
-                'debug': 'Table staff_faces does not exist'
-            }), 200
-        
-        # Simple raw query
-        result_proxy = db.session.execute(text("SELECT id, name, jabatan, departemen, is_active, created_at FROM staff_faces WHERE is_active = 1 ORDER BY name"))
-        rows = result_proxy.fetchall()
-        
-        result = []
-        for row in rows:
-            result.append({
-                'id': row[0],
-                'name': row[1],
-                'jabatan': row[2],
-                'departemen': row[3],
-                'is_active': bool(row[4]),
-                'created_at': str(row[5]) if row[5] else None
-            })
-        
+        # 2026-10-17: rewritten from raw SQL using SQLite-only syntax
+        # (sqlite_master table check, is_active = 1 integer comparison) -
+        # production has been on PostgreSQL for a long time, so this always
+        # errored (sqlite_master doesn't exist there). Using the ORM model
+        # directly works correctly on any backend and needs no table-exists
+        # probe at all (migrations already guarantee the table exists).
+        faces = StaffFace.query.filter_by(is_active=True).order_by(StaffFace.name).all()
+
+        result = [{
+            'id': f.id,
+            'name': f.name,
+            'jabatan': f.jabatan,
+            'departemen': f.departemen,
+            'is_active': f.is_active,
+            'created_at': f.created_at.isoformat() if f.created_at else None,
+        } for f in faces]
+
         return jsonify({
             'total': len(result),
             'staff': result
         }), 200
-        
+
     except Exception as e:
         import traceback
         traceback.print_exc()

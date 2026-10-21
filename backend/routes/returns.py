@@ -62,12 +62,21 @@ def get_returns():
 def create_return():
     """Create new customer return"""
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True) or {}
         user_id = get_jwt_identity()
-        
+
+        # Fase 3 audit fix (fix_report_2.md, 2026-10-01): field wajib
+        # (customer_id/return_date/reason) sebelumnya diakses langsung lewat
+        # data['...'] - body kosong/tidak lengkap melempar KeyError yang
+        # tertangkap generic except di bawah dan balik sebagai 500, bukan
+        # 400 yang menjelaskan field mana yang kurang.
+        missing = [f for f in ('customer_id', 'return_date', 'reason') if not data.get(f)]
+        if missing:
+            return jsonify({'error': f"Field wajib belum diisi: {', '.join(missing)}"}), 400
+
         # Generate return number
         return_number = generate_number('RTN', CustomerReturn, 'return_number')
-        
+
         # Create return
         customer_return = CustomerReturn(
             return_number=return_number,
@@ -194,11 +203,20 @@ def get_return(id):
 def create_qc_inspection(return_id):
     """Create QC inspection for return"""
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True) or {}
         user_id = get_jwt_identity()
         
         customer_return = db.session.get(CustomerReturn, return_id) or abort(404)
-        
+
+        # Fase 3 audit fix (fix_report_2.md, 2026-10-01): field wajib
+        # sebelumnya diakses langsung lewat data['...'] - body kosong/tidak
+        # lengkap melempar KeyError yang tertangkap generic except di bawah
+        # dan balik sebagai 500, bukan 400 yang menjelaskan field mana yang
+        # kurang.
+        missing = [f for f in ('visual_inspection', 'overall_result', 'quantity_inspected') if data.get(f) is None]
+        if missing:
+            return jsonify({'error': f"Field wajib belum diisi: {', '.join(missing)}"}), 400
+
         # Create QC record
         qc_record = ReturnQCRecord(
             return_id=return_id,
@@ -259,11 +277,12 @@ def create_qc_inspection(return_id):
 def create_disposition(return_id):
     """Create disposition for return items"""
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True) or {}
         user_id = get_jwt_identity()
         
         customer_return = db.session.get(CustomerReturn, return_id) or abort(404)
-        
+
+        new_dispositions = []
         for disposition_data in data.get('dispositions', []):
             disposition = ReturnDisposition(
                 return_id=return_id,
@@ -276,31 +295,198 @@ def create_disposition(return_id):
                 processed_by=user_id,
                 notes=disposition_data.get('notes')
             )
-            
+
             db.session.add(disposition)
-            
+            new_dispositions.append(disposition)
+
             # Update return item
             return_item = db.session.get(ReturnItem, disposition_data['return_item_id'])
             if return_item:
                 return_item.disposition = disposition_data['disposition_type']
                 return_item.warehouse_location = disposition_data.get('warehouse_location')
                 return_item.waste_category = disposition_data.get('waste_category')
-            
+
             # Process based on disposition type
             _process_disposition(disposition, return_item)
-        
+
+        db.session.flush()  # need disposition.id for GL idempotency guard below
+
         # Update return status
         customer_return.status = 'processed'
         customer_return.processed_by = user_id
         customer_return.processed_date = get_local_now()
-        
+
+        # GL posting (Fase 2 audit fix 2026-09-30, redesigned Fase 4
+        # fix_report_2.md 2026-10-01 - disetujui pemilik): jurnal kini
+        # diposting PER DISPOSISI (per batch), bukan sekali untuk seluruh
+        # retur - supaya retur yang didisposisi bertahap (batch 1 lalu
+        # batch 2 di hari lain) tetap dapat jurnal untuk SETIAP batch,
+        # bukan cuma batch pertama.
+        for disposition in new_dispositions:
+            return_item = db.session.get(ReturnItem, disposition.return_item_id)
+            if return_item:
+                _post_disposition_gl(disposition, return_item, customer_return, user_id)
+
         db.session.commit()
-        
+
         return jsonify(success_response('api.success')), 201
-        
+
+    except ValueError as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+
+def _post_disposition_gl(disposition, return_item, customer_return, user_id):
+    """Posting jurnal GL untuk SATU disposisi/batch retur penjualan.
+
+    Redesain Fase 4 (fix_report_2.md, 2026-10-01, disetujui pemilik via
+    AskUserQuestion) - versi sebelumnya (fix_report.md Fase 2) menjurnal
+    sekali untuk SELURUH CustomerReturn, jadi retur yang didisposisi
+    bertahap (batch 1 lalu batch 2 di hari lain) cuma dapat jurnal untuk
+    batch pertama. Sekarang jurnal dihitung per ReturnDisposition (per
+    batch), pakai qty PADA DISPOSISI ITU SAJA (bukan seluruh
+    quantity_returned item), idempoten lewat
+    ReturnDisposition.pending_journal_entry_id.
+
+    Dr Retur Penjualan (akun kontra-revenue, slot akun_retur_penjualan_id)
+    Dr PPN Keluaran (proporsional, kalau retur ini punya invoice penjualan
+        terkait dengan PPN)
+    Cr Piutang Dagang (resolve_accounts_receivable per customer)
+
+    Untuk disposition_type == 'warehouse' (barang kembali ke stok layak
+    jual), ditambah:
+    Dr Persediaan / Cr HPP sebesar cost barang (Product.cost x qty disposisi).
+
+    Guard: total nilai yang sudah dijurnal untuk SELURUH retur ini (batch-
+    batch sebelumnya + batch ini) tidak boleh melebihi
+    CustomerReturn.total_value - kalau overshoot (data qty salah/duplikat),
+    ValueError dilempar dan seluruh request di-rollback oleh caller,
+    BUKAN diam-diam memposting jurnal yang melebihi nilai retur asli.
+
+    CustomerReturn.pending_journal_entry_id (dari fix_report.md Fase 2)
+    tetap diisi - menunjuk ke jurnal batch PERTAMA - supaya
+    tests/test_returns_gl.py (tes lama) tetap valid.
+    """
+    if disposition.pending_journal_entry_id:
+        return  # idempoten per-disposisi
+
+    value = float(disposition.quantity or 0) * float(return_item.unit_price or 0)
+    if value <= 0:
+        return
+
+    from models.finance import TaxAccountSettings, Invoice
+    from models.approval_workflow import PendingJournalEntry
+    from utils.finance_helpers import (
+        post_pending_journal, resolve_account, resolve_accounts_receivable,
+        get_or_create_singleton, is_period_locked,
+    )
+
+    if is_period_locked(customer_return.return_date, transaction_type='sales_return'):
+        raise ValueError(
+            f'Periode {customer_return.return_date.strftime("%Y-%m")} sudah '
+            'ditutup, tidak bisa posting jurnal retur.'
+        )
+
+    # Guard nilai total - jumlahkan semua disposisi lain di retur ini yang
+    # SUDAH punya jurnal (pending_journal_entry_id terisi), plus batch ini.
+    already_posted_value = 0.0
+    other_dispositions = ReturnDisposition.query.filter(
+        ReturnDisposition.return_id == customer_return.id,
+        ReturnDisposition.pending_journal_entry_id.isnot(None),
+        ReturnDisposition.id != disposition.id,
+    ).all()
+    for other in other_dispositions:
+        other_item = db.session.get(ReturnItem, other.return_item_id)
+        if other_item:
+            already_posted_value += float(other.quantity or 0) * float(other_item.unit_price or 0)
+
+    if already_posted_value + value > float(customer_return.total_value or 0) + 0.01:
+        raise ValueError(
+            f'Total nilai disposisi ({already_posted_value + value:,.2f}) melebihi '
+            f'total nilai retur {customer_return.return_number} '
+            f'({float(customer_return.total_value or 0):,.2f}) - kemungkinan qty disposisi '
+            'salah atau duplikat.'
+        )
+
+    # Rasio PPN Keluaran proporsional dari invoice penjualan yang terkait
+    # (kalau ada) - CustomerReturn tidak link langsung ke Invoice, jadi
+    # dicari lewat sales_order_id.
+    ppn_ratio = 0.0
+    if customer_return.sales_order_id:
+        invoice = Invoice.query.filter_by(
+            sales_order_id=customer_return.sales_order_id, invoice_type='sales'
+        ).order_by(Invoice.id.desc()).first()
+        if invoice and invoice.subtotal and float(invoice.subtotal) > 0:
+            ppn_ratio = float(invoice.tax_amount or 0) / float(invoice.subtotal)
+
+    journal_lines = []
+    sales_return_account_id = resolve_account('akun_retur_penjualan_id', product_id=return_item.product_id)
+    journal_lines.append({
+        'account_id': sales_return_account_id,
+        'debit': value,
+        'credit': 0,
+        'description': f'Retur Penjualan - {customer_return.return_number} ({disposition.disposition_type})',
+    })
+
+    if disposition.disposition_type == 'warehouse':
+        cost = float(return_item.product.cost or 0) if return_item.product else 0.0
+        cost_value = cost * float(disposition.quantity or 0)
+        if cost_value > 0:
+            inventory_account_id = resolve_account('akun_persediaan_id', product_id=return_item.product_id)
+            hpp_account_id = resolve_account('akun_hpp_id', product_id=return_item.product_id)
+            journal_lines.append({
+                'account_id': inventory_account_id, 'debit': cost_value, 'credit': 0,
+                'description': f'Persediaan dari retur - {customer_return.return_number}',
+            })
+            journal_lines.append({
+                'account_id': hpp_account_id, 'debit': 0, 'credit': cost_value,
+                'description': f'Koreksi HPP dari retur - {customer_return.return_number}',
+            })
+
+    ppn_amount = round(value * ppn_ratio, 2)
+    total_ar = value
+
+    if ppn_amount > 0:
+        tax_settings = get_or_create_singleton(TaxAccountSettings)
+        if tax_settings.akun_ppn_keluaran_id:
+            journal_lines.append({
+                'account_id': tax_settings.akun_ppn_keluaran_id, 'debit': ppn_amount, 'credit': 0,
+                'description': f'Koreksi PPN Keluaran - {customer_return.return_number}',
+            })
+            total_ar += ppn_amount
+        # kalau akun PPN Keluaran belum diatur, PPN tidak dikoreksi (tidak
+        # ada akun tujuan) - total_ar tetap hanya nilai barang, supaya
+        # jurnal tetap balance.
+
+    ar_account_id = resolve_accounts_receivable(customer_return.customer_id)
+    journal_lines.append({
+        'account_id': ar_account_id, 'debit': 0, 'credit': total_ar,
+        'description': f'Koreksi Piutang - {customer_return.return_number}',
+    })
+
+    pending = PendingJournalEntry(
+        workflow_id=None,
+        entry_date=customer_return.return_date,
+        description=f'Jurnal Retur Penjualan - {customer_return.return_number} (disposisi #{disposition.id})',
+        reference=customer_return.return_number,
+        lines=journal_lines,
+        total_debit=sum(l['debit'] for l in journal_lines),
+        total_credit=sum(l['credit'] for l in journal_lines),
+        created_by=user_id,
+    )
+    db.session.add(pending)
+    db.session.flush()
+
+    post_pending_journal(
+        pending.id, posted_by_user_id=user_id,
+        reference_type='sales_return', reference_id=customer_return.id,
+    )
+    disposition.pending_journal_entry_id = pending.id
+    if not customer_return.pending_journal_entry_id:
+        customer_return.pending_journal_entry_id = pending.id
 
 def _process_disposition(disposition, return_item):
     """Process disposition based on type.
@@ -386,9 +572,9 @@ def get_return_analytics():
             db.func.count(CustomerReturn.id).label('count')
         ).group_by(CustomerReturn.reason).all()
         
-        # Monthly return trends (SQLite compatible)
+        # Monthly return trends
         monthly_returns = db.session.query(
-            db.func.strftime('%Y-%m', CustomerReturn.return_date).label('month'),
+            db.func.to_char(CustomerReturn.return_date, 'YYYY-MM').label('month'),
             db.func.count(CustomerReturn.id).label('count')
         ).group_by('month').order_by('month').limit(12).all()
         

@@ -43,8 +43,10 @@ def _check_dcc_permission(user_id, action):
     user = db.session.get(User, user_id)
     if not user:
         return False
-    # Super admin / admin always allowed
-    if user.is_admin or user.is_super_admin:
+    # Super admin always allowed - is_admin alone no longer bypasses (it let a
+    # department admin approve/destroy controlled documents outside the proper
+    # DCC role matrix below, same pattern as the 2026-10-13 RBAC audit)
+    if user.is_super_admin:
         return True
 
     roles = _get_user_dcc_roles(user_id)
@@ -817,7 +819,7 @@ def get_capa_list():
             'raised_by': c.raised_by_user.full_name if c.raised_by_user else None,
             'raised_date': c.raised_date.isoformat() if c.raised_date else None,
             'assigned_department': c.assigned_department,
-            'supplier_name': c.supplier.name if c.supplier else c.supplier_name,
+            'supplier_name': c.supplier.company_name if c.supplier else c.supplier_name,
             'due_date': c.due_date.isoformat() if c.due_date else None,
             'closed_at': c.closed_at.isoformat() if c.closed_at else None,
             'is_overdue': c.due_date < date.today() if c.due_date and c.status not in ['closed', 'cancelled'] else False,

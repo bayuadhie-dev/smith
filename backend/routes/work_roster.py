@@ -871,7 +871,7 @@ def copy_roster():
         
         return jsonify({
             'success': True,
-            'message': f'Roster berhasil dicopy ke {target_date}',
+            'message': f'Roster berhasil dicopy ke {target_week_start}',
             'roster_id': new_roster.id
         }), 201
         

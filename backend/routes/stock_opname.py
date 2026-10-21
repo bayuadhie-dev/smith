@@ -389,11 +389,18 @@ def apply_stock_opname_adjustments(order, user_id, create_adjustments=True):
                     from utils.fifo_helper import _get_inventory_unit_cost
                     unit_cost = _get_inventory_unit_cost(inventory)
 
-                    inventory.quantity_on_hand = item.counted_qty
-                    inventory.quantity_available = item.counted_qty - inventory.quantity_reserved
-                    inventory.last_stock_check = get_local_now()
-
+                    # Delta-based, bukan overwrite flat ke counted_qty: lokasi
+                    # terlepas dari lock begitu status jadi 'completed' (jauh
+                    # sebelum approve ini jalan), jadi quantity_on_hand saat ini
+                    # bisa sudah berubah karena mutasi stock legit (stock-in/out
+                    # normal) yang terjadi di window completed->approved. Variance
+                    # dihitung saat counting (counted_qty - qty sistem waktu itu)
+                    # lalu diterapkan sebagai delta ke qty TERKINI, supaya mutasi
+                    # di window itu tidak ikut terhapus.
                     variance_qty = float(item.variance_qty)
+                    inventory.quantity_on_hand = float(inventory.quantity_on_hand or 0) + variance_qty
+                    inventory.quantity_available = float(inventory.quantity_on_hand) - float(inventory.quantity_reserved or 0)
+                    inventory.last_stock_check = get_local_now()
                     variance_direction = 'in' if variance_qty >= 0 else 'out'
                     movement = record_inventory_transaction(
                         transaction_type='adjustment',

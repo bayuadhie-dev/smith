@@ -7,7 +7,7 @@ import json
 from models import db, Employee, Department, ShiftSchedule, Attendance, Leave, EmployeeRoster, Role
 from utils.i18n import success_response, error_response, get_message
 from utils import generate_number
-from datetime import datetime
+from datetime import datetime, timedelta
 from utils.timezone import get_local_now, get_local_today
 
 hr_bp = Blueprint('hr', __name__)

@@ -29,10 +29,14 @@ def allowed_file(filename):
 
 
 def can_view_all(user_id):
-    """Return True if the user is an admin/super admin and may view all employees' expenses."""
+    """Return True if the user is a super admin and may view/approve all employees'
+    expenses. is_admin alone no longer grants this (see auth_decorators.py
+    require_permission comment) - a department admin should only see/approve
+    their own team's expenses unless they're also a manager (checked separately
+    at the approval call site) or a true super admin."""
     try:
         user = db.session.get(User, int(user_id))
-        return bool(user and (user.is_admin or user.is_super_admin))
+        return bool(user and user.is_super_admin)
     except (TypeError, ValueError):
         return False
 
@@ -583,7 +587,7 @@ def approve_expense(expense_id):
         expense = Expense.query.get_or_404(expense_id)
 
         from utils.finance_helpers import is_period_locked
-        if is_period_locked(expense.expense_date):
+        if is_period_locked(expense.expense_date, transaction_type='expense'):
             return jsonify({'success': False, 'error': f'Periode {expense.expense_date.strftime("%Y-%m")} sudah ditutup (period-close). Tidak bisa approve expense di periode ini.'}), 400
 
         if expense.status != 'submitted':
@@ -885,12 +889,7 @@ def approve_reimbursement(reimbursement_id):
         reimbursement.status = 'approved'
         reimbursement.approved_by = user_id
         reimbursement.approved_at = datetime.utcnow()
-        
-        # Mark expenses as paid
-        for exp in reimbursement.expenses:
-            exp.status = 'paid'
-            exp.reimbursed_at = datetime.utcnow()
-        
+
         db.session.commit()
         
         return jsonify({
@@ -923,7 +922,7 @@ def pay_reimbursement(reimbursement_id):
 
         from utils.finance_helpers import is_period_locked
         today = datetime.utcnow().date()
-        if is_period_locked(today):
+        if is_period_locked(today, transaction_type='reimbursement'):
             return jsonify({'success': False, 'error': f'Periode {today.strftime("%Y-%m")} sudah ditutup (period-close). Tidak bisa memproses pembayaran reimbursement hari ini.'}), 400
 
         if reimbursement.status != 'approved':
@@ -937,6 +936,12 @@ def pay_reimbursement(reimbursement_id):
         reimbursement.paid_by = user_id
         reimbursement.paid_at = datetime.utcnow()
         reimbursement.payment_reference = data.get('payment_reference')
+
+        # Mark the underlying expenses as paid now that cash has actually gone out
+        for exp in reimbursement.expenses:
+            exp.status = 'paid'
+            exp.reimbursed_at = datetime.utcnow()
+
         db.session.flush()
 
         # GL posting: Debit Hutang Karyawan (clears the liability booked
@@ -1017,8 +1022,11 @@ def get_expense_dashboard():
             if employee:
                 employee_filter = [Expense.employee_id == employee.id]
         
-        # Get summary
-        total_expenses = db.session.query(func.sum(Expense.amount_base)).filter(*employee_filter).scalar() or 0
+        # Get summary (exclude draft/rejected - not real committed cost yet)
+        counted_status = Expense.status.notin_(['draft', 'rejected'])
+        total_expenses = db.session.query(func.sum(Expense.amount_base)).filter(
+            *employee_filter, counted_status
+        ).scalar() or 0
         pending_expenses = db.session.query(func.count(Expense.id)).filter(
             *employee_filter,
             Expense.status == 'submitted'
@@ -1027,20 +1035,21 @@ def get_expense_dashboard():
             *employee_filter,
             Expense.status == 'approved'
         ).scalar() or 0
-        
+
         # This month's expenses
         from datetime import date
         this_month = date.today().replace(day=1)
         monthly_expenses = db.session.query(func.sum(Expense.amount_base)).filter(
             *employee_filter,
+            counted_status,
             Expense.expense_date >= this_month
         ).scalar() or 0
-        
+
         # By category
         category_breakdown = db.session.query(
             Expense.expense_category,
             func.sum(Expense.amount_base)
-        ).filter(*employee_filter).group_by(Expense.expense_category).all()
+        ).filter(*employee_filter, counted_status).group_by(Expense.expense_category).all()
         
         return jsonify({
             'success': True,
