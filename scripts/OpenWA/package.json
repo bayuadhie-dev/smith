@@ -62,7 +62,7 @@
     "@bull-board/express": "^8.1.0",
     "@bull-board/nestjs": "^8.1.0",
     "@hono/node-server": "^2.0.12",
-    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@modelcontextprotocol/sdk": "^1.32.0",
     "@nestjs-modules/ioredis": "^2.0.2",
     "@nestjs/bullmq": "^11.0.4",
     "@nestjs/common": "^11.1.27",
