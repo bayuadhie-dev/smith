@@ -6,6 +6,7 @@ import {
   Play, Send, CheckSquare
 } from 'lucide-react';
 import axiosInstance from '../../utils/axiosConfig';
+import { confirmDialog, showError, showSuccess } from '../../components/ui';
 
 interface FormulaItem {
   id: number;
@@ -132,7 +133,7 @@ const RNDProjectDetail: React.FC = () => {
       await axiosInstance.post(`/api/rnd/formulas/${formulaId}/select`);
       fetchProject();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Gagal memilih formula');
+      showError(error.response?.data?.error || 'Gagal memilih formula');
     }
   };
 
@@ -140,33 +141,33 @@ const RNDProjectDetail: React.FC = () => {
     try {
       await axiosInstance.post(`/api/rnd/projects/${id}/request-approval`, { notes });
       setShowApprovalModal(false);
-      alert('Permintaan approval berhasil dikirim');
+      showSuccess('Permintaan approval berhasil dikirim');
       fetchProject();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Gagal mengirim permintaan approval');
+      showError(error.response?.data?.error || 'Gagal mengirim permintaan approval');
     }
   };
 
   const handleConvertToProduction = async () => {
-    if (!confirm('Apakah Anda yakin ingin mengkonversi proyek ini ke BOM Produksi?')) return;
+    if (!(await confirmDialog('Apakah Anda yakin ingin mengkonversi proyek ini ke BOM Produksi?'))) return;
 
     try {
       const response = await axiosInstance.post(`/api/rnd/projects/${id}/convert-to-production`);
-      alert(`Berhasil dikonversi!\nProduk: ${response.data.product.name}\nBOM: ${response.data.bom.bom_number}`);
+      showSuccess(`Berhasil dikonversi!\nProduk: ${response.data.product.name}\nBOM: ${response.data.bom.bom_number}`);
       fetchProject();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Gagal mengkonversi ke produksi');
+      showError(error.response?.data?.error || 'Gagal mengkonversi ke produksi');
     }
   };
 
   const handleDeleteFormula = async (formulaId: number) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus formula ini?')) return;
+    if (!(await confirmDialog('Apakah Anda yakin ingin menghapus formula ini?'))) return;
 
     try {
       await axiosInstance.delete(`/api/rnd/formulas/${formulaId}`);
       fetchProject();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Gagal menghapus formula');
+      showError(error.response?.data?.error || 'Gagal menghapus formula');
     }
   };
 

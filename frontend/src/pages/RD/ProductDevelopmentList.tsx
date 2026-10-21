@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import api from '../../utils/axiosConfig';
 import toast from 'react-hot-toast';
+import { confirmDialog } from '../../components/ui';
 import {
   RocketLaunchIcon,
   PlusIcon,
@@ -103,7 +104,7 @@ const ProductDevelopmentList: React.FC = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('Are you sure you want to delete this product development?')) return;
+    if (!(await confirmDialog('Are you sure you want to delete this product development?'))) return;
     
     try {
       await api.delete(`/api/rd/products/${id}`);

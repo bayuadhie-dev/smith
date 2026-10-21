@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import axiosInstance from '../../utils/axiosConfig';
+import { showError, showWarning } from '../../components/ui';
 
 interface User {
   id: number;
@@ -131,7 +132,7 @@ const RNDProjectForm: React.FC = () => {
     e.preventDefault();
     
     if (!formData.name.trim()) {
-      alert('Nama proyek harus diisi');
+      showWarning('Nama proyek harus diisi');
       return;
     }
 
@@ -151,7 +152,7 @@ const RNDProjectForm: React.FC = () => {
 
       navigate('/app/rnd/projects');
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Gagal menyimpan proyek');
+      showError(error.response?.data?.error || 'Gagal menyimpan proyek');
     } finally {
       setSaving(false);
     }

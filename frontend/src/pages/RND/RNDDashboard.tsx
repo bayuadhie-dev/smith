@@ -54,82 +54,79 @@ const RNDDashboard: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#059669]"></div>
       </div>
     );
   }
 
+  // 2026-10-07: Axion bento-grid restyle (tier-1 module landing page,
+  // #11 of 17). Sub-pages (Projects, Approvals, etc) are intentionally
+  // left as-is - only this landing dashboard is in scope.
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">R&D Dashboard</h1>
-          <p className="text-gray-500 dark:text-gray-400">Research & Development Management</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-snug">R&D Dashboard</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Research & Development Management</p>
         </div>
         <Link
           to="/app/rnd/projects/new"
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-[#059669] to-[#047857] text-white rounded-lg hover:shadow-lg transition-shadow text-sm font-medium"
         >
           <FlaskConical className="w-4 h-4" />
           Proyek Baru
         </Link>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <FolderKanban className="w-6 h-6 text-blue-600" />
+      {/* Stats Cards - bento: Total Proyek spans 2 cols (primary metric) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="xl:col-span-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <FolderKanban className="w-5 h-5" />
             </div>
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Total Proyek</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{data?.total_projects || 0}</p>
-            </div>
+            <p className="text-sm opacity-90">Total Proyek</p>
           </div>
+          <p className="text-3xl font-bold">{data?.total_projects || 0}</p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-yellow-100 rounded-lg">
-              <Clock className="w-6 h-6 text-yellow-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Proyek Aktif</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{data?.active_projects || 0}</p>
+        <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <Clock className="w-5 h-5" />
             </div>
           </div>
+          <p className="text-xs opacity-90 mb-1">Proyek Aktif</p>
+          <p className="text-2xl font-bold">{data?.active_projects || 0}</p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-green-100 rounded-lg">
-              <CheckCircle2 className="w-6 h-6 text-green-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Selesai</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{data?.completed_projects || 0}</p>
+        <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <CheckCircle2 className="w-5 h-5" />
             </div>
           </div>
+          <p className="text-xs opacity-90 mb-1">Selesai</p>
+          <p className="text-2xl font-bold">{data?.completed_projects || 0}</p>
         </div>
+      </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-orange-100 rounded-lg">
-              <AlertTriangle className="w-6 h-6 text-orange-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Pending Approval</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{data?.pending_approvals || 0}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <AlertTriangle className="w-5 h-5" />
             </div>
           </div>
+          <p className="text-xs opacity-90 mb-1">Pending Approval</p>
+          <p className="text-2xl font-bold">{data?.pending_approvals || 0}</p>
         </div>
       </div>
 
       {/* Projects by Stage */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Proyek per Tahap</h2>
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
+        <h2 className="text-base font-bold text-gray-900 dark:text-white mb-4">Proyek per Tahap</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {['LAB_SCALE', 'PILOT_SCALE', 'VALIDATION', 'COMPLETION'].map((stage) => (
             <div key={stage} className="text-center p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
@@ -144,11 +141,11 @@ const RNDDashboard: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Recent Experiments */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Eksperimen Terbaru</h2>
+            <h2 className="text-base font-bold text-gray-900 dark:text-white">Eksperimen Terbaru</h2>
             <Beaker className="w-5 h-5 text-gray-400" />
           </div>
           {data?.recent_experiments && data.recent_experiments.length > 0 ? (
@@ -176,7 +173,7 @@ const RNDDashboard: React.FC = () => {
         </div>
 
         {/* Recent Conversions */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Konversi ke Produksi</h2>
             <FileCheck className="w-5 h-5 text-gray-400" />
@@ -205,7 +202,7 @@ const RNDDashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Link
           to="/app/rnd/projects"
-          className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 hover:border-blue-300 transition-colors"
+          className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200"
         >
           <div className="flex items-center gap-3">
             <FolderKanban className="w-5 h-5 text-blue-600" />
@@ -216,7 +213,7 @@ const RNDDashboard: React.FC = () => {
 
         <Link
           to="/app/rnd/approvals"
-          className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 hover:border-blue-300 transition-colors"
+          className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200"
         >
           <div className="flex items-center gap-3">
             <CheckCircle2 className="w-5 h-5 text-green-600" />
@@ -227,7 +224,7 @@ const RNDDashboard: React.FC = () => {
 
         <Link
           to="/app/rnd/projects/new"
-          className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 hover:border-blue-300 transition-colors"
+          className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200"
         >
           <div className="flex items-center gap-3">
             <FlaskConical className="w-5 h-5 text-purple-600" />

@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom';
 import { useGetProjectsQuery, useDeleteProjectMutation, useGetProjectsAnalyticsQuery } from '../../services/api'
 import toast from 'react-hot-toast'
+import { confirmDialog } from '../../components/ui'
 import { useLanguage } from '../../contexts/LanguageContext';
 import {
   CalendarIcon,
@@ -37,7 +38,7 @@ export default function ProjectList() {
   const [deleteProject] = useDeleteProjectMutation()
 
   const handleDelete = async (id: number, name: string) => {
-    if (window.confirm(`Are you sure you want to delete project "${name}"?`)) {
+    if (await confirmDialog(`Are you sure you want to delete project "${name}"?`)) {
       try {
         await deleteProject(id).unwrap()
         toast.success('Project deleted successfully')

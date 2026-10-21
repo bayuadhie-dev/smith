@@ -5,6 +5,7 @@ import {
   ChevronRight, User, Calendar
 } from 'lucide-react';
 import axiosInstance from '../../utils/axiosConfig';
+import { confirmDialog, showError } from '../../components/ui';
 
 interface Approval {
   id: number;
@@ -53,14 +54,14 @@ const RNDApprovals: React.FC = () => {
   };
 
   const handleApprove = async (id: number) => {
-    if (!confirm('Apakah Anda yakin ingin menyetujui permintaan ini?')) return;
+    if (!(await confirmDialog('Apakah Anda yakin ingin menyetujui permintaan ini?'))) return;
 
     try {
       setProcessingId(id);
       await axiosInstance.post(`/api/rnd/approvals/${id}/approve`, { notes: '' });
       fetchApprovals();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Gagal menyetujui');
+      showError(error.response?.data?.error || 'Gagal menyetujui');
     } finally {
       setProcessingId(null);
     }
@@ -79,7 +80,7 @@ const RNDApprovals: React.FC = () => {
       setRejectReason('');
       fetchApprovals();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Gagal menolak');
+      showError(error.response?.data?.error || 'Gagal menolak');
     } finally {
       setProcessingId(null);
     }

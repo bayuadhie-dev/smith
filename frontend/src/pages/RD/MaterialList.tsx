@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import api from '../../utils/axiosConfig';
 import toast from 'react-hot-toast';
+import { confirmDialog } from '../../components/ui';
 import {
   CubeIcon,
   PlusIcon,
@@ -64,7 +65,7 @@ const MaterialList: React.FC = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('Are you sure you want to delete this material request?')) return;
+    if (!(await confirmDialog('Are you sure you want to delete this material request?'))) return;
     
     try {
       await api.delete(`/api/rd/materials/${id}`);

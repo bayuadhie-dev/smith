@@ -5,6 +5,7 @@ import {
   ChevronLeft, ChevronRight, AlertCircle
 } from 'lucide-react';
 import axiosInstance from '../../utils/axiosConfig';
+import { confirmDialog, showError } from '../../components/ui';
 
 interface Project {
   id: number;
@@ -95,13 +96,13 @@ const RNDProjectList: React.FC = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus proyek ini?')) return;
+    if (!(await confirmDialog('Apakah Anda yakin ingin menghapus proyek ini?'))) return;
 
     try {
       await axiosInstance.delete(`/api/rnd/projects/${id}`);
       fetchProjects();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Gagal menghapus proyek');
+      showError(error.response?.data?.error || 'Gagal menghapus proyek');
     }
   };
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { showError } from '../../components/ui';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import {
   ArrowDownTrayIcon,
@@ -151,10 +152,10 @@ const ResearchReportsForm: React.FC = () => {
         const data = await response.json();
         setReportData(data);
       } else {
-        alert('Failed to generate report');
+        showError('Failed to generate report');
       }
     } catch (error) {
-      alert('Error generating report');
+      showError('Error generating report');
     } finally {
       setLoading(false);
     }
@@ -184,7 +185,7 @@ const ResearchReportsForm: React.FC = () => {
         document.body.removeChild(a);
       }
     } catch (error) {
-      alert('Error exporting report');
+      showError('Error exporting report');
     }
   };
 
