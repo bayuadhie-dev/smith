@@ -12,6 +12,7 @@ import {
   XCircleIcon
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
+import { showError } from '../../components/ui';
 interface AuditLog {
   id: number;
   user_id: number;
@@ -111,7 +112,7 @@ const AuditTrail: React.FC = () => {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Failed to export logs:', error);
-      alert('Failed to export audit logs');
+      showError('Failed to export audit logs');
     }
   };
 
@@ -200,7 +201,7 @@ const AuditTrail: React.FC = () => {
       {/* Filters Panel */}
       {showFilters && (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">FunnelIcon Audit Logs</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Filter Audit Log</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
@@ -278,13 +279,13 @@ const AuditTrail: React.FC = () => {
               onClick={clearFilters}
               className="px-4 py-2 bg-gray-300 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400"
             >
-              Clear Filters
+              Hapus Filter
             </button>
             <button
               onClick={applyFilters}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             >
-              Apply Filters
+              Terapkan Filter
             </button>
           </div>
         </div>
@@ -416,22 +417,24 @@ const AuditTrail: React.FC = () => {
               disabled={currentPage === 1}
               className="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 disabled:opacity-50"
             >
+              Sebelumnya
             </button>
             <button
               onClick={() => loadAuditLogs(currentPage + 1)}
               disabled={currentPage === totalPages}
               className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 disabled:opacity-50"
             >
+              Berikutnya
             </button>
           </div>
           <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
               <p className="text-sm text-gray-700 dark:text-gray-200">
-                Showing <span className="font-medium">{(currentPage - 1) * logsPerPage + 1}</span> to{' '}
+                Menampilkan <span className="font-medium">{(currentPage - 1) * logsPerPage + 1}</span> sampai{' '}
                 <span className="font-medium">
                   {Math.min(currentPage * logsPerPage, totalLogs)}
                 </span>{' '}
-                of <span className="font-medium">{totalLogs}</span> results
+                dari <span className="font-medium">{totalLogs}</span> hasil
               </p>
             </div>
             <div>
@@ -439,14 +442,19 @@ const AuditTrail: React.FC = () => {
                 <button
                   onClick={() => loadAuditLogs(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 disabled:opacity-50"
+                  className="relative inline-flex items-center px-3 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 disabled:opacity-50"
                 >
+                  &laquo;
                 </button>
+                <span className="relative inline-flex items-center px-4 py-2 border-t border-b border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-200">
+                  {currentPage} / {totalPages}
+                </span>
                 <button
                   onClick={() => loadAuditLogs(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 disabled:opacity-50"
+                  className="relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 disabled:opacity-50"
                 >
+                  &raquo;
                 </button>
               </nav>
             </div>
@@ -459,12 +467,12 @@ const AuditTrail: React.FC = () => {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
           <div className="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800">
             <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Audit Log Details</h3>
-              
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Detail Audit Log</h3>
+
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Timestamp</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Waktu</label>
                     <div className="text-sm text-gray-900 dark:text-white">{formatTimestamp(selectedLog.timestamp)}</div>
                   </div>
                   <div>
@@ -472,7 +480,7 @@ const AuditTrail: React.FC = () => {
                     <div className="text-sm text-gray-900 dark:text-white">{selectedLog.user_name}</div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Action</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Aksi</label>
                     <div className="text-sm text-gray-900 dark:text-white capitalize">{selectedLog.action}</div>
                   </div>
                   <div>
@@ -494,21 +502,36 @@ const AuditTrail: React.FC = () => {
                   <div className="text-sm text-gray-900 dark:text-white break-all">{selectedLog.user_agent}</div>
                 </div>
 
-                {selectedLog.old_values && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Old Values</label>
-                    <pre className="text-sm text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 p-3 rounded overflow-auto">
-                      {JSON.stringify(selectedLog.old_values, null, 2)}
-                    </pre>
-                  </div>
-                )}
-
+                {/* Field-level diff, satu baris per kolom yang berubah - lebih mudah dibaca
+                    daripada JSON mentah. old_values/new_values sekarang berisi field-level
+                    changes nyata dari ORM (2026-10-16), bukan dump seluruh request body. */}
                 {selectedLog.new_values && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">New Values</label>
-                    <pre className="text-sm text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 p-3 rounded overflow-auto">
-                      {JSON.stringify(selectedLog.new_values, null, 2)}
-                    </pre>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Perubahan Field</label>
+                    <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                      <table className="w-full text-sm">
+                        <thead className="bg-gray-50 dark:bg-gray-900">
+                          <tr>
+                            <th className="text-left px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400">Field</th>
+                            <th className="text-left px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400">Sebelum</th>
+                            <th className="text-left px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400">Sesudah</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                          {Object.keys(selectedLog.new_values).map((field) => (
+                            <tr key={field}>
+                              <td className="px-3 py-1.5 font-medium text-gray-700 dark:text-gray-200">{field}</td>
+                              <td className="px-3 py-1.5 text-red-600 dark:text-red-400">
+                                {selectedLog.old_values?.[field] !== undefined ? String(selectedLog.old_values[field] ?? '-') : '-'}
+                              </td>
+                              <td className="px-3 py-1.5 text-green-600 dark:text-green-400">
+                                {String(selectedLog.new_values[field] ?? '-')}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 )}
               </div>
@@ -521,6 +544,7 @@ const AuditTrail: React.FC = () => {
                   }}
                   className="px-4 py-2 bg-gray-300 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400"
                 >
+                  Tutup
                 </button>
               </div>
             </div>

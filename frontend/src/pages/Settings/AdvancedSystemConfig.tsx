@@ -11,6 +11,7 @@ import {
   ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
+import { confirmDialog, showError, showSuccess } from '../../components/ui';
 import { usePermissions } from '../../contexts/PermissionContext';
 
 const DatabaseSwitchCard: React.FC = () => {
@@ -35,17 +36,17 @@ const DatabaseSwitchCard: React.FC = () => {
 
   const handleSwitch = async (target: string) => {
     const label = status?.options?.[target] || target;
-    if (!confirm(
+    if (!(await confirmDialog(
       `Pindah database aktif ke "${label}"?\n\nEfeknya LANGSUNG ke semua orang yang sedang buka erp.graterp.my.id - backend akan restart singkat (~3 detik) lalu jalan dengan database ini.`
-    )) {
+    ))) {
       return;
     }
     setSwitching(true);
     try {
       await axiosInstance.post('/api/settings/database-switch', { target });
-      alert(`Sedang pindah ke "${label}"... tunggu ~5 detik lalu refresh halaman.`);
+      showSuccess(`Sedang pindah ke "${label}"... tunggu ~5 detik lalu refresh halaman.`);
     } catch (error: any) {
-      alert('Gagal switch database: ' + (error?.response?.data?.details || error.message));
+      showError('Gagal switch database: ' + (error?.response?.data?.details || error.message));
     } finally {
       setSwitching(false);
     }
@@ -183,10 +184,10 @@ const AdvancedSystemConfig: React.FC = () => {
       setPendingChanges({});
       await loadConfigurations();
       
-      alert('Configuration updated successfully!');
+      showSuccess('Configuration updated successfully!');
     } catch (error) {
       console.error('Failed to save configurations:', error);
-      alert('Failed to save configurations');
+      showError('Failed to save configurations');
     } finally {
       setSaving(false);
     }
@@ -194,7 +195,7 @@ const AdvancedSystemConfig: React.FC = () => {
 
   // Reset to defaults
   const resetToDefaults = async (category: string) => {
-    if (!confirm(`Reset all ${category} settings to default values?`)) {
+    if (!(await confirmDialog(`Reset all ${category} settings to default values?`))) {
       return;
     }
 
@@ -202,14 +203,14 @@ const AdvancedSystemConfig: React.FC = () => {
       await axiosInstance.post('/api/settings/system-config/reset', {
         category: category
       });
-      
+
       await loadConfigurations();
       setPendingChanges({});
-      
-      alert('Settings reset to defaults successfully!');
+
+      showSuccess('Settings reset to defaults successfully!');
     } catch (error) {
       console.error('Failed to reset settings:', error);
-      alert('Failed to reset settings');
+      showError('Failed to reset settings');
     }
   };
 

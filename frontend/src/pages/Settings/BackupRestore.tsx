@@ -16,6 +16,7 @@ import {
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import toast from 'react-hot-toast';
+import { confirmDialog } from '../../components/ui';
 
 interface BackupRecord {
   id: number;
@@ -81,7 +82,7 @@ const BackupRestore: React.FC = () => {
 
   // Create manual backup
   const createBackup = async () => {
-    if (!confirm('Create a new backup? This may take several minutes.')) {
+    if (!(await confirmDialog('Create a new backup? This may take several minutes.'))) {
       return;
     }
 
@@ -104,7 +105,7 @@ const BackupRestore: React.FC = () => {
 
   // Restore from backup
   const restoreBackup = async (backupId: number, filename: string) => {
-    if (!confirm(`⚠️ RESTORE FROM BACKUP\n\nFile: ${filename}\n\nThis will:\n• Overwrite ALL current data\n• Cannot be undone\n• A pre-restore backup will be created\n\nAre you sure you want to continue?`)) {
+    if (!(await confirmDialog(`⚠️ RESTORE FROM BACKUP\n\nFile: ${filename}\n\nThis will:\n• Overwrite ALL current data\n• Cannot be undone\n• A pre-restore backup will be created\n\nAre you sure you want to continue?`, { danger: true }))) {
       return;
     }
 
@@ -194,7 +195,7 @@ const BackupRestore: React.FC = () => {
 
   // Delete backup
   const deleteBackup = async (backupId: number) => {
-    if (!confirm('Are you sure you want to delete this backup?')) {
+    if (!(await confirmDialog('Are you sure you want to delete this backup?'))) {
       return;
     }
 

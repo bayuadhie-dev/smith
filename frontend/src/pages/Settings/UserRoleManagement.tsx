@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { showSuccess, showError } from '../../components/ui';
 import {
   ExclamationTriangleIcon,
   FunnelIcon
@@ -155,10 +156,10 @@ const UserRoleManagementNew: React.FC = () => {
       // Refresh permissions list immediately
       await refetchPermissions();
       
-      alert('Permission created successfully!');
+      showSuccess('Permission created successfully!');
     } catch (error: any) {
       console.error('Error saving permission:', error);
-      alert(error?.data?.error || 'Failed to save permission');
+      showError(error?.data?.error || 'Failed to save permission');
     }
   };
   
@@ -289,7 +290,7 @@ const UserRoleManagementNew: React.FC = () => {
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 bg-gray-50 dark:bg-gray-9000 bg-opacity-75 transition-opacity"></div>
+            <div className="fixed inset-0 bg-gray-50 dark:bg-gray-900 bg-opacity-75 transition-opacity"></div>
 
             <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
               <div className="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
@@ -331,7 +332,7 @@ const UserRoleManagementNew: React.FC = () => {
       {viewingUser && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 bg-gray-50 dark:bg-gray-9000 bg-opacity-75 transition-opacity" onClick={() => setViewingUser(null)}></div>
+            <div className="fixed inset-0 bg-gray-50 dark:bg-gray-900 bg-opacity-75 transition-opacity" onClick={() => setViewingUser(null)}></div>
 
             <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
               <div className="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6">

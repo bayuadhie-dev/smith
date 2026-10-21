@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { notificationService } from '../../services/notificationService';
 import axiosInstance from '../../utils/axiosConfig';
+import { confirmDialog } from '../../components/ui';
 import AccountPreferences from './AccountPreferences';
 import {
   ArrowDownTrayIcon,
@@ -30,6 +31,7 @@ import {
   useUpdateSystemSettingsMutation,
   useGetCompanyProfileQuery,
   useUpdateCompanyProfileMutation,
+  useUploadCompanyLogoMutation,
   useGetUsersQuery,
   useCreateUserMutation,
   useUpdateUserMutation,
@@ -80,6 +82,7 @@ const Settings: React.FC = () => {
   
   const [updateSystemSettings] = useUpdateSystemSettingsMutation();
   const [updateCompanyProfile] = useUpdateCompanyProfileMutation();
+  const [uploadCompanyLogo] = useUploadCompanyLogoMutation();
   const [createUser] = useCreateUserMutation();
   const [updateUser] = useUpdateUserMutation();
   const [deleteUser] = useDeleteUserMutation();
@@ -173,6 +176,29 @@ const Settings: React.FC = () => {
   const showMessage = (type: 'success' | 'error', text: string) => {
     setMessage({ type, text });
     setTimeout(() => setMessage(null), 5000);
+  };
+
+  const [logoUploading, setLogoUploading] = useState(false);
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      showMessage('error', 'Ukuran logo melebihi batas 2MB');
+      e.target.value = '';
+      return;
+    }
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      setLogoUploading(true);
+      await uploadCompanyLogo(formData).unwrap();
+      showMessage('success', 'Logo berhasil diupload');
+    } catch (error: any) {
+      showMessage('error', `Gagal upload logo: ${error.data?.error || error.message}`);
+    } finally {
+      setLogoUploading(false);
+      e.target.value = '';
+    }
   };
 
   const tabs: SettingsTab[] = [
@@ -696,7 +722,7 @@ const Settings: React.FC = () => {
   };
 
   const handleDeactivateUser = async (userId: number, userName: string) => {
-    if (!confirm(`Yakin ingin menonaktifkan user "${userName}"?\n\nUser akan di-deactivate dan tidak bisa login, tapi data tetap tersimpan.`)) {
+    if (!(await confirmDialog(`Yakin ingin menonaktifkan user "${userName}"?\n\nUser akan di-deactivate dan tidak bisa login, tapi data tetap tersimpan.`))) {
       return;
     }
     
@@ -713,16 +739,16 @@ const Settings: React.FC = () => {
 
   const handlePermanentDeleteUser = async (userId: number, userName: string) => {
     // Double confirmation for permanent delete
-    const firstConfirm = confirm(
+    const firstConfirm = await confirmDialog(
       `⚠️ PERINGATAN: Hapus Permanen!\n\n` +
       `Anda akan menghapus user "${userName}" secara PERMANEN.\n\n` +
       `Tindakan ini TIDAK DAPAT DIBATALKAN!\n\n` +
       `Klik OK untuk melanjutkan.`
     );
-    
+
     if (!firstConfirm) return;
-    
-    const secondConfirm = confirm(
+
+    const secondConfirm = await confirmDialog(
       `🚨 KONFIRMASI TERAKHIR\n\n` +
       `Ketik OK untuk menghapus "${userName}" secara permanen.\n\n` +
       `Semua data user akan dihapus dari sistem.`
@@ -794,6 +820,40 @@ const Settings: React.FC = () => {
         return (
           <div className="space-y-6">
             <h3 className="text-lg font-semibold">Company Information</h3>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Logo Perusahaan</label>
+              <p className="text-xs text-gray-500 mb-3">
+                Muncul di semua dokumen cetak (Invoice, SPK, Surat Jalan, dst) lewat field company.logo_url. PNG/JPG/SVG/WebP, maks 2MB.
+              </p>
+              <div className="flex items-center gap-4">
+                <div className="w-24 h-24 border border-dashed rounded-lg flex items-center justify-center bg-gray-50 overflow-hidden shrink-0">
+                  {companyData?.logoUrl ? (
+                    <img
+                      src={`${axiosInstance.defaults.baseURL}${companyData.logoUrl}`}
+                      alt="Logo perusahaan"
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <span className="text-xs text-gray-400 text-center px-2">Belum ada logo</span>
+                  )}
+                </div>
+                <div>
+                  <label className="inline-flex items-center gap-2 px-3 py-2 text-sm border rounded-lg cursor-pointer hover:bg-gray-50">
+                    <ArrowDownTrayIcon className="w-4 h-4 rotate-180" />
+                    {logoUploading ? 'Mengupload...' : companyData?.logoUrl ? 'Ganti Logo' : 'Upload Logo'}
+                    <input
+                      type="file"
+                      accept=".png,.jpg,.jpeg,.svg,.webp"
+                      className="hidden"
+                      disabled={logoUploading}
+                      onChange={handleLogoUpload}
+                    />
+                  </label>
+                </div>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium mb-2">Company Name</label>

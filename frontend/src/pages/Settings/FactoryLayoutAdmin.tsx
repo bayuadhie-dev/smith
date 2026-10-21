@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axiosInstance from '../../utils/axiosConfig';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
+import { confirmDialog } from '../../components/ui';
 
 interface MachineOption {
   id: number;
@@ -91,12 +92,12 @@ const FactoryLayoutAdmin: React.FC = () => {
       .catch(() => setError('Gagal update wing'));
   };
 
-  const deleteWing = (wing: WingRow) => {
+  const deleteWing = async (wing: WingRow) => {
     if (wing.nodes.length > 0) {
       setError(`Tidak bisa hapus wing "${wing.name}" — masih ada ${wing.nodes.length} mesin terpasang. Pindahkan/hapus dulu.`);
       return;
     }
-    if (!window.confirm(`Hapus wing "${wing.name}"?`)) return;
+    if (!(await confirmDialog(`Hapus wing "${wing.name}"?`))) return;
     axiosInstance.delete(`/api/executive/machine-layout/admin/wings/${wing.id}`)
       .then(() => { flash('Wing dihapus'); loadAll(); })
       .catch(() => setError('Gagal hapus wing'));
@@ -123,8 +124,8 @@ const FactoryLayoutAdmin: React.FC = () => {
       .catch(() => setError('Gagal update mesin'));
   };
 
-  const deleteNode = (node: NodeRow) => {
-    if (!window.confirm(`Hapus "${node.machine_name}" dari denah?`)) return;
+  const deleteNode = async (node: NodeRow) => {
+    if (!(await confirmDialog(`Hapus "${node.machine_name}" dari denah?`))) return;
     axiosInstance.delete(`/api/executive/machine-layout/admin/nodes/${node.id}`)
       .then(() => { flash('Mesin dihapus dari denah'); loadAll(); })
       .catch(() => setError('Gagal hapus mesin'));
@@ -141,8 +142,8 @@ const FactoryLayoutAdmin: React.FC = () => {
       .catch(() => setError('Gagal simpan alias'));
   };
 
-  const deleteAlias = (machineId: number) => {
-    if (!window.confirm('Hapus alias ini? Nama tampilan akan kembali ke nama asli mesin.')) return;
+  const deleteAlias = async (machineId: number) => {
+    if (!(await confirmDialog('Hapus alias ini? Nama tampilan akan kembali ke nama asli mesin.'))) return;
     axiosInstance.delete(`/api/executive/machine-layout/admin/aliases/${machineId}`)
       .then(() => { flash('Alias dihapus'); loadAll(); })
       .catch(() => setError('Gagal hapus alias'));

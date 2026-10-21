@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axiosInstance from '../../utils/axiosConfig';
 import SearchableSelect from '../../components/SearchableSelect';
+import { confirmDialog } from '../../components/ui';
 import { Plus, Trash2, Save, Settings2, Pencil } from 'lucide-react';
 
 // Moved out of Production/BatchSchedulingMasterData.tsx (2026-08-24): these 3 tabs are
@@ -189,7 +190,7 @@ const RecipeTab: React.FC = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Nonaktifkan resep ini?')) return;
+    if (!(await confirmDialog('Nonaktifkan resep ini?'))) return;
     try {
       await axiosInstance.delete(`/api/batch-scheduling/recipes/${id}`);
       load();
@@ -480,7 +481,7 @@ const ExceptionTab: React.FC = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Hapus exception ini?')) return;
+    if (!(await confirmDialog('Hapus exception ini?'))) return;
     await axiosInstance.delete(`/api/batch-scheduling/calendar/exceptions/${id}`);
     load();
   };
