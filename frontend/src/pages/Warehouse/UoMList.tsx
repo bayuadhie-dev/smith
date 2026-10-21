@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import axiosInstance from '../../utils/axiosConfig';
+import { confirmDialog, showError } from '../../components/ui';
 import {
   PlusIcon,
   PencilIcon,
@@ -104,17 +105,17 @@ const UoMList: React.FC = () => {
       setEditingUnit(null);
       setUnitForm({ code: '', name: '', category: 'unit', description: '' });
     } catch (err: any) {
-      alert(err.response?.data?.error || 'Gagal menyimpan satuan');
+      showError(err.response?.data?.error || 'Gagal menyimpan satuan');
     }
   };
 
   const handleDeleteUnit = async (id: number) => {
-    if (!confirm('Yakin ingin menghapus satuan ini?')) return;
+    if (!(await confirmDialog('Yakin ingin menghapus satuan ini?'))) return;
     try {
       await axiosInstance.delete(`/api/uom/units/${id}`);
       fetchUnits();
     } catch (err: any) {
-      alert(err.response?.data?.error || 'Gagal menghapus satuan');
+      showError(err.response?.data?.error || 'Gagal menghapus satuan');
     }
   };
 
@@ -138,17 +139,17 @@ const UoMList: React.FC = () => {
       setEditingConversion(null);
       setConversionForm({ from_uom_id: 0, to_uom_id: 0, conversion_factor: '', material_id: '', product_id: '', notes: '' });
     } catch (err: any) {
-      alert(err.response?.data?.error || 'Gagal menyimpan konversi');
+      showError(err.response?.data?.error || 'Gagal menyimpan konversi');
     }
   };
 
   const handleDeleteConversion = async (id: number) => {
-    if (!confirm('Yakin ingin menghapus konversi ini?')) return;
+    if (!(await confirmDialog('Yakin ingin menghapus konversi ini?'))) return;
     try {
       await axiosInstance.delete(`/api/uom/conversions/${id}`);
       fetchConversions();
     } catch (err: any) {
-      alert(err.response?.data?.error || 'Gagal menghapus konversi');
+      showError(err.response?.data?.error || 'Gagal menghapus konversi');
     }
   };
 

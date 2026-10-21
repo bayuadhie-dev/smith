@@ -102,101 +102,102 @@ const [alertFilter, setAlertFilter] = useState('active')
   if (dashboardLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#059669]"></div>
       </div>
     )
   }
 
+  // 2026-10-07: Axion bento-grid restyle (tier-1 module landing page,
+  // #3 of 4). See Dashboard/DashboardEnhanced.tsx for the reference
+  // pattern. Sub-pages (Inventory list, Zones, Locations, etc) are
+  // intentionally left as-is - only this landing dashboard is in scope.
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard Gudang</h1>
-          <p className="text-gray-600 dark:text-gray-300">Advanced inventory analytics and optimization</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-snug">Dashboard Gudang</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Advanced inventory analytics and optimization</p>
         </div>
-        <div className="flex space-x-3">
+        <div className="flex flex-wrap gap-2">
           <Link
             to="/app/warehouse/inventory"
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center"
+            className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-white"
           >
-            <CubeIcon className="h-5 w-5 mr-2" />
+            <CubeIcon className="h-4 w-4" />
             Inventori
           </Link>
           <Link
             to="/app/warehouse/inventory/add-product"
-            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center"
+            className="px-4 py-2 bg-gradient-to-br from-[#059669] to-[#047857] text-white rounded-lg hover:shadow-lg transition-shadow flex items-center gap-2 text-sm font-medium"
           >
-            <CubeIcon className="h-5 w-5 mr-2" />
+            <CubeIcon className="h-4 w-4" />
             Tambah Produk
           </Link>
           <Link
             to="/app/warehouse/stock-input"
-            className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center"
+            className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-white"
           >
-            <BuildingStorefrontIcon className="h-5 w-5 mr-2" />
+            <BuildingStorefrontIcon className="h-4 w-4" />
             Input Material
           </Link>
         </div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Products</p>
-              <p className="text-2xl font-bold text-blue-600">{summary.total_products || 0}</p>
+      {/* Summary Cards - bento: Total Products spans 2 cols (primary metric) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="xl:col-span-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <CubeIcon className="w-5 h-5" />
             </div>
-            <CubeIcon className="h-8 w-8 text-blue-500" />
+            <p className="text-sm opacity-90">Total Products</p>
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Across all locations</p>
+          <p className="text-3xl font-bold">{summary.total_products || 0}</p>
+          <p className="text-xs opacity-75 mt-1">Across all locations</p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Value</p>
-              <p className="text-2xl font-bold text-green-600">
-                ${(summary.total_value || 0).toLocaleString()}
-              </p>
+        <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center justify-between mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <ChartBarIcon className="w-5 h-5" />
             </div>
-            <ChartBarIcon className="h-8 w-8 text-green-500" />
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Inventory valuation</p>
+          <p className="text-xs opacity-90 mb-1">Total Value</p>
+          <p className="text-2xl font-bold">${(summary.total_value || 0).toLocaleString()}</p>
+          <p className="text-xs opacity-75 mt-1">Inventory valuation</p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Storage Utilization</p>
-              <p className="text-2xl font-bold text-purple-600">
-                {summary.location_utilization || 0}%
-              </p>
+        <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center justify-between mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <BuildingStorefrontIcon className="w-5 h-5" />
             </div>
-            <BuildingStorefrontIcon className="h-8 w-8 text-purple-500" />
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Location capacity used</p>
+          <p className="text-xs opacity-90 mb-1">Storage Utilization</p>
+          <p className="text-2xl font-bold">{summary.location_utilization || 0}%</p>
+          <p className="text-xs opacity-75 mt-1">Location capacity used</p>
         </div>
+      </div>
 
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Active Alerts</p>
-              <p className="text-2xl font-bold text-red-600">{summary.active_alerts || 0}</p>
-              {summary.critical_alerts > 0 && (
-                <p className="text-sm text-red-500">{summary.critical_alerts} critical</p>
-              )}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center justify-between mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <ExclamationTriangleIcon className="w-5 h-5" />
             </div>
-            <ExclamationTriangleIcon className="h-8 w-8 text-red-500" />
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Require attention</p>
+          <p className="text-xs opacity-90 mb-1">Active Alerts</p>
+          <p className="text-2xl font-bold">{summary.active_alerts || 0}</p>
+          <p className="text-xs opacity-75 mt-1">
+            {summary.critical_alerts > 0 ? `${summary.critical_alerts} critical` : 'Require attention'}
+          </p>
         </div>
       </div>
 
       {/* KeyIcon Metrics Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Low Stock Items</h3>
             <ExclamationTriangleIcon className="h-6 w-6 text-orange-500" />
@@ -207,7 +208,7 @@ const [alertFilter, setAlertFilter] = useState('active')
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Expiring Soon</h3>
             <ClockIcon className="h-6 w-6 text-yellow-500" />
@@ -218,7 +219,7 @@ const [alertFilter, setAlertFilter] = useState('active')
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Total Locations</h3>
             <BuildingStorefrontIcon className="h-6 w-6 text-blue-500" />
@@ -237,7 +238,7 @@ const [alertFilter, setAlertFilter] = useState('active')
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Movement Analysis */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Stock Movements (Last 7 Days)</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -262,7 +263,7 @@ const [alertFilter, setAlertFilter] = useState('active')
         </div>
 
         {/* ABC Analysis */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">ABC Analysis</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -279,14 +280,14 @@ const [alertFilter, setAlertFilter] = useState('active')
       </div>
 
       {/* Warehouse Management Section */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Warehouse Management</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Zones Management */}
           <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
             <div className="flex items-center justify-between mb-3">
               <h4 className="font-medium text-gray-900 dark:text-white">Zones</h4>
-              <Link to="/app/warehouse/zones" className="text-blue-600 hover:text-blue-800 text-sm">
+              <Link to="/app/warehouse/zones" className="text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 text-sm">
               </Link>
             </div>
             <div className="space-y-2">
@@ -318,7 +319,7 @@ const [alertFilter, setAlertFilter] = useState('active')
           <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
             <div className="flex items-center justify-between mb-3">
               <h4 className="font-medium text-gray-900 dark:text-white">Locations</h4>
-              <Link to="/app/warehouse/locations" className="text-blue-600 hover:text-blue-800 text-sm">
+              <Link to="/app/warehouse/locations" className="text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 text-sm">
               </Link>
             </div>
             <div className="space-y-2">
@@ -352,7 +353,7 @@ const [alertFilter, setAlertFilter] = useState('active')
           <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
             <div className="flex items-center justify-between mb-3">
               <h4 className="font-medium text-gray-900 dark:text-white">Inventory</h4>
-              <Link to="/app/warehouse/inventory" className="text-blue-600 hover:text-blue-800 text-sm">
+              <Link to="/app/warehouse/inventory" className="text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 text-sm">
               </Link>
             </div>
             <div className="space-y-2">
@@ -387,10 +388,10 @@ const [alertFilter, setAlertFilter] = useState('active')
       {/* Recent Activity & Alerts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Movements */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Movements</h3>
-            <Link to="/app/warehouse/movements" className="text-blue-600 hover:text-blue-800 text-sm">
+            <Link to="/app/warehouse/movements" className="text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 text-sm">
               View All
             </Link>
           </div>
@@ -418,10 +419,10 @@ const [alertFilter, setAlertFilter] = useState('active')
         </div>
 
         {/* Active Alerts */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Active Alerts</h3>
-            <Link to="/app/warehouse/alerts" className="text-blue-600 hover:text-blue-800 text-sm">
+            <Link to="/app/warehouse/alerts" className="text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 text-sm">
               View All
             </Link>
           </div>
@@ -441,7 +442,7 @@ const [alertFilter, setAlertFilter] = useState('active')
                       <>
                         <button
                           onClick={() => handleAcknowledgeAlert(alert.id)}
-                          className="text-blue-600 hover:text-blue-800 text-xs"
+                          className="text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 text-xs"
                           title="Acknowledge"
                         >
                           <EyeIcon className="h-4 w-4" />
@@ -464,7 +465,7 @@ const [alertFilter, setAlertFilter] = useState('active')
       </div>
 
       {/* Top Products by Value */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Top Products by Value</h3>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -502,54 +503,28 @@ const [alertFilter, setAlertFilter] = useState('active')
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {/* Enhanced Features */}
-          <Link
-            to="/app/warehouse/analytics"
-            className="flex flex-col items-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
-          >
-            <ChartBarIcon className="h-8 w-8 text-blue-500 mb-2" />
-            <span className="text-sm font-medium">Analytics</span>
-          </Link>
-          <Link
-            to="/app/warehouse/abc-analysis"
-            className="flex flex-col items-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
-          >
-            <CubeIcon className="h-8 w-8 text-green-500 mb-2" />
-            <span className="text-sm font-medium">ABC Analysis</span>
-          </Link>
-          <Link
-            to="/app/production/mrp-run"
-            className="flex flex-col items-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
-          >
-            <ExclamationTriangleIcon className="h-8 w-8 text-orange-500 mb-2" />
-            <span className="text-sm font-medium">MRP Run (Reorder Point)</span>
-          </Link>
-          
-          {/* Traditional Features */}
-          <Link
-            to="/app/warehouse/zones"
-            className="flex flex-col items-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
-          >
-            <BuildingStorefrontIcon className="h-8 w-8 text-purple-500 mb-2" />
-            <span className="text-sm font-medium">Zones</span>
-          </Link>
-          <Link
-            to="/app/warehouse/locations"
-            className="flex flex-col items-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
-          >
-            <Cog6ToothIcon className="h-8 w-8 text-indigo-500 mb-2" />
-            <span className="text-sm font-medium">Locations</span>
-          </Link>
-          <Link
-            to="/app/warehouse/inventory"
-            className="flex flex-col items-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
-          >
-            <CubeIcon className="h-8 w-8 text-teal-500 mb-2" />
-            <span className="text-sm font-medium">Inventory</span>
-          </Link>
+          {[
+            { to: '/app/warehouse/analytics', icon: ChartBarIcon, label: 'Analytics', gradient: 'from-sky-500 to-sky-600' },
+            { to: '/app/warehouse/abc-analysis', icon: CubeIcon, label: 'ABC Analysis', gradient: 'from-emerald-500 to-emerald-600' },
+            { to: '/app/production/mrp-run', icon: ExclamationTriangleIcon, label: 'MRP Run (Reorder Point)', gradient: 'from-[#F15D2C] to-[#C73E1D]' },
+            { to: '/app/warehouse/zones', icon: BuildingStorefrontIcon, label: 'Zones', gradient: 'from-violet-500 to-violet-600' },
+            { to: '/app/warehouse/locations', icon: Cog6ToothIcon, label: 'Locations', gradient: 'from-indigo-500 to-indigo-600' },
+            { to: '/app/warehouse/inventory', icon: CubeIcon, label: 'Inventory', gradient: 'from-teal-500 to-teal-600' },
+          ].map((action) => (
+            <Link
+              key={action.to}
+              to={action.to}
+              className="flex flex-col items-center text-center p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group"
+            >
+              <div className={`bg-gradient-to-br ${action.gradient} p-3 rounded-xl mb-2 group-hover:scale-110 transition-transform`}>
+                <action.icon className="h-6 w-6 text-white" />
+              </div>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{action.label}</span>
+            </Link>
+          ))}
         </div>
       </div>
     </div>

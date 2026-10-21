@@ -14,6 +14,7 @@ import {
   ArrowDownTrayIcon
 } from '@heroicons/react/24/outline'
 import axiosInstance from '../../utils/axiosConfig'
+import { showError } from '../../components/ui'
 
 interface InventoryItem {
   id: number
@@ -162,6 +163,30 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
     )
   }
 
+  // fix_report_3.md Fase 16 (2026-10-02): getStockStatusBadge() above only
+  // ever showed a QUANTITY-based badge (Habis/Stok Rendah/Tersedia) - a
+  // reject/quarantine batch with quantity_on_hand > 0 showed as green
+  // "Tersedia" with nothing indicating it's actually reject/quarantine
+  // stock. This shows the REAL Inventory.stock_status as a second badge.
+  const getPhysicalStatusBadge = (stockStatusValue: string) => {
+    const normalized = (stockStatusValue || '').toLowerCase()
+    if (normalized === 'quarantine') {
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+          Quarantine
+        </span>
+      )
+    }
+    if (normalized === 'reject' || normalized === 'rejected') {
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+          Reject
+        </span>
+      )
+    }
+    return null
+  }
+
   const getItemTypeBadge = (type: string) => {
     if (type === 'product') {
       return (
@@ -248,7 +273,7 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
       link.remove()
     } catch (error) {
       console.error('Error exporting:', error)
-      alert('Gagal export data')
+      showError('Gagal export data')
     }
   }
 
@@ -404,6 +429,15 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
                 <option value="available">Tersedia (Stok &gt; 0)</option>
                 <option value="low_stock">Stok Rendah</option>
                 <option value="out_of_stock">Habis (Stok = 0)</option>
+                <option disabled>──────────</option>
+                {/* fix_report_3.md Fase 16 (2026-10-02): status fisik asli
+                    (Inventory.stock_status) - sebelumnya param ini diam-diam
+                    cuma menangani 3 opsi di atas (berbasis kuantitas), jadi
+                    tidak ada cara sama sekali untuk lihat stok quarantine/
+                    reject dari halaman ini. */}
+                <option value="released">🟢 Released</option>
+                <option value="quarantine">🟡 Quarantine</option>
+                <option value="reject">🔴 Reject</option>
               </select>
             </div>
           </div>
@@ -487,7 +521,10 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
                         {item.batch_number || '-'}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
-                        {getStockStatusBadge(item)}
+                        <div className="flex flex-col gap-1 items-start">
+                          {getStockStatusBadge(item)}
+                          {getPhysicalStatusBadge(item.stock_status)}
+                        </div>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm">
                         {item.expiry_date ? (

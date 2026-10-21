@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
+import { confirmDialog } from '../../components/ui';
 import {
   ArrowLeftIcon,
   ScaleIcon,
@@ -90,7 +91,7 @@ export default function AdjustmentDetail() {
   };
 
   const handleSubmitApproval = async () => {
-    if (!window.confirm('Ajukan penyesuaian stok ini untuk persetujuan?')) return;
+    if (!(await confirmDialog('Ajukan penyesuaian stok ini untuk persetujuan?'))) return;
     try {
       setSubmitting(true);
       const res = await axiosInstance.post(`/api/wms/adjustments/${id}/submit-approval`);
@@ -98,7 +99,7 @@ export default function AdjustmentDetail() {
       const workflowId = res.data?.workflow_id;
       fetchAdjustment();
       setPendingWorkflowId(workflowId || null);
-      if (workflowId && window.confirm('Diajukan untuk persetujuan. Lihat alur approval sekarang?')) {
+      if (workflowId && (await confirmDialog('Diajukan untuk persetujuan. Lihat alur approval sekarang?'))) {
         navigate(`/app/approval/${workflowId}`);
       }
     } catch (err: any) {

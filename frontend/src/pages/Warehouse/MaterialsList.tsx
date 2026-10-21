@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import axiosInstance from '../../utils/axiosConfig';
+import { confirmDialog, showSuccess, showError } from '../../components/ui';
 import {
   ArrowDownTrayIcon,
   CubeIcon,
@@ -104,19 +105,19 @@ const MaterialsList: React.FC = () => {
   };
 
   const handleDelete = async (materialId: number, materialName: string) => {
-    const confirmed = window.confirm(
+    const confirmed = await confirmDialog(
       `Are you sure you want to delete material "${materialName}"?\nThis action cannot be undone.`
     );
-    
+
     if (!confirmed) return;
 
     try {
       await axiosInstance.delete(`/api/materials/${materialId}`);
-      alert('Material deleted successfully');
+      showSuccess('Material deleted successfully');
       fetchMaterials();
     } catch (err: any) {
       console.error('Error deleting material:', err);
-      alert(err.response?.data?.error || 'Failed to delete material');
+      showError(err.response?.data?.error || 'Failed to delete material');
     }
   };
 

@@ -11,6 +11,7 @@ import {
   XMarkIcon
 } from '@heroicons/react/24/outline';
 import SearchableSelect from '../../components/SearchableSelect';
+import { showSuccess } from '../../components/ui';
 
 interface Product {
   id: number;
@@ -299,7 +300,7 @@ const StockInput: React.FC = () => {
       });
 
       if (response.ok) {
-        alert('Stock input berhasil disimpan!');
+        showSuccess('Stock input berhasil disimpan!');
         navigate('/app/warehouse/inventory');
       } else {
         const error = await response.json();

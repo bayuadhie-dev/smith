@@ -53,7 +53,7 @@ const WMSDashboard: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#059669]"></div>
       </div>
     );
   }
@@ -64,15 +64,16 @@ const WMSDashboard: React.FC = () => {
       value: data?.inventory.total_items?.toLocaleString() || '0',
       subtitle: `${data?.inventory.total_quantity?.toLocaleString() || '0'} total qty`,
       icon: CubeIcon,
-      color: 'bg-blue-500',
+      gradient: 'from-[#059669] to-[#047857]',
       link: '/app/warehouse/inventory',
+      span: true,
     },
     {
       title: 'Transaksi Hari Ini',
       value: data?.today.transactions?.toString() || '0',
       subtitle: 'inventory transactions',
       icon: ArrowsRightLeftIcon,
-      color: 'bg-green-500',
+      gradient: 'from-teal-500 to-teal-600',
       link: '/app/wms/transactions',
     },
     {
@@ -80,7 +81,7 @@ const WMSDashboard: React.FC = () => {
       value: `${data?.wip.products || 0} produk`,
       subtitle: `${data?.wip.total_cartons?.toLocaleString() || '0'} karton`,
       icon: ArchiveBoxIcon,
-      color: 'bg-purple-500',
+      gradient: 'from-violet-500 to-violet-600',
       link: '/app/wms/stock-by-wo',
     },
     {
@@ -88,51 +89,52 @@ const WMSDashboard: React.FC = () => {
       value: data?.alerts.low_stock?.toString() || '0',
       subtitle: 'item di bawah minimum',
       icon: ExclamationTriangleIcon,
-      color: data?.alerts.low_stock && data.alerts.low_stock > 0 ? 'bg-red-500' : 'bg-gray-400',
+      gradient: data?.alerts.low_stock && data.alerts.low_stock > 0 ? 'from-[#F15D2C] to-[#C73E1D]' : 'from-gray-400 to-gray-500',
       link: '/app/warehouse/alerts',
     },
   ];
 
   const quickActions = [
-    { name: 'Stok per WO', icon: DocumentMagnifyingGlassIcon, href: '/app/wms/stock-by-wo', desc: 'Lihat stok berdasarkan SPK' },
-    { name: 'Konsumsi Material', icon: CubeIcon, href: '/app/wms/material-consumption', desc: 'Tracking pemakaian bahan baku' },
-    { name: 'Transaksi Stok', icon: ArrowsRightLeftIcon, href: '/app/wms/transactions', desc: 'Log transaksi inventori' },
-    { name: 'Pick List', icon: ClipboardDocumentListIcon, href: '/app/wms/pick-lists', desc: 'Daftar pengambilan barang' },
-    { name: 'Transfer Stok', icon: TruckIcon, href: '/app/wms/transfers', desc: 'Pemindahan antar lokasi' },
-    { name: 'Cycle Count', icon: ChartBarIcon, href: '/app/wms/cycle-counts', desc: 'Jadwal stock opname berkala' },
+    { name: 'Stok per WO', icon: DocumentMagnifyingGlassIcon, href: '/app/wms/stock-by-wo', desc: 'Lihat stok berdasarkan SPK', gradient: 'from-[#059669] to-[#047857]' },
+    { name: 'Konsumsi Material', icon: CubeIcon, href: '/app/wms/material-consumption', desc: 'Tracking pemakaian bahan baku', gradient: 'from-teal-500 to-teal-600' },
+    { name: 'Transaksi Stok', icon: ArrowsRightLeftIcon, href: '/app/wms/transactions', desc: 'Log transaksi inventori', gradient: 'from-violet-500 to-violet-600' },
+    { name: 'Pick List', icon: ClipboardDocumentListIcon, href: '/app/wms/pick-lists', desc: 'Daftar pengambilan barang', gradient: 'from-[#F15D2C] to-[#C73E1D]' },
+    { name: 'Transfer Stok', icon: TruckIcon, href: '/app/wms/transfers', desc: 'Pemindahan antar lokasi', gradient: 'from-amber-500 to-amber-600' },
+    { name: 'Cycle Count', icon: ChartBarIcon, href: '/app/wms/cycle-counts', desc: 'Jadwal stock opname berkala', gradient: 'from-sky-500 to-sky-600' },
   ];
 
+  // 2026-10-07: Axion bento-grid restyle (tier-1 module landing page,
+  // #14 of 17). Sub-pages (Transactions, Pick Lists, etc) are
+  // intentionally left as-is - only this landing dashboard is in scope.
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <BuildingStorefrontIcon className="h-8 w-8 text-blue-600" />
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-snug flex items-center gap-2">
+            <BuildingStorefrontIcon className="h-7 w-7 text-emerald-600" />
             Dashboard WMS
           </h1>
-          <p className="text-gray-500 mt-1">Warehouse Management System — Terintegrasi penuh dengan Produksi & Material</p>
+          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Warehouse Management System — Terintegrasi penuh dengan Produksi & Material</p>
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* KPI Cards - bento: Total Item Inventori spans 2 cols (primary metric) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         {kpiCards.map((card) => (
           <div
             key={card.title}
             onClick={() => navigate(card.link)}
-            className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 cursor-pointer hover:shadow-md transition-shadow"
+            className={`${card.span ? 'xl:col-span-2' : ''} bg-gradient-to-br ${card.gradient} rounded-xl p-4 text-white shadow-lg cursor-pointer hover:shadow-xl transition-shadow`}
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500">{card.title}</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{card.value}</p>
-                <p className="text-xs text-gray-400 mt-1">{card.subtitle}</p>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-2 bg-white/20 rounded-lg">
+                <card.icon className="w-5 h-5" />
               </div>
-              <div className={`p-3 rounded-lg ${card.color}`}>
-                <card.icon className="h-6 w-6 text-white" />
-              </div>
+              <p className="text-sm opacity-90">{card.title}</p>
             </div>
+            <p className={card.span ? 'text-3xl font-bold' : 'text-2xl font-bold'}>{card.value}</p>
+            <p className="text-xs opacity-75 mt-1">{card.subtitle}</p>
           </div>
         ))}
       </div>
@@ -163,7 +165,7 @@ const WMSDashboard: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Zone Utilization */}
-        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+        <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-5">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Utilisasi Zone Gudang</h3>
           {data?.zones && data.zones.length > 0 ? (
             <div className="space-y-4">
@@ -197,7 +199,7 @@ const WMSDashboard: React.FC = () => {
         </div>
 
         {/* Material Consumption Summary */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-5">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Konsumsi Material</h3>
           <div className="space-y-4">
             <div className="text-center py-4">
@@ -216,7 +218,7 @@ const WMSDashboard: React.FC = () => {
             )}
             <button
               onClick={() => navigate('/app/wms/material-consumption')}
-              className="w-full text-center text-sm text-blue-600 hover:text-blue-800 font-medium py-2"
+              className="w-full text-center text-sm text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 font-medium py-2"
             >
               Lihat Detail →
             </button>
@@ -232,15 +234,15 @@ const WMSDashboard: React.FC = () => {
             <div
               key={action.name}
               onClick={() => navigate(action.href)}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 cursor-pointer hover:shadow-md hover:border-blue-300 transition-all group"
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-5 cursor-pointer group"
             >
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-blue-50 group-hover:bg-blue-100 transition-colors">
-                  <action.icon className="h-6 w-6 text-blue-600" />
+                <div className={`bg-gradient-to-br ${action.gradient} p-2.5 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0`}>
+                  <action.icon className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900">{action.name}</p>
-                  <p className="text-sm text-gray-500">{action.desc}</p>
+                  <p className="font-semibold text-gray-900 dark:text-white">{action.name}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{action.desc}</p>
                 </div>
               </div>
             </div>

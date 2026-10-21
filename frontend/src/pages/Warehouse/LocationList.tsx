@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { confirmDialog, showError } from '../../components/ui';
 import {
   BuildingOfficeIcon,
   CheckCircleIcon,
@@ -90,7 +91,7 @@ const LocationList: React.FC = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this location?')) return;
+    if (!(await confirmDialog('Are you sure you want to delete this location?'))) return;
 
     try {
       const response = await fetch(`/api/warehouse/locations/${id}`, {
@@ -103,10 +104,10 @@ const LocationList: React.FC = () => {
       if (response.ok) {
         fetchLocations();
       } else {
-        alert('Failed to delete location');
+        showError('Failed to delete location');
       }
     } catch (error) {
-      alert('Error deleting location');
+      showError('Error deleting location');
     }
   };
 

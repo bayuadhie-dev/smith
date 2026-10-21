@@ -8,6 +8,7 @@ import {
   PlusIcon
 } from '@heroicons/react/24/outline'
 import axiosInstance from '../../utils/axiosConfig'
+import { showWarning, showSuccess, showError } from '../../components/ui'
 
 interface Product {
   id: number
@@ -105,7 +106,7 @@ export default function AddProductToInventory() {
     e.preventDefault()
     
     if (!formData.product_id || !formData.location_id || !formData.quantity) {
-      alert('Produk, lokasi, dan kuantitas wajib diisi')
+      showWarning('Produk, lokasi, dan kuantitas wajib diisi')
       return
     }
 
@@ -125,11 +126,11 @@ export default function AddProductToInventory() {
       }
 
       await axiosInstance.post('/api/warehouse/inventory/add', payload)
-      alert('Produk berhasil ditambahkan ke inventori!')
+      showSuccess('Produk berhasil ditambahkan ke inventori!')
       navigate('/app/warehouse/inventory')
     } catch (error: any) {
       console.error('Error adding to inventory:', error)
-      alert(error.response?.data?.message || 'Gagal menambahkan produk ke inventori')
+      showError(error.response?.data?.message || 'Gagal menambahkan produk ke inventori')
     } finally {
       setLoading(false)
     }

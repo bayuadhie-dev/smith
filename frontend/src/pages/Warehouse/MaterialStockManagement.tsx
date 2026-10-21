@@ -3,6 +3,7 @@ import { PlusIcon, AdjustmentsHorizontalIcon, ClockIcon, MagnifyingGlassIcon } f
 import axiosInstance from '../../utils/axiosConfig';
 import { useLanguage } from '../../contexts/LanguageContext';
 import SearchableSelect from '../../components/SearchableSelect';
+import { showSuccess, showError } from '../../components/ui';
 
 interface Material {
   id: number;
@@ -94,7 +95,7 @@ const MaterialStockManagement: React.FC = () => {
       setLoading(true);
       await axiosInstance.post('/api/materials/stock/add', addStockForm);
       
-      alert('Stock added successfully!');
+      showSuccess('Stock added successfully!');
       setShowAddStockModal(false);
       setAddStockForm({
         material_id: 0,
@@ -109,7 +110,7 @@ const MaterialStockManagement: React.FC = () => {
       });
       loadMaterials();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Failed to add stock');
+      showError(error.response?.data?.error || 'Failed to add stock');
     } finally {
       setLoading(false);
     }

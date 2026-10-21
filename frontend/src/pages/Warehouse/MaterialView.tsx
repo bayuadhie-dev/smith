@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import axiosInstance from '../../utils/axiosConfig';
+import { confirmDialog, showSuccess, showError } from '../../components/ui';
 import {
   ArrowLeftIcon,
   BuildingOfficeIcon,
@@ -69,19 +70,19 @@ const MaterialView: React.FC = () => {
   const handleDelete = async () => {
     if (!material) return;
     
-    const confirmed = window.confirm(
+    const confirmed = await confirmDialog(
       `Are you sure you want to delete material "${material.name}"?\nThis action cannot be undone.`
     );
-    
+
     if (!confirmed) return;
 
     try {
       await axiosInstance.delete(`/api/materials/${id}`);
-      alert('Material deleted successfully');
+      showSuccess('Material deleted successfully');
       navigate('/app/warehouse/materials/list');
     } catch (err: any) {
       console.error('Error deleting material:', err);
-      alert(err.response?.data?.error || 'Failed to delete material');
+      showError(err.response?.data?.error || 'Failed to delete material');
     }
   };
 

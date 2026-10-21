@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
+import { confirmDialog } from '../../components/ui';
 import {
   ClipboardDocumentCheckIcon,
   ArrowLeftIcon,
@@ -186,7 +187,7 @@ export default function StockOpnameDetail() {
   };
 
   const handleComplete = async () => {
-    if (!window.confirm('Selesaikan stok opname ini? Pastikan semua item sudah dihitung.')) return;
+    if (!(await confirmDialog('Selesaikan stok opname ini? Pastikan semua item sudah dihitung.'))) return;
 
     try {
       await axiosInstance.put(`/api/stock-opname/orders/${id}/complete`);
@@ -198,7 +199,7 @@ export default function StockOpnameDetail() {
   };
 
   const handleSubmitApproval = async () => {
-    if (!window.confirm('Ajukan hasil opname ini untuk persetujuan?')) return;
+    if (!(await confirmDialog('Ajukan hasil opname ini untuk persetujuan?'))) return;
 
     try {
       const response = await axiosInstance.post(`/api/stock-opname/orders/${id}/submit-approval`);

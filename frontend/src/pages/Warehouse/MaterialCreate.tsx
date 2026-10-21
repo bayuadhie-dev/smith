@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import axiosInstance from '../../utils/axiosConfig';
+import { showWarning, showSuccess, showError } from '../../components/ui';
 import {
   ArrowLeftIcon,
   BookmarkIcon,
@@ -119,7 +120,7 @@ const MaterialCreate: React.FC = () => {
 
     // Validation
     if (!formData.code || !formData.name || !formData.material_type || !formData.category || !formData.primary_uom) {
-      alert('Please fill in all required fields');
+      showWarning('Please fill in all required fields');
       return;
     }
 
@@ -131,11 +132,11 @@ const MaterialCreate: React.FC = () => {
         safety_stock_days: formData.safety_stock_days === '' ? null : formData.safety_stock_days,
       };
       const response = await axiosInstance.post('/api/materials/', payload);
-      alert('Material created successfully');
+      showSuccess('Material created successfully');
       navigate(`/app/warehouse/materials/${response.data.material_id}`);
     } catch (err) {
       console.error('Error creating material:', err);
-      alert(err instanceof Error ? err.message : 'Failed to create material');
+      showError(err instanceof Error ? err.message : 'Failed to create material');
     } finally {
       setSaving(false);
     }

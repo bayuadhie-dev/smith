@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import axiosInstance from '../../utils/axiosConfig';
+import { showSuccess, showError } from '../../components/ui';
 import {
   ArrowLeftIcon,
   BookmarkIcon,
@@ -125,11 +126,11 @@ const MaterialEdit: React.FC = () => {
     setSaving(true);
     try {
       await axiosInstance.put(`/api/materials/${id}`, material);
-      alert('Material updated successfully');
+      showSuccess('Material updated successfully');
       navigate(`/app/warehouse/materials/${id}`);
     } catch (err) {
       console.error('Error updating material:', err);
-      alert(err instanceof Error ? err.message : 'Failed to update material');
+      showError(err instanceof Error ? err.message : 'Failed to update material');
     } finally {
       setSaving(false);
     }

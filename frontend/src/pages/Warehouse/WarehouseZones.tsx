@@ -10,6 +10,7 @@ import {
   TrashIcon
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast'
+import { confirmDialog } from '../../components/ui';
 import {
   useGetWarehouseZonesQuery,
   useCreateWarehouseZoneMutation,
@@ -100,7 +101,7 @@ const [showModal, setShowModal] = useState(false)
   }
 
   const handleDelete = async (zone: any) => {
-    if (!confirm(`Are you sure you want to delete zone "${zone.name}"?`)) return
+    if (!(await confirmDialog(`Are you sure you want to delete zone "${zone.name}"?`))) return
 
     try {
       await deleteZone(zone.id).unwrap()

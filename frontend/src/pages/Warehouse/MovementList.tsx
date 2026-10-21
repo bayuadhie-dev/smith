@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { showError } from '../../components/ui';
 import {
   ArrowDownTrayIcon,
   ArrowUpTrayIcon,
@@ -154,7 +155,7 @@ const MovementList: React.FC = () => {
       }
     } catch (error) {
       console.error('Failed to export movements:', error);
-      alert('Failed to export data');
+      showError('Failed to export data');
     }
   };
 

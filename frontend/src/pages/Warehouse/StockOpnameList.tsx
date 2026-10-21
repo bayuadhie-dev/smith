@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
+import { confirmDialog } from '../../components/ui';
 import {
   PlusIcon,
   ClipboardDocumentCheckIcon,
@@ -91,7 +92,7 @@ export default function StockOpnameList({ mode = 'perintah' }: StockOpnameListPr
   };
 
   const handleDelete = async (id: number, opnameNumber: string) => {
-    if (!window.confirm(`Hapus stok opname ${opnameNumber}?`)) return;
+    if (!(await confirmDialog(`Hapus stok opname ${opnameNumber}?`))) return;
 
     try {
       await axiosInstance.delete(`/api/stock-opname/orders/${id}`);

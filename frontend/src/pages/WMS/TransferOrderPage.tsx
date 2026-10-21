@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
+import { confirmDialog } from '../../components/ui';
 import {
   TruckIcon,
   CheckBadgeIcon,
@@ -79,7 +80,7 @@ const TransferOrderPage: React.FC = () => {
       toast.success('Transfer diajukan untuk persetujuan');
       fetchData();
       const workflowId = res.data?.workflow_id;
-      if (workflowId && window.confirm('Transfer diajukan untuk persetujuan. Lihat alur approval sekarang?')) {
+      if (workflowId && (await confirmDialog('Transfer diajukan untuk persetujuan. Lihat alur approval sekarang?'))) {
         navigate(`/app/approval/${workflowId}`);
       }
     } catch (err: any) {

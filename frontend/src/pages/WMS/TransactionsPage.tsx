@@ -64,6 +64,23 @@ const typeLabels: Record<string, string> = {
   qc_disposition: 'Disposisi QC',
 };
 
+// SAP-style 3-digit movement type codes (SAP-equivalence plan item #1,
+// 2026-10-05) - mirrors utils.inventory_helpers.derive_movement_type_code()
+// on the backend. Distinct from `typeLabels` above, which filters the raw
+// free-text transaction_type column, not this persisted code.
+const MOVEMENT_TYPE_LABELS: Record<string, string> = {
+  '101': '101 - Penerimaan Barang dari Vendor',
+  '131': '131 - Penerimaan Barang Jadi Produksi',
+  '261': '261 - Pengeluaran Bahan Baku ke SPK',
+  '311': '311 - Transfer Antar Gudang/Lokasi',
+  '551': '551 - Barang Rusak / Reject / QC Disposition',
+  '552': '552 - Reject dari Produksi',
+  '601': '601 - Pengiriman ke Pelanggan',
+  '701': '701 - Penyesuaian Opname (Lebih)',
+  '702': '702 - Penyesuaian Opname (Kurang)',
+  '999': '999 - Lainnya',
+};
+
 interface Transaction {
   id: number;
   transaction_number: string;
@@ -171,6 +188,8 @@ const TransactionsPage: React.FC = () => {
   const [itemSearch, setItemSearch] = useState('');
   const [typeFilters, setTypeFilters] = useState<string[]>([]);
   const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
+  const [movementTypeFilters, setMovementTypeFilters] = useState<string[]>([]);
+  const [movementTypeDropdownOpen, setMovementTypeDropdownOpen] = useState(false);
   const [accountFilter, setAccountFilter] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
   const [startDate, setStartDate] = useState('');
@@ -209,6 +228,7 @@ const TransactionsPage: React.FC = () => {
     const params: any = {};
     if (itemSearch) params.search = itemSearch;
     if (typeFilters.length > 0) params.type = typeFilters.join(',');
+    if (movementTypeFilters.length > 0) params.movement_type = movementTypeFilters.join(',');
     if (accountFilter) params.account_code = accountFilter;
     if (locationFilter) params.location_id = locationFilter;
     if (batchFilter) params.batch_number = batchFilter;
@@ -294,6 +314,7 @@ const TransactionsPage: React.FC = () => {
   const resetFilters = () => {
     setItemSearch('');
     setTypeFilters([]);
+    setMovementTypeFilters([]);
     setAccountFilter('');
     setLocationFilter('');
     setStartDate('');
@@ -305,6 +326,10 @@ const TransactionsPage: React.FC = () => {
 
   const toggleTypeFilter = (t: string) => {
     setTypeFilters((prev) => prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]);
+  };
+
+  const toggleMovementTypeFilter = (t: string) => {
+    setMovementTypeFilters((prev) => prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]);
   };
 
   // ALV-style header click-to-sort: same column toggles asc/desc, a
@@ -619,6 +644,31 @@ const TransactionsPage: React.FC = () => {
                   </label>
                 ))}
                 <button onClick={() => setTypeDropdownOpen(false)} className="w-full mt-1 text-xs text-blue-600 py-1">Tutup</button>
+              </div>
+            )}
+          </div>
+
+          {/* SAP movement type multi-select (MB51-style, persisted column) */}
+          <div className="relative">
+            <label className="block text-xs text-gray-500 mb-1">Kode Gerakan Stok</label>
+            <button
+              onClick={() => setMovementTypeDropdownOpen((v) => !v)}
+              className="w-full flex items-center justify-between border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white"
+            >
+              <span className="truncate text-left">
+                {movementTypeFilters.length === 0 ? 'Semua Kode' : `${movementTypeFilters.length} kode dipilih`}
+              </span>
+              <ChevronDownIcon className="h-4 w-4 text-gray-400 shrink-0" />
+            </button>
+            {movementTypeDropdownOpen && (
+              <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto p-2">
+                {Object.entries(MOVEMENT_TYPE_LABELS).map(([k, v]) => (
+                  <label key={k} className="flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-gray-50 rounded cursor-pointer">
+                    <input type="checkbox" checked={movementTypeFilters.includes(k)} onChange={() => toggleMovementTypeFilter(k)} />
+                    {v}
+                  </label>
+                ))}
+                <button onClick={() => setMovementTypeDropdownOpen(false)} className="w-full mt-1 text-xs text-blue-600 py-1">Tutup</button>
               </div>
             )}
           </div>
