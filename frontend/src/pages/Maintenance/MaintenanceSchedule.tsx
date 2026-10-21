@@ -14,6 +14,7 @@ import {
   TrashIcon
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
+import { confirmDialog, showSuccess, showError } from '../../components/ui';
 interface MaintenanceSchedule {
   id: number;
   schedule_number: string;
@@ -124,11 +125,11 @@ const MaintenanceSchedule: React.FC = () => {
           notes: ''
         });
         await loadData();
-        alert('Maintenance schedule created successfully!');
+        showSuccess('Maintenance schedule created successfully!');
       }
     } catch (error: any) {
       console.error('❌ Failed to create schedule:', error);
-      alert('Failed to create schedule: ' + error.message);
+      showError('Failed to create schedule: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -136,20 +137,20 @@ const MaintenanceSchedule: React.FC = () => {
 
   // Generate maintenance from schedule
   const generateMaintenance = async (scheduleId: number) => {
-    if (!confirm('Generate maintenance record from this schedule?')) {
+    if (!(await confirmDialog('Generate maintenance record from this schedule?'))) {
       return;
     }
 
     try {
       const response = await axiosInstance.post(`/api/maintenance/schedules/${scheduleId}/generate`);
-      
+
       if (response.status === 201) {
-        alert('Maintenance record generated successfully!');
+        showSuccess('Maintenance record generated successfully!');
         await loadData();
       }
     } catch (error: any) {
       console.error('❌ Failed to generate maintenance:', error);
-      alert('Failed to generate maintenance: ' + error.message);
+      showError('Failed to generate maintenance: ' + error.message);
     }
   };
 

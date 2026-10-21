@@ -65,63 +65,17 @@ const SupplierIntegration: React.FC = () => {
       setCapacityData(capacityRes.data?.capacity || []);
     } catch (error) {
       console.error('Failed to load supplier data:', error);
-      // Mock data
-      setSuppliers([
-        {
-          supplier_id: 1,
-          supplier_name: 'PT Polymer Indonesia',
-          contact_person: 'John Doe',
-          phone: '+62-21-1234567',
-          email: 'john@polymer.co.id',
-          total_orders: 45,
-          on_time_deliveries: 42,
-          on_time_percentage: 93.3,
-          avg_lead_time: 7,
-          quality_rating: 4.5,
-          total_value: 2500000000,
-          active_contracts: 3,
-          last_delivery: '2024-01-15',
-          status: 'active'
-        },
-        {
-          supplier_id: 2,
-          supplier_name: 'Chemical Solutions Ltd',
-          contact_person: 'Jane Smith',
-          phone: '+62-21-2345678',
-          email: 'jane@chemsol.com',
-          total_orders: 28,
-          on_time_deliveries: 25,
-          on_time_percentage: 89.3,
-          avg_lead_time: 5,
-          quality_rating: 4.2,
-          total_value: 1800000000,
-          active_contracts: 2,
-          last_delivery: '2024-01-14',
-          status: 'active'
-        },
-        {
-          supplier_id: 3,
-          supplier_name: 'Packaging Pro',
-          contact_person: 'Mike Johnson',
-          phone: '+62-21-3456789',
-          email: 'mike@packpro.co.id',
-          total_orders: 32,
-          on_time_deliveries: 28,
-          on_time_percentage: 87.5,
-          avg_lead_time: 10,
-          quality_rating: 4.0,
-          total_value: 1200000000,
-          active_contracts: 1,
-          last_delivery: '2024-01-12',
-          status: 'active'
-        }
-      ]);
-
-      setCapacityData([
-        { supplier_name: 'PT Polymer Indonesia', material_category: 'Raw Materials', available_capacity: 1000, committed_capacity: 750, utilization_percent: 75.0, lead_time_days: 7 },
-        { supplier_name: 'Chemical Solutions Ltd', material_category: 'Additives', available_capacity: 500, committed_capacity: 380, utilization_percent: 76.0, lead_time_days: 5 },
-        { supplier_name: 'Packaging Pro', material_category: 'Packaging', available_capacity: 800, committed_capacity: 600, utilization_percent: 75.0, lead_time_days: 10 }
-      ]);
+      // 2026-10-07: this used to fall back to 3 fake suppliers ("PT Polymer
+      // Indonesia" supplier_id=1, complete with a fake contact name, phone
+      // number, email, 93.3% on-time rate, 4.5 quality rating, and
+      // Rp2,500,000,000 total value) on ANY API error. If a real
+      // supplier_id=1 exists (near-certain for an auto-increment PK), its
+      // real performance history/contact details would be silently
+      // replaced by this entirely fabricated profile - a genuine risk for
+      // a page used to evaluate real vendor performance. Honest empty
+      // state instead.
+      setSuppliers([]);
+      setCapacityData([]);
     } finally {
       setLoading(false);
     }

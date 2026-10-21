@@ -94,107 +94,18 @@ const DemandPlanning: React.FC = () => {
       setForecastAccuracy(accuracyRes.data?.accuracy || []);
     } catch (error) {
       console.error('Failed to load demand data:', error);
-      // Set mock data for development
-      setDemandForecasts([
-        {
-          product_id: 1,
-          product_name: 'Nonwoven Fabric A',
-          product_code: 'NWF-001',
-          category: 'Nonwoven Fabrics',
-          current_demand: 1200,
-          forecasted_demand: 1450,
-          variance_percent: 20.8,
-          confidence_level: 85.5,
-          trend: 'increasing',
-          seasonality_factor: 1.15,
-          last_updated: '2024-01-15T10:30:00Z'
-        },
-        {
-          product_id: 2,
-          product_name: 'Medical Mask Material',
-          product_code: 'MMM-001',
-          category: 'Medical Products',
-          current_demand: 2100,
-          forecasted_demand: 1980,
-          variance_percent: -5.7,
-          confidence_level: 92.3,
-          trend: 'decreasing',
-          seasonality_factor: 0.95,
-          last_updated: '2024-01-15T10:30:00Z'
-        },
-        {
-          product_id: 3,
-          product_name: 'FunnelIcon Media Pro',
-          product_code: 'FMP-001',
-          category: 'FunnelIcon Media',
-          current_demand: 850,
-          forecasted_demand: 920,
-          variance_percent: 8.2,
-          confidence_level: 78.9,
-          trend: 'increasing',
-          seasonality_factor: 1.08,
-          last_updated: '2024-01-15T10:30:00Z'
-        },
-        {
-          product_id: 4,
-          product_name: 'Geotextile Fabric',
-          product_code: 'GTF-001',
-          category: 'Geotextiles',
-          current_demand: 650,
-          forecasted_demand: 640,
-          variance_percent: -1.5,
-          confidence_level: 88.7,
-          trend: 'stable',
-          seasonality_factor: 0.98,
-          last_updated: '2024-01-15T10:30:00Z'
-        },
-        {
-          product_id: 5,
-          product_name: 'PP Granules',
-          product_code: 'PPG-001',
-          category: 'Raw Materials',
-          current_demand: 3200,
-          forecasted_demand: 3400,
-          variance_percent: 6.3,
-          confidence_level: 91.2,
-          trend: 'increasing',
-          seasonality_factor: 1.06,
-          last_updated: '2024-01-15T10:30:00Z'
-        }
-      ]);
-
-      setHistoricalData([
-        { date: '2023-07', actual_demand: 8500, forecasted_demand: 8200, variance: 300 },
-        { date: '2023-08', actual_demand: 9200, forecasted_demand: 8800, variance: 400 },
-        { date: '2023-09', actual_demand: 8800, forecasted_demand: 9100, variance: -300 },
-        { date: '2023-10', actual_demand: 9800, forecasted_demand: 9500, variance: 300 },
-        { date: '2023-11', actual_demand: 10200, forecasted_demand: 10000, variance: 200 },
-        { date: '2023-12', actual_demand: 11500, forecasted_demand: 10800, variance: 700 },
-        { date: '2024-01', actual_demand: 10800, forecasted_demand: 11200, variance: -400 }
-      ]);
-
-      setSeasonalityData([
-        { month: 'Jan', seasonal_index: 0.95, avg_demand: 9500, peak_demand: 12000, low_demand: 7500 },
-        { month: 'Feb', seasonal_index: 0.88, avg_demand: 8800, peak_demand: 11200, low_demand: 6800 },
-        { month: 'Mar', seasonal_index: 1.05, avg_demand: 10500, peak_demand: 13500, low_demand: 8200 },
-        { month: 'Apr', seasonal_index: 1.12, avg_demand: 11200, peak_demand: 14500, low_demand: 8800 },
-        { month: 'May', seasonal_index: 1.18, avg_demand: 11800, peak_demand: 15200, low_demand: 9200 },
-        { month: 'Jun', seasonal_index: 1.25, avg_demand: 12500, peak_demand: 16000, low_demand: 9800 },
-        { month: 'Jul', seasonal_index: 1.15, avg_demand: 11500, peak_demand: 14800, low_demand: 9000 },
-        { month: 'Aug', seasonal_index: 1.08, avg_demand: 10800, peak_demand: 13800, low_demand: 8500 },
-        { month: 'Sep', seasonal_index: 1.02, avg_demand: 10200, peak_demand: 13000, low_demand: 8000 },
-        { month: 'Oct', seasonal_index: 0.98, avg_demand: 9800, peak_demand: 12500, low_demand: 7700 },
-        { month: 'Nov', seasonal_index: 0.92, avg_demand: 9200, peak_demand: 11800, low_demand: 7200 },
-        { month: 'Dec', seasonal_index: 0.85, avg_demand: 8500, peak_demand: 10800, low_demand: 6500 }
-      ]);
-
-      setForecastAccuracy([
-        { product_name: 'Nonwoven Fabric A', mape: 8.5, mad: 120, mse: 18500, accuracy_grade: 'A' },
-        { product_name: 'Medical Mask Material', mape: 12.3, mad: 180, mse: 28900, accuracy_grade: 'B' },
-        { product_name: 'FunnelIcon Media Pro', mape: 15.8, mad: 95, mse: 12800, accuracy_grade: 'B' },
-        { product_name: 'Geotextile Fabric', mape: 6.2, mad: 45, mse: 3200, accuracy_grade: 'A' },
-        { product_name: 'PP Granules', mape: 18.9, mad: 420, mse: 89500, accuracy_grade: 'C' }
-      ]);
+      // 2026-10-07: this used to fall back to 5 fake products (product_id
+      // 1-5, including one literally named "FunnelIcon Media Pro" - a
+      // leftover from a broken find/replace), a 7-month fake historical
+      // demand series, 12 fake monthly seasonality indices, and fake
+      // forecast-accuracy grades (MAPE/MAD/MSE) on ANY API error. A demand
+      // planner acting on a fake "increasing 20.8% demand, confidence
+      // 85.5%" for a product that shares a real product_id could drive a
+      // real over/under-procurement decision. Honest empty state instead.
+      setDemandForecasts([]);
+      setHistoricalData([]);
+      setSeasonalityData([]);
+      setForecastAccuracy([]);
     } finally {
       setLoading(false);
     }

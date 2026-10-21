@@ -58,20 +58,13 @@ const CapacityPlanning: React.FC = () => {
       setTimeline(timelineRes.data?.timeline || []);
     } catch (error) {
       console.error('Failed to load capacity data:', error);
-      // Mock data
-      setResources([
-        { id: 1, resource_name: 'Production Line A', resource_type: 'machine', available_capacity: 100, planned_capacity: 85, utilization_percent: 85.0, bottleneck: false, efficiency: 92.5, status: 'active' },
-        { id: 2, resource_name: 'Production Line B', resource_type: 'machine', available_capacity: 120, planned_capacity: 118, utilization_percent: 98.3, bottleneck: true, efficiency: 88.2, status: 'active' },
-        { id: 3, resource_name: 'Quality Control', resource_type: 'labor', available_capacity: 80, planned_capacity: 72, utilization_percent: 90.0, bottleneck: false, efficiency: 95.8, status: 'active' },
-        { id: 4, resource_name: 'Packaging Unit', resource_type: 'machine', available_capacity: 150, planned_capacity: 135, utilization_percent: 90.0, bottleneck: false, efficiency: 91.3, status: 'active' }
-      ]);
-      
-      setTimeline([
-        { date: 'Week 1', available_capacity: 1000, planned_load: 850, actual_load: 820, utilization: 82.0 },
-        { date: 'Week 2', available_capacity: 1000, planned_load: 920, actual_load: 900, utilization: 90.0 },
-        { date: 'Week 3', available_capacity: 950, planned_load: 880, actual_load: 860, utilization: 90.5 },
-        { date: 'Week 4', available_capacity: 1100, planned_load: 980, actual_load: 0, utilization: 0 }
-      ]);
+      // 2026-10-07: this used to fall back to 4 fake resources ("Production
+      // Line A/B" at fixed 85%/98.3% utilization, etc) and a 4-week fake
+      // timeline on ANY API error. A capacity-planning page showing a fake
+      // bottleneck ("Production Line B" flagged bottleneck:true) could
+      // drive a real scheduling decision. Honest empty state instead.
+      setResources([]);
+      setTimeline([]);
     } finally {
       setLoading(false);
     }

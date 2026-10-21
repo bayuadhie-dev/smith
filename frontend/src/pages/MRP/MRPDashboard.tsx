@@ -341,14 +341,14 @@ const MRPDashboard: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#059669]"></div>
         <span className="ml-3">Loading MRP dashboard...</span>
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen">
       {/* Time-Phased Check (cross-SO aggregation) - only shown when opened
           with ?sales_order_id=X, e.g. from a Forecast-conversion notification */}
       {timePhaseSoId && (
@@ -510,114 +510,86 @@ const MRPDashboard: React.FC = () => {
             </span>
           </div>
         </div>
-        <div className="flex space-x-3">
+        <div className="flex flex-wrap gap-2">
           <Link
             to="/app/production/demand-planning"
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="flex items-center px-4 py-2 bg-gradient-to-br from-[#059669] to-[#047857] text-white rounded-lg hover:shadow-lg transition-shadow text-sm font-medium"
           >
-            <ChartBarIcon className="h-5 w-5 mr-2" />
+            <ChartBarIcon className="h-4 w-4 mr-2" />
             Demand Planning
           </Link>
           <Link
             to="/app/production/capacity-planning"
-            className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+            className="flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium"
           >
-            <CogIcon className="h-5 w-5 mr-2" />
+            <CogIcon className="h-4 w-4 mr-2" />
             Capacity Planning
           </Link>
           <Link
             to="/app/production/material-requirements"
-            className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+            className="flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium"
           >
-            <CubeIcon className="h-5 w-5 mr-2" />
+            <CubeIcon className="h-4 w-4 mr-2" />
             Material Requirements
           </Link>
           <Link
             to="/app/purchasing/supplier-integration"
-            className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
+            className="flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium"
           >
-            <TruckIcon className="h-5 w-5 mr-2" />
+            <TruckIcon className="h-4 w-4 mr-2" />
             Supplier Integration
           </Link>
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <CubeIcon className="h-6 w-6 text-blue-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total SPK</p>
-              <p className="text-2xl font-bold text-gray-900">{formatNumber(metrics.total_work_orders)}</p>
-            </div>
+      {/* KPI Cards - bento: Total SPK spans 2 cols (primary metric) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="xl:col-span-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg"><CubeIcon className="w-5 h-5" /></div>
+            <p className="text-sm opacity-90">Total SPK</p>
           </div>
-          <div className="mt-4 flex items-center text-sm">
-            <span className="text-blue-600 font-medium">{metrics.in_progress_orders} In Progress</span>
-            <span className="text-gray-400 mx-2">•</span>
-            <span className="text-green-600 font-medium">{metrics.completed_orders} Completed</span>
-          </div>
+          <p className="text-3xl font-bold">{formatNumber(metrics.total_work_orders)}</p>
+          <p className="text-xs opacity-75 mt-1">
+            {metrics.in_progress_orders} In Progress &middot; {metrics.completed_orders} Completed
+          </p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-2 bg-orange-100 rounded-lg">
-              <ExclamationTriangleIcon className="h-6 w-6 text-orange-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Material Shortages</p>
-              <p className="text-2xl font-bold text-gray-900">{formatNumber(metrics.material_shortages)}</p>
-            </div>
+        <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg"><ExclamationTriangleIcon className="w-5 h-5" /></div>
           </div>
-          <div className="mt-4">
-            <Link to="/app/mrp/material-requirements" className="text-sm text-orange-600 hover:text-orange-800">
-              View Details →
-            </Link>
-          </div>
+          <p className="text-xs opacity-90 mb-1">Material Shortages</p>
+          <p className="text-2xl font-bold">{formatNumber(metrics.material_shortages)}</p>
+          <Link to="/app/mrp/material-requirements" className="text-xs underline opacity-90 hover:opacity-100">
+            View Details →
+          </Link>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <BuildingOfficeIcon className="h-6 w-6 text-green-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Capacity Utilization</p>
-              <p className="text-2xl font-bold text-gray-900">{formatPercent(metrics.capacity_utilization)}</p>
-            </div>
+        <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg"><BuildingOfficeIcon className="w-5 h-5" /></div>
           </div>
-          <div className="mt-4">
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div 
-                className="bg-green-600 h-2 rounded-full" 
-                style={{ width: `${metrics.capacity_utilization ?? 0}%` }}
-              ></div>
-            </div>
-          </div>
+          <p className="text-xs opacity-90 mb-1">Capacity Utilization</p>
+          <p className="text-2xl font-bold">{formatPercent(metrics.capacity_utilization)}</p>
         </div>
+      </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <CheckCircleIcon className="h-6 w-6 text-purple-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">On-Time Delivery</p>
-              <p className="text-2xl font-bold text-gray-900">{formatPercent(metrics.on_time_delivery)}</p>
-            </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg"><CheckCircleIcon className="w-5 h-5" /></div>
           </div>
-          <div className="mt-4 flex items-center text-sm">
-            <span className="text-red-600 font-medium">{metrics.overdue_orders} Overdue</span>
-          </div>
+          <p className="text-xs opacity-90 mb-1">On-Time Delivery</p>
+          <p className="text-2xl font-bold">{formatPercent(metrics.on_time_delivery)}</p>
+          <p className="text-xs opacity-75 mt-1">{metrics.overdue_orders} Overdue</p>
         </div>
       </div>
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* Capacity Utilization - Custom Bar Chart */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Resource Capacity Utilization</h3>
           {capacityData.length > 0 ? (
             <div className="space-y-4">
@@ -671,7 +643,7 @@ const MRPDashboard: React.FC = () => {
       {/* Bottom Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Material Shortages */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold text-gray-900">Material Shortages</h3>
             <Link to="/app/mrp/material-requirements" className="text-sm text-blue-600 hover:text-blue-800">
@@ -699,7 +671,7 @@ const MRPDashboard: React.FC = () => {
         </div>
 
         {/* Demand Forecast */}
-        <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Demand Forecast vs Current</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -740,7 +712,7 @@ const MRPDashboard: React.FC = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Link

@@ -7,6 +7,7 @@ import {
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
+import { showError } from '../../components/ui';
 
 interface CorrectiveAction {
   id: number;
@@ -120,7 +121,7 @@ const ChecklistNGItems: React.FC = () => {
       fetchData();
     } catch (e) {
       console.error(e);
-      alert('Gagal menyimpan');
+      showError('Gagal menyimpan');
     } finally {
       setSaving(false);
     }

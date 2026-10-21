@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { showError } from '../../components/ui';
 import {
   ArrowDownTrayIcon,
   ArrowTrendingUpIcon,
@@ -135,10 +136,10 @@ const MaintenanceAnalyticsForm: React.FC = () => {
         const data = await response.json();
         setAnalyticsData(data);
       } else {
-        alert('Failed to generate analytics');
+        showError('Failed to generate analytics');
       }
     } catch (error) {
-      alert('Error generating analytics');
+      showError('Error generating analytics');
     } finally {
       setLoading(false);
     }
@@ -168,7 +169,7 @@ const MaintenanceAnalyticsForm: React.FC = () => {
         document.body.removeChild(a);
       }
     } catch (error) {
-      alert('Error exporting report');
+      showError('Error exporting report');
     }
   };
 

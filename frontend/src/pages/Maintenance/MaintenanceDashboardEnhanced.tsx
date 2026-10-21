@@ -6,8 +6,6 @@ import {
   ArrowPathIcon as Activity,
   ArrowDownTrayIcon,
   ArrowPathIcon as RefreshCw,
-  ArrowTrendingDownIcon as ArrowDownRight,
-  ArrowTrendingUpIcon as ArrowUpRight,
   ArrowTrendingUpIcon,
   CalendarIcon as Calendar,
   ChartBarIcon,
@@ -66,7 +64,7 @@ interface EquipmentPerformance {
   machine_name: string;
   uptime_percentage: number;
   mttr: number;
-  mtbf: number;
+  mtbf: number | null;
   maintenance_cost: number;
   last_maintenance: string;
 }
@@ -165,7 +163,10 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
     }).format(amount);
   };
 
-  const formatDuration = (hours: number) => {
+  const formatDuration = (hours: number | null | undefined) => {
+    if (hours === null || hours === undefined) {
+      return 'N/A';
+    }
     if (hours < 24) {
       return `${hours.toFixed(1)} hours`;
     }
@@ -241,10 +242,6 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
               <Activity className="h-6 w-6 text-green-600" />
             </div>
           </div>
-          <div className="mt-4 flex items-center">
-            <ArrowUpRight className="h-4 w-4 text-green-500 mr-1" />
-            <span className="text-sm text-green-600">+2.3% from last month</span>
-          </div>
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
@@ -256,10 +253,6 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
             <div className="p-3 bg-orange-100 rounded-lg">
               <ClockIcon className="h-6 w-6 text-orange-600" />
             </div>
-          </div>
-          <div className="mt-4 flex items-center">
-            <ArrowDownRight className="h-4 w-4 text-green-500 mr-1" />
-            <span className="text-sm text-green-600">-15% improvement</span>
           </div>
         </div>
 
@@ -443,7 +436,7 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="text-sm text-gray-900 dark:text-white">{equipment.uptime_percentage.toFixed(1)}%</div>
+                        <div className="text-sm text-gray-900 dark:text-white">{(equipment.uptime_percentage || 0).toFixed(1)}%</div>
                         <div className="ml-2 w-16 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                           <div 
                             className="bg-green-500 h-2 rounded-full" 

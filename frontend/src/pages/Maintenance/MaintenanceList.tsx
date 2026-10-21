@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import api from '../../utils/axiosConfig';
 import toast from 'react-hot-toast';
+import { confirmDialog } from '../../components/ui';
 import {
   WrenchScrewdriverIcon,
   PlusIcon,
@@ -130,7 +131,7 @@ const MaintenanceList: React.FC = () => {
   };
 
   const handleDelete = async (recordId: number) => {
-    if (!window.confirm('Are you sure you want to delete this maintenance record?')) return;
+    if (!(await confirmDialog('Are you sure you want to delete this maintenance record?'))) return;
     
     try {
       await api.delete(`/api/maintenance/records/${recordId}`);

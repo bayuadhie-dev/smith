@@ -75,64 +75,21 @@ const MaterialRequirements: React.FC = () => {
       setSummary(summaryRes.data?.summary || {});
     } catch (error) {
       console.error('Failed to load material requirements:', error);
-      // Mock data
-      setRequirements([
-        {
-          id: 1,
-          material_name: 'PP Granules Grade A',
-          material_code: 'PP-001',
-          required_qty: 500,
-          available_qty: 150,
-          shortage_qty: 350,
-          unit: 'kg',
-          required_date: '2024-01-20',
-          lead_time_days: 7,
-          supplier_name: 'PT Polymer Indonesia',
-          unit_cost: 8500,
-          total_cost: 2975000,
-          priority: 'high',
-          status: 'shortage'
-        },
-        {
-          id: 2,
-          material_name: 'Additives UV-401',
-          material_code: 'ADD-001',
-          required_qty: 25,
-          available_qty: 8,
-          shortage_qty: 17,
-          unit: 'kg',
-          required_date: '2024-01-18',
-          lead_time_days: 5,
-          supplier_name: 'Chemical Solutions Ltd',
-          unit_cost: 25000,
-          total_cost: 425000,
-          priority: 'medium',
-          status: 'shortage'
-        },
-        {
-          id: 3,
-          material_name: 'Packaging Film',
-          material_code: 'PKG-001',
-          required_qty: 1000,
-          available_qty: 0,
-          shortage_qty: 1000,
-          unit: 'm',
-          required_date: '2024-01-25',
-          lead_time_days: 10,
-          supplier_name: 'Packaging Pro',
-          unit_cost: 1200,
-          total_cost: 1200000,
-          priority: 'critical',
-          status: 'shortage'
-        }
-      ]);
-
+      // 2026-10-07: this used to fall back to 3 fake material shortages
+      // ("PP Granules Grade A - CRITICAL shortage 350kg" with a fake
+      // supplier name and cost) plus a fake summary (45 materials, 8
+      // shortage items, Rp15,600,000 total shortage value, 3 critical) on
+      // ANY API error. This is a procurement-planning page - staff could
+      // act on a fake "critical shortage" (e.g. raise a real purchase
+      // requisition) believing it reflects real inventory. Honest empty
+      // state instead.
+      setRequirements([]);
       setSummary({
-        total_materials: 45,
-        total_shortage_items: 8,
-        total_shortage_value: 15600000,
-        critical_shortages: 3,
-        avg_lead_time: 7.5
+        total_materials: 0,
+        total_shortage_items: 0,
+        total_shortage_value: 0,
+        critical_shortages: 0,
+        avg_lead_time: 0
       });
     } finally {
       setLoading(false);
