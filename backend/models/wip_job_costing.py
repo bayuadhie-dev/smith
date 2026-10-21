@@ -162,6 +162,12 @@ class JobCostEntry(db.Model):
     
     # Status
     status = db.Column(db.String(20), nullable=False, default='active')  # active, reversed, adjusted
+
+    # Fase 5 audit fix (2026-09-30) - True when this cost entry's estimate
+    # is incomplete (no WorkOrderBOMItem found for the work order, or one
+    # found but with 0/missing unit_cost on some line) - see
+    # WIPWorkflowIntegration.create_material_cost_entry() docstring.
+    is_cost_incomplete = db.Column(db.Boolean, nullable=False, default=False)
     
     # Audit Trail
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -332,27 +338,75 @@ class WIPWorkflowIntegration:
     
     @staticmethod
     def create_material_cost_entry(wip_batch_id, work_order_id, user_id):
-        """Create material cost entry when materials are issued"""
+        """Create material cost entry when materials are issued.
+
+        Fase 5 audit fix (2026-09-30): sebelumnya SELALU pakai
+        estimated_material_cost = qty WO x SystemSetting
+        'job_costing.material_cost_per_unit' (fallback hardcoded 50000),
+        tidak pernah query BOM sama sekali - komentar kode sendiri
+        menyebut "Simplified ... In real implementation, this would
+        calculate from BOM and material issues".
+
+        Sekarang dihitung dari WorkOrderBOMItem - keputusan pemilik
+        (2026-09-30): sumber BOM yang otoritatif adalah WorkOrderBOMItem
+        (salinan per-WO yang dipakai alur produksi riil/Tutup SPK), BUKAN
+        tabel BOM master (BillOfMaterials/BOMItem), karena WorkOrderBOMItem
+        mencerminkan penyesuaian manual per-WO dan actual consumption -
+        BOM master bisa sudah berubah sejak WO dibuat.
+
+        Kalau BOM tidak ada sama sekali ATAU ada tapi sebagian/semua
+        unit_cost-nya 0/kosong (data master belum lengkap - ini masalah
+        data, bukan bug kode, jadi TIDAK diisi asal), fungsi ini TIDAK diam-
+        diam memakai angka tetap seolah-olah itu angka nyata: hasilnya
+        tetap dihitung sebaik mungkin dari data yang ada, tapi
+        JobCostEntry.is_cost_incomplete=True dan description diberi
+        peringatan eksplisit, supaya siapa pun yang membaca job cost ini
+        tahu angkanya tidak lengkap.
+        """
         wip_batch = WIPBatch.query.get(wip_batch_id)
         if not wip_batch:
             return None
-            
-        # Calculate material cost from BOM
+
         from .production import WorkOrder
-        from models.settings import SystemSetting
+        from .work_order_bom import WorkOrderBOMItem
         work_order = WorkOrder.query.get(work_order_id)
-        
-        # Get fallback material cost per unit from system settings
-        mat_cost_setting = SystemSetting.query.filter_by(setting_key='job_costing.material_cost_per_unit').first()
-        mat_cost_per_unit = float(mat_cost_setting.setting_value) if mat_cost_setting and mat_cost_setting.setting_value else 50000
-        
-        # Simplified material cost calculation
-        # In real implementation, this would calculate from BOM and material issues
-        estimated_material_cost = float(work_order.quantity) * mat_cost_per_unit
-        
+
+        # WO-wide rows only (production_batch_id IS NULL) - production_batch_id
+        # set rows are per-batch partial-closing trees (Tutup Batch), which
+        # would double-count material cost if summed alongside the WO-wide rows.
+        bom_items = WorkOrderBOMItem.query.filter_by(
+            work_order_id=work_order_id, production_batch_id=None,
+        ).all()
+
+        is_incomplete = False
+        wo_quantity = float(work_order.quantity or 0) if work_order else 0.0
+
+        if not bom_items:
+            is_incomplete = True
+            from models.settings import SystemSetting
+            mat_cost_setting = SystemSetting.query.filter_by(setting_key='job_costing.material_cost_per_unit').first()
+            mat_cost_per_unit = float(mat_cost_setting.setting_value) if mat_cost_setting and mat_cost_setting.setting_value else 50000
+            estimated_material_cost = wo_quantity * mat_cost_per_unit
+        else:
+            total_cost = 0.0
+            for item in bom_items:
+                item_cost = item.total_cost_planned
+                if item_cost is None:
+                    item_cost = float(item.quantity_planned or 0) * float(item.unit_cost or 0)
+                item_cost = float(item_cost or 0)
+                if item_cost <= 0:
+                    is_incomplete = True
+                total_cost += item_cost
+            estimated_material_cost = total_cost
+            mat_cost_per_unit = (estimated_material_cost / wo_quantity) if wo_quantity else 0.0
+
         wip_batch.material_cost = estimated_material_cost
         wip_batch.update_wip_value()
-        
+
+        description = 'Material cost for production (dihitung dari BOM WorkOrderBOMItem)'
+        if is_incomplete:
+            description += ' [PERINGATAN: data BOM/unit_cost material tidak lengkap - estimasi bisa tidak akurat]'
+
         # Create job cost entry
         job_cost = JobCostEntry(
             job_cost_no=f"JC-{wip_batch.wip_batch_no}-MAT",
@@ -360,13 +414,14 @@ class WIPWorkflowIntegration:
             work_order_id=work_order_id,
             cost_type='material',
             cost_category='raw_material',
-            description='Material cost for production',
+            description=description,
             quantity=work_order.quantity,
             unit_cost=mat_cost_per_unit,
             total_cost=estimated_material_cost,
+            is_cost_incomplete=is_incomplete,
             created_by=user_id
         )
-        
+
         db.session.add(job_cost)
         return job_cost
     

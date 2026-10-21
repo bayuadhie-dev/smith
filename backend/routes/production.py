@@ -1192,6 +1192,25 @@ def create_work_order():
             if default_recipe:
                 machine_id = default_recipe.machine_id
 
+        # Fase 7 audit fix (fix_report_2.md, 2026-10-01): no validation
+        # existed anywhere for quantity <= 0 - a WO for 0 or negative units
+        # silently got created. Found alongside the date-sequence gap below
+        # while triaging test_production_validation_failures.
+        if data.get('quantity') is not None and float(data['quantity']) <= 0:
+            return jsonify({'error': 'quantity harus lebih besar dari 0'}), 400
+
+        # No validation existed anywhere for scheduled_end_date being before
+        # scheduled_start_date - a WO scheduled to finish before it starts
+        # silently got created. Found while triaging
+        # test_production_validation_failures, which already expected 400
+        # here but got 500 (a separate issue - unrelated KeyError from a
+        # wrong field name in that test's payload, fixed in the test).
+        if data.get('scheduled_start_date') and data.get('scheduled_end_date'):
+            start = datetime.fromisoformat(data['scheduled_start_date'])
+            end = datetime.fromisoformat(data['scheduled_end_date'])
+            if end < start:
+                return jsonify({'error': 'scheduled_end_date tidak boleh lebih awal dari scheduled_start_date'}), 400
+
         wo = WorkOrder(
             wo_number=wo_number,
             product_id=data['product_id'],
@@ -1211,6 +1230,22 @@ def create_work_order():
         )
         
         db.session.add(wo)
+        db.session.flush()
+
+        # Snapshot the master BOM into this WO right now, not whenever
+        # (or if) someone later clicks "Copy BOM" manually - see
+        # utils/bom_snapshot.py for why that gap mattered.
+        from utils.bom_snapshot import snapshot_bom_to_work_order
+        snapshot_bom_to_work_order(wo)
+
+        # Soft overcommit check (2026-10-20) - see utils/material_overcommit_check.py
+        # for why this is a warning, not a block: material availability was
+        # never checked at WO-creation time at all before this, not even
+        # against on-hand stock, let alone against what other open WOs
+        # already need from the same scarce material.
+        from utils.material_overcommit_check import check_material_overcommit
+        overcommit_warnings = check_material_overcommit(wo.product_id, wo.quantity, exclude_wo_id=wo.id)
+
         db.session.commit()
 
         # Invalidate WO list cache
@@ -1221,7 +1256,12 @@ def create_work_order():
         except Exception:
             pass
 
-        return jsonify({'message': 'Work order created', 'wo_id': wo.id, 'wo_number': wo_number}), 201
+        return jsonify({
+            'message': 'Work order created',
+            'wo_id': wo.id,
+            'wo_number': wo_number,
+            'material_warnings': overcommit_warnings,
+        }), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
@@ -1266,6 +1306,13 @@ def update_work_order(id):
             wo.uom = data['uom']
         if 'pack_per_carton' in data:
             wo.pack_per_carton = data['pack_per_carton']
+        # fix_report_3.md (2026-10-02): 'batch_number' was silently dropped
+        # here - the PUT returned 200 success but the field never persisted,
+        # same pattern as the Asset.machine_id bug (fix_report_2.md Fase 11).
+        # Found while chasing an inventory-matching bug in shipping that
+        # relies on WorkOrder.batch_number being settable.
+        if 'batch_number' in data:
+            wo.batch_number = data['batch_number']
         if 'scheduled_start_date' in data:
             wo.scheduled_start_date = datetime.fromisoformat(data['scheduled_start_date']) if data['scheduled_start_date'] else None
         if 'scheduled_end_date' in data:
@@ -1699,6 +1746,55 @@ def create_work_order_production_record(id):
         if not machine_id:
             return jsonify({'error': 'Machine ID is required for production record'}), 400
 
+        # Fase 7 audit fix (fix_report_2.md, 2026-10-01): no validation
+        # existed for negative quantity_good/quantity_reject/quantity_produced
+        # or negative runtime - a production record reporting negative
+        # output/runtime silently got accepted. Found while triaging
+        # test_production_output_record_validation.
+        for qty_field in ('quantity_produced', 'quantity_good', 'quantity_reject'):
+            if data.get(qty_field) is not None and float(data[qty_field]) < 0:
+                return jsonify({'error': f'{qty_field} tidak boleh negatif'}), 400
+        if data.get('actual_runtime') is not None and float(data['actual_runtime']) < 0:
+            return jsonify({'error': 'actual_runtime tidak boleh negatif'}), 400
+
+        # fix_report_3.md (2026-10-02): reject/waste reported here used to
+        # be a pure number (ShiftProduction.reject_quantity, wo.quantity_scrap)
+        # with no physical trace at all - no Inventory row, no WasteRecord,
+        # nothing to point to for "where did these 800 rejected pieces
+        # actually go". Found via a real end-to-end production test.
+        # Business rule (confirmed with owner before writing this code):
+        # (1) reject qty must not exceed 2% of quantity_produced for this
+        #     same call, (2) a reason is mandatory whenever reject > 0.
+        #
+        # fix_report_3.md Fase 20 (2026-10-05, CORRECTED - found via live
+        # E2E verification): rule (1) was originally a HARD BLOCK (400,
+        # nothing persisted) - but real production shifts genuinely DO
+        # sometimes exceed 2% reject (machine fault, a bad raw-material lot,
+        # etc.), and this made the ENTIRE shift's production data
+        # (quantity_produced, quantity_good, downtime, everything) silently
+        # unsaveable whenever that happened - not just the reject figure.
+        # Operators had no way to record a real high-reject shift at all.
+        # Re-confirmed with owner: downgraded to a non-blocking warning -
+        # real data is never rejected over this threshold, 2% is now a
+        # flag for QA/production to investigate, not a submission gate.
+        # waste_reason is still mandatory whenever reject > 0 (that part of
+        # the rule was never the problem - a reject number with literally no
+        # stated reason is still a real data-quality gap).
+        quantity_reject_input = float(data.get('quantity_reject', 0) or 0)
+        quantity_produced_input = float(data.get('quantity_produced', 0) or 0)
+        high_reject_warning = None
+        if quantity_reject_input > 0:
+            if not (data.get('waste_reason') or '').strip():
+                return jsonify({'error': 'waste_reason wajib diisi kalau ada quantity_reject'}), 400
+            if quantity_produced_input > 0:
+                reject_percent = (quantity_reject_input / quantity_produced_input) * 100
+                if reject_percent > 2.0:
+                    high_reject_warning = (
+                        f'Reject {reject_percent:.2f}% dari hasil produksi melebihi ambang batas 2% '
+                        f'(Reject: {quantity_reject_input}, Produksi: {quantity_produced_input}) - '
+                        f'data tetap disimpan, perlu ditinjau tim QA/produksi.'
+                    )
+
         # Optional link to a Batch Scheduling ProductionBatch (2026-09-12) -
         # NULL/omitted preserves the exact legacy behavior (one WIPBatch per
         # WorkOrder total) for WOs/companies not using Batch Scheduling yet.
@@ -1735,7 +1831,13 @@ def create_work_order_production_record(id):
         # Store downtime entries as JSON in notes if needed
         if downtime_notes:
             record.notes = f"{data.get('notes', '')}\n\n[Downtime Details]\n{downtime_notes}".strip()
-        
+
+        # High-reject warning (see note above) - kept permanently on the
+        # record itself, not just the one-time API response, so it's still
+        # visible to anyone reviewing this shift's data later.
+        if high_reject_warning:
+            record.notes = f"{record.notes or ''}\n\n[PERINGATAN QA] {high_reject_warning}".strip()
+
         db.session.add(record)
         
         # Get downtime by category from request
@@ -1917,7 +2019,52 @@ def create_work_order_production_record(id):
         wo.quantity_produced = float(wo.quantity_produced or 0) + float(data.get('quantity_produced', 0))
         wo.quantity_good = float(wo.quantity_good or 0) + float(data.get('quantity_good', 0))
         wo.quantity_scrap = float(wo.quantity_scrap or 0) + float(data.get('quantity_reject', 0))
-        
+
+        # fix_report_3.md (2026-10-02): land reject qty in real Inventory
+        # (stock_status='reject'), same pattern already used for GRN reject
+        # (_resolve_grn_quarantine_location()) - keeps it in the warehouse
+        # for a QC decision (existing /quarantine/<id>/destroy endpoint)
+        # instead of just vanishing into a summary number. Validated above
+        # (waste_reason required, <=2% of this call's own output).
+        if quantity_reject_input > 0:
+            from models.warehouse import Inventory, WarehouseZone, WarehouseLocation
+            from utils.inventory_helpers import record_inventory_transaction
+            reject_location = WarehouseLocation.query.join(WarehouseZone).filter(
+                WarehouseZone.zone_type == 'reject'
+            ).first()
+            if reject_location:
+                reject_inv = Inventory.query.filter_by(
+                    product_id=record_product_id,
+                    location_id=reject_location.id,
+                    batch_number=data.get('batch_number') or wo.batch_number,
+                    stock_status='reject',
+                ).first()
+                if not reject_inv:
+                    reject_inv = Inventory(
+                        product_id=record_product_id, location_id=reject_location.id,
+                        batch_number=data.get('batch_number') or wo.batch_number,
+                        quantity_on_hand=0, quantity_available=0, quantity_reserved=0,
+                        stock_status='reject', is_active=True, created_by=user_id,
+                    )
+                    db.session.add(reject_inv)
+                    db.session.flush()
+                reject_inv.quantity_on_hand = float(reject_inv.quantity_on_hand or 0) + quantity_reject_input
+                reject_inv.quantity_available = float(reject_inv.quantity_available or 0) + quantity_reject_input
+                reject_inv.updated_at = get_local_now()
+
+                record_inventory_transaction(
+                    transaction_type='adjustment',
+                    direction='in',
+                    quantity=quantity_reject_input,
+                    product_id=record_product_id,
+                    to_location_id=reject_location.id,
+                    batch_number=data.get('batch_number') or wo.batch_number,
+                    reference_type='shift_production_reject',
+                    reference_id=id,
+                    notes=f"Reject dari produksi WO {wo.wo_number} - {data.get('waste_reason')}",
+                    created_by=user_id,
+                )
+
         # Calculate buffer stock (production exceeding target)
         buffer_stock_qty = 0
         if wo.quantity_good > wo.quantity:
@@ -2065,7 +2212,8 @@ def create_work_order_production_record(id):
             db.session.add(labor_job_cost)
             # Convert to float to avoid Decimal conflicts
             wip_batch.labor_cost = float(wip_batch.labor_cost or 0) + float(labor_cost)
-        
+            _post_wip_cost_absorption_gl(labor_cost, 'payroll_expense', wo.wo_number, data.get('shift', '1'), 'labor', id, int(user_id))
+
         # Create job cost entry for overhead
         if overhead_cost > 0:
             overhead_job_cost = JobCostEntry(
@@ -2088,6 +2236,7 @@ def create_work_order_production_record(id):
             db.session.add(overhead_job_cost)
             # Convert to float to avoid Decimal conflicts
             wip_batch.overhead_cost = float(wip_batch.overhead_cost or 0) + float(overhead_cost)
+            _post_wip_cost_absorption_gl(overhead_cost, 'beban_operasional', wo.wo_number, data.get('shift', '1'), 'overhead', id, int(user_id))
         
         # Update total WIP value
         wip_batch.update_wip_value()
@@ -2254,6 +2403,7 @@ def create_work_order_production_record(id):
 
         return jsonify({
             'message': 'Production record created',
+            'warnings': [high_reject_warning] if high_reject_warning else [],
             'record_id': record_id,
             'shift_production_id': shift_production_id,
             'work_order_progress': {
@@ -2320,14 +2470,32 @@ def start_work_order(id):
         wo = db.session.get(WorkOrder, id)
         if not wo:
             return jsonify(error_response('api.error', error_code=404)), 404
-        
-        # Auto-issue materials from BOM
-        bom = BillOfMaterials.query.filter_by(product_id=wo.product_id, is_active=True).first()
-        
+
+        # Auto-issue materials: prefer the frozen WO-specific snapshot
+        # (WorkOrderBOMItem, see utils/bom_snapshot.py) over the live master
+        # BOM. Before this, this endpoint always re-queried the live BOM
+        # here regardless of what was snapshotted at WO creation - if the
+        # master BOM was edited in between, this silently issued against
+        # whatever the BOM happens to be *right now*, not what was true
+        # when the WO was planned. WOs created before the 2026-10-16
+        # snapshot fix have no snapshot rows, so they fall back to the live
+        # BOM exactly as this endpoint always behaved for them.
+        from models.work_order_bom import WorkOrderBOMItem
+        snapshot_items = WorkOrderBOMItem.query.filter_by(
+            work_order_id=id, production_batch_id=None, parent_item_id=None
+        ).filter(WorkOrderBOMItem.material_id.isnot(None)).all()
+
+        if snapshot_items:
+            bom = True  # sentinel - only gates the block below, never dereferenced
+            bom_items_to_issue = snapshot_items
+        else:
+            bom = BillOfMaterials.query.filter_by(product_id=wo.product_id, is_active=True).first()
+            bom_items_to_issue = bom.items if bom else []
+
         if bom:
             # Check opname lock for all BOM materials before issuing
             from utils.opname_lock import check_opname_lock
-            for bom_item in bom.items:
+            for bom_item in bom_items_to_issue:
                 lock = check_opname_lock(material_id=bom_item.material_id)
                 if lock['locked']:
                     return jsonify({'error': lock['message']}), 423
@@ -2359,9 +2527,17 @@ def start_work_order(id):
                 db.session.add(mi)
                 db.session.flush()
                 
-                # Issue materials from BOM
-                for idx, bom_item in enumerate(bom.items, 1):
-                    required_qty = float(bom_item.quantity) * float(wo.quantity)
+                # Issue materials from BOM (snapshot preferred - quantity_planned
+                # is already correctly scaled to this WO; live BOMItem.quantity
+                # still needs the *wo.quantity scaling it always needed).
+                for idx, bom_item in enumerate(bom_items_to_issue, 1):
+                    if hasattr(bom_item, 'quantity_planned') and bom_item.quantity_planned is not None:
+                        required_qty = float(bom_item.quantity_planned)
+                    else:
+                        # UOM conversion (2026-10-20): bom_item.quantity is in
+                        # this BOM line's own uom, not necessarily the
+                        # material's stock-tracking UOM - see BOMItem.conversion_factor.
+                        required_qty = float(bom_item.quantity) * float(wo.quantity) * float(bom_item.conversion_factor or 1)
                     
                     # Find inventory with stock
                     inventories = Inventory.query.filter(
@@ -2547,10 +2723,60 @@ def start_work_order(id):
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
+def _post_wip_cost_absorption_gl(amount, expense_transaction_key, wo_number, shift, cost_label, work_order_id, user_id):
+    """fix_report_3.md Fase 18 (2026-10-02): labor/overhead cost absorbed
+    into WIPBatch (via create_work_order_production_record()'s per-shift
+    job costing, above) never posted to GL anywhere - found right after
+    fixing the raw-material GL gap (Fase 14), this is the same shape of
+    gap for the OTHER half of manufacturing cost (labor + overhead), real
+    money even when it comes from a flat SystemSetting rate rather than
+    actual payroll data. Design (confirmed with owner): post per shift,
+    standard absorption-costing entry - Dr Persediaan Barang Dalam Proses
+    (WIP) / Cr the period expense account (payroll_expense for labor,
+    beban_operasional for overhead) - reclassifies cost already counted as
+    a period expense into capitalized WIP value, same direction as any
+    textbook job-order costing system. Best-effort: never raises past the
+    caller (this fires from deep inside a 300-line endpoint that must not
+    fail over a missing account-default config), skips silently (not an
+    error) if the expense account or the WIP account isn't configured."""
+    if amount <= 0:
+        return
+    try:
+        from models.finance import GlobalAccountDefault
+        from models.approval_workflow import PendingJournalEntry
+        from utils.finance_helpers import post_pending_journal
+
+        wip_default = GlobalAccountDefault.query.filter_by(transaction_key='wip_persediaan').first()
+        expense_default = GlobalAccountDefault.query.filter_by(transaction_key=expense_transaction_key).first()
+        if not wip_default or not expense_default:
+            return
+
+        pending = PendingJournalEntry(
+            workflow_id=None,
+            entry_date=get_local_now().date(),
+            description=f'Absorpsi biaya {cost_label} ke WIP - {wo_number} shift {shift}',
+            reference=wo_number,
+            lines=[
+                {'account_id': wip_default.account_id, 'debit': float(amount), 'credit': 0,
+                 'description': f'Biaya {cost_label} diserap ke WIP - {wo_number} shift {shift}'},
+                {'account_id': expense_default.account_id, 'debit': 0, 'credit': float(amount),
+                 'description': f'Reklasifikasi beban {cost_label} ke WIP - {wo_number} shift {shift}'},
+            ],
+            total_debit=float(amount),
+            total_credit=float(amount),
+            created_by=user_id,
+        )
+        db.session.add(pending)
+        db.session.flush()
+        post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='wip_cost_absorption', reference_id=work_order_id)
+    except Exception as e:
+        print(f"WIP cost absorption GL posting warning (non-fatal): {e}")
+
+
 def _check_batch_closing_requirements(batch):
     """Gate for 'Tutup Batch' (partial closing, one ProductionBatch at a time -
     see design discussion: each batch = one physical production event, the
-    SMITH equivalent of Accurate's per-event Finished Good Slip). Only checks
+    SMITH equivalent of Accurate's per-event Finished Good Slip). Checks
     actual material consumption for THIS batch's own WorkOrderBOMItem rows -
     packing list stays a WO-level check (PackingListItem.batch_mixing is
     free-text from OCR/manual entry, not a reliable FK to ProductionBatch.id,
@@ -2566,6 +2792,45 @@ def _check_batch_closing_requirements(batch):
         missing.append(f'Pemakaian bahan aktual belum diisi untuk {len(unfilled)} item BOM batch ini')
     if not bom_items:
         missing.append('Belum ada rincian bahan aktual untuk batch ini - buka tab Bahan Aktual dan expand BOM dulu')
+
+    # fix_report_3.md (2026-10-02, found via real production E2E testing):
+    # the check above only verifies quantity_actual was TYPED IN somewhere -
+    # it says nothing about whether that material was ever physically
+    # issued from the warehouse (MaterialIssue/MaterialIssueItem). A batch
+    # could reach 'Tutup Batch' - and from there the whole WO through
+    # 'Selesaikan SPK' to shipped+invoiced - while every raw material for it
+    # sat at MaterialIssue.status='approved'/issued_quantity=0 the entire
+    # time (confirmed reproducible: a real WO completed, shipped and got
+    # paid for before any of its 13 BOM materials ever left the warehouse).
+    # Added: every MaterialIssue tied to this batch must have each item's
+    # issued_quantity cover its required_quantity. Compared with a small
+    # tolerance (not item.is_fully_issued's strict >=) because issued_quantity
+    # accumulates via float arithmetic in issue_materials() and can land a
+    # hair below required_quantity from pure floating-point rounding even
+    # when the full quantity was issued in substance - MaterialIssueItem.
+    # status is NOT trusted here for the same reason (see fix_report_3.md
+    # for the separate 'issued_quantity==required_quantity but status stuck
+    # at partial' finding this surfaced).
+    from models.material_issue import MaterialIssue, MaterialIssueItem
+
+    batch_issues = MaterialIssue.query.filter_by(production_batch_id=batch.id).filter(
+        MaterialIssue.status != 'cancelled'
+    ).all()
+    if not batch_issues:
+        missing.append('Belum ada Material Issue (staging bahan baku) untuk batch ini')
+    else:
+        not_issued = []
+        for mi in batch_issues:
+            for item in mi.items:
+                required = float(item.required_quantity or 0)
+                issued = float(item.issued_quantity or 0)
+                if required > 0 and issued < required - max(required * 0.001, 0.01):
+                    not_issued.append(item)
+        if not_issued:
+            missing.append(
+                f'{len(not_issued)} item bahan baku belum benar-benar dikeluarkan dari gudang '
+                f'(Material Issue belum "issued" sepenuhnya) - buka menu Material Issue dan proses dulu'
+            )
 
     return len(missing) == 0, missing
 
@@ -2983,19 +3248,37 @@ def complete_work_order(id):
             wo.quantity_produced = shift_produced
             wo.quantity_good = shift_good
 
+        # Cost variance summary (informasional saja, lihat komentar di
+        # get_work_order_bom() - sistem ini tidak posting jurnal GL untuk
+        # selisih biaya karena HPP sudah pakai biaya aktual/FIFO, bukan
+        # biaya standar).
+        wo_bom_items_for_cost = WorkOrderBOMItem.query.filter_by(work_order_id=id).all()
+        total_planned_cost = sum(float(i.total_cost_planned or 0) for i in wo_bom_items_for_cost)
+        items_with_actual_cost = [i for i in wo_bom_items_for_cost if i.total_cost_actual is not None]
+        total_actual_cost = sum(float(i.total_cost_actual or 0) for i in items_with_actual_cost)
+        cost_variance_summary = None
+        if items_with_actual_cost:
+            cost_variance_summary = {
+                'total_cost_planned': total_planned_cost,
+                'total_cost_actual': total_actual_cost,
+                'variance': total_actual_cost - total_planned_cost,
+                'variance_percent': round((total_actual_cost - total_planned_cost) / total_planned_cost * 100, 2) if total_planned_cost > 0 else None,
+            }
+
         db.session.commit()
         # Send WhatsApp notification (best-effort, won't affect completion if it fails)
         try:
             from utils.production_notifications import trigger_wo_completion_whatsapp_notification
             trigger_wo_completion_whatsapp_notification(id)
         except Exception as notif_err:
-            print(f"Failed to send WO completion notification: {notif_err}")        
+            print(f"Failed to send WO completion notification: {notif_err}")
         response = {
             'success': True,
             'message': f'Work order completed. {qty_good} units received to warehouse.' if qty_good > 0 else 'Work order completed.',
             'wo_number': wo.wo_number,
                 'product_id': wo.product_id,
-            'quantity_received': qty_good
+            'quantity_received': qty_good,
+            'cost_variance_summary': cost_variance_summary
         }
         if integration_results:
             response['integration_results'] = integration_results
@@ -4809,6 +5092,7 @@ def get_batch_record(batch_id):
 
         total_good = sum(s['good_quantity'] for s in shifts)
         total_reject = sum(s['reject_quantity'] for s in shifts)
+        total_rework = sum(s['rework_quantity'] for s in shifts)
         total_actual = sum(s['actual_quantity'] for s in shifts)
         yield_percent = round((total_good / total_actual * 100), 2) if total_actual else None
 
@@ -4850,6 +5134,7 @@ def get_batch_record(batch_id):
                 'total_actual': total_actual,
                 'total_good': total_good,
                 'total_reject': total_reject,
+                'total_rework': total_rework,
                 'yield_percent': yield_percent,
             },
             'qc_status': qc_status,
@@ -4858,6 +5143,112 @@ def get_batch_record(batch_id):
             'admin_closed_by_name': batch.admin_closed_by and db.session.get(User, batch.admin_closed_by).full_name,
             'approved_by_name': batch.approved_by_user.full_name if batch.approved_by_user else None,
             'approved_at': batch.approved_at.isoformat() if batch.approved_at else None,
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@production_bp.route('/batches/weekly-report', methods=['GET'])
+@jwt_required()
+@require_permission('work_orders.view')
+def get_batch_weekly_report():
+    """Weekly roll-up of GMP Batch Records (Catatan Pengolahan Bets) - every
+    ProductionBatch scheduled within [start_date, end_date], with per-batch
+    Grade A/B/C + yield plus a week-level summary. Each row links to the
+    full single-batch record (/batches/<id>/record) for the detailed view.
+
+    Same caveat as get_batch_record(): shift output is only attributed here
+    when ShiftProduction.production_batch_id is set directly - shifts only
+    linked via work_order_id are NOT included in this listing (unlike the
+    single-batch endpoint, which has a safe unambiguous-WO fallback; doing
+    that per-batch here would risk double-counting a WO's shifts across
+    multiple batches in the same week).
+    """
+    try:
+        from models.batch_scheduling import ProductionBatch
+        from models.production import ShiftProduction
+
+        start_date_str = request.args.get('start_date')
+        end_date_str = request.args.get('end_date')
+        if not start_date_str or not end_date_str:
+            return jsonify({'error': 'start_date and end_date are required (YYYY-MM-DD)'}), 400
+        try:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            return jsonify({'error': 'Invalid date format, expected YYYY-MM-DD'}), 400
+        if end_date < start_date:
+            return jsonify({'error': 'end_date must not be before start_date'}), 400
+        if (end_date - start_date) > timedelta(days=31):
+            return jsonify({'error': 'Range too wide - max 31 days per report'}), 400
+
+        batches = (ProductionBatch.query
+                   .join(WorkOrder, ProductionBatch.work_order_id == WorkOrder.id)
+                   .join(Product, WorkOrder.product_id == Product.id)
+                   .filter(ProductionBatch.scheduled_date >= start_date,
+                           ProductionBatch.scheduled_date <= end_date)
+                   .order_by(ProductionBatch.scheduled_date, ProductionBatch.id)
+                   .all())
+
+        batch_ids = [b.id for b in batches]
+        shift_totals: dict = {}
+        if batch_ids:
+            shift_rows = (ShiftProduction.query
+                          .filter(ShiftProduction.production_batch_id.in_(batch_ids))
+                          .all())
+            for s in shift_rows:
+                t = shift_totals.setdefault(s.production_batch_id, {'good': 0.0, 'reject': 0.0, 'rework': 0.0, 'actual': 0.0})
+                t['good'] += float(s.good_quantity or 0)
+                t['reject'] += float(s.reject_quantity or 0)
+                t['rework'] += float(s.rework_quantity or 0)
+                t['actual'] += float(s.actual_quantity or 0)
+
+        batch_rows = []
+        wk_planned = wk_realized = wk_good = wk_reject = wk_rework = wk_actual = 0.0
+        wk_closed = 0
+        for b in batches:
+            t = shift_totals.get(b.id, {'good': 0.0, 'reject': 0.0, 'rework': 0.0, 'actual': 0.0})
+            yield_pct = round((t['good'] / t['actual'] * 100), 2) if t['actual'] else None
+            wk_planned += float(b.planned_qty or 0)
+            wk_realized += float(b.realized_qty or 0)
+            wk_good += t['good']
+            wk_reject += t['reject']
+            wk_rework += t['rework']
+            wk_actual += t['actual']
+            if b.admin_closed:
+                wk_closed += 1
+            batch_rows.append({
+                'id': b.id,
+                'batch_number': b.batch_number,
+                'wo_number': b.work_order.wo_number if b.work_order else None,
+                'product_name': b.work_order.product.name if b.work_order and b.work_order.product else None,
+                'scheduled_date': b.scheduled_date.isoformat() if b.scheduled_date else None,
+                'status': b.status,
+                'planned_qty': float(b.planned_qty or 0),
+                'realized_qty': float(b.realized_qty or 0),
+                'good_quantity': t['good'],
+                'reject_quantity': t['reject'],
+                'rework_quantity': t['rework'],
+                'yield_percent': yield_pct,
+                'admin_closed': b.admin_closed,
+            })
+
+        wk_yield_pct = round((wk_good / wk_actual * 100), 2) if wk_actual else None
+
+        return jsonify({
+            'period': {'start_date': start_date.isoformat(), 'end_date': end_date.isoformat()},
+            'summary': {
+                'total_batches': len(batches),
+                'batches_closed': wk_closed,
+                'batches_open': len(batches) - wk_closed,
+                'total_planned_qty': wk_planned,
+                'total_realized_qty': wk_realized,
+                'total_good': wk_good,
+                'total_reject': wk_reject,
+                'total_rework': wk_rework,
+                'yield_percent': wk_yield_pct,
+            },
+            'batches': batch_rows,
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -4902,17 +5293,39 @@ def get_work_order_bom(wo_id):
                     'suggested_actual': suggested_actual,
                     'suggested_actual_note': suggested_note,
                     'unit_cost': float(item.unit_cost) if item.unit_cost else 0,
+                    'total_cost_planned': float(item.total_cost_planned) if item.total_cost_planned is not None else 0,
+                    'total_cost_actual': float(item.total_cost_actual) if item.total_cost_actual is not None else None,
                     'is_modified': item.is_modified,
                     'is_added': item.is_added,
                     'modification_reason': item.modification_reason,
                     'notes': item.notes
                 })
+
+            # Cost variance summary (informasional, bukan jurnal GL - sistem
+            # ini posting HPP/Persediaan pakai biaya aktual/FIFO riil di
+            # Shipping, bukan biaya standar, jadi tidak ada saldo "standard
+            # cost" di GL yang perlu direkonsiliasi lewat jurnal selisih.
+            # Ini murni laporan selisih biaya aktual vs rencana BOM per SPK
+            # untuk kontrol produksi/manajemen - keputusan user 2026-10-16).
+            total_planned = sum(float(i.total_cost_planned or 0) for i in wo_bom_items)
+            total_actual = sum(float(i.total_cost_actual or 0) for i in wo_bom_items if i.total_cost_actual is not None)
+            items_with_actual = sum(1 for i in wo_bom_items if i.total_cost_actual is not None)
+            cost_summary = {
+                'total_cost_planned': total_planned,
+                'total_cost_actual': total_actual if items_with_actual > 0 else None,
+                'variance': (total_actual - total_planned) if items_with_actual > 0 else None,
+                'variance_percent': round((total_actual - total_planned) / total_planned * 100, 2) if items_with_actual > 0 and total_planned > 0 else None,
+                'items_with_actual_cost': items_with_actual,
+                'items_total': len(wo_bom_items),
+            }
+
             return jsonify({
                 'source': 'work_order',
                 'work_order_id': wo_id,
                 'wo_number': wo.wo_number,
                 'product_id': wo.product_id,
-                'bom_items': items_json
+                'bom_items': items_json,
+                'cost_summary': cost_summary
             }), 200
         
         # If no WO-specific BOM, find master BOM
@@ -4971,73 +5384,35 @@ def get_work_order_bom(wo_id):
 @jwt_required()
 @require_permission('work_orders.create')
 def copy_bom_to_work_order(wo_id):
-    """Copy BOM items from master BOM to work order for editing"""
+    """Manual re-copy of BOM items from master BOM to a work order.
+
+    Since 2026-10-16, WO creation snapshots the BOM automatically (see
+    utils/bom_snapshot.py) - this endpoint now only matters for a WO
+    created before that fix, or one whose BOM items were deliberately
+    deleted to re-copy a newer master BOM on purpose."""
     try:
+        from utils.bom_snapshot import snapshot_bom_to_work_order
+
         user_id = get_jwt_identity()
         wo = db.session.get(WorkOrder, wo_id)
         if not wo:
             return jsonify({'error': 'Work order not found'}), 404
-        
-        # Find BOM - first by bom_id, then by product_id
-        bom = None
-        if wo.bom_id:
-            bom = db.session.get(BillOfMaterials, wo.bom_id)
-        
-        if not bom and wo.product_id:
-            # Find active BOM for this product
-            bom = BillOfMaterials.query.filter_by(
-                product_id=wo.product_id,
-                is_active=True
-            ).first()
-        
-        if not bom:
-            return jsonify({'error': 'No BOM found for this work order'}), 404
-        
-        # Check if WO already has BOM items
+
         existing = WorkOrderBOMItem.query.filter_by(work_order_id=wo_id).first()
         if existing:
             return jsonify({'error': 'Work order already has BOM items. Delete them first to re-copy.'}), 400
-        
-        # Copy BOM items to WO
-        # BOM qty is per carton (1 batch = 1 carton)
-        # planned = BOM qty per ctn × total cartons needed
-        wo_quantity = float(wo.quantity) if wo.quantity else 0
-        # Use BOM's pack_per_carton (not WO's) — BOM defines 1 CTN composition
-        bom_ppc = float(bom.pack_per_carton) if bom.pack_per_carton else float(wo.pack_per_carton or 1)
-        total_cartons = math.ceil(wo_quantity / bom_ppc) if bom_ppc > 0 else 0
-        
-        for bom_item in bom.items:
-            qty_per_ctn = float(bom_item.quantity) if bom_item.quantity else 0
-            qty_planned = qty_per_ctn * total_cartons
-            
-            wo_bom_item = WorkOrderBOMItem(
-                work_order_id=wo_id,
-                original_bom_id=bom.id,
-                original_bom_item_id=bom_item.id,
-                line_number=bom_item.line_number,
-                material_id=bom_item.material_id,
-                product_id=bom_item.product_id,
-                item_name=bom_item.item_name,
-                item_code=bom_item.item_code,
-                item_type=bom_item.item_type,
-                quantity_per_unit=bom_item.quantity,
-                uom=bom_item.uom,
-                scrap_percent=bom_item.scrap_percent,
-                quantity_planned=qty_planned,
-                unit_cost=bom_item.unit_cost,
-                is_modified=False,
-                is_added=False,
-                notes=bom_item.notes
-            )
-            db.session.add(wo_bom_item)
-        
+
+        bom, items_copied = snapshot_bom_to_work_order(wo)
+        if not bom:
+            return jsonify({'error': 'No BOM found for this work order'}), 404
+
         db.session.commit()
-        
+
         return jsonify({
             'message': f'BOM items copied from {bom.bom_number} to work order',
-            'items_copied': len(bom.items)
+            'items_copied': items_copied
         }), 201
-        
+
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
@@ -5242,6 +5617,29 @@ def update_work_order_bom_actual(wo_id):
             item.quantity_actual = float(qty_actual)
             if item.quantity_planned is not None:
                 item.quantity_variance = float(qty_actual) - float(item.quantity_planned)
+
+            # Actual cost: real FIFO cost of what was actually issued to this
+            # WO/batch for this material (MaterialIssueItem.total_cost),
+            # not the frozen BOM unit_cost - that's the whole point of a
+            # cost variance (price variance shows up when the material's
+            # real cost at issue time differs from what the BOM assumed).
+            # Falls back to planned unit_cost x actual qty only when no
+            # MaterialIssue exists yet to look up (e.g. actual entered
+            # before issuing) so total_cost_actual is never left null.
+            if item.material_id:
+                from models.material_issue import MaterialIssue, MaterialIssueItem
+                issue_q = db.session.query(func.coalesce(func.sum(MaterialIssueItem.total_cost), 0)).join(
+                    MaterialIssue, MaterialIssueItem.material_issue_id == MaterialIssue.id
+                ).filter(
+                    MaterialIssue.work_order_id == wo_id,
+                    MaterialIssueItem.material_id == item.material_id,
+                )
+                if item.production_batch_id:
+                    issue_q = issue_q.filter(MaterialIssue.production_batch_id == item.production_batch_id)
+                real_cost = float(issue_q.scalar() or 0)
+                item.total_cost_actual = real_cost if real_cost > 0 else float(qty_actual) * float(item.unit_cost or 0)
+            else:
+                item.total_cost_actual = float(qty_actual) * float(item.unit_cost or 0)
             if entry.get('notes') is not None:
                 item.notes = entry['notes']
             batch_number = entry.get('batch_number')
