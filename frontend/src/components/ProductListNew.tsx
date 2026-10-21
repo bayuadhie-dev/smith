@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { confirmDialog, showError, showSuccess } from './ui';
 import {
   ArrowDownTrayIcon,
   ArrowUpTrayIcon,
@@ -126,7 +127,7 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
   };
 
   const handleDelete = async (product: ProductNew) => {
-    if (!confirm(`Apakah Anda yakin ingin menghapus produk ${product.nama_produk}?`)) {
+    if (!(await confirmDialog(`Apakah Anda yakin ingin menghapus produk ${product.nama_produk}?`))) {
       return;
     }
 
@@ -139,11 +140,11 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
         fetchProducts();
       } else {
         const error = await response.json();
-        alert('Gagal menghapus produk: ' + error.error);
+        showError('Gagal menghapus produk: ' + error.error);
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('Terjadi kesalahan saat menghapus produk');
+      showError('Terjadi kesalahan saat menghapus produk');
     }
   };
 
@@ -180,15 +181,15 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
       });
 
       if (response.ok) {
-        alert('Import berhasil!');
+        showSuccess('Import berhasil!');
         fetchProducts();
       } else {
         const error = await response.json();
-        alert('Import gagal: ' + error.error);
+        showError('Import gagal: ' + error.error);
       }
     } catch (error) {
       console.error('Error importing:', error);
-      alert('Terjadi kesalahan saat import');
+      showError('Terjadi kesalahan saat import');
     }
 
     // Reset file input

@@ -32,8 +32,13 @@
     @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white;
   }
   
+  /* 2026-10-07: Axion look (rounder corners, softer shadow that lifts on
+     hover) to match DashboardEnhanced.tsx's hand-styled cards
+     (rounded-2xl shadow-md hover:shadow-lg). Was rounded-lg/shadow-sm/
+     border, the flatter pre-Axion style. Kept border-free like the
+     Dashboard's own cards - shadow alone defines the edge now. */
   .card {
-    @apply bg-white rounded-lg shadow-sm border border-gray-200 dark:bg-gray-800 dark:border-gray-700;
+    @apply bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 dark:bg-gray-800;
   }
   
   .table-container {

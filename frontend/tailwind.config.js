@@ -8,17 +8,28 @@ export default {
   theme: {
     extend: {
       colors: {
+        // 2026-10-07: system-wide Axion-restyle (user-approved global
+        // change, originally scoped as a Production-module pilot). Was the
+        // default Tailwind "blue" palette - every page using the shared
+        // .btn-primary/.card classes (92-99 pages, see index.css) rendered
+        // blue, while only hand-edited pages (DashboardEnhanced.tsx etc,
+        // ~24 pages) got the newer Axion emerald/orange look applied via
+        // one-off hardcoded hex colors. Changing this single token cascades
+        // the Axion color to every page using the shared classes, instead
+        // of hand-editing each file individually. Values match
+        // DashboardEnhanced.tsx's literal #059669/#047857 exactly
+        // (= standard Tailwind emerald palette).
         primary: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#60a5fa',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          800: '#1e40af',
-          900: '#1e3a8a',
+          50: '#ecfdf5',
+          100: '#d1fae5',
+          200: '#a7f3d0',
+          300: '#6ee7b7',
+          400: '#34d399',
+          500: '#10b981',
+          600: '#059669',
+          700: '#047857',
+          800: '#065f46',
+          900: '#064e3b',
         },
       },
       typography: {

@@ -1426,6 +1426,14 @@ export const settingsApi = api.injectEndpoints({
       }),
       invalidatesTags: ['Settings'],
     }),
+    uploadCompanyLogo: builder.mutation<{ message: string; logoUrl: string }, FormData>({
+      query: (formData) => ({
+        url: '/settings/company/logo',
+        method: 'POST',
+        body: formData,
+      }),
+      invalidatesTags: ['Settings'],
+    }),
     getUsers: builder.query<any, void>({
       query: () => ({
         url: '/settings/users',
@@ -1741,6 +1749,7 @@ export const {
   useGetCompanyProfileQuery,
   useGetCompanyPublicQuery,
   useUpdateCompanyProfileMutation,
+  useUploadCompanyLogoMutation,
   useGetUsersQuery,
   useCreateUserMutation,
   useUpdateUserMutation,

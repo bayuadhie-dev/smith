@@ -10,6 +10,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useLanguage } from '../../contexts/LanguageContext';
 import axiosInstance from '../../utils/axiosConfig';
+import { showError, showSuccess } from '../ui';
 interface ExportOptionsProps {
   reportType: string;
   reportData?: any;
@@ -129,7 +130,7 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({
       onExportComplete?.(true);
     } catch (error) {
       console.error('Export failed:', error);
-      alert('Export failed. Please try again.');
+      showError('Export failed. Please try again.');
       onExportComplete?.(false);
     } finally {
       setExporting(false);
@@ -156,7 +157,7 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({
           recipients: exportSettings.emailRecipients.split(',').map(email => email.trim())
         });
         
-        alert('Report has been sent to the specified email addresses.');
+        showSuccess('Report has been sent to the specified email addresses.');
       } else {
         // Direct download
         const response = await axiosInstance.post('/api/reports/export', exportData, {
@@ -184,7 +185,7 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({
       onExportComplete?.(true);
     } catch (error) {
       console.error('Advanced export failed:', error);
-      alert('Export failed. Please try again.');
+      showError('Export failed. Please try again.');
       onExportComplete?.(false);
     } finally {
       setExporting(false);

@@ -7,7 +7,7 @@ import axiosInstance from './utils/axiosConfig'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { LanguageProvider } from './contexts/LanguageContext'
 import { PermissionProvider } from './contexts/PermissionContext'
-import { ToastProvider, ErrorBoundary } from './components/ui'
+import { ToastProvider, ErrorBoundary, ConfirmDialogProvider } from './components/ui'
 import SessionTimeoutModal from './components/SessionTimeoutModal'
 import Layout from './components/Layout/Layout'
 import RoleBasedRedirect from './components/RoleBasedRedirect'
@@ -106,6 +106,9 @@ import GRNList from './pages/Purchasing/GRNList'
 import GRNDetail from './pages/Purchasing/GRNDetail'
 import PurchaseInvoiceList from './pages/Purchasing/InvoiceList'
 import InvoiceMatching from './pages/Purchasing/InvoiceMatching'
+import PurchaseReturnList from './pages/Purchasing/PurchaseReturnList'
+import PurchaseReturnDetail from './pages/Purchasing/PurchaseReturnDetail'
+import PurchaseReturnForm from './pages/Purchasing/PurchaseReturnForm'
 import MachineList from './pages/Production/MachineList'
 import MachineForm from './pages/Production/MachineForm'
 import MachineDetail from './pages/Production/MachineDetail'
@@ -153,6 +156,7 @@ import WorkOrderStatus from './pages/Production/WorkOrderStatus'
 import WorkOrderKanban from './pages/Production/WorkOrderKanban'
 import QualityTestList from './pages/Quality/QualityTestList'
 import QualityTestForm from './pages/Quality/QualityTestForm'
+import QualityInspectionDetail from './pages/Quality/QualityInspectionDetail'
 import QualityDashboardEnhanced from './pages/Quality/QualityDashboardEnhanced'
 import QualityAlerts from './pages/Quality/QualityAlerts'
 import QualityAnalytics from './pages/Quality/QualityAnalytics'
@@ -204,6 +208,7 @@ import TaxManagement from './pages/Finance/TaxManagement'
 import CostingControlling from './pages/Finance/CostingControlling'
 import Consolidation from './pages/Finance/Consolidation'
 import PaymentForm from './pages/Finance/PaymentForm'
+import PaymentDetail from './pages/Finance/PaymentDetail'
 import ExpenseList from './pages/Finance/ExpenseList'
 import EmployeeExpenseForm from './pages/Finance/EmployeeExpenseForm'
 import ReimbursementList from './pages/Finance/ReimbursementList'
@@ -282,6 +287,7 @@ import CloseWorkOrder from './pages/Production/CloseWorkOrder'
 import BatchClose from './pages/Production/BatchClose'
 import BatchRecord from './pages/Production/BatchRecord'
 import BatchRecordList from './pages/Production/BatchRecordList'
+import BatchRecordWeeklyReport from './pages/Production/BatchRecordWeeklyReport'
 import BOMForm from './pages/Products/BOMForm'
 import ProductionScheduleForm from './pages/Production/ProductionScheduleForm'
 import QualityCheckForm from './pages/Production/QualityCheckForm'
@@ -313,6 +319,7 @@ import SystemOverview from './pages/Landing/SystemOverview'
 import ApprovalDashboard from './pages/Approval/ApprovalDashboard'
 import ApprovalDetail from './pages/Approval/ApprovalDetail'
 import WIPLedger from './pages/Finance/WIPLedger'
+import WIPLedgerDetail from './pages/Finance/WIPLedgerDetail'
 import DocumentDashboard from './pages/Documents/DocumentDashboardUpgraded'
 import DocumentGenerator from './pages/Documents/DocumentGeneratorUpgraded'
 import TemplateList from './pages/Documents/TemplateList'
@@ -425,10 +432,23 @@ function App() {
   // Show loading screen while checking authentication
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-[#064e3b] to-slate-900">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
-          <p className="text-blue-200">Verifying session...</p>
+          <div className="relative h-16 w-16 mx-auto mb-4">
+            <div className="absolute inset-0 rounded-full border-[3px] border-white/10" />
+            <div
+              className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-[#10b981] border-r-teal-400 animate-spin"
+              style={{ animationDuration: '0.9s' }}
+            />
+            <div
+              className="absolute inset-[6px] rounded-full border-[3px] border-transparent border-b-[#F15D2C] animate-spin [animation-direction:reverse]"
+              style={{ animationDuration: '1.4s' }}
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="h-2.5 w-2.5 rounded-full bg-gradient-to-br from-[#059669] to-[#047857] animate-pulse" />
+            </div>
+          </div>
+          <p className="text-emerald-100 text-sm font-medium">Verifying session...</p>
         </div>
       </div>
     )
@@ -439,6 +459,7 @@ function App() {
         <ThemeProvider>
           <PermissionProvider>
             <ToastProvider />
+            <ConfirmDialogProvider />
             {!isPublicRoute && <SessionTimeoutModal />}
             <Routes>
               {/* System Overview for non-authenticated users */}
@@ -702,6 +723,9 @@ function App() {
                 <Route path="purchasing/grn/new" element={<GRNForm />} />
                 <Route path="purchasing/grn/:id" element={<GRNDetail />} />
                 <Route path="purchasing/grn/:id/edit" element={<GRNForm />} />
+                <Route path="purchasing/returns" element={<PurchaseReturnList />} />
+                <Route path="purchasing/returns/new" element={<PurchaseReturnForm />} />
+                <Route path="purchasing/returns/:id" element={<PurchaseReturnDetail />} />
                 <Route path="purchasing/quotes" element={<QuoteList />} />
                 <Route path="purchasing/quotes/new" element={<SupplierQuoteForm />} />
                 <Route path="purchasing/quotes/:id" element={<SupplierQuoteForm />} />
@@ -751,6 +775,7 @@ function App() {
                 <Route path="production/work-orders/:id/close" element={<CloseWorkOrder />} />
                 <Route path="production/batches/:id/close" element={<BatchClose />} />
                 <Route path="production/batch-records" element={<BatchRecordList />} />
+                <Route path="production/batches/weekly-report" element={<BatchRecordWeeklyReport />} />
                 <Route path="production/batches/:id/record" element={<BatchRecord />} />
                 <Route path="production/remaining-stock" element={<RemainingStock />} />
                 <Route path="production/scheduling" element={<WeeklyProductionPlan />} />
@@ -824,7 +849,7 @@ function App() {
                 <Route path="quality/tests/:id/edit" element={<QualityTestForm />} />
                 <Route path="quality/inspections" element={<QualityTestList />} />
                 <Route path="quality/inspections/new" element={<QualityTestForm />} />
-                <Route path="quality/inspections/:id" element={<QualityTestForm />} />
+                <Route path="quality/inspections/:id" element={<QualityInspectionDetail />} />
                 <Route path="quality/inspections/:id/edit" element={<QualityTestForm />} />
                 <Route path="quality-enhanced/dashboard" element={<QualityDashboardEnhanced />} />
                 <Route path="quality-enhanced/alerts" element={<QualityAlerts />} />
@@ -857,7 +882,7 @@ function App() {
                 <Route path="finance/invoices/new" element={<FinanceInvoiceForm />} />
                 <Route path="finance/invoices/:id" element={<FinanceInvoiceForm />} />
                 <Route path="finance/invoices/:id/edit" element={<FinanceInvoiceForm />} />
-                <Route path="finance/payments/:id" element={<PaymentForm />} />
+                <Route path="finance/payments/:id" element={<PaymentDetail />} />
                 <Route path="finance/cash-bank" element={<CashBankManagement />} />
                 <Route path="finance/costing" element={<CostingControlling />} />
                 <Route path="finance/consolidation" element={<Consolidation />} />
@@ -893,6 +918,7 @@ function App() {
 
                 {/* WIP Accounting */}
                 <Route path="finance/wip-ledger" element={<WIPLedger />} />
+                <Route path="finance/wip-ledger/:id" element={<WIPLedgerDetail />} />
 
                 {/* Documents */}
                 <Route path="documents" element={<DocumentDashboard />} />

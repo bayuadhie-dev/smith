@@ -8,6 +8,7 @@ import {
   XMarkIcon
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
+import { showError } from '../../components/ui';
 
 interface DowntimeItem {
   reason: string;
@@ -157,7 +158,7 @@ const DowntimeActionItems: React.FC<DowntimeActionItemsProps> = ({
         // Backend returned JSON error instead of file
         const text = await response.data.text();
         const errorData = JSON.parse(text);
-        alert(`Gagal mengekspor Excel: ${errorData.error || 'Unknown error'}`);
+        showError(`Gagal mengekspor Excel: ${errorData.error || 'Unknown error'}`);
         return;
       }
       
@@ -177,12 +178,12 @@ const DowntimeActionItems: React.FC<DowntimeActionItemsProps> = ({
         try {
           const text = await error.response.data.text();
           const errorData = JSON.parse(text);
-          alert(`Gagal mengekspor Excel: ${errorData.error || 'Server error'}`);
+          showError(`Gagal mengekspor Excel: ${errorData.error || 'Server error'}`);
         } catch {
-          alert('Gagal mengekspor Excel: Server error');
+          showError('Gagal mengekspor Excel: Server error');
         }
       } else {
-        alert(`Gagal mengekspor Excel: ${error.response?.data?.error || error.message || 'Unknown error'}`);
+        showError(`Gagal mengekspor Excel: ${error.response?.data?.error || error.message || 'Unknown error'}`);
       }
     }
   };
@@ -206,7 +207,7 @@ const DowntimeActionItems: React.FC<DowntimeActionItemsProps> = ({
       if (contentType.includes('application/json')) {
         const text = await response.data.text();
         const errorData = JSON.parse(text);
-        alert(`Gagal mengekspor PDF: ${errorData.error || 'Unknown error'}`);
+        showError(`Gagal mengekspor PDF: ${errorData.error || 'Unknown error'}`);
         return;
       }
       
@@ -225,12 +226,12 @@ const DowntimeActionItems: React.FC<DowntimeActionItemsProps> = ({
         try {
           const text = await error.response.data.text();
           const errorData = JSON.parse(text);
-          alert(`Gagal mengekspor PDF: ${errorData.error || 'Server error'}`);
+          showError(`Gagal mengekspor PDF: ${errorData.error || 'Server error'}`);
         } catch {
-          alert('Gagal mengekspor PDF: Server error');
+          showError('Gagal mengekspor PDF: Server error');
         }
       } else {
-        alert(`Gagal mengekspor PDF: ${error.response?.data?.error || error.message || 'Unknown error'}`);
+        showError(`Gagal mengekspor PDF: ${error.response?.data?.error || error.message || 'Unknown error'}`);
       }
     }
   };
@@ -278,7 +279,7 @@ const DowntimeActionItems: React.FC<DowntimeActionItemsProps> = ({
       setEditingKey(null);
     } catch (error) {
       console.error('Error saving action item:', error);
-      alert('Gagal menyimpan perubahan');
+      showError('Gagal menyimpan perubahan');
     }
   };
 

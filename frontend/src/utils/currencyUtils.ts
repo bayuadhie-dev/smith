@@ -121,5 +121,27 @@ export const formatCurrency = (amount: number | null | undefined): string => {
   return formatRupiah(amount);
 };
 
+export const PO_CURRENCIES = ['IDR', 'USD', 'CNY'] as const;
+
+export const currencySymbol = (currency?: string | null): string => {
+  const c = (currency || 'IDR').toUpperCase();
+  if (c === 'USD') return 'US$';
+  if (c === 'CNY') return '¥';
+  return 'Rp';
+};
+
+export const formatCurrencyAmount = (
+  amount: number | null | undefined,
+  currency?: string | null
+): string => {
+  const c = (currency || 'IDR').toUpperCase();
+  if (c === 'IDR') {
+    return formatRupiah(amount);
+  }
+  const num = Number(amount || 0);
+  const sym = currencySymbol(c);
+  return `${sym} ${num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+};
+
 // Export default as formatRupiah for convenience
 export default formatRupiah;

@@ -4,7 +4,29 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 
-const SOCKET_URL = import.meta.env.VITE_WS_URL || 'http://localhost:5000';
+// Same auto-detect pattern as store/api.ts's getApiBaseUrl() - this used to
+// be a bare `VITE_WS_URL || 'http://localhost:5000'` fallback. VITE_WS_URL
+// was never actually set anywhere (laptop or server .env), so in
+// production every browser tried to open a WebSocket to ITS OWN machine's
+// localhost:5000 instead of the real backend - guaranteed to fail for
+// every real user, which is exactly the repeating "[WS] Connection error"
+// found live on erp.graterp.my.id (2026-10-07). Messages silently never
+// sent/received over the socket as a result.
+const getSocketUrl = () => {
+  if (import.meta.env.VITE_WS_URL) {
+    return import.meta.env.VITE_WS_URL;
+  }
+
+  const hostname = window.location.hostname;
+
+  if (hostname === 'erp.graterp.my.id' || hostname.endsWith('.graterp.my.id')) {
+    return 'https://api.graterp.my.id';
+  }
+
+  return `http://${hostname}:5000`;
+};
+
+const SOCKET_URL = getSocketUrl();
 
 export interface SocketMessage {
   id: number;
