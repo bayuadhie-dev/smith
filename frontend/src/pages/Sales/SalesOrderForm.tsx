@@ -26,6 +26,8 @@ interface SalesOrderFormData {
   required_date?: string
   priority?: string
   notes?: string
+  shipping_cost?: number
+  shipping_ppn_code?: string
   items: {
     product_id: number
     quantity: number
@@ -95,6 +97,8 @@ const navigate = useNavigate()
     defaultValues: {
       order_date: new Date().toISOString().split('T')[0],
       priority: 'normal',
+      shipping_cost: 0,
+      shipping_ppn_code: 'Y',
       items: [{ product_id: 0, quantity: 1, unit_price: 0, discount_percent: 0 }]
     }
   })
@@ -108,6 +112,8 @@ const navigate = useNavigate()
         required_date: existingOrder.required_date ? existingOrder.required_date.split('T')[0] : undefined,
         priority: existingOrder.priority || 'normal',
         notes: existingOrder.notes || '',
+        shipping_cost: existingOrder.shipping_cost || 0,
+        shipping_ppn_code: existingOrder.shipping_ppn_code || 'Y',
         items: (existingOrder.items || []).map((item: any) => ({
           product_id: item.product_id,
           quantity: item.quantity,
@@ -259,10 +265,23 @@ const navigate = useNavigate()
     return subtotal - discount
   }
 
+  const watchedShippingCost = watch('shipping_cost')
+  const watchedShippingPpnCode = watch('shipping_ppn_code')
+
+  // Mirrors backend utils.tax_helpers.PPN_RATE_MAP - display-only, the
+  // server recomputes authoritatively (SAP-equivalence plan item #3).
+  const SHIPPING_PPN_RATE_MAP: Record<string, number> = { Y: 11, A: 1.1, B: 1.2, L: 12 }
+
+  const calculateShippingTax = () => {
+    const rate = SHIPPING_PPN_RATE_MAP[watchedShippingPpnCode || ''] || 0
+    return (Number(watchedShippingCost) || 0) * (rate / 100)
+  }
+
   const calculateGrandTotal = () => {
-    return watchedItems.reduce((total, _, index) => {
+    const itemsTotal = watchedItems.reduce((total, _, index) => {
       return total + calculateItemTotal(index)
     }, 0)
+    return itemsTotal + (Number(watchedShippingCost) || 0) + calculateShippingTax()
   }
 
   const onSubmit = async (data: SalesOrderFormData) => {
@@ -294,6 +313,8 @@ const navigate = useNavigate()
             required_date: data.required_date,
             priority: data.priority,
             notes: data.notes,
+            shipping_cost: parseFloat((data.shipping_cost || 0).toString()),
+            shipping_ppn_code: data.shipping_ppn_code || null,
             items: normalizedItems
           }).unwrap()
           toast.success('Sales Order updated successfully!')
@@ -314,6 +335,8 @@ const navigate = useNavigate()
       const result = await createOrder({
         ...data,
         customer_id: parseInt(data.customer_id.toString()),
+        shipping_cost: parseFloat((data.shipping_cost || 0).toString()),
+        shipping_ppn_code: data.shipping_ppn_code || null,
         items: normalizedItems
       }).unwrap()
 
@@ -688,7 +711,7 @@ const navigate = useNavigate()
                       
                       {/* BOM Availability Indicator */}
                       {(() => {
-                        const bomData = getProductBOMInfo(selectedProduct.id)
+                        const bomData = getProductBOMInfo(selectedProduct.product_id)
                         return bomData.hasBOM ? (
                           <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                             <div className="flex items-center gap-2 mb-2">
@@ -856,7 +879,38 @@ const navigate = useNavigate()
           {/* Order Summary */}
           <div className="mt-6 pt-4 border-t">
             <div className="flex justify-end">
-              <div className="w-64">
+              <div className="w-64 space-y-2">
+                <div className="flex justify-between items-center gap-3">
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                    Biaya Kirim (Rp)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    {...register('shipping_cost')}
+                    className="input w-32 text-right"
+                    placeholder="0"
+                  />
+                </div>
+                <div className="flex justify-between items-center gap-3">
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                    Kode PPN Ongkir
+                  </label>
+                  <select {...register('shipping_ppn_code')} className="input w-32">
+                    <option value="">Tidak ada</option>
+                    <option value="Y">Y - 11%</option>
+                    <option value="A">A - 1.1%</option>
+                    <option value="B">B - 1.2%</option>
+                    <option value="L">L - 12%</option>
+                  </select>
+                </div>
+                {Number(watchedShippingCost) > 0 && (
+                  <div className="flex justify-between items-center text-sm text-gray-600 dark:text-gray-300">
+                    <span>PPN Ongkir:</span>
+                    <span>Rp {calculateShippingTax().toLocaleString()}</span>
+                  </div>
+                )}
                 <div className="flex justify-between items-center text-lg font-semibold">
                   <span>Grand Total:</span>
                   <span>Rp {calculateGrandTotal().toLocaleString()}</span>

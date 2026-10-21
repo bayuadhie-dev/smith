@@ -22,14 +22,15 @@ import { useState, useEffect } from 'react'
 import axiosInstance from '../../utils/axiosConfig'
 import LoadingSpinner from '../../components/Common/LoadingSpinner'
 import QuotationDetailModal from './QuotationDetailModal'
+import { showError, showSuccess } from '../../components/ui'
 interface Quotation {
   id: number
   quotation_number: string
   customer_id: number
   customer_name: string
   customer_company: string
-  issue_date: string
-  expiry_date: string
+  quote_date: string
+  valid_until: string
   status: string
   total_amount: number
   items_count: number
@@ -124,11 +125,11 @@ const [quotations, setQuotations] = useState<Quotation[]>([])
   const handleConvertToOrder = async (quotationId: number) => {
     try {
       const response = await axiosInstance.post(`/api/sales/quotations/${quotationId}/convert`)
-      alert('Quotation converted to sales order successfully!')
+      showSuccess('Quotation converted to sales order successfully!')
       loadQuotations()
     } catch (error) {
       console.error('Error converting quotation:', error)
-      alert('Failed to convert quotation')
+      showError('Failed to convert quotation')
     }
   }
 
@@ -305,7 +306,7 @@ const [quotations, setQuotations] = useState<Quotation[]>([])
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {quotations.map((quotation) => {
                 const StatusIcon = getStatusIcon(quotation.status)
-                const expiringSoon = isExpiringSoon(quotation.expiry_date)
+                const expiringSoon = isExpiringSoon(quotation.valid_until)
                 
                 return (
                   <tr key={quotation.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
@@ -342,11 +343,11 @@ const [quotations, setQuotations] = useState<Quotation[]>([])
                       <div className="text-sm text-gray-900 dark:text-white">
                         <div className="flex items-center">
                           <CalendarIcon className="h-4 w-4 text-gray-400 mr-1" />
-                          <span>Issued: {new Date(quotation.issue_date).toLocaleDateString()}</span>
+                          <span>Issued: {new Date(quotation.quote_date).toLocaleDateString()}</span>
                         </div>
                         <div className={`flex items-center mt-1 ${expiringSoon ? 'text-orange-600' : ''}`}>
                           <CalendarIcon className="h-4 w-4 text-gray-400 mr-1" />
-                          <span>Expires: {new Date(quotation.expiry_date).toLocaleDateString()}</span>
+                          <span>Expires: {new Date(quotation.valid_until).toLocaleDateString()}</span>
                           {expiringSoon && <span className="ml-1 text-xs">⚠️</span>}
                         </div>
                       </div>

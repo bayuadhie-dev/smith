@@ -3,6 +3,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import SearchableSelect from '../../components/SearchableSelect';
 import { showSuccess, showError, showWarning } from '../../components/ui/Toast';
+import { confirmDialog } from '../../components/ui';
 import { Save, Plus, Trash2, ChevronDown, ChevronRight, ChevronLeft, Layers, CalendarRange, Factory, PackageCheck, AlertTriangle, Search, ArrowUpDown, ClipboardPaste, Pencil, Lock, TrendingUp } from 'lucide-react';
 import PeriodSelectModal from './PeriodSelectModal';
 import { periodLabel, shiftPeriod } from './forecastPeriod';
@@ -441,7 +442,7 @@ export default function SalesForecastGrid() {
   };
 
   const handleDeleteLine = async (lineId: number) => {
-    if (!window.confirm('Hapus baris produk ini dari grid?')) return;
+    if (!(await confirmDialog('Hapus baris produk ini dari grid?'))) return;
     try {
       await axiosInstance.delete(`/api/sales/forecast-lines/${lineId}`);
       load();

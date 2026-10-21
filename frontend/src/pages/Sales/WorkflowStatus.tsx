@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
+import { confirmDialog, showError, showSuccess } from '../../components/ui';
 import {
   BeakerIcon,
   CheckCircleIcon,
@@ -100,17 +101,17 @@ const WorkflowStatus: React.FC = () => {
 
   const approveQuality = async (inspectionId: number) => {
     try {
-      const approved = confirm('Approve this quality inspection?');
+      const approved = await confirmDialog('Approve this quality inspection?');
       const notes = prompt('Enter inspection notes (optional):') || '';
 
       await axiosInstance.post(`/api/workflow-complete/quality/${inspectionId}/approve`, {
         approved,
         notes
       });
-      alert('Quality inspection updated successfully!');
+      showSuccess('Quality inspection updated successfully!');
       fetchWorkflowStatus();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Failed to update quality inspection');
+      showError(error.response?.data?.error || 'Failed to update quality inspection');
     }
   };
 
@@ -123,10 +124,10 @@ const WorkflowStatus: React.FC = () => {
         tracking_number: trackingNumber,
         carrier
       });
-      alert('Order shipped successfully!');
+      showSuccess('Order shipped successfully!');
       fetchWorkflowStatus();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Failed to ship order');
+      showError(error.response?.data?.error || 'Failed to ship order');
     }
   };
 

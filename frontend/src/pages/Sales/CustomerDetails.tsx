@@ -339,6 +339,7 @@ function PricingConditionsManager({ customerId }: { customerId: number }) {
         <select className="input-field w-32" value={conditionType} onChange={(e) => setConditionType(e.target.value)}>
           <option value="discount">Diskon</option>
           <option value="surcharge">Surcharge</option>
+          <option value="freight">Ongkos Kirim</option>
           <option value="tax">Pajak</option>
         </select>
         <select className="input-field w-32" value={calcType} onChange={(e) => setCalcType(e.target.value)}>

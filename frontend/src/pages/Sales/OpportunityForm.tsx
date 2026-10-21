@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useLanguage } from '../../contexts/LanguageContext';
 import axiosInstance from '../../utils/axiosConfig'
 import LoadingSpinner from '../../components/Common/LoadingSpinner'
+import { showError, showSuccess } from '../../components/ui'
 import {
   ArrowLeftIcon,
   BanknotesIcon,
@@ -177,16 +178,16 @@ const OpportunityForm = () => {
 
       if (isEditMode) {
         await axiosInstance.put(`/api/sales/opportunities/${id}`, payload)
-        alert('Opportunity updated successfully!')
+        showSuccess('Opportunity updated successfully!')
       } else {
         const response = await axiosInstance.post('/api/sales/opportunities', payload)
-        alert(`Opportunity created successfully!\nOpportunity #: ${response.data.opportunity_number}`)
+        showSuccess(`Opportunity created successfully!\nOpportunity #: ${response.data.opportunity_number}`)
       }
       navigate('/app/sales/opportunities')
 
     } catch (error: any) {
       console.error('Error saving opportunity:', error)
-      alert(`Error saving opportunity: ${error.response?.data?.error || error.message}`)
+      showError(`Error saving opportunity: ${error.response?.data?.error || error.message}`)
     } finally {
       setSubmitting(false)
     }

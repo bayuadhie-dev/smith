@@ -4,6 +4,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useForm } from 'react-hook-form'
 import axiosInstance from '../../utils/axiosConfig'
 import LoadingSpinner from '../../components/Common/LoadingSpinner'
+import { showError, showSuccess } from '../../components/ui'
 import {
   ArrowLeftIcon,
   BanknotesIcon,
@@ -73,7 +74,7 @@ const CustomerForm = () => {
       })
     } catch (error) {
       console.error('Error loading customer:', error)
-      alert('Failed to load customer data')
+      showError('Failed to load customer data')
     } finally {
       setLoadingData(false)
     }
@@ -112,16 +113,16 @@ const CustomerForm = () => {
 
       if (isEdit) {
         await axiosInstance.put(`/api/sales/customers/${id}`, payload)
-        alert('Customer updated successfully!')
+        showSuccess('Customer updated successfully!')
       } else {
         await axiosInstance.post('/api/sales/customers', payload)
-        alert('Customer created successfully!')
+        showSuccess('Customer created successfully!')
       }
-      
+
       navigate('/app/sales/customers')
     } catch (error: any) {
       console.error('Error saving customer:', error)
-      alert(error.response?.data?.error || 'Failed to save customer')
+      showError(error.response?.data?.error || 'Failed to save customer')
     } finally {
       setIsLoading(false)
     }

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../../contexts/LanguageContext';
 import axiosInstance from '../../utils/axiosConfig'
 import LoadingSpinner from '../../components/Common/LoadingSpinner'
+import { showError, showSuccess } from '../../components/ui'
 import {
   ArrowLeftIcon,
   BuildingOfficeIcon,
@@ -178,12 +179,12 @@ const ActivityForm = () => {
 
       const response = await axiosInstance.post('/api/sales/activities', payload)
       
-      alert(`Activity created successfully!\nActivity #: ${response.data.activity_number}`)
+      showSuccess(`Activity created successfully!\nActivity #: ${response.data.activity_number}`)
       navigate('/app/sales/activities')
-      
+
     } catch (error: any) {
       console.error('Error creating activity:', error)
-      alert(`Error creating activity: ${error.response?.data?.error || error.message}`)
+      showError(`Error creating activity: ${error.response?.data?.error || error.message}`)
     } finally {
       setSubmitting(false)
     }

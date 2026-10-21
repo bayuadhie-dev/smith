@@ -21,6 +21,7 @@ import {
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import axiosInstance from '../../utils/axiosConfig';
 import toast from 'react-hot-toast';
+import { confirmDialog } from '../../components/ui';
 import ConfirmAndStartProductionModal from '../../components/Sales/ConfirmAndStartProductionModal';
 
 interface SalesOrder {
@@ -131,7 +132,7 @@ const SalesOrderListUpgraded: React.FC = () => {
   };
 
   const handleCancelOrder = async (id: number) => {
-    if (!confirm('Are you sure you want to cancel this order?')) return;
+    if (!(await confirmDialog('Are you sure you want to cancel this order?'))) return;
     try {
       await axiosInstance.put(`/api/sales/orders/${id}`, { status: 'cancelled' });
       toast.success('Order cancelled successfully');

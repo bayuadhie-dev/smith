@@ -4,6 +4,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useGetSalesOrderQuery } from '../../services/api';
 import axiosInstance from '../../utils/axiosConfig';
 import toast from 'react-hot-toast';
+import { confirmDialog } from '../../components/ui';
 import { format } from 'date-fns';
 import DocumentGenerateButton from '../../components/DocumentGenerateButton';
 import ConfirmAndStartProductionModal from '../../components/Sales/ConfirmAndStartProductionModal';
@@ -43,7 +44,7 @@ const SalesOrderDetails: React.FC = () => {
   // confirm-and-start-production tidak bisa dipakai di sini karena butuh status
   // 'draft' - jadi panggil langsung trigger-complete (cuma bagian produksinya saja).
   const handleTriggerProductionOnly = async () => {
-    if (!window.confirm('SO ini sudah confirmed tapi belum ada SPK. Mulai produksi sekarang?')) return;
+    if (!(await confirmDialog('SO ini sudah confirmed tapi belum ada SPK. Mulai produksi sekarang?'))) return;
     setIsTriggeringProduction(true);
     try {
       const res = await axiosInstance.post(`/api/workflow-complete/sales-order/${id}/trigger-complete`);
@@ -181,6 +182,48 @@ const SalesOrderDetails: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* fix_report_3.md Fase 16 (2026-10-02): SO confirm sekarang cek
+            kecukupan bahan baku (MRP), bukan cuma stok barang jadi (ATP) -
+            kalau kurang, 1 Purchase Requisition otomatis dibuat (warning-
+            only, SO tetap confirmed) dan diringkas di sini. material_eta_date
+            diisi MANUAL oleh admin purchasing (lihat tombol di bawah),
+            bukan otomatis. */}
+        {order.material_shortage_note && (
+          <div className="mt-4 rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-700 p-4">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="font-semibold text-amber-800 dark:text-amber-300">
+                  ⚠️ Bahan baku kurang untuk produksi pesanan ini
+                </p>
+                <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
+                  {order.material_shortage_note}
+                </p>
+              </div>
+              <button
+                className="shrink-0 text-sm px-3 py-1.5 rounded-md bg-amber-600 text-white hover:bg-amber-700"
+                onClick={async () => {
+                  const value = window.prompt(
+                    'Estimasi tanggal kedatangan bahan baku (YYYY-MM-DD):',
+                    order.material_eta_date || ''
+                  );
+                  if (value === null) return;
+                  try {
+                    await axiosInstance.put(`/api/sales/orders/${id}`, { material_eta_date: value || null });
+                    toast.success('Estimasi kedatangan bahan diperbarui');
+                    refetch();
+                  } catch (err: any) {
+                    toast.error(err.response?.data?.error || 'Gagal memperbarui estimasi');
+                  }
+                }}
+              >
+                {order.material_eta_date
+                  ? `ETA: ${format(new Date(order.material_eta_date), 'dd MMM yyyy')} (ubah)`
+                  : 'Isi estimasi kedatangan'}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Order Information */}

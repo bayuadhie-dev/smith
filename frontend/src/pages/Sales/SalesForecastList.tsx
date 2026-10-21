@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import { showSuccess, showError } from '../../components/ui/Toast';
+import { confirmDialog } from '../../components/ui';
 import { Plus, ChartBar, Trash2, Calendar, Package, ArrowRight } from 'lucide-react';
 import PeriodSelectModal from './PeriodSelectModal';
 import { fmtMonth } from './forecastPeriod';
@@ -73,7 +74,7 @@ export default function SalesForecastList() {
   };
 
   const handleDelete = async (h: ForecastHeaderSummary) => {
-    if (!window.confirm(`Hapus forecast "${h.name || fmtMonth(h.period_start)}"? Semua data grid ikut terhapus.`)) return;
+    if (!(await confirmDialog(`Hapus forecast "${h.name || fmtMonth(h.period_start)}"? Semua data grid ikut terhapus.`))) return;
     try {
       await axiosInstance.delete(`/api/sales/forecasts/${h.id}`);
       showSuccess('Forecast dihapus');

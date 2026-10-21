@@ -18,6 +18,7 @@ import {
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import axiosInstance from '../../utils/axiosConfig';
 import toast from 'react-hot-toast';
+import { confirmDialog } from '../../components/ui';
 
 interface Pipeline {
   id: number;
@@ -116,21 +117,15 @@ const OpportunityListUpgraded: React.FC = () => {
       setSelectedPipeline(defaultPipeline);
     } catch (error) {
       console.error('Error loading pipelines:', error);
-      // Create default pipeline if none exists
-      setSelectedPipeline({
-        id: 1,
-        name: 'Default Pipeline',
-        description: 'Default sales pipeline',
-        is_default: true,
-        stages: [
-          { id: 1, name: 'Prospecting', order: 1, probability: 10, color_code: '#3B82F6', is_closed_won: false, is_closed_lost: false },
-          { id: 2, name: 'Qualification', order: 2, probability: 25, color_code: '#8B5CF6', is_closed_won: false, is_closed_lost: false },
-          { id: 3, name: 'Proposal', order: 3, probability: 50, color_code: '#F59E0B', is_closed_won: false, is_closed_lost: false },
-          { id: 4, name: 'Negotiation', order: 4, probability: 75, color_code: '#10B981', is_closed_won: false, is_closed_lost: false },
-          { id: 5, name: 'Closed Won', order: 5, probability: 100, color_code: '#22C55E', is_closed_won: true, is_closed_lost: false },
-          { id: 6, name: 'Closed Lost', order: 6, probability: 0, color_code: '#EF4444', is_closed_won: false, is_closed_lost: true }
-        ]
-      });
+      // 2026-10-07: this used to fabricate a whole fake pipeline (id=1,
+      // 6 fake stages with ids 1-6) on ANY API error - including a real
+      // pipeline existing but a transient fetch failure. The Kanban board
+      // drag/drop (handleMoveStage) submits the dragged-to column's id
+      // directly as the opportunity's real stage_id - if a real pipeline's
+      // stage ids also happen to be small auto-increment integers (likely),
+      // dropping a real opportunity onto this fake board could silently
+      // move it into the WRONG real stage. Leave selectedPipeline null
+      // instead - the Kanban view already guards on it being non-null.
     }
   };
 
@@ -190,7 +185,7 @@ const OpportunityListUpgraded: React.FC = () => {
   };
 
   const handleDeleteOpportunity = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this opportunity?')) return;
+    if (!(await confirmDialog('Are you sure you want to delete this opportunity?'))) return;
     try {
       await axiosInstance.delete(`/api/sales/opportunities/${id}`);
       toast.success('Opportunity deleted successfully');

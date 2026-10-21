@@ -94,153 +94,95 @@ const SalesDashboard: React.FC = () => {
     );
   }
 
+  // 2026-10-07: Axion bento-grid restyle (tier-1 module landing page,
+  // #6 of 17). Sub-pages (Leads, Pipeline, Quotations, etc) are
+  // intentionally left as-is - only this landing dashboard is in scope.
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg shadow-lg p-6 text-white">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Dashboard Penjualan</h1>
-            <p className="text-blue-100 mt-2">Comprehensive CRM and Sales Management</p>
-          </div>
-          <ChartBarIcon className="h-12 w-12 text-blue-200" />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-snug">Dashboard Penjualan</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Comprehensive CRM and Sales Management</p>
         </div>
       </div>
 
-      {/* CRM Navigation */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Sales CRM Modules</h2>
+      {/* CRM Navigation - bento module cards */}
+      <div>
+        <h2 className="text-base font-bold text-gray-900 dark:text-white mb-3">Sales CRM Modules</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <Link
-            to="/app/sales/leads"
-            className="flex flex-col items-center p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-300 hover:bg-blue-50 transition-colors group"
-          >
-            <UserGroupIcon className="h-8 w-8 text-gray-600 dark:text-gray-300 group-hover:text-blue-600 mb-2" />
-            <span className="text-sm font-medium text-gray-900 dark:text-white group-hover:text-blue-600">Leads</span>
-          </Link>
-
-          <Link
-            to="/app/sales/opportunities"
-            className="flex flex-col items-center p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-green-300 hover:bg-green-50 transition-colors group"
-          >
-            <FunnelIcon className="h-8 w-8 text-gray-600 dark:text-gray-300 group-hover:text-green-600 mb-2" />
-            <span className="text-sm font-medium text-gray-900 dark:text-white group-hover:text-green-600">Pipeline</span>
-          </Link>
-
-          <Link
-            to="/app/sales/quotations"
-            className="flex flex-col items-center p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-purple-300 hover:bg-purple-50 transition-colors group"
-          >
-            <DocumentTextIcon className="h-8 w-8 text-gray-600 dark:text-gray-300 group-hover:text-purple-600 mb-2" />
-            <span className="text-sm font-medium text-gray-900 dark:text-white group-hover:text-purple-600">Quotations</span>
-          </Link>
-
-          <Link
-            to="/app/sales/activities"
-            className="flex flex-col items-center p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-orange-300 hover:bg-orange-50 transition-colors group"
-          >
-            <CalendarIcon className="h-8 w-8 text-gray-600 dark:text-gray-300 group-hover:text-orange-600 mb-2" />
-            <span className="text-sm font-medium text-gray-900 dark:text-white group-hover:text-orange-600">Activities</span>
-          </Link>
-
-          <Link
-            to="/app/sales/customers"
-            className="flex flex-col items-center p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-indigo-300 hover:bg-indigo-50 transition-colors group"
-          >
-            <BuildingOfficeIcon className="h-8 w-8 text-gray-600 dark:text-gray-300 group-hover:text-indigo-600 mb-2" />
-            <span className="text-sm font-medium text-gray-900 dark:text-white group-hover:text-indigo-600">Customers</span>
-          </Link>
-
-          <Link
-            to="/app/sales/orders"
-            className="flex flex-col items-center p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-red-300 hover:bg-red-50 transition-colors group"
-          >
-            <ShoppingCartIcon className="h-8 w-8 text-gray-600 dark:text-gray-300 group-hover:text-red-600 mb-2" />
-            <span className="text-sm font-medium text-gray-900 dark:text-white group-hover:text-red-600">Orders</span>
-          </Link>
+          {[
+            { to: '/app/sales/leads', icon: UserGroupIcon, label: 'Leads', gradient: 'from-[#059669] to-[#047857]' },
+            { to: '/app/sales/opportunities', icon: FunnelIcon, label: 'Pipeline', gradient: 'from-teal-500 to-teal-600' },
+            { to: '/app/sales/quotations', icon: DocumentTextIcon, label: 'Quotations', gradient: 'from-violet-500 to-violet-600' },
+            { to: '/app/sales/activities', icon: CalendarIcon, label: 'Activities', gradient: 'from-[#F15D2C] to-[#C73E1D]' },
+            { to: '/app/sales/customers', icon: BuildingOfficeIcon, label: 'Customers', gradient: 'from-indigo-500 to-indigo-600' },
+            { to: '/app/sales/orders', icon: ShoppingCartIcon, label: 'Orders', gradient: 'from-pink-500 to-pink-600' },
+          ].map((m) => (
+            <Link
+              key={m.to}
+              to={m.to}
+              className="flex flex-col items-center text-center p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 group"
+            >
+              <div className={`bg-gradient-to-br ${m.gradient} p-3 rounded-xl mb-2 group-hover:scale-110 transition-transform`}>
+                <m.icon className="h-6 w-6 text-white" />
+              </div>
+              <span className="text-sm font-medium text-gray-900 dark:text-white">{m.label}</span>
+            </Link>
+          ))}
         </div>
       </div>
 
-      {/* KeyIcon Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Lead Conversion Rate */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <ArrowTrendingUpIcon className="h-8 w-8 text-green-600" />
+      {/* Key Metrics - bento: Lead Conversion spans 2 cols (primary metric) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="xl:col-span-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <ArrowTrendingUpIcon className="w-5 h-5" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Lead Conversion</p>
-              <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                {formatPercentage(metrics.lead_metrics.conversion_rate)}
-              </p>
-            </div>
+            <p className="text-sm opacity-90">Lead Conversion</p>
           </div>
-          <div className="mt-4">
-            <div className="text-sm text-gray-600 dark:text-gray-300">
-              {metrics.lead_metrics.converted_leads} of {metrics.lead_metrics.total_leads} leads converted
-            </div>
-          </div>
+          <p className="text-3xl font-bold">{formatPercentage(metrics.lead_metrics.conversion_rate)}</p>
+          <p className="text-xs opacity-75 mt-1">
+            {metrics.lead_metrics.converted_leads} of {metrics.lead_metrics.total_leads} leads converted
+          </p>
         </div>
 
-        {/* Pipeline Value */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <BanknotesIcon className="h-8 w-8 text-blue-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Pipeline Value</p>
-              <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                {formatRupiah(metrics.opportunity_metrics.total_value)}
-              </p>
+        <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <BanknotesIcon className="w-5 h-5" />
             </div>
           </div>
-          <div className="mt-4">
-            <div className="text-sm text-gray-600 dark:text-gray-300">
-              {metrics.opportunity_metrics.total_opportunities} active opportunities
-            </div>
-          </div>
+          <p className="text-xs opacity-90 mb-1">Pipeline Value</p>
+          <p className="text-2xl font-bold">{formatRupiah(metrics.opportunity_metrics.total_value)}</p>
+          <p className="text-xs opacity-75 mt-1">{metrics.opportunity_metrics.total_opportunities} active opportunities</p>
         </div>
 
-        {/* Win Rate */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <FunnelIcon className="h-8 w-8 text-purple-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Win Rate</p>
-              <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                {formatPercentage(metrics.opportunity_metrics.win_rate)}
-              </p>
+        <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <FunnelIcon className="w-5 h-5" />
             </div>
           </div>
-          <div className="mt-4">
-            <div className="text-sm text-gray-600 dark:text-gray-300">
-              {metrics.opportunity_metrics.won_opportunities} deals won
-            </div>
-          </div>
+          <p className="text-xs opacity-90 mb-1">Win Rate</p>
+          <p className="text-2xl font-bold">{formatPercentage(metrics.opportunity_metrics.win_rate)}</p>
+          <p className="text-xs opacity-75 mt-1">{metrics.opportunity_metrics.won_opportunities} deals won</p>
         </div>
+      </div>
 
-        {/* Quote Acceptance */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <DocumentTextIcon className="h-8 w-8 text-orange-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Quote Acceptance</p>
-              <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                {formatPercentage(metrics.quotation_metrics.acceptance_rate)}
-              </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <DocumentTextIcon className="w-5 h-5" />
             </div>
           </div>
-          <div className="mt-4">
-            <div className="text-sm text-gray-600 dark:text-gray-300">
-              {metrics.quotation_metrics.accepted_quotations} of {metrics.quotation_metrics.total_quotations} quotes accepted
-            </div>
-          </div>
+          <p className="text-xs opacity-90 mb-1">Quote Acceptance</p>
+          <p className="text-2xl font-bold">{formatPercentage(metrics.quotation_metrics.acceptance_rate)}</p>
+          <p className="text-xs opacity-75 mt-1">
+            {metrics.quotation_metrics.accepted_quotations} of {metrics.quotation_metrics.total_quotations} quotes accepted
+          </p>
         </div>
       </div>
 
@@ -248,7 +190,7 @@ const SalesDashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Link
           to="/app/sales/leads/new"
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow group"
+          className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6 hover:shadow-md transition-shadow group"
         >
           <div className="flex items-center">
             <UserGroupIcon className="h-8 w-8 text-blue-600 group-hover:text-blue-700" />
@@ -261,7 +203,7 @@ const SalesDashboard: React.FC = () => {
 
         <Link
           to="/app/sales/opportunities/new"
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow group"
+          className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6 hover:shadow-md transition-shadow group"
         >
           <div className="flex items-center">
             <FunnelIcon className="h-8 w-8 text-green-600 group-hover:text-green-700" />
@@ -274,7 +216,7 @@ const SalesDashboard: React.FC = () => {
 
         <Link
           to="/app/sales/quotations/new"
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow group"
+          className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6 hover:shadow-md transition-shadow group"
         >
           <div className="flex items-center">
             <DocumentTextIcon className="h-8 w-8 text-purple-600 group-hover:text-purple-700" />
@@ -287,7 +229,7 @@ const SalesDashboard: React.FC = () => {
 
         <Link
           to="/app/sales/activities/new"
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow group"
+          className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6 hover:shadow-md transition-shadow group"
         >
           <div className="flex items-center">
             <CalendarIcon className="h-8 w-8 text-orange-600 group-hover:text-orange-700" />
@@ -303,7 +245,7 @@ const SalesDashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Link
           to="/app/sales/forecasts"
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow group"
+          className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6 hover:shadow-md transition-shadow group"
         >
           <div className="flex items-center">
             <ChartBarIcon className="h-8 w-8 text-indigo-600 group-hover:text-indigo-700" />
@@ -316,7 +258,7 @@ const SalesDashboard: React.FC = () => {
 
         <Link
           to="/app/sales/orders"
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow group"
+          className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6 hover:shadow-md transition-shadow group"
         >
           <div className="flex items-center">
             <ShoppingCartIcon className="h-8 w-8 text-teal-600 group-hover:text-teal-700" />
@@ -329,7 +271,7 @@ const SalesDashboard: React.FC = () => {
 
         <Link
           to="/app/sales/customers"
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow group"
+          className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6 hover:shadow-md transition-shadow group"
         >
           <div className="flex items-center">
             <BuildingOfficeIcon className="h-8 w-8 text-pink-600 group-hover:text-pink-700" />
@@ -344,10 +286,10 @@ const SalesDashboard: React.FC = () => {
       {/* Detailed Metrics */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Lead Metrics */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Lead Pipeline</h3>
-            <Link to="/app/sales/leads" className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+            <Link to="/app/sales/leads" className="text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 text-sm font-medium">
               View All →
             </Link>
           </div>
@@ -373,10 +315,10 @@ const SalesDashboard: React.FC = () => {
         </div>
 
         {/* Opportunity Metrics */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Sales Pipeline</h3>
-            <Link to="/app/sales/opportunities" className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+            <Link to="/app/sales/opportunities" className="text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 text-sm font-medium">
               View Pipeline →
             </Link>
           </div>
@@ -402,10 +344,10 @@ const SalesDashboard: React.FC = () => {
         </div>
 
         {/* Activity Metrics */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Activities</h3>
-            <Link to="/app/sales/activities" className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+            <Link to="/app/sales/activities" className="text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 text-sm font-medium">
               View All →
             </Link>
           </div>
@@ -427,10 +369,10 @@ const SalesDashboard: React.FC = () => {
         </div>
 
         {/* Quotation Metrics */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Quotations</h3>
-            <Link to="/app/sales/quotations" className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+            <Link to="/app/sales/quotations" className="text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 text-sm font-medium">
               View All →
             </Link>
           </div>

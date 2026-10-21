@@ -21,6 +21,7 @@ import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import axiosInstance from '../../utils/axiosConfig';
 import toast from 'react-hot-toast';
+import { confirmDialog } from '../../components/ui';
 
 interface Lead {
   id: number;
@@ -137,7 +138,7 @@ const LeadListUpgraded: React.FC = () => {
   }, [searchTerm, statusFilter, sourceFilter]);
 
   const handleDeleteLead = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this lead?')) return;
+    if (!(await confirmDialog('Are you sure you want to delete this lead?'))) return;
     try {
       await axiosInstance.delete(`/api/sales/leads/${id}`);
       toast.success('Lead deleted successfully');

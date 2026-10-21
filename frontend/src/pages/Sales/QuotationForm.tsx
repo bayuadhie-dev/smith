@@ -5,6 +5,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import axiosInstance from '../../utils/axiosConfig';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import SearchableSelect from '../../components/SearchableSelect';
+import { showError, showSuccess } from '../../components/ui';
 import {
   ArrowLeftIcon,
   ExclamationTriangleIcon,
@@ -19,6 +20,8 @@ interface QuotationFormData {
   valid_until: string
   terms_conditions?: string
   notes?: string
+  shipping_cost?: number
+  shipping_ppn_code?: string
   items: {
     product_id: number
     product_name?: string
@@ -63,6 +66,8 @@ const QuotationForm = () => {
     defaultValues: {
       quote_date: new Date().toISOString().split('T')[0],
       valid_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      shipping_cost: 0,
+      shipping_ppn_code: 'Y',
       items: [{
         product_id: 0,
         quantity: 1,
@@ -82,6 +87,8 @@ const QuotationForm = () => {
 
   const watchedItems = watch('items')
   const selectedCustomerId = watch('customer_id')
+  const watchedShippingCost = watch('shipping_cost')
+  const watchedShippingPpnCode = watch('shipping_ppn_code')
   const selectedCustomer = customers.find(c => c.id == selectedCustomerId)
 
   useEffect(() => {
@@ -129,10 +136,12 @@ const QuotationForm = () => {
       setValue('valid_until', quotation.valid_until)
       setValue('terms_conditions', quotation.terms_conditions)
       setValue('notes', quotation.notes)
+      setValue('shipping_cost', quotation.shipping_cost || 0)
+      setValue('shipping_ppn_code', quotation.shipping_ppn_code || 'Y')
       setValue('items', quotation.items)
     } catch (error) {
       console.error('Error loading quotation:', error)
-      alert('Failed to load quotation')
+      showError('Failed to load quotation')
     }
   }
 
@@ -142,6 +151,8 @@ const QuotationForm = () => {
       const payload = {
         ...data,
         customer_id: parseInt(data.customer_id.toString()),
+        shipping_cost: parseFloat((data.shipping_cost || 0).toString()),
+        shipping_ppn_code: data.shipping_ppn_code || null,
         items: data.items.map(item => ({
           ...item,
           product_id: parseInt(item.product_id.toString()),
@@ -155,16 +166,16 @@ const QuotationForm = () => {
 
       if (isEdit) {
         await axiosInstance.put(`/api/sales/quotations/${id}`, payload)
-        alert('Quotation updated successfully!')
+        showSuccess('Quotation updated successfully!')
       } else {
         await axiosInstance.post('/api/sales/quotations', payload)
-        alert('Quotation created successfully!')
+        showSuccess('Quotation created successfully!')
       }
-      
+
       navigate('/app/sales/quotations')
     } catch (error: any) {
       console.error('Error saving quotation:', error)
-      alert(error.response?.data?.error || 'Failed to save quotation')
+      showError(error.response?.data?.error || 'Failed to save quotation')
     } finally {
       setIsLoading(false)
     }
@@ -222,8 +233,18 @@ const QuotationForm = () => {
     })
   }
 
+  // Mirrors backend utils.tax_helpers.PPN_RATE_MAP - display-only, the
+  // server recomputes authoritatively (SAP-equivalence plan item #3).
+  const SHIPPING_PPN_RATE_MAP: Record<string, number> = { Y: 11, A: 1.1, B: 1.2, L: 12 }
+
+  const calculateShippingTax = () => {
+    const rate = SHIPPING_PPN_RATE_MAP[watchedShippingPpnCode || ''] || 0
+    return (Number(watchedShippingCost) || 0) * (rate / 100)
+  }
+
   const calculateGrandTotal = () => {
-    return watchedItems.reduce((sum, item) => sum + (item.total_amount || 0), 0)
+    const itemsTotal = watchedItems.reduce((sum, item) => sum + (item.total_amount || 0), 0)
+    return itemsTotal + (Number(watchedShippingCost) || 0) + calculateShippingTax()
   }
 
   if (loadingData) {
@@ -448,13 +469,43 @@ const QuotationForm = () => {
             ))}
           </div>
 
-          {/* Grand Total */}
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="flex justify-between items-center">
-              <span className="text-lg font-medium text-blue-900">Grand Total:</span>
-              <span className="text-2xl font-bold text-blue-900">
-                Rp {calculateGrandTotal().toLocaleString()}
-              </span>
+          {/* Shipping Cost + Grand Total */}
+          <div className="mt-6 space-y-4">
+            <div className="flex items-center justify-end gap-3">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                Biaya Kirim (Rp)
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                {...register('shipping_cost')}
+                className="input w-40 text-right"
+                placeholder="0"
+              />
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                Kode PPN Ongkir
+              </label>
+              <select {...register('shipping_ppn_code')} className="input w-32">
+                <option value="">Tidak ada</option>
+                <option value="Y">Y - 11%</option>
+                <option value="A">A - 1.1%</option>
+                <option value="B">B - 1.2%</option>
+                <option value="L">L - 12%</option>
+              </select>
+            </div>
+            {Number(watchedShippingCost) > 0 && (
+              <div className="flex items-center justify-end text-sm text-gray-600 dark:text-gray-300">
+                PPN Ongkir: Rp {calculateShippingTax().toLocaleString()}
+              </div>
+            )}
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex justify-between items-center">
+                <span className="text-lg font-medium text-blue-900">Grand Total:</span>
+                <span className="text-2xl font-bold text-blue-900">
+                  Rp {calculateGrandTotal().toLocaleString()}
+                </span>
+              </div>
             </div>
           </div>
         </div>
