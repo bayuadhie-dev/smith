@@ -108,23 +108,26 @@ export default function ShippingDashboard() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#059669]"></div>
       </div>
     )
   }
 
+  // 2026-10-07: Axion bento-grid restyle (tier-1 module landing page,
+  // #10 of 17). Sub-pages (Orders, Tracking, Calculator, etc) are
+  // intentionally left as-is - only this landing dashboard is in scope.
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard Pengiriman</h1>
-        <div className="flex items-center gap-4">
+    <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-snug">Dashboard Pengiriman</h1>
+        <div className="flex flex-wrap items-center gap-3">
           <input
             type="date"
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
             className="input"
           />
-          <button 
+          <button
             onClick={() => navigate('/app/shipping/orders/new')}
             className="btn-primary inline-flex items-center gap-2"
           >
@@ -134,82 +137,58 @@ export default function ShippingDashboard() {
         </div>
       </div>
 
-      {/* KeyIcon Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Total Shipments */}
-        <div className="card bg-blue-50 border-blue-200">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <TruckIcon className="w-5 h-5 text-blue-600" />
-              </div>
+      {/* Key Metrics - bento: Total Pengiriman spans 2 cols (primary metric) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="xl:col-span-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <TruckIcon className="w-5 h-5" />
             </div>
-            <div className="ml-5 w-0 flex-1">
-              <dl>
-                <dt className="text-sm font-medium text-blue-700 truncate">Total Pengiriman</dt>
-                <dd className="text-lg font-medium text-blue-900">{totalShipments}</dd>
-              </dl>
-            </div>
+            <p className="text-sm opacity-90">Total Pengiriman</p>
           </div>
+          <p className="text-3xl font-bold">{totalShipments}</p>
         </div>
 
-        {/* In Transit */}
-        <div className="card bg-yellow-50 border-yellow-200">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
-                <ClockIcon className="w-5 h-5 text-yellow-600" />
-              </div>
-            </div>
-            <div className="ml-5 w-0 flex-1">
-              <dl>
-                <dt className="text-sm font-medium text-yellow-700 truncate">Dalam Perjalanan</dt>
-                <dd className="text-lg font-medium text-yellow-900">{inTransit}</dd>
-              </dl>
+        <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <ClockIcon className="w-5 h-5" />
             </div>
           </div>
+          <p className="text-xs opacity-90 mb-1">Dalam Perjalanan</p>
+          <p className="text-2xl font-bold">{inTransit}</p>
         </div>
 
-        {/* Delivered */}
-        <div className="card bg-green-50 border-green-200">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                <CheckCircleIcon className="w-5 h-5 text-green-600" />
-              </div>
-            </div>
-            <div className="ml-5 w-0 flex-1">
-              <dl>
-                <dt className="text-sm font-medium text-green-700 truncate">Terkirim</dt>
-                <dd className="text-lg font-medium text-green-900">{delivered}</dd>
-              </dl>
+        <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <CheckCircleIcon className="w-5 h-5" />
             </div>
           </div>
+          <p className="text-xs opacity-90 mb-1">Terkirim</p>
+          <p className="text-2xl font-bold">{delivered}</p>
         </div>
+      </div>
 
-        {/* Pending */}
-        <div className="card bg-orange-50 border-orange-200">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
-                <ExclamationTriangleIcon className="w-5 h-5 text-orange-600" />
-              </div>
-            </div>
-            <div className="ml-5 w-0 flex-1">
-              <dl>
-                <dt className="text-sm font-medium text-orange-700 truncate">Menunggu</dt>
-                <dd className="text-lg font-medium text-orange-900">{pending}</dd>
-              </dl>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <ExclamationTriangleIcon className="w-5 h-5" />
             </div>
           </div>
+          <p className="text-xs opacity-90 mb-1">Menunggu</p>
+          <p className="text-2xl font-bold">{pending}</p>
         </div>
       </div>
 
       {/* Ready for Shipping - From QC */}
-      <div className="card border-2 border-green-200 bg-green-50">
+      <div className="card p-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-medium text-green-900 flex items-center gap-2">
-            <CheckCircleIcon className="h-6 w-6 text-green-600" />
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white flex items-center gap-2">
+            <div className="bg-gradient-to-br from-[#059669] to-[#047857] p-1.5 rounded-lg">
+              <CheckCircleIcon className="h-5 w-5 text-white" />
+            </div>
             Siap Kirim dari QC ({readyForShipping.length})
           </h2>
           <button
@@ -294,7 +273,7 @@ export default function ShippingDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="card">
+      <div className="card p-6">
         <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Aksi Cepat</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <button
@@ -336,12 +315,12 @@ export default function ShippingDashboard() {
       </div>
 
       {/* Recent Shipments */}
-      <div className="card">
+      <div className="card p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-medium text-gray-900 dark:text-white">Pengiriman Terbaru</h2>
           <button
             onClick={() => navigate('/app/shipping/orders')}
-            className="text-blue-600 hover:text-blue-500 text-sm font-medium"
+            className="text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 text-sm font-medium"
           >
             Lihat Semua
           </button>
@@ -393,7 +372,7 @@ export default function ShippingDashboard() {
 
       {/* Alerts & Notifications */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="card">
+        <div className="card p-6">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Peringatan</h3>
           <div className="space-y-3">
             {pending > 0 && (
@@ -415,7 +394,7 @@ export default function ShippingDashboard() {
           </div>
         </div>
 
-        <div className="card">
+        <div className="card p-6">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Statistik Hari Ini</h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center">

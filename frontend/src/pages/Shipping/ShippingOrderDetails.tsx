@@ -1,27 +1,66 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { confirmDialog, showError } from '../../components/ui';
 import {
   ArrowDownTrayIcon,
   ArrowLeftIcon,
   CalendarIcon as Calendar,
   CheckCircleIcon,
   CheckCircleIcon as CheckCircle,
+  ChevronDownIcon,
+  ChevronRightIcon,
   ClockIcon,
   CubeIcon,
   DocumentTextIcon,
   EnvelopeIcon as Mail,
   ExclamationTriangleIcon,
+  MagnifyingGlassIcon,
   MapPinIcon as MapPin,
   PencilIcon as Edit,
   PhoneIcon,
+  PlusIcon,
   PrinterIcon,
+  QrCodeIcon,
   TruckIcon,
   TruckIcon as Truck,
   UserIcon,
   XCircleIcon,
+  XMarkIcon,
   TrashIcon as Trash2
 } from '@heroicons/react/24/outline';
+
+interface HandlingUnit {
+  id: number;
+  hu_number: string;
+  shipping_item_id: number;
+  quantity: number;
+  uom: string;
+  product_name: string;
+  product_code: string;
+  notes: string | null;
+  standard_pallet_qty: number | null;
+  fill_percent: number | null;
+  is_full_pallet: boolean;
+  created_at: string;
+  shipping_order?: {
+    id: number;
+    shipping_number: string;
+    status: string;
+    customer_name: string;
+    shipping_date: string;
+    vehicle_number: string | null;
+  };
+}
+
+interface HandlingUnitListResponse {
+  shipping_item_id: number;
+  item_quantity: number;
+  packed_quantity: number;
+  remaining_quantity: number;
+  handling_units: HandlingUnit[];
+}
+
 interface ShippingOrderDetails {
   id: number;
   shipping_number: string;
@@ -74,11 +113,126 @@ const ShippingOrderDetails: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // Handling Unit drill-down state - keyed by shipping_item_id
+  const [expandedItemId, setExpandedItemId] = useState<number | null>(null);
+  const [huByItem, setHuByItem] = useState<Record<number, HandlingUnitListResponse>>({});
+  const [huLoading, setHuLoading] = useState<Record<number, boolean>>({});
+  const [newHuQty, setNewHuQty] = useState<Record<number, string>>({});
+  const [newHuNotes, setNewHuNotes] = useState<Record<number, string>>({});
+  const [huError, setHuError] = useState<Record<number, string>>({});
+  const [huSubmitting, setHuSubmitting] = useState<Record<number, boolean>>({});
+  const [confirmDeleteHuId, setConfirmDeleteHuId] = useState<number | null>(null);
+
+  // Scan/lookup widget state
+  const [scanInput, setScanInput] = useState('');
+  const [scanResult, setScanResult] = useState<HandlingUnit | null>(null);
+  const [scanError, setScanError] = useState('');
+  const [scanLoading, setScanLoading] = useState(false);
+
   useEffect(() => {
     if (id) {
       fetchOrderDetails();
     }
   }, [id]);
+
+  const authHeaders = () => ({
+    'Authorization': `Bearer ${localStorage.getItem('token')}`
+  });
+
+  const fetchHandlingUnits = async (itemId: number) => {
+    setHuLoading(prev => ({ ...prev, [itemId]: true }));
+    try {
+      const res = await fetch(`/api/shipping/shipping-items/${itemId}/handling-units`, {
+        headers: authHeaders()
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setHuByItem(prev => ({ ...prev, [itemId]: data }));
+      }
+    } catch {
+      // swallow - panel will just show empty state
+    } finally {
+      setHuLoading(prev => ({ ...prev, [itemId]: false }));
+    }
+  };
+
+  const toggleItemExpand = (itemId: number) => {
+    const next = expandedItemId === itemId ? null : itemId;
+    setExpandedItemId(next);
+    if (next !== null && !huByItem[next]) {
+      fetchHandlingUnits(next);
+    }
+  };
+
+  const submitNewHu = async (itemId: number) => {
+    const qtyStr = newHuQty[itemId];
+    const qty = parseFloat(qtyStr);
+    if (!qtyStr || isNaN(qty) || qty <= 0) {
+      setHuError(prev => ({ ...prev, [itemId]: 'Quantity harus diisi dan lebih besar dari 0' }));
+      return;
+    }
+    setHuSubmitting(prev => ({ ...prev, [itemId]: true }));
+    setHuError(prev => ({ ...prev, [itemId]: '' }));
+    try {
+      const res = await fetch(`/api/shipping/shipping-items/${itemId}/handling-units`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ quantity: qty, notes: newHuNotes[itemId] || undefined })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setNewHuQty(prev => ({ ...prev, [itemId]: '' }));
+        setNewHuNotes(prev => ({ ...prev, [itemId]: '' }));
+        fetchHandlingUnits(itemId);
+      } else {
+        setHuError(prev => ({ ...prev, [itemId]: data.error || 'Gagal membuat Handling Unit' }));
+      }
+    } catch {
+      setHuError(prev => ({ ...prev, [itemId]: 'Network error' }));
+    } finally {
+      setHuSubmitting(prev => ({ ...prev, [itemId]: false }));
+    }
+  };
+
+  const deleteHu = async (itemId: number, huId: number) => {
+    setConfirmDeleteHuId(null);
+    try {
+      const res = await fetch(`/api/shipping/handling-units/${huId}`, {
+        method: 'DELETE',
+        headers: authHeaders()
+      });
+      if (res.ok) {
+        fetchHandlingUnits(itemId);
+      } else {
+        setHuError(prev => ({ ...prev, [itemId]: 'Gagal menghapus Handling Unit' }));
+      }
+    } catch {
+      setHuError(prev => ({ ...prev, [itemId]: 'Network error saat menghapus Handling Unit' }));
+    }
+  };
+
+  const runScan = async () => {
+    const hu = scanInput.trim();
+    if (!hu) return;
+    setScanLoading(true);
+    setScanError('');
+    setScanResult(null);
+    try {
+      const res = await fetch(`/api/shipping/handling-units/scan/${encodeURIComponent(hu)}`, {
+        headers: authHeaders()
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setScanResult(data);
+      } else {
+        setScanError(data.error || 'Handling Unit tidak ditemukan');
+      }
+    } catch {
+      setScanError('Network error saat mencari Handling Unit');
+    } finally {
+      setScanLoading(false);
+    }
+  };
 
   const fetchOrderDetails = async () => {
     setLoading(true);
@@ -116,15 +270,15 @@ const ShippingOrderDetails: React.FC = () => {
       if (response.ok) {
         fetchOrderDetails();
       } else {
-        alert('Failed to update order status');
+        showError('Failed to update order status');
       }
     } catch (error) {
-      alert('Error updating order status');
+      showError('Error updating order status');
     }
   };
 
   const deleteOrder = async () => {
-    if (!confirm('Are you sure you want to delete this shipping order?')) return;
+    if (!(await confirmDialog('Are you sure you want to delete this shipping order?'))) return;
 
     try {
       const response = await fetch(`/api/shipping/orders/${id}`, {
@@ -137,10 +291,10 @@ const ShippingOrderDetails: React.FC = () => {
       if (response.ok) {
         navigate('/app/shipping/orders');
       } else {
-        alert('Failed to delete shipping order');
+        showError('Failed to delete shipping order');
       }
     } catch (error) {
-      alert('Error deleting shipping order');
+      showError('Error deleting shipping order');
     }
   };
 
@@ -168,7 +322,7 @@ const ShippingOrderDetails: React.FC = () => {
         document.body.removeChild(a);
       }
     } catch (error) {
-      alert('Error downloading POD');
+      showError('Error downloading POD');
     }
   };
 
@@ -361,51 +515,256 @@ const ShippingOrderDetails: React.FC = () => {
             </div>
           </div>
 
-          {/* Shipping Items */}
+          {/* Shipping Items + Handling Unit drill-down */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Shipping Items</h3>
-            
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-gray-900">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('production.product')}</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.quantity')}</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                  {order.items?.map((item) => (
-                    <tr key={item.id}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <CubeIcon className="h-4 w-4 text-gray-400 mr-2" />
-                          <div>
-                            <div className="text-sm font-medium text-gray-900 dark:text-white">
-                              {item.product_code}
-                            </div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                              {item.product_name}
-                            </div>
+
+            <div className="space-y-2">
+              {order.items?.map((item) => {
+                const isExpanded = expandedItemId === item.id;
+                const huData = huByItem[item.id];
+                const isHuLoading = huLoading[item.id];
+                const packed = huData?.packed_quantity ?? 0;
+                const total = huData?.item_quantity ?? item.quantity;
+                const pct = total > 0 ? Math.min(100, Math.round((packed / total) * 100)) : 0;
+
+                return (
+                  <div key={item.id} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => toggleItemExpand(item.id)}
+                      className="w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-left"
+                    >
+                      <div className="flex items-center gap-3">
+                        {isExpanded ? (
+                          <ChevronDownIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                        ) : (
+                          <ChevronRightIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                        )}
+                        <CubeIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                        <div>
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                            {item.product_code} - {item.product_name}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            Batch: {item.batch_number || '-'}
                           </div>
                         </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        {item.quantity} {item.uom}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        {item.batch_number || '-'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        {huData && (
+                          <span className="text-xs text-gray-500 dark:text-gray-400 hidden sm:inline">
+                            {huData.handling_units.length} HU · {packed}/{total} {item.uom} dipacking
+                          </span>
+                        )}
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">
+                          {item.quantity} {item.uom}
+                        </span>
+                      </div>
+                    </button>
+
+                    {isExpanded && (
+                      <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 px-4 py-4 space-y-4">
+                        <div>
+                          <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
+                            <span>Progress packing</span>
+                            <span>{packed}/{total} {item.uom} ({pct}%)</span>
+                          </div>
+                          <div className="w-full h-2 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                            <div
+                              className={`h-2 rounded-full ${pct >= 100 ? 'bg-green-500' : 'bg-blue-500'}`}
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                        </div>
+
+                        {isHuLoading ? (
+                          <div className="text-sm text-gray-500 dark:text-gray-400 py-2">Memuat Handling Unit...</div>
+                        ) : (
+                          <div className="space-y-2">
+                            {(huData?.handling_units.length ?? 0) === 0 && (
+                              <div className="text-sm text-gray-500 dark:text-gray-400 italic">
+                                Belum ada Handling Unit (pallet/kemasan) untuk item ini.
+                              </div>
+                            )}
+                            {huData?.handling_units.map((hu) => (
+                              <div
+                                key={hu.id}
+                                className="flex items-center justify-between gap-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2"
+                              >
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <QrCodeIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                                  <div className="min-w-0">
+                                    <div className="text-sm font-mono font-medium text-gray-900 dark:text-white truncate">
+                                      {hu.hu_number}
+                                    </div>
+                                    {hu.notes && (
+                                      <div className="text-xs text-gray-500 dark:text-gray-400 truncate">{hu.notes}</div>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2 flex-shrink-0">
+                                  {confirmDeleteHuId === hu.id ? (
+                                    <>
+                                      <span className="text-xs text-gray-600 dark:text-gray-300">Hapus?</span>
+                                      <button
+                                        type="button"
+                                        onClick={() => deleteHu(item.id, hu.id)}
+                                        className="px-2 py-1 text-xs font-medium bg-red-600 text-white rounded hover:bg-red-700"
+                                      >
+                                        Ya, hapus
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => setConfirmDeleteHuId(null)}
+                                        className="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
+                                      >
+                                        Batal
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <span className="text-sm text-gray-900 dark:text-white">{hu.quantity} {hu.uom}</span>
+                                      {hu.fill_percent !== null && (
+                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                          hu.is_full_pallet
+                                            ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300'
+                                            : 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300'
+                                        }`}>
+                                          {hu.is_full_pallet ? 'Full' : `${hu.fill_percent}%`}
+                                        </span>
+                                      )}
+                                      <button
+                                        type="button"
+                                        onClick={() => setConfirmDeleteHuId(hu.id)}
+                                        className="p-1 text-gray-400 hover:text-red-600"
+                                        title="Hapus Handling Unit"
+                                      >
+                                        <XMarkIcon className="h-4 w-4" />
+                                      </button>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Add new HU form */}
+                        <div className="flex flex-wrap items-end gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                          <div className="flex-1 min-w-[120px]">
+                            <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
+                              Quantity ({item.uom})
+                            </label>
+                            <input
+                              type="number"
+                              min="0"
+                              step="any"
+                              value={newHuQty[item.id] || ''}
+                              onChange={(e) => setNewHuQty(prev => ({ ...prev, [item.id]: e.target.value }))}
+                              placeholder={`sisa ${huData ? huData.remaining_quantity : item.quantity}`}
+                              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-[160px]">
+                            <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Catatan (opsional)</label>
+                            <input
+                              type="text"
+                              value={newHuNotes[item.id] || ''}
+                              onChange={(e) => setNewHuNotes(prev => ({ ...prev, [item.id]: e.target.value }))}
+                              placeholder="misal: pallet 1"
+                              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => submitNewHu(item.id)}
+                            disabled={huSubmitting[item.id]}
+                            className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm flex items-center gap-1"
+                          >
+                            <PlusIcon className="h-4 w-4" />
+                            Tambah HU
+                          </button>
+                        </div>
+                        {huError[item.id] && (
+                          <div className="text-sm text-red-600 dark:text-red-400">{huError[item.id]}</div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
+          </div>
+
+          {/* Handling Unit - scan/lookup */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1">Cari Handling Unit</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              Scan atau ketik nomor HU untuk cek isi, qty, dan status pengirimannya - bukan untuk konfirmasi loading.
+            </p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={scanInput}
+                onChange={(e) => setScanInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && runScan()}
+                placeholder="HU-202610-00001"
+                className="flex-1 px-3 py-2 text-sm font-mono border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              />
+              <button
+                type="button"
+                onClick={runScan}
+                disabled={scanLoading}
+                className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 flex items-center gap-2"
+              >
+                <MagnifyingGlassIcon className="h-4 w-4" />
+                {scanLoading ? 'Mencari...' : 'Cari'}
+              </button>
+            </div>
+
+            {scanError && <div className="text-sm text-red-600 dark:text-red-400 mt-3">{scanError}</div>}
+
+            {scanResult && (
+              <div className="mt-4 border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-900/40">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-mono font-medium text-gray-900 dark:text-white">{scanResult.hu_number}</span>
+                  {scanResult.fill_percent !== null && (
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                      scanResult.is_full_pallet
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300'
+                        : 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300'
+                    }`}>
+                      {scanResult.is_full_pallet ? 'Full Pallet' : `${scanResult.fill_percent}% dari pallet standar`}
+                    </span>
+                  )}
+                </div>
+                <div className="text-sm text-gray-900 dark:text-white">
+                  {scanResult.product_code} - {scanResult.product_name}
+                </div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">
+                  Quantity: {scanResult.quantity} {scanResult.uom}
+                </div>
+                {scanResult.notes && (
+                  <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">Catatan: {scanResult.notes}</div>
+                )}
+                {scanResult.shipping_order && (
+                  <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-300">
+                    <div>
+                      Surat Jalan:{' '}
+                      <Link
+                        to={`/app/shipping/orders/${scanResult.shipping_order.id}`}
+                        className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+                      >
+                        {scanResult.shipping_order.shipping_number}
+                      </Link>
+                      {' '}({scanResult.shipping_order.status})
+                    </div>
+                    <div>Customer: {scanResult.shipping_order.customer_name}</div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Tracking History */}

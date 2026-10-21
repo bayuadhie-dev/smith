@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { showError } from '../../components/ui';
 import {
   CalendarIcon as Calendar,
   CheckIcon as Save,
@@ -150,12 +151,12 @@ const ShippingTrackingForm: React.FC = () => {
         (error) => {
           console.error('Error getting location:', error);
           setLocationLoading(false);
-          alert('Unable to get current location. Please enter manually.');
+          showError('Unable to get current location. Please enter manually.');
         }
       );
     } else {
       setLocationLoading(false);
-      alert('Geolocation is not supported by this browser.');
+      showError('Geolocation is not supported by this browser.');
     }
   };
 

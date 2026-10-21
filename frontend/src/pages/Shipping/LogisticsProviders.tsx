@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../../contexts/LanguageContext';
+import { confirmDialog } from '../../components/ui';
 import {
   useGetLogisticsProvidersQuery,
   useCreateLogisticsProviderMutation,
@@ -82,7 +83,7 @@ export default function LogisticsProviders() {
   }
 
   const handleDelete = async (id: number) => {
-    if (window.confirm('Apakah Anda yakin ingin menghapus provider ini?')) {
+    if (await confirmDialog('Apakah Anda yakin ingin menghapus provider ini?')) {
       try {
         await deleteProvider(id).unwrap()
       } catch (error) {
