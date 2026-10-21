@@ -96,6 +96,52 @@ class ShippingItem(db.Model):
     shipping_order = db.relationship('ShippingOrder', back_populates='items')
     sales_order_item = db.relationship('SalesOrderItem')
     product = db.relationship('Product')
+    handling_units = db.relationship('HandlingUnit', back_populates='shipping_item', cascade='all, delete-orphan')
+
+
+class HandlingUnit(db.Model):
+    """Satu unit kemasan fisik (pallet/karton besar) dalam satu ShippingItem.
+
+    Dibuat saat packing (bukan saat buat shipping order) karena split pallet
+    baru diketahui pas barang benar-benar disusun fisik. quantity adalah
+    qty ASLI (pcs/kg), bukan "1 pallet" - supaya pallet yang isinya cuma
+    2/3 kapasitas standar tetap tercatat apa adanya; full/partial dihitung
+    saat tampil (quantity vs Product.standard_pallet_qty), bukan field
+    tersendiri yang harus diisi manual.
+    """
+    __tablename__ = 'handling_units'
+
+    id = db.Column(db.Integer, primary_key=True)
+    hu_number = db.Column(db.String(50), unique=True, nullable=False, index=True)
+    shipping_item_id = db.Column(db.Integer, db.ForeignKey('shipping_items.id', ondelete='CASCADE'), nullable=False)
+    quantity = db.Column(db.Numeric(15, 2), nullable=False)
+    notes = db.Column(db.Text, nullable=True)
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    shipping_item = db.relationship('ShippingItem', back_populates='handling_units')
+    created_by_user = db.relationship('User', foreign_keys=[created_by])
+
+    def to_dict(self):
+        item = self.shipping_item
+        product = item.product if item else None
+        pallet_qty = float(product.standard_pallet_qty) if product and product.standard_pallet_qty else None
+        fill_pct = round(float(self.quantity) / pallet_qty * 100, 1) if pallet_qty else None
+        return {
+            'id': self.id,
+            'hu_number': self.hu_number,
+            'shipping_item_id': self.shipping_item_id,
+            'quantity': float(self.quantity),
+            'uom': item.uom if item else None,
+            'product_name': product.name if product else None,
+            'product_code': product.code if product else None,
+            'notes': self.notes,
+            'standard_pallet_qty': pallet_qty,
+            'fill_percent': fill_pct,
+            'is_full_pallet': (fill_pct is not None and fill_pct >= 99.5),
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+        }
+
 
 class DeliveryTracking(db.Model):
     __tablename__ = 'delivery_tracking'

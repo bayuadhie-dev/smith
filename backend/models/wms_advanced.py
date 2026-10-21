@@ -96,6 +96,15 @@ class InventoryTransaction(db.Model):
     # Types: production_output, material_issue, goods_receipt, sales_delivery,
     #        transfer, adjustment, return, fg_conversion, wip_in, wip_out, scrap
 
+    # SAP-style 3-digit movement type code (101/131/261/311/551/552/601/
+    # 701/702/999), persisted at write time via
+    # utils.inventory_helpers.derive_movement_type_code() - see that
+    # function's docstring for the full (transaction_type, reference_type,
+    # direction) -> code mapping. Nullable because historical rows predate
+    # this column; routes/wms_advanced.py's enrich_transaction_dict() falls
+    # back to deriving it on read for any row where this is still NULL.
+    movement_type = db.Column(db.String(3), nullable=True, index=True)
+
     transaction_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     # Item (product OR material)
@@ -197,6 +206,7 @@ class InventoryTransaction(db.Model):
             'id': self.id,
             'transaction_number': self.transaction_number,
             'transaction_type': self.transaction_type,
+            'movement_type': self.movement_type,
             'transaction_date': self.transaction_date.isoformat() if self.transaction_date else None,
             'item_type': item_type,
             'item_code': item_code,

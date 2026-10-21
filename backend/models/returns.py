@@ -28,7 +28,13 @@ class CustomerReturn(db.Model):
     qc_date = db.Column(db.DateTime, nullable=True)
     qc_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     qc_notes = db.Column(db.Text, nullable=True)
-    
+
+    # GL posting (Fase 2 audit fix, 2026-09-30) - set once the AR-reversal/
+    # inventory-COGS journal for this return has been posted, so
+    # create_disposition() never double-posts if the endpoint is called
+    # again (e.g. for a later batch of dispositions on the same return).
+    pending_journal_entry_id = db.Column(db.Integer, db.ForeignKey('pending_journal_entries.id'), nullable=True)
+
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -145,7 +151,20 @@ class ReturnDisposition(db.Model):
     completed_date = db.Column(db.DateTime, nullable=True)
     
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    
+
+    # GL posting (Fase 4, fix_report_2.md, 2026-10-01) - jurnal retur kini
+    # diposting per DISPOSISI (per batch), bukan sekali untuk seluruh
+    # CustomerReturn (lihat CustomerReturn.pending_journal_entry_id di
+    # models/returns.py - kolom itu dari fix_report.md Fase 2, sekarang
+    # cuma menunjuk ke jurnal disposisi PERTAMA untuk kompatibilitas tes
+    # lama, bukan lagi guard idempotensi utama). Idempoten lewat kolom ini
+    # - kalau endpoint /disposition dipanggil ulang dengan disposisi yang
+    # SAMA (baris ReturnDisposition yang sama), tidak akan menggandakan
+    # jurnal. Dua batch disposisi TERPISAH untuk retur yang sama masing-
+    # masing dapat baris ReturnDisposition sendiri, jadi masing-masing
+    # dapat jurnalnya sendiri secara alami.
+    pending_journal_entry_id = db.Column(db.Integer, db.ForeignKey('pending_journal_entries.id'), nullable=True)
+
     # Relationships
     customer_return = db.relationship('CustomerReturn')
     return_item = db.relationship('ReturnItem')

@@ -51,6 +51,12 @@ class Invoice(db.Model):
     # and calls POST /purchase-invoices/<id>/release-hold. Not used for sales invoices.
     on_hold = db.Column(db.Boolean, nullable=False, default=False)
     hold_reason = db.Column(db.Text, nullable=True)
+    # Void audit trail (Fase 3 audit fix, 2026-09-30) - who/when voided this
+    # invoice. status is set to 'cancelled' on void; these columns exist
+    # purely so the actor/reason isn't lost the way status alone would lose it.
+    voided_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    voided_at = db.Column(db.DateTime, nullable=True)
+    void_reason = db.Column(db.Text, nullable=True)
     pending_journal_entry_id = db.Column(db.Integer, db.ForeignKey('pending_journal_entries.id'), nullable=True)
     internal_notes = db.Column(db.Text, nullable=True)
     notes = db.Column(db.Text, nullable=True)
@@ -123,12 +129,16 @@ class Payment(db.Model):
     received_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+    # Void audit trail (Fase 3 audit fix, 2026-09-30)
+    voided_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    voided_at = db.Column(db.DateTime, nullable=True)
+    void_reason = db.Column(db.Text, nullable=True)
+
     # Relationships
     invoice = db.relationship('Invoice', back_populates='payments')
     customer = db.relationship('Customer')
     supplier = db.relationship('Supplier')
-    received_by_user = db.relationship('User')
+    received_by_user = db.relationship('User', foreign_keys=[received_by])
 
 class Account(db.Model):
     __tablename__ = 'accounts'
@@ -505,6 +515,34 @@ class RecurringPaymentTransaction(db.Model):
     recurring_payment = db.relationship('RecurringPayment')
 
 
+class NumberSequenceCounter(db.Model):
+    """Row-locked counter backing utils.helpers.generate_number() (2026-10-16).
+
+    generate_number() previously found "the last used number" via a plain
+    SELECT (max over existing rows matching prefix+year+month), then the
+    caller INSERTed a new row using next_seq - a classic TOCTOU race: two
+    concurrent requests creating e.g. 2 shipping orders in the same second
+    could both read the same "last" number and both try to insert the same
+    new number. Every numbered column has a DB unique constraint, so this
+    never silently duplicated data - the second insert just failed with an
+    IntegrityError, surfacing as a confusing 500 to whichever staff member
+    lost the race. This table fixes it at the source: one row per
+    (prefix, period), locked with SELECT ... FOR UPDATE so concurrent
+    callers serialize on the counter instead of racing on a derived SELECT.
+    """
+    __tablename__ = 'number_sequence_counters'
+
+    id = db.Column(db.Integer, primary_key=True)
+    prefix = db.Column(db.String(50), nullable=False)
+    period = db.Column(db.String(10), nullable=False)  # 'YYYYMM'
+    last_seq = db.Column(db.Integer, nullable=False, default=0)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint('prefix', 'period', name='uq_number_sequence_counter_prefix_period'),
+    )
+
+
 class NumberSequence(db.Model):
     """
     Optional override for document number prefixes (INV, PO, JE, etc),
@@ -584,6 +622,41 @@ class PeriodTransactionTypeLock(db.Model):
 
     __table_args__ = (
         db.UniqueConstraint('period_year', 'period_month', 'transaction_type', name='uq_period_txn_type_lock'),
+    )
+
+
+class PeriodAccountTypeLock(db.Model):
+    """Kunci per Account Type ala SAP (2026-10-06, SAP-equivalence plan item
+    #2) - lapisan TAMBAHAN di atas PeriodTransactionTypeLock, bukan
+    pengganti. SAP mengunci posting period per 5 bucket subledger asal
+    dokumen: D=Debitur/AR, K=Kreditur/AP, M=Material/Inventory,
+    S=GL langsung, A=Aset Tetap.
+
+    transaction_type yang sudah dipakai di seluruh codebase (lihat
+    PeriodTransactionTypeLock) sebenarnya sudah merepresentasikan sumbu
+    yang SAMA (subledger asal dokumen) - lihat
+    utils.finance_helpers.TRANSACTION_TYPE_TO_SAP_BUCKET untuk mapping
+    statisnya. Lock ini dicek SETELAH PeriodTransactionTypeLock di
+    is_period_locked() - kalau admin cukup mengunci satu transaction_type
+    spesifik, pakai lock yang lama; kalau mau mengunci satu bucket SAP
+    penuh (mis. seluruh AP, apa pun transaction_type persisnya), pakai ini.
+
+    PENTING: jangan ketukar dengan Account.account_type (asset/liability/
+    equity/revenue/expense) - itu kategori neraca per AKUN GL, sumbu yang
+    sama sekali berbeda dari bucket subledger D/K/M/S/A di sini.
+    """
+    __tablename__ = 'period_account_type_locks'
+
+    id = db.Column(db.Integer, primary_key=True)
+    period_year = db.Column(db.Integer, nullable=False)
+    period_month = db.Column(db.Integer, nullable=False)
+    account_type_bucket = db.Column(db.String(1), nullable=False)  # D/K/M/S/A
+    locked_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    locked_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+
+    __table_args__ = (
+        db.UniqueConstraint('period_year', 'period_month', 'account_type_bucket', name='uq_period_acct_type_lock'),
     )
 
 

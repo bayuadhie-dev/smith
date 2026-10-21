@@ -23,6 +23,21 @@ class Material(db.Model):
     # anywhere; used by the MRP engine's lot-sizing (rounds a shortage up to
     # this quantity) instead of the sparser per-supplier-contract MOQ.
     min_order_qty = db.Column(db.Numeric(15, 2), nullable=True)
+    # SAP-equivalence plan item #4 (2026-10-05): lot-sizing procedure code
+    # used by utils.mrp_engine.run_mrp() when turning a net shortage into a
+    # planned-order quantity/date. 'EX' (lot-for-lot, the longstanding
+    # default/unchanged behavior) rounds only to min_order_qty above.
+    # 'FX' (fixed lot size) instead rounds up to the nearest multiple of
+    # fixed_lot_size below, ignoring min_order_qty. 'WB'/'MB' (weekly/monthly
+    # lot size) keep EX's per-bucket net/round behavior but then POOL the
+    # resulting planned orders that land in the same real calendar
+    # week/month into a single consolidated order - see
+    # _pool_planned_orders() in mrp_engine.py.
+    lot_sizing_procedure = db.Column(db.String(2), nullable=False, default='EX', server_default='EX')
+    # Only meaningful when lot_sizing_procedure='FX'. NULL/0 falls back to
+    # EX behavior for that material (silently - not an error - since a
+    # planner may switch a material to FX before filling this in).
+    fixed_lot_size = db.Column(db.Numeric(15, 2), nullable=True)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     is_hazardous = db.Column(db.Boolean, default=False, nullable=False)
     storage_conditions = db.Column(db.Text, nullable=True)  # temperature, humidity requirements
@@ -105,6 +120,11 @@ class Product(db.Model):
     # "Minimum Beli" from the standard Accurate master data export - see the
     # same field on Material for the full rationale.
     min_order_qty = db.Column(db.Numeric(15, 2), nullable=True)
+    # Kapasitas standar 1 pallet produk ini, dalam primary_uom - dipakai
+    # cuma untuk label "full/partial pallet" pada Handling Unit saat
+    # packing/shipping (lihat models/shipping.py HandlingUnit). Optional -
+    # kalau NULL, HU tetap bisa dibuat, cuma tanpa label persentase isi.
+    standard_pallet_qty = db.Column(db.Numeric(15, 2), nullable=True)
 
     # ===== Master Data page fields =====
     kelompok = db.Column(db.String(100), nullable=True)  # free-text tag from Excel "Kelompok" column

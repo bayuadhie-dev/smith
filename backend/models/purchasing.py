@@ -64,6 +64,15 @@ class PurchaseOrder(db.Model):
     tax_amount = db.Column(db.Numeric(15, 2), default=0)
     discount_amount = db.Column(db.Numeric(15, 2), default=0)
     total_amount = db.Column(db.Numeric(15, 2), default=0)
+    # Multi-currency (2026-10-19, po_multicurrency_plan.md): amounts above
+    # are in `currency`. exchange_rate (<currency> -> IDR) is locked once at
+    # PO approval from utils/exchange_rates.get_current_rate and is the single
+    # rate used by GRN costing and invoices from this PO. IDR => 1.
+    currency = db.Column(db.String(10), nullable=False, default='IDR', server_default='IDR')
+    exchange_rate = db.Column(db.Numeric(15, 6), nullable=False, default=1, server_default='1')
+    # 'auto' (exchange_rates feed) or 'manual' (user-entered when the feed had
+    # no rate, after confirming the real rate). NULL = not locked yet / legacy.
+    exchange_rate_source = db.Column(db.String(10), nullable=True)
     notes = db.Column(db.Text, nullable=True)
     internal_notes = db.Column(db.Text, nullable=True)
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
@@ -170,7 +179,7 @@ class GRNItem(db.Model):
     grn = db.relationship('GoodsReceivedNote', back_populates='items')
     po_item = db.relationship('PurchaseOrderItem')
     product = db.relationship('Product')
-    # material = db.relationship('Material')  # Disabled temporarily
+    material = db.relationship('Material')
     location = db.relationship('WarehouseLocation')
 
 class PurchaseApproval(db.Model):
@@ -189,6 +198,39 @@ class PurchaseApproval(db.Model):
     # Relationships
     purchase_order = db.relationship('PurchaseOrder')
     approver = db.relationship('User')
+
+class PRApproval(db.Model):
+    """Tiered approval for Purchase Requisition, by estimated amount (2026-10-16).
+
+    Mirrors PurchaseApproval's level pattern (multiple rows per PR, one per
+    required level) but gates by ROLE rather than a pre-assigned approver_id
+    - any user holding `required_role` can act on that level, matching the
+    `approver_roles` pattern used by the generic ApprovalWorkflow system
+    elsewhere. Levels are sequential: level N can't be acted on until level
+    N-1 is approved (enforced in routes/purchase_requisition.py, not here).
+    See routes/purchase_requisition.py::_create_pr_approval_levels for the
+    actual amount->levels mapping.
+    """
+    __tablename__ = 'pr_approvals'
+
+    id = db.Column(db.Integer, primary_key=True)
+    pr_id = db.Column(db.Integer, db.ForeignKey('purchase_requisitions.id', ondelete='CASCADE'), nullable=False)
+    approval_level = db.Column(db.Integer, nullable=False)  # 1, 2, ...
+    required_role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), nullable=False)
+    approver_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)  # filled in once acted on
+    status = db.Column(db.String(20), nullable=False, default='pending')  # pending, approved, rejected
+    comments = db.Column(db.Text, nullable=True)
+    approved_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    # Escalation (2026-10-17): set once a reminder notification has already
+    # been sent for this pending step - see utils/scheduled_jobs.py
+    # check_approval_escalations(). NULL = not yet escalated.
+    escalated_at = db.Column(db.DateTime, nullable=True)
+
+    purchase_requisition = db.relationship('PurchaseRequisition', backref='approval_steps')
+    required_role = db.relationship('Role')
+    approver = db.relationship('User')
+
 
 class SupplierQuote(db.Model):
     __tablename__ = 'supplier_quotes'
@@ -455,10 +497,18 @@ class PurchaseRequisition(db.Model):
     rejection_reason = db.Column(db.Text, nullable=True)
     converted_to_po_id = db.Column(db.Integer, db.ForeignKey('purchase_orders.id'), nullable=True)
     notes = db.Column(db.Text, nullable=True)
+    # fix_report_3.md Fase 15 (2026-10-02): traceability back to the
+    # SalesOrder this PR was auto-created for, when it exists specifically
+    # because that SO's confirm detected a raw-material shortfall (see
+    # utils.sales_order_workflow._check_and_create_shortage_pr). NULL for
+    # every other PR (manual requisitions, etc) - this is not a required
+    # field for PRs in general.
+    sales_order_id = db.Column(db.Integer, db.ForeignKey('sales_orders.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
+    sales_order = db.relationship('SalesOrder', foreign_keys=[sales_order_id])
     requester = db.relationship('User', foreign_keys=[requested_by])
     approver = db.relationship('User', foreign_keys=[approved_by])
     converted_po = db.relationship('PurchaseOrder', foreign_keys=[converted_to_po_id])

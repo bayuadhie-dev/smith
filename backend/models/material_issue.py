@@ -134,14 +134,24 @@ class MaterialIssueItem(db.Model):
     @property
     def pending_quantity(self):
         return self.required_quantity - self.issued_quantity
-    
+
     @property
     def is_fully_issued(self):
-        return self.issued_quantity >= self.required_quantity
-    
+        # fix_report_3.md (2026-10-02): issue_materials() accumulates
+        # issued_quantity via Python float arithmetic across possibly
+        # several FIFO batches, which can land a hair below the exact
+        # Decimal required_quantity from pure floating-point rounding even
+        # when the full amount was issued in substance - found via a real
+        # production run where every item's issued_quantity matched
+        # required_quantity exactly in the API response, yet this property
+        # (strict >=) still said 'not fully issued', leaving the item/
+        # MaterialIssue status stuck at 'partial' forever. Small tolerance
+        # matches the 2-decimal-place precision these columns are stored at.
+        return float(self.issued_quantity or 0) >= float(self.required_quantity or 0) - 0.01
+
     @property
     def is_partially_issued(self):
-        return self.issued_quantity > 0 and self.issued_quantity < self.required_quantity
+        return self.issued_quantity > 0 and not self.is_fully_issued
 
 class MaterialReturn(db.Model):
     """Material return from production"""

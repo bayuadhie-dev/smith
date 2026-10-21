@@ -407,12 +407,17 @@ class ChatUserStatus(db.Model):
     __tablename__ = 'chat_user_status'
     
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, unique=True)
+    # ondelete='CASCADE' added 2026-10-17: deleting a User (e.g. declining a
+    # pending registration) crashed with a NotNullViolation here - the FK had
+    # no cascade behavior, so SQLAlchemy's default (null out the FK on the
+    # dependent row) hit this column's own nullable=False constraint. A
+    # deleted user's online-status row has no reason to survive them anyway.
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False, unique=True)
     status = db.Column(db.String(20), default='offline')  # online, idle, dnd, offline
     custom_status = db.Column(db.String(128), nullable=True)
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    user = db.relationship('User', backref='chat_status', uselist=False)
+
+    user = db.relationship('User', backref=db.backref('chat_status', uselist=False, cascade='all, delete-orphan', passive_deletes=True))
     
     def to_dict(self):
         return {

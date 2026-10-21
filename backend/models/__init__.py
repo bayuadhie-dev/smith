@@ -19,7 +19,7 @@ from .production import (
     LiveMonitoringCheck, LiveMonitoringChecklistAnswer
 )
 from .quality import QualityTest, QualityInspection, CAPA, QualityStandard
-from .shipping import ShippingOrder, ShippingItem, DeliveryTracking, LogisticsProvider
+from .shipping import ShippingOrder, ShippingItem, DeliveryTracking, LogisticsProvider, HandlingUnit
 from .mbf_report import MBFReport, MBFReportDetail
 from .returns import CustomerReturn, ReturnItem, ReturnQCRecord, ReturnDisposition
 from .finance import Invoice, InvoiceItem, Payment, AccountingEntry, CostCenter, Account
@@ -52,6 +52,8 @@ from .stock_opname import StockOpnameOrder, StockOpnameItem
 from .notification import Notification, SystemAlert
 from .backup import BackupRecord
 from .integration import IntegrationLog, ThirdPartyAPI
+from .report_scheduler import ScheduledReport
+from .custom_report import CustomReportDefinition
 from .analytics import AnalyticsReport, KPI, MetricData
 from .settings import SystemSetting, CompanyProfile
 from .settings_extended import (
@@ -125,7 +127,7 @@ __all__ = [
     # Quality models
     'QualityTest', 'QualityInspection', 'CAPA', 'QualityStandard',
     # Shipping models
-    'ShippingOrder', 'ShippingItem', 'DeliveryTracking', 'LogisticsProvider',
+    'ShippingOrder', 'ShippingItem', 'DeliveryTracking', 'LogisticsProvider', 'HandlingUnit',
     # Returns models
     'CustomerReturn', 'ReturnItem', 'ReturnQCRecord', 'ReturnDisposition',
     # Finance models
@@ -160,6 +162,8 @@ __all__ = [
     'BackupRecord',
     # Integration models
     'IntegrationLog', 'ThirdPartyAPI',
+    'ScheduledReport',
+    'CustomReportDefinition',
     # Analytics models
     'AnalyticsReport', 'KPI', 'MetricData',
     # Settings models

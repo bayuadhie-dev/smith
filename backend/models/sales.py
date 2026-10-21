@@ -274,8 +274,15 @@ class Quotation(db.Model):
     tax_percent = db.Column(db.Numeric(5, 2), default=0)
     tax_amount = db.Column(db.Numeric(15, 2), default=0)
     shipping_cost = db.Column(db.Numeric(15, 2), default=0)
+    # SAP-equivalence plan item #3 (2026-10-05): PPN code applied to
+    # shipping_cost specifically - reuses the same Y/A/B/L code set as
+    # Product/Material.ppn_code (see utils.tax_helpers.PPN_RATE_MAP),
+    # since freight isn't tied to a single product and so can't inherit
+    # a ppn_code from one. Defaults to 'Y' (standard 11%).
+    shipping_ppn_code = db.Column(db.String(5), nullable=True)  # default 'Y' applied at route level only, not here (see routes/sales.py) - an explicit None (user picks 'Tidak ada') must stay None, and SQLAlchemy's column-level default would otherwise silently override an explicit None at flush time
+    shipping_tax_amount = db.Column(db.Numeric(15, 2), default=0)
     total_amount = db.Column(db.Numeric(15, 2), default=0)
-    
+
     # Status & Tracking
     status = db.Column(db.String(50), nullable=False, default='draft')  # draft, sent, accepted, rejected, expired, converted
     sent_date = db.Column(db.DateTime, nullable=True)
@@ -363,12 +370,25 @@ class SalesOrder(db.Model):
     delivery_address = db.Column(db.Text, nullable=True)
     shipping_method = db.Column(db.String(100), nullable=True)
     shipping_cost = db.Column(db.Numeric(15, 2), default=0)
+    # SAP-equivalence plan item #3 (2026-10-05): see Quotation.shipping_ppn_code
+    shipping_ppn_code = db.Column(db.String(5), nullable=True)  # default 'Y' applied at route level only, not here (see routes/sales.py) - an explicit None (user picks 'Tidak ada') must stay None, and SQLAlchemy's column-level default would otherwise silently override an explicit None at flush time
+    shipping_tax_amount = db.Column(db.Numeric(15, 2), default=0)
     subtotal = db.Column(db.Numeric(15, 2), default=0)
     tax_amount = db.Column(db.Numeric(15, 2), default=0)
     discount_amount = db.Column(db.Numeric(15, 2), default=0)
     total_amount = db.Column(db.Numeric(15, 2), default=0)
     notes = db.Column(db.Text, nullable=True)
     internal_notes = db.Column(db.Text, nullable=True)
+    # fix_report_3.md Fase 15 (2026-10-02): auto-filled by
+    # utils.sales_order_workflow._check_and_create_shortage_pr() when SO
+    # confirm detects a raw-material shortfall against this order's BOM
+    # (not just finished-goods ATP) - a PurchaseRequisition gets
+    # auto-created for the shortfall and summarized here. SO confirmation
+    # is NOT blocked by this (warning-only, same precedent as ATP).
+    material_shortage_note = db.Column(db.Text, nullable=True)
+    # Filled in MANUALLY by purchasing admin once the PR/PO above has been
+    # processed and a real delivery date is known - never set automatically.
+    material_eta_date = db.Column(db.Date, nullable=True)
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     approved_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     approved_at = db.Column(db.DateTime, nullable=True)
@@ -849,7 +869,7 @@ class PricingCondition(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False)
-    condition_type = db.Column(db.String(20), nullable=False)  # discount, surcharge, tax
+    condition_type = db.Column(db.String(20), nullable=False)  # discount, surcharge, freight, tax
     calculation_type = db.Column(db.String(20), nullable=False, default='percentage')  # percentage, fixed_amount
     value = db.Column(db.Numeric(10, 4), nullable=False)
     sequence = db.Column(db.Integer, nullable=False, default=10)

@@ -72,7 +72,12 @@ class AuditLog(db.Model):
     __tablename__ = 'audit_logs'
     
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    # ondelete='SET NULL' added 2026-10-17: deleting a User (e.g. declining a
+    # pending registration) crashed with a ForeignKeyViolation here - audit
+    # rows must survive user deletion for the audit trail to stay meaningful
+    # (compliance/history), so this is SET NULL, not CASCADE - the log entry
+    # itself is kept, just with the now-deleted user reference cleared.
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'), nullable=True)
     session_id = db.Column(db.String(255), nullable=True)
     action = db.Column(db.String(50), nullable=False)  # create, read, update, delete, login, logout
     resource_type = db.Column(db.String(100), nullable=False)  # user, product, order, etc.

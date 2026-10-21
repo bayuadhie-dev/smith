@@ -43,7 +43,14 @@ class ApprovalWorkflow(db.Model):
     
     # Journal Entry Reference (after approval)
     journal_entry_id = db.Column(db.Integer, db.ForeignKey('accounting_entries.id'), nullable=True)
-    
+
+    # Escalation (2026-10-17): set once check_approval_escalations() has
+    # already re-notified for this workflow's current step, so it doesn't
+    # repeat the same reminder every hourly run. Reset to NULL whenever the
+    # workflow advances to a new step (review->approval) so a fresh step
+    # gets its own escalation window.
+    escalated_at = db.Column(db.DateTime, nullable=True)
+
     # Metadata
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -110,7 +117,14 @@ class ApprovalConfiguration(db.Model):
     
     # Thresholds (optional)
     amount_threshold = db.Column(db.Numeric(15, 2))  # Require approval if amount > threshold
-    
+
+    # Escalation (2026-10-17): hours a workflow of this transaction_type may
+    # sit in its current step (pending_review/pending_approval) before
+    # utils/scheduled_jobs.py's check_approval_escalations() re-notifies the
+    # configured reviewer_roles/approver_roles as an overdue reminder. NULL
+    # (the default) = escalation disabled for this type - opt-in, not forced.
+    escalation_hours = db.Column(db.Integer, nullable=True)
+
     # Active Status
     is_active = db.Column(db.Boolean, default=True)
     
@@ -151,7 +165,11 @@ class PendingJournalEntry(db.Model):
     # Metadata
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
+    # Idempotency guard (2026-10-17): set once post_pending_journal() has
+    # actually run for this row - see approve_workflow()'s use of this. NULL
+    # means "not posted yet".
+    posted_at = db.Column(db.DateTime, nullable=True)
+
     # Relationships
     workflow = db.relationship('ApprovalWorkflow', backref='pending_journal')
     creator = db.relationship('User')
