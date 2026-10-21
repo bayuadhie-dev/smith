@@ -3,6 +3,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { formatRupiah } from '../../utils/currencyUtils';
 import axiosInstance from '../../utils/axiosConfig';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
+import { confirmDialog, showSuccess, showError, showWarning, showInfo } from '../../components/ui';
 
 import {
   ArrowDownTrayIcon,
@@ -69,7 +70,7 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
       link.remove()
       window.URL.revokeObjectURL(url)
     } catch (err: any) {
-      alert(err?.response?.data?.error || 'Gagal export laporan pajak')
+      showError(err?.response?.data?.error || 'Gagal export laporan pajak')
     } finally {
       setTaxReportExporting(false)
     }
@@ -77,7 +78,7 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
 
   const handleExportEfaktur = async () => {
     if (!efakturStart || !efakturEnd) {
-      alert('Pilih tanggal mulai dan akhir dulu')
+      showWarning('Pilih tanggal mulai dan akhir dulu')
       return
     }
     setEfakturExporting(true)
@@ -96,10 +97,10 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
       window.URL.revokeObjectURL(url)
       const skipped = response.headers['x-skipped-no-npwp']
       if (skipped) {
-        alert(`Beberapa invoice dilewati karena customer belum punya NPWP: ${skipped}`)
+        showWarning(`Beberapa invoice dilewati karena customer belum punya NPWP: ${skipped}`)
       }
     } catch (err: any) {
-      alert(err?.response?.data?.error || 'Gagal export e-Faktur')
+      showError(err?.response?.data?.error || 'Gagal export e-Faktur')
     } finally {
       setEfakturExporting(false)
     }
@@ -183,41 +184,41 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
 
   const handleEditTransaction = (transaction: TaxTransaction) => {
     // TODO: Open edit modal or navigate to edit form
-    alert(`Edit Tax Transaction: ${transaction.description}\nType: ${transaction.type}\nDate: ${formatDate(transaction.transaction_date)}\nTax Amount: ${formatRupiah(transaction.tax_amount)}`)
+    showInfo(`Edit Tax Transaction: ${transaction.description}\nType: ${transaction.type}\nDate: ${formatDate(transaction.transaction_date)}\nTax Amount: ${formatRupiah(transaction.tax_amount)}`)
   }
 
   const handleSubmitTransaction = async (transaction: TaxTransaction) => {
     if (transaction.status.toLowerCase() === 'submitted') {
-      alert('This transaction has already been submitted.')
+      showWarning('This transaction has already been submitted.')
       return
     }
-    
-    if (window.confirm(`Submit tax transaction for processing?\n\nDescription: ${transaction.description}\nTax Amount: ${formatRupiah(transaction.tax_amount)}\n\nOnce submitted, this transaction cannot be edited.`)) {
+
+    if (await confirmDialog(`Submit tax transaction for processing?\n\nDescription: ${transaction.description}\nTax Amount: ${formatRupiah(transaction.tax_amount)}\n\nOnce submitted, this transaction cannot be edited.`)) {
       try {
         await axiosInstance.patch(`/api/finance/tax-management/${transaction.id}/submit`)
-        alert('Tax transaction has been submitted successfully.')
+        showSuccess('Tax transaction has been submitted successfully.')
         loadTaxData() // Reload the data
       } catch (error) {
         console.error('Error submitting tax transaction:', error)
-        alert('Failed to submit tax transaction. Please try again.')
+        showError('Failed to submit tax transaction. Please try again.')
       }
     }
   }
 
   const handleDeleteTransaction = async (transaction: TaxTransaction) => {
     if (transaction.status.toLowerCase() === 'submitted') {
-      alert('Cannot delete a submitted transaction. Please contact your tax administrator.')
+      showWarning('Cannot delete a submitted transaction. Please contact your tax administrator.')
       return
     }
-    
-    if (window.confirm(`Are you sure you want to delete this tax transaction?\n\nDescription: ${transaction.description}\nType: ${transaction.type}\nTax Amount: ${formatRupiah(transaction.tax_amount)}\n\nThis action cannot be undone.`)) {
+
+    if (await confirmDialog(`Are you sure you want to delete this tax transaction?\n\nDescription: ${transaction.description}\nType: ${transaction.type}\nTax Amount: ${formatRupiah(transaction.tax_amount)}\n\nThis action cannot be undone.`, { danger: true })) {
       try {
         await axiosInstance.delete(`/api/finance/tax-management/${transaction.id}`)
-        alert('Tax transaction has been deleted successfully.')
+        showSuccess('Tax transaction has been deleted successfully.')
         loadTaxData() // Reload the data
       } catch (error) {
         console.error('Error deleting tax transaction:', error)
-        alert('Failed to delete tax transaction. Please try again.')
+        showError('Failed to delete tax transaction. Please try again.')
       }
     }
   }

@@ -13,6 +13,7 @@ import {
 import toast from 'react-hot-toast';
 import axiosInstance from '../../utils/axiosConfig';
 import { usePermissions } from '../../contexts/PermissionContext';
+import { confirmDialog } from '../../components/ui';
 
 interface Expense {
   id: number;
@@ -94,7 +95,7 @@ const ExpenseList: React.FC = () => {
 
       const config = actionConfig[action];
       if (!config) return;
-      if (config.confirm && !window.confirm(config.confirm)) return;
+      if (config.confirm && !(await confirmDialog(config.confirm))) return;
 
       if (action === 'delete') {
         await axiosInstance.delete(config.url);

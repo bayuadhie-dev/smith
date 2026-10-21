@@ -64,7 +64,7 @@ const PaymentForm = () => {
 
     const partyEndpoint = paymentType === 'supplier'
       ? '/api/purchasing/suppliers'
-      : '/api/customers';
+      : '/api/sales/customers';
 
     axiosInstance.get(partyEndpoint).then((res) => {
       const list = res.data.suppliers || res.data.customers || res.data || [];

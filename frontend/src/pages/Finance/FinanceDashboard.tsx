@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { formatRupiah } from '../../utils/currencyUtils';
 import {
-  ArrowTrendingUpIcon,
   BanknotesIcon,
   BookOpenIcon,
   CalculatorIcon,
@@ -117,94 +116,98 @@ const FinanceDashboard: React.FC = () => {
 
   const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
 
+  // Adaptive axis-tick scale (was hardcoded to divide by 1 billion, which
+  // rendered every gridline as "0B" for this company's real revenue
+  // figures - hundreds of millions, not billions).
+  const formatAxisValue = (value: number) => {
+    const abs = Math.abs(value);
+    if (abs >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(1)}B`;
+    if (abs >= 1_000_000) return `${(value / 1_000_000).toFixed(0)}Jt`;
+    if (abs >= 1_000) return `${(value / 1_000).toFixed(0)}Rb`;
+    return `${value}`;
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#059669]"></div>
         <span className="ml-3">Loading finance dashboard...</span>
       </div>
     );
   }
 
+  // 2026-10-07: Axion bento-grid restyle (tier-1 module landing page,
+  // #7 of 17). Sub-pages (Accounting, Budget, Cash Flow, Reports) are
+  // intentionally left as-is - only this landing dashboard is in scope.
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard Keuangan</h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-1">Financial overview and key performance indicators</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-snug">Dashboard Keuangan</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Financial overview and key performance indicators</p>
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <CurrencyDollarIcon className="h-8 w-8 text-green-600" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Revenue</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatRupiah(kpis.total_revenue)}</p>
-              <div className="flex items-center mt-1">
-                <ArrowTrendingUpIcon className="h-4 w-4 text-green-500" />
-                <span className="text-sm text-green-600 ml-1">+12.5%</span>
-              </div>
+      {/* KPI Cards - bento: Total Revenue spans 2 cols (primary metric) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="xl:col-span-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <CurrencyDollarIcon className="w-5 h-5" />
             </div>
+            <p className="text-sm opacity-90">Total Revenue</p>
           </div>
+          <p className="text-3xl font-bold">{formatRupiah(kpis.total_revenue)}</p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <ChartBarIcon className="h-8 w-8 text-blue-600" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Net Profit</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatRupiah(kpis.net_profit)}</p>
-              <div className="flex items-center mt-1">
-                <ArrowTrendingUpIcon className="h-4 w-4 text-green-500" />
-                <span className="text-sm text-green-600 ml-1">+8.3%</span>
-              </div>
+        <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <ChartBarIcon className="w-5 h-5" />
             </div>
           </div>
+          <p className="text-xs opacity-90 mb-1">Net Profit</p>
+          <p className="text-2xl font-bold">{formatRupiah(kpis.net_profit)}</p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <BanknotesIcon className="h-8 w-8 text-purple-600" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Cash Balance</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatRupiah(kpis.cash_balance)}</p>
-              <div className="flex items-center mt-1">
-                <CheckCircleIcon className="h-4 w-4 text-green-500" />
-                <span className="text-sm text-green-600 ml-1">Healthy</span>
-              </div>
+        <div className={`bg-gradient-to-br ${kpis.cash_balance > 0 ? 'from-violet-500 to-violet-600' : 'from-red-500 to-red-600'} rounded-xl p-4 text-white shadow-lg`}>
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <BanknotesIcon className="w-5 h-5" />
             </div>
+          </div>
+          <p className="text-xs opacity-90 mb-1">Cash Balance</p>
+          <p className="text-2xl font-bold">{formatRupiah(kpis.cash_balance)}</p>
+          <div className="flex items-center gap-1 mt-1">
+            <CheckCircleIcon className="h-3.5 w-3.5" />
+            <span className="text-xs opacity-90">{kpis.cash_balance > 0 ? 'Positif' : 'Negatif'}</span>
           </div>
         </div>
+      </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <CalculatorIcon className="h-8 w-8 text-orange-600" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Profit Margin</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatPercent(kpis.profit_margin)}</p>
-              <div className="flex items-center mt-1">
-                <ArrowTrendingUpIcon className="h-4 w-4 text-green-500" />
-                <span className="text-sm text-green-600 ml-1">+2.1%</span>
-              </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <CalculatorIcon className="w-5 h-5" />
             </div>
           </div>
+          <p className="text-xs opacity-90 mb-1">Profit Margin</p>
+          <p className="text-2xl font-bold">{formatPercent(kpis.profit_margin)}</p>
         </div>
       </div>
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Cash Flow Chart */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Cash Flow Trend</h3>
           <ResponsiveContainer width="100%" height={300}>
             <AreaChart data={cashFlowData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
-              <YAxis tickFormatter={(value) => `${(value / 1000000000).toFixed(0)}B`} />
+              <YAxis tickFormatter={formatAxisValue} />
               <Tooltip formatter={(value, name) => [
                 formatRupiah(value as number),
                 name === 'cash_in' ? 'Cash In' :
@@ -218,7 +221,7 @@ const FinanceDashboard: React.FC = () => {
         </div>
 
         {/* Expense Breakdown */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Expense Breakdown</h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
@@ -243,13 +246,13 @@ const FinanceDashboard: React.FC = () => {
       </div>
 
       {/* Revenue & Profit Chart */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Revenue & Profit Trend</h3>
         <ResponsiveContainer width="100%" height={400}>
           <BarChart data={revenueData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="month" />
-            <YAxis tickFormatter={(value) => `${(value / 1000000000).toFixed(0)}B`} />
+            <YAxis tickFormatter={formatAxisValue} />
             <Tooltip formatter={(value, name) => [
               formatRupiah(value as number),
               name === 'revenue' ? 'Revenue' :
@@ -264,7 +267,7 @@ const FinanceDashboard: React.FC = () => {
 
       {/* Financial Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Accounts Receivable</p>
@@ -277,7 +280,7 @@ const FinanceDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Accounts Payable</p>
@@ -290,7 +293,7 @@ const FinanceDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Working Capital</p>
@@ -303,7 +306,7 @@ const FinanceDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Expenses</p>
@@ -318,48 +321,26 @@ const FinanceDashboard: React.FC = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Link
-            to="/app/finance/accounting"
-            className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
-          >
-            <div className="text-center">
-              <BookOpenIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Accounting</span>
-            </div>
-          </Link>
-          
-          <Link
-            to="/app/finance/budget"
-            className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors"
-          >
-            <div className="text-center">
-              <CalculatorIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Budget Planning</span>
-            </div>
-          </Link>
-          
-          <Link
-            to="/app/finance/cash-flow"
-            className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors"
-          >
-            <div className="text-center">
-              <BanknotesIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Cash Flow</span>
-            </div>
-          </Link>
-          
-          <Link
-            to="/app/finance/reports"
-            className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-colors"
-          >
-            <div className="text-center">
-              <DocumentTextIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Reports</span>
-            </div>
-          </Link>
+          {[
+            { to: '/app/finance/accounting', icon: BookOpenIcon, label: 'Accounting', gradient: 'from-[#059669] to-[#047857]' },
+            { to: '/app/finance/budget', icon: CalculatorIcon, label: 'Budget Planning', gradient: 'from-teal-500 to-teal-600' },
+            { to: '/app/finance/cash-flow', icon: BanknotesIcon, label: 'Cash Flow', gradient: 'from-violet-500 to-violet-600' },
+            { to: '/app/finance/reports', icon: DocumentTextIcon, label: 'Reports', gradient: 'from-[#F15D2C] to-[#C73E1D]' },
+          ].map((action) => (
+            <Link
+              key={action.to}
+              to={action.to}
+              className="flex flex-col items-center text-center p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group"
+            >
+              <div className={`bg-gradient-to-br ${action.gradient} p-3 rounded-xl mb-2 group-hover:scale-110 transition-transform`}>
+                <action.icon className="h-6 w-6 text-white" />
+              </div>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{action.label}</span>
+            </Link>
+          ))}
         </div>
       </div>
     </div>

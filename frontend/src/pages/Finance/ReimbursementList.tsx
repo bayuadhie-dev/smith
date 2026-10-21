@@ -10,6 +10,7 @@ import {
 import toast from 'react-hot-toast';
 import axiosInstance from '../../utils/axiosConfig';
 import { usePermissions } from '../../contexts/PermissionContext';
+import { confirmDialog } from '../../components/ui';
 
 interface Reimbursement {
   id: number;
@@ -64,7 +65,7 @@ const ReimbursementList: React.FC = () => {
   };
 
   const handleApprove = async (reimbursementId: number) => {
-    if (!window.confirm('Setujui reimbursement ini?')) return;
+    if (!(await confirmDialog('Setujui reimbursement ini?'))) return;
     try {
       await axiosInstance.post(`/api/expenses/reimbursements/${reimbursementId}/approve`, {});
       toast.success('Reimbursement berhasil disetujui');

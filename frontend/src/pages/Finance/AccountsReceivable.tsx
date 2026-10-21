@@ -14,6 +14,7 @@ import {
 import { useState, useEffect } from 'react'
 import axiosInstance from '../../utils/axiosConfig'
 import LoadingSpinner from '../../components/Common/LoadingSpinner'
+import { confirmDialog, showSuccess, showError } from '../../components/ui'
 interface AccountReceivable {
   id: number
   invoice_number: string
@@ -141,10 +142,10 @@ const [receivables, setReceivables] = useState<AccountReceivable[]>([])
       link.click()
       document.body.removeChild(link)
       
-      alert('Accounts Receivable data exported successfully!')
+      showSuccess('Accounts Receivable data exported successfully!')
     } catch (error) {
       console.error('Export error:', error)
-      alert('Failed to export data. Please try again.')
+      showError('Failed to export data. Please try again.')
     }
   }
 
@@ -160,25 +161,25 @@ const [receivables, setReceivables] = useState<AccountReceivable[]>([])
         notes: `Payment for invoice ${receivable.invoice_number}`
       })
       .then(() => {
-        alert('Payment recorded successfully!')
+        showSuccess('Payment recorded successfully!')
         loadReceivables()
       })
       .catch(error => {
         console.error('Payment error:', error)
-        alert('Failed to record payment. Please try again.')
+        showError('Failed to record payment. Please try again.')
       })
     }
   }
 
   const handleDeleteInvoice = async (receivable: AccountReceivable) => {
-    if (window.confirm(`Are you sure you want to delete invoice ${receivable.invoice_number}?\n\nCustomer: ${receivable.customer_name}\nAmount: ${formatRupiah(receivable.total_amount)}\n\nThis action cannot be undone.`)) {
+    if (await confirmDialog(`Are you sure you want to delete invoice ${receivable.invoice_number}?\n\nCustomer: ${receivable.customer_name}\nAmount: ${formatRupiah(receivable.total_amount)}\n\nThis action cannot be undone.`)) {
       try {
         await axiosInstance.delete(`/api/finance/invoices/${receivable.id}`)
-        alert(`Invoice ${receivable.invoice_number} deleted successfully!`)
+        showSuccess(`Invoice ${receivable.invoice_number} deleted successfully!`)
         loadReceivables()
       } catch (error) {
         console.error('Delete error:', error)
-        alert('Failed to delete invoice. Please try again.')
+        showError('Failed to delete invoice. Please try again.')
       }
     }
   }

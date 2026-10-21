@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import axiosInstance from '../../utils/axiosConfig';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
+import { confirmDialog, showError, showWarning, showInfo } from '../../components/ui';
 import {
   ArrowDownTrayIcon,
   BookOpenIcon,
@@ -158,13 +159,13 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
   }
 
   const handleDeleteEntry = async (entry: LedgerEntry) => {
-    if (window.confirm(`Hapus jurnal manual ini?\n\nTanggal: ${formatDate(entry.entry_date)}\nDeskripsi: ${entry.description}\nReferensi: ${entry.reference_number || 'N/A'}\n\nSemua baris dalam jurnal ini (debit dan kredit) akan ikut terhapus.`)) {
+    if (await confirmDialog(`Hapus jurnal manual ini?\n\nTanggal: ${formatDate(entry.entry_date)}\nDeskripsi: ${entry.description}\nReferensi: ${entry.reference_number || 'N/A'}\n\nSemua baris dalam jurnal ini (debit dan kredit) akan ikut terhapus.`)) {
       try {
         await axiosInstance.delete(`/api/finance/general-ledger/${entry.id}`)
         loadEntries() // Reload the entries
       } catch (error: any) {
         console.error('Error deleting journal entry:', error)
-        alert(error.response?.data?.error || 'Gagal menghapus jurnal. Silakan coba lagi.')
+        showError(error.response?.data?.error || 'Gagal menghapus jurnal. Silakan coba lagi.')
       }
     }
   }
@@ -199,7 +200,7 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
     e.preventDefault()
 
     if (!newEntryIsBalanced || newEntryTotalDebit === 0) {
-      alert('Jurnal harus balance (total debit = total kredit) dan tidak boleh 0.')
+      showWarning('Jurnal harus balance (total debit = total kredit) dan tidak boleh 0.')
       return
     }
 
@@ -212,7 +213,7 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
       }))
 
     if (linesPayload.length < 2) {
-      alert('Isi minimal 2 baris jurnal dengan akun dan nominal.')
+      showWarning('Isi minimal 2 baris jurnal dengan akun dan nominal.')
       return
     }
 
@@ -229,7 +230,7 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
       loadEntries()
     } catch (error: any) {
       console.error('Error creating journal entry:', error)
-      alert(error.response?.data?.error || 'Gagal membuat jurnal. Silakan coba lagi.')
+      showError(error.response?.data?.error || 'Gagal membuat jurnal. Silakan coba lagi.')
     } finally {
       setCreatingEntry(false)
     }
@@ -364,7 +365,7 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
                   'Created By': entry.created_by
                 }))
                 console.log('Exporting GL data:', data)
-                alert('Export functionality will be implemented soon!')
+                showInfo('Export functionality will be implemented soon!')
               }}
               className="btn-secondary inline-flex items-center gap-2"
             >

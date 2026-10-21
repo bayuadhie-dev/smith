@@ -17,6 +17,7 @@ import {
 import { useState, useEffect } from 'react'
 import axiosInstance from '../../utils/axiosConfig'
 import LoadingSpinner from '../../components/Common/LoadingSpinner'
+import { confirmDialog, showSuccess, showError, showInfo } from '../../components/ui'
 interface AccountPayable {
   id: number
   invoice_number: string
@@ -122,14 +123,14 @@ const [payables, setPayables] = useState<AccountPayable[]>([])
   }
 
   const handleDeletePayable = async (payable: AccountPayable) => {
-    if (window.confirm(`Are you sure you want to delete invoice ${payable.invoice_number} from ${payable.supplier_name}?`)) {
+    if (await confirmDialog(`Are you sure you want to delete invoice ${payable.invoice_number} from ${payable.supplier_name}?`)) {
       try {
         await axiosInstance.delete(`/api/finance/invoices/${payable.id}`)
-        alert(`Invoice ${payable.invoice_number} has been deleted successfully.`)
+        showSuccess(`Invoice ${payable.invoice_number} has been deleted successfully.`)
         loadPayables() // Reload the list
       } catch (error) {
         console.error('Error deleting payable:', error)
-        alert('Failed to delete invoice. Please try again.')
+        showError('Failed to delete invoice. Please try again.')
       }
     }
   }
@@ -254,7 +255,7 @@ const [payables, setPayables] = useState<AccountPayable[]>([])
                   'Days Overdue': p.days_overdue
                 }))
                 console.log('Exporting AP data:', data)
-                alert('Export functionality will be implemented soon!')
+                showInfo('Export functionality will be implemented soon!')
               }}
               className="btn-secondary inline-flex items-center gap-2"
             >

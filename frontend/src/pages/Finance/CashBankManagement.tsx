@@ -3,6 +3,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { formatRupiah } from '../../utils/currencyUtils';
 import axiosInstance from '../../utils/axiosConfig'
 import LoadingSpinner from '../../components/Common/LoadingSpinner'
+import { showInfo } from '../../components/ui'
 import {
   ArrowDownIcon,
   ArrowPathIcon,
@@ -347,7 +348,7 @@ const [cashAccounts, setCashAccounts] = useState<CashAccount[]>([])
                   currency: formData.get('currency')
                 }
                 console.log('Adding account:', accountData)
-                alert('Account will be added to the system!')
+                showInfo('Account will be added to the system!')
                 setShowAddModal(false)
               }}
               className="space-y-4"

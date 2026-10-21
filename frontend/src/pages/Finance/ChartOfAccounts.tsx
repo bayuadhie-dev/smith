@@ -3,6 +3,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { formatRupiah } from '../../utils/currencyUtils';
 import axiosInstance from '../../utils/axiosConfig';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
+import { confirmDialog, showSuccess, showError } from '../../components/ui';
 import {
   ArrowDownTrayIcon,
   EyeIcon,
@@ -153,17 +154,17 @@ const [accounts, setAccounts] = useState<Account[]>([])
       if (editingAccount) {
         // Update existing account
         await axiosInstance.put(`/api/finance/chart-of-accounts/${editingAccount.code}`, formData)
-        alert('Account updated successfully!')
+        showSuccess('Account updated successfully!')
       } else {
         // Create new account
         await axiosInstance.post('/api/finance/chart-of-accounts', formData)
-        alert('Account created successfully!')
+        showSuccess('Account created successfully!')
       }
       handleCloseModal()
       loadAccounts()
     } catch (error: any) {
       console.error('Error saving account:', error)
-      alert(error.response?.data?.error || 'Failed to save account. Please try again.')
+      showError(error.response?.data?.error || 'Failed to save account. Please try again.')
     }
   }
 
@@ -256,14 +257,14 @@ const [accounts, setAccounts] = useState<Account[]>([])
   }
 
   const handleDeleteAccount = async (account: Account) => {
-    if (window.confirm(`Are you sure you want to delete this account?\n\nCode: ${account.code}\nName: ${account.name}\nType: ${account.type}\n\nThis action cannot be undone.`)) {
+    if (await confirmDialog(`Are you sure you want to delete this account?\n\nCode: ${account.code}\nName: ${account.name}\nType: ${account.type}\n\nThis action cannot be undone.`)) {
       try {
         await axiosInstance.delete(`/api/finance/chart-of-accounts/${account.code}`)
-        alert(`Account "${account.name}" has been deleted successfully.`)
+        showSuccess(`Account "${account.name}" has been deleted successfully.`)
         loadAccounts() // Reload the accounts
       } catch (error) {
         console.error('Error deleting account:', error)
-        alert('Failed to delete account. Please try again.')
+        showError('Failed to delete account. Please try again.')
       }
     }
   }

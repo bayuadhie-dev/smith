@@ -13,6 +13,7 @@ import {
   TrashIcon
 } from '@heroicons/react/24/outline';
 import ChartOfAccounts from './ChartOfAccounts';
+import { confirmDialog, showSuccess, showError, showWarning } from '../../components/ui';
 
 interface Account {
   id: number;
@@ -133,7 +134,7 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
   };
 
   const handleDeleteJournal = async (entry: JournalEntry) => {
-    if (window.confirm(`Hapus jurnal manual ini?\n\nTanggal: ${new Date(entry.entry_date).toLocaleDateString('id-ID')}\nDeskripsi: ${entry.description}\n\nSemua baris dalam jurnal ini (debit dan kredit) akan ikut terhapus.`)) {
+    if (await confirmDialog(`Hapus jurnal manual ini?\n\nTanggal: ${new Date(entry.entry_date).toLocaleDateString('id-ID')}\nDeskripsi: ${entry.description}\n\nSemua baris dalam jurnal ini (debit dan kredit) akan ikut terhapus.`)) {
       try {
         // Reuses the same DELETE endpoint GeneralLedger.tsx uses (both
         // pages show the same AccountingEntry data, just grouped
@@ -143,7 +144,7 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
         loadData();
       } catch (error: any) {
         console.error('Error deleting journal entry:', error);
-        alert(error.response?.data?.error || 'Gagal menghapus jurnal. Silakan coba lagi.');
+        showError(error.response?.data?.error || 'Gagal menghapus jurnal. Silakan coba lagi.');
       }
     }
   };
@@ -156,7 +157,7 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
     const totalCredit = journalFormData.lines.reduce((sum, line) => sum + (line.credit || 0), 0);
     
     if (totalDebit !== totalCredit) {
-      alert(`Entry is not balanced!\nTotal Debit: ${formatRupiah(totalDebit)}\nTotal Credit: ${formatRupiah(totalCredit)}\nDifference: ${formatRupiah(Math.abs(totalDebit - totalCredit))}`);
+      showWarning(`Entry is not balanced!\nTotal Debit: ${formatRupiah(totalDebit)}\nTotal Credit: ${formatRupiah(totalCredit)}\nDifference: ${formatRupiah(Math.abs(totalDebit - totalCredit))}`);
       return;
     }
 
@@ -169,12 +170,12 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
       // already produces) rather than building a second near-duplicate
       // endpoint for the same underlying table.
       await axiosInstance.post('/api/finance/general-ledger', journalFormData);
-      alert('Journal entry created successfully!');
+      showSuccess('Journal entry created successfully!');
       handleCloseJournalModal();
       loadData();
     } catch (error: any) {
       console.error('Error creating journal entry:', error);
-      alert(error.response?.data?.error || 'Failed to create journal entry. Please try again.');
+      showError(error.response?.data?.error || 'Failed to create journal entry. Please try again.');
     }
   };
 

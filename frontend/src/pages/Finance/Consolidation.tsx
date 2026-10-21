@@ -11,6 +11,7 @@ import {
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig'
 import LoadingSpinner from '../../components/Common/LoadingSpinner'
+import { showInfo, showSuccess } from '../../components/ui'
 interface ConsolidatedData {
   entity_name: string
   revenue: number
@@ -127,7 +128,7 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
                 'Eliminations': entity.elimination_adjustments
               }))
               console.log('Exporting consolidation data:', data)
-              alert('Consolidation export will be implemented soon!')
+              showInfo('Consolidation export will be implemented soon!')
             }}
             className="btn-secondary inline-flex items-center gap-2"
           >
@@ -479,7 +480,7 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
                 setConsolidatedData(updatedData)
                 
                 console.log('Adding entity:', newEntity)
-                alert('Entity added to consolidation successfully!')
+                showSuccess('Entity added to consolidation successfully!')
                 setShowAddEntityModal(false)
               }}
               className="space-y-4"

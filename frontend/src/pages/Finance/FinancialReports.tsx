@@ -70,9 +70,19 @@ interface BalanceSheet {
   equity: {
     common_stock: number
     retained_earnings: number
+    current_year_earnings?: number
     total_equity: number
   }
   total_liabilities_equity: number
+  unclassified_accounts?: Array<{
+    account_code: string
+    account_name: string
+    account_type: string
+    balance: number
+  }>
+  is_balanced?: boolean
+  imbalance?: number
+  warnings?: string[]
 }
 
 interface CashFlow {
@@ -233,11 +243,43 @@ const FinancialReports = () => {
   const renderBalanceSheet = () => {
     if (!balanceSheet) return null
 
+    const hasWarnings = (balanceSheet.warnings && balanceSheet.warnings.length > 0) ||
+      balanceSheet.is_balanced === false ||
+      (balanceSheet.unclassified_accounts && balanceSheet.unclassified_accounts.length > 0)
+
     return (
       <div className="space-y-6">
+        {hasWarnings && (
+          <div className="rounded-lg border border-red-300 bg-red-50 p-4 text-red-800">
+            <div className="flex items-center gap-2 font-semibold mb-2">
+              <span>⚠️</span>
+              <span>
+                {balanceSheet.is_balanced === false
+                  ? `Neraca tidak seimbang (selisih ${formatRupiah(Math.abs(balanceSheet.imbalance || 0))})`
+                  : 'Ada akun yang belum terklasifikasi di Neraca'}
+              </span>
+            </div>
+            {balanceSheet.unclassified_accounts && balanceSheet.unclassified_accounts.length > 0 && (
+              <ul className="list-disc ml-6 text-sm space-y-1 mb-2">
+                {balanceSheet.unclassified_accounts.map((ua) => (
+                  <li key={ua.account_code}>
+                    {ua.account_code} ({ua.account_name}) - {formatRupiah(ua.balance)} - tipe "{ua.account_type}" tidak masuk kategori manapun
+                  </li>
+                ))}
+              </ul>
+            )}
+            {balanceSheet.warnings && balanceSheet.warnings.length > 0 && (
+              <ul className="list-disc ml-6 text-sm space-y-1">
+                {balanceSheet.warnings.map((w, i) => (
+                  <li key={i}>{w}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
         <div className="card p-6">
           <h3 className="text-xl font-semibold mb-4">🏢 Balance Sheet - As of Dec 31, {selectedYear}</h3>
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Assets */}
             <div>

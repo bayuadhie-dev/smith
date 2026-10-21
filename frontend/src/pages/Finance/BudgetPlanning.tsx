@@ -14,6 +14,7 @@ import {
   ExclamationTriangleIcon,
   PlusIcon
 } from '@heroicons/react/24/outline';
+import { showSuccess, showError, showWarning, showInfo } from '../../components/ui';
 
 interface Budget {
   id: number;
@@ -132,17 +133,17 @@ const BudgetPlanning: React.FC = () => {
     e.preventDefault();
     const validLines = budgetLines.filter(l => l.account_id && l.budget_amount > 0);
     if (validLines.length === 0) {
-      alert('Tambahkan minimal 1 baris akun dengan nominal anggaran.');
+      showWarning('Tambahkan minimal 1 baris akun dengan nominal anggaran.');
       return;
     }
     try {
       await axiosInstance.post('/api/finance/budgets', { ...formData, budget_year: formData.fiscal_year, lines: validLines });
-      alert('Budget created successfully!');
+      showSuccess('Budget created successfully!');
       handleCloseModal();
       loadBudgetData();
     } catch (error: any) {
       console.error('Error creating budget:', error);
-      alert(error.response?.data?.error || 'Failed to create budget. Please try again.');
+      showError(error.response?.data?.error || 'Failed to create budget. Please try again.');
     }
   };
 
@@ -189,7 +190,7 @@ const BudgetPlanning: React.FC = () => {
         </div>
         <div className="flex space-x-3">
           <button 
-            onClick={() => alert('Generate budget report functionality')}
+            onClick={() => showInfo('Generate budget report functionality')}
             className="btn-secondary"
           >
             <ChartBarIcon className="h-4 w-4 mr-2" />

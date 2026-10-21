@@ -4,6 +4,7 @@ import axiosInstance from '../../utils/axiosConfig'
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useForm, useFieldArray } from 'react-hook-form'
 import toast from 'react-hot-toast'
+import DocumentGenerateButton from '../../components/DocumentGenerateButton'
 import {
   useCreateInvoiceMutation,
   useGetSalesOrdersQuery,
@@ -255,12 +256,22 @@ const navigate = useNavigate()
               {invoiceData.invoice_number} - {invoiceData.status?.toUpperCase()}
             </p>
           </div>
-          <button
-            onClick={() => navigate(-1)}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
-          >
-            Kembali
-          </button>
+          <div className="flex items-center gap-2">
+            {!isProductionCost && (
+              <DocumentGenerateButton
+                transactionType="invoice"
+                transactionId={invoiceData.id}
+                transactionNumber={invoiceData.invoice_number}
+                label="Generate Invoice"
+              />
+            )}
+            <button
+              onClick={() => navigate(-1)}
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
+            >
+              Kembali
+            </button>
+          </div>
         </div>
 
         {/* Invoice Info Card */}

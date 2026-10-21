@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
+import { showWarning, showSuccess, showError } from '../../components/ui';
 import {
   ArrowLeft,
   Save,
@@ -162,12 +163,12 @@ const EmployeeExpenseForm: React.FC = () => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        alert('File size must be less than 5MB');
+        showWarning('File size must be less than 5MB');
         return;
       }
       const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
       if (!validTypes.includes(file.type)) {
-        alert('Only JPEG, PNG, GIF, and PDF files are allowed');
+        showWarning('Only JPEG, PNG, GIF, and PDF files are allowed');
         return;
       }
       setReceiptFile(file);
@@ -219,11 +220,11 @@ const EmployeeExpenseForm: React.FC = () => {
         });
       }
 
-      alert(isEdit ? 'Expense updated successfully!' : 'Expense created successfully!');
+      showSuccess(isEdit ? 'Expense updated successfully!' : 'Expense created successfully!');
       navigate('/app/finance/expenses');
     } catch (error) {
       console.error('Error saving expense:', error);
-      alert('Failed to save expense. Please try again.');
+      showError('Failed to save expense. Please try again.');
     } finally {
       setLoading(false);
     }

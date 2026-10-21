@@ -9,6 +9,7 @@ import {
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
+import { showInfo } from '../../components/ui';
 
 interface CostAnalysis {
   cost_center: string
@@ -147,7 +148,7 @@ const [costAnalysis, setCostAnalysis] = useState<CostAnalysis[]>([])
                 'Cost per Unit': item.cost_per_unit
               }))
               console.log('Exporting costing data:', data)
-              alert('Cost analysis export will be implemented soon!')
+              showInfo('Cost analysis export will be implemented soon!')
             }}
             className="btn-secondary inline-flex items-center gap-2"
           >

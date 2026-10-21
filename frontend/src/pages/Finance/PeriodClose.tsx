@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from '../../lib/axios';
+import { confirmDialog } from '../../components/ui';
 
 interface PeriodCloseRecord {
   id: number;
@@ -25,6 +26,16 @@ interface TransactionLock {
   period_year: number;
   period_month: number;
   transaction_type: string;
+  locked_at: string | null;
+  notes: string | null;
+}
+
+interface AccountTypeLock {
+  id: number;
+  period_year: number;
+  period_month: number;
+  account_type_bucket: string;
+  account_type_label: string;
   locked_at: string | null;
   notes: string | null;
 }
@@ -83,6 +94,13 @@ const PeriodClose: React.FC = () => {
   const [newLockType, setNewLockType] = useState('');
   const [newLockNotes, setNewLockNotes] = useState('');
 
+  // Account Type lock, SAP-style D/K/M/S/A (2026-10-06)
+  const [bucketLocks, setBucketLocks] = useState<AccountTypeLock[]>([]);
+  const [bucketLocksLoading, setBucketLocksLoading] = useState(true);
+  const [bucketLabels, setBucketLabels] = useState<Record<string, string>>({});
+  const [newBucket, setNewBucket] = useState('');
+  const [newBucketNotes, setNewBucketNotes] = useState('');
+
   const loadRecords = () => {
     axios.get('/finance/period-close').then((res) => {
       setRecords(res.data?.period_closes || []);
@@ -106,10 +124,22 @@ const PeriodClose: React.FC = () => {
       .finally(() => setLocksLoading(false));
   };
 
+  const loadBucketLocks = () => {
+    setBucketLocksLoading(true);
+    axios.get('/finance/period-account-type-locks', { params: { period_year: selectedYear, period_month: selectedMonth } })
+      .then((res) => {
+        setBucketLocks(res.data?.locks || []);
+        setBucketLabels(res.data?.bucket_labels || {});
+      })
+      .catch(() => setBucketLocks([]))
+      .finally(() => setBucketLocksLoading(false));
+  };
+
   useEffect(() => { loadRecords(); }, []);
   useEffect(() => {
     loadChecklist();
     loadLocks();
+    loadBucketLocks();
     setMissingRequired(null);
     setNegativeStockWarning(null);
   }, [selectedYear, selectedMonth]);
@@ -138,7 +168,7 @@ const PeriodClose: React.FC = () => {
   };
 
   const handleDeactivateTask = async (code: string) => {
-    if (!confirm(`Nonaktifkan checklist item "${code}"?`)) return;
+    if (!(await confirmDialog(`Nonaktifkan checklist item "${code}"?`))) return;
     try {
       await axios.delete(`/finance/closing-tasks/${code}`);
       loadChecklist();
@@ -169,6 +199,33 @@ const PeriodClose: React.FC = () => {
       setMessage({ type: 'error', text: e?.response?.data?.error || 'Gagal membuka kunci.' });
     }
   };
+
+  const handleAddBucketLock = async () => {
+    if (!newBucket) return;
+    try {
+      await axios.post('/finance/period-account-type-locks', {
+        period_year: selectedYear, period_month: selectedMonth,
+        account_type_bucket: newBucket, notes: newBucketNotes || undefined,
+      });
+      setNewBucket(''); setNewBucketNotes('');
+      loadBucketLocks();
+    } catch (e: any) {
+      setMessage({ type: 'error', text: e?.response?.data?.error || 'Gagal mengunci bucket.' });
+    }
+  };
+
+  const handleRemoveBucketLock = async (id: number) => {
+    try {
+      await axios.delete(`/finance/period-account-type-locks/${id}`);
+      loadBucketLocks();
+    } catch (e: any) {
+      setMessage({ type: 'error', text: e?.response?.data?.error || 'Gagal membuka kunci bucket.' });
+    }
+  };
+
+  const availableBuckets = Object.keys(bucketLabels).filter(
+    (b) => !bucketLocks.some((l) => l.account_type_bucket === b)
+  );
 
   const handleClose = async (force = false) => {
     setClosing(true);
@@ -386,6 +443,57 @@ const PeriodClose: React.FC = () => {
                   onChange={(e) => setNewLockNotes(e.target.value)}
                   className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm flex-1" />
                 <button onClick={handleAddLock} disabled={!newLockType}
+                  className="px-3 py-1.5 bg-gray-700 text-white text-sm rounded-md hover:bg-gray-800 disabled:opacity-50">
+                  Kunci
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Kunci per Bucket SAP (D/K/M/S/A) - 2026-10-06 */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6 border border-gray-200 dark:border-gray-700">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+          Kunci per Account Type (SAP) - {MONTH_NAMES[selectedMonth - 1]} {selectedYear}
+        </h2>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+          Kunci satu bucket SAP (Debitur/Kreditur/Material/Buku Besar/Aset) sekaligus - lebih kasar dari Kunci
+          Parsial di atas, mengunci SEMUA jenis transaksi yang masuk ke bucket itu untuk periode ini.
+        </p>
+
+        {bucketLocksLoading ? (
+          <p className="text-sm text-gray-500">Memuat...</p>
+        ) : (
+          <>
+            {bucketLocks.length > 0 && (
+              <div className="space-y-2 mb-4">
+                {bucketLocks.map((lock) => (
+                  <div key={lock.id} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-900 rounded-md">
+                    <div>
+                      <span className="text-sm text-gray-900 dark:text-white">{lock.account_type_label}</span>
+                      {lock.notes && <span className="text-xs text-gray-500 dark:text-gray-400 ml-2 italic">({lock.notes})</span>}
+                    </div>
+                    <button onClick={() => handleRemoveBucketLock(lock.id)} className="text-xs text-gray-400 hover:text-red-600">
+                      buka kunci
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            {availableBuckets.length > 0 && (
+              <div className="flex gap-2">
+                <select value={newBucket} onChange={(e) => setNewBucket(e.target.value)}
+                  className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm flex-1">
+                  <option value="">Pilih bucket...</option>
+                  {availableBuckets.map((b) => (
+                    <option key={b} value={b}>{bucketLabels[b]}</option>
+                  ))}
+                </select>
+                <input placeholder="Catatan (opsional)" value={newBucketNotes}
+                  onChange={(e) => setNewBucketNotes(e.target.value)}
+                  className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm flex-1" />
+                <button onClick={handleAddBucketLock} disabled={!newBucket}
                   className="px-3 py-1.5 bg-gray-700 text-white text-sm rounded-md hover:bg-gray-800 disabled:opacity-50">
                   Kunci
                 </button>
