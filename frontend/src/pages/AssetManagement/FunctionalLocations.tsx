@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { MapPinIcon, PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
+import { confirmDialog } from '../../components/ui';
 
 interface FunctionalLocation {
   id: number;
@@ -85,7 +86,7 @@ export default function FunctionalLocations() {
   };
 
   const handleDelete = async (l: FunctionalLocation) => {
-    if (!confirm(`Hapus lokasi ${l.name}?`)) return;
+    if (!(await confirmDialog(`Hapus lokasi ${l.name}?`))) return;
     try {
       await axiosInstance.delete(`/api/assets/functional-locations/${l.id}`);
       toast.success('Dihapus');

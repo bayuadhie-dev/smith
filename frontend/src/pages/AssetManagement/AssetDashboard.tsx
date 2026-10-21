@@ -104,95 +104,84 @@ const AssetDashboard: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#059669]"></div>
       </div>
     );
   }
 
+  // 2026-10-07: Axion bento-grid restyle (tier-1 module landing page,
+  // #15 of 17). Sub-pages (Asset list, Depreciation, Spare Parts, etc)
+  // are intentionally left as-is - only this landing dashboard is in scope.
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6 space-y-4">
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
-            <BuildingOfficeIcon className="h-8 w-8 text-blue-600" />
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-snug flex items-center gap-2">
+            <BuildingOfficeIcon className="h-7 w-7 text-emerald-600" />
             Dashboard Aset
           </h1>
-          <p className="text-slate-500 dark:text-gray-400 mt-1">
+          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
             Manajemen Siklus Hidup Aset Terpadu
           </p>
         </div>
         <button
           onClick={() => navigate('/app/assets/new')}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-[#059669] to-[#047857] text-white rounded-lg hover:shadow-lg transition-shadow text-sm font-medium"
         >
           <PlusIcon className="h-5 w-5" />
           Tambah Aset
         </button>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-slate-500 dark:text-gray-400">Total Aset</p>
-              <p className="text-3xl font-bold text-slate-800 dark:text-white mt-1">
-                {summary?.totals.total_assets || 0}
-              </p>
+      {/* Summary Cards - bento: Total Aset spans 2 cols (primary metric) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="xl:col-span-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <ChartBarIcon className="w-5 h-5" />
             </div>
-            <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-              <ChartBarIcon className="h-8 w-8 text-blue-600" />
-            </div>
+            <p className="text-sm opacity-90">Total Aset</p>
           </div>
+          <p className="text-3xl font-bold">{summary?.totals.total_assets || 0}</p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-slate-500 dark:text-gray-400">Nilai Perolehan</p>
-              <p className="text-2xl font-bold text-slate-800 dark:text-white mt-1">
-                {formatCurrency(summary?.totals.total_acquisition_cost || 0)}
-              </p>
-            </div>
-            <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
-              <CurrencyDollarIcon className="h-8 w-8 text-green-600" />
+        <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <CurrencyDollarIcon className="w-5 h-5" />
             </div>
           </div>
+          <p className="text-xs opacity-90 mb-1">Nilai Perolehan</p>
+          <p className="text-2xl font-bold">{formatCurrency(summary?.totals.total_acquisition_cost || 0)}</p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-slate-500 dark:text-gray-400">Akumulasi Penyusutan</p>
-              <p className="text-2xl font-bold text-slate-800 dark:text-white mt-1">
-                {formatCurrency(summary?.totals.total_depreciation || 0)}
-              </p>
-            </div>
-            <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
-              <ArrowTrendingDownIcon className="h-8 w-8 text-orange-600" />
+        <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <ArrowTrendingDownIcon className="w-5 h-5" />
             </div>
           </div>
+          <p className="text-xs opacity-90 mb-1">Akumulasi Penyusutan</p>
+          <p className="text-2xl font-bold">{formatCurrency(summary?.totals.total_depreciation || 0)}</p>
         </div>
+      </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-slate-500 dark:text-gray-400">Nilai Buku Bersih</p>
-              <p className="text-2xl font-bold text-slate-800 dark:text-white mt-1">
-                {formatCurrency(summary?.totals.total_net_book_value || 0)}
-              </p>
-            </div>
-            <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-              <ArrowTrendingUpIcon className="h-8 w-8 text-purple-600" />
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <ArrowTrendingUpIcon className="w-5 h-5" />
             </div>
           </div>
+          <p className="text-xs opacity-90 mb-1">Nilai Buku Bersih</p>
+          <p className="text-2xl font-bold">{formatCurrency(summary?.totals.total_net_book_value || 0)}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* Assets by Type */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">
             Aset per Kategori
           </h2>
@@ -226,7 +215,7 @@ const AssetDashboard: React.FC = () => {
         </div>
 
         {/* Maintenance Alerts */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
             <WrenchScrewdriverIcon className="h-5 w-5 text-orange-600" />
             Maintenance Alert
@@ -295,9 +284,11 @@ const AssetDashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <button
           onClick={() => navigate('/app/assets/list')}
-          className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 hover:shadow-md transition-shadow text-left"
+          className="p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 text-left"
         >
-          <ChartBarIcon className="h-8 w-8 text-blue-600 mb-3" />
+          <div className="bg-gradient-to-br from-[#059669] to-[#047857] p-2.5 rounded-xl inline-flex mb-3">
+            <ChartBarIcon className="h-6 w-6 text-white" />
+          </div>
           <h3 className="font-semibold text-slate-800 dark:text-white">Daftar Aset</h3>
           <p className="text-sm text-slate-500 dark:text-gray-400 mt-1">
             Lihat semua aset dan detailnya
@@ -306,9 +297,11 @@ const AssetDashboard: React.FC = () => {
 
         <button
           onClick={() => navigate('/app/assets/depreciation')}
-          className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 hover:shadow-md transition-shadow text-left"
+          className="p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 text-left"
         >
-          <CurrencyDollarIcon className="h-8 w-8 text-green-600 mb-3" />
+          <div className="bg-gradient-to-br from-teal-500 to-teal-600 p-2.5 rounded-xl inline-flex mb-3">
+            <CurrencyDollarIcon className="h-6 w-6 text-white" />
+          </div>
           <h3 className="font-semibold text-slate-800 dark:text-white">Laporan Penyusutan</h3>
           <p className="text-sm text-slate-500 dark:text-gray-400 mt-1">
             Jadwal dan laporan depreciation
@@ -317,9 +310,11 @@ const AssetDashboard: React.FC = () => {
 
         <button
           onClick={() => navigate('/app/assets/spare-parts')}
-          className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 hover:shadow-md transition-shadow text-left"
+          className="p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 text-left"
         >
-          <WrenchScrewdriverIcon className="h-8 w-8 text-orange-600 mb-3" />
+          <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] p-2.5 rounded-xl inline-flex mb-3">
+            <WrenchScrewdriverIcon className="h-6 w-6 text-white" />
+          </div>
           <h3 className="font-semibold text-slate-800 dark:text-white">Suku Cadang</h3>
           <p className="text-sm text-slate-500 dark:text-gray-400 mt-1">
             Inventaris spare parts & MRO
