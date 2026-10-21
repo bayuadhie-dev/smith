@@ -139,8 +139,8 @@ const ProductionMonitoringDashboard: React.FC = () => {
       }
       
       /* Keep colored text as is */
-      .text-blue-600, .text-red-600, .text-green-600, 
-      .text-yellow-600, .text-indigo-600 {
+      .text-teal-600, .text-red-600, .text-green-600, 
+      .text-yellow-600, .text-violet-600 {
         /* Keep original colors */
       }
       
@@ -401,10 +401,11 @@ const ProductionMonitoringDashboard: React.FC = () => {
       {/* ═══════════════════════════════════════════════════════════
           HEADER — Premium Executive Style
       ═══════════════════════════════════════════════════════════ */}
-      <div className="relative bg-gradient-to-r from-indigo-700 via-blue-600 to-cyan-500 rounded-2xl p-5 text-white shadow-2xl overflow-hidden">
+      <div className="relative bg-gradient-to-r from-[#064e3b] via-[#059669] to-teal-600 rounded-2xl p-5 text-white shadow-2xl overflow-hidden">
         {/* Background decorative circles */}
         <div className="absolute -top-8 -right-8 w-40 h-40 bg-white/10 rounded-full" />
         <div className="absolute -bottom-10 -left-10 w-56 h-56 bg-white/5 rounded-full" />
+        <div className="absolute top-1/2 right-1/3 w-24 h-24 bg-[#F15D2C]/10 rounded-full blur-xl" />
         <div className="relative flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
           {/* Left: Title + Period */}
           <div>
@@ -414,7 +415,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
               </div>
               <div>
                 <h1 className="text-2xl font-black tracking-tight">Production Monitoring</h1>
-                <p className="text-blue-100 text-xs font-medium">Executive Dashboard &bull; Real-time Factory Intelligence</p>
+                <p className="text-emerald-100 text-xs font-medium">Executive Dashboard &bull; Real-time Factory Intelligence</p>
               </div>
             </div>
             <div className="flex items-center gap-2 mt-3 flex-wrap">
@@ -427,7 +428,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
                 <span className={`w-2 h-2 rounded-full animate-pulse ${isCritical ? 'bg-red-300' : isOnTrack ? 'bg-green-300' : 'bg-yellow-300'}`} />
                 {statusLabel}
               </span>
-              <span className="text-blue-200 text-xs">
+              <span className="text-emerald-100 text-xs">
                 {period.month_name} {period.year}
                 {viewMode === 'weekly' && weekNumber > 0 && ` · Week ${weekNumber}`}
                 {' '}&bull; Hari ke-{displaySummary.working_days}/{displaySummary.total_working_days || 22}
@@ -440,18 +441,18 @@ const ProductionMonitoringDashboard: React.FC = () => {
             {/* Live Clock */}
             <div className="text-right">
               <div className="text-3xl font-black tracking-widest font-mono">{fmtClock(clockTime)}</div>
-              <div className="text-blue-200 text-xs mt-0.5">{fmtDate(clockTime)}</div>
+              <div className="text-emerald-100 text-xs mt-0.5">{fmtDate(clockTime)}</div>
             </div>
             {/* Period Controls */}
             <div className="flex flex-wrap items-center gap-2">
               <div className="flex bg-white/20 backdrop-blur-sm rounded-lg p-0.5 border border-white/30">
                 <button onClick={() => { setViewMode('monthly'); setWeekNumber(0); }}
                   className={`px-3 py-1.5 rounded-md text-sm font-semibold transition-all duration-200 ${
-                    viewMode === 'monthly' ? 'bg-white text-blue-700 shadow-md' : 'text-white hover:bg-white/10'
+                    viewMode === 'monthly' ? 'bg-white text-emerald-700 shadow-md' : 'text-white hover:bg-white/10'
                   }`}>Monthly</button>
                 <button onClick={() => { setViewMode('weekly'); setWeekNumber(0); }}
                   className={`px-3 py-1.5 rounded-md text-sm font-semibold transition-all duration-200 ${
-                    viewMode === 'weekly' ? 'bg-white text-blue-700 shadow-md' : 'text-white hover:bg-white/10'
+                    viewMode === 'weekly' ? 'bg-white text-emerald-700 shadow-md' : 'text-white hover:bg-white/10'
                   }`}>Weekly</button>
               </div>
               {viewMode === 'weekly' && period.weeks && (
@@ -508,28 +509,28 @@ const ProductionMonitoringDashboard: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
 
         {/* 1. TARGET */}
-        <div className="group bg-white rounded-2xl p-4 shadow-md border border-gray-100 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-blue-50 rounded-full -translate-y-1/2 translate-x-1/2" />
+        <div className="group bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md border border-gray-100 dark:border-gray-700 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-teal-50 dark:bg-teal-900/20 rounded-full -translate-y-1/2 translate-x-1/2" />
           <div className="relative">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 bg-blue-100 rounded-xl">
-                <CalendarDaysIcon className="h-5 w-5 text-blue-600" />
+              <div className="p-2 bg-teal-100 dark:bg-teal-900/40 rounded-xl">
+                <CalendarDaysIcon className="h-5 w-5 text-teal-600 dark:text-teal-400" />
               </div>
-              <span className="text-xs font-semibold text-blue-500 bg-blue-50 px-2 py-0.5 rounded-full">Target</span>
+              <span className="text-xs font-semibold text-teal-500 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/30 px-2 py-0.5 rounded-full">Target</span>
             </div>
-            <p className="text-3xl font-black text-gray-900 leading-none">{fmtNum(displaySummary.target_ctn)}</p>
+            <p className="text-3xl font-black text-gray-900 dark:text-white leading-none">{fmtNum(displaySummary.target_ctn)}</p>
             <p className="text-xs text-gray-400 mt-0.5 font-medium">Karton {displayLabel}</p>
-            <div className="mt-3 pt-2 border-t border-gray-50">
-              <p className="text-xs text-gray-500">Per hari: <span className="font-bold text-blue-600">{fmtNum(displaySummary.daily_target_ctn || 0)} ctn</span></p>
+            <div className="mt-3 pt-2 border-t border-gray-50 dark:border-gray-700">
+              <p className="text-xs text-gray-500 dark:text-gray-400">Per hari: <span className="font-bold text-teal-600 dark:text-teal-400">{fmtNum(displaySummary.daily_target_ctn || 0)} ctn</span></p>
               <p className="text-[10px] text-gray-400 mt-0.5">{displaySummary.total_working_days || 22} hari kerja/{viewMode === 'weekly' ? 'minggu' : 'bulan'}</p>
             </div>
           </div>
         </div>
 
         {/* 2. AKTUAL + GAP */}
-        <div className="group bg-white rounded-2xl p-4 shadow-md border border-gray-100 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 relative overflow-hidden">
+        <div className="group bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md border border-gray-100 dark:border-gray-700 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 relative overflow-hidden">
           <div className={`absolute top-0 right-0 w-20 h-20 rounded-full -translate-y-1/2 translate-x-1/2 ${
-            displaySummary.gap_ctn > 0 ? 'bg-red-50' : 'bg-green-50'
+            displaySummary.gap_ctn > 0 ? 'bg-red-50 dark:bg-red-900/20' : 'bg-green-50 dark:bg-green-900/20'
           }`} />
           <div className="relative">
             <div className="flex items-center justify-between mb-2">
@@ -547,7 +548,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
             </p>
             <p className="text-xs text-gray-400 mt-0.5 font-medium">Pencapaian Target</p>
             <div className="mt-2">
-              <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+              <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden">
                 <div
                   className={`h-1.5 rounded-full transition-all duration-700 ${
                     displaySummary.achievement_pct >= 80 ? 'bg-green-500' :
@@ -593,22 +594,22 @@ const ProductionMonitoringDashboard: React.FC = () => {
         </div>
 
         {/* 4. GRADE A/B/C */}
-        <div className="group bg-white rounded-2xl p-4 shadow-md border border-gray-100 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-green-50 rounded-full -translate-y-1/2 translate-x-1/2" />
+        <div className="group bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md border border-gray-100 dark:border-gray-700 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-green-50 dark:bg-green-900/20 rounded-full -translate-y-1/2 translate-x-1/2" />
           <div className="relative">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 bg-green-100 rounded-xl">
-                <BeakerIcon className="h-5 w-5 text-green-600" />
+              <div className="p-2 bg-green-100 dark:bg-green-900/40 rounded-xl">
+                <BeakerIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
               </div>
-              <span className="text-xs font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+              <span className="text-xs font-semibold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-2 py-0.5 rounded-full">
                 QR: {displaySummary.quality_rate}%
               </span>
             </div>
             <div className="flex items-end gap-1.5">
-              <span className="text-3xl font-black text-green-600 leading-none">{fmtNum(displaySummary.total_grade_a)}</span>
-              <span className="text-lg font-bold text-gray-300 pb-0.5">/</span>
+              <span className="text-3xl font-black text-green-600 dark:text-green-400 leading-none">{fmtNum(displaySummary.total_grade_a)}</span>
+              <span className="text-lg font-bold text-gray-300 dark:text-gray-600 pb-0.5">/</span>
               <span className="text-xl font-black text-amber-500 pb-0.5">{fmtNum(displaySummary.total_grade_b)}</span>
-              <span className="text-lg font-bold text-gray-300 pb-0.5">/</span>
+              <span className="text-lg font-bold text-gray-300 dark:text-gray-600 pb-0.5">/</span>
               <span className="text-xl font-black text-red-500 pb-0.5">{fmtNum(displaySummary.total_grade_c)}</span>
             </div>
             <p className="text-xs text-gray-400 mt-0.5 font-medium">Grade A / B / C</p>
@@ -622,21 +623,21 @@ const ProductionMonitoringDashboard: React.FC = () => {
         </div>
 
         {/* 5. WAKTU PRODUKSI */}
-        <div className="group bg-white rounded-2xl p-4 shadow-md border border-gray-100 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-indigo-50 rounded-full -translate-y-1/2 translate-x-1/2" />
+        <div className="group bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md border border-gray-100 dark:border-gray-700 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-violet-50 dark:bg-violet-900/20 rounded-full -translate-y-1/2 translate-x-1/2" />
           <div className="relative">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 bg-indigo-100 rounded-xl">
-                <ClockIcon className="h-5 w-5 text-indigo-600" />
+              <div className="p-2 bg-violet-100 dark:bg-violet-900/40 rounded-xl">
+                <ClockIcon className="h-5 w-5 text-violet-600 dark:text-violet-400" />
               </div>
-              <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
+              <span className="text-xs font-semibold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30 px-2 py-0.5 rounded-full">
                 WO {data.work_orders.completed}/{data.work_orders.total}
               </span>
             </div>
-            <p className="text-3xl font-black text-gray-900 leading-none">{displaySummary.runtime_hours}<span className="text-lg text-gray-400 font-semibold">j</span></p>
+            <p className="text-3xl font-black text-gray-900 dark:text-white leading-none">{displaySummary.runtime_hours}<span className="text-lg text-gray-400 font-semibold">j</span></p>
             <p className="text-xs text-gray-400 mt-0.5 font-medium">Runtime (Planned: {displaySummary.planned_runtime_minutes > 0 ? (displaySummary.planned_runtime_minutes / 60).toFixed(1) : 0}j)</p>
             {/* Stacked progress bar */}
-            <div className="flex rounded-full h-2 overflow-hidden mt-2 mb-2 bg-gray-100">
+            <div className="flex rounded-full h-2 overflow-hidden mt-2 mb-2 bg-gray-100 dark:bg-gray-700">
               {displaySummary.planned_runtime_minutes > 0 ? (<>
                 <div className="bg-emerald-500 transition-all duration-700" style={{ width: `${Math.min((displaySummary.runtime_minutes / displaySummary.planned_runtime_minutes * 100), 100)}%` }} />
                 <div className="bg-red-500 transition-all duration-700" style={{ width: `${Math.min((displaySummary.downtime_minutes / displaySummary.planned_runtime_minutes * 100), 100)}%` }} />
@@ -664,28 +665,28 @@ const ProductionMonitoringDashboard: React.FC = () => {
       {/* ═══════════════════════════════════════════════════════════
           AUTO-REFRESH CONTROL — Modern Toggle + Countdown
       ═══════════════════════════════════════════════════════════ */}
-      <div className="bg-white rounded-xl px-4 py-3 shadow-sm border border-gray-100 flex flex-wrap items-center justify-between gap-3">
+      <div className="bg-white dark:bg-gray-800 rounded-xl px-4 py-3 shadow-sm border border-gray-100 dark:border-gray-700 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-4">
           {/* Modern Toggle Switch */}
           <label className="flex items-center gap-2.5 cursor-pointer select-none">
             <div
               onClick={() => setAutoRefresh(prev => !prev)}
               className={`relative w-11 h-6 rounded-full transition-colors duration-300 cursor-pointer ${
-                autoRefresh ? 'bg-blue-600' : 'bg-gray-300'
+                autoRefresh ? 'bg-gradient-to-r from-[#059669] to-[#047857]' : 'bg-gray-300 dark:bg-gray-600'
               }`}
             >
               <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-300 ${
                 autoRefresh ? 'translate-x-5' : 'translate-x-0'
               }`} />
             </div>
-            <span className="text-sm font-semibold text-gray-700">Auto-Refresh</span>
+            <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">Auto-Refresh</span>
           </label>
           {autoRefresh && (
             <>
               <select
                 value={refreshInterval}
                 onChange={(e) => setRefreshInterval(+e.target.value)}
-                className="px-2 py-1 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 bg-gray-50 text-gray-700"
+                className="px-2 py-1 text-xs border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-400 bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-200"
               >
                 <option value={1}>1 menit</option>
                 <option value={2}>2 menit</option>
@@ -694,7 +695,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
                 <option value={15}>15 menit</option>
               </select>
               {/* Live Countdown */}
-              <div className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full">
+              <div className="flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 text-xs font-semibold px-3 py-1 rounded-full">
                 <ClockIcon className="h-3.5 w-3.5" />
                 Refresh dalam <span className="font-black tabular-nums">{refreshCountdown}d</span>
               </div>
@@ -704,7 +705,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
         <button
           onClick={async () => { setIsRefreshing(true); await fetchData(); setIsRefreshing(false); }}
           disabled={isRefreshing}
-          className="flex items-center gap-2 px-4 py-1.5 text-sm font-semibold bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-lg transition-all duration-150 shadow-sm disabled:opacity-60"
+          className="flex items-center gap-2 px-4 py-1.5 text-sm font-semibold bg-gradient-to-br from-[#059669] to-[#047857] text-white rounded-lg hover:shadow-lg transition-shadow disabled:opacity-60"
         >
           <ArrowDownTrayIcon className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
           {isRefreshing ? 'Memuat...' : 'Refresh Sekarang'}
@@ -714,7 +715,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
       {/* ═══════════════════════════════════════════════════════════
           TAB NAVIGATION — Premium Pill Style
       ═══════════════════════════════════════════════════════════ */}
-      <div className="bg-white rounded-2xl p-1.5 shadow-sm border border-gray-100">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-1.5 shadow-sm border border-gray-100 dark:border-gray-700">
         <div className="flex gap-1 overflow-x-auto pb-0.5 scrollbar-none">
           {tabs.map(t => (
             <button
@@ -722,8 +723,8 @@ const ProductionMonitoringDashboard: React.FC = () => {
               onClick={() => setActiveTab(t.id as any)}
               className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 ${
                 activeTab === t.id
-                  ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-md shadow-blue-200 scale-[1.02]'
-                  : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+                  ? 'bg-gradient-to-r from-[#059669] to-teal-600 text-white shadow-md shadow-emerald-200 dark:shadow-none scale-[1.02]'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
             >
               <t.icon className="h-3.5 w-3.5 shrink-0" />
@@ -1143,7 +1144,7 @@ const MachineDailyTab: React.FC<{ data: any }> = ({ data }) => {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow border overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 border overflow-hidden">
         <div className="p-4 border-b bg-gray-50 dark:bg-gray-900 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white">📋 Data Mesin Harian — Hasil per Shift</h3>
@@ -1153,7 +1154,7 @@ const MachineDailyTab: React.FC<{ data: any }> = ({ data }) => {
             <select
               value={filterMachine}
               onChange={(e) => setFilterMachine(e.target.value)}
-              className="px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white dark:bg-gray-800 dark:text-white w-full sm:w-44"
+              className="px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-1 focus:ring-teal-500 bg-white dark:bg-gray-800 dark:text-white w-full sm:w-44"
             >
               <option value="">Semua Mesin</option>
               {uniqueMachines.map(m => (
@@ -1207,12 +1208,12 @@ const MachineDailyTab: React.FC<{ data: any }> = ({ data }) => {
                       <tr className="bg-slate-700 dark:bg-slate-800 hover:bg-slate-600 dark:hover:bg-slate-700 cursor-pointer border-t-2 border-slate-500 dark:border-slate-600 text-white" onClick={() => toggleDay(day.date)}>
                         <td className="px-3 py-2.5">
                           <div className="flex items-center gap-2">
-                            {isExpanded ? <ChevronUpIcon className="h-4 w-4 text-blue-300" /> : <ChevronDownIcon className="h-4 w-4 text-blue-300" />}
+                            {isExpanded ? <ChevronUpIcon className="h-4 w-4 text-teal-300" /> : <ChevronDownIcon className="h-4 w-4 text-teal-300" />}
                             <span className="font-bold text-white text-sm">{dateLabel}</span>
                             <span className="text-slate-300 text-[10px] font-medium">({dayLabel})</span>
                           </div>
                         </td>
-                        <td className="px-3 py-2.5 font-semibold text-blue-200">{day.machines.length} mesin</td>
+                        <td className="px-3 py-2.5 font-semibold text-teal-200">{day.machines.length} mesin</td>
                         <td className="px-3 py-2.5"></td>
                         <td className="px-3 py-2.5 text-right font-bold text-green-300">{fmtNum(day.day_total_a)}</td>
                         <td className="px-3 py-2.5 text-right font-bold text-yellow-300">{fmtNum(day.day_total_b)}</td>
@@ -1229,9 +1230,9 @@ const MachineDailyTab: React.FC<{ data: any }> = ({ data }) => {
                       {isExpanded && day.machines.map((m: any) => (
                         <React.Fragment key={`${day.date}-${m.machine_name}`}>
                           {/* Machine sub-total row */}
-                          <tr className="bg-indigo-50/50 dark:bg-indigo-900/10 border-t border-indigo-100 dark:border-indigo-900/30">
+                          <tr className="bg-violet-50/50 dark:bg-violet-900/10 border-t border-violet-100 dark:border-violet-900/30">
                             <td className="px-3 py-1.5 pl-8"></td>
-                            <td className="px-3 py-1.5 font-bold text-indigo-700 dark:text-indigo-400">{m.machine_name}</td>
+                            <td className="px-3 py-1.5 font-bold text-violet-700 dark:text-violet-400">{m.machine_name}</td>
                             <td className="px-3 py-1.5 text-center text-gray-400 text-[10px]">total</td>
                             <td className="px-3 py-1.5 text-right font-semibold text-green-600">{fmtNum(m.total_grade_a)}</td>
                             <td className="px-3 py-1.5 text-right text-yellow-500">{fmtNum(m.total_grade_b)}</td>
@@ -1249,7 +1250,7 @@ const MachineDailyTab: React.FC<{ data: any }> = ({ data }) => {
                               <td className="px-3 py-1.5 pl-12"></td>
                               <td className="px-3 py-1.5"></td>
                               <td className="px-3 py-1.5 text-center">
-                                <span className="px-1.5 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded font-bold text-[10px]">
+                                <span className="px-1.5 py-0.5 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 rounded font-bold text-[10px]">
                                   {sRow.shift_label}
                                 </span>
                               </td>
@@ -1304,7 +1305,7 @@ const OverviewTab: React.FC<{
   const projectedCtn = elapsed > 0 ? Math.round(actual / elapsed * totalWd) : 0;
   const projectedPct = target > 0 ? Math.round(projectedCtn / target * 100) : 0;
   const paceStatus = projectedPct >= 100 ? 'ahead' : projectedPct >= 85 ? 'on-track' : projectedPct >= 70 ? 'at-risk' : 'behind';
-  const paceColor = { ahead: 'from-green-500 to-emerald-600', 'on-track': 'from-blue-500 to-indigo-600', 'at-risk': 'from-yellow-500 to-orange-500', behind: 'from-red-500 to-rose-600' }[paceStatus];
+  const paceColor = { ahead: 'from-green-500 to-emerald-600', 'on-track': 'from-teal-500 to-violet-600', 'at-risk': 'from-yellow-500 to-orange-500', behind: 'from-red-500 to-rose-600' }[paceStatus];
   const paceLabel = { ahead: 'Di Atas Target', 'on-track': 'Sesuai Target', 'at-risk': 'Perlu Perhatian', behind: 'Di Bawah Target' }[paceStatus];
   const remainingDays = Math.max(0, totalWd - elapsed);
   const neededPerDay = remainingDays > 0 ? Math.ceil((target - actual) / remainingDays) : 0;
@@ -1312,9 +1313,9 @@ const OverviewTab: React.FC<{
   const timePct = Math.round(elapsed / totalWd * 100);
   const achievePct = Math.min(100, s.achievement_pct || 0);
   const accentBg   = { ahead: '#10B981', 'on-track': '#3B82F6', 'at-risk': '#F59E0B', behind: '#EF4444' }[paceStatus];
-  const accentText = { ahead: 'text-emerald-600', 'on-track': 'text-blue-600', 'at-risk': 'text-amber-600', behind: 'text-red-600' }[paceStatus];
-  const accentBadge = { ahead: 'bg-emerald-100 text-emerald-700', 'on-track': 'bg-blue-100 text-blue-700', 'at-risk': 'bg-amber-100 text-amber-700', behind: 'bg-red-100 text-red-700' }[paceStatus];
-  const accentBar  = { ahead: 'bg-emerald-500', 'on-track': 'bg-blue-500', 'at-risk': 'bg-amber-500', behind: 'bg-red-500' }[paceStatus];
+  const accentText = { ahead: 'text-emerald-600', 'on-track': 'text-teal-600', 'at-risk': 'text-amber-600', behind: 'text-red-600' }[paceStatus];
+  const accentBadge = { ahead: 'bg-emerald-100 text-emerald-700', 'on-track': 'bg-teal-100 text-teal-700', 'at-risk': 'bg-amber-100 text-amber-700', behind: 'bg-red-100 text-red-700' }[paceStatus];
+  const accentBar  = { ahead: 'bg-emerald-500', 'on-track': 'bg-teal-500', 'at-risk': 'bg-amber-500', behind: 'bg-red-500' }[paceStatus];
 
   const machineBreakdown = useMemo(() => {
     if (!convertingDailyRecords) return [];
@@ -1340,12 +1341,12 @@ const OverviewTab: React.FC<{
   <div className="space-y-5">
     {/* Converting Production Summary */}
     {convertingSummary && convertingSummary.total_output > 0 && (
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border border-gray-200 dark:border-gray-700">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Ringkasan Produksi Converting ({viewMode === 'weekly' ? 'Mingguan' : 'Bulanan'})</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/10 rounded-lg border border-blue-100 dark:border-blue-800/30">
+          <div className="text-center p-3 bg-teal-50 dark:bg-teal-900/10 rounded-lg border border-teal-100 dark:border-teal-800/30">
             <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase font-semibold">Total Output</p>
-            <p className="text-lg font-bold text-blue-600 dark:text-blue-400">{fmtNum(convertingSummary.total_output)} pcs</p>
+            <p className="text-lg font-bold text-teal-600 dark:text-teal-400">{fmtNum(convertingSummary.total_output)} pcs</p>
           </div>
           <div className="text-center p-3 bg-green-50 dark:bg-green-900/10 rounded-lg border border-green-100 dark:border-green-800/30">
             <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase font-semibold">Grade A (Good)</p>
@@ -1353,7 +1354,7 @@ const OverviewTab: React.FC<{
           </div>
           <div className="text-center p-3 bg-red-50 dark:bg-red-900/10 rounded-lg border border-red-100 dark:border-red-800/30">
             <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase font-semibold">Reject / Scrap</p>
-            <p className="text-lg font-bold text-red-550 dark:text-red-400">{fmtNum(convertingSummary.total_reject)} pcs</p>
+            <p className="text-lg font-bold text-red-600 dark:text-red-400">{fmtNum(convertingSummary.total_reject)} pcs</p>
           </div>
           <div className="text-center p-3 bg-purple-50 dark:bg-purple-900/10 rounded-lg border border-purple-100 dark:border-purple-800/30">
             <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase font-semibold">Quality Rate</p>
@@ -1370,8 +1371,8 @@ const OverviewTab: React.FC<{
                 return (
                   <div key={m.code} className="p-3 bg-gray-50 dark:bg-gray-900/30 rounded-lg border border-gray-100 dark:border-gray-700/50 flex items-center justify-between">
                     <div>
-                      <p className="text-xs font-bold text-gray-700 dark:text-gray-250">{m.name} ({m.code})</p>
-                      <p className="text-[10px] text-gray-450 dark:text-gray-400">Quality Rate: {qr}%</p>
+                      <p className="text-xs font-bold text-gray-700 dark:text-gray-300">{m.name} ({m.code})</p>
+                      <p className="text-[10px] text-gray-500 dark:text-gray-400">Quality Rate: {qr}%</p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-extrabold text-gray-900 dark:text-white">{fmtNum(m.output)} pcs</p>
@@ -1386,7 +1387,7 @@ const OverviewTab: React.FC<{
       </div>
     )}
     {/* Pace Indicator — compact */}
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 border border-gray-200 dark:border-gray-700 overflow-hidden">
       <div className="h-1 w-full" style={{ backgroundColor: accentBg }} />
       <div className="px-4 py-3">
         {/* Single row: % + badge + text | divider | 3 inline stats */}
@@ -1443,7 +1444,7 @@ const OverviewTab: React.FC<{
     </div>
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
       {/* Daily Production Trend */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Trend Produksi Harian (pcs)</h3>
         <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
@@ -1461,7 +1462,7 @@ const OverviewTab: React.FC<{
         </div>
       </div>
       {/* Time Distribution */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Distribusi Waktu</h3>
         <div className="h-72 flex items-center">
           {timePieData.length > 0 ? (
@@ -1485,7 +1486,7 @@ const OverviewTab: React.FC<{
     </div>
 
     {/* Runtime / Downtime / Idle per Day */}
-    <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border">
       <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Runtime / Downtime / Idle Harian (jam)</h3>
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
@@ -1504,7 +1505,7 @@ const OverviewTab: React.FC<{
     </div>
 
     {/* Product Achievement Summary (top 10) */}
-    <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border">
       <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Achievement per Produk</h3>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
@@ -1584,7 +1585,7 @@ const DailyTab: React.FC<{
 
   return (
     <div className="space-y-6">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow border overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 border overflow-hidden">
         <div className="p-4 border-b bg-gray-50 dark:bg-gray-900">
           <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Detail Harian - Produksi per Hari per Produk</h3>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Klik tanggal untuk melihat detail shift, mesin, dan SPK</p>
@@ -1618,15 +1619,15 @@ const DailyTab: React.FC<{
                 return (
                   <React.Fragment key={day.date}>
                     {/* Day summary row */}
-                    <tr className="bg-blue-50/60 hover:bg-blue-100/60 cursor-pointer border-t border-blue-200" onClick={() => toggleDay(day.date)}>
-                      <td className="px-3 py-2 sticky left-0 bg-blue-50/60 z-10">
+                    <tr className="bg-teal-50/60 hover:bg-teal-100/60 cursor-pointer border-t border-teal-200" onClick={() => toggleDay(day.date)}>
+                      <td className="px-3 py-2 sticky left-0 bg-teal-50/60 z-10">
                         <div className="flex items-center gap-1.5">
-                          {isExpanded ? <ChevronUpIcon className="h-3.5 w-3.5 text-blue-500" /> : <ChevronDownIcon className="h-3.5 w-3.5 text-blue-500" />}
-                          <span className="font-semibold text-blue-800">{dateLabel}</span>
-                          <span className="text-blue-500 text-[10px]">({dayLabel})</span>
+                          {isExpanded ? <ChevronUpIcon className="h-3.5 w-3.5 text-teal-500" /> : <ChevronDownIcon className="h-3.5 w-3.5 text-teal-500" />}
+                          <span className="font-semibold text-teal-800">{dateLabel}</span>
+                          <span className="text-teal-500 text-[10px]">({dayLabel})</span>
                         </div>
                       </td>
-                      <td className="px-3 py-2 font-medium text-blue-700">{day.products.length} produk</td>
+                      <td className="px-3 py-2 font-medium text-teal-700">{day.products.length} produk</td>
                       <td className="px-2 py-2"></td>
                       <td className="px-2 py-2 text-right font-semibold text-green-700">{fmtNum(day.day_summary.grade_a)}</td>
                       <td className="px-2 py-2 text-right font-semibold text-yellow-600">{fmtNum(day.day_summary.grade_b)}</td>
@@ -1656,7 +1657,7 @@ const DailyTab: React.FC<{
                         <td className="px-2 py-1.5 text-right text-red-500">{fmtNum(Math.round(p.grade_c))}</td>
                         <td className="px-2 py-1.5 text-right">{fmtNum(Math.round(p.total_pcs))}</td>
                         <td className="px-2 py-1.5 text-right">{fmtNum(Math.round(p.total_ctn))}</td>
-                        <td className="px-2 py-1.5 text-right text-blue-600 font-medium">{fmtNum(Math.round(p.cumulative_ctn))}</td>
+                        <td className="px-2 py-1.5 text-right text-teal-600 font-medium">{fmtNum(Math.round(p.cumulative_ctn))}</td>
                         <td className="px-2 py-1.5 text-right text-gray-500 dark:text-gray-400">{fmtNum(Math.round(p.target_monthly_ctn))}</td>
                         <td className={`px-2 py-1.5 text-right font-medium ${p.gap_ctn > 0 ? 'text-red-600' : 'text-green-600'}`}>
                           {p.gap_ctn > 0 ? '-' : '+'}{fmtNum(Math.abs(Math.round(p.gap_ctn)))}
@@ -1674,11 +1675,11 @@ const DailyTab: React.FC<{
                       );
                       
                       const shifts = [...new Set(allRecords.map((d: any) => d.shift))].sort();
-                      const shiftColors: Record<number, string> = { 1: 'bg-blue-500', 2: 'bg-green-500', 3: 'bg-purple-500' };
+                      const shiftColors: Record<number, string> = { 1: 'bg-teal-500', 2: 'bg-green-500', 3: 'bg-purple-500' };
                       const catColors: Record<string, string> = {
                         mesin: 'bg-red-100 text-red-700 border-red-300',
                         operator: 'bg-orange-100 text-orange-700 border-orange-300',
-                        material: 'bg-blue-100 text-blue-700 border-blue-300',
+                        material: 'bg-teal-100 text-teal-700 border-teal-300',
                         design: 'bg-purple-100 text-purple-700 border-purple-300',
                         idle: 'bg-yellow-100 text-yellow-700 border-yellow-300',
                         others: 'bg-gray-100 text-gray-700 border-gray-300'
@@ -1731,10 +1732,10 @@ const DailyTab: React.FC<{
                             return (
                               <React.Fragment key={`group-mach-${day.date}-${machineName}`}>
                                 {/* Machine Header Row */}
-                                <tr className="bg-indigo-50 dark:bg-gray-800 border-t border-b border-indigo-100 dark:border-gray-700">
+                                <tr className="bg-violet-50 dark:bg-gray-800 border-t border-b border-violet-100 dark:border-gray-700">
                                   <td colSpan={14} className="px-4 py-1.5">
                                     <div className="flex items-center gap-2">
-                                      <span className="text-xs font-bold text-indigo-900 dark:text-indigo-200">
+                                      <span className="text-xs font-bold text-violet-900 dark:text-violet-200">
                                         🖥️ Mesin: <span className="font-extrabold">{machineName}</span>
                                       </span>
                                       <span className="text-[10px] font-semibold bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-400 px-1.5 py-0.5 rounded">
@@ -1764,7 +1765,7 @@ const DailyTab: React.FC<{
                                         <td colSpan={13} className="px-3 py-1">
                                           <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
                                             <span>📦 Produk: <span className="text-gray-900 dark:text-gray-100 font-bold">{productName}</span></span>
-                                            <span className="text-[10px] bg-slate-200 text-slate-700 dark:bg-slate-750 dark:text-slate-300 px-1.5 py-0.5 rounded">
+                                            <span className="text-[10px] bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded">
                                               Subtotal: {prodTotalMin}m
                                             </span>
                                           </div>
@@ -1821,7 +1822,7 @@ const DailyTab: React.FC<{
                                                     Shift {shiftNum}
                                                   </span>
                                                   {dt.count > 1 && (
-                                                    <span className="mr-1.5 px-1.5 py-0.5 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 rounded text-[9px] font-extrabold" title={`${dt.count} kejadian`}>
+                                                    <span className="mr-1.5 px-1.5 py-0.5 bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300 rounded text-[9px] font-extrabold" title={`${dt.count} kejadian`}>
                                                       {dt.count}x
                                                     </span>
                                                   )}
@@ -1834,11 +1835,11 @@ const DailyTab: React.FC<{
                                                   {dt.duration_minutes}m
                                                 </td>
                                                 <td className="px-2 py-1 text-center" colSpan={2}>
-                                                  <span className="px-1.5 py-0.5 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/30 dark:text-indigo-300 rounded text-[9px] font-semibold">
+                                                  <span className="px-1.5 py-0.5 bg-violet-50 text-violet-700 dark:bg-violet-950/30 dark:text-violet-300 rounded text-[9px] font-semibold">
                                                     PIC: {dt.pic || 'N/A'}
                                                   </span>
                                                 </td>
-                                                <td className="px-2 py-1 text-blue-600 dark:text-blue-400 text-[10px]" colSpan={4}>
+                                                <td className="px-2 py-1 text-teal-600 dark:text-teal-400 text-[10px]" colSpan={4}>
                                                   WO: <span className="font-medium">{dt.wo_number || 'N/A'}</span>
                                                 </td>
                                               </tr>
@@ -1872,7 +1873,7 @@ const DailyTab: React.FC<{
 
       {/* Converting Daily Summary Table */}
       {convertingDailyRecords && convertingDailyRecords.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow border overflow-hidden mt-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 border overflow-hidden mt-6">
           <div className="p-4 border-b bg-gray-50 dark:bg-gray-900">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Detail Harian - Produksi Converting</h3>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Rincian hasil output harian mesin Converting ({viewMode === 'weekly' ? 'Mingguan' : 'Bulanan'}). Klik tanggal untuk melihat rincian downtime.</p>
@@ -1899,7 +1900,7 @@ const DailyTab: React.FC<{
                   const catColors: Record<string, string> = {
                     mesin: 'bg-red-100 text-red-700 border-red-300',
                     operator: 'bg-orange-100 text-orange-700 border-orange-300',
-                    material: 'bg-blue-100 text-blue-700 border-blue-300',
+                    material: 'bg-teal-100 text-teal-700 border-teal-300',
                     design: 'bg-purple-100 text-purple-700 border-purple-300',
                     idle: 'bg-yellow-100 text-yellow-700 border-yellow-300',
                     others: 'bg-gray-100 text-gray-700 border-gray-300'
@@ -1912,10 +1913,10 @@ const DailyTab: React.FC<{
                   return (
                     <React.Fragment key={r.date}>
                       <tr 
-                        className="hover:bg-gray-50 dark:hover:bg-gray-750 cursor-pointer"
+                        className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
                         onClick={() => toggleConvertingDay(r.date)}
                       >
-                        <td className="px-3 py-2 font-semibold text-blue-800 dark:text-blue-400 flex items-center gap-1.5">
+                        <td className="px-3 py-2 font-semibold text-teal-800 dark:text-teal-400 flex items-center gap-1.5">
                           {isExpanded ? (
                             <ChevronUpIcon className="h-3 w-3 text-slate-500" />
                           ) : (
@@ -1935,35 +1936,35 @@ const DailyTab: React.FC<{
                             <div className="space-y-5">
                               {/* 1. Rincian Hasil Produksi */}
                               <div className="space-y-2">
-                                <h4 className="font-bold text-xs text-indigo-900 dark:text-indigo-300 flex items-center gap-1.5 uppercase tracking-wider">
-                                  <DocumentTextIcon className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                                <h4 className="font-bold text-xs text-violet-900 dark:text-violet-300 flex items-center gap-1.5 uppercase tracking-wider">
+                                  <DocumentTextIcon className="h-4 w-4 text-violet-600 dark:text-violet-400" />
                                   📋 Rincian Hasil Produksi Converting - {dateLabel}
                                 </h4>
                                 {r.production_records && r.production_records.length > 0 ? (
-                                  <div className="overflow-x-auto rounded-lg border border-indigo-100 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
+                                  <div className="overflow-x-auto rounded-lg border border-violet-100 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
                                     <table className="w-full text-left text-xs">
-                                      <thead className="bg-indigo-50/50 dark:bg-gray-900 text-indigo-950 dark:text-gray-300 border-b border-indigo-100 dark:border-gray-700">
+                                      <thead className="bg-violet-50/50 dark:bg-gray-900 text-violet-950 dark:text-gray-300 border-b border-violet-100 dark:border-gray-700">
                                         <tr>
                                           <th className="px-3 py-2.5">Mesin</th>
                                           <th className="px-3 py-2.5 text-center">Shift</th>
                                           <th className="px-3 py-2.5">Produk</th>
                                           <th className="px-3 py-2.5 text-right">Target Efisiensi</th>
-                                          <th className="px-3 py-2.5 text-right text-green-750 font-bold">Grade A (pcs)</th>
+                                          <th className="px-3 py-2.5 text-right text-green-700 font-bold">Grade A (pcs)</th>
                                           <th className="px-3 py-2.5 text-right text-red-700 font-bold">Reject (pcs)</th>
                                           <th className="px-3 py-2.5 text-right font-black">Total Output</th>
                                           <th className="px-3 py-2.5 text-right font-semibold">Target Speed</th>
                                           <th className="px-3 py-2.5 text-right font-semibold">Actual Speed</th>
-                                          <th className="px-3 py-2.5 text-right font-black text-blue-750">Efisiensi</th>
+                                          <th className="px-3 py-2.5 text-right font-black text-teal-700">Efisiensi</th>
                                         </tr>
                                       </thead>
-                                      <tbody className="divide-y divide-gray-100 dark:divide-gray-750">
+                                      <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                                         {r.production_records.map((pRec: any, pIdx: number) => (
-                                          <tr key={pIdx} className="hover:bg-gray-50/80 dark:hover:bg-gray-750 transition-colors">
+                                          <tr key={pIdx} className="hover:bg-gray-50/80 dark:hover:bg-gray-700 transition-colors">
                                             <td className="px-3 py-2 font-semibold text-gray-950 dark:text-white">
                                               {pRec.machine_name} <span className="text-[10px] text-gray-400 font-normal">({pRec.machine_code})</span>
                                             </td>
-                                            <td className="px-3 py-2 text-center text-gray-850 dark:text-gray-200">Shift {pRec.shift}</td>
-                                            <td className="px-3 py-2 text-gray-650 dark:text-gray-400 font-medium">{pRec.product_name}</td>
+                                            <td className="px-3 py-2 text-center text-gray-800 dark:text-gray-200">Shift {pRec.shift}</td>
+                                            <td className="px-3 py-2 text-gray-600 dark:text-gray-400 font-medium">{pRec.product_name}</td>
                                             <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-400">{pRec.machine_target_efficiency ? `${pRec.machine_target_efficiency}%` : '-'}</td>
                                             <td className="px-3 py-2 text-right text-green-700 font-bold">{fmtNum(pRec.good_quantity)}</td>
                                             <td className="px-3 py-2 text-right text-red-600 font-semibold">{fmtNum(pRec.reject_quantity)}</td>
@@ -2018,16 +2019,16 @@ const DailyTab: React.FC<{
                                           <th className="px-3 py-2.5 text-right">Durasi</th>
                                         </tr>
                                       </thead>
-                                      <tbody className="divide-y divide-gray-100 dark:divide-gray-750">
+                                      <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                                         {r.downtime_records.map((rec: any, idx: number) => {
                                           const cConfigClass = catColors[rec.downtime_category] || catColors.others;
                                           const cLabel = catLabels[rec.downtime_category] || catLabels.others;
                                           return (
-                                            <tr key={idx} className="hover:bg-gray-50/80 dark:hover:bg-gray-750 transition-colors">
+                                            <tr key={idx} className="hover:bg-gray-50/80 dark:hover:bg-gray-700 transition-colors">
                                               <td className="px-3 py-2 font-semibold text-gray-950 dark:text-white">{rec.machine_name}</td>
-                                              <td className="px-3 py-2 text-gray-650 dark:text-gray-400 font-medium">{rec.product_name}</td>
-                                              <td className="px-3 py-2 text-center text-gray-850 dark:text-gray-200">Shift {rec.shift}</td>
-                                              <td className="px-3 py-2 italic text-gray-850 dark:text-gray-300">"{rec.downtime_reason}"</td>
+                                              <td className="px-3 py-2 text-gray-600 dark:text-gray-400 font-medium">{rec.product_name}</td>
+                                              <td className="px-3 py-2 text-center text-gray-800 dark:text-gray-200">Shift {rec.shift}</td>
+                                              <td className="px-3 py-2 italic text-gray-800 dark:text-gray-300">"{rec.downtime_reason}"</td>
                                               <td className="px-3 py-2">
                                                 <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${cConfigClass}`}>
                                                   {cLabel}
@@ -2101,7 +2102,7 @@ const ProductsTab: React.FC<{ data: any; viewMode: 'monthly' | 'weekly' }> = ({ 
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span className="text-slate-600 dark:text-gray-400">Forecast:</span>
-            <span className="font-semibold text-blue-600 dark:text-blue-400">{fmtNum(data.target)} ctn</span>
+            <span className="font-semibold text-teal-600 dark:text-teal-400">{fmtNum(data.target)} ctn</span>
           </div>
           
           <div className="flex justify-between">
@@ -2179,7 +2180,7 @@ const ProductsTab: React.FC<{ data: any; viewMode: 'monthly' | 'weekly' }> = ({ 
   return (
     <div className="space-y-5">
       {/* Chart */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Target vs Aktual per Produk (karton)</h3>
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
@@ -2280,7 +2281,7 @@ const ProductsTab: React.FC<{ data: any; viewMode: 'monthly' | 'weekly' }> = ({ 
         </div>
       </div>
       {/* Full Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Detail Lengkap per Produk</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
@@ -2423,7 +2424,7 @@ const MachineHealthWidget: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow mb-5">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md hover:shadow-lg transition-shadow duration-200 mb-5">
         <LoadingSpinner />
       </div>
     );
@@ -2612,7 +2613,7 @@ const MachinesTab: React.FC<{ data: any }> = ({ data }) => {
           const dtPct = totalTime > 0 ? (m.downtime / totalTime * 100) : 0;
           const idlePct = totalTime > 0 ? (m.idle_time / totalTime * 100) : 0;
           return (
-            <div key={i} className={`bg-white dark:bg-gray-800 rounded-xl p-4 shadow border-l-4 ${m.avg_oee >= 60 ? 'border-l-green-500' : m.avg_oee >= 40 ? 'border-l-yellow-500' : 'border-l-red-500'}`}>
+            <div key={i} className={`bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md hover:shadow-lg transition-shadow duration-200 border-l-4 ${m.avg_oee >= 60 ? 'border-l-green-500' : m.avg_oee >= 40 ? 'border-l-yellow-500' : 'border-l-red-500'}`}>
               <div className="flex items-center justify-between mb-3">
                 <h4 className="font-semibold text-gray-900 dark:text-white text-sm">{m.machine_name}</h4>
                 <span className={`text-lg font-bold ${m.avg_oee >= 60 ? 'text-green-600' : m.avg_oee >= 40 ? 'text-yellow-600' : 'text-red-600'}`}>
@@ -2655,7 +2656,7 @@ const MachinesTab: React.FC<{ data: any }> = ({ data }) => {
       </div>
 
       {/* OEE Comparison Chart */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">📊 Perbandingan OEE per Mesin</h3>
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
@@ -2675,7 +2676,7 @@ const MachinesTab: React.FC<{ data: any }> = ({ data }) => {
       </div>
 
       {/* Time Utilization Comparison */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">⏱️ Utilisasi Waktu per Mesin (Jam)</h3>
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
@@ -2694,7 +2695,7 @@ const MachinesTab: React.FC<{ data: any }> = ({ data }) => {
       </div>
 
       {/* Production & Quality Comparison */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">📦 Produksi & Kualitas per Mesin</h3>
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
@@ -2713,7 +2714,7 @@ const MachinesTab: React.FC<{ data: any }> = ({ data }) => {
       </div>
 
       {/* Detailed Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">📋 Detail Lengkap per Mesin</h3>
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 mb-3">Klik baris mesin untuk melihat rincian downtime dan detail kerja mesin tersebut</p>
         <div className="overflow-x-auto">
@@ -2742,7 +2743,7 @@ const MachinesTab: React.FC<{ data: any }> = ({ data }) => {
                     onClick={() => toggleMachine(m.machine_name)}
                   >
                     <td className="px-3 py-2 font-medium text-gray-900 dark:text-white flex items-center gap-1.5">
-                      {expandedMachines.has(m.machine_name) ? <ChevronUpIcon className="h-3 w-3 text-blue-500" /> : <ChevronDownIcon className="h-3 w-3 text-blue-500" />}
+                      {expandedMachines.has(m.machine_name) ? <ChevronUpIcon className="h-3 w-3 text-teal-500" /> : <ChevronDownIcon className="h-3 w-3 text-teal-500" />}
                       <span>{m.machine_name}</span>
                     </td>
                     <td className={`px-3 py-2 text-right font-bold ${m.avg_oee >= 60 ? 'text-green-600' : m.avg_oee >= 40 ? 'text-yellow-600' : 'text-red-600'}`}>
@@ -2788,7 +2789,7 @@ const MachinesTab: React.FC<{ data: any }> = ({ data }) => {
                                     const catColors: Record<string, string> = {
                                       mesin: 'bg-red-100 text-red-700 border-red-200',
                                       operator: 'bg-orange-100 text-orange-700 border-orange-200',
-                                      material: 'bg-blue-100 text-blue-700 border-blue-200',
+                                      material: 'bg-teal-100 text-teal-700 border-teal-200',
                                       design: 'bg-purple-100 text-purple-700 border-purple-200',
                                       idle: 'bg-yellow-100 text-yellow-700 border-yellow-200',
                                       others: 'bg-gray-100 text-gray-700 border-gray-200'
@@ -2804,7 +2805,7 @@ const MachinesTab: React.FC<{ data: any }> = ({ data }) => {
                                         <td className="px-3 py-1.5 text-center text-gray-500 font-medium">{dtIdx + 1}</td>
                                         <td className="px-3 py-1.5 text-gray-700 dark:text-gray-300 font-medium">{dateLabel}</td>
                                         <td className="px-3 py-1.5 text-center">
-                                          <span className="px-1.5 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded font-bold text-[10px]">
+                                          <span className="px-1.5 py-0.5 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 rounded font-bold text-[10px]">
                                             S{dt.shift}
                                           </span>
                                         </td>
@@ -2817,13 +2818,13 @@ const MachinesTab: React.FC<{ data: any }> = ({ data }) => {
                                         <td className="px-3 py-1.5 text-right font-bold text-red-600">{dt.duration_minutes}m</td>
                                         <td className="px-3 py-1.5">
                                           {dt.pic ? (
-                                            <span className="px-1.5 py-0.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 rounded font-medium">
+                                            <span className="px-1.5 py-0.5 bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400 rounded font-medium">
                                               {dt.pic}
                                             </span>
                                           ) : <span className="text-gray-400">—</span>}
                                         </td>
                                         <td className="px-3 py-1.5 text-gray-600 dark:text-gray-400">{stripPackagingSuffix(dt.product_name)}</td>
-                                        <td className="px-3 py-1.5 text-blue-600 dark:text-blue-400 font-medium">{dt.wo_number}</td>
+                                        <td className="px-3 py-1.5 text-teal-600 dark:text-teal-400 font-medium">{dt.wo_number}</td>
                                       </tr>
                                     );
                                   })}
@@ -3031,7 +3032,7 @@ const DowntimeTab: React.FC<{
     <div className="space-y-5">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Category Pie */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border">
           <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Downtime per Kategori</h3>
           <div className="h-72 flex items-center">
             {downtimePieData.length > 0 ? (
@@ -3057,7 +3058,7 @@ const DowntimeTab: React.FC<{
           </div>
         </div>
         {/* Category Breakdown Cards */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border">
           <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Breakdown Waktu Downtime</h3>
           <div className="space-y-3">
             {Object.entries(DOWNTIME_COLORS).map(([k, color]) => {
@@ -3081,7 +3082,7 @@ const DowntimeTab: React.FC<{
       </div>
 
       {/* Top Downtime Reasons - Combined list */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
           <ExclamationTriangleIcon className="h-4 w-4 inline mr-1 text-red-500" />
           Top 10 Downtime (Seluruh Mesin)
@@ -3111,7 +3112,7 @@ const DowntimeTab: React.FC<{
                     <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                       <td className="px-3 py-2 font-medium">{idx + 1}</td>
                       <td className="px-3 py-2">
-                        <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${isUnplanned ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>
+                        <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${isUnplanned ? 'bg-red-100 text-red-700' : 'bg-teal-100 text-teal-700'}`}>
                           {isUnplanned ? 'Unplanned' : 'Planned'}
                         </span>
                       </td>
@@ -3132,7 +3133,7 @@ const DowntimeTab: React.FC<{
                       <td className="px-3 py-2 text-right font-medium text-red-600">{fmtMin(item.total_minutes)}</td>
                       <td className="px-3 py-2 w-36">
                         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                          <div className={`h-2 rounded-full ${isUnplanned ? 'bg-red-500' : 'bg-blue-500'}`} style={{ width: `${pct}%` }} />
+                          <div className={`h-2 rounded-full ${isUnplanned ? 'bg-red-500' : 'bg-teal-500'}`} style={{ width: `${pct}%` }} />
                         </div>
                       </td>
                     </tr>
@@ -3145,7 +3146,7 @@ const DowntimeTab: React.FC<{
       </div>
 
       {/* All Downtime Reasons Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border mt-5">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border mt-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
           <div>
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
@@ -3159,13 +3160,13 @@ const DowntimeTab: React.FC<{
               placeholder="Cari alasan, mesin, produk..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-950 dark:text-white w-56 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-950 dark:text-white w-56 focus:outline-none focus:ring-1 focus:ring-teal-500"
             />
             <input
               type="date"
               value={filterDateFrom}
               onChange={e => setFilterDateFrom(e.target.value)}
-              className="px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-950 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-950 dark:text-white focus:outline-none focus:ring-1 focus:ring-teal-500"
               title="Dari tanggal"
             />
             <span className="text-[10px] text-gray-400">s/d</span>
@@ -3173,13 +3174,13 @@ const DowntimeTab: React.FC<{
               type="date"
               value={filterDateTo}
               onChange={e => setFilterDateTo(e.target.value)}
-              className="px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-950 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-950 dark:text-white focus:outline-none focus:ring-1 focus:ring-teal-500"
               title="Sampai tanggal"
             />
             <select
               value={filterMachine}
               onChange={e => setFilterMachine(e.target.value)}
-              className="px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-950 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-950 dark:text-white focus:outline-none focus:ring-1 focus:ring-teal-500"
             >
               <option value="all">Semua Mesin</option>
               {machineOptions.map(m => <option key={m} value={m}>{m}</option>)}
@@ -3187,7 +3188,7 @@ const DowntimeTab: React.FC<{
             <select
               value={filterType}
               onChange={e => setFilterType(e.target.value)}
-              className="px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-950 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-950 dark:text-white focus:outline-none focus:ring-1 focus:ring-teal-500"
             >
               <option value="all">Semua Tipe</option>
               <option value="planned">Planned</option>
@@ -3196,7 +3197,7 @@ const DowntimeTab: React.FC<{
             {(filterDateFrom || filterDateTo || filterMachine !== 'all' || filterType !== 'all' || searchTerm) && (
               <button
                 onClick={() => { setFilterDateFrom(''); setFilterDateTo(''); setFilterMachine('all'); setFilterType('all'); setSearchTerm(''); }}
-                className="px-2 py-1.5 text-[10px] text-blue-600 hover:text-blue-800 font-medium"
+                className="px-2 py-1.5 text-[10px] text-teal-600 hover:text-teal-800 font-medium"
               >
                 Reset
               </button>
@@ -3208,7 +3209,7 @@ const DowntimeTab: React.FC<{
         </div>
           {allTimeDowntimeLoading ? (
           <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
             <span className="text-xs text-gray-500 ml-3">Memuat data sepanjang waktu...</span>
           </div>
         ) : sortedAllTimeDowntime.length > 0 ? (
@@ -3227,7 +3228,7 @@ const DowntimeTab: React.FC<{
                   <th className="px-3 py-2 text-left">Impact</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-105 dark:divide-gray-700">
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                 {sortedAllTimeDowntime.map((item: any, idx: number) => {
                   const maxMin = sortedAllTimeDowntime[0]?.total_minutes || 1;
                   const pct = (item.total_minutes / maxMin) * 100;
@@ -3238,18 +3239,18 @@ const DowntimeTab: React.FC<{
                     <React.Fragment key={idx}>
                       <tr 
                         onClick={() => setExpandedKey(isExpanded ? null : rowKey)}
-                        className="hover:bg-gray-50 dark:hover:bg-gray-750 dark:bg-gray-900/40 transition-colors cursor-pointer select-none"
+                        className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900/40 transition-colors cursor-pointer select-none"
                       >
                         <td className="px-3 py-2 font-medium text-slate-400 flex items-center gap-1">
                           <span className="text-[9px] text-slate-400 w-3 inline-block text-center">{isExpanded ? '▼' : '▶'}</span>
                           {idx + 1}
                         </td>
                         <td className="px-3 py-2">
-                          <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${isUnplanned ? 'bg-red-50 text-red-600 dark:bg-red-950/20 dark:text-red-400' : 'bg-blue-50 text-blue-600 dark:bg-blue-950/20 dark:text-blue-400'}`}>
+                          <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${isUnplanned ? 'bg-red-50 text-red-600 dark:bg-red-950/20 dark:text-red-400' : 'bg-teal-50 text-teal-600 dark:bg-teal-950/20 dark:text-teal-400'}`}>
                             {isUnplanned ? 'Unplanned' : 'Planned'}
                           </span>
                         </td>
-                        <td className="px-3 py-2 text-gray-800 dark:text-gray-250 font-bold">{item.reason}</td>
+                        <td className="px-3 py-2 text-gray-800 dark:text-gray-300 font-bold">{item.reason}</td>
                         <td className="px-3 py-2">
                           <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium" style={{
                             backgroundColor: DOWNTIME_COLORS[item.category] ? DOWNTIME_COLORS[item.category] + '20' : '#F3F4F6',
@@ -3262,11 +3263,11 @@ const DowntimeTab: React.FC<{
                         <td className="px-3 py-2 text-gray-600 dark:text-gray-400 text-[11px] max-w-[150px] truncate" title={item.products}>
                           {item.products ? stripPackagingSuffix(item.products) : 'N/A'}
                         </td>
-                        <td className="px-3 py-2 text-right font-bold text-slate-700 dark:text-slate-350">{item.count}x</td>
-                        <td className="px-3 py-2 text-right font-bold text-red-605 dark:text-red-500">{fmtMin(item.total_minutes)}</td>
+                        <td className="px-3 py-2 text-right font-bold text-slate-700 dark:text-slate-300">{item.count}x</td>
+                        <td className="px-3 py-2 text-right font-bold text-red-600 dark:text-red-500">{fmtMin(item.total_minutes)}</td>
                         <td className="px-3 py-2 w-36">
                           <div className="w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
-                            <div className={`h-full rounded-full ${isUnplanned ? 'bg-red-500' : 'bg-blue-500'}`} style={{ width: `${pct}%` }} />
+                            <div className={`h-full rounded-full ${isUnplanned ? 'bg-red-500' : 'bg-teal-500'}`} style={{ width: `${pct}%` }} />
                           </div>
                         </td>
                       </tr>
@@ -3278,9 +3279,9 @@ const DowntimeTab: React.FC<{
                                 🔍 Riwayat Detail Kejadian untuk "{item.reason}"
                               </h4>
                               {item.occurrences && item.occurrences.length > 0 ? (
-                                <div className="overflow-x-auto rounded-lg border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-905 max-h-60 overflow-y-auto">
+                                <div className="overflow-x-auto rounded-lg border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 max-h-60 overflow-y-auto">
                                   <table className="min-w-full text-[11px] text-left">
-                                    <thead className="bg-slate-100 dark:bg-slate-800 text-slate-650 dark:text-slate-400 uppercase tracking-wider sticky top-0 z-20">
+                                    <thead className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 uppercase tracking-wider sticky top-0 z-20">
                                       <tr>
                                         <th className="px-3 py-1.5 font-bold">Tanggal</th>
                                         <th className="px-3 py-1.5 font-bold">Shift</th>
@@ -3290,7 +3291,7 @@ const DowntimeTab: React.FC<{
                                         <th className="px-3 py-1.5 font-bold">Alasan Input</th>
                                       </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
+                                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                                       {item.occurrences.map((occ: any, oIdx: number) => (
                                         <tr key={oIdx} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 text-slate-600 dark:text-slate-300">
                                           <td className="px-3 py-1.5 font-medium">{occ.date}</td>
@@ -3423,7 +3424,7 @@ const GraphTab: React.FC<{ data: any }> = ({ data }) => {
         dates.sort();
         
         productMap[productName] = {
-          wo: `WO-${product.product_code || 'N/A'}`,
+          productCode: product.product_code || '-',
           product: productName.length > 30 ? productName.substring(0, 30) + '...' : productName,
           startDate: dates[0],
           endDate: dates[dates.length - 1],
@@ -3436,8 +3437,6 @@ const GraphTab: React.FC<{ data: any }> = ({ data }) => {
     const result = Object.values(productMap)
       .sort((a: any, b: any) => b.totalCtn - a.totalCtn) // Sort by total cartons
       .slice(0, 15); // Top 15
-    
-    console.log('Gantt Data Result:', result);
     
     return result;
   }, [data]);
@@ -3528,7 +3527,7 @@ const GraphTab: React.FC<{ data: any }> = ({ data }) => {
   return (
     <div className="space-y-5">
       {/* Waterfall Chart - Gap Analysis */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
           📊 Waterfall Chart - Gap Analysis (Target vs Aktual)
         </h3>
@@ -3549,8 +3548,8 @@ const GraphTab: React.FC<{ data: any }> = ({ data }) => {
                 </BarChart>
               </ResponsiveContainer>
             </div>
-            <div className="mt-3 p-3 bg-blue-50 rounded-lg">
-              <p className="text-xs text-blue-900">
+            <div className="mt-3 p-3 bg-teal-50 rounded-lg">
+              <p className="text-xs text-teal-900">
                 <strong>Insight:</strong> Gap dari target forecast: <span className={`font-bold ${data.summary.gap_ctn > 0 ? 'text-red-600' : 'text-green-600'}`}>
                   {data.summary.gap_ctn > 0 ? '-' : '+'}{fmtNum(Math.abs(Math.round(data.summary.gap_ctn)))} ctn
                 </span> ({data.summary.achievement_pct}% tercapai)
@@ -3565,7 +3564,7 @@ const GraphTab: React.FC<{ data: any }> = ({ data }) => {
       </div>
 
       {/* Pareto Chart - 80/20 Downtime Analysis */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
           📈 Pareto Chart - 80/20 Downtime Analysis
         </h3>
@@ -3602,7 +3601,7 @@ const GraphTab: React.FC<{ data: any }> = ({ data }) => {
       </div>
 
       {/* NEW: Trend Line Chart - Daily Production */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
           📉 Trend Produksi Harian (Target vs Aktual vs Kumulatif)
         </h3>
@@ -3640,7 +3639,7 @@ const GraphTab: React.FC<{ data: any }> = ({ data }) => {
       </div>
 
       {/* NEW: Stacked Area Chart - Grade Distribution */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
           📊 Distribusi Grade A/B/C Over Time
         </h3>
@@ -3674,7 +3673,7 @@ const GraphTab: React.FC<{ data: any }> = ({ data }) => {
       </div>
 
       {/* NEW: Quality Trend Line */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
           ✨ Trend Kualitas (% Grade A)
         </h3>
@@ -3710,7 +3709,7 @@ const GraphTab: React.FC<{ data: any }> = ({ data }) => {
       </div>
 
       {/* NEW: Machine Efficiency Comparison */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
           ⚙️ Perbandingan Efisiensi Mesin (OEE & Produksi)
         </h3>
@@ -3730,8 +3729,8 @@ const GraphTab: React.FC<{ data: any }> = ({ data }) => {
                 </BarChart>
               </ResponsiveContainer>
             </div>
-            <div className="mt-3 p-3 bg-blue-50 rounded-lg">
-              <p className="text-xs text-blue-900">
+            <div className="mt-3 p-3 bg-teal-50 rounded-lg">
+              <p className="text-xs text-teal-900">
                 <strong>Best Performer:</strong> {machineComparisonData.reduce((best, m) => m.oee > best.oee ? m : best, machineComparisonData[0]).machine} 
                 ({machineComparisonData.reduce((best, m) => m.oee > best.oee ? m : best, machineComparisonData[0]).oee}% OEE)
               </p>
@@ -3745,9 +3744,9 @@ const GraphTab: React.FC<{ data: any }> = ({ data }) => {
       </div>
 
       {/* Gantt Chart - WO Timeline */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow border">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
-          📅 Gantt Chart - Timeline Produksi per SPK
+          📅 Gantt Chart - Timeline Produksi per Produk
         </h3>
         {ganttData.length > 0 ? (
           <>
@@ -3755,7 +3754,7 @@ const GraphTab: React.FC<{ data: any }> = ({ data }) => {
               <table className="w-full text-xs">
                 <thead>
                   <tr className="bg-gray-50 dark:bg-gray-900">
-                    <th className="px-3 py-2 text-left">WO Number</th>
+                    <th className="px-3 py-2 text-left">Kode Produk</th>
                     <th className="px-3 py-2 text-left">Produk</th>
                     <th className="px-3 py-2 text-center">Start Date</th>
                     <th className="px-3 py-2 text-center">End Date</th>
@@ -3772,7 +3771,7 @@ const GraphTab: React.FC<{ data: any }> = ({ data }) => {
                     
                     return (
                       <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                        <td className="px-3 py-2 font-medium text-blue-600">{wo.wo}</td>
+                        <td className="px-3 py-2 font-medium text-teal-600">{wo.productCode}</td>
                         <td className="px-3 py-2 text-gray-700 dark:text-gray-200">{stripPackagingSuffix(wo.product)}</td>
                         <td className="px-3 py-2 text-center text-gray-600 dark:text-gray-300">{wo.startDate}</td>
                         <td className="px-3 py-2 text-center text-gray-600 dark:text-gray-300">{wo.endDate}</td>
@@ -3781,7 +3780,7 @@ const GraphTab: React.FC<{ data: any }> = ({ data }) => {
                         <td className="px-3 py-2">
                           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
                             <div 
-                              className="bg-gradient-to-r from-blue-500 to-cyan-500 h-4 rounded-full flex items-center justify-center text-[10px] text-white font-medium"
+                              className="bg-gradient-to-r from-teal-500 to-teal-500 h-4 rounded-full flex items-center justify-center text-[10px] text-white font-medium"
                               style={{ width: `${barWidth}%` }}
                             >
                               {duration}d
@@ -3868,8 +3867,8 @@ const ShiftTab: React.FC<{ data: any }> = ({ data }) => {
 
       {/* Comparison Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <div className="bg-white rounded-xl p-5 shadow border">
-          <h3 className="text-sm font-semibold text-gray-900 mb-3">Output per Shift (pcs)</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border border-gray-100 dark:border-gray-700">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Output per Shift (pcs)</h3>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={barData}>
@@ -3885,8 +3884,8 @@ const ShiftTab: React.FC<{ data: any }> = ({ data }) => {
             </ResponsiveContainer>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-5 shadow border">
-          <h3 className="text-sm font-semibold text-gray-900 mb-3">OEE & Quality Rate per Shift (%)</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border border-gray-100 dark:border-gray-700">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">OEE & Quality Rate per Shift (%)</h3>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={barData}>
@@ -3904,14 +3903,14 @@ const ShiftTab: React.FC<{ data: any }> = ({ data }) => {
       </div>
 
       {/* Detail Table */}
-      <div className="bg-white rounded-xl shadow border overflow-hidden">
-        <div className="px-5 py-4 border-b bg-gray-50">
-          <h3 className="text-sm font-semibold text-gray-900">Detail Perbandingan Shift</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 border border-gray-100 dark:border-gray-700 overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Detail Perbandingan Shift</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-gray-100 text-gray-600 text-xs font-semibold">
+              <tr className="bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-300 text-xs font-semibold">
                 <th className="px-4 py-3 text-left">Shift</th>
                 <th className="px-4 py-3 text-right">Total Pcs</th>
                 <th className="px-4 py-3 text-right">Grade A</th>
@@ -3924,23 +3923,23 @@ const ShiftTab: React.FC<{ data: any }> = ({ data }) => {
                 <th className="px-4 py-3 text-right">Jumlah Shift</th>
               </tr>
             </thead>
-            <tbody className="divide-y">
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {shifts.map((s: any, i: number) => (
-                <tr key={i} className={`hover:bg-gray-50 ${s.shift_label === best.shift_label ? 'bg-yellow-50' : ''}`}>
+                <tr key={i} className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${s.shift_label === best.shift_label ? 'bg-yellow-50 dark:bg-yellow-900/10' : ''}`}>
                   <td className="px-4 py-3 font-bold" style={{ color: SHIFT_COLORS[i] }}>{s.shift_label} {s.shift_label === best.shift_label ? '🏆' : ''}</td>
-                  <td className="px-4 py-3 text-right font-semibold">{fmtNum(s.total_pcs)}</td>
-                  <td className="px-4 py-3 text-right text-green-600">{fmtNum(s.grade_a)}</td>
+                  <td className="px-4 py-3 text-right font-semibold text-gray-900 dark:text-white">{fmtNum(s.total_pcs)}</td>
+                  <td className="px-4 py-3 text-right text-green-600 dark:text-green-400">{fmtNum(s.grade_a)}</td>
                   <td className="px-4 py-3 text-right text-yellow-500">{fmtNum(s.grade_b)}</td>
                   <td className="px-4 py-3 text-right text-red-500">{fmtNum(s.grade_c)}</td>
                   <td className="px-4 py-3 text-right">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${s.quality_rate >= 95 ? 'bg-green-100 text-green-700' : s.quality_rate >= 85 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>{s.quality_rate}%</span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${s.quality_rate >= 95 ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : s.quality_rate >= 85 ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'}`}>{s.quality_rate}%</span>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${s.avg_oee >= 85 ? 'bg-green-100 text-green-700' : s.avg_oee >= 70 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>{s.avg_oee}%</span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${s.avg_oee >= 85 ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : s.avg_oee >= 70 ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'}`}>{s.avg_oee}%</span>
                   </td>
-                  <td className="px-4 py-3 text-right text-gray-600">{(s.runtime / 60).toFixed(1)}</td>
+                  <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-300">{(s.runtime / 60).toFixed(1)}</td>
                   <td className="px-4 py-3 text-right text-red-500">{(s.downtime / 60).toFixed(1)}</td>
-                  <td className="px-4 py-3 text-right text-gray-500">{s.shift_count}</td>
+                  <td className="px-4 py-3 text-right text-gray-500 dark:text-gray-400">{s.shift_count}</td>
                 </tr>
               ))}
             </tbody>
@@ -3978,8 +3977,8 @@ const AnalyticsTab: React.FC<{ data: any; dailyChartData: any[] }> = ({ data, da
   return (
     <div className="space-y-5">
       {/* Quality Trend */}
-      <div className="bg-white rounded-xl p-5 shadow border">
-        <h3 className="text-sm font-semibold text-gray-900 mb-1">Tren Kualitas Harian</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border border-gray-100 dark:border-gray-700">
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">Tren Kualitas Harian</h3>
         <p className="text-xs text-gray-400 mb-3">Grade A/B/C per hari dan quality rate (%)</p>
         <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
@@ -4000,9 +3999,9 @@ const AnalyticsTab: React.FC<{ data: any; dailyChartData: any[] }> = ({ data, da
       </div>
 
       {/* OEE Heatmap */}
-      <div className="bg-white rounded-xl p-5 shadow border overflow-hidden">
-        <h3 className="text-sm font-semibold text-gray-900 mb-1">OEE Heatmap — Per Mesin per Hari</h3>
-        <div className="flex items-center gap-4 mb-3 text-xs text-gray-500">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border border-gray-100 dark:border-gray-700 overflow-hidden">
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">OEE Heatmap — Per Mesin per Hari</h3>
+        <div className="flex items-center gap-4 mb-3 text-xs text-gray-500 dark:text-gray-400">
           {[{ color: '#10B981', label: '≥85% Baik' }, { color: '#F59E0B', label: '70–84% Cukup' }, { color: '#EF4444', label: '50–69% Rendah' }, { color: '#FCA5A5', label: '<50% Kritis' }, { color: '#F3F4F6', label: 'No Data' }].map(x => (
             <span key={x.label} className="flex items-center gap-1"><span className="w-3 h-3 rounded" style={{ backgroundColor: x.color, border: '1px solid #e5e7eb' }} />{x.label}</span>
           ))}
@@ -4014,16 +4013,16 @@ const AnalyticsTab: React.FC<{ data: any; dailyChartData: any[] }> = ({ data, da
             <table className="text-xs border-collapse">
               <thead>
                 <tr>
-                  <th className="sticky left-0 bg-white px-3 py-2 text-left text-gray-700 font-semibold z-10 min-w-[120px]">Mesin</th>
+                  <th className="sticky left-0 bg-white dark:bg-gray-800 px-3 py-2 text-left text-gray-700 dark:text-gray-300 font-semibold z-10 min-w-[120px]">Mesin</th>
                   {dates.map((d: string) => (
-                    <th key={d} className="px-1 py-2 text-center text-gray-500 font-normal min-w-[36px]">{d.split('-')[2]}</th>
+                    <th key={d} className="px-1 py-2 text-center text-gray-500 dark:text-gray-400 font-normal min-w-[36px]">{d.split('-')[2]}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {machines.map((m: string) => (
                   <tr key={m}>
-                    <td className="sticky left-0 bg-white px-3 py-1 font-medium text-gray-800 z-10 border-r border-gray-100">{m}</td>
+                    <td className="sticky left-0 bg-white dark:bg-gray-800 px-3 py-1 font-medium text-gray-800 dark:text-gray-200 z-10 border-r border-gray-100 dark:border-gray-700">{m}</td>
                     {dates.map((d: string) => {
                       const oee = oeeMap[`${m}__${d}`];
                       const color = oee !== undefined ? getOeeColor(oee) : '#F3F4F6';
@@ -4057,7 +4056,7 @@ const FGConversionTab: React.FC<{
 
   const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
     draft:       { label: 'Draft',      color: 'text-gray-600',  bg: 'bg-gray-100' },
-    in_progress: { label: 'Proses',     color: 'text-blue-600',  bg: 'bg-blue-100' },
+    in_progress: { label: 'Proses',     color: 'text-teal-600',  bg: 'bg-teal-100' },
     completed:   { label: 'Selesai',    color: 'text-green-700', bg: 'bg-green-100' },
     cancelled:   { label: 'Batal',      color: 'text-red-600',   bg: 'bg-red-100' },
   };
@@ -4071,7 +4070,7 @@ const FGConversionTab: React.FC<{
   if (fgLoading) return (
     <div className="flex items-center justify-center h-64">
       <div className="flex flex-col items-center gap-3">
-        <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-10 h-10 border-4 border-violet-500 border-t-transparent rounded-full animate-spin" />
         <p className="text-sm text-gray-500">Memuat data FG Conversion...</p>
       </div>
     </div>
@@ -4081,7 +4080,7 @@ const FGConversionTab: React.FC<{
     <div className="flex flex-col items-center justify-center h-64 gap-4">
       <ArrowsRightLeftIcon className="h-12 w-12 text-gray-300" />
       <p className="text-gray-400">Belum ada data FG Conversion</p>
-      <button onClick={onFetch} className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700">Muat Data</button>
+      <button onClick={onFetch} className="px-4 py-2 bg-violet-600 text-white rounded-lg text-sm hover:bg-violet-700">Muat Data</button>
     </div>
   );
 
@@ -4100,7 +4099,7 @@ const FGConversionTab: React.FC<{
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 rounded-2xl p-5 text-white shadow-xl">
+      <div className="bg-gradient-to-r from-[#059669] via-teal-500 to-[#047857] rounded-2xl p-5 text-white shadow-xl">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h2 className="text-xl font-bold flex items-center gap-2">
@@ -4117,9 +4116,9 @@ const FGConversionTab: React.FC<{
       {/* Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Total Konversi', value: summary.total_conversions, sub: `${summary.completed} selesai`, color: 'from-indigo-500 to-blue-600', icon: '📦' },
-          { label: 'Total FG Output', value: fmtNum(summary.total_fg_qty), sub: 'pcs diproduksi', color: 'from-emerald-500 to-teal-600', icon: '✅' },
-          { label: 'Total WIP Input', value: fmtNum(summary.total_wip_qty), sub: 'pcs WIP dipakai', color: 'from-violet-500 to-purple-600', icon: '🏭' },
+          { label: 'Total Konversi', value: summary.total_conversions, sub: `${summary.completed} selesai`, color: 'from-[#059669] to-[#047857]', icon: '📦' },
+          { label: 'Total FG Output', value: fmtNum(summary.total_fg_qty), sub: 'pcs diproduksi', color: 'from-teal-500 to-teal-600', icon: '✅' },
+          { label: 'Total WIP Input', value: fmtNum(summary.total_wip_qty), sub: 'pcs WIP dipakai', color: 'from-violet-500 to-violet-600', icon: '🏭' },
           {
             label: 'Loss Rate',
             value: `${summary.loss_pct}%`,
@@ -4128,7 +4127,7 @@ const FGConversionTab: React.FC<{
             icon: summary.loss_pct > 5 ? '⚠️' : '📉'
           },
         ].map((card, i) => (
-          <div key={i} className={`bg-gradient-to-br ${card.color} rounded-xl p-4 text-white shadow`}>
+          <div key={i} className={`bg-gradient-to-br ${card.color} rounded-2xl p-4 text-white shadow-md hover:shadow-lg transition-shadow duration-200`}>
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-xs font-medium text-white/80">{card.label}</p>
@@ -4144,8 +4143,8 @@ const FGConversionTab: React.FC<{
       {/* Status Breakdown + Chart */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Status Pills */}
-        <div className="bg-white rounded-xl p-5 shadow border">
-          <h3 className="text-sm font-semibold text-gray-900 mb-4">Status Konversi</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border border-gray-100 dark:border-gray-700">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Status Konversi</h3>
           <div className="space-y-3">
             {Object.entries(status_breakdown || {}).map(([status, count]) => {
               const cfg = statusConfig[status] || { label: status, color: 'text-gray-600', bg: 'bg-gray-100' };
@@ -4154,10 +4153,10 @@ const FGConversionTab: React.FC<{
                 <div key={status}>
                   <div className="flex justify-between items-center mb-1">
                     <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${cfg.bg} ${cfg.color}`}>{cfg.label}</span>
-                    <span className="text-sm font-bold text-gray-800">{count as number} <span className="text-gray-400 font-normal text-xs">({pct}%)</span></span>
+                    <span className="text-sm font-bold text-gray-800 dark:text-gray-200">{count as number} <span className="text-gray-400 font-normal text-xs">({pct}%)</span></span>
                   </div>
-                  <div className="w-full bg-gray-100 rounded-full h-1.5">
-                    <div className="h-1.5 rounded-full bg-gradient-to-r from-indigo-400 to-blue-500" style={{ width: `${pct}%` }} />
+                  <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-1.5">
+                    <div className="h-1.5 rounded-full bg-gradient-to-r from-[#059669] to-teal-500" style={{ width: `${pct}%` }} />
                   </div>
                 </div>
               );
@@ -4169,8 +4168,8 @@ const FGConversionTab: React.FC<{
         </div>
 
         {/* Bar Chart Top 10 Products */}
-        <div className="lg:col-span-2 bg-white rounded-xl p-5 shadow border">
-          <h3 className="text-sm font-semibold text-gray-900 mb-3">Output FG per Produk (Top 10 · karton)</h3>
+        <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border border-gray-100 dark:border-gray-700">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Output FG per Produk (Top 10 · karton)</h3>
           {chartData.length > 0 ? (
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
@@ -4197,15 +4196,15 @@ const FGConversionTab: React.FC<{
       </div>
 
       {/* Per Product Detail Table */}
-      <div className="bg-white rounded-xl shadow border overflow-hidden">
-        <div className="px-5 py-4 border-b bg-gradient-to-r from-emerald-50 to-teal-50">
-          <h3 className="text-sm font-semibold text-gray-900">Detail FG per Produk</h3>
-          <p className="text-xs text-gray-500 mt-0.5">WIP terpakai, FG dihasilkan, loss, dan jumlah batch</p>
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 border border-gray-100 dark:border-gray-700 overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-gray-900 dark:to-gray-900">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Detail FG per Produk</h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">WIP terpakai, FG dihasilkan, loss, dan jumlah batch</p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-gray-50 text-gray-600 text-xs font-semibold">
+              <tr className="bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300 text-xs font-semibold">
                 <th className="px-4 py-3 text-left">#</th>
                 <th className="px-4 py-3 text-left">Produk</th>
                 <th className="px-4 py-3 text-right">WIP Input (pcs)</th>
@@ -4216,24 +4215,24 @@ const FGConversionTab: React.FC<{
                 <th className="px-4 py-3 text-right">Batch</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {(by_product || []).map((p: any, i: number) => (
-                <tr key={i} className={`hover:bg-gray-50 transition ${p.loss_pct > 5 ? 'bg-red-50/40' : ''}`}>
+                <tr key={i} className={`hover:bg-gray-50 dark:hover:bg-gray-700 transition ${p.loss_pct > 5 ? 'bg-red-50/40 dark:bg-red-900/10' : ''}`}>
                   <td className="px-4 py-3 text-gray-400 text-xs">{i + 1}</td>
-                  <td className="px-4 py-3 font-medium text-gray-900">{stripPackagingSuffix(p.product_name)}</td>
-                  <td className="px-4 py-3 text-right text-gray-600">{fmtNum(p.wip_qty)}</td>
-                  <td className="px-4 py-3 text-right text-emerald-700 font-semibold">{fmtNum(p.fg_qty)}</td>
+                  <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{stripPackagingSuffix(p.product_name)}</td>
+                  <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-300">{fmtNum(p.wip_qty)}</td>
+                  <td className="px-4 py-3 text-right text-emerald-700 dark:text-emerald-400 font-semibold">{fmtNum(p.fg_qty)}</td>
                   <td className="px-4 py-3 text-right">
-                    <span className="bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full text-xs font-bold">{fmtNum(p.cartons)}</span>
+                    <span className="bg-teal-100 dark:bg-teal-900/30 text-teal-800 dark:text-teal-400 px-2 py-0.5 rounded-full text-xs font-bold">{fmtNum(p.cartons)}</span>
                   </td>
                   <td className="px-4 py-3 text-right text-red-500">{fmtNum(p.loss_qty)}</td>
                   <td className="px-4 py-3 text-right">
                     <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                      p.loss_pct === 0 ? 'bg-green-100 text-green-700' :
-                      p.loss_pct <= 2 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'
+                      p.loss_pct === 0 ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
+                      p.loss_pct <= 2 ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
                     }`}>{p.loss_pct}%</span>
                   </td>
-                  <td className="px-4 py-3 text-right text-gray-500">{p.batch_count}</td>
+                  <td className="px-4 py-3 text-right text-gray-500 dark:text-gray-400">{p.batch_count}</td>
                 </tr>
               ))}
               {(by_product || []).length === 0 && (
@@ -4245,15 +4244,15 @@ const FGConversionTab: React.FC<{
       </div>
 
       {/* Recent Conversions Table */}
-      <div className="bg-white rounded-xl shadow border overflow-hidden">
-        <div className="px-5 py-4 border-b bg-gradient-to-r from-slate-50 to-gray-50">
-          <h3 className="text-sm font-semibold text-gray-900">Riwayat Konversi Terbaru</h3>
-          <p className="text-xs text-gray-500 mt-0.5">30 konversi terakhir pada periode ini</p>
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 border border-gray-100 dark:border-gray-700 overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-slate-50 to-gray-50 dark:from-gray-900 dark:to-gray-900">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Riwayat Konversi Terbaru</h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">30 konversi terakhir pada periode ini</p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
-              <tr className="bg-gray-100 text-gray-600 font-semibold">
+              <tr className="bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-300 font-semibold">
                 <th className="px-3 py-2.5 text-left">No. Konversi</th>
                 <th className="px-3 py-2.5 text-left">Batch</th>
                 <th className="px-3 py-2.5 text-left">WO</th>
@@ -4267,23 +4266,23 @@ const FGConversionTab: React.FC<{
                 <th className="px-3 py-2.5 text-center">Validasi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {(recent_conversions || []).map((c: any, i: number) => {
                 const sc = statusConfig[c.status] || { label: c.status, color: 'text-gray-600', bg: 'bg-gray-100' };
                 const qc = qcConfig[c.qc_status] || { label: c.qc_status, color: 'text-gray-500' };
                 return (
-                  <tr key={i} className="hover:bg-gray-50">
-                    <td className="px-3 py-2 font-mono text-indigo-700 font-medium">{c.conversion_number}</td>
-                    <td className="px-3 py-2 font-mono text-gray-600">{c.batch_number}</td>
-                    <td className="px-3 py-2 text-blue-600 font-medium">{c.wo_number}</td>
-                    <td className="px-3 py-2 text-gray-800 max-w-[180px] truncate" title={c.fg_products}>{stripPackagingSuffix(c.fg_products)}</td>
-                    <td className="px-3 py-2 text-center text-gray-500">{c.conversion_date}</td>
+                  <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td className="px-3 py-2 font-mono text-violet-700 dark:text-violet-400 font-medium">{c.conversion_number}</td>
+                    <td className="px-3 py-2 font-mono text-gray-600 dark:text-gray-300">{c.batch_number}</td>
+                    <td className="px-3 py-2 text-teal-600 dark:text-teal-400 font-medium">{c.wo_number}</td>
+                    <td className="px-3 py-2 text-gray-800 dark:text-gray-200 max-w-[180px] truncate" title={c.fg_products}>{stripPackagingSuffix(c.fg_products)}</td>
+                    <td className="px-3 py-2 text-center text-gray-500 dark:text-gray-400">{c.conversion_date}</td>
                     <td className="px-3 py-2 text-center">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${sc.bg} ${sc.color}`}>{sc.label}</span>
                     </td>
                     <td className={`px-3 py-2 text-center font-semibold ${qc.color}`}>{qc.label}</td>
-                    <td className="px-3 py-2 text-right text-gray-600">{fmtNum(c.total_wip_qty)}</td>
-                    <td className="px-3 py-2 text-right text-emerald-700 font-semibold">{fmtNum(c.total_fg_qty)}</td>
+                    <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">{fmtNum(c.total_wip_qty)}</td>
+                    <td className="px-3 py-2 text-right text-emerald-700 dark:text-emerald-400 font-semibold">{fmtNum(c.total_fg_qty)}</td>
                     <td className="px-3 py-2 text-right">
                       <span className={`font-semibold ${
                         c.loss_pct === 0 ? 'text-green-600' : c.loss_pct <= 2 ? 'text-yellow-600' : 'text-red-600'
@@ -4378,8 +4377,8 @@ const ConvertingTab: React.FC = () => {
   };
 
   const getEfficiencyColor = (eff: number, target: number) => {
-    if (eff >= target) return 'text-green-650 dark:text-green-400 font-bold';
-    if (eff >= target * 0.8) return 'text-yellow-650 dark:text-yellow-400 font-bold';
+    if (eff >= target) return 'text-green-600 dark:text-green-400 font-bold';
+    if (eff >= target * 0.8) return 'text-yellow-600 dark:text-yellow-400 font-bold';
     return 'text-red-600 dark:text-red-400 font-bold';
   };
 
@@ -4403,7 +4402,7 @@ const ConvertingTab: React.FC = () => {
 
   const getMachineTypeColor = (type: string) => {
     const colors: Record<string, string> = {
-      perforating: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+      perforating: 'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-400',
       slitting: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
       laminasi: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
       bagmaker: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
@@ -4441,7 +4440,7 @@ const ConvertingTab: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Date Selector */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 border border-slate-200 dark:border-gray-700 p-4">
         <div className="flex items-center justify-between">
           <button
             onClick={() => changeDate(-1)}
@@ -4451,7 +4450,7 @@ const ConvertingTab: React.FC = () => {
           </button>
 
           <div className="flex items-center gap-3">
-            <CalendarDaysIcon className="h-5 w-5 text-blue-600" />
+            <CalendarDaysIcon className="h-5 w-5 text-teal-600" />
             <input
               type="date"
               value={date}
@@ -4474,7 +4473,7 @@ const ConvertingTab: React.FC = () => {
       {/* Summary Cards */}
       {summary && (
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-          <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white shadow-sm">
+          <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-sm">
             <div className="flex items-center gap-2 mb-2">
               <CogIcon className="h-5 w-5 opacity-80" />
               <span className="text-sm opacity-80 font-medium">Mesin Aktif</span>
@@ -4519,10 +4518,10 @@ const ConvertingTab: React.FC = () => {
       {/* Loading State */}
       {loading ? (
         <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
         </div>
       ) : activeMachines.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 p-12 text-center">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 border border-slate-200 dark:border-gray-700 p-12 text-center">
           <CogIcon className="h-16 w-16 text-slate-300 dark:text-gray-600 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-slate-600 dark:text-gray-300">Tidak ada data converting</h3>
           <p className="text-slate-400 dark:text-gray-500 mt-1">Belum ada hasil produksi converting yang diinput untuk tanggal ini</p>
@@ -4542,7 +4541,7 @@ const ConvertingTab: React.FC = () => {
                 {typeMachines.map((machine) => (
                   <div
                     key={machine.id}
-                    className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 overflow-hidden"
+                    className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 border border-slate-200 dark:border-gray-700 overflow-hidden"
                   >
                     {/* Card Header - Clickable */}
                     <div
@@ -4551,7 +4550,7 @@ const ConvertingTab: React.FC = () => {
                     >
                       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                         <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white">
+                          <div className="w-12 h-12 bg-gradient-to-br from-teal-500 to-violet-600 rounded-xl flex items-center justify-center text-white">
                             <CogIcon className="h-6 w-6" />
                           </div>
                           <div>
@@ -4682,7 +4681,7 @@ const ConvertingTab: React.FC = () => {
                                       const catColors: Record<string, string> = {
                                         mesin: 'bg-red-100 text-red-700 border-red-300',
                                         operator: 'bg-orange-100 text-orange-700 border-orange-300',
-                                        material: 'bg-blue-100 text-blue-700 border-blue-300',
+                                        material: 'bg-teal-100 text-teal-700 border-teal-300',
                                         design: 'bg-purple-100 text-purple-700 border-purple-300',
                                         idle: 'bg-yellow-100 text-yellow-700 border-yellow-300',
                                         others: 'bg-gray-100 text-gray-700 border-gray-300'
@@ -4776,26 +4775,26 @@ const PackingListTab: React.FC = () => {
     <div className="space-y-6 mt-4">
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow border border-slate-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 border border-slate-200 dark:border-gray-700">
           <p className="text-xs font-semibold text-slate-500">Total Packing List</p>
           <p className="text-2xl font-black text-slate-800 dark:text-white mt-1">{packingLists.length}</p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow border border-slate-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 border border-slate-200 dark:border-gray-700">
           <p className="text-xs font-semibold text-slate-500">Total Output Karton</p>
-          <p className="text-2xl font-black text-blue-600 dark:text-blue-400 mt-1">{totalCartons.toLocaleString('id-ID')} <span className="text-xs font-medium text-slate-500">Karton</span></p>
+          <p className="text-2xl font-black text-teal-600 dark:text-teal-400 mt-1">{totalCartons.toLocaleString('id-ID')} <span className="text-xs font-medium text-slate-500">Karton</span></p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow border border-slate-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 border border-slate-200 dark:border-gray-700">
           <p className="text-xs font-semibold text-slate-500">Total Finished Goods (Pcs)</p>
-          <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400 mt-1">{totalPcs.toLocaleString('id-ID')} <span className="text-xs font-medium text-slate-500">Pcs</span></p>
+          <p className="text-2xl font-black text-violet-600 dark:text-violet-400 mt-1">{totalPcs.toLocaleString('id-ID')} <span className="text-xs font-medium text-slate-500">Pcs</span></p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow border border-slate-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 border border-slate-200 dark:border-gray-700">
           <p className="text-xs font-semibold text-slate-500">QC Released (Masuk Gudang)</p>
           <p className="text-2xl font-black text-green-600 dark:text-green-400 mt-1">{releasedCount} <span className="text-xs font-medium text-slate-500">Dokumen</span></p>
         </div>
       </div>
 
       {/* Filter & Action Bar */}
-      <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow border border-slate-200 dark:border-gray-700 flex flex-wrap gap-4 items-center justify-between">
+      <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 border border-slate-200 dark:border-gray-700 flex flex-wrap gap-4 items-center justify-between">
         <div className="flex gap-3 flex-1 min-w-[250px]">
           <div className="relative flex-1">
             <input
@@ -4823,7 +4822,7 @@ const PackingListTab: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow border border-slate-200 dark:border-gray-700 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 border border-slate-200 dark:border-gray-700 overflow-hidden">
         {loading ? (
           <div className="p-8 text-center"><LoadingSpinner /></div>
         ) : packingLists.length === 0 ? (
@@ -4850,12 +4849,12 @@ const PackingListTab: React.FC = () => {
                     <React.Fragment key={pl.id}>
                       <tr
                         onClick={() => toggleExpand(pl.id)}
-                        className={`cursor-pointer hover:bg-slate-50 dark:hover:bg-gray-700/50 transition ${isExpanded ? 'bg-blue-50/50 dark:bg-gray-700/30' : ''}`}
+                        className={`cursor-pointer hover:bg-slate-50 dark:hover:bg-gray-700/50 transition ${isExpanded ? 'bg-teal-50/50 dark:bg-gray-700/30' : ''}`}
                       >
                         <td className="px-4 py-3 text-slate-400">
-                          {isExpanded ? <ChevronDownIcon className="h-5 w-5 text-blue-600" /> : <ChevronRightIcon className="h-5 w-5" />}
+                          {isExpanded ? <ChevronDownIcon className="h-5 w-5 text-teal-600" /> : <ChevronRightIcon className="h-5 w-5" />}
                         </td>
-                        <td className="px-4 py-3 font-bold text-blue-600 dark:text-blue-400">
+                        <td className="px-4 py-3 font-bold text-teal-600 dark:text-teal-400">
                           {pl.packing_number}
                         </td>
                         <td className="px-4 py-3">
@@ -4872,7 +4871,7 @@ const PackingListTab: React.FC = () => {
                         <td className="px-4 py-3 text-center font-bold text-slate-800 dark:text-white">
                           {pl.total_carton?.toLocaleString('id-ID')}
                         </td>
-                        <td className="px-4 py-3 text-center font-semibold text-indigo-600 dark:text-indigo-400">
+                        <td className="px-4 py-3 text-center font-semibold text-violet-600 dark:text-violet-400">
                           {pl.total_pcs?.toLocaleString('id-ID')}
                         </td>
                         <td className="px-4 py-3 text-slate-600 dark:text-gray-300 text-xs">
@@ -4893,7 +4892,7 @@ const PackingListTab: React.FC = () => {
                       {/* Expandable Detail Section */}
                       {isExpanded && (
                         <tr className="bg-slate-50/80 dark:bg-gray-900/40">
-                          <td colSpan={7} className="px-6 py-4 border-t border-b border-blue-100 dark:border-gray-700">
+                          <td colSpan={7} className="px-6 py-4 border-t border-b border-teal-100 dark:border-gray-700">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                               {/* Batch Breakdown Table */}
                               <div className="bg-white dark:bg-gray-800 p-3.5 rounded-lg shadow-sm border border-slate-200 dark:border-gray-700 space-y-2">
@@ -4915,7 +4914,7 @@ const PackingListTab: React.FC = () => {
                                       {pl.batch_summary.map((b: any, idx: number) => (
                                         <tr key={idx}>
                                           <td className="py-1.5 font-bold text-slate-800 dark:text-slate-200">{b.batch_mixing}</td>
-                                          <td className="py-1.5 text-center text-blue-600 font-semibold">#{b.start_carton} - #{b.end_carton}</td>
+                                          <td className="py-1.5 text-center text-teal-600 font-semibold">#{b.start_carton} - #{b.end_carton}</td>
                                           <td className="py-1.5 text-right font-bold">{b.total_carton} krt</td>
                                         </tr>
                                       ))}

@@ -281,16 +281,24 @@ export default function OEEDashboardEnhanced() {
 
   const hasData = summary.avg_oee !== undefined && summary.avg_oee !== null;
 
+  // 2026-10-07: Axion bento-grid restyle (tier-1 module landing page,
+  // #17 of 17, the last one). This dashboard is deeply tabbed
+  // (overview/downtime/RCA/machines/alerts) - in scope here is only the
+  // outer shell + header + the 4 top-level stat cards (the Overview
+  // tab's hero row); the tab content itself (charts, RCA detail,
+  // machine list, alerts) is left exactly as-is, same discipline as
+  // every other dashboard in this rollout treating sub-content as out
+  // of scope.
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
       {/* Header */}
       <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg"><ChartBarIcon className="h-8 w-8 text-white" /></div>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl shadow-lg"><ChartBarIcon className="h-8 w-8 text-white" /></div>
             OEE Monitoring
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-2 ml-14">Overall Equipment Effectiveness dengan Root Cause Analysis Otomatis</p>
+          <p className="text-gray-500 dark:text-gray-400 mt-2 ml-14 text-sm">Overall Equipment Effectiveness dengan Root Cause Analysis Otomatis</p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <select className="px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800" value={selectedMachine || ''} onChange={(e) => setSelectedMachine(e.target.value ? Number(e.target.value) : null)}>
@@ -331,33 +339,52 @@ export default function OEEDashboardEnhanced() {
 
           {activeTab === 'overview' && (
             <>
-              {/* Stats Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border p-5 relative overflow-hidden">
-                  <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${getOEEBgGradient(summary.avg_oee || 0)} opacity-10 rounded-bl-full`}></div>
+              {/* Stats Cards - bento: Average OEE spans 2 cols (primary metric) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-4">
+                <div className="xl:col-span-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl p-4 text-white shadow-lg">
                   <div className="flex items-center justify-between">
-                    <div><p className="text-sm text-gray-500 dark:text-gray-400">Average OEE</p><p className={`text-4xl font-bold ${getOEEColor(summary.avg_oee || 0)} mt-1`}>{(summary.avg_oee || 0).toFixed(1)}%</p><p className="text-xs text-gray-400">Target: ≥ 85%</p></div>
-                    <div className="relative"><CircularProgress value={summary.avg_oee || 0} color={getProgressColor(summary.avg_oee || 0, 85)} /><ChartBarIcon className={`h-5 w-5 ${getOEEColor(summary.avg_oee || 0)} absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2`} /></div>
+                    <div>
+                      <p className="text-sm opacity-90">Average OEE</p>
+                      <p className="text-4xl font-bold mt-1">{(summary.avg_oee || 0).toFixed(1)}%</p>
+                      <p className="text-xs opacity-75">Target: ≥ 85%</p>
+                    </div>
+                    <div className="relative"><CircularProgress value={summary.avg_oee || 0} color="green" /><ChartBarIcon className="h-5 w-5 text-white absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" /></div>
                   </div>
                 </div>
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border p-5 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500 to-indigo-600 opacity-10 rounded-bl-full"></div>
+                <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
                   <div className="flex items-center justify-between">
-                    <div><p className="text-sm text-gray-500 dark:text-gray-400">Efisiensi</p><p className={`text-4xl font-bold ${(summary.avg_availability || 0) >= 60 ? 'text-green-600' : 'text-red-600'} mt-1`}>{(summary.avg_availability || 0).toFixed(1)}%</p><p className="text-xs text-gray-400">Target: ≥ 60%</p></div>
-                    <div className="relative"><CircularProgress value={summary.avg_availability || 0} color="blue" /><BoltIcon className="h-5 w-5 text-blue-600 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" /></div>
+                    <div>
+                      <p className="text-xs opacity-90">Efisiensi</p>
+                      <p className="text-2xl font-bold mt-1">{(summary.avg_availability || 0).toFixed(1)}%</p>
+                      <p className="text-xs opacity-75">Target: ≥ 60%</p>
+                    </div>
+                    <BoltIcon className="h-8 w-8 opacity-75" />
                   </div>
                 </div>
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border p-5 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-500 to-emerald-600 opacity-10 rounded-bl-full"></div>
+                <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow-lg">
                   <div className="flex items-center justify-between">
-                    <div><p className="text-sm text-gray-500 dark:text-gray-400">Quality</p><p className={`text-4xl font-bold ${(summary.avg_quality || 0) >= 95 ? 'text-green-600' : 'text-yellow-600'} mt-1`}>{(summary.avg_quality || 0).toFixed(1)}%</p><p className="text-xs text-gray-400">Target: ≥ 95%</p></div>
-                    <div className="relative"><CircularProgress value={summary.avg_quality || 0} color="green" /><CheckCircleIcon className="h-5 w-5 text-green-600 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" /></div>
+                    <div>
+                      <p className="text-xs opacity-90">Quality</p>
+                      <p className="text-2xl font-bold mt-1">{(summary.avg_quality || 0).toFixed(1)}%</p>
+                      <p className="text-xs opacity-75">Target: ≥ 95%</p>
+                    </div>
+                    <CheckCircleIcon className="h-8 w-8 opacity-75" />
                   </div>
                 </div>
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border p-5 cursor-pointer hover:shadow-md" onClick={() => setActiveTab('rca')}>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+                <div
+                  className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-4 text-white shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
+                  onClick={() => setActiveTab('rca')}
+                >
                   <div className="flex items-center justify-between">
-                    <div><p className="text-sm text-gray-500 dark:text-gray-400">RCA Status</p><p className={`text-2xl font-bold mt-1 ${rcaSummary.overallHealth === 'critical' ? 'text-red-600' : rcaSummary.overallHealth === 'warning' ? 'text-orange-600' : 'text-green-600'}`}>{rcaSummary.criticalCount > 0 ? `${rcaSummary.criticalCount} Critical` : rcaSummary.highCount > 0 ? `${rcaSummary.highCount} High` : 'Good'}</p><p className="text-xs text-gray-400">{rcaSummary.totalRecommendations} rekomendasi</p></div>
-                    <div className={`p-3 rounded-xl ${rcaSummary.overallHealth === 'critical' ? 'bg-red-100' : rcaSummary.overallHealth === 'warning' ? 'bg-orange-100' : 'bg-green-100'}`}><MagnifyingGlassIcon className={`h-8 w-8 ${rcaSummary.overallHealth === 'critical' ? 'text-red-600' : rcaSummary.overallHealth === 'warning' ? 'text-orange-600' : 'text-green-600'}`} /></div>
+                    <div>
+                      <p className="text-xs opacity-90">RCA Status</p>
+                      <p className="text-xl font-bold mt-1">{rcaSummary.criticalCount > 0 ? `${rcaSummary.criticalCount} Critical` : rcaSummary.highCount > 0 ? `${rcaSummary.highCount} High` : 'Good'}</p>
+                      <p className="text-xs opacity-75">{rcaSummary.totalRecommendations} rekomendasi</p>
+                    </div>
+                    <MagnifyingGlassIcon className="h-8 w-8 opacity-75" />
                   </div>
                 </div>
               </div>

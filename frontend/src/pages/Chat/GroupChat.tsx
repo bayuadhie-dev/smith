@@ -147,6 +147,24 @@ const GroupChat: React.FC = () => {
   const token = localStorage.getItem('access_token') || localStorage.getItem('token');
   const currentUserId = authUser?.id || parseInt(localStorage.getItem('userId') || '0');
 
+  // This page uses `fixed inset-0` to get a full-bleed Discord-style layout
+  // that escapes Layout.tsx's centered/padded <main>. But `position: fixed`
+  // is positioned relative to the viewport, not the parent - so it ignores
+  // Layout's `lg:pl-[84px]`/`lg:pl-64` offset for the persistent left nav
+  // rail and used to render flush to the real viewport edge, burying the
+  // channel sidebar's left portion under the nav icons. Mirrors Layout.tsx's
+  // own localStorage + custom-event pattern to stay in sync with the live
+  // sidebar collapsed/expanded state instead of hardcoding one offset.
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(
+    () => localStorage.getItem('erp_sidebar_collapsed') === 'true'
+  );
+  useEffect(() => {
+    const handler = () => setSidebarCollapsed(localStorage.getItem('erp_sidebar_collapsed') === 'true');
+    window.addEventListener('erp-sidebar-collapsed-changed', handler);
+    return () => window.removeEventListener('erp-sidebar-collapsed-changed', handler);
+  }, []);
+  const navOffsetClass = sidebarCollapsed ? 'lg:left-[84px]' : 'lg:left-64';
+
   // Server & Channel state
   const [servers, setServers] = useState<Server[]>([]);
   const [selectedServer, setSelectedServer] = useState<Server | null>(null);
@@ -865,13 +883,13 @@ const GroupChat: React.FC = () => {
   // (TypingBar & InputBox now defined outside GroupChat — see top of file)
 
   if (loading) return (
-    <div className="fixed inset-0 top-16 flex items-center justify-center bg-[#313338]">
+    <div className={`fixed inset-0 top-16 ${navOffsetClass} flex items-center justify-center bg-[#313338]`}>
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#5865f2]" />
     </div>
   );
 
   if (servers.length === 0 && !loading) return (
-    <div className="fixed inset-0 top-16 flex items-center justify-center bg-[#313338] text-gray-100">
+    <div className={`fixed inset-0 top-16 ${navOffsetClass} flex items-center justify-center bg-[#313338] text-gray-100`}>
       <div className="text-center">
         <UserGroupIcon className="h-16 w-16 mx-auto text-gray-600 dark:text-gray-300 mb-4" />
         <h2 className="text-xl font-semibold text-gray-400">Akses Chat Tidak Tersedia</h2>
@@ -887,7 +905,7 @@ const GroupChat: React.FC = () => {
 
   // ─── Render ───────────────────────────────────────────────────────────────
   return (
-    <div className="fixed inset-0 top-16 flex bg-[#313338] text-gray-100 overflow-hidden font-sans" style={{ fontFamily: "'gg sans','Noto Sans',Arial,sans-serif" }}>
+    <div className={`fixed inset-0 top-16 ${navOffsetClass} flex bg-[#313338] text-gray-100 overflow-hidden font-sans`} style={{ fontFamily: "'gg sans','Noto Sans',Arial,sans-serif" }}>
       <h1 className="sr-only">Group Chat</h1>
 
       {/* ═══ LEFT: Channel Sidebar ═══ */}

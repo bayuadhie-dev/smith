@@ -104,120 +104,101 @@ export default function ApprovalDashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#059669]"></div>
       </div>
     );
   }
 
+  // 2026-10-07: Axion bento-grid restyle (tier-1 module landing page,
+  // #12 of 17). Sub-pages (workflow detail) are intentionally left
+  // as-is - only this landing dashboard is in scope.
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Approval</h1>
-        <p className="text-gray-600 dark:text-gray-300">Manage transaction approvals with review and approval process</p>
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-snug">Approval</h1>
+        <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Manage transaction approvals with review and approval process</p>
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-        <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-lg shadow-lg p-6 text-white">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl shadow-lg p-5 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-yellow-100 text-sm">Pending Review</p>
+              <p className="text-sm opacity-90">Pending Review</p>
               <p className="text-3xl font-bold mt-2">{stats.pending_review}</p>
             </div>
-            <ClockIcon className="h-12 w-12 text-yellow-200" />
+            <ClockIcon className="h-10 w-10 opacity-75" />
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white">
+        <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl shadow-lg p-5 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-blue-100 text-sm">Pending Approval</p>
+              <p className="text-sm opacity-90">Pending Approval</p>
               <p className="text-3xl font-bold mt-2">{stats.pending_approval}</p>
             </div>
-            <DocumentTextIcon className="h-12 w-12 text-blue-200" />
+            <DocumentTextIcon className="h-10 w-10 opacity-75" />
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-lg p-6 text-white">
+        <div className="bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl shadow-lg p-5 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-green-100 text-sm">Approved</p>
+              <p className="text-sm opacity-90">Approved</p>
               <p className="text-3xl font-bold mt-2">{stats.approved}</p>
             </div>
-            <CheckCircleIcon className="h-12 w-12 text-green-200" />
+            <CheckCircleIcon className="h-10 w-10 opacity-75" />
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-lg shadow-lg p-6 text-white">
+        <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-lg p-5 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-red-100 text-sm">Rejected</p>
+              <p className="text-sm opacity-90">Rejected</p>
               <p className="text-3xl font-bold mt-2">{stats.rejected}</p>
             </div>
-            <XCircleIcon className="h-12 w-12 text-red-200" />
+            <XCircleIcon className="h-10 w-10 opacity-75" />
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg p-6 text-white">
+        <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl shadow-lg p-5 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-purple-100 text-sm">My Pending Tasks</p>
+              <p className="text-sm opacity-90">My Pending Tasks</p>
               <p className="text-3xl font-bold mt-2">{stats.my_pending}</p>
             </div>
-            <UserGroupIcon className="h-12 w-12 text-purple-200" />
+            <UserGroupIcon className="h-10 w-10 opacity-75" />
           </div>
         </div>
       </div>
 
       {/* Filter Tabs */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
-        <div className="flex space-x-2">
-          <button
-            onClick={() => setFilter('my_tasks')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              filter === 'my_tasks'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            My Tasks ({stats.my_pending})
-          </button>
-          <button
-            onClick={() => setFilter('pending_review')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              filter === 'pending_review'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            Pending Review
-          </button>
-          <button
-            onClick={() => setFilter('pending_approval')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              filter === 'pending_approval'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            Pending Approval
-          </button>
-          <button
-            onClick={() => setFilter('all')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              filter === 'all'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            All Workflows
-          </button>
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-4">
+        <div className="flex flex-wrap gap-2">
+          {[
+            { id: 'my_tasks', label: `My Tasks (${stats.my_pending})` },
+            { id: 'pending_review', label: 'Pending Review' },
+            { id: 'pending_approval', label: 'Pending Approval' },
+            { id: 'all', label: 'All Workflows' },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setFilter(tab.id)}
+              className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+                filter === tab.id
+                  ? 'bg-gradient-to-br from-[#059669] to-[#047857] text-white'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Workflows List */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-900">
@@ -286,7 +267,7 @@ export default function ApprovalDashboard() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <Link
                         to={`/app/approval/${workflow.id}`}
-                        className="text-blue-600 hover:text-blue-900"
+                        className="text-emerald-600 hover:text-emerald-800 dark:text-emerald-400"
                       >
                         View Details
                       </Link>

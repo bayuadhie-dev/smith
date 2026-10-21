@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
+import { confirmDialog } from '../../components/ui';
 import { TrashIcon, PencilIcon } from '@heroicons/react/24/outline';
 import { useGetProductsQuery } from '../../services/api';
 import {
@@ -79,7 +80,7 @@ export default function MasterDataRecipeTab() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Nonaktifkan resep ini?')) return;
+    if (!(await confirmDialog('Nonaktifkan resep ini?'))) return;
     try {
       await deleteRecipe(id).unwrap();
       toast.success('Resep dinonaktifkan');

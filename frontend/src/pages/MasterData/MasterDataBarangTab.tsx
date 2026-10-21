@@ -191,6 +191,8 @@ export default function MasterDataBarangTab() {
         payload.expiry_days = form.expiry_days;
         payload.safety_stock_qty = form.safety_stock_qty ?? null;
         payload.safety_stock_days = form.safety_stock_days ?? null;
+        payload.lot_sizing_procedure = form.lot_sizing_procedure || 'EX';
+        payload.fixed_lot_size = form.lot_sizing_procedure === 'FX' ? (form.fixed_lot_size ?? null) : null;
         await updateMaterialDetail({ id: editingRow.id, ...payload }).unwrap();
       }
       toast.success('Item berhasil diupdate');
@@ -473,6 +475,37 @@ export default function MasterDataBarangTab() {
                       />
                       <p className="text-xs text-gray-500 mt-1">MRP membulatkan shortage ke angka ini bila lebih kecil.</p>
                     </div>
+                    {editingRow.source === 'material' && (
+                      <div>
+                        <label className="block text-sm mb-1">Prosedur Lot Sizing</label>
+                        <select
+                          className="input-field"
+                          value={form.lot_sizing_procedure ?? 'EX'}
+                          onChange={(e) => setForm({ ...form, lot_sizing_procedure: e.target.value })}
+                        >
+                          <option value="EX">EX - Lot-for-lot (default, pakai MOQ di atas)</option>
+                          <option value="FX">FX - Ukuran Lot Tetap</option>
+                          <option value="WB">WB - Gabung Mingguan</option>
+                          <option value="MB">MB - Gabung Bulanan</option>
+                        </select>
+                        <p className="text-xs text-gray-500 mt-1">
+                          WB/MB menggabungkan beberapa planned order MRP dalam satu minggu/bulan kalender jadi satu pesanan.
+                        </p>
+                      </div>
+                    )}
+                    {editingRow.source === 'material' && form.lot_sizing_procedure === 'FX' && (
+                      <div>
+                        <label className="block text-sm mb-1">Ukuran Lot Tetap</label>
+                        <input
+                          type="number"
+                          className="input-field"
+                          value={form.fixed_lot_size ?? ''}
+                          onChange={(e) => setForm({ ...form, fixed_lot_size: e.target.value === '' ? null : Number(e.target.value) })}
+                          placeholder="Wajib diisi untuk FX"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Shortage dibulatkan ke atas ke kelipatan angka ini (MOQ diabaikan).</p>
+                      </div>
+                    )}
                     <div>
                       <label className="block text-sm mb-1">Reorder Point</label>
                       <input

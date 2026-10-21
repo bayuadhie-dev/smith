@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
+import { confirmDialog } from '../../components/ui';
 import {
   BookOpenIcon,
   PlusIcon,
@@ -154,7 +155,7 @@ const ManualAdmin: React.FC = () => {
   };
 
   const handleDeleteCategory = async (id: number) => {
-    if (!confirm('Yakin ingin menghapus kategori ini? Semua artikel di dalamnya juga akan terhapus.')) return;
+    if (!(await confirmDialog('Yakin ingin menghapus kategori ini? Semua artikel di dalamnya juga akan terhapus.'))) return;
     try {
       await axiosInstance.delete(`/api/manual/categories/${id}`);
       toast.success('Kategori berhasil dihapus');
@@ -183,7 +184,7 @@ const ManualAdmin: React.FC = () => {
   };
 
   const handleDeleteArticle = async (id: number) => {
-    if (!confirm('Yakin ingin menghapus artikel ini?')) return;
+    if (!(await confirmDialog('Yakin ingin menghapus artikel ini?'))) return;
     try {
       await axiosInstance.delete(`/api/manual/articles/${id}`);
       toast.success('Artikel berhasil dihapus');
@@ -212,7 +213,7 @@ const ManualAdmin: React.FC = () => {
   };
 
   const handleDeleteFaq = async (id: number) => {
-    if (!confirm('Yakin ingin menghapus FAQ ini?')) return;
+    if (!(await confirmDialog('Yakin ingin menghapus FAQ ini?'))) return;
     try {
       await axiosInstance.delete(`/api/manual/faqs/${id}`);
       toast.success('FAQ berhasil dihapus');

@@ -81,6 +81,43 @@ interface ActiveUsersData {
   offline_count: number
 }
 
+// Human-readable Indonesian labels for the audit log widget - resource_type
+// is a raw DB table name (e.g. "purchase_requisitions") or, from the
+// request-level tracker, a raw URL segment - neither reads naturally on
+// its own, so map the common ones and fall back to a cleaned-up version of
+// whatever string comes back rather than ever leaving it fully raw.
+const AUDIT_ACTION_LABEL: Record<string, string> = {
+  create: 'membuat',
+  update: 'mengubah',
+  delete: 'menghapus',
+  view: 'melihat',
+  list: 'melihat daftar',
+}
+const AUDIT_RESOURCE_LABEL: Record<string, string> = {
+  users: 'data pengguna',
+  auth: 'profil akun',
+  roles: 'role pengguna',
+  'batch-scheduling': 'penjadwalan batch',
+  batch_scheduling: 'penjadwalan batch',
+  purchase_requisitions: 'Purchase Requisition',
+  purchase_orders: 'Purchase Order',
+  pr_approvals: 'approval PR',
+  work_orders: 'Work Order (SPK)',
+  sales_orders: 'Sales Order',
+  shipping_orders: 'Shipping Order',
+  invoices: 'Invoice',
+  bill_of_materials: 'BOM',
+  settings: 'pengaturan sistem',
+  materials: 'data material',
+  products: 'data produk',
+}
+function describeAuditAction(action: string, resourceType: string) {
+  const verb = AUDIT_ACTION_LABEL[action] || action
+  const noun = AUDIT_RESOURCE_LABEL[resourceType]
+    || resourceType.replace(/_/g, ' ').replace(/-/g, ' ')
+  return `${verb} ${noun}`
+}
+
 export default function DashboardEnhanced() {
   const navigate = useNavigate()
   const { user } = useAppSelector((state) => state.auth)
@@ -98,6 +135,7 @@ export default function DashboardEnhanced() {
   const [activeUsers, setActiveUsers] = useState<ActiveUsersData | null>(null)
   const [showProductionOutput, setShowProductionOutput] = useState(false)
   const [dateRange] = useState('30')
+  const [auditSummary, setAuditSummary] = useState<any>(null)
 
   // Fetch trends data for production chart
   const { data: trends } = useQuery({
@@ -209,6 +247,16 @@ export default function DashboardEnhanced() {
     const interval = setInterval(() => refetch(), 5 * 60 * 1000)
     return () => clearInterval(interval)
   }, [refetch])
+
+  // Audit log summary widget - super_admin only (the audit-log endpoints
+  // themselves are locked to super_admin, 2026-10-16). A non-super-admin
+  // user would get a 403 here, so don't even call it for them.
+  useEffect(() => {
+    if (!(user as any)?.is_super_admin) return
+    axiosInstance.get('/api/settings/audit-logs/summary')
+      .then((res) => setAuditSummary(res.data))
+      .catch(() => setAuditSummary(null))
+  }, [(user as any)?.is_super_admin])
 
   if (isLoading) {
     return (
@@ -772,52 +820,78 @@ export default function DashboardEnhanced() {
           </div>
         </div>
 
-        {/* Recent Activity - real audit log, not simulated */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg overflow-hidden transition-shadow duration-200">
-          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-br from-slate-600 to-slate-800 rounded-lg">
-                <ClockIcon className="w-5 h-5 text-white" />
+        {/* Recent Activity - real audit log (field-level, 2026-10-16), super_admin only.
+            Was previously visible to anyone with executive_dashboard.view and showed raw
+            action/resource_type strings ("UPDATE auth") - now matches the same policy and
+            readable labels as the AuditTrail page itself (see describeAuditAction below). */}
+        {(user as any)?.is_super_admin && (
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg overflow-hidden transition-shadow duration-200">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-br from-slate-600 to-slate-800 rounded-lg">
+                  <ClockIcon className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white">Recent Activity</h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Audit trail (superadmin tidak tercatat)</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-base font-bold text-gray-900 dark:text-white">Recent Activity</h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Live audit trail</p>
+              <Link to="/app/settings/audit-trail" className="text-sm font-medium text-[#059669] hover:underline flex-shrink-0">
+                Lihat Semua
+              </Link>
+            </div>
+            {auditSummary && (
+              <div className="grid grid-cols-3 gap-px bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700">
+                <div className="bg-white dark:bg-gray-800 px-4 py-2 text-center">
+                  <p className="text-lg font-bold text-gray-900 dark:text-white">{auditSummary.today_count}</p>
+                  <p className="text-[11px] text-gray-400">Hari Ini</p>
+                </div>
+                <div className="bg-white dark:bg-gray-800 px-4 py-2 text-center">
+                  <p className="text-lg font-bold text-gray-900 dark:text-white">{auditSummary.week_count}</p>
+                  <p className="text-[11px] text-gray-400">7 Hari</p>
+                </div>
+                <div className="bg-white dark:bg-gray-800 px-4 py-2 text-center">
+                  <p className={`text-lg font-bold ${auditSummary.failed_today > 0 ? 'text-red-600' : 'text-gray-900 dark:text-white'}`}>{auditSummary.failed_today}</p>
+                  <p className="text-[11px] text-gray-400">Gagal</p>
+                </div>
               </div>
+            )}
+            <div className="p-2 space-y-0.5 max-h-[360px] overflow-y-auto">
+              {!activityLogs || activityLogs.length === 0 ? (
+                <div className="p-8 text-center">
+                  <ClockIcon className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Belum ada aktivitas</p>
+                </div>
+              ) : (
+                activityLogs.slice(0, 8).map((log: any) => {
+                  const actionMeta: Record<string, { dot: string }> = {
+                    CREATE: { dot: 'bg-green-500' },
+                    UPDATE: { dot: 'bg-orange-500' },
+                    DELETE: { dot: 'bg-red-500' },
+                  }
+                  const meta = actionMeta[log.action] || { dot: 'bg-gray-400' }
+                  return (
+                    <div key={log.id} className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                      <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-white text-[10px] font-bold ${meta.dot}`}>
+                        {log.action?.charAt(0)}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm text-gray-900 dark:text-white truncate">
+                          <span className="font-semibold">{log.user_name}</span>{' '}
+                          <span className="text-gray-500 dark:text-gray-400">
+                            {describeAuditAction((log.action || '').toLowerCase(), log.module || log.entity_type || '')}
+                          </span>
+                          {log.entity_id ? ` (#${log.entity_id})` : ''}
+                        </p>
+                        <p className="text-[11px] text-gray-400 dark:text-gray-500">{log.timestamp}</p>
+                      </div>
+                    </div>
+                  )
+                })
+              )}
             </div>
           </div>
-          <div className="p-2 space-y-0.5 max-h-[360px] overflow-y-auto">
-            {!activityLogs || activityLogs.length === 0 ? (
-              <div className="p-8 text-center">
-                <ClockIcon className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-                <p className="text-sm text-gray-500 dark:text-gray-400">No recent activity</p>
-              </div>
-            ) : (
-              activityLogs.slice(0, 8).map((log: any) => {
-                const actionMeta: Record<string, { dot: string; verb: string }> = {
-                  CREATE: { dot: 'bg-green-500', verb: 'menambahkan' },
-                  UPDATE: { dot: 'bg-orange-500', verb: 'mengubah' },
-                  DELETE: { dot: 'bg-red-500', verb: 'menghapus' },
-                }
-                const meta = actionMeta[log.action] || { dot: 'bg-gray-400', verb: 'melakukan aksi pada' }
-                return (
-                  <div key={log.id} className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-white text-[10px] font-bold ${meta.dot}`}>
-                      {log.action?.charAt(0)}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm text-gray-900 dark:text-white truncate">
-                        <span className="font-semibold">{log.user_name}</span>{' '}
-                        <span className="text-gray-500 dark:text-gray-400">{meta.verb}</span>{' '}
-                        {log.resource_name || log.description}
-                      </p>
-                      <p className="text-[11px] text-gray-400 dark:text-gray-500">{log.module} &middot; {log.timestamp}</p>
-                    </div>
-                  </div>
-                )
-              })
-            )}
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Module Shortcuts - quick menu: tile padat, chip warna sebagai satu-satunya penanda modul */}

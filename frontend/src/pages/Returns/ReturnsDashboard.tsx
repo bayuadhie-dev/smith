@@ -74,90 +74,87 @@ const [page, setPage] = useState(1)
     }
   }
 
+  // 2026-10-07: Axion bento-grid restyle (tier-1 module landing page,
+  // #16 of 17). Returns table/detail are intentionally left as-is -
+  // only the header+analytics section is in scope for the bento look.
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Retur</h1>
-          <p className="text-gray-600 dark:text-gray-300">Manage customer returns and QC inspections</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-snug">Retur</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Manage customer returns and QC inspections</p>
         </div>
         <Link
           to="/app/returns/new"
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+          className="bg-gradient-to-br from-[#059669] to-[#047857] text-white px-4 py-2 rounded-lg hover:shadow-lg transition-shadow flex items-center gap-2 text-sm font-medium"
         >
           <PlusIcon className="h-5 w-5" />
           New Return
         </Link>
       </div>
 
-      {/* Analytics Cards */}
+      {/* Analytics Cards - bento: Total Returns spans 2 cols (primary metric) */}
       {analytics && (
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-            <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <ArrowPathIcon className="h-6 w-6 text-blue-600" />
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+            <div className="xl:col-span-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl p-4 text-white shadow-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-2 bg-white/20 rounded-lg">
+                  <ArrowPathIcon className="w-5 h-5" />
+                </div>
+                <p className="text-sm opacity-90">Total Returns</p>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Returns</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">{analytics.summary.total_returns}</p>
+              <p className="text-3xl font-bold">{analytics.summary.total_returns}</p>
+            </div>
+
+            <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl p-4 text-white shadow-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-2 bg-white/20 rounded-lg">
+                  <ClockIcon className="w-5 h-5" />
+                </div>
               </div>
+              <p className="text-xs opacity-90 mb-1">Pending QC</p>
+              <p className="text-2xl font-bold">{analytics.summary.pending_qc}</p>
+            </div>
+
+            <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-2 bg-white/20 rounded-lg">
+                  <CheckCircleIcon className="w-5 h-5" />
+                </div>
+              </div>
+              <p className="text-xs opacity-90 mb-1">QC Approved</p>
+              <p className="text-2xl font-bold">{analytics.summary.approved_returns}</p>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-            <div className="flex items-center">
-              <div className="p-2 bg-yellow-100 rounded-lg">
-                <ClockIcon className="h-6 w-6 text-yellow-600" />
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+            <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white shadow-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-2 bg-white/20 rounded-lg">
+                  <XCircleIcon className="w-5 h-5" />
+                </div>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Pending QC</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">{analytics.summary.pending_qc}</p>
-              </div>
+              <p className="text-xs opacity-90 mb-1">QC Rejected</p>
+              <p className="text-2xl font-bold">{analytics.summary.rejected_returns}</p>
             </div>
-          </div>
 
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-            <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <CheckCircleIcon className="h-6 w-6 text-green-600" />
+            <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-2 bg-white/20 rounded-lg">
+                  <CheckCircleIcon className="w-5 h-5" />
+                </div>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">QC Approved</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">{analytics.summary.approved_returns}</p>
-              </div>
+              <p className="text-xs opacity-90 mb-1">Approval Rate</p>
+              <p className="text-2xl font-bold">{analytics.summary.qc_approval_rate.toFixed(1)}%</p>
             </div>
           </div>
-
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-            <div className="flex items-center">
-              <div className="p-2 bg-red-100 rounded-lg">
-                <XCircleIcon className="h-6 w-6 text-red-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">QC Rejected</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">{analytics.summary.rejected_returns}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-            <div className="flex items-center">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <CheckCircleIcon className="h-6 w-6 text-purple-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Approval Rate</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">{analytics.summary.qc_approval_rate.toFixed(1)}%</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        </>
       )}
 
       {/* Filters and Search */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
@@ -206,7 +203,7 @@ const [page, setPage] = useState(1)
       </div>
 
       {/* Returns Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-900">
@@ -286,7 +283,7 @@ const [page, setPage] = useState(1)
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <Link
                         to={`/app/returns/${returnItem.id}`}
-                        className="text-blue-600 hover:text-blue-900"
+                        className="text-emerald-600 hover:text-emerald-800 dark:text-emerald-400"
                       >
                         View Details
                       </Link>

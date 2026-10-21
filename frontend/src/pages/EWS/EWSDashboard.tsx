@@ -51,10 +51,13 @@ export default function EWSDashboard() {
     return 'text-green-600'
   }
 
+  // 2026-10-07: Axion bento-grid restyle (tier-1 module landing page,
+  // #13 of 17). Filters/table/modal below are intentionally left as-is -
+  // only the summary row is in scope for the bento treatment.
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+    <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-snug">
           Early Warning System — Risiko Downtime
         </h1>
         <select
@@ -69,29 +72,32 @@ export default function EWSDashboard() {
         </select>
       </div>
 
-      {/* Summary cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="card p-6">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Discore ({periodDays} hari)</h3>
-          <p className="mt-2 text-3xl font-semibold text-gray-900 dark:text-white">
+      {/* Summary cards - bento: Total Discore spans 2 cols (primary metric) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="xl:col-span-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl p-4 text-white shadow-lg">
+          <p className="text-sm opacity-90">Total Discore ({periodDays} hari)</p>
+          <p className="mt-1 text-3xl font-bold">
             {summaryLoading ? '...' : summaryData?.total_scored ?? 0}
           </p>
         </div>
-        <div className="card p-6">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Status BAHAYA</h3>
-          <p className="mt-2 text-3xl font-semibold text-red-600">
+        <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white shadow-lg">
+          <p className="text-xs opacity-90">Status BAHAYA</p>
+          <p className="mt-1 text-2xl font-bold">
             {summaryLoading ? '...' : summaryData?.bahaya ?? 0}
           </p>
         </div>
-        <div className="card p-6">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Status AMAN</h3>
-          <p className="mt-2 text-3xl font-semibold text-green-600">
+        <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
+          <p className="text-xs opacity-90">Status AMAN</p>
+          <p className="mt-1 text-2xl font-bold">
             {summaryLoading ? '...' : summaryData?.aman ?? 0}
           </p>
         </div>
-        <div className="card p-6">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Rasio Bahaya</h3>
-          <p className="mt-2 text-3xl font-semibold text-gray-900 dark:text-white">
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-4 text-white shadow-lg">
+          <p className="text-xs opacity-90">Rasio Bahaya</p>
+          <p className="mt-1 text-2xl font-bold">
             {summaryLoading ? '...' : `${summaryData?.bahaya_rate ?? 0}%`}
           </p>
         </div>

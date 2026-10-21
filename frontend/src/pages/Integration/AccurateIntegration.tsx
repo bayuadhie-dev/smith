@@ -65,6 +65,7 @@ import {
   ChevronUpDownIcon,
   MagnifyingGlassIcon,
 } from '@heroicons/react/24/outline'
+import { confirmDialog, showSuccess, showError, showWarning } from '../../components/ui'
 
 export default function AccurateIntegration() {
   const [activeTab, setActiveTab] = useState<'config' | 'mapping' | 'dryrun' | 'approval' | 'modules' | 'ejo' | 'warehouse' | 'transfer'>('config')
@@ -94,9 +95,9 @@ export default function AccurateIntegration() {
   const handleScanBomIndex = async () => {
     try {
       const res = await scanBomIndex().unwrap()
-      alert(`Index BOM berhasil disegarkan: ${res.data.indexed_count} item ter-index.`)
+      showSuccess(`Index BOM berhasil disegarkan: ${res.data.indexed_count} item ter-index.`)
     } catch (err: any) {
-      alert(err?.data?.message || 'Gagal menyegarkan index BOM.')
+      showError(err?.data?.message || 'Gagal menyegarkan index BOM.')
     }
   }
 
@@ -107,10 +108,10 @@ export default function AccurateIntegration() {
   const handleScanWoCache = async () => {
     try {
       const res = await scanWoCache().unwrap()
-      alert(`Daftar EJO berhasil disegarkan: ${res.data.cached_count} Perintah Kerja ter-cache. Proses ini butuh beberapa menit.`)
+      showSuccess(`Daftar EJO berhasil disegarkan: ${res.data.cached_count} Perintah Kerja ter-cache. Proses ini butuh beberapa menit.`)
       refetchWoCache()
     } catch (err: any) {
-      alert(err?.data?.message || 'Gagal menyegarkan daftar EJO.')
+      showError(err?.data?.message || 'Gagal menyegarkan daftar EJO.')
     }
   }
 
@@ -130,10 +131,10 @@ export default function AccurateIntegration() {
   const handleSyncWarehouseStock = async () => {
     try {
       const res = await syncWarehouseStock().unwrap()
-      alert(`Sinkronisasi selesai: ${res.data.synced} tahap tersinkron, ${res.data.skipped_already_synced} sudah pernah disync sebelumnya, ${res.data.skipped_no_match} produk tidak cocok.`)
+      showSuccess(`Sinkronisasi selesai: ${res.data.synced} tahap tersinkron, ${res.data.skipped_already_synced} sudah pernah disync sebelumnya, ${res.data.skipped_no_match} produk tidak cocok.`)
       refetchWarehouseStock()
     } catch (err: any) {
-      alert(err?.data?.message || 'Gagal menyinkronkan stok gudang.')
+      showError(err?.data?.message || 'Gagal menyinkronkan stok gudang.')
     }
   }
 
@@ -160,10 +161,10 @@ export default function AccurateIntegration() {
   const handleSyncSnapshotFull = async () => {
     try {
       const res = await syncSnapshotFull().unwrap()
-      alert(`Sinkronisasi selesai: ${res.data.synced} entri gudang tersinkron dari ${res.data.scanned} item Accurate (${res.data.skipped_no_match} tidak cocok). Proses ini butuh 5-10 menit.`)
+      showSuccess(`Sinkronisasi selesai: ${res.data.synced} entri gudang tersinkron dari ${res.data.scanned} item Accurate (${res.data.skipped_no_match} tidak cocok). Proses ini butuh 5-10 menit.`)
       refetchSnapshotSummary()
     } catch (err: any) {
-      alert(err?.data?.message || 'Gagal menyinkronkan snapshot stok gudang.')
+      showError(err?.data?.message || 'Gagal menyinkronkan snapshot stok gudang.')
     }
   }
 
@@ -181,10 +182,10 @@ export default function AccurateIntegration() {
   const handleSyncTransfer = async () => {
     try {
       const res = await syncTransfer().unwrap()
-      alert(`Sinkronisasi selesai: ${res.data.synced} transaksi baru tersinkron dari ${res.data.scanned} transaksi Accurate. Proses ini bisa butuh beberapa menit.`)
+      showSuccess(`Sinkronisasi selesai: ${res.data.synced} transaksi baru tersinkron dari ${res.data.scanned} transaksi Accurate. Proses ini bisa butuh beberapa menit.`)
       refetchTransferList()
     } catch (err: any) {
-      alert(err?.data?.message || 'Gagal menyinkronkan histori transfer gudang.')
+      showError(err?.data?.message || 'Gagal menyinkronkan histori transfer gudang.')
     }
   }
 
@@ -231,7 +232,7 @@ export default function AccurateIntegration() {
       }))
       setSelectedCandidateProductId(null)
     } catch (err: any) {
-      alert(err?.data?.message || 'Gagal menghitung perbandingan dengan WO yang dipilih.')
+      showError(err?.data?.message || 'Gagal menghitung perbandingan dengan WO yang dipilih.')
     }
   }
 
@@ -258,10 +259,10 @@ export default function AccurateIntegration() {
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     if (params.get('connected') === 'true') {
-      alert('Berhasil terhubung ke Accurate Online via OAuth!')
+      showSuccess('Berhasil terhubung ke Accurate Online via OAuth!')
       window.history.replaceState({}, document.title, window.location.pathname)
     } else if (params.get('oauth_error')) {
-      alert('OAuth Error: ' + params.get('oauth_error'))
+      showError('OAuth Error: ' + params.get('oauth_error'))
       window.history.replaceState({}, document.title, window.location.pathname)
     }
   }, [])
@@ -272,7 +273,7 @@ export default function AccurateIntegration() {
   const [bulkImportResult, setBulkImportResult] = useState<any>(null)
 
   const handleBulkImportMaster = async () => {
-    if (!window.confirm('Import semua Item, Vendor, Customer, dan GL Account dari Accurate sebagai record BARU di SMITH? Cocok untuk database yang masih kosong. Data yang kodenya sudah ada akan dilewati (tidak duplikat).')) {
+    if (!(await confirmDialog('Import semua Item, Vendor, Customer, dan GL Account dari Accurate sebagai record BARU di SMITH? Cocok untuk database yang masih kosong. Data yang kodenya sudah ada akan dilewati (tidak duplikat).'))) {
       return
     }
     setBulkImportResult(null)
@@ -280,7 +281,7 @@ export default function AccurateIntegration() {
       const res = await bulkImportMaster().unwrap()
       setBulkImportResult(res.data)
     } catch (err: any) {
-      alert('Gagal import: ' + (err?.data?.details || err.message))
+      showError('Gagal import: ' + (err?.data?.details || err.message))
     }
   }
 
@@ -395,9 +396,9 @@ export default function AccurateIntegration() {
         access_token: accessToken || undefined,
         api_url: apiUrl || config?.api_url,
       }).unwrap()
-      alert('Konfigurasi API Accurate berhasil disimpan!')
+      showSuccess('Konfigurasi API Accurate berhasil disimpan!')
     } catch (err: any) {
-      alert('Gagal menyimpan konfigurasi: ' + (err?.data?.details || err.message))
+      showError('Gagal menyimpan konfigurasi: ' + (err?.data?.details || err.message))
     }
   }
 
@@ -405,14 +406,14 @@ export default function AccurateIntegration() {
     try {
       await updateConfig({ is_dry_run: !currentVal }).unwrap()
     } catch (err: any) {
-      alert('Gagal mengubah mode dry-run')
+      showError('Gagal mengubah mode dry-run')
     }
   }
 
   const handleSaveMappingSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedAccNo || !selectedInternalId) {
-      alert('Pilih barang Accurate dan item Internal ERP yang ingin di-mapping')
+      showWarning('Pilih barang Accurate dan item Internal ERP yang ingin di-mapping')
       return
     }
     const accItem = accurateItems.find((i: any) => i.item_no === selectedAccNo)
@@ -426,41 +427,41 @@ export default function AccurateIntegration() {
         smith_product_id: selectedInternalType === 'product' ? Number(selectedInternalId) : null,
         uom_conversion_ratio: uomRatio,
       }).unwrap()
-      alert('Pemetaan barang berhasil disimpan!')
+      showSuccess('Pemetaan barang berhasil disimpan!')
       setSelectedAccNo('')
       setSelectedInternalId('')
     } catch (err: any) {
-      alert('Gagal menyimpan pemetaan: ' + (err?.data?.details || err.message))
+      showError('Gagal menyimpan pemetaan: ' + (err?.data?.details || err.message))
     }
   }
 
   const handleRunDryRunSubmit = async () => {
     try {
       await runDryRun().unwrap()
-      alert('Simulasi Dry-Run selesai! Hasil preview dapat dilihat di tabel di bawah.')
+      showSuccess('Simulasi Dry-Run selesai! Hasil preview dapat dilihat di tabel di bawah.')
     } catch (err: any) {
-      alert('Gagal menjalankan simulasi: ' + (err?.data?.details || err.message))
+      showError('Gagal menjalankan simulasi: ' + (err?.data?.details || err.message))
     }
   }
 
   const handleApprove = async (logId: number) => {
-    if (window.confirm('Apakah Anda yakin ingin menyetujui transaksi ini dan menerapkan stok ke WMS?')) {
+    if (await confirmDialog('Apakah Anda yakin ingin menyetujui transaksi ini dan menerapkan stok ke WMS?')) {
       try {
         await approveLog(logId).unwrap()
-        alert('Transaksi berhasil diapprove & stok WMS ter-update!')
+        showSuccess('Transaksi berhasil diapprove & stok WMS ter-update!')
       } catch (err: any) {
-        alert('Gagal menyetujui: ' + (err?.data?.details || err.message))
+        showError('Gagal menyetujui: ' + (err?.data?.details || err.message))
       }
     }
   }
 
   const handleReject = async (logId: number) => {
-    if (window.confirm('Apakah Anda yakin ingin menolak transaksi ini?')) {
+    if (await confirmDialog('Apakah Anda yakin ingin menolak transaksi ini?', { danger: true })) {
       try {
         await rejectLog(logId).unwrap()
-        alert('Transaksi ditolak')
+        showSuccess('Transaksi ditolak')
       } catch (err: any) {
-        alert('Gagal menolak: ' + (err?.data?.details || err.message))
+        showError('Gagal menolak: ' + (err?.data?.details || err.message))
       }
     }
   }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { FileText, AlertTriangle, Mail, Trash2, BarChart3, Plus, Search, Eye, Upload, CheckCircle, Clock, XCircle, ChevronDown, ChevronRight, RefreshCw, Filter, Download, Edit, MessageSquare, Send, ClipboardList, BookOpen, Archive } from 'lucide-react';
+import { confirmDialog, showError, showSuccess, showWarning } from '../../components/ui';
 
 // ============================================================
 // TypeScript Interfaces
@@ -171,7 +172,7 @@ const fetchApi = async (url: string, options?: RequestInit) => {
 
 const downloadFile = async (url: string, filename: string) => {
   const res = await fetch(`${API_BASE}${url}`, { headers: getAuthHeaders() });
-  if (!res.ok) { alert('Download gagal: ' + (await res.text())); return; }
+  if (!res.ok) { showError('Download gagal: ' + (await res.text())); return; }
   const blob = await res.blob();
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -253,11 +254,11 @@ const DocumentListTab = () => {
 
   const handleDelete = async (e: React.MouseEvent, docId: number, docNumber: string) => {
     e.stopPropagation();
-    if (!confirm(`Hapus dokumen ${docNumber} beserta semua revisi dan distribusinya?`)) return;
+    if (!(await confirmDialog(`Hapus dokumen ${docNumber} beserta semua revisi dan distribusinya?`))) return;
     try {
       await fetchApi(`/documents/${docId}`, { method: 'DELETE' });
       loadDocs();
-    } catch (err: any) { alert('Error: ' + err.message); }
+    } catch (err: any) { showError('Error: ' + err.message); }
   };
 
   const loadDocs = useCallback(async () => {
@@ -280,7 +281,7 @@ const DocumentListTab = () => {
       setShowForm(false);
       setFormData({ document_number: '', title: '', document_level: 'II', department_code: 'DCC', retention_period_years: 5, required_reviewers: 1, assigned_reviewer_id: '', assigned_reviewer2_id: '', assigned_approver_id: '' });
       loadDocs();
-    } catch (e: any) { alert('Error: ' + e.message); }
+    } catch (e: any) { showError('Error: ' + e.message); }
   };
 
   const levels = [
@@ -544,7 +545,7 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
   };
 
   const handleNewRevision = async () => {
-    if (!revFormData.change_notice_id) { alert('Pilih Change Notice'); return; }
+    if (!revFormData.change_notice_id) { showWarning('Pilih Change Notice'); return; }
     try {
       const payload: any = { ...revFormData, change_notice_id: Number(revFormData.change_notice_id) };
       if (payload.assigned_reviewer_id) payload.assigned_reviewer_id = Number(payload.assigned_reviewer_id);
@@ -557,7 +558,7 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
       await fetchApi(`/documents/${docId}/revisions`, { method: 'POST', body: JSON.stringify(payload) });
       setShowRevisionForm(false);
       loadAll();
-    } catch (e: any) { alert('Error: ' + e.message); }
+    } catch (e: any) { showError('Error: ' + e.message); }
   };
 
   const handleFileUpload = async (revId: number, accept: string = '.pdf,.docx,.doc,.xlsx,.xls') => {
@@ -573,17 +574,17 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
       try {
         const res = await fetch(`${API_BASE}/revisions/${revId}/upload`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: fd });
         const data = await res.json();
-        if (!res.ok) { alert(data.error || 'Upload gagal'); return; }
+        if (!res.ok) { showError(data.error || 'Upload gagal'); return; }
         loadAll();
-      } catch (e: any) { alert('Error: ' + e.message); }
+      } catch (e: any) { showError('Error: ' + e.message); }
     };
     input.click();
   };
 
   const handleDistribute = async () => {
-    if (selectedDepts.length === 0) return alert('Pilih minimal 1 departemen');
+    if (selectedDepts.length === 0) { showWarning('Pilih minimal 1 departemen'); return; }
     const activeRev = detail?.revisions?.find((r: any) => r.status === 'active');
-    if (!activeRev) return alert('Tidak ada revisi aktif untuk didistribusikan');
+    if (!activeRev) { showWarning('Tidak ada revisi aktif untuk didistribusikan'); return; }
     try {
       await fetchApi(`/documents/${docId}/distribute`, {
         method: 'POST', body: JSON.stringify({ revision_id: activeRev.id, departments: selectedDepts, copy_type: 'controlled' })
@@ -591,14 +592,14 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
       setShowDistForm(false);
       setSelectedDepts([]);
       loadAll();
-    } catch (e: any) { alert('Error: ' + e.message); }
+    } catch (e: any) { showError('Error: ' + e.message); }
   };
 
   const handleAcknowledge = async (distId: number) => {
     try {
       await fetchApi(`/distribution/${distId}/acknowledge`, { method: 'POST', body: JSON.stringify({ old_copy_returned: true }) });
       loadAll();
-    } catch (e: any) { alert('Error: ' + e.message); }
+    } catch (e: any) { showError('Error: ' + e.message); }
   };
 
   if (loading) return <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"><div className="bg-white dark:bg-gray-800 rounded-xl p-8">Memuat...</div></div>;
@@ -1046,7 +1047,7 @@ const CapaTab = () => {
       await fetchApi('/capa', { method: 'POST', body: JSON.stringify(formData) });
       setShowForm(false);
       loadCapas();
-    } catch (e: any) { alert('Error: ' + e.message); }
+    } catch (e: any) { showError('Error: ' + e.message); }
   };
 
   const sources = [
@@ -1239,16 +1240,16 @@ const CapaDetailModal = ({ capaId, onClose }: { capaId: number; onClose: () => v
     try {
       await fetchApi(`/capa/${capaId}/investigation`, { method: 'POST', body: JSON.stringify(invForm) });
       loadDetail();
-      alert('Investigasi berhasil disimpan');
-    } catch (e: any) { alert('Error: ' + e.message); }
+      showSuccess('Investigasi berhasil disimpan');
+    } catch (e: any) { showError('Error: ' + e.message); }
   };
 
   const saveVerification = async () => {
     try {
       await fetchApi(`/capa/${capaId}/verification`, { method: 'POST', body: JSON.stringify(verForm) });
       loadDetail();
-      alert('Verifikasi berhasil disimpan');
-    } catch (e: any) { alert('Error: ' + e.message); }
+      showSuccess('Verifikasi berhasil disimpan');
+    } catch (e: any) { showError('Error: ' + e.message); }
   };
 
   if (loading) return <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"><div className="bg-white dark:bg-gray-800 rounded-xl p-8">Memuat...</div></div>;
@@ -1273,7 +1274,7 @@ const CapaDetailModal = ({ capaId, onClose }: { capaId: number; onClose: () => v
                 const reason = prompt('Alasan pembatalan CAPA:');
                 if (!reason) return;
                 try { await fetchApi(`/capa/${capaId}/cancel`, { method: 'POST', body: JSON.stringify({ reason }) }); loadDetail(); }
-                catch (e: any) { alert('Error: ' + e.message); }
+                catch (e: any) { showError('Error: ' + e.message); }
               }} className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-sm hover:bg-red-200">
                 Batalkan CAPA
               </button>
@@ -1466,7 +1467,7 @@ const MemoTab = () => {
       setShowForm(false);
       setFormData({ subject: '', content: '', category: 'lainnya' });
       loadMemos();
-    } catch (e: any) { alert('Error: ' + e.message); }
+    } catch (e: any) { showError('Error: ' + e.message); }
   };
 
   const categories = [
@@ -1576,12 +1577,12 @@ const MemoTab = () => {
               <div className="flex gap-2">
                 <button onClick={() => setPublishMemoId(null)} className="px-4 py-2 border rounded-lg text-sm">Batal</button>
                 <button onClick={async () => {
-                  if (publishDepts.length === 0) return alert('Pilih minimal 1 departemen');
+                  if (publishDepts.length === 0) { showWarning('Pilih minimal 1 departemen'); return; }
                   try {
                     await fetchApi(`/memos/${publishMemoId}/publish`, { method: 'POST', body: JSON.stringify({ departments: publishDepts }) });
                     setPublishMemoId(null);
                     loadMemos();
-                  } catch (e: any) { alert('Error: ' + e.message); }
+                  } catch (e: any) { showError('Error: ' + e.message); }
                 }} className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700">
                   Publish ({publishDepts.length} dept)
                 </button>
@@ -1622,7 +1623,7 @@ const DestructionTab = () => {
       await fetchApi('/destructions', { method: 'POST', body: JSON.stringify(formData) });
       setShowForm(false);
       loadLogs();
-    } catch (e: any) { alert('Error: ' + e.message); }
+    } catch (e: any) { showError('Error: ' + e.message); }
   };
 
   return (
@@ -1728,7 +1729,7 @@ const DestructionTab = () => {
                   {l.witness_confirmed ? <span className="text-green-600">✓ {l.witnessed_by}</span> : (
                     <button onClick={async () => {
                       try { await fetchApi(`/destructions/${l.id}/witness`, { method: 'POST' }); loadLogs(); }
-                      catch (e: any) { alert('Error: ' + e.message); }
+                      catch (e: any) { showError('Error: ' + e.message); }
                     }} className="px-2 py-1 bg-yellow-500 text-white rounded text-xs hover:bg-yellow-600">Witness</button>
                   )}
                 </td>
@@ -1737,7 +1738,7 @@ const DestructionTab = () => {
                     l.witness_confirmed ? (
                       <button onClick={async () => {
                         try { await fetchApi(`/destructions/${l.id}/verify`, { method: 'POST' }); loadLogs(); }
-                        catch (e: any) { alert('Error: ' + e.message); }
+                        catch (e: any) { showError('Error: ' + e.message); }
                       }} className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700">Verify</button>
                     ) : <span className="text-gray-400">Tunggu saksi</span>
                   )}
@@ -1771,7 +1772,7 @@ const QualityRecordsTab = () => {
     try {
       await fetchApi('/quality-records', { method: 'POST', body: JSON.stringify(formData) });
       setShowForm(false); loadRecords();
-    } catch (e: any) { alert('Error: ' + e.message); }
+    } catch (e: any) { showError('Error: ' + e.message); }
   };
 
   const departments = [
@@ -1908,13 +1909,13 @@ const ChangeNoticeTab = () => {
   useEffect(() => { if (selectedDocId) loadNotices(selectedDocId); }, [selectedDocId, loadNotices]);
 
   const handleCreate = async () => {
-    if (!selectedDocId) return alert('Pilih dokumen terlebih dahulu');
+    if (!selectedDocId) { showWarning('Pilih dokumen terlebih dahulu'); return; }
     try {
       await fetchApi(`/documents/${selectedDocId}/change-notice`, { method: 'POST', body: JSON.stringify(formData) });
       setShowForm(false);
       setFormData({ change_description: '', reason: '', change_type: 'content_change' });
       loadNotices(selectedDocId);
-    } catch (e: any) { alert('Error: ' + e.message); }
+    } catch (e: any) { showError('Error: ' + e.message); }
   };
 
   const handleApprove = async (noticeId: number, action: string) => {
@@ -1922,7 +1923,7 @@ const ChangeNoticeTab = () => {
     try {
       await fetchApi(`/change-notices/${noticeId}/approve`, { method: 'POST', body: JSON.stringify({ action, rejection_reason: reason }) });
       if (selectedDocId) loadNotices(selectedDocId);
-    } catch (e: any) { alert('Error: ' + e.message); }
+    } catch (e: any) { showError('Error: ' + e.message); }
   };
 
   return (
@@ -2062,13 +2063,13 @@ const DocumentReviewTab = () => {
   useEffect(() => { if (selectedDocId) loadReviews(selectedDocId); }, [selectedDocId, loadReviews]);
 
   const handleSubmit = async () => {
-    if (!selectedDocId) return alert('Pilih dokumen terlebih dahulu');
+    if (!selectedDocId) { showWarning('Pilih dokumen terlebih dahulu'); return; }
     try {
       await fetchApi(`/documents/${selectedDocId}/review`, { method: 'POST', body: JSON.stringify(formData) });
       setShowForm(false);
       setFormData({ review_result: 'still_relevant', review_notes: '', next_review_date: '' });
       loadReviews(selectedDocId);
-    } catch (e: any) { alert('Error: ' + e.message); }
+    } catch (e: any) { showError('Error: ' + e.message); }
   };
 
   const resultLabels: Record<string, { label: string; color: string }> = {

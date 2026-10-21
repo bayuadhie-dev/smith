@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
+import { confirmDialog } from '../../components/ui';
 import {
   ArrowLeftIcon,
   Cog6ToothIcon,
@@ -169,7 +170,7 @@ const ServerSettings: React.FC = () => {
   };
 
   const handleDeleteServer = async () => {
-    if (!confirm('Yakin ingin menghapus server ini? Semua data akan hilang.')) return;
+    if (!(await confirmDialog('Yakin ingin menghapus server ini? Semua data akan hilang.'))) return;
     
     try {
       await axiosInstance.delete(`/api/chat/servers/${serverId}`);
@@ -200,7 +201,7 @@ const ServerSettings: React.FC = () => {
   };
 
   const handleDeleteChannel = async (channelId: number) => {
-    if (!confirm('Yakin ingin menghapus channel ini?')) return;
+    if (!(await confirmDialog('Yakin ingin menghapus channel ini?'))) return;
     
     try {
       await axiosInstance.delete(`/api/chat/channels/${channelId}`);
@@ -257,7 +258,7 @@ const ServerSettings: React.FC = () => {
   };
 
   const handleDeleteCategory = async (categoryId: number) => {
-    if (!confirm('Yakin ingin menghapus kategori ini? Channel di dalamnya akan dipindahkan ke uncategorized.')) return;
+    if (!(await confirmDialog('Yakin ingin menghapus kategori ini? Channel di dalamnya akan dipindahkan ke uncategorized.'))) return;
     
     try {
       await axiosInstance.delete(`/api/chat/categories/${categoryId}`);
@@ -288,7 +289,7 @@ const ServerSettings: React.FC = () => {
   };
 
   const handleDeleteRole = async (roleId: number) => {
-    if (!confirm('Yakin ingin menghapus role ini?')) return;
+    if (!(await confirmDialog('Yakin ingin menghapus role ini?'))) return;
     
     try {
       await axiosInstance.delete(`/api/chat/roles/${roleId}`);
