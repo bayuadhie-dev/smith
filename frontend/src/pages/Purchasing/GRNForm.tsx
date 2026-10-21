@@ -32,11 +32,12 @@ interface PurchaseOrder {
 interface POItem {
   id: number;
   line_number: number;
-  product?: {
-    id: number;
-    name: string;
-    code: string;
-  };
+  product_id?: number | null;
+  product_name?: string | null;
+  product_code?: string | null;
+  material_id?: number | null;
+  material_name?: string | null;
+  material_code?: string | null;
   description: string;
   quantity: number;
   uom: string;
@@ -54,6 +55,7 @@ interface Location {
 interface GRNItem {
   po_item_id: number;
   product_id: number | null;
+  material_id: number | null;
   quantity_ordered: number;
   quantity_received: number;
   quantity_accepted: number;
@@ -126,7 +128,8 @@ const GRNForm: React.FC = () => {
       // Initialize items from PO
       const grnItems: GRNItem[] = (po.items || []).map((item: any) => ({
         po_item_id: item.id,
-        product_id: item.product_id ?? item.product?.id ?? null,
+        product_id: item.product_id ?? null,
+        material_id: item.material_id ?? null,
         quantity_ordered: item.quantity,
         quantity_received: 0,
         quantity_accepted: 0,
@@ -178,6 +181,7 @@ const GRNForm: React.FC = () => {
         items: (data.items || []).map((item: any) => ({
           po_item_id: item.po_item_id,
           product_id: item.product_id ?? null,
+          material_id: item.material_id ?? null,
           quantity_ordered: item.quantity_ordered,
           quantity_received: item.quantity_received,
           quantity_accepted: item.quantity_accepted,
@@ -265,7 +269,7 @@ const GRNForm: React.FC = () => {
         if (i === index) {
           const updatedItem = {
             ...item,
-            [field]: ['quantity_ordered', 'quantity_received', 'quantity_accepted', 'quantity_rejected', 'product_id', 'location_id'].includes(field)
+            [field]: ['quantity_ordered', 'quantity_received', 'quantity_accepted', 'quantity_rejected', 'product_id', 'material_id', 'location_id'].includes(field)
               ? (value === '' ? (field.includes('_id') ? null : 0) : Number(value))
               : value
           };
@@ -342,7 +346,7 @@ const GRNForm: React.FC = () => {
                   <option value="">Select Purchase Order</option>
                   {purchaseOrders.map(po => (
                     <option key={po.id} value={po.id}>
-                      {po.po_number} - {po.supplier.company_name}
+                      {po.po_number} - {po.supplier_name || po.supplier?.company_name}
                     </option>
                   ))}
                 </select>
@@ -432,7 +436,7 @@ const GRNForm: React.FC = () => {
                         <div>
                           <h4 className="font-medium text-gray-900 dark:text-white">
                             <Hash className="inline h-4 w-4 mr-1" />
-                            Line {poItem?.line_number} - {poItem?.product?.name || poItem?.description}
+                            Line {poItem?.line_number} - {poItem?.product_name || poItem?.material_name || poItem?.description}
                           </h4>
                           <p className="text-sm text-gray-500 dark:text-gray-400">
                             Ordered: {item.quantity_ordered} {item.uom}

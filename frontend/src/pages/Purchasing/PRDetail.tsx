@@ -2,11 +2,18 @@ import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import AccessibleModal from '../../components/ui/AccessibleModal';
+import { toast } from 'react-hot-toast';
 import {
   ArrowLeftIcon, PencilSquareIcon, ArrowPathIcon, CubeIcon,
-  ArrowTopRightOnSquareIcon,
+  ArrowTopRightOnSquareIcon, CheckCircleIcon, XCircleIcon, ClockIcon,
 } from '@heroicons/react/24/outline';
 import { formatRupiah } from '../../utils/currencyUtils';
+
+const STEP_STATUS_CONFIG: Record<string, { label: string; color: string; icon: any }> = {
+  pending:  { label: 'Menunggu', color: 'bg-gray-100 text-gray-600', icon: ClockIcon },
+  approved: { label: 'Disetujui', color: 'bg-green-100 text-green-700', icon: CheckCircleIcon },
+  rejected: { label: 'Ditolak', color: 'bg-red-100 text-red-700', icon: XCircleIcon },
+};
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   draft:     { label: 'Draft',      color: 'bg-gray-100 text-gray-700' },
@@ -26,12 +33,38 @@ export default function PRDetail() {
     open: false, loading: false, data: null, itemName: '',
   });
 
-  useEffect(() => {
+  // Drill-down modal: approval step detail
+  const [stepModal, setStepModal] = useState<{ open: boolean; step: any }>({ open: false, step: null });
+  const [actingLevel, setActingLevel] = useState<number | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const [showRejectFor, setShowRejectFor] = useState<number | null>(null);
+
+  const fetchPr = () => {
     setLoading(true);
-    axiosInstance.get(`/api/purchasing/purchase-requisitions/${id}`)
+    return axiosInstance.get(`/api/purchasing/purchase-requisitions/${id}`)
       .then(r => setPr(r.data))
       .finally(() => setLoading(false));
-  }, [id]);
+  };
+
+  useEffect(() => { fetchPr(); }, [id]);
+
+  const actOnStep = async (level: number, action: 'approve' | 'reject', reason?: string) => {
+    setActingLevel(level);
+    try {
+      await axiosInstance.post(`/api/purchasing/purchase-requisitions/${id}/approval-steps/${level}/action`, {
+        action,
+        rejection_reason: reason,
+      });
+      toast.success(action === 'approve' ? `Level ${level} disetujui` : `PR ditolak pada level ${level}`);
+      setShowRejectFor(null);
+      setRejectReason('');
+      await fetchPr();
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || 'Gagal memproses approval');
+    } finally {
+      setActingLevel(null);
+    }
+  };
 
   const openMaterialDrillDown = async (item: any) => {
     if (!item.material_id) return; // drill-down only meaningful for real material master data
@@ -101,6 +134,17 @@ export default function PRDetail() {
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-5">
         <h2 className="text-base font-bold text-gray-900 dark:text-white mb-4">Informasi Umum</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 text-sm">
+          {pr.sales_order_id && (
+            <div className="md:col-span-2 flex items-center gap-2">
+              <span className="text-xs text-gray-400">Dibuat otomatis dari kekurangan bahan baku</span>
+              <Link
+                to={`/app/sales/orders/${pr.sales_order_id}`}
+                className="text-sm font-medium text-blue-600 hover:text-blue-700 underline"
+              >
+                {pr.sales_order_number || `SO #${pr.sales_order_id}`}
+              </Link>
+            </div>
+          )}
           <InfoRow label="Diajukan oleh" value={pr.requester_name || '-'} />
           <InfoRow label="Departemen" value={pr.department || '-'} />
           <InfoRow label="Tanggal Pengajuan" value={pr.request_date || '-'} />
@@ -121,6 +165,94 @@ export default function PRDetail() {
           </div>
         )}
       </div>
+
+      {/* Approval Berjenjang - hanya muncul untuk PR dengan nilai di atas
+          batas auto-approve (punya PRApproval rows). Tiap baris bisa
+          diklik untuk drill-down detail (siapa, kapan, komentar). */}
+      {pr.approval_steps && pr.approval_steps.length > 0 && (
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-5">
+          <h2 className="text-base font-bold text-gray-900 dark:text-white mb-4">Approval Berjenjang</h2>
+          <div className="space-y-2">
+            {pr.approval_steps.map((step: any, idx: number) => {
+              const cfg = STEP_STATUS_CONFIG[step.status] || STEP_STATUS_CONFIG.pending;
+              const StepIcon = cfg.icon;
+              const priorApproved = pr.approval_steps.slice(0, idx).every((s: any) => s.status === 'approved');
+              const isActionable = step.status === 'pending' && priorApproved;
+              return (
+                <div key={step.id} className="border border-gray-100 dark:border-gray-700 rounded-xl overflow-hidden">
+                  <div
+                    onClick={() => setStepModal({ open: true, step })}
+                    className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/40"
+                    title="Klik untuk lihat detail"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="w-7 h-7 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-xs font-bold text-gray-600 dark:text-gray-300">
+                        {step.approval_level}
+                      </span>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">{step.required_role_name || `Role #${step.required_role_id}`}</p>
+                        {step.approver_name && (
+                          <p className="text-xs text-gray-400">{step.approver_name} &middot; {step.approved_at ? new Date(step.approved_at).toLocaleString('id-ID') : ''}</p>
+                        )}
+                      </div>
+                    </div>
+                    <span className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${cfg.color}`}>
+                      <StepIcon className="h-3.5 w-3.5" /> {cfg.label}
+                    </span>
+                  </div>
+                  {isActionable && (
+                    <div className="border-t border-gray-100 dark:border-gray-700 p-3 bg-gray-50 dark:bg-gray-700/20">
+                      {showRejectFor === step.approval_level ? (
+                        <div className="space-y-2">
+                          <textarea
+                            value={rejectReason}
+                            onChange={(e) => setRejectReason(e.target.value)}
+                            placeholder="Alasan penolakan..."
+                            className="w-full text-sm border border-gray-200 dark:border-gray-600 rounded-lg p-2 bg-white dark:bg-gray-800"
+                            rows={2}
+                          />
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => actOnStep(step.approval_level, 'reject', rejectReason)}
+                              disabled={actingLevel === step.approval_level}
+                              className="px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-medium hover:bg-red-700 disabled:opacity-50"
+                            >
+                              Konfirmasi Tolak
+                            </button>
+                            <button
+                              onClick={() => { setShowRejectFor(null); setRejectReason(''); }}
+                              className="px-3 py-1.5 border border-gray-200 dark:border-gray-600 rounded-lg text-xs font-medium"
+                            >
+                              Batal
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => actOnStep(step.approval_level, 'approve')}
+                            disabled={actingLevel === step.approval_level}
+                            className="px-3 py-1.5 bg-[#059669] text-white rounded-lg text-xs font-medium hover:bg-emerald-700 disabled:opacity-50"
+                          >
+                            {actingLevel === step.approval_level ? 'Memproses...' : 'Setujui'}
+                          </button>
+                          <button
+                            onClick={() => setShowRejectFor(step.approval_level)}
+                            disabled={actingLevel === step.approval_level}
+                            className="px-3 py-1.5 border border-red-200 text-red-600 rounded-lg text-xs font-medium hover:bg-red-50"
+                          >
+                            Tolak
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Items */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-5">
@@ -219,6 +351,41 @@ export default function PRDetail() {
           </table>
         )}
       </AccessibleModal>
+
+      {/* Drill-down modal: approval step detail */}
+      <AccessibleModal
+        isOpen={stepModal.open}
+        onClose={() => setStepModal({ open: false, step: null })}
+        title={stepModal.step ? `Detail Approval Level ${stepModal.step.approval_level}` : 'Detail Approval'}
+        description="Rincian status approval berjenjang untuk PR ini"
+        size="md"
+      >
+        {stepModal.step && (
+          <div className="space-y-3 text-sm">
+            <DetailRow label="Level" value={String(stepModal.step.approval_level)} />
+            <DetailRow label="Role yang Dibutuhkan" value={stepModal.step.required_role_name || `Role #${stepModal.step.required_role_id}`} />
+            <DetailRow
+              label="Status"
+              value={(STEP_STATUS_CONFIG[stepModal.step.status] || STEP_STATUS_CONFIG.pending).label}
+            />
+            <DetailRow label="Diproses oleh" value={stepModal.step.approver_name || '-'} />
+            <DetailRow
+              label="Tanggal Diproses"
+              value={stepModal.step.approved_at ? new Date(stepModal.step.approved_at).toLocaleString('id-ID') : '-'}
+            />
+            <DetailRow label="Komentar" value={stepModal.step.comments || '-'} />
+          </div>
+        )}
+      </AccessibleModal>
+    </div>
+  );
+}
+
+function DetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between gap-4 py-1.5 border-b border-gray-100 dark:border-gray-700 last:border-0">
+      <span className="text-gray-400">{label}</span>
+      <span className="text-gray-900 dark:text-white font-medium text-right">{value}</span>
     </div>
   );
 }

@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
+import { formatRupiah, formatCurrencyAmount } from '../../utils/currencyUtils'
+import AccessibleModal from '../../components/ui/AccessibleModal'
 import {
   useGetPurchaseOrdersQuery,
   useSubmitForApprovalMutation
@@ -24,6 +26,23 @@ const [search, setSearch] = useState('')
   const [status, setStatus] = useState('')
   const [priority, setPriority] = useState('')
   const [page, setPage] = useState(1)
+  const [manualRateModal, setManualRateModal] = useState<{
+    open: boolean
+    poId: number | null
+    poNumber: string
+    currency: string
+    rate: string
+    confirmed: boolean
+    submitting: boolean
+  }>({
+    open: false,
+    poId: null,
+    poNumber: '',
+    currency: 'USD',
+    rate: '',
+    confirmed: false,
+    submitting: false
+  })
   
   const { data, isLoading, refetch } = useGetPurchaseOrdersQuery({
     search,
@@ -59,15 +78,45 @@ const [search, setSearch] = useState('')
     return badges[priority] || { class: 'bg-blue-100 text-blue-800', label: 'Normal' }
   }
 
-  const handleSubmitApproval = async (poId: number) => {
+  const handleSubmitApproval = async (po: any) => {
     try {
-      // Role-based approval workflow (ApprovalWorkflow) - no approver selection
-      // needed here anymore; reviewer/approver assignment is role-driven.
-      await submitForApproval({ poId }).unwrap()
+      await submitForApproval({ poId: po.id }).unwrap()
       toast.success('Purchase order submitted for approval')
       refetch()
     } catch (error: any) {
+      if (error?.data?.error_code === 'EXCHANGE_RATE_UNAVAILABLE') {
+        setManualRateModal({
+          open: true,
+          poId: po.id,
+          poNumber: po.po_number,
+          currency: error?.data?.currency || po.currency || 'USD',
+          rate: '',
+          confirmed: false,
+          submitting: false
+        })
+        return
+      }
       toast.error(error?.data?.error || 'Failed to submit for approval')
+    }
+  }
+
+  const handleSubmitManualRate = async () => {
+    if (!manualRateModal.poId) return
+    const parsedRate = parseFloat(manualRateModal.rate)
+    if (!parsedRate || parsedRate <= 0 || !manualRateModal.confirmed) return
+    setManualRateModal(m => ({ ...m, submitting: true }))
+    try {
+      await submitForApproval({
+        poId: manualRateModal.poId,
+        manual_exchange_rate: parsedRate,
+        manual_rate_confirmed: true
+      }).unwrap()
+      toast.success('Purchase order submitted with manual exchange rate')
+      setManualRateModal(m => ({ ...m, open: false, submitting: false }))
+      refetch()
+    } catch (error: any) {
+      toast.error(error?.data?.error || 'Failed to submit for approval')
+      setManualRateModal(m => ({ ...m, submitting: false }))
     }
   }
 
@@ -242,8 +291,15 @@ const [search, setSearch] = useState('')
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900 dark:text-white">
-                          ${po.total_amount?.toLocaleString() || '0'}
+                          {formatCurrencyAmount(po.total_amount, po.currency)}
                         </div>
+                        {po.currency && po.currency !== 'IDR' && (
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            {po.status === 'draft'
+                              ? `(${po.currency} - kurs dikunci saat submit)`
+                              : `≈ ${formatRupiah(po.total_amount_idr)} (${po.exchange_rate_source === 'manual' ? 'kurs manual' : 'kurs auto'})`}
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-2">
@@ -265,7 +321,7 @@ const [search, setSearch] = useState('')
                                 <PencilIcon className="h-4 w-4" />
                               </Link>
                               <button
-                                onClick={() => handleSubmitApproval(po.id)}
+                                onClick={() => handleSubmitApproval(po)}
                                 className="text-yellow-600 hover:text-yellow-900 p-1"
                                 title="Submit for Approval"
                               >
@@ -334,6 +390,67 @@ const [search, setSearch] = useState('')
           </div>
         </div>
       )}
+
+      {/* Manual Exchange Rate Modal (shown when automatic rate is unavailable) */}
+      <AccessibleModal
+        isOpen={manualRateModal.open}
+        onClose={() => setManualRateModal(m => ({ ...m, open: false }))}
+        title={`Input Kurs Manual — ${manualRateModal.poNumber} (${manualRateModal.currency})`}
+        size="md"
+      >
+        <div className="space-y-4 text-sm">
+          <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800">
+            ⚠️ Kurs otomatis {manualRateModal.currency}/IDR tidak tersedia. Cek kurs riil (BI / bank / supplier) terlebih dahulu sebelum menyimpan. Kurs ini akan dikunci untuk GRN dan faktur dari PO ini.
+          </div>
+          <div>
+            <label className="block font-medium text-gray-700 dark:text-gray-200 mb-1">
+              Kurs 1 {manualRateModal.currency} ke IDR *
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              min="1"
+              value={manualRateModal.rate}
+              onChange={e => setManualRateModal(m => ({ ...m, rate: e.target.value }))}
+              placeholder="Contoh: 16250"
+              className="input-field w-full"
+            />
+          </div>
+          <label className="flex items-start gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={manualRateModal.confirmed}
+              onChange={e => setManualRateModal(m => ({ ...m, confirmed: e.target.checked }))}
+              className="mt-1"
+            />
+            <span className="text-gray-700 dark:text-gray-300">
+              Saya sudah mengecek kurs riil dan menyetujui kurs ini dikunci untuk PO {manualRateModal.poNumber}
+            </span>
+          </label>
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={() => setManualRateModal(m => ({ ...m, open: false }))}
+              className="btn-secondary"
+              disabled={manualRateModal.submitting}
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmitManualRate}
+              disabled={
+                manualRateModal.submitting ||
+                !manualRateModal.confirmed ||
+                !(parseFloat(manualRateModal.rate) > 0)
+              }
+              className="btn-primary disabled:opacity-50"
+            >
+              {manualRateModal.submitting ? 'Menyimpan...' : 'Kunci Kurs & Submit PO'}
+            </button>
+          </div>
+        </div>
+      </AccessibleModal>
     </div>
   )
 }

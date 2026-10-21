@@ -6,7 +6,7 @@ import {
   ArrowLeftIcon, PencilSquareIcon, ArrowPathIcon, CubeIcon,
   BuildingStorefrontIcon, TruckIcon,
 } from '@heroicons/react/24/outline';
-import { formatRupiah } from '../../utils/currencyUtils';
+import { formatRupiah, formatCurrencyAmount } from '../../utils/currencyUtils';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   draft:     { label: 'Draft',      color: 'bg-gray-100 text-gray-700' },
@@ -74,6 +74,9 @@ export default function PODetail() {
     return <div className="p-6 text-center text-gray-500">Purchase Order tidak ditemukan.</div>;
   }
 
+  const ccy = po.currency || 'IDR';
+  const isForeign = ccy !== 'IDR';
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
       {/* Header */}
@@ -86,6 +89,12 @@ export default function PODetail() {
             <h1 className="text-xl font-bold text-gray-900 dark:text-white">{po.po_number}</h1>
             <div className="flex items-center gap-2 mt-0.5">
               <span className={`px-2 py-0.5 rounded text-xs font-medium ${statusCfg?.color}`}>{statusCfg?.label}</span>
+              <span className="px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-700">{ccy}</span>
+              {isForeign && po.exchange_rate_source && (
+                <span className={`px-2 py-0.5 rounded text-xs font-medium ${po.exchange_rate_source === 'manual' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'}`}>
+                  {po.exchange_rate_source === 'manual' ? 'Kurs Manual' : 'Kurs Otomatis'}
+                </span>
+              )}
               {po.has_grn && (
                 <span className="text-xs text-emerald-600 flex items-center gap-0.5">
                   <TruckIcon className="h-3.5 w-3.5" /> Sudah ada penerimaan barang
@@ -120,6 +129,17 @@ export default function PODetail() {
           <InfoRow label="Termin Pembayaran" value={po.payment_terms || '-'} />
           <InfoRow label="Metode Pembayaran" value={po.payment_method || '-'} />
           <InfoRow label="Metode Pengiriman" value={po.shipping_method || '-'} />
+          <InfoRow label="Mata Uang" value={ccy} />
+          {isForeign && (
+            <InfoRow
+              label="Kurs ke IDR"
+              value={
+                po.status === 'draft'
+                  ? 'Belum dikunci (masih draft)'
+                  : `1 ${ccy} = ${formatRupiah(po.exchange_rate)} (${po.exchange_rate_source === 'manual' ? 'diinput manual' : 'otomatis'})`
+              }
+            />
+          )}
         </div>
         {po.notes && (
           <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
@@ -139,8 +159,8 @@ export default function PODetail() {
                 <th className="pb-2 pr-3">Item</th>
                 <th className="pb-2 pr-3 text-right">Qty</th>
                 <th className="pb-2 pr-3">Satuan</th>
-                <th className="pb-2 pr-3 text-right">Harga Satuan</th>
-                <th className="pb-2 text-right">Total</th>
+                <th className="pb-2 pr-3 text-right">Harga Satuan ({ccy})</th>
+                <th className="pb-2 text-right">Total ({ccy})</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -163,8 +183,8 @@ export default function PODetail() {
                     </td>
                     <td className="py-2 pr-3 text-right tabular-nums">{item.quantity.toLocaleString('id-ID')}</td>
                     <td className="py-2 pr-3 text-gray-500 dark:text-gray-400">{item.uom}</td>
-                    <td className="py-2 pr-3 text-right tabular-nums">{formatRupiah(item.unit_price)}</td>
-                    <td className="py-2 text-right tabular-nums font-medium">{formatRupiah(item.total_price)}</td>
+                    <td className="py-2 pr-3 text-right tabular-nums">{formatCurrencyAmount(item.unit_price, ccy)}</td>
+                    <td className="py-2 text-right tabular-nums font-medium">{formatCurrencyAmount(item.total_price, ccy)}</td>
                   </tr>
                 );
               })}
@@ -173,11 +193,16 @@ export default function PODetail() {
         </div>
         <div className="flex justify-end pt-3 mt-3 border-t border-gray-100 dark:border-gray-700 text-sm">
           <div className="space-y-1 text-right">
-            <p className="text-gray-500 dark:text-gray-400">Subtotal: {formatRupiah(po.subtotal)}</p>
-            {po.tax_amount > 0 && <p className="text-gray-500 dark:text-gray-400">Pajak: {formatRupiah(po.tax_amount)}</p>}
-            {po.discount_amount > 0 && <p className="text-gray-500 dark:text-gray-400">Diskon: -{formatRupiah(po.discount_amount)}</p>}
-            {po.shipping_cost > 0 && <p className="text-gray-500 dark:text-gray-400">Ongkir: {formatRupiah(po.shipping_cost)}</p>}
-            <p className="text-base font-bold text-gray-900 dark:text-white">Total: {formatRupiah(po.total_amount)}</p>
+            <p className="text-gray-500 dark:text-gray-400">Subtotal: {formatCurrencyAmount(po.subtotal, ccy)}</p>
+            {po.tax_amount > 0 && <p className="text-gray-500 dark:text-gray-400">Pajak: {formatCurrencyAmount(po.tax_amount, ccy)}</p>}
+            {po.discount_amount > 0 && <p className="text-gray-500 dark:text-gray-400">Diskon: -{formatCurrencyAmount(po.discount_amount, ccy)}</p>}
+            {po.shipping_cost > 0 && <p className="text-gray-500 dark:text-gray-400">Ongkir: {formatCurrencyAmount(po.shipping_cost, ccy)}</p>}
+            <p className="text-base font-bold text-gray-900 dark:text-white">Total ({ccy}): {formatCurrencyAmount(po.total_amount, ccy)}</p>
+            {isForeign && po.status !== 'draft' && (
+              <p className="text-sm font-medium text-indigo-600 dark:text-indigo-400">
+                Ekuivalen IDR: {formatRupiah(po.total_amount_idr)}
+              </p>
+            )}
           </div>
         </div>
       </div>

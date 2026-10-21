@@ -103,61 +103,64 @@ export default function Purchasing() {
       name: 'Active Suppliers',
       value: suppliersData?.total || 0,
       icon: UsersIcon,
-      color: 'bg-blue-500',
-      link: '/app/purchasing/suppliers'
+      gradient: 'from-[#059669] to-[#047857]',
+      link: '/app/purchasing/suppliers',
+      span: true,
     },
     {
       name: 'Purchase Orders',
       value: purchaseOrdersData?.total || 0,
       icon: DocumentTextIcon,
-      color: 'bg-green-500',
+      gradient: 'from-teal-500 to-teal-600',
       link: '/app/purchasing/purchase-orders'
     },
     {
       name: 'Active Contracts',
       value: contractsData?.contracts?.filter((c: any) => c.status === 'active').length || 0,
       icon: ClipboardDocumentListIcon,
-      color: 'bg-purple-500',
+      gradient: 'from-violet-500 to-violet-600',
       link: '/app/purchasing/contracts'
     },
     {
       name: 'Pending Quotes',
       value: quotesData?.quotes?.filter((q: any) => q.status === 'submitted').length || 0,
       icon: BanknotesIcon,
-      color: 'bg-orange-500',
+      gradient: 'from-[#F15D2C] to-[#C73E1D]',
       link: '/app/purchasing/quotes'
     },
   ]
 
-
+  // 2026-10-07: Axion bento-grid restyle (tier-1 module landing page,
+  // #4 of 4). Sub-pages (Suppliers list, PO list, Contracts, etc) are
+  // intentionally left as-is - only this landing dashboard is in scope.
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard Pembelian</h1>
-          <p className="text-gray-600 dark:text-gray-300">Comprehensive procurement and supplier management system</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-snug">Dashboard Pembelian</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Comprehensive procurement and supplier management system</p>
         </div>
-        <div className="flex space-x-3">
+        <div className="flex flex-wrap gap-2">
           <Link
             to="/app/purchasing/suppliers/new"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-[#059669] to-[#047857] text-white font-medium rounded-lg hover:shadow-lg transition-shadow text-sm"
           >
-            <BuildingOfficeIcon className="h-5 w-5" />
+            <BuildingOfficeIcon className="h-4 w-4" />
             Tambah Supplier
           </Link>
           <Link
             to="/app/purchasing/price-comparison"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-medium rounded-lg hover:bg-gray-200 dark:bg-gray-700 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium text-gray-700 dark:text-white"
           >
-            <ChartBarIcon className="h-5 w-5" />
+            <ChartBarIcon className="h-4 w-4" />
             Price Analysis
           </Link>
           <Link
             to="/app/purchasing/purchase-orders/new"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium text-gray-700 dark:text-white"
           >
-            <DocumentTextIcon className="h-5 w-5" />
+            <DocumentTextIcon className="h-4 w-4" />
             Create PO
           </Link>
         </div>
@@ -165,16 +168,16 @@ export default function Purchasing() {
 
       {/* Navigation Tabs */}
       <div className="border-b border-gray-200 dark:border-gray-700">
-        <nav className="-mb-px flex space-x-8">
+        <nav className="-mb-px flex space-x-8 overflow-x-auto">
           {tabs.map((tab) => {
             const Icon = tab.icon
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 py-2 px-1 border-b-2 font-medium text-sm ${
+                className={`flex items-center gap-2 py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
                   activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
+                    ? 'border-[#059669] text-emerald-600 dark:text-emerald-400'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
@@ -188,26 +191,24 @@ export default function Purchasing() {
 
       {/* Overview Tab Content */}
       {activeTab === 'overview' && (
-        <div className="space-y-6">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="space-y-4">
+          {/* Stats Cards - bento: Active Suppliers spans 2 cols (primary metric) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
             {stats.map((stat) => {
               const Icon = stat.icon
               return (
                 <Link
                   key={stat.name}
                   to={stat.link}
-                  className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow"
+                  className={`${stat.span ? 'xl:col-span-2' : ''} bg-gradient-to-br ${stat.gradient} rounded-xl p-4 text-white shadow-lg hover:shadow-xl transition-shadow`}
                 >
-                  <div className="flex items-center">
-                    <div className={`p-3 rounded-lg ${stat.color}`}>
-                      <Icon className="h-6 w-6 text-white" />
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="p-2 bg-white/20 rounded-lg">
+                      <Icon className="h-5 w-5" />
                     </div>
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600 dark:text-gray-300">{stat.name}</p>
-                      <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
-                    </div>
+                    <p className="text-sm opacity-90">{stat.name}</p>
                   </div>
+                  <p className={stat.span ? 'text-3xl font-bold' : 'text-2xl font-bold'}>{stat.value}</p>
                 </Link>
               )
             })}
@@ -215,7 +216,7 @@ export default function Purchasing() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Recent Activities */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
               <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white">Recent Activities</h3>
               </div>
@@ -241,7 +242,7 @@ export default function Purchasing() {
             </div>
 
             {/* Pending Approvals */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
               <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white">Pending Approvals</h3>
               </div>
@@ -273,7 +274,7 @@ export default function Purchasing() {
                 <div className="mt-4">
                   <Link
                     to="/app/purchasing/purchase-orders?status=pending_approval"
-                    className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                    className="text-sm text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 font-medium"
                   >
                     View all pending approvals →
                   </Link>
@@ -283,63 +284,30 @@ export default function Purchasing() {
           </div>
 
           {/* Quick Actions */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Quick Actions</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Link
-                to="/app/purchasing/suppliers/new"
-                className="flex items-center gap-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 transition-colors"
-              >
-                <BuildingOfficeIcon className="h-6 w-6 text-blue-600" />
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white">Add Supplier</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Register new supplier</p>
-                </div>
-              </Link>
-              
-              <Link
-                to="/app/purchasing/rfqs/new"
-                className="flex items-center gap-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 transition-colors"
-              >
-                <DocumentTextIcon className="h-6 w-6 text-green-600" />
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white">Create RFQ</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Request for quotation</p>
-                </div>
-              </Link>
-              
-              <Link
-                to="/app/purchasing/contracts/new"
-                className="flex items-center gap-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 transition-colors"
-              >
-                <ClipboardDocumentListIcon className="h-6 w-6 text-purple-600" />
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white">New Contract</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Create supplier contract</p>
-                </div>
-              </Link>
-              
-              <Link
-                to="/app/purchasing/requisitions/new"
-                className="flex items-center gap-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 transition-colors"
-              >
-                <ClipboardDocumentListIcon className="h-6 w-6 text-yellow-600" />
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white text-sm">Buat PR</p>
-                  <p className="text-xs text-gray-500">Purchase Requisition</p>
-                </div>
-              </Link>
-
-              <Link
-                to="/app/purchasing/price-comparison"
-                className="flex items-center gap-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 transition-colors"
-              >
-                <ChartBarIcon className="h-6 w-6 text-orange-600" />
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white">Price Analysis</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Compare supplier prices</p>
-                </div>
-              </Link>
+              {[
+                { to: '/app/purchasing/suppliers/new', icon: BuildingOfficeIcon, title: 'Add Supplier', desc: 'Register new supplier', gradient: 'from-[#059669] to-[#047857]' },
+                { to: '/app/purchasing/rfqs/new', icon: DocumentTextIcon, title: 'Create RFQ', desc: 'Request for quotation', gradient: 'from-teal-500 to-teal-600' },
+                { to: '/app/purchasing/contracts/new', icon: ClipboardDocumentListIcon, title: 'New Contract', desc: 'Create supplier contract', gradient: 'from-violet-500 to-violet-600' },
+                { to: '/app/purchasing/requisitions/new', icon: ClipboardDocumentListIcon, title: 'Buat PR', desc: 'Purchase Requisition', gradient: 'from-amber-500 to-amber-600' },
+                { to: '/app/purchasing/price-comparison', icon: ChartBarIcon, title: 'Price Analysis', desc: 'Compare supplier prices', gradient: 'from-[#F15D2C] to-[#C73E1D]' },
+              ].map((action) => (
+                <Link
+                  key={action.to}
+                  to={action.to}
+                  className="flex items-center gap-3 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group"
+                >
+                  <div className={`bg-gradient-to-br ${action.gradient} p-2.5 rounded-xl flex-shrink-0 group-hover:scale-110 transition-transform`}>
+                    <action.icon className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-medium text-gray-900 dark:text-white text-sm">{action.title}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{action.desc}</p>
+                  </div>
+                </Link>
+              ))}
             </div>
           </div>
         </div>
@@ -347,7 +315,7 @@ export default function Purchasing() {
 
       {/* Other tab contents would be rendered here based on activeTab */}
       {activeTab === 'suppliers' && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <div className="text-center">
             <BuildingOfficeIcon className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Supplier Management</h3>
@@ -357,7 +325,7 @@ export default function Purchasing() {
             <div className="mt-6">
               <Link
                 to="/app/purchasing/suppliers"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-[#059669] to-[#047857] text-white font-medium rounded-lg hover:shadow-lg transition-shadow"
               >
                 View All Suppliers
               </Link>
@@ -367,7 +335,7 @@ export default function Purchasing() {
       )}
 
       {activeTab === 'purchase-orders' && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <div className="text-center">
             <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Purchase Order Management</h3>
@@ -377,7 +345,7 @@ export default function Purchasing() {
             <div className="mt-6">
               <Link
                 to="/app/purchasing/purchase-orders"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-[#059669] to-[#047857] text-white font-medium rounded-lg hover:shadow-lg transition-shadow"
               >
                 View All Purchase Orders
               </Link>
@@ -387,7 +355,7 @@ export default function Purchasing() {
       )}
 
       {activeTab === 'contracts' && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <div className="text-center">
             <ClipboardDocumentListIcon className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Contract Management</h3>
@@ -397,7 +365,7 @@ export default function Purchasing() {
             <div className="mt-6">
               <Link
                 to="/app/purchasing/contracts"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-[#059669] to-[#047857] text-white font-medium rounded-lg hover:shadow-lg transition-shadow"
               >
                 View All Contracts
               </Link>
@@ -407,7 +375,7 @@ export default function Purchasing() {
       )}
 
       {activeTab === 'price-comparison' && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <div className="text-center">
             <ChartBarIcon className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Price Analysis</h3>
@@ -417,7 +385,7 @@ export default function Purchasing() {
             <div className="mt-6">
               <Link
                 to="/app/purchasing/price-comparison"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-[#059669] to-[#047857] text-white font-medium rounded-lg hover:shadow-lg transition-shadow"
               >
                 Start Price Analysis
               </Link>

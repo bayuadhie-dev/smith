@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
+import { confirmDialog } from '../../components/ui'
 import {
   useGetContractsQuery, 
   useActivateContractMutation 
@@ -57,7 +58,7 @@ const [search, setSearch] = useState('')
   }
 
   const handleActivate = async (contractId: number, contractNumber: string) => {
-    if (window.confirm(`Are you sure you want to activate contract "${contractNumber}"?`)) {
+    if (await confirmDialog(`Are you sure you want to activate contract "${contractNumber}"?`)) {
       try {
         await activateContract(contractId).unwrap()
         toast.success('Contract activated successfully')

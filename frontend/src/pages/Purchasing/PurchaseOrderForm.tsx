@@ -4,9 +4,12 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useForm, useFieldArray } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import SearchableSelect from '../../components/SearchableSelect'
+import axiosInstance from '../../utils/axiosConfig'
+import { PO_CURRENCIES, currencySymbol, formatCurrencyAmount, formatRupiah } from '../../utils/currencyUtils'
 import {
   useGetSuppliersQuery,
   useGetProductsQuery,
+  useGetMaterialsListQuery,
   useCreatePurchaseOrderMutation,
   useUpdatePurchaseOrderMutation,
   useGetPurchaseOrderQuery
@@ -20,9 +23,11 @@ interface PurchaseOrderFormData {
   order_date: string
   required_date?: string
   payment_terms?: string
+  currency: string
   notes?: string
   items: {
-    product_id: number
+    product_id: number | null
+    material_id: number | null
     quantity: number
     unit_price: number
     uom: string
@@ -36,9 +41,15 @@ const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
   const isEdit = Boolean(id)
   const [isLoading, setIsLoading] = useState(false)
+  const [rateInfo, setRateInfo] = useState<{ rate: number | null; available: boolean; loading: boolean }>({
+    rate: 1,
+    available: true,
+    loading: false
+  })
 
   const { data: suppliers } = useGetSuppliersQuery({})
   const { data: products } = useGetProductsQuery({})
+  const { data: materials } = useGetMaterialsListQuery({ per_page: 2000 })
   const [createPO] = useCreatePurchaseOrderMutation()
   const [updatePO] = useUpdatePurchaseOrderMutation()
   const { data: existingPO } = useGetPurchaseOrderQuery(id, { skip: !isEdit })
@@ -46,7 +57,8 @@ const navigate = useNavigate()
   const { register, control, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<PurchaseOrderFormData>({
     defaultValues: {
       order_date: new Date().toISOString().split('T')[0],
-      items: [{ product_id: 0, quantity: 1, unit_price: 0, uom: 'PCS' }]
+      currency: 'IDR',
+      items: [{ product_id: null, material_id: null, quantity: 1, unit_price: 0, uom: 'PCS' }]
     }
   })
 
@@ -56,7 +68,9 @@ const navigate = useNavigate()
   })
 
   const watchedItems = watch('items')
+  const watchedCurrency = watch('currency') || 'IDR'
   const hasGrn = Boolean(existingPO?.has_grn)
+  const isNotDraft = Boolean(isEdit && existingPO && existingPO.status !== 'draft')
 
   useEffect(() => {
     if (isEdit && existingPO) {
@@ -65,9 +79,11 @@ const navigate = useNavigate()
         order_date: existingPO.order_date,
         required_date: existingPO.required_date || '',
         payment_terms: existingPO.payment_terms || '',
+        currency: existingPO.currency || 'IDR',
         notes: existingPO.notes || '',
         items: (existingPO.items || []).map((item: any) => ({
-          product_id: item.product_id,
+          product_id: item.product_id ?? null,
+          material_id: item.material_id ?? null,
           quantity: item.quantity,
           unit_price: item.unit_price,
           uom: item.uom || 'PCS'
@@ -75,6 +91,35 @@ const navigate = useNavigate()
       })
     }
   }, [isEdit, existingPO, reset])
+
+  useEffect(() => {
+    if (watchedCurrency === 'IDR') {
+      setRateInfo({ rate: 1, available: true, loading: false })
+      return
+    }
+    if (isNotDraft && existingPO?.exchange_rate) {
+      setRateInfo({ rate: Number(existingPO.exchange_rate), available: true, loading: false })
+      return
+    }
+    let cancelled = false
+    setRateInfo(prev => ({ ...prev, loading: true }))
+    axiosInstance.get('/api/purchasing/exchange-rate', { params: { currency: watchedCurrency } })
+      .then(res => {
+        if (!cancelled) {
+          setRateInfo({
+            rate: res.data.rate,
+            available: Boolean(res.data.available),
+            loading: false
+          })
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setRateInfo({ rate: null, available: false, loading: false })
+        }
+      })
+    return () => { cancelled = true }
+  }, [watchedCurrency, isNotDraft, existingPO?.exchange_rate])
 
   const calculateTotal = () => {
     return watchedItems.reduce((total, item) => {
@@ -85,9 +130,9 @@ const navigate = useNavigate()
   const onSubmit = async (data: PurchaseOrderFormData) => {
     setIsLoading(true)
     try {
-      // Validate items
+      // Validate items - each row must reference either a product or a material
       const validItems = data.items.filter(item =>
-        item.product_id && item.quantity > 0 && item.unit_price > 0
+        (item.product_id || item.material_id) && item.quantity > 0 && item.unit_price > 0
       )
 
       if (!hasGrn && validItems.length === 0) {
@@ -99,10 +144,11 @@ const navigate = useNavigate()
         ...data,
         supplier_id: parseInt(data.supplier_id.toString()),
         items: validItems.map(item => ({
-          ...item,
-          product_id: parseInt(item.product_id.toString()),
           quantity: parseFloat(item.quantity.toString()),
-          unit_price: parseFloat(item.unit_price.toString())
+          unit_price: parseFloat(item.unit_price.toString()),
+          uom: item.uom,
+          ...(item.product_id ? { product_id: parseInt(item.product_id.toString()) } : {}),
+          ...(item.material_id ? { material_id: parseInt(item.material_id.toString()) } : {})
         }))
       }
 
@@ -127,12 +173,40 @@ const navigate = useNavigate()
   }
 
   const addItem = () => {
-    append({ product_id: 0, quantity: 1, unit_price: 0, uom: 'PCS' })
+    append({ product_id: null, material_id: null, quantity: 1, unit_price: 0, uom: 'PCS' })
   }
 
   const getProductById = (productId: number) => {
     return products?.products?.find((p: any) => p.id == productId)
   }
+
+  const getMaterialById = (materialId: number) => {
+    return materials?.materials?.find((m: any) => m.id == materialId)
+  }
+
+  // Combined searchable options across products (purchasable+active) and
+  // materials (fix for the SAP-equivalence E2E finding, 2026-10: materials
+  // only have a materials-table row, never a mirrored products row, so a
+  // real PR auto-generated for a raw-material shortage could never actually
+  // be put on a PO before this - the backend already accepted material_id
+  // on PurchaseOrderItem, this form just never offered it) - prefixed with
+  // "p-"/"m-" composite ids since SearchableSelect only supports one flat id.
+  const itemOptions = [
+    ...(products?.products || [])
+      .filter((p: any) => p.is_purchasable && p.is_active)
+      .map((product: any) => ({
+        id: `p-${product.id}`,
+        code: product.code,
+        name: `[Produk] ${product.name}`
+      })),
+    ...(materials?.materials || [])
+      .filter((m: any) => m.is_active)
+      .map((material: any) => ({
+        id: `m-${material.id}`,
+        code: material.code,
+        name: `[Material] ${material.name}`
+      }))
+  ]
 
   return (
     <div className="space-y-6">
@@ -230,6 +304,33 @@ const navigate = useNavigate()
               </select>
             </div>
 
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                Mata Uang (Currency) *
+              </label>
+              <select
+                {...register('currency')}
+                className="input-field"
+                disabled={isNotDraft || hasGrn}
+              >
+                {PO_CURRENCIES.map(c => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+              {isNotDraft && (
+                <p className="mt-1 text-xs text-gray-500">Mata uang terkunci karena PO sudah bukan draft.</p>
+              )}
+              {watchedCurrency !== 'IDR' && (
+                <p className="mt-1 text-xs text-blue-600 dark:text-blue-400">
+                  {rateInfo.loading
+                    ? 'Memuat kurs...'
+                    : rateInfo.rate
+                      ? `${isNotDraft ? 'Kurs terkunci' : 'Estimasi kurs saat ini'}: 1 ${watchedCurrency} = ${formatRupiah(rateInfo.rate)}`
+                      : 'Kurs otomatis belum tersedia — kurs akan diminta secara manual saat Submit Approval.'}
+                </p>
+              )}
+            </div>
+
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               </label>
@@ -261,8 +362,14 @@ const navigate = useNavigate()
 
           <div className="space-y-4">
             {fields.map((field, index) => {
-              const selectedProduct = getProductById(watchedItems[index]?.product_id)
-              
+              const selectedProduct = getProductById(watchedItems[index]?.product_id as any)
+              const selectedMaterial = getMaterialById(watchedItems[index]?.material_id as any)
+              const itemRefValue = watchedItems[index]?.product_id
+                ? `p-${watchedItems[index].product_id}`
+                : watchedItems[index]?.material_id
+                  ? `m-${watchedItems[index].material_id}`
+                  : null
+
               return (
                 <div key={field.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                   <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
@@ -271,14 +378,21 @@ const navigate = useNavigate()
                         Product *
                       </label>
                       <SearchableSelect
-                        options={(products?.products || []).filter((p: any) => p.is_purchasable && p.is_active).map((product: any) => ({
-                          id: product.id,
-                          code: product.code,
-                          name: product.name
-                        }))}
-                        value={watchedItems[index]?.product_id || null}
-                        onChange={(value) => setValue(`items.${index}.product_id`, value as any, { shouldValidate: true })}
-                        placeholder="Select product"
+                        options={itemOptions}
+                        value={itemRefValue}
+                        onChange={(value) => {
+                          const ref = value as string | null
+                          if (!ref) {
+                            setValue(`items.${index}.product_id`, null, { shouldValidate: true })
+                            setValue(`items.${index}.material_id`, null, { shouldValidate: true })
+                            return
+                          }
+                          const [kind, rawId] = ref.split('-')
+                          const parsedId = parseInt(rawId, 10)
+                          setValue(`items.${index}.product_id`, kind === 'p' ? parsedId : null, { shouldValidate: true })
+                          setValue(`items.${index}.material_id`, kind === 'm' ? parsedId : null, { shouldValidate: true })
+                        }}
+                        placeholder="Select product or material"
                         disabled={hasGrn}
                         required
                       />
@@ -299,14 +413,16 @@ const navigate = useNavigate()
                         className="input-field"
                         disabled={hasGrn}
                       />
-                      {selectedProduct && (
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{selectedProduct.primary_uom}</p>
+                      {(selectedProduct || selectedMaterial) && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          {selectedProduct ? selectedProduct.primary_uom : selectedMaterial.unit_of_measure}
+                        </p>
                       )}
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                        Unit Price *
+                        Unit Price ({currencySymbol(watchedCurrency)}) *
                       </label>
                       <input
                         type="number"
@@ -325,7 +441,7 @@ const navigate = useNavigate()
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('common.total')}</label>
                       <div className="input-field bg-gray-50 dark:bg-gray-900">
-                        Rp {((watchedItems[index]?.quantity || 0) * (watchedItems[index]?.unit_price || 0)).toLocaleString()}
+                        {formatCurrencyAmount((watchedItems[index]?.quantity || 0) * (watchedItems[index]?.unit_price || 0), watchedCurrency)}
                       </div>
                     </div>
 
@@ -342,7 +458,7 @@ const navigate = useNavigate()
                     </div>
                   </div>
 
-                  {/* Product Info */}
+                  {/* Product / Material Info */}
                   {selectedProduct && (
                     <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                       <div className="grid grid-cols-3 gap-4 text-sm">
@@ -361,6 +477,24 @@ const navigate = useNavigate()
                       </div>
                     </div>
                   )}
+                  {selectedMaterial && (
+                    <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                      <div className="grid grid-cols-3 gap-4 text-sm">
+                        <div>
+                          <span className="text-amber-700">Category:</span>
+                          <p className="font-medium">{selectedMaterial.category || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <span className="text-amber-700">Material Type:</span>
+                          <p className="font-medium">{selectedMaterial.material_type?.replace('_', ' ')}</p>
+                        </div>
+                        <div>
+                          <span className="text-amber-700">Standard Cost:</span>
+                          <p className="font-medium">Rp {selectedMaterial.cost_per_unit?.toLocaleString()}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )
             })}
@@ -369,11 +503,17 @@ const navigate = useNavigate()
           {/* Order Summary */}
           <div className="mt-6 pt-4 border-t">
             <div className="flex justify-end">
-              <div className="w-64">
+              <div className="w-80 space-y-1">
                 <div className="flex justify-between items-center text-lg font-semibold">
-                  <span>Total Amount:</span>
-                  <span>Rp {calculateTotal().toLocaleString()}</span>
+                  <span>Total Amount ({watchedCurrency}):</span>
+                  <span>{formatCurrencyAmount(calculateTotal(), watchedCurrency)}</span>
                 </div>
+                {watchedCurrency !== 'IDR' && rateInfo.rate && (
+                  <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
+                    <span>{isNotDraft ? 'Ekuivalen IDR (kurs terkunci):' : 'Estimasi IDR:'}</span>
+                    <span>≈ {formatRupiah(calculateTotal() * rateInfo.rate)}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>

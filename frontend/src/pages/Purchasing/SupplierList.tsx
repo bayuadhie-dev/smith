@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useGetSuppliersQuery, useGetSupplierTypesQuery, useDeleteSupplierMutation, useGetAllSupplierScorecardsQuery } from '../../services/api'
 import toast from 'react-hot-toast'
+import { confirmDialog } from '../../components/ui'
 import {
   EyeIcon,
   FunnelIcon,
@@ -42,7 +43,7 @@ const [search, setSearch] = useState('')
   const [deleteSupplier] = useDeleteSupplierMutation()
 
   const handleDelete = async (id: number, name: string) => {
-    if (window.confirm(`Are you sure you want to delete supplier "${name}"?`)) {
+    if (await confirmDialog(`Are you sure you want to delete supplier "${name}"?`)) {
       try {
         await deleteSupplier(id).unwrap()
         toast.success('Supplier deleted successfully')
