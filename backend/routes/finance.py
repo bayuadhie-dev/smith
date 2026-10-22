@@ -1880,25 +1880,28 @@ def get_income_statement():
 @jwt_required()
 @require_permission('finance.view')
 def get_sales_report():
-    """Laporan Penjualan: per-invoice Penjualan/Diskon/BPP for a free date
-    range (2026-10-22), built specifically so each column reconciles to the
-    matching Income Statement account for the SAME period, not just an
-    independently-computed approximation:
-      - Penjualan  <-> Akun 4-1000 Pendapatan Penjualan (gross, same figure
-        get_income_statement()'s sales_revenue reports for this period)
-      - Diskon     <-> Akun 4-1200 Diskon Penjualan (only populated now that
-        create_invoice's GL posting records it separately - see that
-        function's 2026-10-22 fix)
-      - BPP        <-> Akun 5-1xxx HPP (summed from the COGS journal
-        shipping.py posts per shipment, reference_type='sales_delivery',
-        traced back to each invoice via its linked ShippingOrder rows)
+    """Laporan Penjualan: a standalone sales register (per general
+    accounting convention - revenue-side detail: who bought what, when, for
+    how much, net of discount) for a free date range (2026-10-22). Does NOT
+    embed or re-derive the Income Statement here - that's its own report
+    (get_income_statement()) on its own page; this endpoint only reads the
+    same underlying GL postings so the two independently agree, without
+    one being rendered inside the other.
+      - Penjualan: gross (quantity * unit_price) per invoice line, summed
+        from InvoiceItem - same figure create_invoice's GL posting credits
+        to 4-1000 Pendapatan Penjualan.
+      - Diskon: gross minus InvoiceItem.total_amount (net) - same figure
+        posted to 4-1200 Diskon Penjualan (see create_invoice's 2026-10-22
+        fix for why this used to read Rp0 from an unrelated header field).
+      - BPP: summed from the COGS journal shipping.py posts per shipment
+        (reference_type='sales_delivery'), traced back to each invoice via
+        its linked ShippingOrder rows.
 
-    Per-invoice BPP is best-effort: an invoice whose shipment predates
-    today's cost-basis fixes (Accurate sync balanceUnitCost, buffer_stock
-    WO-cost) may show Rp0 BPP for lines whose stock-in event never carried
-    a cost - the 'rekonsiliasi' block at the bottom is the source of truth
-    (it sums directly from posted AccountingEntry rows, same as the Income
-    Statement), the per-invoice breakdown is for drill-down only.
+    Per-invoice BPP is best-effort: an invoice whose shipment predates the
+    2026-10-22 cost-basis fixes (Accurate sync balanceUnitCost, buffer_stock
+    WO-cost) may show Rp0 for lines whose stock-in event never carried a
+    cost - that's a data-completeness gap in the underlying InventoryTransaction
+    history, not a bug in this endpoint.
     """
     try:
         from models.shipping import ShippingOrder
@@ -2003,31 +2006,6 @@ def get_sales_report():
                 'laba_kotor': round(laba_kotor, 2),
             })
 
-        # Rekonsiliasi: the same figures computed directly from posted GL
-        # accounts for this exact date range, independent of the per-invoice
-        # trace above - this is what actually must match Laba Rugi, since
-        # the income statement itself is built from these same accounts.
-        akun_penjualan = _classified_accounts('revenue')
-        penjualan_gl = sum(
-            _account_balance_in_range(a, date_from, date_to)
-            for a in akun_penjualan if a.account_code == '4-1000'
-        )
-        diskon_gl = sum(
-            _account_balance_in_range(a, date_from, date_to)
-            for a in akun_penjualan if a.account_code == '4-1200'
-        )
-        # Same COGS definition as get_income_statement() (2026-10-22): 5-1xxx
-        # plus the unambiguously-manufacturing 6-xxxx accounts that used to
-        # be miscounted as selling expense - see that function's comment for
-        # the full account list and why the rest of 6-xxxx isn't included.
-        _mfg_overhead_codes_6xxx = {'6-1000', '6-2000', '6-3000', '6-3100', '6-3200', '6-4000'}
-        akun_expense = _classified_accounts('expense')
-        bpp_gl = sum(
-            _account_balance_in_range(a, date_from, date_to)
-            for a in akun_expense
-            if a.account_code.startswith('5-1') or a.account_code in _mfg_overhead_codes_6xxx
-        )
-
         return jsonify({
             'period': {'date_from': date_from.isoformat(), 'date_to': date_to.isoformat()},
             'rows': rows,
@@ -2036,11 +2014,6 @@ def get_sales_report():
                 'diskon': round(total_diskon, 2),
                 'bpp': round(total_bpp, 2),
                 'laba_kotor': round(total_penjualan - total_diskon - total_bpp, 2),
-            },
-            'rekonsiliasi_laba_rugi': {
-                'akun_penjualan': {'code': '4-1000', 'name': 'Pendapatan Penjualan', 'balance': round(penjualan_gl, 2)},
-                'akun_diskon': {'code': '4-1200', 'name': 'Diskon Penjualan', 'balance': round(diskon_gl, 2)},
-                'akun_bpp': {'code': '5-1xxx', 'name': 'HPP', 'balance': round(bpp_gl, 2)},
             },
         }), 200
     except Exception as e:

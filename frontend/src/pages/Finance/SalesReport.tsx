@@ -40,11 +40,6 @@ interface SalesReportData {
   period: { date_from: string; date_to: string };
   rows: SalesReportRow[];
   totals: { penjualan: number; diskon: number; bpp: number; laba_kotor: number };
-  rekonsiliasi_laba_rugi: {
-    akun_penjualan: { code: string; name: string; balance: number };
-    akun_diskon: { code: string; name: string; balance: number };
-    akun_bpp: { code: string; name: string; balance: number };
-  };
 }
 
 function firstDayOfMonth(): string {
@@ -90,8 +85,6 @@ const SalesReport: React.FC = () => {
   useEffect(() => {
     fetchReport();
   }, [fetchReport]);
-
-  const matches = (reportValue: number, glValue: number) => Math.abs(reportValue - glValue) < 1;
 
   return (
     <div className="p-6 space-y-6">
@@ -257,74 +250,10 @@ const SalesReport: React.FC = () => {
                 </tr>
               </tfoot>
             </table>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-4">
-            <h3 className="font-semibold mb-3">Rekonsiliasi ke Laba Rugi</h3>
-            <p className="text-sm text-gray-500 mb-3">
-              Angka berikut diambil langsung dari saldo akun GL periode yang sama — kalau
-              baris di atas menunjukkan tanda centang hijau, totalnya sudah pasti sama dengan
-              yang muncul di Laporan Laba Rugi untuk periode ini.
-            </p>
-            <table className="min-w-full text-sm">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-2 text-left">Kolom Laporan Penjualan</th>
-                  <th className="px-4 py-2 text-left">Akun Laba Rugi</th>
-                  <th className="px-4 py-2 text-right">Saldo Akun (GL)</th>
-                  <th className="px-4 py-2 text-right">Total Laporan</th>
-                  <th className="px-4 py-2 text-center">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-t">
-                  <td className="px-4 py-2">Penjualan</td>
-                  <td className="px-4 py-2">
-                    {data.rekonsiliasi_laba_rugi.akun_penjualan.code} - {data.rekonsiliasi_laba_rugi.akun_penjualan.name}
-                  </td>
-                  <td className="px-4 py-2 text-right">{formatRupiah(data.rekonsiliasi_laba_rugi.akun_penjualan.balance)}</td>
-                  <td className="px-4 py-2 text-right">{formatRupiah(data.totals.penjualan)}</td>
-                  <td className="px-4 py-2 text-center">
-                    {matches(data.totals.penjualan, data.rekonsiliasi_laba_rugi.akun_penjualan.balance) ? '✅' : '⚠️'}
-                  </td>
-                </tr>
-                <tr className="border-t">
-                  <td className="px-4 py-2">Diskon</td>
-                  <td className="px-4 py-2">
-                    {data.rekonsiliasi_laba_rugi.akun_diskon.code} - {data.rekonsiliasi_laba_rugi.akun_diskon.name}
-                  </td>
-                  <td className="px-4 py-2 text-right">{formatRupiah(data.rekonsiliasi_laba_rugi.akun_diskon.balance)}</td>
-                  <td className="px-4 py-2 text-right">{formatRupiah(data.totals.diskon)}</td>
-                  <td className="px-4 py-2 text-center">
-                    {matches(data.totals.diskon, data.rekonsiliasi_laba_rugi.akun_diskon.balance) ? '✅' : '⚠️'}
-                  </td>
-                </tr>
-                <tr className="border-t">
-                  <td className="px-4 py-2">BPP</td>
-                  <td className="px-4 py-2">
-                    {data.rekonsiliasi_laba_rugi.akun_bpp.code} - {data.rekonsiliasi_laba_rugi.akun_bpp.name}
-                  </td>
-                  <td className="px-4 py-2 text-right">{formatRupiah(data.rekonsiliasi_laba_rugi.akun_bpp.balance)}</td>
-                  <td className="px-4 py-2 text-right">{formatRupiah(data.totals.bpp)}</td>
-                  <td className="px-4 py-2 text-center">
-                    {matches(data.totals.bpp, data.rekonsiliasi_laba_rugi.akun_bpp.balance) ? '✅' : '⚠️'}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <p className="text-xs text-gray-400 mt-3">
+            <p className="text-xs text-gray-400 mt-3 px-4 pb-3">
               Catatan: kolom BPP per-invoice hanya terisi untuk invoice yang pengirimannya
-              sudah tercatat dengan biaya (unit cost) yang valid. Kalau total BPP per-invoice
-              di tabel atas lebih kecil dari saldo akun GL, selisihnya ada di invoice-invoice
-              lama yang HPP-nya belum punya basis biaya — bukan kesalahan laporan ini.
-            </p>
-            <p className="text-xs text-gray-400 mt-1">
-              Catatan lain: jurnal HPP dicatat pada tanggal pengiriman diproses (bukan
-              tanggal invoice), dan jurnal pembalik dari void invoice dicatat pada tanggal
-              void (bukan tanggal invoice asli). Untuk periode yang sangat sempit, rekonsiliasi
-              di bawah bisa menunjukkan ⚠️ meski datanya benar — gunakan rentang tanggal yang
-              mencakup baik tanggal invoice maupun tanggal pengiriman/void-nya untuk hasil
-              yang pasti cocok.
+              sudah tercatat dengan biaya (unit cost) yang valid. Invoice lama yang HPP-nya
+              belum punya basis biaya akan tampil BPP Rp0 — bukan kesalahan laporan ini.
             </p>
           </div>
         </>
