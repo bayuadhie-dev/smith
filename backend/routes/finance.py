@@ -1794,6 +1794,34 @@ def get_income_statement():
             # directly here nets it out of total_revenue correctly.
             total_revenue = sales_revenue + sales_discounts + other_revenue
 
+            # Per-account breakdown (2026-10-22, per user request: "harusnya
+            # sesuai dengan CoA untuk setiap itemnya") - the totals above
+            # collapse everything into a handful of generic labels (Direct
+            # Materials, Selling Expenses, etc). Real accountants expect to
+            # see each actual Chart of Accounts line (code + name + its own
+            # balance) under the matching section, not just the rolled-up
+            # category total. Zero-balance accounts are omitted so the
+            # report doesn't list the company's entire unused CoA every
+            # time; sorted by account_code to match the CoA's own ordering.
+            def account_list(accounts, *, exclude_codes=()):
+                out = []
+                for a in accounts:
+                    if a.account_code in exclude_codes:
+                        continue
+                    bal = year_balance(a)
+                    if abs(bal) < 0.01:
+                        continue
+                    out.append({'code': a.account_code, 'name': a.account_name, 'balance': bal})
+                return sorted(out, key=lambda r: r['code'])
+
+            revenue_account_list = account_list(revenue_accounts)
+            cogs_account_list = account_list(
+                [a for a in expense_accounts if a.account_code.startswith('5-1') or a.account_code in _mfg_overhead_codes_6xxx]
+            )
+            selling_account_list = account_list(selling_accounts)
+            admin_account_list = account_list(admin_accounts)
+            other_account_list = account_list(other_accounts)
+
             gross_profit = total_revenue - total_cogs
             operating_income = gross_profit - total_operating_expenses
             net_income_before_tax = operating_income - total_other_expenses
@@ -1806,25 +1834,30 @@ def get_income_statement():
                     'sales_revenue': sales_revenue,
                     'sales_discounts': sales_discounts,
                     'other_income': other_revenue,
-                    'total_revenue': total_revenue
+                    'total_revenue': total_revenue,
+                    'accounts': revenue_account_list,
                 },
                 'cost_of_sales': {
                     'direct_materials': direct_materials + cogs_other,
                     'direct_labor': direct_labor,
                     'manufacturing_overhead': manufacturing_overhead,
-                    'total_cogs': total_cogs
+                    'total_cogs': total_cogs,
+                    'accounts': cogs_account_list,
                 },
                 'gross_profit': gross_profit,
                 'operating_expenses': {
                     'selling_expenses': selling_expenses,
                     'administrative_expenses': administrative_expenses,
-                    'total_operating_expenses': total_operating_expenses
+                    'total_operating_expenses': total_operating_expenses,
+                    'selling_accounts': selling_account_list,
+                    'admin_accounts': admin_account_list,
                 },
                 'operating_income': operating_income,
                 'other_expenses': {
                     'interest_expense': interest_expense,
                     'depreciation': 0,
-                    'total_other_expenses': total_other_expenses
+                    'total_other_expenses': total_other_expenses,
+                    'accounts': other_account_list,
                 },
                 'net_income_before_tax': net_income_before_tax,
                 'income_tax': income_tax,

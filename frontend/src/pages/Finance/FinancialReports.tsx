@@ -9,30 +9,41 @@ import {
   ChartBarIcon,
   ClipboardDocumentListIcon
 } from '@heroicons/react/24/outline';
+interface CoaAccountLine {
+  code: string
+  name: string
+  balance: number
+}
+
 interface IncomeStatement {
   revenue: {
     sales_revenue: number
     sales_discounts: number
     other_income: number
     total_revenue: number
+    accounts: CoaAccountLine[]
   }
   cost_of_sales: {
     direct_materials: number
     direct_labor: number
     manufacturing_overhead: number
     total_cogs: number
+    accounts: CoaAccountLine[]
   }
   gross_profit: number
   operating_expenses: {
     selling_expenses: number
     administrative_expenses: number
     total_operating_expenses: number
+    selling_accounts: CoaAccountLine[]
+    admin_accounts: CoaAccountLine[]
   }
   operating_income: number
   other_expenses: {
     interest_expense: number
     depreciation: number
     total_other_expenses: number
+    accounts: CoaAccountLine[]
   }
   net_income_before_tax: number
   income_tax: number
@@ -151,47 +162,46 @@ const FinancialReports = () => {
           <h3 className="text-xl font-semibold mb-4">📊 Income Statement - {selectedYear}</h3>
           
           <div className="space-y-4">
-            {/* Revenue Section */}
+            {/* Revenue Section - per actual CoA account */}
             <div className="border-b pb-4">
-              <h4 className="font-semibold text-green-700 mb-2">REVENUE</h4>
+              <h4 className="font-semibold text-green-700 mb-2">PENDAPATAN</h4>
               <div className="ml-4 space-y-1">
-                <div className="flex justify-between">
-                  <span>Sales Revenue</span>
-                  <span>{formatRupiah(incomeStatement.revenue?.sales_revenue || 0)}</span>
-                </div>
-                <div className="flex justify-between text-red-600">
-                  <span>Sales Discounts</span>
-                  <span>({formatRupiah(Math.abs(incomeStatement.revenue?.sales_discounts || 0))})</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Other Income</span>
-                  <span>{formatRupiah(incomeStatement.revenue?.other_income || 0)}</span>
-                </div>
+                {(incomeStatement.revenue?.accounts || []).map((acc) => (
+                  <div key={acc.code} className="flex justify-between">
+                    <span>
+                      <span className="text-gray-400 mr-2">{acc.code}</span>
+                      {acc.name}
+                    </span>
+                    <span className={acc.balance < 0 ? 'text-red-600' : ''}>
+                      {acc.balance < 0 ? `(${formatRupiah(Math.abs(acc.balance))})` : formatRupiah(acc.balance)}
+                    </span>
+                  </div>
+                ))}
                 <div className="flex justify-between font-semibold border-t pt-1">
-                  <span>Total Revenue</span>
+                  <span>Total Pendapatan</span>
                   <span>{formatRupiah(incomeStatement.revenue?.total_revenue || 0)}</span>
                 </div>
               </div>
             </div>
 
-            {/* Cost of Sales */}
+            {/* Cost of Sales - per actual CoA account */}
             <div className="border-b pb-4">
-              <h4 className="font-semibold text-red-700 mb-2">COST OF SALES</h4>
+              <h4 className="font-semibold text-red-700 mb-2">BEBAN POKOK PENJUALAN (HPP)</h4>
               <div className="ml-4 space-y-1">
-                <div className="flex justify-between">
-                  <span>Direct Materials</span>
-                  <span>{formatRupiah(incomeStatement.cost_of_sales?.direct_materials || 0)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Direct Labor</span>
-                  <span>{formatRupiah(incomeStatement.cost_of_sales?.direct_labor || 0)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Manufacturing Overhead</span>
-                  <span>{formatRupiah(incomeStatement.cost_of_sales?.manufacturing_overhead || 0)}</span>
-                </div>
+                {(incomeStatement.cost_of_sales?.accounts || []).length === 0 && (
+                  <div className="text-gray-400 italic">Belum ada posting HPP periode ini</div>
+                )}
+                {(incomeStatement.cost_of_sales?.accounts || []).map((acc) => (
+                  <div key={acc.code} className="flex justify-between">
+                    <span>
+                      <span className="text-gray-400 mr-2">{acc.code}</span>
+                      {acc.name}
+                    </span>
+                    <span>{formatRupiah(acc.balance)}</span>
+                  </div>
+                ))}
                 <div className="flex justify-between font-semibold border-t pt-1">
-                  <span>Total Cost of Sales</span>
+                  <span>Total HPP</span>
                   <span>({formatRupiah(incomeStatement.cost_of_sales?.total_cogs || 0)})</span>
                 </div>
               </div>
@@ -199,24 +209,42 @@ const FinancialReports = () => {
 
             {/* Gross Profit */}
             <div className="flex justify-between font-bold text-lg bg-blue-50 p-2 rounded">
-              <span>GROSS PROFIT</span>
+              <span>LABA KOTOR</span>
               <span className="text-blue-600">{formatRupiah(incomeStatement.gross_profit || 0)}</span>
             </div>
 
-            {/* Operating Expenses */}
+            {/* Operating Expenses - per actual CoA account, selling + admin */}
             <div className="border-b pb-4">
-              <h4 className="font-semibold text-orange-700 mb-2">OPERATING EXPENSES</h4>
+              <h4 className="font-semibold text-orange-700 mb-2">BEBAN OPERASIONAL</h4>
               <div className="ml-4 space-y-1">
-                <div className="flex justify-between">
-                  <span>Selling Expenses</span>
-                  <span>{formatRupiah(incomeStatement.operating_expenses?.selling_expenses || 0)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Administrative Expenses</span>
-                  <span>{formatRupiah(incomeStatement.operating_expenses?.administrative_expenses || 0)}</span>
-                </div>
+                <div className="text-xs uppercase tracking-wide text-gray-400 mt-1">Beban Penjualan</div>
+                {(incomeStatement.operating_expenses?.selling_accounts || []).length === 0 && (
+                  <div className="text-gray-400 italic">-</div>
+                )}
+                {(incomeStatement.operating_expenses?.selling_accounts || []).map((acc) => (
+                  <div key={acc.code} className="flex justify-between">
+                    <span>
+                      <span className="text-gray-400 mr-2">{acc.code}</span>
+                      {acc.name}
+                    </span>
+                    <span>{formatRupiah(acc.balance)}</span>
+                  </div>
+                ))}
+                <div className="text-xs uppercase tracking-wide text-gray-400 mt-2">Beban Administrasi &amp; Umum</div>
+                {(incomeStatement.operating_expenses?.admin_accounts || []).length === 0 && (
+                  <div className="text-gray-400 italic">-</div>
+                )}
+                {(incomeStatement.operating_expenses?.admin_accounts || []).map((acc) => (
+                  <div key={acc.code} className="flex justify-between">
+                    <span>
+                      <span className="text-gray-400 mr-2">{acc.code}</span>
+                      {acc.name}
+                    </span>
+                    <span>{formatRupiah(acc.balance)}</span>
+                  </div>
+                ))}
                 <div className="flex justify-between font-semibold border-t pt-1">
-                  <span>Total Operating Expenses</span>
+                  <span>Total Beban Operasional</span>
                   <span>({formatRupiah(incomeStatement.operating_expenses?.total_operating_expenses || 0)})</span>
                 </div>
               </div>
@@ -224,18 +252,40 @@ const FinancialReports = () => {
 
             {/* Operating Income */}
             <div className="flex justify-between font-bold text-lg bg-green-50 p-2 rounded">
-              <span>OPERATING INCOME</span>
+              <span>LABA USAHA</span>
               <span className="text-green-600">{formatRupiah(incomeStatement.operating_income || 0)}</span>
             </div>
+
+            {/* Other Income/Expenses - per actual CoA account (9-xxxx) */}
+            {(incomeStatement.other_expenses?.accounts || []).length > 0 && (
+              <div className="border-b pb-4">
+                <h4 className="font-semibold text-purple-700 mb-2">PENDAPATAN / BEBAN LAIN-LAIN</h4>
+                <div className="ml-4 space-y-1">
+                  {(incomeStatement.other_expenses?.accounts || []).map((acc) => (
+                    <div key={acc.code} className="flex justify-between">
+                      <span>
+                        <span className="text-gray-400 mr-2">{acc.code}</span>
+                        {acc.name}
+                      </span>
+                      <span>{formatRupiah(acc.balance)}</span>
+                    </div>
+                  ))}
+                  <div className="flex justify-between font-semibold border-t pt-1">
+                    <span>Total Lain-lain</span>
+                    <span>({formatRupiah(incomeStatement.other_expenses?.total_other_expenses || 0)})</span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Net Income */}
             <div className="border-t pt-4">
               <div className="flex justify-between">
-                <span>Income Tax</span>
+                <span>Pajak Penghasilan</span>
                 <span>({formatRupiah(incomeStatement.income_tax || 0)})</span>
               </div>
               <div className="flex justify-between font-bold text-xl bg-indigo-50 p-3 rounded mt-2">
-                <span>NET INCOME</span>
+                <span>LABA BERSIH</span>
                 <span className="text-indigo-600">{formatRupiah(incomeStatement.net_income || 0)}</span>
               </div>
             </div>
