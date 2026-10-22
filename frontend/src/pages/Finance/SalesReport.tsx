@@ -15,6 +15,22 @@ interface SalesReportRow {
   laba_kotor: number;
 }
 
+interface ProductReportRow {
+  product_id: number;
+  product_name: string;
+  qty_terjual: number;
+  penjualan: number;
+  diskon: number;
+  bpp: number;
+  laba_kotor: number;
+}
+
+interface ProductReportData {
+  period: { date_from: string; date_to: string };
+  rows: ProductReportRow[];
+  totals: { penjualan: number; diskon: number; bpp: number; laba_kotor: number };
+}
+
 interface SalesReportData {
   period: { date_from: string; date_to: string };
   rows: SalesReportRow[];
@@ -38,7 +54,9 @@ function today(): string {
 const SalesReport: React.FC = () => {
   const [dateFrom, setDateFrom] = useState(firstDayOfMonth());
   const [dateTo, setDateTo] = useState(today());
+  const [view, setView] = useState<'invoice' | 'product'>('invoice');
   const [data, setData] = useState<SalesReportData | null>(null);
+  const [productData, setProductData] = useState<ProductReportData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,16 +64,23 @@ const SalesReport: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await axiosInstance.get(
-        `/api/finance/reports/sales-report?date_from=${dateFrom}&date_to=${dateTo}`
-      );
-      setData(res.data);
+      if (view === 'invoice') {
+        const res = await axiosInstance.get(
+          `/api/finance/reports/sales-report?date_from=${dateFrom}&date_to=${dateTo}`
+        );
+        setData(res.data);
+      } else {
+        const res = await axiosInstance.get(
+          `/api/finance/reports/sales-report-by-product?date_from=${dateFrom}&date_to=${dateTo}`
+        );
+        setProductData(res.data);
+      }
     } catch (e: any) {
       setError(e?.response?.data?.error || 'Gagal memuat laporan penjualan');
     } finally {
       setLoading(false);
     }
-  }, [dateFrom, dateTo]);
+  }, [dateFrom, dateTo, view]);
 
   useEffect(() => {
     fetchReport();
@@ -99,12 +124,75 @@ const SalesReport: React.FC = () => {
         >
           Tampilkan
         </button>
+        <div className="flex gap-1 bg-gray-100 rounded p-1">
+          <button
+            onClick={() => setView('invoice')}
+            className={`px-3 py-1.5 rounded text-sm ${view === 'invoice' ? 'bg-white shadow font-medium' : 'text-gray-500'}`}
+          >
+            Per Invoice
+          </button>
+          <button
+            onClick={() => setView('product')}
+            className={`px-3 py-1.5 rounded text-sm ${view === 'product' ? 'bg-white shadow font-medium' : 'text-gray-500'}`}
+          >
+            Per Produk
+          </button>
+        </div>
       </div>
 
       {loading && <LoadingSpinner />}
       {error && <div className="bg-red-50 text-red-700 p-3 rounded">{error}</div>}
 
-      {data && !loading && (
+      {view === 'product' && productData && !loading && (
+        <div className="bg-white rounded-lg shadow overflow-x-auto">
+          <table className="min-w-full text-sm">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-2 text-left">Produk</th>
+                <th className="px-4 py-2 text-right">Qty Terjual</th>
+                <th className="px-4 py-2 text-right">Penjualan</th>
+                <th className="px-4 py-2 text-right">Diskon</th>
+                <th className="px-4 py-2 text-right">BPP</th>
+                <th className="px-4 py-2 text-right">Laba Kotor</th>
+              </tr>
+            </thead>
+            <tbody>
+              {productData.rows.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-4 py-6 text-center text-gray-400">
+                    Tidak ada penjualan produk pada periode ini.
+                  </td>
+                </tr>
+              )}
+              {productData.rows.map((row) => (
+                <tr key={row.product_id} className="border-t">
+                  <td className="px-4 py-2">{row.product_name}</td>
+                  <td className="px-4 py-2 text-right">{row.qty_terjual.toLocaleString('id-ID')}</td>
+                  <td className="px-4 py-2 text-right">{formatRupiah(row.penjualan)}</td>
+                  <td className="px-4 py-2 text-right text-red-600">
+                    {row.diskon > 0 ? `(${formatRupiah(row.diskon)})` : formatRupiah(0)}
+                  </td>
+                  <td className="px-4 py-2 text-right">{formatRupiah(row.bpp)}</td>
+                  <td className="px-4 py-2 text-right font-medium">{formatRupiah(row.laba_kotor)}</td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot className="bg-gray-50 font-semibold border-t-2">
+              <tr>
+                <td className="px-4 py-2" colSpan={2}>TOTAL</td>
+                <td className="px-4 py-2 text-right">{formatRupiah(productData.totals.penjualan)}</td>
+                <td className="px-4 py-2 text-right text-red-600">
+                  {productData.totals.diskon > 0 ? `(${formatRupiah(productData.totals.diskon)})` : formatRupiah(0)}
+                </td>
+                <td className="px-4 py-2 text-right">{formatRupiah(productData.totals.bpp)}</td>
+                <td className="px-4 py-2 text-right">{formatRupiah(productData.totals.laba_kotor)}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      )}
+
+      {view === 'invoice' && data && !loading && (
         <>
           <div className="bg-white rounded-lg shadow overflow-x-auto">
             <table className="min-w-full text-sm">

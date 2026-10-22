@@ -2013,6 +2013,107 @@ def get_sales_report():
         return jsonify({'error': str(e)}), 500
 
 
+@finance_bp.route('/reports/sales-report-by-product', methods=['GET'])
+@jwt_required()
+@require_permission('finance.view')
+def get_sales_report_by_product():
+    """Per-product view of the same Laporan Penjualan (2026-10-22) - same
+    Penjualan/Diskon/BPP/Laba Kotor columns as get_sales_report(), grouped
+    by product instead of by invoice, for management to see which specific
+    products are actually profitable.
+
+    Penjualan/Diskon come from InvoiceItem (gross = quantity * unit_price,
+    diskon = gross - total_amount, since total_amount is stored net of the
+    line's own discount_percent). BPP comes directly from
+    InventoryTransaction.total_cost for 'out' movements referencing a sales
+    shipment - more reliable here than re-deriving from AccountingEntry
+    (which has no product_id to group by), and already the exact cost
+    shipping.py used when it posted the HPP journal for that same line.
+    """
+    try:
+        from models.wms_advanced import InventoryTransaction
+        from datetime import datetime as dt
+
+        date_from_str = request.args.get('date_from')
+        date_to_str = request.args.get('date_to')
+        if date_from_str:
+            date_from = dt.strptime(date_from_str, '%Y-%m-%d').date()
+        else:
+            today = get_local_now().date()
+            date_from = today.replace(day=1)
+        if date_to_str:
+            date_to = dt.strptime(date_to_str, '%Y-%m-%d').date()
+        else:
+            date_to = get_local_now().date()
+
+        items = db.session.query(InvoiceItem, Invoice).join(
+            Invoice, InvoiceItem.invoice_id == Invoice.id
+        ).filter(
+            Invoice.invoice_type == 'sales',
+            Invoice.customer_id.isnot(None),
+            Invoice.status != 'cancelled',
+            Invoice.invoice_date >= date_from,
+            Invoice.invoice_date <= date_to,
+            InvoiceItem.product_id.isnot(None),
+        ).all()
+
+        by_product = {}
+        for item, inv in items:
+            pid = item.product_id
+            gross = float(item.quantity) * float(item.unit_price)
+            net = float(item.total_amount or 0)
+            diskon = gross - net
+            slot = by_product.setdefault(pid, {
+                'product_id': pid,
+                'product_name': item.product.name if item.product else item.description,
+                'penjualan': 0.0, 'diskon': 0.0, 'qty_terjual': 0.0,
+            })
+            slot['penjualan'] += gross
+            slot['diskon'] += diskon
+            slot['qty_terjual'] += float(item.quantity)
+
+        bpp_rows = db.session.query(
+            InventoryTransaction.product_id,
+            func.sum(InventoryTransaction.total_cost)
+        ).filter(
+            InventoryTransaction.direction == 'out',
+            InventoryTransaction.reference_type.in_(['sales_order', 'sales_delivery']),
+            InventoryTransaction.transaction_date >= date_from,
+            InventoryTransaction.transaction_date <= date_to,
+            InventoryTransaction.product_id.isnot(None),
+        ).group_by(InventoryTransaction.product_id).all()
+        bpp_by_product = {pid: float(total or 0) for pid, total in bpp_rows}
+
+        rows = []
+        for pid, slot in by_product.items():
+            bpp = bpp_by_product.get(pid, 0.0)
+            rows.append({
+                'product_id': pid,
+                'product_name': slot['product_name'],
+                'qty_terjual': round(slot['qty_terjual'], 3),
+                'penjualan': round(slot['penjualan'], 2),
+                'diskon': round(slot['diskon'], 2),
+                'bpp': round(bpp, 2),
+                'laba_kotor': round(slot['penjualan'] - slot['diskon'] - bpp, 2),
+            })
+        rows.sort(key=lambda r: r['penjualan'], reverse=True)
+
+        totals = {
+            'penjualan': round(sum(r['penjualan'] for r in rows), 2),
+            'diskon': round(sum(r['diskon'] for r in rows), 2),
+            'bpp': round(sum(r['bpp'] for r in rows), 2),
+            'laba_kotor': round(sum(r['laba_kotor'] for r in rows), 2),
+        }
+
+        return jsonify({
+            'period': {'date_from': date_from.isoformat(), 'date_to': date_to.isoformat()},
+            'rows': rows,
+            'totals': totals,
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @finance_bp.route('/reports/balance-sheet', methods=['GET'])
 @jwt_required()
 @require_permission('finance.view')
