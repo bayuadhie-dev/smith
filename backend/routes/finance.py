@@ -387,6 +387,7 @@ def create_invoice():
                 product_id=item_data.get('product_id'),
                 description=item_data['description'],
                 quantity=item_data['quantity'],
+                uom=item_data.get('uom'),
                 unit_price=item_data['unit_price'],
                 discount_percent=item_data.get('discount_percent', 0),
                 total_amount=line_net,
@@ -1939,8 +1940,21 @@ def get_sales_report():
         total_penjualan = total_diskon = total_bpp = 0.0
 
         for inv in invoices:
-            penjualan = float(inv.subtotal or 0) + float(inv.discount_amount or 0)  # gross, pre-discount
-            diskon = float(inv.discount_amount or 0)
+            # Derive gross/diskon from InvoiceItem lines (2026-10-22 fix) -
+            # invoice.discount_amount is a SEPARATE header-level field only
+            # populated when a caller explicitly passes discount_amount in
+            # the request; it has nothing to do with each item's own
+            # discount_percent, which is what create_invoice's GL posting
+            # actually sums into the 4-1200 Diskon Penjualan entry. Reading
+            # discount_amount here silently showed Rp0 diskon for every
+            # invoice created via per-item discount_percent (the normal
+            # path), while 'penjualan' (subtotal + discount_amount) was
+            # actually the NET amount mislabeled as gross - caught because
+            # the rekonsiliasi block's GL-balance total didn't match the
+            # row total by exactly the missing discount.
+            penjualan = sum(float(item.quantity) * float(item.unit_price) for item in inv.items)
+            diskon = penjualan - float(inv.subtotal or 0)
+            diskon_percent = round((diskon / penjualan) * 100, 2) if penjualan else 0.0
 
             shipping_order_ids = [so.id for so in ShippingOrder.query.filter_by(invoice_id=inv.id).all()]
             bpp = 0.0
@@ -1958,12 +1972,32 @@ def get_sales_report():
             total_diskon += diskon
             total_bpp += bpp
 
+            # Packaging context (isi/karton, satuan, jumlah) - from the
+            # invoice's first/primary line item and its product's
+            # ProductPackaging master data (packs_per_karton), for
+            # management review ("berapa kerton, isi berapa dalam 1
+            # karton, satuannya apa"). Multi-item invoices only show the
+            # first line's packaging here - the per-product view
+            # (sales-report-by-product) is the source of truth per product.
+            primary_item = inv.items[0] if inv.items else None
+            product_name = None
+            packs_per_karton = None
+            if primary_item and primary_item.product:
+                product_name = primary_item.product.name
+                if primary_item.product.packaging:
+                    packs_per_karton = primary_item.product.packaging.packs_per_karton
+
             rows.append({
                 'invoice_id': inv.id,
                 'invoice_number': inv.invoice_number,
                 'invoice_date': inv.invoice_date.isoformat() if inv.invoice_date else None,
                 'customer_name': inv.customer.company_name if inv.customer else None,
+                'product_name': product_name,
+                'satuan': primary_item.uom if primary_item else None,
+                'jumlah': float(primary_item.quantity) if primary_item else None,
+                'packs_per_karton': packs_per_karton,
                 'penjualan': round(penjualan, 2),
+                'diskon_percent': diskon_percent,
                 'diskon': round(diskon, 2),
                 'bpp': round(bpp, 2),
                 'laba_kotor': round(laba_kotor, 2),

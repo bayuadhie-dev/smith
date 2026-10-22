@@ -9,8 +9,13 @@ interface SalesReportRow {
   invoice_number: string;
   invoice_date: string;
   customer_name: string | null;
+  product_name: string | null;
+  satuan: string | null;
+  jumlah: number | null;
+  packs_per_karton: number | null;
   penjualan: number;
   diskon: number;
+  diskon_percent: number;
   bpp: number;
   laba_kotor: number;
 }
@@ -201,8 +206,13 @@ const SalesReport: React.FC = () => {
                   <th className="px-4 py-2 text-left">No Invoice</th>
                   <th className="px-4 py-2 text-left">Tanggal</th>
                   <th className="px-4 py-2 text-left">Customer</th>
+                  <th className="px-4 py-2 text-left">Produk</th>
+                  <th className="px-4 py-2 text-right">Isi/Karton</th>
+                  <th className="px-4 py-2 text-center">Satuan</th>
+                  <th className="px-4 py-2 text-right">Jumlah</th>
                   <th className="px-4 py-2 text-right">Penjualan</th>
                   <th className="px-4 py-2 text-right">Diskon</th>
+                  <th className="px-4 py-2 text-right">Diskon %</th>
                   <th className="px-4 py-2 text-right">BPP</th>
                   <th className="px-4 py-2 text-right">Laba Kotor</th>
                 </tr>
@@ -210,7 +220,7 @@ const SalesReport: React.FC = () => {
               <tbody>
                 {data.rows.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-4 py-6 text-center text-gray-400">
+                    <td colSpan={12} className="px-4 py-6 text-center text-gray-400">
                       Tidak ada invoice penjualan pada periode ini.
                     </td>
                   </tr>
@@ -220,10 +230,15 @@ const SalesReport: React.FC = () => {
                     <td className="px-4 py-2">{row.invoice_number}</td>
                     <td className="px-4 py-2">{row.invoice_date}</td>
                     <td className="px-4 py-2">{row.customer_name || '-'}</td>
+                    <td className="px-4 py-2">{row.product_name || '-'}</td>
+                    <td className="px-4 py-2 text-right">{row.packs_per_karton ?? '-'}</td>
+                    <td className="px-4 py-2 text-center">{row.satuan || '-'}</td>
+                    <td className="px-4 py-2 text-right">{row.jumlah?.toLocaleString('id-ID') ?? '-'}</td>
                     <td className="px-4 py-2 text-right">{formatRupiah(row.penjualan)}</td>
                     <td className="px-4 py-2 text-right text-red-600">
                       {row.diskon > 0 ? `(${formatRupiah(row.diskon)})` : formatRupiah(0)}
                     </td>
+                    <td className="px-4 py-2 text-right">{row.diskon_percent > 0 ? `${row.diskon_percent}%` : '-'}</td>
                     <td className="px-4 py-2 text-right">{formatRupiah(row.bpp)}</td>
                     <td className="px-4 py-2 text-right font-medium">{formatRupiah(row.laba_kotor)}</td>
                   </tr>
@@ -231,11 +246,12 @@ const SalesReport: React.FC = () => {
               </tbody>
               <tfoot className="bg-gray-50 font-semibold border-t-2">
                 <tr>
-                  <td className="px-4 py-2" colSpan={3}>TOTAL</td>
+                  <td className="px-4 py-2" colSpan={7}>TOTAL</td>
                   <td className="px-4 py-2 text-right">{formatRupiah(data.totals.penjualan)}</td>
                   <td className="px-4 py-2 text-right text-red-600">
                     {data.totals.diskon > 0 ? `(${formatRupiah(data.totals.diskon)})` : formatRupiah(0)}
                   </td>
+                  <td className="px-4 py-2 text-right"></td>
                   <td className="px-4 py-2 text-right">{formatRupiah(data.totals.bpp)}</td>
                   <td className="px-4 py-2 text-right">{formatRupiah(data.totals.laba_kotor)}</td>
                 </tr>
