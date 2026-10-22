@@ -7,6 +7,7 @@ interface RecurringPaymentMaster {
   category: string;
   vendor_name: string | null;
   notes: string | null;
+  is_factory_cost: boolean;
 }
 
 interface RecurringPaymentTx {
@@ -40,7 +41,7 @@ const RecurringPayment: React.FC = () => {
   const [loadingTx, setLoadingTx] = useState(false);
 
   const [showNewMasterForm, setShowNewMasterForm] = useState(false);
-  const [newMaster, setNewMaster] = useState({ name: '', category: 'electricity', vendor_name: '', notes: '' });
+  const [newMaster, setNewMaster] = useState({ name: '', category: 'electricity', vendor_name: '', notes: '', is_factory_cost: false });
 
   const [showNewTxForm, setShowNewTxForm] = useState(false);
   const [newTx, setNewTx] = useState({ payment_date: '', amount: '', notes: '' });
@@ -86,7 +87,7 @@ const RecurringPayment: React.FC = () => {
     try {
       await axios.post('/finance/recurring-payments', newMaster);
       setMessage({ type: 'success', text: 'Berhasil ditambahkan.' });
-      setNewMaster({ name: '', category: 'electricity', vendor_name: '', notes: '' });
+      setNewMaster({ name: '', category: 'electricity', vendor_name: '', notes: '', is_factory_cost: false });
       setShowNewMasterForm(false);
       loadMasters();
     } catch (e) {
@@ -180,6 +181,14 @@ const RecurringPayment: React.FC = () => {
                   onChange={(e) => setNewMaster((prev) => ({ ...prev, vendor_name: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm"
                 />
+                <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
+                  <input
+                    type="checkbox"
+                    checked={newMaster.is_factory_cost}
+                    onChange={(e) => setNewMaster((prev) => ({ ...prev, is_factory_cost: e.target.checked }))}
+                  />
+                  Biaya Pabrik (masuk HPP, bukan Beban Operasional)
+                </label>
                 <button
                   onClick={handleCreateMaster}
                   disabled={saving || !newMaster.name}
@@ -206,6 +215,11 @@ const RecurringPayment: React.FC = () => {
                     <div className="text-xs text-gray-500 dark:text-gray-400">
                       {CATEGORY_LABELS[m.category] || m.category}
                       {m.vendor_name && ` · ${m.vendor_name}`}
+                      {m.is_factory_cost && (
+                        <span className="ml-2 px-1.5 py-0.5 bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 rounded text-[10px] font-medium">
+                          HPP
+                        </span>
+                      )}
                     </div>
                   </button>
                 ))

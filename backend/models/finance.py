@@ -486,6 +486,14 @@ class RecurringPayment(db.Model):
     name = db.Column(db.String(200), nullable=False)  # e.g. "Listrik Pabrik", "WiFi Kantor"
     category = db.Column(db.String(50), nullable=False)  # electricity, water, internet, other
     vendor_name = db.Column(db.String(200), nullable=True)  # e.g. "PLN", "Indihome"
+    # 2026-10-22: "Listrik Pabrik" and "WiFi Kantor" are both category
+    # 'electricity'/'internet' with no structured way to tell factory from
+    # office spend apart - category alone can't drive GL routing (the same
+    # category covers both). This per-template flag lets the user mark
+    # which specific bills are factory/manufacturing overhead (-> posts to
+    # 5-1300 HPP - Overhead, Cost of Sales) vs everything else (stays on
+    # the shared Beban Operasional account, per the 2026-08-16 decision).
+    is_factory_cost = db.Column(db.Boolean, default=False, nullable=False)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     notes = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)

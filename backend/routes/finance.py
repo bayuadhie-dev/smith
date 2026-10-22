@@ -3322,6 +3322,7 @@ def get_recurring_payments():
                 'category': p.category,
                 'vendor_name': p.vendor_name,
                 'notes': p.notes,
+                'is_factory_cost': p.is_factory_cost,
             } for p in payments]
         }), 200
     except Exception as e:
@@ -3344,6 +3345,7 @@ def create_recurring_payment():
             category=data['category'],
             vendor_name=data.get('vendor_name'),
             notes=data.get('notes'),
+            is_factory_cost=bool(data.get('is_factory_cost', False)),
         )
         db.session.add(payment)
         db.session.commit()
@@ -3423,17 +3425,35 @@ def create_recurring_payment_transaction(id):
         db.session.add(transaction)
         db.session.flush()
 
-        # GL posting: Debit Beban Operasional (shared with regular expense
-        # claims, per Bayu's 2026-08-16 decision), Credit Kas.
-        beban_default = GlobalAccountDefault.query.filter_by(transaction_key='beban_operasional').first()
+        # GL posting: Credit Kas, Debit either -
+        # - 5-1300 HPP - Overhead (Cost of Sales), if this template is
+        #   flagged is_factory_cost (e.g. "Listrik Pabrik") - 2026-10-22,
+        #   previously ALL recurring bills shared the generic Beban
+        #   Operasional account regardless of whether they were factory
+        #   overhead or office spend.
+        # - Beban Operasional (shared account), everything else - unchanged
+        #   from the 2026-08-16 decision.
+        if recurring_payment.is_factory_cost:
+            debit_account = Account.query.filter_by(account_code='5-1300').first()
+            if not debit_account:
+                db.session.rollback()
+                return jsonify({'error': 'Akun 5-1300 HPP - Overhead tidak ditemukan'}), 400
+            debit_account_id = debit_account.id
+        else:
+            beban_default = GlobalAccountDefault.query.filter_by(transaction_key='beban_operasional').first()
+            if not beban_default:
+                db.session.rollback()
+                return jsonify({'error': 'Akun Beban Operasional belum diatur di Preferensi Akun'}), 400
+            debit_account_id = beban_default.account_id
+
         cash_default = GlobalAccountDefault.query.filter_by(transaction_key='cash').first()
-        if not beban_default or not cash_default:
+        if not cash_default:
             db.session.rollback()
-            return jsonify({'error': 'Akun Beban Operasional atau Kas belum diatur di Preferensi Akun'}), 400
+            return jsonify({'error': 'Akun Kas belum diatur di Preferensi Akun'}), 400
 
         journal_lines = [
             {
-                'account_id': beban_default.account_id,
+                'account_id': debit_account_id,
                 'debit': amount,
                 'credit': 0,
                 'description': f'{recurring_payment.name} - {transaction.period_label}',
