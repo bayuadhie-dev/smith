@@ -318,6 +318,14 @@ const SalesReport: React.FC = () => {
               di tabel atas lebih kecil dari saldo akun GL, selisihnya ada di invoice-invoice
               lama yang HPP-nya belum punya basis biaya — bukan kesalahan laporan ini.
             </p>
+            <p className="text-xs text-gray-400 mt-1">
+              Catatan lain: jurnal HPP dicatat pada tanggal pengiriman diproses (bukan
+              tanggal invoice), dan jurnal pembalik dari void invoice dicatat pada tanggal
+              void (bukan tanggal invoice asli). Untuk periode yang sangat sempit, rekonsiliasi
+              di bawah bisa menunjukkan ⚠️ meski datanya benar — gunakan rentang tanggal yang
+              mencakup baik tanggal invoice maupun tanggal pengiriman/void-nya untuk hasil
+              yang pasti cocok.
+            </p>
           </div>
         </>
       )}
