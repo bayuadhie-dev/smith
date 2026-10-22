@@ -192,12 +192,25 @@ def reverse_accounting_entries(reference_type, reference_id, entry_date, user_id
     Purchase Invoice, Payment) so a void always produces a real, balanced
     reversing journal instead of silently leaving the original posting in
     place. Debit and credit are swapped per account (summed if an account
-    appears on multiple original lines), the original entries are marked
-    status='reversed' (the model already had this status value defined but
-    nothing ever set it before this fix), and a fresh PendingJournalEntry +
+    appears on multiple original lines), and a fresh PendingJournalEntry +
     AccountingEntry set is posted with new_reference_type (defaults to
     'void_<reference_type>') tagged to the SAME reference_id, so the void's
     journal is easy to find via the same reference_id used for the original.
+
+    The original entries are left at status='posted', UNCHANGED (2026-10-22
+    fix - this function used to also flip them to status='reversed', which
+    every balance query (_account_balance_in_range, year_balance, etc.)
+    already excludes via its own `status == 'posted'` filter. Flipping the
+    original on top of posting an explicit reversing entry double-subtracted
+    the same amount: once by excluding the original, once by the reversing
+    entry's opposite-sign posting - caught live when a voided-and-recreated
+    Rp54.000.000 invoice made the Income Statement's 4-1000 balance come out
+    Rp54.000.000 LOWER than the Laporan Penjualan's independently-computed
+    total for the identical period. Standard double-entry practice is to
+    never alter a posted entry's own record - only ever post a new entry
+    that nets against it - which is also what makes a date-ranged report
+    correctly show the original's effect on its own date and the reversal's
+    effect on the void date, rather than erasing history.
 
     Returns the list of created (reversing) AccountingEntry objects, or an
     empty list if there was nothing posted to reverse (not an error - some
@@ -243,9 +256,10 @@ def reverse_accounting_entries(reference_type, reference_id, entry_date, user_id
     if not reversal_lines:
         # original entries net to zero already (shouldn't normally happen
         # for a balanced journal unless every line was on the same
-        # account) - mark reversed anyway so a re-void doesn't re-trigger.
-        for entry in original_entries:
-            entry.status = 'reversed'
+        # account) - nothing to post. Re-void idempotency is the caller's
+        # job (Invoice.status/Payment.status == 'cancelled' guard), not
+        # this function's - see the 2026-10-22 note on why original_entries
+        # is never mutated here.
         return []
 
     pending = PendingJournalEntry(
@@ -266,9 +280,6 @@ def reverse_accounting_entries(reference_type, reference_id, entry_date, user_id
         reference_type=new_reference_type or f'void_{reference_type}',
         reference_id=reference_id,
     )
-
-    for entry in original_entries:
-        entry.status = 'reversed'
 
     return created
 
