@@ -404,8 +404,40 @@ def post_payroll_journal(period, records, posted_by_user_id=None):
             or if the resulting journal doesn't balance.
     """
     from models.approval_workflow import PendingJournalEntry
+    from models.finance import Account
 
-    total_gaji = sum(float(r.gross_salary - r.absence_deduction) for r in records)
+    # Direct factory labor vs administrative salary split (2026-10-22) -
+    # previously ALL payroll posted to one account (7-1000 Beban Gaji),
+    # miscategorizing piecework/daily-rate factory floor wages as
+    # administrative expense instead of Cost of Sales. User-confirmed rule:
+    # pay_type 'piecework' (Borongan) or 'daily' (Harian) -> direct labor
+    # COGS, posted as TWO separate lines per user request (not combined):
+    # base wage -> 5-1210 HPP - Upah Borongan, allowances -> 5-1220 HPP -
+    # Tunjangan Karyawan Langsung (both children of 5-1200). Everyone else
+    # (monthly/fixed/weekly/outsourcing, incl. factory supervisors/managers
+    # who are salaried) stays as administrative Beban Gaji, unchanged.
+    DIRECT_LABOR_PAY_TYPES = {'piecework', 'daily'}
+
+    def is_direct_labor(r):
+        return bool(r.employee and r.employee.pay_type in DIRECT_LABOR_PAY_TYPES)
+
+    # Upah (base wage): basic_salary + overtime, net of attendance deduction.
+    # Tunjangan (allowances): position + transport allowance, tracked
+    # separately on the model (not reduced by absence_deduction - allowances
+    # are typically paid regardless of days absent in this system's
+    # calculate_employee_payroll()).
+    total_upah_langsung = sum(
+        float(r.basic_salary + r.overtime_amount - r.absence_deduction)
+        for r in records if is_direct_labor(r)
+    )
+    total_tunjangan_langsung = sum(
+        float(r.allowances) for r in records if is_direct_labor(r)
+    )
+    total_gaji_admin = sum(
+        float(r.gross_salary - r.absence_deduction) for r in records
+        if not is_direct_labor(r)
+    )
+    total_gaji = total_upah_langsung + total_tunjangan_langsung + total_gaji_admin
     total_pph21 = sum(float(r.tax_deduction) for r in records)
     total_bpjs_kesehatan = sum(float(r.insurance_deduction) for r in records)
     total_bpjs_tk = sum(float(r.pension_deduction) for r in records)
@@ -414,10 +446,31 @@ def post_payroll_journal(period, records, posted_by_user_id=None):
 
     lines = []
 
-    if total_gaji > 0:
+    upah_account = Account.query.filter_by(account_code='5-1210').first()
+    tunjangan_account = Account.query.filter_by(account_code='5-1220').first()
+    if not upah_account or not tunjangan_account:
+        # Sub-accounts missing (e.g. migration not yet applied on this
+        # environment) - fall back to the old single-account behavior
+        # rather than silently dropping this portion of payroll.
+        total_gaji_admin += total_upah_langsung + total_tunjangan_langsung
+        total_upah_langsung = total_tunjangan_langsung = 0
+
+    if total_upah_langsung > 0:
+        lines.append({
+            'account_id': upah_account.id,
+            'debit': total_upah_langsung, 'credit': 0,
+            'description': f'HPP - Upah Borongan - {period.period_name}',
+        })
+    if total_tunjangan_langsung > 0:
+        lines.append({
+            'account_id': tunjangan_account.id,
+            'debit': total_tunjangan_langsung, 'credit': 0,
+            'description': f'HPP - Tunjangan Karyawan Langsung - {period.period_name}',
+        })
+    if total_gaji_admin > 0:
         lines.append({
             'account_id': resolve_payroll_account('payroll_expense'),
-            'debit': total_gaji, 'credit': 0,
+            'debit': total_gaji_admin, 'credit': 0,
             'description': f'Beban Gaji - {period.period_name}',
         })
     if total_pph21 > 0:

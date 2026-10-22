@@ -1714,18 +1714,58 @@ def get_income_statement():
 
             # Chart of accounts convention (confirmed 2026-09-19): 5-xxxx = HPP/COGS
             # (5-1100 bahan baku, 5-1200 tenaga kerja, 5-1300 overhead),
-            # 6/7-xxxx = beban operasional pabrik+gaji folded into selling/admin
-            # for this report, 8-1000/8-2000 = selling/admin, 9-xxxx = other.
+            # 8-1000/8-2000 = selling/admin, 9-xxxx = other.
+            #
+            # 6-xxxx was previously lumped wholesale into "selling expenses"
+            # alongside 8-1xxx (2026-10-22 fix, found while investigating why
+            # Laporan Penjualan's BPP didn't include labor/utility/overhead
+            # costs a manufacturer would expect in COGS). The chart of
+            # accounts actually has a SPECIFIC set of 6-xxxx accounts whose
+            # names are unambiguously manufacturing cost, not selling cost:
+            # 6-1000 Beban Bahan Baku, 6-2000 Beban Tenaga Kerja, 6-3000/
+            # 6-3100/6-3200 Overhead/Overhead Pabrik/Perlengkapan Pabrik,
+            # 6-4000 Beban Utilitas - these were being counted as "Selling
+            # Expenses" below Gross Profit instead of inside COGS, overstating
+            # Gross Profit and overstating Selling Expenses by the same
+            # amount (net income was still correct, only the subtotals above
+            # it were wrong). The remaining 6-xxxx accounts (6-3300 Beban
+            # Operasional, 6-5000 Beban Sewa, 6-6000 Beban Penyusutan, 6-7000
+            # Selisih Persediaan) are genuinely ambiguous without a business
+            # decision on which cost center they belong to - left as selling
+            # expense for now, NOT reclassified blindly.
+            #
+            # 7-xxxx (Beban Gaji, incl. factory floor wages per the user) is
+            # a SEPARATE, harder gap: it's one single account for ALL
+            # payroll (factory + office mixed together) with no per-employee
+            # production/non-production split to divide it by - left as
+            # administrative expense until that classification exists
+            # (would need Employee/Department tagging, a business decision,
+            # not a safe code-only fix).
+            _mfg_overhead_codes_6xxx = {'6-1000', '6-2000', '6-3000', '6-3100', '6-3200', '6-4000'}
+
             cogs_accounts = [a for a in expense_accounts if a.account_code.startswith('5-1')]
             direct_materials = sum(year_balance(a) for a in cogs_accounts if a.account_code == '5-1100')
-            direct_labor = sum(year_balance(a) for a in cogs_accounts if a.account_code == '5-1200')
+            # 5-1210/5-1220 (2026-10-22, Upah Borongan / Tunjangan Karyawan
+            # Langsung) are children of 5-1200 - included here too so they
+            # don't fall through total_cogs uncounted.
+            direct_labor = sum(
+                year_balance(a) for a in cogs_accounts
+                if a.account_code in ('5-1200', '5-1210', '5-1220')
+            )
             manufacturing_overhead = sum(year_balance(a) for a in cogs_accounts if a.account_code == '5-1300')
+            manufacturing_overhead += sum(
+                year_balance(a) for a in expense_accounts if a.account_code in _mfg_overhead_codes_6xxx
+            )
             # 5-1000 is the HPP header account itself - include it too in case
             # postings land there directly instead of its 5-11xx/12xx/13xx children.
             cogs_other = sum(year_balance(a) for a in expense_accounts if a.account_code == '5-1000')
             total_cogs = direct_materials + direct_labor + manufacturing_overhead + cogs_other
 
-            selling_accounts = [a for a in expense_accounts if a.account_code.startswith('8-1') or a.account_code.startswith('6-')]
+            selling_accounts = [
+                a for a in expense_accounts
+                if (a.account_code.startswith('8-1') or a.account_code.startswith('6-'))
+                and a.account_code not in _mfg_overhead_codes_6xxx
+            ]
             admin_accounts = [a for a in expense_accounts if a.account_code.startswith('8-2') or a.account_code.startswith('7-')]
             selling_expenses = sum(year_balance(a) for a in selling_accounts)
             administrative_expenses = sum(year_balance(a) for a in admin_accounts)
@@ -1942,10 +1982,16 @@ def get_sales_report():
             _account_balance_in_range(a, date_from, date_to)
             for a in akun_penjualan if a.account_code == '4-1200'
         )
+        # Same COGS definition as get_income_statement() (2026-10-22): 5-1xxx
+        # plus the unambiguously-manufacturing 6-xxxx accounts that used to
+        # be miscounted as selling expense - see that function's comment for
+        # the full account list and why the rest of 6-xxxx isn't included.
+        _mfg_overhead_codes_6xxx = {'6-1000', '6-2000', '6-3000', '6-3100', '6-3200', '6-4000'}
         akun_expense = _classified_accounts('expense')
         bpp_gl = sum(
             _account_balance_in_range(a, date_from, date_to)
-            for a in akun_expense if a.account_code.startswith('5-1')
+            for a in akun_expense
+            if a.account_code.startswith('5-1') or a.account_code in _mfg_overhead_codes_6xxx
         )
 
         return jsonify({
@@ -2363,10 +2409,23 @@ def get_dashboard_expenses():
     try:
         expense_accounts = _classified_accounts('expense')
 
+        # Same COGS/selling/admin split as get_income_statement() (2026-10-22
+        # fix applied here too for consistency): 5-1210/5-1220 (Upah Borongan
+        # / Tunjangan Karyawan Langsung) count as labor, and the
+        # unambiguously-manufacturing 6-xxxx accounts count as overhead, not
+        # selling expense.
+        _mfg_overhead_codes_6xxx = {'6-1000', '6-2000', '6-3000', '6-3100', '6-3200', '6-4000'}
         materials = sum(_account_balance_in_range(a) for a in expense_accounts if a.account_code in ('5-1000', '5-1100'))
-        labor = sum(_account_balance_in_range(a) for a in expense_accounts if a.account_code == '5-1200')
-        manufacturing = sum(_account_balance_in_range(a) for a in expense_accounts if a.account_code == '5-1300')
-        selling = sum(_account_balance_in_range(a) for a in expense_accounts if a.account_code.startswith('8-1') or a.account_code.startswith('6-'))
+        labor = sum(_account_balance_in_range(a) for a in expense_accounts if a.account_code in ('5-1200', '5-1210', '5-1220'))
+        manufacturing = sum(
+            _account_balance_in_range(a) for a in expense_accounts
+            if a.account_code == '5-1300' or a.account_code in _mfg_overhead_codes_6xxx
+        )
+        selling = sum(
+            _account_balance_in_range(a) for a in expense_accounts
+            if (a.account_code.startswith('8-1') or a.account_code.startswith('6-'))
+            and a.account_code not in _mfg_overhead_codes_6xxx
+        )
         admin = sum(_account_balance_in_range(a) for a in expense_accounts if a.account_code.startswith('8-2') or a.account_code.startswith('7-'))
         others = sum(_account_balance_in_range(a) for a in expense_accounts if a.account_code.startswith('9-'))
 
