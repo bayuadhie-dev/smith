@@ -999,14 +999,52 @@ def sync_warehouse_stock_from_item_detail(client, max_items=None):
                 material_id = match['id'] if is_material else None
 
                 from models.accurate import WarehouseStockSnapshotDetail
+                from utils.inventory_helpers import record_inventory_transaction
+
+                # Accurate's own cost basis for this item (2026-10-22 fix) -
+                # this sync used to only overwrite Inventory.quantity_on_hand
+                # directly with no InventoryTransaction row, so items whose
+                # stock only ever came in via this sync had NO 'in' txn for
+                # fifo_helper._get_inventory_unit_cost() to find - unit_cost
+                # silently resolved to 0, which made shipping's COGS journal
+                # skip posting entirely (see fix_report + memory note on the
+                # erp.graterp.my.id HPP audit, 2026-10-22). item/detail.do
+                # does return a cost field (see ACCURATE_API_FIELDS.md
+                # section 3) - prefer it, fall back to lastPurchaseCost.
+                item_unit_cost = item_detail.get('cost') or item_detail.get('lastPurchaseCost') or None
 
                 for accurate_wh_id, wh_data in relevant_stock.items():
                     location_id = _ACCURATE_WAREHOUSE_TO_SMITH_LOCATION[accurate_wh_id]
                     qty = wh_data.get('unit1Quantity', 0)
 
                     inv = _get_or_create_warehouse_inventory(location_id, product_id=product_id, material_id=material_id)
-                    inv.quantity_on_hand = float(qty)
-                    inv.quantity_available = float(qty)
+                    old_qty = float(inv.quantity_on_hand or 0)
+                    new_qty = float(qty)
+                    inv.quantity_on_hand = new_qty
+                    inv.quantity_available = new_qty
+
+                    # Record the delta as a real stock movement (not just a
+                    # quantity overwrite) so it shows up in SMITH's existing
+                    # stock-movement history UI and carries a cost basis for
+                    # HPP, same as any other inventory-affecting event.
+                    delta = round(new_qty - old_qty, 3)
+                    if delta != 0:
+                        record_inventory_transaction(
+                            transaction_type='adjustment',
+                            direction='in' if delta > 0 else 'out',
+                            quantity=abs(delta),
+                            product_id=product_id,
+                            material_id=material_id,
+                            to_location_id=location_id if delta > 0 else None,
+                            from_location_id=location_id if delta < 0 else None,
+                            reference_type='accurate_warehouse_sync',
+                            reference_number=f"ACC-WH-{row.get('id')}",
+                            unit_cost=float(item_unit_cost) if item_unit_cost else None,
+                            total_cost=round(abs(delta) * float(item_unit_cost), 2) if item_unit_cost else None,
+                            balance_before=old_qty,
+                            balance_after=new_qty,
+                            notes=f"Accurate warehouse stock sync: {item_name}",
+                        )
 
                     # flush before checking so any snapshot inserted earlier in
                     # this same request (e.g. a prior page's item) is visible -
