@@ -155,7 +155,12 @@ const FinancialReports = () => {
   // Income Statement period selection (2026-10-22): independent of the
   // year dropdown Balance Sheet/Cash Flow still use - harian/mingguan/
   // bulanan/tahunan/bebas (custom range), per user request.
-  const [incomePeriodMode, setIncomePeriodMode] = useState<IncomePeriodMode>('tahunan')
+  // Defaults to 'bulanan' (current month), matching Laporan Penjualan's own
+  // default range (2026-10-22) - the two pages previously defaulted to
+  // different periods (this page: full year, Sales Report: current month
+  // only), which looked like a data mismatch when compared side by side
+  // even though both were individually correct for their own period.
+  const [incomePeriodMode, setIncomePeriodMode] = useState<IncomePeriodMode>('bulanan')
   const [incomeDay, setIncomeDay] = useState(toISODate(new Date()))
   const [incomeWeekAnchor, setIncomeWeekAnchor] = useState(toISODate(new Date()))
   const [incomeMonth, setIncomeMonth] = useState(new Date().toISOString().slice(0, 7))
