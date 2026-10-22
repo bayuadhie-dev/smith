@@ -371,6 +371,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
           permission: 'finance',
           children: [
             { name: 'Dashboard', href: '/app/finance', icon: PresentationChartLineIcon },
+            { name: 'Laporan Penjualan', href: '/app/finance/sales-report', icon: DocumentTextIcon },
             { name: 'Budget', href: '/app/finance/budget', icon: CurrencyDollarIcon },
             { name: 'Cash Flow', href: '/app/finance/cash-flow', icon: ArrowsRightLeftIcon },
             { name: 'Expenses', href: '/app/finance/expenses', icon: DocumentTextIcon, permission: 'expense' },

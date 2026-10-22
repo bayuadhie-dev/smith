@@ -12,6 +12,7 @@ import {
 interface IncomeStatement {
   revenue: {
     sales_revenue: number
+    sales_discounts: number
     other_income: number
     total_revenue: number
   }
@@ -157,6 +158,10 @@ const FinancialReports = () => {
                 <div className="flex justify-between">
                   <span>Sales Revenue</span>
                   <span>{formatRupiah(incomeStatement.revenue?.sales_revenue || 0)}</span>
+                </div>
+                <div className="flex justify-between text-red-600">
+                  <span>Sales Discounts</span>
+                  <span>({formatRupiah(Math.abs(incomeStatement.revenue?.sales_discounts || 0))})</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Other Income</span>

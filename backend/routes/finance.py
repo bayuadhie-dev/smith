@@ -478,19 +478,39 @@ def create_invoice():
                 'description': f'Piutang - {invoice_number}',
             })
 
-            # Credit: Penjualan (revenue), per line item's resolved akun_penjualan_id
+            # Credit: Penjualan (revenue) at GROSS (pre-discount) per line
+            # item's resolved akun_penjualan_id, with discount posted
+            # separately (debit) to the dedicated Diskon Penjualan account
+            # (4-1200) instead of being silently netted into the revenue
+            # line (2026-10-22 fix - the account already existed in
+            # account_config.py's ACCOUNT_CODES['sales_discounts'] mapping
+            # and on the chart of accounts, but nothing ever posted to it,
+            # so Laporan Penjualan's Diskon column had nothing in the GL to
+            # tie out to). Net effect on the journal balance is unchanged;
+            # this only makes the discount visible as its own line.
+            total_line_discount = 0.0
             for item_data in data.get('items', []):
                 product_id = item_data.get('product_id')
                 line_total = item_data['quantity'] * item_data['unit_price']
                 line_discount = line_total * (item_data.get('discount_percent', 0) / 100)
-                line_net = line_total - line_discount
+                total_line_discount += line_discount
                 sales_account_id = resolve_account('akun_penjualan_id', product_id=product_id)
                 journal_lines.append({
                     'account_id': sales_account_id,
                     'debit': 0,
-                    'credit': float(line_net),
+                    'credit': float(line_total),
                     'description': item_data.get('description') or f'Penjualan - {invoice_number}',
                 })
+            if total_line_discount > 0.01:
+                from utils.account_config import ACCOUNT_CODES
+                discount_account = Account.query.filter_by(account_code=ACCOUNT_CODES['sales_discounts']).first()
+                if discount_account:
+                    journal_lines.append({
+                        'account_id': discount_account.id,
+                        'debit': float(total_line_discount),
+                        'credit': 0,
+                        'description': f'Diskon Penjualan - {invoice_number}',
+                    })
 
             # Balance the journal against tax/discount deltas if subtotal of
             # credit lines doesn't already equal total_amount (tax_amount is
@@ -1716,10 +1736,22 @@ def get_income_statement():
             other_other = sum(year_balance(a) for a in other_accounts if a.account_code != '9-1000')
             total_other_expenses = interest_expense + other_other
 
+            # 4-1200 Diskon Penjualan broken out as its own line (2026-10-22,
+            # alongside the invoice-posting fix that finally puts real
+            # postings on this account instead of netting discount silently
+            # into sales_revenue) - previously fell into the generic
+            # other_revenue bucket with 4-1100/4-9000, which both hid it from
+            # view and double-counted it against sales_revenue (sales_revenue
+            # was already net-of-discount before, so bucketing the discount
+            # separately too would have subtracted it twice).
             sales_revenue = sum(year_balance(a) for a in revenue_accounts if a.account_code == '4-1000')
-            other_revenue_accounts = [a for a in revenue_accounts if a.account_code != '4-1000']
+            sales_discounts = sum(year_balance(a) for a in revenue_accounts if a.account_code == '4-1200')
+            other_revenue_accounts = [a for a in revenue_accounts if a.account_code not in ('4-1000', '4-1200')]
             other_revenue = sum(year_balance(a) for a in other_revenue_accounts)
-            total_revenue = sales_revenue + other_revenue
+            # sales_discounts' balance is negative in 4-1200's own credit-normal
+            # convention (it's debited, a contra-revenue account), so adding it
+            # directly here nets it out of total_revenue correctly.
+            total_revenue = sales_revenue + sales_discounts + other_revenue
 
             gross_profit = total_revenue - total_cogs
             operating_income = gross_profit - total_operating_expenses
@@ -1731,6 +1763,7 @@ def get_income_statement():
             income_statement = {
                 'revenue': {
                     'sales_revenue': sales_revenue,
+                    'sales_discounts': sales_discounts,
                     'other_income': other_revenue,
                     'total_revenue': total_revenue
                 },
@@ -1800,6 +1833,139 @@ def get_income_statement():
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@finance_bp.route('/reports/sales-report', methods=['GET'])
+@jwt_required()
+@require_permission('finance.view')
+def get_sales_report():
+    """Laporan Penjualan: per-invoice Penjualan/Diskon/BPP for a free date
+    range (2026-10-22), built specifically so each column reconciles to the
+    matching Income Statement account for the SAME period, not just an
+    independently-computed approximation:
+      - Penjualan  <-> Akun 4-1000 Pendapatan Penjualan (gross, same figure
+        get_income_statement()'s sales_revenue reports for this period)
+      - Diskon     <-> Akun 4-1200 Diskon Penjualan (only populated now that
+        create_invoice's GL posting records it separately - see that
+        function's 2026-10-22 fix)
+      - BPP        <-> Akun 5-1xxx HPP (summed from the COGS journal
+        shipping.py posts per shipment, reference_type='sales_delivery',
+        traced back to each invoice via its linked ShippingOrder rows)
+
+    Per-invoice BPP is best-effort: an invoice whose shipment predates
+    today's cost-basis fixes (Accurate sync balanceUnitCost, buffer_stock
+    WO-cost) may show Rp0 BPP for lines whose stock-in event never carried
+    a cost - the 'rekonsiliasi' block at the bottom is the source of truth
+    (it sums directly from posted AccountingEntry rows, same as the Income
+    Statement), the per-invoice breakdown is for drill-down only.
+    """
+    try:
+        from models.shipping import ShippingOrder
+        from datetime import datetime as dt, timedelta
+
+        date_from_str = request.args.get('date_from')
+        date_to_str = request.args.get('date_to')
+        if date_from_str:
+            date_from = dt.strptime(date_from_str, '%Y-%m-%d').date()
+        else:
+            today = get_local_now().date()
+            date_from = today.replace(day=1)
+        if date_to_str:
+            date_to = dt.strptime(date_to_str, '%Y-%m-%d').date()
+        else:
+            date_to = get_local_now().date()
+
+        # Match create_invoice()'s own GL-posting condition exactly
+        # (invoice_type=='sales' + has a customer, no status gate at all -
+        # 'status' here is a payment-tracking field, default 'draft' at
+        # creation, not a document-draft/unconfirmed flag - the GL entry is
+        # posted unconditionally at invoice creation). Excluding
+        # status=='draft' here (an earlier version of this endpoint did)
+        # undercounted real posted revenue by exactly the sum of invoices
+        # still sitting in 'draft' payment status - caught via this
+        # endpoint's own rekonsiliasi block disagreeing with the GL by
+        # Rp2.270.000 on first test (2026-10-22). Only 'cancelled' is
+        # excluded, matching the one status invoice cancellation actually
+        # reverses the journal for (see invoice.status = 'cancelled' call site).
+        invoices = Invoice.query.filter(
+            Invoice.invoice_type == 'sales',
+            Invoice.customer_id.isnot(None),
+            Invoice.status != 'cancelled',
+            Invoice.invoice_date >= date_from,
+            Invoice.invoice_date <= date_to,
+        ).order_by(Invoice.invoice_date.asc()).all()
+
+        rows = []
+        total_penjualan = total_diskon = total_bpp = 0.0
+
+        for inv in invoices:
+            penjualan = float(inv.subtotal or 0) + float(inv.discount_amount or 0)  # gross, pre-discount
+            diskon = float(inv.discount_amount or 0)
+
+            shipping_order_ids = [so.id for so in ShippingOrder.query.filter_by(invoice_id=inv.id).all()]
+            bpp = 0.0
+            if shipping_order_ids:
+                bpp = db.session.query(func.sum(AccountingEntry.debit_amount)).filter(
+                    AccountingEntry.reference_type == 'sales_delivery',
+                    AccountingEntry.reference_id.in_(shipping_order_ids),
+                    AccountingEntry.account_code.like('5-1%'),
+                    AccountingEntry.status == 'posted',
+                ).scalar() or 0.0
+                bpp = float(bpp)
+
+            laba_kotor = penjualan - diskon - bpp
+            total_penjualan += penjualan
+            total_diskon += diskon
+            total_bpp += bpp
+
+            rows.append({
+                'invoice_id': inv.id,
+                'invoice_number': inv.invoice_number,
+                'invoice_date': inv.invoice_date.isoformat() if inv.invoice_date else None,
+                'customer_name': inv.customer.company_name if inv.customer else None,
+                'penjualan': round(penjualan, 2),
+                'diskon': round(diskon, 2),
+                'bpp': round(bpp, 2),
+                'laba_kotor': round(laba_kotor, 2),
+            })
+
+        # Rekonsiliasi: the same figures computed directly from posted GL
+        # accounts for this exact date range, independent of the per-invoice
+        # trace above - this is what actually must match Laba Rugi, since
+        # the income statement itself is built from these same accounts.
+        akun_penjualan = _classified_accounts('revenue')
+        penjualan_gl = sum(
+            _account_balance_in_range(a, date_from, date_to)
+            for a in akun_penjualan if a.account_code == '4-1000'
+        )
+        diskon_gl = sum(
+            _account_balance_in_range(a, date_from, date_to)
+            for a in akun_penjualan if a.account_code == '4-1200'
+        )
+        akun_expense = _classified_accounts('expense')
+        bpp_gl = sum(
+            _account_balance_in_range(a, date_from, date_to)
+            for a in akun_expense if a.account_code.startswith('5-1')
+        )
+
+        return jsonify({
+            'period': {'date_from': date_from.isoformat(), 'date_to': date_to.isoformat()},
+            'rows': rows,
+            'totals': {
+                'penjualan': round(total_penjualan, 2),
+                'diskon': round(total_diskon, 2),
+                'bpp': round(total_bpp, 2),
+                'laba_kotor': round(total_penjualan - total_diskon - total_bpp, 2),
+            },
+            'rekonsiliasi_laba_rugi': {
+                'akun_penjualan': {'code': '4-1000', 'name': 'Pendapatan Penjualan', 'balance': round(penjualan_gl, 2)},
+                'akun_diskon': {'code': '4-1200', 'name': 'Diskon Penjualan', 'balance': round(diskon_gl, 2)},
+                'akun_bpp': {'code': '5-1xxx', 'name': 'HPP', 'balance': round(bpp_gl, 2)},
+            },
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 
 @finance_bp.route('/reports/balance-sheet', methods=['GET'])
 @jwt_required()

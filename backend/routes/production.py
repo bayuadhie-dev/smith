@@ -2111,7 +2111,24 @@ def create_work_order_production_record(id):
                 inventory.quantity_on_hand = float(inventory.quantity_on_hand or 0) + float(buffer_stock_qty)
                 inventory.quantity_available = float(inventory.quantity_available or 0) + float(buffer_stock_qty)
                 inventory.updated_at = datetime.utcnow()
-                
+
+                # Cost basis for buffer stock (2026-10-22 fix) - this 'in'
+                # transaction used to carry no unit_cost at all, so any later
+                # shipment that drew down THIS inventory (found via fifo_helper's
+                # most-recent-'in' lookup) silently got unit_cost=0, skipping
+                # the COGS journal at sale time (same root cause class as the
+                # Accurate warehouse-sync gap fixed earlier today - see
+                # project_fsnindonesia_domain_vps_setup.md memory). Use the
+                # WO's own BOM snapshot material cost (WorkOrderBOMItem,
+                # already frozen at WO creation) as the per-unit basis - the
+                # same real material cost this WO actually consumed.
+                buffer_unit_cost = None
+                bom_total_cost = db.session.query(
+                    db.func.sum(WorkOrderBOMItem.total_cost_planned)
+                ).filter(WorkOrderBOMItem.work_order_id == wo.id).scalar()
+                if bom_total_cost and wo.quantity_good:
+                    buffer_unit_cost = float(bom_total_cost) / float(wo.quantity_good)
+
                 # Create inventory movement for buffer stock
                 buffer_movement = record_inventory_transaction(
                     transaction_type='stock_in',
@@ -2121,6 +2138,8 @@ def create_work_order_production_record(id):
                     to_location_id=inventory.location_id,
                     reference_number=wo.wo_number,
                     reference_type='buffer_stock',
+                    unit_cost=buffer_unit_cost,
+                    total_cost=round(buffer_unit_cost * float(buffer_stock_qty), 2) if buffer_unit_cost else None,
                     notes=f'Buffer stock dari WO {wo.wo_number} - produksi melebihi target',
                     created_by=user_id
                 )
