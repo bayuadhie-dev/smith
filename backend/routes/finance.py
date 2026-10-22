@@ -5,7 +5,7 @@ from models.sales import Customer
 from models.settings import CompanyProfile
 from utils.i18n import success_response, error_response, get_message
 from utils import generate_number, generate_number_v2
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from sqlalchemy import func, extract
 from utils.timezone import get_local_now, get_local_today
 from utils.auth_decorators import require_permission
@@ -1682,7 +1682,24 @@ def _classified_balance_in_range(bucket, date_from=None, date_to=None):
 @require_permission('finance.view')
 def get_income_statement():
     try:
-        year = request.args.get('year', get_local_now().year, type=int)
+        # Free period selection (2026-10-22, per user request: "periode ada
+        # opsi per tanggal/minggu/bulan/tahun") - date_from/date_to take
+        # priority when given (frontend computes the actual range for
+        # whichever granularity the user picked: a single day, an ISO
+        # week, a calendar month, or a custom range); `year` alone is kept
+        # as a backward-compatible fallback for any other caller still
+        # using the old year-only contract (defaults to the current year's
+        # Jan 1 - Dec 31 if neither is given).
+        date_from_str = request.args.get('date_from')
+        date_to_str = request.args.get('date_to')
+        if date_from_str and date_to_str:
+            date_from = datetime.strptime(date_from_str, '%Y-%m-%d').date()
+            date_to = datetime.strptime(date_to_str, '%Y-%m-%d').date()
+            year = date_to.year  # only used for the response label below
+        else:
+            year = request.args.get('year', get_local_now().year, type=int)
+            date_from = date(year, 1, 1)
+            date_to = date(year, 12, 31)
 
         # Calculate from actual accounting entries
         # Calculate income statement from actual data
@@ -1690,16 +1707,19 @@ def get_income_statement():
             from models.finance import Account
 
             def year_balance(account):
-                """Account.balance scoped to `year` - the shared @property on
-                Account sums ALL posted entries regardless of date, which
-                made the year dropdown on this report a no-op. Entries are
-                summed per the account's own normal_balance convention,
-                same as Account.balance itself.
+                """Account.balance scoped to [date_from, date_to] - the
+                shared @property on Account sums ALL posted entries
+                regardless of date, which made the year dropdown on this
+                report a no-op. Entries are summed per the account's own
+                normal_balance convention, same as Account.balance itself.
+                Name kept as year_balance for minimal diff even though it
+                now covers an arbitrary period, not just a calendar year.
                 """
                 entries = AccountingEntry.query.filter(
                     AccountingEntry.account_code == account.account_code,
                     AccountingEntry.status == 'posted',
-                    func.extract('year', AccountingEntry.entry_date) == year,
+                    AccountingEntry.entry_date >= date_from,
+                    AccountingEntry.entry_date <= date_to,
                 ).all()
                 debit_total = sum(float(e.debit_amount or 0) for e in entries)
                 credit_total = sum(float(e.credit_amount or 0) for e in entries)
@@ -1902,7 +1922,7 @@ def get_income_statement():
         
         return jsonify({
             'income_statement': income_statement,
-            'period': f"Year {year}",
+            'period': {'date_from': date_from.isoformat(), 'date_to': date_to.isoformat(), 'label': f"{date_from.isoformat()} – {date_to.isoformat()}"},
             'message': 'Income statement will be calculated from your accounting entries. Please record transactions first.'
         }), 200
     except Exception as e:

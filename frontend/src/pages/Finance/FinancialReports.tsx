@@ -114,6 +114,36 @@ interface CashFlow {
   ending_cash: number
 }
 
+type IncomePeriodMode = 'harian' | 'mingguan' | 'bulanan' | 'tahunan' | 'bebas'
+
+/** Local-calendar-date YYYY-MM-DD, NOT d.toISOString() - that converts to
+ * UTC first, which silently shifts the date back a day for any timezone
+ * ahead of UTC (e.g. WIB/UTC+7) - caught live: "Bulanan" for October 2026
+ * showed 2026-09-30 to 2026-10-30 instead of 2026-10-01 to 2026-10-31. */
+function toISODate(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+/** Monday-Sunday of the ISO week containing `d`. */
+function weekRange(d: Date): { from: string; to: string } {
+  const day = d.getDay() || 7 // Sunday=0 -> 7
+  const monday = new Date(d)
+  monday.setDate(d.getDate() - day + 1)
+  const sunday = new Date(monday)
+  sunday.setDate(monday.getDate() + 6)
+  return { from: toISODate(monday), to: toISODate(sunday) }
+}
+
+function monthRange(yearMonth: string): { from: string; to: string } {
+  const [y, m] = yearMonth.split('-').map(Number)
+  const from = new Date(y, m - 1, 1)
+  const to = new Date(y, m, 0)
+  return { from: toISODate(from), to: toISODate(to) }
+}
+
 const FinancialReports = () => {
   const [incomeStatement, setIncomeStatement] = useState<IncomeStatement | null>(null)
   const [balanceSheet, setBalanceSheet] = useState<BalanceSheet | null>(null)
@@ -122,20 +152,67 @@ const FinancialReports = () => {
   const [activeReport, setActiveReport] = useState<'income' | 'balance' | 'cashflow'>('income')
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
 
+  // Income Statement period selection (2026-10-22): independent of the
+  // year dropdown Balance Sheet/Cash Flow still use - harian/mingguan/
+  // bulanan/tahunan/bebas (custom range), per user request.
+  const [incomePeriodMode, setIncomePeriodMode] = useState<IncomePeriodMode>('tahunan')
+  const [incomeDay, setIncomeDay] = useState(toISODate(new Date()))
+  const [incomeWeekAnchor, setIncomeWeekAnchor] = useState(toISODate(new Date()))
+  const [incomeMonth, setIncomeMonth] = useState(new Date().toISOString().slice(0, 7))
+  const [incomeCustomFrom, setIncomeCustomFrom] = useState(toISODate(new Date(new Date().getFullYear(), 0, 1)))
+  const [incomeCustomTo, setIncomeCustomTo] = useState(toISODate(new Date()))
+  const [incomeRange, setIncomeRange] = useState<{ from: string; to: string }>(
+    { from: `${new Date().getFullYear()}-01-01`, to: `${new Date().getFullYear()}-12-31` }
+  )
+
   useEffect(() => {
-    loadReports()
+    let range: { from: string; to: string }
+    switch (incomePeriodMode) {
+      case 'harian':
+        range = { from: incomeDay, to: incomeDay }
+        break
+      case 'mingguan':
+        range = weekRange(new Date(incomeWeekAnchor))
+        break
+      case 'bulanan':
+        range = monthRange(incomeMonth)
+        break
+      case 'bebas':
+        range = { from: incomeCustomFrom, to: incomeCustomTo }
+        break
+      case 'tahunan':
+      default:
+        range = { from: `${selectedYear}-01-01`, to: `${selectedYear}-12-31` }
+    }
+    setIncomeRange(range)
+  }, [incomePeriodMode, incomeDay, incomeWeekAnchor, incomeMonth, incomeCustomFrom, incomeCustomTo, selectedYear])
+
+  useEffect(() => {
+    loadIncomeStatement()
+  }, [incomeRange])
+
+  useEffect(() => {
+    loadOtherReports()
   }, [selectedYear])
 
-  const loadReports = async () => {
+  const loadIncomeStatement = async () => {
+    try {
+      const res = await axiosInstance.get(
+        `/api/finance/reports/income-statement?date_from=${incomeRange.from}&date_to=${incomeRange.to}`
+      )
+      setIncomeStatement(res.data.income_statement)
+    } catch (error) {
+      console.error('Error loading income statement:', error)
+    }
+  }
+
+  const loadOtherReports = async () => {
     try {
       setLoading(true)
-      const [incomeRes, balanceRes, cashFlowRes] = await Promise.all([
-        axiosInstance.get(`/api/finance/reports/income-statement?year=${selectedYear}`),
+      const [balanceRes, cashFlowRes] = await Promise.all([
         axiosInstance.get(`/api/finance/reports/balance-sheet`),
         axiosInstance.get(`/api/finance/reports/cash-flow?year=${selectedYear}`)
       ])
-
-      setIncomeStatement(incomeRes.data.income_statement)
       setBalanceSheet(balanceRes.data.balance_sheet)
       setCashFlow(cashFlowRes.data.cash_flow)
     } catch (error) {
@@ -159,8 +236,54 @@ const FinancialReports = () => {
     return (
       <div className="space-y-6">
         <div className="card p-6">
-          <h3 className="text-xl font-semibold mb-4">📊 Income Statement - {selectedYear}</h3>
-          
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <h3 className="text-xl font-semibold">📊 Laporan Laba Rugi</h3>
+            <span className="text-sm text-gray-500">{incomeRange.from} s/d {incomeRange.to}</span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 mb-4 p-3 bg-gray-50 rounded-lg">
+            <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+              {([
+                ['harian', 'Harian'],
+                ['mingguan', 'Mingguan'],
+                ['bulanan', 'Bulanan'],
+                ['tahunan', 'Tahunan'],
+                ['bebas', 'Bebas'],
+              ] as [IncomePeriodMode, string][]).map(([mode, label]) => (
+                <button
+                  key={mode}
+                  onClick={() => setIncomePeriodMode(mode)}
+                  className={`px-3 py-1.5 rounded-md text-sm transition-colors ${incomePeriodMode === mode ? 'bg-white shadow text-gray-900 font-medium' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {incomePeriodMode === 'harian' && (
+              <input type="date" value={incomeDay} onChange={(e) => setIncomeDay(e.target.value)} className="border rounded px-3 py-2 text-sm" />
+            )}
+            {incomePeriodMode === 'mingguan' && (
+              <div>
+                <input type="date" value={incomeWeekAnchor} onChange={(e) => setIncomeWeekAnchor(e.target.value)} className="border rounded px-3 py-2 text-sm" />
+                <span className="text-xs text-gray-400 ml-2">pilih tanggal mana saja di minggu yang dimaksud</span>
+              </div>
+            )}
+            {incomePeriodMode === 'bulanan' && (
+              <input type="month" value={incomeMonth} onChange={(e) => setIncomeMonth(e.target.value)} className="border rounded px-3 py-2 text-sm" />
+            )}
+            {incomePeriodMode === 'tahunan' && (
+              <span className="text-sm text-gray-500">Tahun {selectedYear} — ubah di dropdown kanan atas</span>
+            )}
+            {incomePeriodMode === 'bebas' && (
+              <div className="flex items-center gap-2">
+                <input type="date" value={incomeCustomFrom} onChange={(e) => setIncomeCustomFrom(e.target.value)} className="border rounded px-3 py-2 text-sm" />
+                <span className="text-gray-400 text-sm">s/d</span>
+                <input type="date" value={incomeCustomTo} onChange={(e) => setIncomeCustomTo(e.target.value)} className="border rounded px-3 py-2 text-sm" />
+              </div>
+            )}
+          </div>
+
           <div className="space-y-4">
             {/* Revenue Section - per actual CoA account */}
             <div className="border-b pb-4">
