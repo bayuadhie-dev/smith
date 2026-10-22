@@ -1008,10 +1008,16 @@ def sync_warehouse_stock_from_item_detail(client, max_items=None):
                 # fifo_helper._get_inventory_unit_cost() to find - unit_cost
                 # silently resolved to 0, which made shipping's COGS journal
                 # skip posting entirely (see fix_report + memory note on the
-                # erp.graterp.my.id HPP audit, 2026-10-22). item/detail.do
-                # does return a cost field (see ACCURATE_API_FIELDS.md
-                # section 3) - prefer it, fall back to lastPurchaseCost.
-                item_unit_cost = item_detail.get('cost') or item_detail.get('lastPurchaseCost') or None
+                # erp.graterp.my.id HPP audit, 2026-10-22).
+                # Live-checked (2026-10-22) what item/detail.do actually
+                # returns for this company's Accurate data: `cost` is always
+                # 0.0 here (an unused standard-cost field), and
+                # `lastPurchaseCost` doesn't exist in the response at all -
+                # despite both being listed in ACCURATE_API_FIELDS.md as
+                # available fields. `balanceUnitCost` (Accurate's own moving-
+                # average cost, computed from balanceTotalCost/balance) is
+                # the field that's actually populated - use that instead.
+                item_unit_cost = item_detail.get('balanceUnitCost') or None
 
                 for accurate_wh_id, wh_data in relevant_stock.items():
                     location_id = _ACCURATE_WAREHOUSE_TO_SMITH_LOCATION[accurate_wh_id]
