@@ -15,7 +15,7 @@ from datetime import datetime
 from models import db
 from models.document_management import DocumentTemplate, TemplateVersion
 
-LAYOUT = 'v2-2026-10g'
+LAYOUT = 'v2-2026-10h'
 AUTO_NOTE_PREFIX = 'Auto-generated'
 
 TEAL = '#1f4e5a'
@@ -152,7 +152,7 @@ def notes_line(left, top, width):
     return [L('Catatan:', left, top, 18, 4, fs=9, bold=True), F('notes', left + 18, top, width - 18, 12, fs=9)]
 
 
-def signatures(left, width, top, labels, caption_paths=None):
+def signatures(left, width, top, labels, caption_paths=None, captions=None):
     """labels: list of static texts or ('field', path). 3 or 2 columns."""
     n = len(labels)
     w = width / n
@@ -165,7 +165,10 @@ def signatures(left, width, top, labels, caption_paths=None):
             objs.append(L(label, x, top, w, 5 + 4.6 * label.count('\n'), fs=9.5, align='center'))
         objs.append(LINE(x + w * 0.15, top + 26, w * 0.7, stroke_width=1))
         cap = (caption_paths or {}).get(i)
-        if cap:
+        static_cap = (captions or {}).get(i)
+        if static_cap:
+            objs.append(L(static_cap, x, top + 27.3, w, 4, fs=9.5, bold=True, align='center'))
+        elif cap:
             objs.append(F(cap, x, top + 27.3, w, 4, fs=8, align='center', color=MUTED))
         else:
             objs.append(L('Nama jelas & tanda tangan', x, top + 27.3, w, 4, fs=8, align='center', color=MUTED))
@@ -260,7 +263,7 @@ def build_spk():
           F('notes', 16, 74, 178, 14, fs=9.5)]
     for i in range(1, 10):
         o.append(LINE(14, 73 + i * 8, 182, stroke=GRID, stroke_width=1))
-    o += signatures(14, 182, 234, ['Dibuat oleh,\nPPIC', 'Disetujui oleh,\nManager Produksi'])
+    o += signatures(14, 182, 234, ['Dibuat oleh,', 'Disetujui oleh,'], captions={0: 'PPIC', 1: 'Manager Produksi'})
     return o, 'A4', 'portrait', None, None
 
 
@@ -281,7 +284,7 @@ def build_spk_batch():
         C('no', 'No.', 10, 'center'), C('name', 'Nama Bahan / Sub-Rakitan', 96), C('quantity', 'Kebutuhan', 30, 'right', 'num'),
         C('uom', 'Satuan', 22), C('realisasi', 'Realisasi', 24),
     ], min_rows=0, row_h=6.5, height=30, fs=9))
-    o += flow(signatures(14, 182, 108, ['Dibuat oleh,\nPPIC', 'Disetujui oleh,\nManager Produksi']))
+    o += flow(signatures(14, 182, 108, ['Dibuat oleh,', 'Disetujui oleh,'], captions={0: 'PPIC', 1: 'Manager Produksi'}))
     return o, 'A4', 'portrait', None, None
 
 
