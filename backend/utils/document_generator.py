@@ -774,6 +774,102 @@ def generate_purchase_order_document(po_id, user_id):
     return document
 
 
+_SATUAN = ['', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan', 'sepuluh', 'sebelas']
+
+
+def _terbilang(n):
+    n = int(n)
+    if n < 12:
+        return _SATUAN[n]
+    if n < 20:
+        return _terbilang(n - 10) + ' belas'
+    if n < 100:
+        return _terbilang(n // 10) + ' puluh' + (' ' + _terbilang(n % 10) if n % 10 else '')
+    if n < 200:
+        return 'seratus' + (' ' + _terbilang(n - 100) if n > 100 else '')
+    if n < 1000:
+        return _terbilang(n // 100) + ' ratus' + (' ' + _terbilang(n % 100) if n % 100 else '')
+    if n < 2000:
+        return 'seribu' + (' ' + _terbilang(n - 1000) if n > 1000 else '')
+    if n < 1000000:
+        return _terbilang(n // 1000) + ' ribu' + (' ' + _terbilang(n % 1000) if n % 1000 else '')
+    if n < 1000000000:
+        return _terbilang(n // 1000000) + ' juta' + (' ' + _terbilang(n % 1000000) if n % 1000000 else '')
+    if n < 1000000000000:
+        return _terbilang(n // 1000000000) + ' miliar' + (' ' + _terbilang(n % 1000000000) if n % 1000000000 else '')
+    return _terbilang(n // 1000000000000) + ' triliun' + (' ' + _terbilang(n % 1000000000000) if n % 1000000000000 else '')
+
+
+def _rp(v):
+    return 'Rp ' + f"{int(round(v)):,}".replace(',', '.')
+
+
+def _render_kwitansi_html(d):
+    from html import escape as e
+    company = d['company']
+    is_receipt = d['is_receipt']
+    title = 'BUKTI PENERIMAAN' if is_receipt else 'BUKTI PEMBAYARAN'
+    party_label = 'Diterima dari' if is_receipt else 'Dibayarkan kepada'
+    contact = ' | '.join(x for x in [company.get('phone'), company.get('email')] if x)
+    address = ', '.join(x for x in [company.get('address'), company.get('city')] if x)
+
+    if d['allocations']:
+        head = '<tr><th>No.</th><th>No. Faktur</th><th class="r">Dibayar</th></tr>'
+        rows = ''.join(
+            f'<tr><td class="c">{i}</td><td>{e(a["invoice_number"])}</td><td class="r">{_rp(a["amount"])}</td></tr>'
+            for i, a in enumerate(d['allocations'], 1))
+    else:
+        head = '<tr><th>No.</th><th>Akun</th><th>Keterangan</th><th class="r">Nilai</th></tr>'
+        rows = ''.join(
+            f'<tr><td class="c">{i}</td><td>{e(l["account"])}</td><td>{e(l["description"] or "")}</td><td class="r">{_rp(l["amount"])}</td></tr>'
+            for i, l in enumerate(d['lines'], 1))
+    cols = 3 if d['allocations'] else 4
+    total_row = f'<tr class="tot"><td colspan="{cols - 1}" class="r">TOTAL</td><td class="r">{_rp(d["amount"])}</td></tr>'
+
+    def sign(label):
+        return f'<td class="sig"><div>{label}</div><div class="line"></div></td>'
+
+    signs = (sign('Penerima') + sign('Pemberi') + sign('Mengetahui')) if is_receipt else (sign('Penerima') + sign('Kasir / Keuangan') + sign('Mengetahui'))
+
+    return f"""<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+@page {{ size: A5 landscape; margin: 10mm 12mm; }}
+body {{ font-family: Arial, sans-serif; font-size: 9.5pt; color: #111; margin: 0; }}
+table {{ border-collapse: collapse; width: 100%; }}
+.hdr td {{ vertical-align: top; }}
+.co {{ font-size: 13pt; font-weight: bold; }}
+.sub {{ font-size: 8pt; color: #444; }}
+.ttl {{ text-align: right; }}
+.ttl .t {{ font-size: 14pt; font-weight: bold; letter-spacing: 1px; }}
+.rule {{ border-top: 2px solid #111; margin: 6px 0 8px; }}
+.info td {{ padding: 2px 0; }}
+.info td.k {{ width: 38mm; color: #444; white-space: nowrap; }}
+.words {{ border: 1px solid #999; padding: 5px 8px; margin: 8px 0; font-style: italic; background: #f6f6f6; }}
+.items th {{ background: #e8e8e8; border: 1px solid #999; padding: 4px 6px; font-size: 8.5pt; text-align: left; }}
+.items td {{ border: 1px solid #999; padding: 4px 6px; }}
+.items .tot td {{ font-weight: bold; background: #f0f0f0; }}
+.r {{ text-align: right; }} .c {{ text-align: center; width: 8mm; }}
+.notes {{ margin-top: 6px; font-size: 8.5pt; }}
+.sigs {{ margin-top: 14px; }}
+.sig {{ width: 33%; text-align: center; font-size: 8.5pt; }}
+.sig .line {{ border-bottom: 1px solid #111; margin: 16mm 14mm 2px; }}
+</style></head><body>
+<table class="hdr"><tr>
+<td><div class="co">{e(company.get('name') or company.get('legal_name') or '')}</div>
+<div class="sub">{e(address)}</div><div class="sub">{e(contact)}</div></td>
+<td class="ttl"><div class="t">{title}</div><div>No. {e(d['document_number'])}</div><div>Tanggal: {e(d['document_date'])}</div></td>
+</tr></table>
+<div class="rule"></div>
+<table class="info">
+<tr><td class="k">{party_label}</td><td>: <b>{e(d['party_name'] or '-')}</b></td><td class="k">Kas/Bank</td><td>: {e(d['bank_account'] or '-')}</td></tr>
+<tr><td class="k">Metode</td><td>: {e(d['payment_method'] or '-')}</td><td class="k">No. Referensi</td><td>: {e(d['reference_number'] or '-')}</td></tr>
+</table>
+<div class="words"><b>Terbilang:</b> {e(d['terbilang'])}</div>
+<table class="items"><thead>{head}</thead><tbody>{rows}{total_row}</tbody></table>
+{f'<div class="notes"><b>Catatan:</b> {e(d["notes"])}</div>' if d['notes'] else ''}
+<table class="sigs"><tr>{signs}</tr></table>
+</body></html>"""
+
+
 def generate_kwitansi_document(payment_id, user_id):
     """
     Generate a printable Kwitansi (payment receipt) document (Print Template
@@ -787,22 +883,39 @@ def generate_kwitansi_document(payment_id, user_id):
     if not payment:
         raise ValueError('Payment not found')
 
-    template = _get_default_template('kwitansi')
-    if not template:
-        template = create_default_kwitansi_template(user_id)
+    from models.finance import Account
 
     doc_number = generate_number('DOC-KWT', Document, 'document_number')
 
     party = payment.customer if payment.customer else payment.supplier
+    bank = db.session.get(Account, payment.bank_account_id) if payment.bank_account_id else None
+    allocations = [{'invoice_number': a.invoice.invoice_number if a.invoice else f'#{a.invoice_id}', 'amount': float(a.amount)}
+                   for a in payment.allocations]
+    if not allocations and payment.invoice:
+        allocations = [{'invoice_number': payment.invoice.invoice_number, 'amount': float(payment.amount or 0)}]
+    lines = []
+    for l in payment.lines:
+        acc = db.session.get(Account, l.account_id)
+        lines.append({'account': f'{acc.account_code} - {acc.account_name}' if acc else f'#{l.account_id}',
+                      'description': l.description, 'amount': float(l.amount)})
+    if not allocations and not lines and payment.contra_account_id:
+        acc = db.session.get(Account, payment.contra_account_id)
+        lines.append({'account': f'{acc.account_code} - {acc.account_name}' if acc else '-',
+                      'description': payment.notes, 'amount': float(payment.amount or 0)})
+
+    amount = float(payment.amount or 0)
     document_data = {
         'document_number': payment.payment_number,
-        'document_date': payment.payment_date.strftime('%d %B %Y') if payment.payment_date else '',
-        'payment_type_label': 'Terima (Uang Masuk)' if payment.payment_type == 'receipt' else 'Bayar (Uang Keluar)',
-        'party_name': (party.company_name if hasattr(party, 'company_name') else '') if party else '',
-        'amount': float(payment.amount or 0),
-        'payment_method': payment.payment_method or '',
+        'document_date': payment.payment_date.strftime('%d-%m-%Y') if payment.payment_date else '',
+        'is_receipt': payment.payment_type in ('receipt', 'received') or payment.customer_id is not None,
+        'party_name': (party.company_name if hasattr(party, 'company_name') else getattr(party, 'name', '')) if party else '',
+        'amount': amount,
+        'terbilang': (_terbilang(amount).strip().capitalize() + ' rupiah') if amount >= 1 else 'Nol rupiah',
+        'payment_method': (payment.payment_method or '').replace('_', ' ').title(),
         'reference_number': payment.reference_number or '',
-        'invoice_number': ', '.join(a.invoice.invoice_number for a in payment.allocations if a.invoice) or (payment.invoice.invoice_number if payment.invoice else ''),
+        'bank_account': f'{bank.account_code} - {bank.account_name}' if bank else '',
+        'allocations': allocations,
+        'lines': lines,
         'notes': payment.notes or '',
         'company': get_company_context(),
     }
@@ -811,7 +924,7 @@ def generate_kwitansi_document(payment_id, user_id):
         document_number=doc_number,
         document_title=f'Kwitansi {payment.payment_number}',
         document_type='kwitansi',
-        template_version_id=template.current_version_id,
+        template_version_id=None,
         document_data=document_data,
         reference_type='payment',
         reference_id=payment.id,
@@ -819,7 +932,7 @@ def generate_kwitansi_document(payment_id, user_id):
         status='generated',
         created_by=user_id
     )
-    document.html_content = render_template_version_to_html(template.current_version, document_data)
+    document.html_content = _render_kwitansi_html(document_data)
 
     db.session.add(document)
     db.session.flush()
