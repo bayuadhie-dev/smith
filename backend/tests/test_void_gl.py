@@ -74,15 +74,25 @@ def test_void_sales_invoice_without_payment_reverses_journal(client, auth_header
     assert invoice.balance_due == 0
     assert invoice.voided_by is not None
 
+    # Original entries are never mutated (flipping them to 'reversed' on top of the
+    # reversing journal subtracted the amount twice from every balance query);
+    # the reversing journal below is what cancels them.
     for entry in original_entries:
         db.session.refresh(entry)
-        assert entry.status == 'reversed'
+        assert entry.status == 'posted'
 
     reversal_entries = AccountingEntry.query.filter_by(reference_type='void_sales_invoice', reference_id=invoice_id).all()
     assert len(reversal_entries) > 0
     total_debit = sum(float(e.debit_amount or 0) for e in reversal_entries)
     total_credit = sum(float(e.credit_amount or 0) for e in reversal_entries)
     assert round(total_debit, 2) == round(total_credit, 2)
+
+    # net effect of original + reversal is zero on every account
+    from collections import defaultdict
+    net = defaultdict(float)
+    for e in list(original_entries) + list(reversal_entries):
+        net[e.account_id] += float(e.debit_amount or 0) - float(e.credit_amount or 0)
+    assert all(abs(v) < 0.01 for v in net.values()), dict(net)
 
     # AR (piutang) yang tadinya di-debit harus di-credit balik sebesar total invoice
     piutang_reversal = [e for e in reversal_entries if e.account_id == accounts['piutang'].id]
@@ -234,8 +244,8 @@ def test_void_purchase_invoice_reverses_journal(client, auth_headers, db_session
 
     db.session.refresh(entry1)
     db.session.refresh(entry2)
-    assert entry1.status == 'reversed'
-    assert entry2.status == 'reversed'
+    assert entry1.status == 'posted'      # originals stay posted; the reversal journal cancels them
+    assert entry2.status == 'posted'
 
     reversal_entries = AccountingEntry.query.filter_by(reference_type='void_purchase_invoice', reference_id=invoice.id).all()
     assert len(reversal_entries) > 0
