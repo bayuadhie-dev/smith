@@ -238,7 +238,7 @@ def _render_line_or_box(obj, kind):
     return f'<div style="{style}"></div>'
 
 
-def _render_repeating_table(obj, document_data):
+def _render_repeating_table(obj, document_data, wrap=True):
     """The one exception to absolute positioning - a real <table> flowing
     from the element's anchor, so WeasyPrint's native pagination (<thead>
     repeats per page) handles rows that overflow onto later pages.
@@ -306,15 +306,17 @@ def _render_repeating_table(obj, document_data):
     col_widths = ''.join(f'<col style="width:{c.get("width", 0)}mm;">' for c in columns)
     layout = 'table-layout:fixed;' if grid else ''
 
-    return (
-        # position:absolute (not position:relative + margin-top) - see
-        # fix_report_3.md Fase 20 (margin-collapse put the table at y=0).
-        f'<div style="position:absolute; left:{left}mm; top:{top}mm; width:{width}mm;">'
+    table_html = (
         f'<table style="width:100%; border-collapse:collapse; font-size:{font_pt}pt; {layout}">'
         f'<colgroup>{col_widths}</colgroup>'
         f'{header_html}<tbody>{"".join(body_rows)}</tbody>'
-        f'</table></div>'
+        f'</table>'
     )
+    if not wrap:
+        return table_html
+    # position:absolute (not position:relative + margin-top) - see
+    # fix_report_3.md Fase 20 (margin-collapse put the table at y=0).
+    return f'<div style="position:absolute; left:{left}mm; top:{top}mm; width:{width}mm;">{table_html}</div>'
 
 
 def render_template_version_to_html(template_version, document_data):
@@ -325,21 +327,57 @@ def render_template_version_to_html(template_version, document_data):
     objects = canvas_data.get('objects', [])
     page_width_mm, page_height_mm = _paper_dimensions_mm(template_version)
 
-    body_parts = []
-    for obj in objects:
+    def render_one(obj):
         element_type = obj.get('elementType', 'label')
         if element_type in ('label', 'field'):
-            body_parts.append(_render_text_like(obj, document_data))
-        elif element_type == 'image':
-            body_parts.append(_render_image(obj, document_data))
-        elif element_type in ('barcode', 'qrcode'):
-            body_parts.append(_render_code(obj, document_data, element_type))
-        elif element_type in ('line', 'box'):
-            body_parts.append(_render_line_or_box(obj, element_type))
-        elif element_type == 'repeating_table':
-            body_parts.append(_render_repeating_table(obj, document_data))
-        # Unknown elementType: skip silently - a render should degrade
-        # gracefully, not 500 the whole document over 1 unrecognized element.
+            return _render_text_like(obj, document_data)
+        if element_type == 'image':
+            return _render_image(obj, document_data)
+        if element_type in ('barcode', 'qrcode'):
+            return _render_code(obj, document_data, element_type)
+        if element_type in ('line', 'box'):
+            return _render_line_or_box(obj, element_type)
+        if element_type == 'repeating_table':
+            return _render_repeating_table(obj, document_data)
+        return ''  # unknown elementType: degrade gracefully, never 500 the render
+
+    # Flow layout: a repeating_table with flow=True is rendered at its real
+    # data height, and every object marked flowAfter=True is placed relative
+    # to the table's BOTTOM (offset = designed top - designed table bottom),
+    # so totals/notes/signatures follow the last row instead of sitting at a
+    # fixed page position. In the Designer these objects sit at their nominal
+    # positions below the placeholder table, so it stays WYSIWYG.
+    flow_table = next((o for o in objects if o.get('elementType') == 'repeating_table' and o.get('flow')), None)
+    flow_children = [o for o in objects if o.get('flowAfter')] if flow_table else []
+    flow_ids = {id(o) for o in flow_children}
+
+    body_parts = []
+    for obj in objects:
+        if obj is flow_table or id(obj) in flow_ids:
+            continue
+        body_parts.append(render_one(obj))
+
+    if flow_table:
+        t_left, t_top, t_width, t_height, _a = _object_box(flow_table)
+        nominal_bottom = t_top + t_height
+        inner = []
+        max_bottom = 0
+        for child in flow_children:
+            c = dict(child)
+            c_left, c_top, c_w, c_h, _ca = _object_box(child)
+            offset = c_top - nominal_bottom
+            c['left'] = c_left - t_left
+            c['top'] = offset
+            max_bottom = max(max_bottom, offset + c_h)
+            inner.append(render_one(c))
+        body_parts.append(
+            # In-flow (not absolute) so a long table + the blocks after it can
+            # continue onto the next page instead of being clipped.
+            f'<div style="position:relative; padding-top:{t_top}mm; margin-left:{t_left}mm; width:{t_width}mm;">'
+            f'{_render_repeating_table(flow_table, document_data, wrap=False)}'
+            f'<div style="position:relative; width:100%; height:{max_bottom + 2}mm; page-break-inside:avoid; break-inside:avoid;">{"".join(p for p in inner if p)}</div>'
+            f'</div>'
+        )
 
     content_html = ''.join(p for p in body_parts if p)
 
@@ -349,7 +387,8 @@ def render_template_version_to_html(template_version, document_data):
     <head>
         <meta charset="UTF-8">
         <style>
-            @page {{ size: {page_width_mm}mm {page_height_mm}mm; margin: 0; }}
+            @page {{ size: {page_width_mm}mm {page_height_mm}mm; margin: 0 0 12mm 0; }}
+            @page :not(:first) {{ margin-top: 12mm; }}
             body {{ margin: 0; padding: 0; font-family: Arial, sans-serif; }}
             .tpd-page {{ position: relative; width: {page_width_mm}mm; min-height: {page_height_mm}mm; }}
         </style>

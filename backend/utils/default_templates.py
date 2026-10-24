@@ -15,7 +15,7 @@ from datetime import datetime
 from models import db
 from models.document_management import DocumentTemplate, TemplateVersion
 
-LAYOUT = 'v2-2026-10c'
+LAYOUT = 'v2-2026-10e'
 AUTO_NOTE_PREFIX = 'Auto-generated'
 
 TEAL = '#1f4e5a'
@@ -71,12 +71,12 @@ def QR(path, left, top, size):
             'scaleX': 1, 'scaleY': 1, 'fill': '#f3f4f6', 'stroke': '#9ca3af', 'strokeWidth': 1, 'fieldPath': path}
 
 
-def TABLE(source, left, top, width, columns, min_rows=10, row_h=6.5, height=70, fs=9):
+def TABLE(source, left, top, width, columns, min_rows=0, row_h=6.5, height=30, fs=9):
     return {'type': 'Rect', 'elementType': 'repeating_table', 'left': left, 'top': top, 'width': width,
             'height': height, 'scaleX': 1, 'scaleY': 1, 'fill': '#f3f4f6', 'stroke': '#9ca3af', 'strokeWidth': 1,
             'dataSource': source, 'columns': columns, 'showHeader': True,
             'gridColor': GRID, 'headerBg': TEAL, 'headerColor': '#ffffff', 'zebra': STRIPE,
-            'minRows': min_rows, 'rowHeight': row_h, 'tableFontSize': _fs(fs)}
+            'minRows': min_rows, 'rowHeight': row_h, 'tableFontSize': _fs(fs), 'flow': True}
 
 
 def C(path, label, width, align='left', fmt=None, bold=False):
@@ -86,6 +86,13 @@ def C(path, label, width, align='left', fmt=None, bold=False):
     if bold:
         c['bold'] = True
     return c
+
+
+def flow(objs):
+    """Mark objects to follow the flow table's bottom (see template_render_engine)."""
+    for o in objs:
+        o['flowAfter'] = True
+    return objs
 
 
 # ---- shared blocks -------------------------------------------------------
@@ -180,13 +187,13 @@ def build_invoice():
         C('pack', 'Isi/Krt', 15, 'right', 'num'), C('quantity', 'Qty', 18, 'right', 'num'), C('uom', 'Satuan', 15),
         C('unit_price', 'Harga', 18, 'right', 'num'), C('discount_text', 'Diskon', 20, 'right'),
         C('subtotal', 'Jumlah', 20, 'right', 'num'),
-    ], min_rows=10, row_h=6.5, height=72, fs=9))
-    o += totals_block(116, 140, 40, 40, [('Subtotal', 'gross', False), ('Diskon', 'discount_total', False),
-                                         ('PPN', 'tax_amount', False), ('TOTAL', 'total_amount', True),
-                                         ('Sudah Dibayar', 'paid_amount', False), ('Sisa Tagihan', 'balance_due', True)])
-    o += words_box(14, 183, 182)
-    o += notes_line(14, 195, 182)
-    o += signatures(14, 182, 234, ['Diterima oleh,', 'Hormat kami,'], {1: 'company.name'})
+    ], min_rows=0, row_h=6.5, height=30, fs=9))
+    o += flow(totals_block(116, 98, 40, 40, [('Subtotal', 'gross', False), ('Diskon', 'discount_total', False),
+                                             ('PPN', 'tax_amount', False), ('TOTAL', 'total_amount', True),
+                                             ('Sudah Dibayar', 'paid_amount', False), ('Sisa Tagihan', 'balance_due', True)]))
+    o += flow(words_box(14, 141, 182))
+    o += flow(notes_line(14, 154, 182))
+    o += flow(signatures(14, 182, 172, ['Diterima oleh,', 'Hormat kami,'], {1: 'company.name'}))
     return o, 'A4', 'portrait', None, None
 
 
@@ -202,12 +209,12 @@ def build_po():
         C('no', 'No.', 9, 'center'), C('code', 'Kode', 26), C('item_name', 'Deskripsi', 66),
         C('quantity', 'Qty', 20, 'right', 'num'), C('uom', 'Satuan', 17), C('unit_price', 'Harga', 24, 'right', 'num'),
         C('subtotal', 'Jumlah', 20, 'right', 'num'),
-    ], min_rows=10, row_h=6.5, height=72, fs=9))
-    o += totals_block(116, 140, 40, 40, [('Subtotal', 'subtotal', False), ('Diskon', 'discount_amount', False),
-                                         ('PPN', 'tax_amount', False), ('TOTAL', 'total_amount', True)])
-    o += words_box(14, 170, 182)
-    o += notes_line(14, 183, 182)
-    o += signatures(14, 182, 234, ['Dibuat oleh,', 'Disetujui oleh,'])
+    ], min_rows=0, row_h=6.5, height=30, fs=9))
+    o += flow(totals_block(116, 98, 40, 40, [('Subtotal', 'subtotal', False), ('Diskon', 'discount_amount', False),
+                                             ('PPN', 'tax_amount', False), ('TOTAL', 'total_amount', True)]))
+    o += flow(words_box(14, 128, 182))
+    o += flow(notes_line(14, 141, 182))
+    o += flow(signatures(14, 182, 160, ['Dibuat oleh,', 'Disetujui oleh,']))
     return o, 'A4', 'portrait', None, None
 
 
@@ -223,13 +230,13 @@ def build_surat_jalan():
         C('no', 'No.', 9, 'center'), C('code', 'Kode', 24), C('product_name', 'Nama Produk', 50),
         C('pack', 'Isi/Krt', 14, 'right', 'num'), C('quantity', 'Qty', 16, 'right', 'num'), C('uom', 'Satuan', 17),
         C('batch_text', 'Batch', 29), C('description', 'Keterangan', 23),
-    ], min_rows=10, row_h=6.5, height=72, fs=9))
-    o += [BOX(116, 138, 40, 7, fill=CELL), BOX(156, 138, 40, 7),
-          L('TOTAL QTY', 117.5, 139.5, 36, 4, fs=9.5, bold=True),
-          F('total_quantity', 157.5, 139.5, 37, 4, fs=9.5, bold=True, align='right', fmt='num')]
-    o += notes_line(14, 150, 182)
-    o.append(L('Barang diterima dalam keadaan baik dan jumlah sesuai.', 14, 164, 182, 4, fs=8, color=MUTED))
-    o += signatures(14, 182, 234, ['Disiapkan oleh,', 'Sopir,', 'Diterima oleh,'])
+    ], min_rows=0, row_h=6.5, height=30, fs=9))
+    o += flow([BOX(116, 98, 40, 7, fill=CELL), BOX(156, 98, 40, 7),
+               L('TOTAL QTY', 117.5, 99.5, 36, 4, fs=9.5, bold=True),
+               F('total_quantity', 157.5, 99.5, 37, 4, fs=9.5, bold=True, align='right', fmt='num')])
+    o += flow(notes_line(14, 109, 182))
+    o += flow([L('Barang diterima dalam keadaan baik dan jumlah sesuai.', 14, 122, 182, 4, fs=8, color=MUTED)])
+    o += flow(signatures(14, 182, 130, ['Disiapkan oleh,', 'Sopir,', 'Diterima oleh,']))
     return o, 'A4', 'portrait', None, None
 
 
@@ -273,8 +280,8 @@ def build_spk_batch():
     o.append(TABLE('bom_items', 14, 71, 182, [
         C('no', 'No.', 10, 'center'), C('name', 'Nama Bahan / Sub-Rakitan', 96), C('quantity', 'Kebutuhan', 30, 'right', 'num'),
         C('uom', 'Satuan', 22), C('realisasi', 'Realisasi', 24),
-    ], min_rows=12, row_h=6.5, height=85, fs=9))
-    o += signatures(14, 182, 234, ['Operator,', 'Supervisor,', 'Disetujui oleh,'])
+    ], min_rows=0, row_h=6.5, height=30, fs=9))
+    o += flow(signatures(14, 182, 108, ['Operator,', 'Supervisor,', 'Disetujui oleh,']))
     return o, 'A4', 'portrait', None, None
 
 
@@ -283,21 +290,21 @@ def build_kwitansi():
     # title is dynamic (penerimaan / pembayaran): replace the static label with a field
     o = [x for x in o if not (x.get('elementType') == 'label' and x.get('text') == 'BUKTI')]
     o.insert(4, F('title', 118, 7, 82, 7, fs=15, bold=True, align='right'))
-    o += meta_grid(10, 30, 32, 63, [('__dyn__', 'party_name'), ('Metode', 'payment_method')], 7)
+    o += meta_grid(10, 30, 38, 57, [('__dyn__', 'party_name'), ('Metode', 'payment_method')], 7)
     o += meta_grid(105, 30, 32, 63, [('Kas/Bank', 'bank_account'), ('No. Referensi', 'reference_number')], 7)
     # first label cell is dynamic (Diterima dari / Dibayarkan kepada)
     o = [x for x in o if not (x.get('elementType') == 'label' and x.get('text') == '__dyn__')]
-    o.append(F('party_label', 11.5, 32, 29, 4, fs=9))
+    o.append(F('party_label', 11.5, 32, 35, 4, fs=9))
     o += words_box(10, 46, 190)
     o.append(TABLE('detail_rows', 10, 57, 190, [
         C('no', 'No.', 10, 'center'), C('uraian', 'Uraian', 72), C('keterangan', 'Keterangan', 58),
         C('nilai', 'Nilai', 50, 'right', 'rp'),
-    ], min_rows=4, row_h=6.5, height=34, fs=9))
-    o += [BOX(110, 94, 40, 7, fill=CELL), BOX(150, 94, 50, 7, fill=CELL),
-          L('TOTAL', 111.5, 95.5, 36, 4, fs=9.5, bold=True),
-          F('amount', 151.5, 95.5, 47, 4, fs=9.5, bold=True, align='right', fmt='rp')]
-    o += notes_line(10, 104, 190)
-    o += signatures(10, 190, 109, [('field', 'sign_1'), ('field', 'sign_2'), ('field', 'sign_3')])
+    ], min_rows=0, row_h=6.5, height=30, fs=9))
+    o += flow([BOX(110, 88, 40, 7, fill=CELL), BOX(150, 88, 50, 7, fill=CELL),
+               L('TOTAL', 111.5, 89.5, 36, 4, fs=9.5, bold=True),
+               F('amount', 151.5, 89.5, 47, 4, fs=9.5, bold=True, align='right', fmt='rp')])
+    o += flow(notes_line(10, 98, 190))
+    o += flow(signatures(10, 190, 106, [('field', 'sign_1'), ('field', 'sign_2'), ('field', 'sign_3')]))
     return o, 'A5', 'landscape', 210, 148
 
 
