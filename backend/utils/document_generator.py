@@ -85,13 +85,21 @@ def _create_default_template(user_id, template_name, template_code, document_typ
     return template
 
 
+def _pt_to_mm(font_size_pt):
+    # Render engine reads fontSize as mm (editor convention) and converts to pt;
+    # default layouts are authored in pt, so convert here.
+    return round(float(font_size_pt) / 2.83465, 3)
+
+
 def _label(text, left, top, width, height=6, font_size=10, font_weight='normal', text_align='left'):
+    font_size = _pt_to_mm(font_size)
     return {'type': 'Textbox', 'elementType': 'label', 'left': left, 'top': top, 'width': width, 'height': height,
             'scaleX': 1, 'scaleY': 1, 'text': text, 'fontSize': font_size, 'fontWeight': font_weight,
             'fontFamily': 'Arial', 'textAlign': text_align, 'fill': '#000000'}
 
 
 def _field(field_path, left, top, width, height=6, font_size=10, font_weight='normal', text_align='left'):
+    font_size = _pt_to_mm(font_size)
     # text = the field's placeholder label (shown while editing) - fieldPath is
     # what the render engine actually uses; see utils/template_render_engine.py.
     return {'type': 'Textbox', 'elementType': 'field', 'left': left, 'top': top, 'width': width, 'height': height,
@@ -170,10 +178,6 @@ def generate_surat_jalan_from_sales_order(sales_order_id, user_id, items_to_ship
         if not to_ship_by_item:
             raise ValueError('Tidak ada quantity yang perlu dikirim untuk Sales Order ini (sudah terkirim semua)')
 
-        template = _get_default_template('surat_jalan')
-        if not template:
-            template = create_default_surat_jalan_template(user_id)
-
         doc_number = generate_number('SJ', Document, 'document_number')
 
         items_data = []
@@ -227,7 +231,7 @@ def generate_surat_jalan_from_sales_order(sales_order_id, user_id, items_to_ship
 
         document_data = {
             'document_number': doc_number,
-            'document_date': datetime.utcnow().strftime('%d %B %Y'),
+            'document_date': datetime.utcnow().strftime('%d-%m-%Y'),
             'sales_order_number': sales_order.order_number,
             'customer_name': sales_order.customer.company_name if sales_order.customer else '',
             'customer_address': sales_order.delivery_address or (sales_order.customer.billing_address if sales_order.customer else ''),
@@ -246,7 +250,7 @@ def generate_surat_jalan_from_sales_order(sales_order_id, user_id, items_to_ship
             document_number=doc_number,
             document_title=f'Surat Jalan - {sales_order.customer.company_name if sales_order.customer else ""}',
             document_type='surat_jalan',
-            template_version_id=template.current_version_id,
+            template_version_id=None,
             document_data=document_data,
             reference_type='sales_order',
             reference_id=sales_order.id,
@@ -254,7 +258,7 @@ def generate_surat_jalan_from_sales_order(sales_order_id, user_id, items_to_ship
             status='generated',
             created_by=user_id
         )
-        document.html_content = render_template_version_to_html(template.current_version, document_data)
+        document.html_content = _render_sj_html(document_data)
 
         db.session.add(document)
         db.session.flush()
@@ -285,22 +289,18 @@ def generate_spk_from_work_order(work_order_id, user_id):
         if not work_order:
             raise ValueError('Work Order not found')
 
-        template = _get_default_template('spk')
-        if not template:
-            template = create_default_spk_template(user_id)
-
         doc_number = generate_number('SPK', Document, 'document_number')
 
         document_data = {
             'document_number': doc_number,
-            'document_date': datetime.utcnow().strftime('%d %B %Y'),
+            'document_date': datetime.utcnow().strftime('%d-%m-%Y'),
             'work_order_number': work_order.wo_number,
             'product_name': work_order.product.name if work_order.product else '',
             'product_code': work_order.product.code if work_order.product else '',
             'quantity': float(work_order.quantity),
             'uom': work_order.uom if work_order.uom else 'PCS',
-            'start_date': work_order.scheduled_start_date.strftime('%d %B %Y') if work_order.scheduled_start_date else '',
-            'due_date': work_order.scheduled_end_date.strftime('%d %B %Y') if work_order.scheduled_end_date else '',
+            'start_date': work_order.scheduled_start_date.strftime('%d-%m-%Y') if work_order.scheduled_start_date else '',
+            'due_date': work_order.scheduled_end_date.strftime('%d-%m-%Y') if work_order.scheduled_end_date else '',
             'priority': work_order.priority or 'normal',
             'notes': work_order.notes or '',
             'machine': work_order.machine.name if work_order.machine else '',
@@ -314,7 +314,7 @@ def generate_spk_from_work_order(work_order_id, user_id):
             document_number=doc_number,
             document_title=f'SPK - {work_order.product.name if work_order.product else work_order.wo_number}',
             document_type='spk',
-            template_version_id=template.current_version_id,
+            template_version_id=None,
             document_data=document_data,
             reference_type='work_order',
             reference_id=work_order.id,
@@ -322,7 +322,7 @@ def generate_spk_from_work_order(work_order_id, user_id):
             status='generated',
             created_by=user_id
         )
-        document.html_content = render_template_version_to_html(template.current_version, document_data)
+        document.html_content = _render_spk_html(document_data)
 
         db.session.add(document)
         db.session.flush()
@@ -416,7 +416,7 @@ def generate_spk_from_batch(batch_id, user_id):
     recipe = batch.recipe
     document_data = {
         'document_number': doc_number,
-        'document_date': datetime.utcnow().strftime('%d %B %Y'),
+        'document_date': datetime.utcnow().strftime('%d-%m-%Y'),
         'batch_number': batch.batch_number,
         'work_order_number': batch.work_order.wo_number if batch.work_order else '',
         'product_name': recipe.product.name if recipe and recipe.product else '',
@@ -424,7 +424,7 @@ def generate_spk_from_batch(batch_id, user_id):
         'quantity': float(batch.planned_qty) if batch.planned_qty is not None else 0,
         'uom': batch.work_order.uom if batch.work_order else 'PCS',
         'machine': batch.machine.name if batch.machine else '',
-        'scheduled_date': batch.scheduled_date.strftime('%d %B %Y') if batch.scheduled_date else '',
+        'scheduled_date': batch.scheduled_date.strftime('%d-%m-%Y') if batch.scheduled_date else '',
         'shift_number': batch.shift_number,
         'sequence_in_shift': batch.sequence_in_shift,
         'operator': '',
@@ -719,10 +719,6 @@ def generate_purchase_order_document(po_id, user_id):
     if not po:
         raise ValueError('Purchase Order not found')
 
-    template = _get_default_template('purchase_order')
-    if not template:
-        template = create_default_purchase_order_template(user_id)
-
     doc_number = generate_number('DOC-PO', Document, 'document_number')
 
     supplier = po.supplier
@@ -738,8 +734,8 @@ def generate_purchase_order_document(po_id, user_id):
 
     document_data = {
         'document_number': po.po_number,
-        'document_date': po.order_date.strftime('%d %B %Y') if po.order_date else '',
-        'required_date': po.required_date.strftime('%d %B %Y') if po.required_date else '',
+        'document_date': po.order_date.strftime('%d-%m-%Y') if po.order_date else '',
+        'required_date': po.required_date.strftime('%d-%m-%Y') if po.required_date else '',
         'supplier_name': supplier.company_name if supplier else '',
         'supplier_address': supplier.address if supplier else '',
         'delivery_address': po.delivery_address or '',
@@ -749,6 +745,7 @@ def generate_purchase_order_document(po_id, user_id):
         'tax_amount': float(po.tax_amount or 0),
         'discount_amount': float(po.discount_amount or 0),
         'total_amount': float(po.total_amount or 0),
+        'terbilang': (_terbilang(float(po.total_amount or 0)).strip().capitalize() + ' rupiah') if float(po.total_amount or 0) >= 1 else 'Nol rupiah',
         'line_items': line_items,
         'company': get_company_context(),
     }
@@ -757,7 +754,7 @@ def generate_purchase_order_document(po_id, user_id):
         document_number=doc_number,
         document_title=f'PO {po.po_number} - {supplier.company_name if supplier else ""}',
         document_type='purchase_order',
-        template_version_id=template.current_version_id,
+        template_version_id=None,
         document_data=document_data,
         reference_type='purchase_order',
         reference_id=po.id,
@@ -765,7 +762,7 @@ def generate_purchase_order_document(po_id, user_id):
         status='generated',
         created_by=user_id
     )
-    document.html_content = render_template_version_to_html(template.current_version, document_data)
+    document.html_content = _render_po_html(document_data)
 
     db.session.add(document)
     db.session.flush()
@@ -855,6 +852,105 @@ table {{ border-collapse: collapse; width: 100%; }}
 {f'<div style="margin-top:8px;font-size:9pt"><b>Catatan:</b> {e(d["notes"])}</div>' if d['notes'] else ''}
 <table class="sig" style="margin-top:14px"><tr><td>Diterima oleh,<div class="line"></div><div style="font-size:8pt;color:#555">Nama jelas &amp; tanda tangan</div></td><td>Hormat kami,<div class="line"></div><div style="font-size:8pt;color:#555">{e(d['company'].get('name') or '')}</div></td></tr></table>
 </body></html>"""
+
+
+_PRINT_CSS = """
+@page { size: A4; margin: 14mm 14mm; }
+body { font-family: Arial, sans-serif; font-size: 9.5pt; color: #111; margin: 0; }
+table { border-collapse: collapse; width: 100%; }
+.box { border: 1px solid #999; padding: 6px 8px; vertical-align: top; }
+.box .h { font-size: 8pt; color: #555; text-transform: uppercase; margin-bottom: 2px; }
+.meta td { padding: 1px 0; font-size: 9pt; } .meta td.k { width: 36mm; color: #444; white-space: nowrap; }
+.items { margin-top: 10px; }
+.items th { background: #e8e8e8; border: 1px solid #999; padding: 5px 6px; font-size: 8.5pt; text-align: left; }
+.items td { border: 1px solid #999; padding: 4px 6px; vertical-align: top; }
+.items .tot td { font-weight: bold; background: #f0f0f0; }
+.r { text-align: right; } .c { text-align: center; width: 8mm; }
+.sum { width: 78mm; margin-left: auto; margin-top: 8px; }
+.sum td { padding: 3px 6px; border-bottom: 1px solid #ddd; }
+.sum tr.grand td { font-weight: bold; border-top: 1.5px solid #111; border-bottom: 1.5px solid #111; background: #f0f0f0; }
+.words { border: 1px solid #999; padding: 5px 8px; margin-top: 8px; font-style: italic; background: #f6f6f6; }
+.sig td { text-align: center; font-size: 9pt; }
+.sig .line { border-bottom: 1px solid #111; margin: 20mm 14mm 2px; }
+.sig .cap { font-size: 8pt; color: #555; }
+"""
+
+
+def _sig_row(labels):
+    cells = ''.join(f'<td style="width:{100 // len(labels)}%">{l}<div class="line"></div><div class="cap">Nama jelas &amp; tanda tangan</div></td>' for l in labels)
+    return f'<table class="sig" style="margin-top:14px"><tr>{cells}</tr></table>'
+
+
+def _page(body):
+    return f'<!DOCTYPE html><html><head><meta charset="UTF-8"><style>{_PRINT_CSS}</style></head><body>{body}</body></html>'
+
+
+def _meta_rows(pairs):
+    from html import escape as e
+    return ''.join(f'<tr><td class="k">{k}</td><td>: {e(str(v) if v not in (None, "") else "-")}</td></tr>' for k, v in pairs)
+
+
+def _render_po_html(d):
+    from html import escape as e
+    rows = ''.join(
+        f"""<tr><td class="c">{i}</td><td>{e(it['item_name'])}</td><td class="r">{_num(it['quantity'])}</td>
+<td>{e(it['uom'])}</td><td class="r">{_num(it['unit_price'])}</td><td class="r">{_num(it['subtotal'])}</td></tr>"""
+        for i, it in enumerate(d['line_items'], 1))
+    def tot(label, val, cls=''):
+        return f'<tr class="{cls}"><td>{label}</td><td class="r">{_rp(val)}</td></tr>'
+    totals = tot('Subtotal', d['subtotal'])
+    if d['discount_amount']:
+        totals += tot('Diskon', -d['discount_amount'])
+    if d['tax_amount']:
+        totals += tot('PPN', d['tax_amount'])
+    totals += tot('TOTAL', d['total_amount'], 'grand')
+    body = f"""{_doc_header_html(d['company'], 'PURCHASE ORDER', [f"No. {d['document_number']}", f"Tanggal: {d['document_date']}"])}
+<table><tr>
+<td class="box" style="width:50%"><div class="h">Kepada Supplier</div><div style="font-weight:bold;font-size:10.5pt">{e(d['supplier_name'] or '-')}</div><div>{e(d['supplier_address'] or '')}</div></td>
+<td class="box"><table class="meta">{_meta_rows([('Dibutuhkan', d['required_date']), ('Syarat Pembayaran', d['payment_terms']), ('Kirim Ke', d['delivery_address'])])}</table></td>
+</tr></table>
+<table class="items"><thead><tr><th>No.</th><th>Deskripsi</th><th class="r">Qty</th><th>Satuan</th><th class="r">Harga</th><th class="r">Jumlah</th></tr></thead><tbody>{rows}</tbody></table>
+<table class="sum">{totals}</table>
+<div class="words"><b>Terbilang:</b> {e(d['terbilang'])}</div>
+{f'<div style="margin-top:8px;font-size:9pt"><b>Catatan:</b> {e(d["notes"])}</div>' if d['notes'] else ''}
+{_sig_row(['Dibuat oleh,', 'Disetujui oleh,'])}"""
+    return _page(body)
+
+
+def _render_sj_html(d):
+    from html import escape as e
+    rows = ''
+    for i, it in enumerate(d['items'], 1):
+        batches = ', '.join(f"{b['batch_number']} ({_num(b['quantity'])})" for b in it.get('batches', []))
+        rows += f"""<tr><td class="c">{i}</td><td>{e(it['product_name'] or '')}</td><td class="r">{_num(it['quantity'])}</td>
+<td>{e(it['uom'] or '')}</td><td>{e(batches)}</td><td>{e(it.get('description') or '')}</td></tr>"""
+    total_row = f'<tr class="tot"><td colspan="2" class="r">TOTAL QTY</td><td class="r">{_num(d["total_quantity"])}</td><td colspan="3"></td></tr>'
+    body = f"""{_doc_header_html(d['company'], 'SURAT JALAN', [f"No. {d['document_number']}", f"Tanggal: {d['document_date']}", f"Ref. SO: {d['sales_order_number']}"])}
+<table><tr>
+<td class="box" style="width:50%"><div class="h">Kepada</div><div style="font-weight:bold;font-size:10.5pt">{e(d['customer_name'] or '-')}</div><div>{e(d['customer_address'] or '')}</div><div>{e(d['customer_phone'] or '')}</div></td>
+<td class="box"><table class="meta">{_meta_rows([('Sopir', d['driver_name']), ('No. Kendaraan', d['vehicle_number'])])}</table></td>
+</tr></table>
+<table class="items"><thead><tr><th>No.</th><th>Nama Produk</th><th class="r">Qty</th><th>Satuan</th><th>Batch</th><th>Keterangan</th></tr></thead><tbody>{rows}{total_row}</tbody></table>
+{f'<div style="margin-top:8px;font-size:9pt"><b>Catatan:</b> {e(d["notes"])}</div>' if d['notes'] else ''}
+<div style="margin-top:6px;font-size:8pt;color:#555">Barang diterima dalam keadaan baik dan jumlah sesuai.</div>
+{_sig_row(['Disiapkan oleh,', 'Sopir,', 'Diterima oleh,'])}"""
+    return _page(body)
+
+
+def _render_spk_html(d):
+    from html import escape as e
+    prio = {'low': 'Rendah', 'normal': 'Normal', 'high': 'Tinggi', 'urgent': 'Mendesak'}.get(str(d.get('priority') or '').lower(), d.get('priority') or '-')
+    body = f"""{_doc_header_html(d['company'], 'SURAT PERINTAH KERJA', [f"No. {d['document_number']}", f"Tanggal: {d['document_date']}", f"Ref. WO: {d['work_order_number']}"])}
+<table><tr>
+<td class="box" style="width:50%"><div class="h">Produk yang Dikerjakan</div>
+<div style="font-weight:bold;font-size:11pt">{e(d['product_name'] or '-')}</div><div>Kode: {e(d['product_code'] or '-')}</div>
+<div style="margin-top:6px;font-size:13pt"><b>{_num(d['quantity'])}</b> {e(d['uom'] or '')}</div></td>
+<td class="box"><table class="meta">{_meta_rows([('Mesin', d['machine']), ('Mulai', d['start_date']), ('Target Selesai', d['due_date']), ('Prioritas', prio)])}</table></td>
+</tr></table>
+<table class="items"><thead><tr><th>Instruksi / Catatan Produksi</th></tr></thead>
+<tbody><tr><td style="height:45mm">{e(d['notes'] or '')}</td></tr></tbody></table>
+{_sig_row(['Operator,', 'Supervisor,', 'Disetujui oleh,'])}"""
+    return _page(body)
 
 
 _SATUAN = ['', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan', 'sepuluh', 'sebelas']
