@@ -1,3 +1,5 @@
+import hashlib
+import os
 import pytest
 import re
 from flask import url_for
@@ -88,12 +90,25 @@ def test_boost_coverage_dynamically(app, client, auth_headers):
     }
 
     processed_count = 0
-    
+
+    # Endpoints that rewrite real source files / import code into the DB. The crawler
+    # runs as a real super admin, so these must never be hit (see conftest).
+    DESTRUCTIVE = ('sync-to-files', '/regenerate', 'import-from-code')
+    root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+    guarded = [os.path.join(root, p) for p in (
+        'backend/routes/oee.py', 'backend/utils/helpers.py',
+        'frontend/src/pages/Production/WorkOrderProductionInput.tsx',
+        'frontend/src/pages/Production/EditProductionRecord.tsx')]
+    digest = lambda: [hashlib.md5(open(f, 'rb').read()).hexdigest() if os.path.exists(f) else None for f in guarded]
+    before = digest()
+
     for rule in rules:
         path = rule.rule
         
         # Skip static resources, Swagger/APISpec, and health checks
         if any(x in path for x in ['/static/', '/swagger', '/flasgger', '/apispec', '/health']):
+            continue
+        if any(x in path for x in DESTRUCTIVE):
             continue
             
         processed_count += 1
@@ -135,6 +150,7 @@ def test_boost_coverage_dynamically(app, client, auth_headers):
     except Exception:
         pass
 
+    assert digest() == before, "the route crawler modified real source files"
     print(f"\n[BOOSTER] Successfully tested {processed_count} routes across supported HTTP methods.")
 
 

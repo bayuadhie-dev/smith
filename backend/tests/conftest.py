@@ -165,3 +165,18 @@ def reset_db(db_session):
     db_session.commit()
     db_session.expire_all()
     db.session.remove()
+
+
+@pytest.fixture(autouse=True)
+def _never_rewrite_source_files(monkeypatch):
+    """Keyword Manager's sync endpoint rewrites real source files (oee.py,
+    helpers.py, two .tsx pages) from the database. A test (e.g. the route
+    crawler) must never do that - with a real super admin it used to, and the
+    changes also propagated to the servers through Syncthing."""
+    try:
+        import routes.keyword_manager as km
+    except Exception:
+        return
+    for name in ('sync_helpers_py', 'sync_oee_py', 'sync_frontend_file'):
+        if hasattr(km, name):
+            monkeypatch.setattr(km, name, lambda *a, **k: (True, 'skipped in tests'))
