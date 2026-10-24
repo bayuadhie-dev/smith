@@ -1661,6 +1661,19 @@ def delete_tax_transaction(id):
         return jsonify({'error': str(e)}), 500
 
 
+def _tax_type_label(transaction_type, tax_type):
+    """Label yang dipahami halaman Tax Management (badge warna per jenis)."""
+    if transaction_type == 'vat_out':
+        return 'VAT Output'
+    if transaction_type == 'vat_in':
+        return 'VAT Input'
+    if transaction_type == 'income_tax':
+        return 'Income Tax'
+    if 'PPh' in (tax_type or ''):
+        return 'Withholding Tax'
+    return tax_type or transaction_type
+
+
 def _invoice_vat_rows(period):
     """PPN yang berasal dari faktur pada periode 'YYYY-MM' (keluaran dari faktur
     penjualan, masukan dari faktur pembelian), supaya halaman Pajak sama dengan
@@ -1687,7 +1700,11 @@ def _invoice_vat_rows(period):
             'transaction_date': inv.invoice_date.isoformat() if inv.invoice_date else None,
             'transaction_type': 'vat_out' if inv.invoice_type == 'sales' else 'vat_in',
             'tax_type': 'PPN',
+            'type': 'VAT Output' if inv.invoice_type == 'sales' else 'VAT Input',
+            'description': f"{'Faktur penjualan' if inv.invoice_type == 'sales' else 'Faktur pembelian'} {inv.invoice_number}",
             'base_amount': float((inv.subtotal or 0) - (inv.discount_amount or 0)),
+            'tax_rate': round(float(inv.tax_amount or 0) / float((inv.subtotal or 0) - (inv.discount_amount or 0)) * 100, 2)
+                        if (inv.subtotal or 0) - (inv.discount_amount or 0) else 0,
             'tax_amount': float(inv.tax_amount or 0),
             'status': 'auto',
             'source': 'invoice',
@@ -1736,6 +1753,9 @@ def get_tax_management():
                 'transaction_date': t.transaction_date.isoformat() if t.transaction_date else None,
                 'transaction_type': t.transaction_type,
                 'tax_type': t.tax_type,
+                'type': _tax_type_label(t.transaction_type, t.tax_type),
+                'description': t.reference_number or t.tax_invoice_number or t.transaction_number,
+                'tax_rate': float(t.tax_rate or 0),
                 'base_amount': float(t.base_amount),
                 'tax_amount': float(t.tax_amount),
                 'status': t.status,

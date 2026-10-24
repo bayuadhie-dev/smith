@@ -278,6 +278,12 @@ def test_tax_page_includes_invoice_ppn_without_double_counting(client, auth_head
     assert data['tax_summary']['vat_receivable'] == 55_000
     assert {r['transaction_number'] for r in data['tax_transactions']} == {'INV-TAX-1', 'PI-TAX-1'}
     assert all(r['source'] == 'invoice' for r in data['tax_transactions'])
+    # the Tax page reads type/description/tax_rate on every row (it crashed on a
+    # missing 'type'), so the API must always send them
+    rows = {r['transaction_number']: r for r in data['tax_transactions']}
+    assert rows['INV-TAX-1']['type'] == 'VAT Output' and rows['PI-TAX-1']['type'] == 'VAT Input'
+    assert all(r['description'] and 'tax_rate' in r for r in data['tax_transactions'])
+    assert rows['INV-TAX-1']['tax_rate'] == 11.0
 
     # once the same invoice is recorded manually it must not be counted twice
     db_session.add(TaxTransaction(
