@@ -739,7 +739,20 @@ def run_monthly_depreciation(period_year, period_month, posted_by_user_id=None):
     assets_processed = 0
     skipped = 0
 
+    # Idempoten: aset yang jadwal penyusutannya untuk periode ini SUDAH
+    # diposting dilewati. Tanpa ini, menutup ulang periode yang pernah dibuka
+    # kembali menghitung penyusutan dobel / gagal 500 di constraint unik
+    # (asset_id, period_date, book_type).
+    already_posted_ids = {
+        row.asset_id for row in DepreciationSchedule.query.filter_by(
+            period_date=period_end_date, book_type='commercial', is_posted=True
+        ).all()
+    }
+
     for asset in assets:
+        if asset.id in already_posted_ids:
+            skipped += 1
+            continue
         monthly_depreciation = float(asset.annual_depreciation) / 12
         if monthly_depreciation <= 0:
             skipped += 1
@@ -962,12 +975,19 @@ def get_real_cash_flow(start_date, end_date):
     Returns a dict: {cash_in, cash_out, net_cash_flow, operating, investing, financing}
     where operating/investing/financing are each {'in':, 'out':, 'net':}.
     """
-    OPERATING_REF_TYPES = ('payment', 'sales_invoice', 'purchase_invoice')
+    # Aktivitas investasi = transaksi aset tetap. Pembiayaan belum punya
+    # transaksi pencatat khusus, jadi 0. SEMUA sisanya (pembayaran, faktur,
+    # gaji, beban, void, jurnal manual, dll) adalah operasional - dengan begitu
+    # operasional + investasi + pembiayaan selalu sama dengan perubahan kas
+    # total (sebelumnya hanya 3 tipe referensi yang dihitung operasional).
+    INVESTING_REF_TYPES = ('asset', 'asset_disposal', 'asset_purchase')
 
+    # Hanya jurnal berstatus 'posted' - sama dengan saldo buku besar / neraca.
     rows = db.session.query(
         AccountingEntry.reference_type, AccountingEntry.debit_amount, AccountingEntry.credit_amount
     ).join(Account, AccountingEntry.account_id == Account.id).filter(
         Account.is_cash_bank == True,
+        AccountingEntry.status == 'posted',
         AccountingEntry.entry_date >= start_date,
         AccountingEntry.entry_date <= end_date,
     ).all()
@@ -975,15 +995,17 @@ def get_real_cash_flow(start_date, end_date):
     cash_in = sum(float(r[1] or 0) for r in rows)
     cash_out = sum(float(r[2] or 0) for r in rows)
 
-    operating_in = sum(float(r[1] or 0) for r in rows if r[0] in OPERATING_REF_TYPES)
-    operating_out = sum(float(r[2] or 0) for r in rows if r[0] in OPERATING_REF_TYPES)
+    investing_in = sum(float(r[1] or 0) for r in rows if r[0] in INVESTING_REF_TYPES)
+    investing_out = sum(float(r[2] or 0) for r in rows if r[0] in INVESTING_REF_TYPES)
+    operating_in = cash_in - investing_in
+    operating_out = cash_out - investing_out
 
     return {
         'cash_in': cash_in,
         'cash_out': cash_out,
         'net_cash_flow': cash_in - cash_out,
         'operating': {'in': operating_in, 'out': operating_out, 'net': operating_in - operating_out},
-        'investing': {'in': 0.0, 'out': 0.0, 'net': 0.0},
+        'investing': {'in': investing_in, 'out': investing_out, 'net': investing_in - investing_out},
         'financing': {'in': 0.0, 'out': 0.0, 'net': 0.0},
     }
 
@@ -995,6 +1017,7 @@ def get_cash_balance_as_of(as_of_date):
         db.func.coalesce(db.func.sum(AccountingEntry.debit_amount - AccountingEntry.credit_amount), 0)
     ).join(Account, AccountingEntry.account_id == Account.id).filter(
         Account.is_cash_bank == True,
+        AccountingEntry.status == 'posted',
         AccountingEntry.entry_date <= as_of_date,
     ).scalar()
     return float(result or 0)

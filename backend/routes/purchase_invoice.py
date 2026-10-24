@@ -454,6 +454,18 @@ def create_purchase_invoice():
         total_debit_amount = 0.0
 
         for idx, item_data in enumerate(items_data, 1):
+            # Item identity (material/product/description/uom) comes from the PO
+            # line when the caller didn't send it - otherwise an inventory
+            # purchase silently fell through to the EXPENSE debit below.
+            _poi = db.session.get(PurchaseOrderItem, item_data.get('po_item_id'))
+            if _poi:
+                if not item_data.get('material_id') and not item_data.get('product_id'):
+                    item_data['material_id'] = getattr(_poi, 'material_id', None)
+                    item_data['product_id'] = getattr(_poi, 'product_id', None)
+                if not item_data.get('description'):
+                    item_data['description'] = getattr(_poi, 'description', None) or ''
+                if not item_data.get('uom'):
+                    item_data['uom'] = getattr(_poi, 'uom', None)
             # total_price is NOT NULL and was left entirely to the caller to
             # supply - auto-compute from quantity*unit_price when omitted,
             # same fallback already used in purchase_return.py. Found via
@@ -490,7 +502,7 @@ def create_purchase_invoice():
             # Track quantity_invoiced on the PO line item
             po_item = db.session.get(PurchaseOrderItem, item_data.get('po_item_id'))
             if po_item:
-                po_item.quantity_invoiced = (po_item.quantity_invoiced or 0) + (item_data.get('quantity') or 0)
+                po_item.quantity_invoiced = float(po_item.quantity_invoiced or 0) + float(item_data.get('quantity') or 0)
 
             # Release the matching budget commitment (reserved when the PO
             # was approved) by exactly the amount now becoming actual -

@@ -628,7 +628,7 @@ def get_payments():
             if p.customer_id and p.customer:
                 return p.customer.company_name
             if p.supplier_id and p.supplier:
-                return p.supplier.name
+                return p.supplier.company_name
             return None
 
         # Payment has no `bank_account` relationship on the model - look
@@ -768,6 +768,19 @@ def create_payment():
         bank_account = db.session.get(Account, data['bank_account_id'])
         if not bank_account or not bank_account.is_cash_bank:
             return jsonify({'error': 'bank_account_id must reference a Kas/Bank account'}), 400
+
+        # Akun kontrol piutang/hutang hanya boleh berubah lewat faktur (agar
+        # daftar piutang/hutang selalu sinkron dengan buku besar).
+        CONTROL_CODES = {'1-1100', '1-1110', '2-1000', '2-1050'}
+        for l in lines_in:
+            acc = db.session.get(Account, l.get('account_id')) if l.get('account_id') else None
+            if not acc:
+                return jsonify({'error': 'Akun pada rincian tidak ditemukan'}), 400
+            if acc.is_header:
+                return jsonify({'error': f'Akun {acc.account_code} adalah akun induk (header), pilih akun detail'}), 400
+            if acc.account_code in CONTROL_CODES:
+                return jsonify({'error': f'Akun {acc.account_code} - {acc.account_name} adalah akun kontrol Piutang/Hutang. '
+                                         'Gunakan form Penerimaan Penjualan / Pembayaran Pembelian dengan memilih faktur.'}), 400
 
         # Edit ("Ubah") = void the old payment and create a replacement in one
         # transaction; amounts the old one holds count as available balance.
@@ -970,6 +983,17 @@ def void_invoice(id):
             user_id=user_id,
             description=f'Void invoice {invoice.invoice_number}' + (f' - {reason}' if reason else ''),
         )
+
+        # Faktur pembelian: kembalikan qty yang sudah ditagih pada baris PO,
+        # supaya baris itu bisa ditagih ulang dan 3-way match tidak terkunci
+        # oleh faktur yang sudah dibatalkan.
+        if invoice.invoice_type == 'purchase':
+            from models import PurchaseOrderItem
+            for it in invoice.items:
+                if it.po_item_id:
+                    poi = db.session.get(PurchaseOrderItem, it.po_item_id)
+                    if poi:
+                        poi.quantity_invoiced = max(0.0, float(poi.quantity_invoiced or 0) - float(it.quantity or 0))
 
         invoice.status = 'cancelled'
         invoice.balance_due = 0
@@ -2337,7 +2361,7 @@ def get_sales_report_by_product():
 @require_permission('finance.view')
 def get_balance_sheet():
     try:
-        as_of_date = request.args.get('date', get_local_now().date().isoformat())
+        as_of_date = request.args.get('date') or request.args.get('as_of_date') or get_local_now().date().isoformat()
 
         # Real balance-sheet calculation from posted accounting entries, per
         # this system's actual chart of accounts convention (confirmed
@@ -2348,13 +2372,40 @@ def get_balance_sheet():
         # numbers regardless of how much real GL activity existed.
         from models.finance import Account, AccountingEntry
 
+        # Saldo per akun diambil hanya dari jurnal posted bertanggal <= as_of_date,
+        # supaya neraca di tanggal lampau konsisten dengan laba yang juga
+        # difilter sampai tanggal yang sama (sebelumnya saldo = seluruh waktu,
+        # sehingga neraca tanggal lama tidak seimbang bila ada transaksi
+        # sesudahnya).
+        try:
+            _asof = datetime.strptime(as_of_date, '%Y-%m-%d').date()
+        except ValueError:
+            _asof = get_local_now().date()
+            as_of_date = _asof.isoformat()
+        _net = {
+            code: float(d or 0) - float(c or 0)
+            for code, d, c in db.session.query(
+                AccountingEntry.account_code,
+                db.func.sum(AccountingEntry.debit_amount),
+                db.func.sum(AccountingEntry.credit_amount),
+            ).filter(AccountingEntry.status == 'posted', AccountingEntry.entry_date <= _asof)
+             .group_by(AccountingEntry.account_code).all()
+        }
+        _accounts = {a.account_code: a for a in Account.query.all()}
+
+        def _signed(code):
+            acc = _accounts.get(code)
+            if not acc:
+                return 0.0
+            v = _net.get(code, 0.0)
+            return v if acc.normal_balance == 'debit' else -v
+
         def code_balance(code):
-            acc = Account.query.filter_by(account_code=code).first()
-            return float(acc.balance) if acc else 0.0
+            return _signed(code)
 
         def prefix_balance(prefix, exclude=()):
-            accs = Account.query.filter(Account.account_code.like(f'{prefix}%'), Account.is_active == True).all()
-            return sum(float(a.balance) for a in accs if a.account_code not in exclude)
+            return sum(_signed(a.account_code) for a in _accounts.values()
+                       if a.is_active and a.account_code.startswith(prefix) and a.account_code not in exclude)
 
         # Fase 6 audit fix (fix_report_2.md, 2026-10-01): current_year_earnings
         # (ditambahkan Fase 1 fix_report.md) sebelumnya dihitung dari
@@ -2372,14 +2423,19 @@ def get_balance_sheet():
         # _classified_balance_in_range() module-level helper, below)
 
         cash = code_balance('1-1000') + code_balance('1-1010') + code_balance('1-1020')
-        accounts_receivable = code_balance('1-1100') - code_balance('1-1110')
+        # Akun kontra-aset (Cadangan Piutang 1-1110, Akumulasi Penyusutan 1-2100)
+        # bersaldo kredit. Pakai saldo mentah (debit - kredit, negatif untuk
+        # kredit) lalu DITAMBAHKAN ke akun induknya - sebelumnya dikurangkan,
+        # sehingga saldo kredit justru menambah aset dan neraca selisih 2x
+        # nilai akumulasi penyusutan.
+        accounts_receivable = _net.get('1-1100', 0.0) + _net.get('1-1110', 0.0)
         inventory = code_balance('1-1200') + code_balance('1-1300') + code_balance('1-1400') + code_balance('1-1500')
         prepaid_expenses = code_balance('1-1600')
         total_current_assets = cash + accounts_receivable + inventory + prepaid_expenses
 
         property_plant_equipment = code_balance('1-2000')
-        accumulated_depreciation = code_balance('1-2100')
-        net_fixed_assets = property_plant_equipment - accumulated_depreciation
+        accumulated_depreciation = _net.get('1-2100', 0.0)  # negatif (saldo kredit)
+        net_fixed_assets = property_plant_equipment + accumulated_depreciation
         total_assets = total_current_assets + net_fixed_assets
 
         accounts_payable = code_balance('2-1000')
@@ -2480,7 +2536,7 @@ def get_balance_sheet():
                 continue
             if any(acc.account_code.startswith(p) for p in _covered_prefixes):
                 continue
-            balance = float(acc.balance)
+            balance = _signed(acc.account_code)
             if abs(balance) > 0.01:
                 unclassified_accounts.append({
                     'account_code': acc.account_code,
@@ -2550,7 +2606,7 @@ def get_balance_sheet():
         return jsonify({
             'balance_sheet': balance_sheet,
             'as_of_date': as_of_date,
-            'message': 'Dihitung dari posting GL riil per tanggal saat ini - bukan estimasi. as_of_date belum memfilter per tanggal (menampilkan saldo terkini).'
+            'message': 'Dihitung dari posting GL riil sampai dengan tanggal laporan (jurnal posted bertanggal <= tanggal) - bukan estimasi.'
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -2638,11 +2694,12 @@ def get_dashboard_kpis():
     try:
         from utils.finance_helpers import get_cash_balance_as_of
 
-        total_revenue = float(db.session.query(func.sum(Invoice.total_amount)).filter(
-            Invoice.invoice_type == 'sales',
-            Invoice.status.notin_(['draft', 'cancelled'])
-        ).scalar() or 0)
-
+        # Pendapatan dan beban sama-sama dari buku besar (klasifikasi yang sama
+        # dengan Laba Rugi), supaya laba dashboard = laba bersih Laba Rugi.
+        # Sebelumnya pendapatan = SUM(total faktur) - ikut menghitung PPN
+        # keluaran dan membuang faktur draft yang sudah terjurnal - lalu
+        # dikurangi beban tanpa PPN.
+        total_revenue = _classified_balance_in_range('revenue')
         total_expenses = _classified_balance_in_range('expense')
 
         accounts_receivable = float(db.session.query(func.sum(Invoice.balance_due)).filter(
@@ -2886,8 +2943,13 @@ def get_chart_of_accounts():
 def create_account():
     """Create a new account"""
     try:
-        data = request.get_json()
-        
+        data = request.get_json() or {}
+        missing = [f for f in ('code', 'name', 'type') if not data.get(f)]
+        if missing:
+            return jsonify({'error': f"Field wajib belum diisi: {', '.join(missing)}"}), 400
+        if data['type'].lower() not in ('asset', 'liability', 'equity', 'revenue', 'expense'):
+            return jsonify({'error': "type harus salah satu dari: asset, liability, equity, revenue, expense"}), 400
+
         # Check if account code already exists
         if Account.query.filter_by(account_code=data['code']).first():
             return jsonify({'error': f"Account code '{data['code']}' already exists"}), 400
@@ -3029,6 +3091,28 @@ def get_journal_entries():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+def _budget_line_actuals(budget):
+    """Realisasi per baris anggaran dihitung langsung dari buku besar (jurnal
+    posted pada akun baris tsb dalam periode anggaran) - kolom
+    BudgetLine.actual_amount tidak pernah diisi oleh transaksi apa pun."""
+    out = {}
+    for line in budget.lines:
+        if not line.account_id:
+            out[line.id] = float(line.actual_amount or 0)
+            continue
+        acc = db.session.get(Account, line.account_id)
+        q = db.session.query(
+            db.func.coalesce(db.func.sum(AccountingEntry.debit_amount - AccountingEntry.credit_amount), 0)
+        ).filter(AccountingEntry.account_id == line.account_id, AccountingEntry.status == 'posted')
+        if budget.start_date:
+            q = q.filter(AccountingEntry.entry_date >= budget.start_date)
+        if budget.end_date:
+            q = q.filter(AccountingEntry.entry_date <= budget.end_date)
+        net = float(q.scalar() or 0)
+        out[line.id] = net if (acc and acc.normal_balance == 'debit') else -net
+    return out
+
+
 @finance_bp.route('/budget/budgets', methods=['GET'])
 @jwt_required()
 @require_permission('finance.view')
@@ -3040,12 +3124,12 @@ def get_budget_list():
         
         # Get budgets from Budget model
         try:
-            from ..models.finance import Budget
+            from models.finance import Budget
             budgets = Budget.query.filter_by(is_active=True).all()
             
             budget_list = []
             for b in budgets:
-                total_actual = sum(float(line.actual_amount) for line in b.lines)
+                total_actual = sum(_budget_line_actuals(b).values())
                 # Commitment/encumbrance (2026-09-17) - reserved by approved
                 # Purchase Orders but not yet invoiced/actual. See
                 # utils.finance_helpers.reserve_po_budget_commitment().
@@ -3090,11 +3174,15 @@ def get_variance_analysis():
 
         lines = BudgetLine.query.join(Budget).filter(Budget.is_active == True).all()
 
+        actuals = {}
+        for b in Budget.query.filter_by(is_active=True).all():
+            actuals.update(_budget_line_actuals(b))
+
         by_category = {}
         for line in lines:
             cat = by_category.setdefault(line.category, {'budget': 0.0, 'actual': 0.0})
             cat['budget'] += float(line.budget_amount or 0)
-            cat['actual'] += float(line.actual_amount or 0)
+            cat['actual'] += actuals.get(line.id, float(line.actual_amount or 0))
 
         analysis = []
         for category, totals in sorted(by_category.items()):

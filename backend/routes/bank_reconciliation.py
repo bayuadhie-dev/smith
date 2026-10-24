@@ -299,6 +299,24 @@ def match_line(line_id):
     if not entry:
         return jsonify({'error': 'AccountingEntry not found'}), 404
 
+    # Validasi kecocokan (sebelumnya entri jurnal apa pun diterima: akun lain,
+    # nilai berbeda, atau yang sudah dipakai baris lain).
+    statement = db.session.get(BankStatement, line.statement_id)
+    if entry.status != 'posted':
+        return jsonify({'error': 'Hanya entri jurnal berstatus posted yang bisa dicocokkan'}), 400
+    if statement and entry.account_id != statement.account_id:
+        return jsonify({'error': 'Entri jurnal ini bukan milik akun Kas/Bank rekening koran tersebut'}), 400
+    entry_net = float(entry.debit_amount or 0) - float(entry.credit_amount or 0)  # + masuk, - keluar
+    if abs(entry_net - float(line.amount)) > 0.01:
+        return jsonify({'error': f'Nilai tidak sama: baris bank Rp{float(line.amount):,.2f}, entri jurnal Rp{entry_net:,.2f}'}), 400
+    already = BankStatementLine.query.filter(
+        BankStatementLine.matched_accounting_entry_id == entry.id,
+        BankStatementLine.is_matched == True,
+        BankStatementLine.id != line.id,
+    ).first()
+    if already:
+        return jsonify({'error': 'Entri jurnal ini sudah dicocokkan dengan baris bank lain'}), 400
+
     line.is_matched = True
     line.matched_accounting_entry_id = entry.id
     line.matched_by = get_jwt_identity()
