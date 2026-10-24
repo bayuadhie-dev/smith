@@ -15,7 +15,7 @@ from datetime import datetime
 from models import db
 from models.document_management import DocumentTemplate, TemplateVersion
 
-LAYOUT = 'v2-2026-10e'
+LAYOUT = 'v2-2026-10f'
 AUTO_NOTE_PREFIX = 'Auto-generated'
 
 TEAL = '#1f4e5a'
@@ -260,7 +260,7 @@ def build_spk():
           F('notes', 16, 74, 178, 14, fs=9.5)]
     for i in range(1, 10):
         o.append(LINE(14, 73 + i * 8, 182, stroke=GRID, stroke_width=1))
-    o += signatures(14, 182, 234, ['Operator,', 'Supervisor,', 'Disetujui oleh,'])
+    o += signatures(14, 182, 234, ['PPIC,', 'Manager Produksi,'])
     return o, 'A4', 'portrait', None, None
 
 
@@ -281,7 +281,7 @@ def build_spk_batch():
         C('no', 'No.', 10, 'center'), C('name', 'Nama Bahan / Sub-Rakitan', 96), C('quantity', 'Kebutuhan', 30, 'right', 'num'),
         C('uom', 'Satuan', 22), C('realisasi', 'Realisasi', 24),
     ], min_rows=0, row_h=6.5, height=30, fs=9))
-    o += flow(signatures(14, 182, 108, ['Operator,', 'Supervisor,', 'Disetujui oleh,']))
+    o += flow(signatures(14, 182, 108, ['PPIC,', 'Manager Produksi,']))
     return o, 'A4', 'portrait', None, None
 
 
