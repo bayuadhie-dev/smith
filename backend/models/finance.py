@@ -124,6 +124,12 @@ class Payment(db.Model):
     exchange_rate = db.Column(db.Numeric(15, 6), default=1)
     reference_number = db.Column(db.String(100), nullable=True)
     bank_account_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)  # Kas/Bank account (Account.is_cash_bank=True)
+    # Counterpart account for a standalone Kas/Bank transaction with NO
+    # invoice behind it (2026-10-22, e.g. bank admin fee, interest income,
+    # owner capital injection) - invoice_id-based payments resolve their
+    # own counterpart (Piutang/Hutang Usaha) automatically and leave this
+    # null; this is only used/required when invoice_id is absent.
+    contra_account_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
     status = db.Column(db.String(50), nullable=False, default='pending')  # pending, cleared, bounced, cancelled
     notes = db.Column(db.Text, nullable=True)
     received_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)

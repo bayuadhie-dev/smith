@@ -28,6 +28,12 @@ interface CashBankAccount {
   name: string;
 }
 
+interface ContraAccount {
+  id: number;
+  code: string;
+  name: string;
+}
+
 const PaymentForm = () => {
   const { t } = useLanguage();
   const navigate = useNavigate()
@@ -41,13 +47,22 @@ const PaymentForm = () => {
   const [parties, setParties] = useState<Party[]>([]);
   const [invoices, setInvoices] = useState<UnpaidInvoice[]>([]);
   const [cashBankAccounts, setCashBankAccounts] = useState<CashBankAccount[]>([]);
+  const [contraAccounts, setContraAccounts] = useState<ContraAccount[]>([]);
   const [loadingInvoices, setLoadingInvoices] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Standalone transaction (2026-10-22, per user request: "transaksi kas
+  // bebas tanpa invoice") - bank admin fee, interest income, owner capital,
+  // etc. have no invoice behind them at all. When on, party/invoice
+  // selection is replaced by a direct Akun Lawan (counterpart account)
+  // picker.
+  const [isStandalone, setIsStandalone] = useState(false);
+
   const [formData, setFormData] = useState({
     party_id: '',
     invoice_id: '',
+    contra_account_id: '',
     amount: '',
     payment_date: '',
     payment_method: 'bank_transfer',
@@ -79,7 +94,12 @@ const PaymentForm = () => {
     axiosInstance.get('/api/finance/chart-of-accounts').then((res) => {
       const all = res.data.accounts || [];
       setCashBankAccounts(all.filter((a: any) => a.is_cash_bank));
-    }).catch(() => setCashBankAccounts([]));
+      setContraAccounts(
+        all
+          .filter((a: any) => !a.is_cash_bank && !a.is_header)
+          .map((a: any) => ({ id: a.id, code: a.code, name: a.name }))
+      );
+    }).catch(() => { setCashBankAccounts([]); setContraAccounts([]); });
   }, []);
 
   // Load unpaid invoices whenever the selected party changes
@@ -136,8 +156,12 @@ const PaymentForm = () => {
     e.preventDefault()
     setError(null);
 
-    if (!formData.invoice_id) {
+    if (!isStandalone && !formData.invoice_id) {
       setError('Pilih faktur yang akan dibayar.');
+      return;
+    }
+    if (isStandalone && !formData.contra_account_id) {
+      setError('Pilih Akun Lawan.');
       return;
     }
     if (!formData.bank_account_id) {
@@ -150,15 +174,21 @@ const PaymentForm = () => {
       await axiosInstance.post('/api/finance/payments', {
         payment_date: formData.payment_date,
         payment_type: paymentType === 'supplier' ? 'payment' : 'receipt',
-        invoice_id: Number(formData.invoice_id),
-        supplier_id: paymentType === 'supplier' ? Number(formData.party_id) : undefined,
-        customer_id: paymentType === 'customer' ? Number(formData.party_id) : undefined,
+        invoice_id: isStandalone ? undefined : Number(formData.invoice_id),
+        contra_account_id: isStandalone ? Number(formData.contra_account_id) : undefined,
+        supplier_id: !isStandalone && paymentType === 'supplier' ? Number(formData.party_id) : undefined,
+        customer_id: !isStandalone && paymentType === 'customer' ? Number(formData.party_id) : undefined,
         payment_method: formData.payment_method,
         amount: Number(formData.amount),
         reference_number: formData.reference_number || undefined,
+        notes: formData.notes || undefined,
         bank_account_id: Number(formData.bank_account_id),
       });
-      navigate(paymentType === 'supplier' ? '/app/accounting/payable' : '/app/accounting/receivable');
+      navigate(
+        isStandalone
+          ? (paymentType === 'supplier' ? '/app/finance/pembayaran' : '/app/finance/penerimaan')
+          : (paymentType === 'supplier' ? '/app/accounting/payable' : '/app/accounting/receivable')
+      );
     } catch (err: any) {
       setError(err.response?.data?.error || 'Gagal menyimpan pembayaran. Silakan coba lagi.');
     } finally {
@@ -194,6 +224,18 @@ const PaymentForm = () => {
       {/* Payment Form */}
       <div className="card p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
+          <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+            <input
+              type="checkbox"
+              checked={isStandalone}
+              onChange={(e) => {
+                setIsStandalone(e.target.checked);
+                setFormData((f) => ({ ...f, party_id: '', invoice_id: '', contra_account_id: '' }));
+              }}
+            />
+            Transaksi Bebas (Tanpa Invoice) — mis. biaya admin bank, bunga, setoran modal
+          </label>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
@@ -210,47 +252,75 @@ const PaymentForm = () => {
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                {paymentType === 'supplier' ? 'Supplier' : 'Customer'}
-              </label>
-              <select 
-                className="input w-full"
-                value={formData.party_id}
-                onChange={(e) => setFormData({...formData, party_id: e.target.value, invoice_id: ''})}
-                required
-              >
-                <option value="">Pilih {paymentType === 'supplier' ? 'supplier' : 'customer'}</option>
-                {parties.map((p) => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
-              </select>
-            </div>
+            {!isStandalone && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                    {paymentType === 'supplier' ? 'Supplier' : 'Customer'}
+                  </label>
+                  <select
+                    className="input w-full"
+                    value={formData.party_id}
+                    onChange={(e) => setFormData({...formData, party_id: e.target.value, invoice_id: ''})}
+                    required
+                  >
+                    <option value="">Pilih {paymentType === 'supplier' ? 'supplier' : 'customer'}</option>
+                    {parties.map((p) => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
+                </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Faktur
-              </label>
-              <select
-                className="input w-full"
-                value={formData.invoice_id}
-                onChange={(e) => handleInvoiceChange(e.target.value)}
-                disabled={!formData.party_id || loadingInvoices}
-                required
-              >
-                <option value="">
-                  {loadingInvoices ? 'Memuat...' : !formData.party_id ? 'Pilih pihak dulu' : 'Pilih faktur'}
-                </option>
-                {invoices.map((inv) => (
-                  <option key={inv.id} value={inv.id}>
-                    {inv.invoice_number} — sisa Rp{inv.balance_due.toLocaleString('id-ID')}
-                  </option>
-                ))}
-              </select>
-              {formData.party_id && !loadingInvoices && invoices.length === 0 && (
-                <p className="text-sm text-gray-500 mt-1">Tidak ada faktur belum lunas untuk pihak ini.</p>
-              )}
-            </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                    Faktur
+                  </label>
+                  <select
+                    className="input w-full"
+                    value={formData.invoice_id}
+                    onChange={(e) => handleInvoiceChange(e.target.value)}
+                    disabled={!formData.party_id || loadingInvoices}
+                    required
+                  >
+                    <option value="">
+                      {loadingInvoices ? 'Memuat...' : !formData.party_id ? 'Pilih pihak dulu' : 'Pilih faktur'}
+                    </option>
+                    {invoices.map((inv) => (
+                      <option key={inv.id} value={inv.id}>
+                        {inv.invoice_number} — sisa Rp{inv.balance_due.toLocaleString('id-ID')}
+                      </option>
+                    ))}
+                  </select>
+                  {formData.party_id && !loadingInvoices && invoices.length === 0 && (
+                    <p className="text-sm text-gray-500 mt-1">Tidak ada faktur belum lunas untuk pihak ini.</p>
+                  )}
+                </div>
+              </>
+            )}
+
+            {isStandalone && (
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                  Akun Lawan
+                </label>
+                <select
+                  className="input w-full"
+                  value={formData.contra_account_id}
+                  onChange={(e) => setFormData({ ...formData, contra_account_id: e.target.value })}
+                  required
+                >
+                  <option value="">Pilih akun lawan (mis. Pendapatan Lain-lain, Beban Operasional)</option>
+                  {contraAccounts.map((acc) => (
+                    <option key={acc.id} value={acc.id}>{acc.code} - {acc.name}</option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  {paymentType === 'customer'
+                    ? 'Jurnal: Debit Kas/Bank, Kredit akun ini.'
+                    : 'Jurnal: Debit akun ini, Kredit Kas/Bank.'}
+                </p>
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">

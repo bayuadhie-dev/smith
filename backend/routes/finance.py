@@ -671,8 +671,15 @@ def create_payment():
         number_prefix = 'RCP' if data.get('payment_type') == 'receipt' else 'PAY'
         payment_number = generate_number(number_prefix, Payment, 'payment_number')
 
-        if not data.get('invoice_id'):
-            return jsonify({'error': 'invoice_id is required'}), 400
+        # Standalone transaction support (2026-10-22, per user request:
+        # "transaksi kas bebas tanpa invoice") - every payment used to
+        # require an invoice_id, so e.g. a bank admin fee or interest
+        # income had nowhere to be recorded at all. Now either invoice_id
+        # (existing AR/AP settlement flow, unchanged below) OR
+        # contra_account_id (the other side of the journal, chosen
+        # directly) must be given.
+        if not data.get('invoice_id') and not data.get('contra_account_id'):
+            return jsonify({'error': 'invoice_id atau contra_account_id wajib diisi'}), 400
         if not data.get('bank_account_id'):
             return jsonify({'error': 'bank_account_id is required'}), 400
 
@@ -698,6 +705,8 @@ def create_payment():
             amount=data['amount'],
             reference_number=data.get('reference_number'),
             bank_account_id=data['bank_account_id'],
+            contra_account_id=data.get('contra_account_id'),
+            notes=data.get('notes'),
             received_by=user_id
         )
         
@@ -760,6 +769,45 @@ def create_payment():
                 workflow_id=None,
                 entry_date=payment.payment_date,
                 description=f'Payment {payment.payment_number} - {invoice.invoice_number}',
+                reference=payment.payment_number,
+                lines=lines,
+                total_debit=amount,
+                total_credit=amount,
+                created_by=user_id,
+            )
+            db.session.add(pending)
+            db.session.flush()
+            post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='payment', reference_id=payment.id)
+        elif data.get('contra_account_id'):
+            # Standalone transaction, no invoice (2026-10-22) - counterpart
+            # account chosen directly by the user instead of being derived
+            # from Piutang/Hutang Usaha. E.g. receipt: Dr Kas/Bank, Cr
+            # [Pendapatan Lain-lain / Uang Muka, whatever was picked];
+            # payment: Dr [Beban Operasional / whatever was picked], Cr
+            # Kas/Bank.
+            from utils.finance_helpers import post_pending_journal
+            from models.approval_workflow import PendingJournalEntry
+
+            amount = float(data['amount'])
+            if data['payment_type'] == 'receipt':
+                lines = [
+                    {'account_id': data['bank_account_id'], 'debit': amount, 'credit': 0,
+                     'description': f'Penerimaan - {payment.payment_number}'},
+                    {'account_id': data['contra_account_id'], 'debit': 0, 'credit': amount,
+                     'description': payment.notes or f'Penerimaan - {payment.payment_number}'},
+                ]
+            else:
+                lines = [
+                    {'account_id': data['contra_account_id'], 'debit': amount, 'credit': 0,
+                     'description': payment.notes or f'Pembayaran - {payment.payment_number}'},
+                    {'account_id': data['bank_account_id'], 'debit': 0, 'credit': amount,
+                     'description': f'Pembayaran - {payment.payment_number}'},
+                ]
+
+            pending = PendingJournalEntry(
+                workflow_id=None,
+                entry_date=payment.payment_date,
+                description=payment.notes or f'Payment {payment.payment_number}',
                 reference=payment.payment_number,
                 lines=lines,
                 total_debit=amount,
